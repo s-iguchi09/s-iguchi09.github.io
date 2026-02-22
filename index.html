@@ -1,24 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>My AdSense Page</title>
+    <meta charset="UTF-8">
+    <title>WPF標準コントロール実践ガイドアプリ | .NET 10対応</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="最新の .NET 10 と WPF で作成した、標準コントロールの使い方を学べるデスクトップアプリの紹介ページです。各コントロールごとにページを分け、見たい情報にすぐアクセスできます。">
+    <style>
+        body { font-family: system-ui, sans-serif; line-height: 1.7; margin: 0; background: #fafafa; color: #222; }
+        header { background: #1e88e5; color: #fff; padding: 1.8rem 1.2rem; }
+        nav { background: #fff; border-bottom: 1px solid #ddd; padding: 0.6rem 1.2rem; }
+        nav a { margin-right: 1rem; text-decoration: none; color: #1e88e5; }
+        main { max-width: 960px; margin: 1.5rem auto; padding: 0 1.2rem; }
+        section { background: #fff; padding: 1.4rem 1.6rem; border-radius: 6px; margin-bottom: 2rem; }
+        footer { background: #fff; border-top: 1px solid #ddd; padding: 1.5rem 1.2rem; font-size: 0.85rem; color: #555; }
+        h2 { border-left: 4px solid #1e88e5; padding-left: 0.5rem; }
+    </style>
 </head>
 <body>
-  <h1>Welcome</h1>
 
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
+<header>
+    <h1>WPF標準コントロール実践ガイドアプリ（.NET 10）</h1>
+    <p>WPF標準コントロールの使い方を体系的に学べるデスクトップアプリです。</p>
+</header>
 
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-XXXXXXX"
-       data-ad-slot="YYYYYYY"
-       data-ad-format="auto"></ins>
+<nav>
+    <a href="#about">アプリ概要</a>
+    <a href="#features">特徴</a>
+    <!--<a href="#controls">コントロール一覧</a>-->
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="#contact">お問い合わせ</a>
+</nav>
 
-  <script>
-       (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
+<main>
+
+<section id="about">
+    <h2>アプリ概要</h2>
+    <p>
+        本アプリは、WPFで作成した標準コントロールの動作を実際に確認できる学習用アプリです。
+        最新の <strong>.NET 10</strong> で開発されており、各コントロールごとにページを分けて構成しています。
+    </p>
+</section>
+
+<section id="features">
+    <h2>主な特徴</h2>
+    <ul>
+        <li>WPF標準コントロールの動作を実際に確認できる</li>
+        <li>.NET 10対応の最新構成</li>
+        <li>コントロールごとにページを分割し、目的の情報にすぐアクセス可能</li>
+        <li>シンプルで学習に集中できるUI</li>
+    </ul>
+</section>
+
+<!--
+<section id="controls">
+    <h2>収録コントロール</h2>
+    <ul>
+        <li>Button / TextBox / CheckBox / RadioButton</li>
+        <li>ComboBox / ListBox / ListView / DataGrid</li>
+        <li>Grid / StackPanel / DockPanel</li>
+        <li>TabControl / Expander / Slider / ProgressBar</li>
+    </ul>
+</section>
+-->
+
+<section id="contact">
+    <h2>お問い合わせ</h2>
+    <p>アプリに関するご意見・ご要望は以下よりご連絡ください。</p>
+    <ul>
+        <li>GitHub: https://github.com/s-iguchi09/WPFStandardControlDemoApp</li>
+    </ul>
+</section>
+
+</main>
+
+<footer>
+    <p>© 2026 WPF標準コントロール実践ガイドアプリ</p>
+    <p><a href="privacy.html">プライバシーポリシー</a></p>
+</footer>
 
 </body>
 </html>
