@@ -2,71 +2,62 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>プライバシーポリシー</title>
+  <title>プライバシーポリシー - s-iguchi Applications</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<h1>プライバシーポリシー</h1>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">s-iguchi Applications</div>
+    <nav class="site-nav">
+      <a href="../index.html">English</a>
+      <a href="about.html">概要</a>
+      <a href="privacy.html">プライバシーポリシー</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 言語</button>
+    </nav>
+  </div>
+</header>
 
-<p>
-このサイト（s-iguchi09.github.io）では、個人情報を直接収集することはありません。
-ただし、Google AdSense などの第三者サービスが、広告配信のために Cookie や類似技術を使用する場合があります。
-</p>
+<main>
 
-<h2>Cookie の使用について</h2>
-<p>
-Google およびそのパートナーは、ユーザーの過去のアクセス情報に基づいて広告を表示するために Cookie を使用することがあります。
-ユーザーは Google の広告設定ページからパーソナライズ広告を無効にできます。
-</p>
+  <section class="hero">
+    <h1>プライバシーポリシー</h1>
+    <p>このサイトにおけるデータの取り扱いについて説明します。</p>
+  </section>
 
-<h2>第三者サービスについて</h2>
-<p>
-このサイトでは、Google AdSense やアクセス解析ツールなどの第三者サービスを利用する場合があります。
-これらのサービスは、ブラウザ情報、IP アドレス、利用状況などの非個人情報を自動的に収集することがあります。
-</p>
+  <section class="content-section">
+    <h2>データ収集</h2>
+    <p>
+      このサイトは個人情報を直接収集しません。
+      ただし、GitHub Pages や解析ツールなどの第三者サービスがアクセスログを収集する場合があります。
+    </p>
 
-<h2>外部リンクについて</h2>
-<p>
-当サイトには外部サイトへのリンクが含まれています。
-リンク先サイトの内容やプライバシー保護について、当サイトは責任を負いません。
-</p>
+    <h2>第三者サービス</h2>
+    <p>
+      このサイトで紹介するアプリケーションは外部 API や SDK を利用する場合があります。
+      詳細は各サービスのプライバシーポリシーをご確認ください。
+    </p>
 
-<h2>ポリシーの変更について</h2>
-<p>
-本プライバシーポリシーは予告なく変更される場合があります。
-最新の内容をご確認ください。
-</p>
+    <h2>お問い合わせ</h2>
+    <p>
+      プライバシーポリシーに関する質問は GitHub を通じて開発者にお問い合わせください。
+    </p>
+  </section>
 
-<p><a href="index.html">トップページに戻る</a></p>
+</main>
 
-<!-- Language Switcher -->
-<div id="lang-switch" style="margin-top: 20px;">
-  <button onclick="switchLanguage()" style="padding: 6px 12px;">
-    🌐 Language
-  </button>
-</div>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
 
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
-
-  // 日本語ページ → 英語ページ
-  if (path.startsWith('/ja/')) {
-    // /ja/apps/xxx.html → /apps/xxx.html
-    const newPath = path.replace('/ja', '');
-    window.location.href = newPath === '/' ? '/index.html' : newPath;
-    return;
-  }
-
-  // 英語ページ → 日本語ページ
-  if (path.startsWith('/apps/')) {
-    // /apps/xxx.html → /ja/apps/xxx.html
-    window.location.href = '/ja' + path;
-    return;
-  }
-
-  // トップページなど
-  window.location.href = '/ja/index.html';
+  const newPath = path.replace('/ja', '');
+  window.location.href = newPath === '/' ? '/index.html' : newPath;
 }
 </script>
 

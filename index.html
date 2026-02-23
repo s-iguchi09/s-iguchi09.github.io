@@ -3,57 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <title>s-iguchi Applications</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>s-iguchi Applications</h1>
-<p>This website introduces applications developed by s-iguchi. Each application includes detailed explanations, features, and repository links.</p>
+<!-- 1. 固定ヘッダー -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">s-iguchi Applications</div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 Language</button>
+    </nav>
+  </div>
+</header>
 
-<h2>Application List</h2>
-<ul>
-  <li>
-    <a href="apps/wpf-standard-control-demo.html">
-      WPF Standard Control Demo (.NET 10)
-    </a>
-  </li>
-</ul>
+<main>
 
-<p>
-  <a href="about.html">About</a> |
-  <a href="privacy.html">Privacy Policy</a>
-</p>
+  <!-- 2. ヒーローセクション（既存の h1 + p を包むだけ） -->
+  <section class="hero">
+    <h1>s-iguchi Applications</h1>
+    <p>This website introduces applications developed by s-iguchi. Each application includes detailed explanations, features, and repository links.</p>
+  </section>
 
-<div id="lang-switch">
-  <button onclick="switchToJapanese()">日本語</button>
-</div>
+  <h2>Application List</h2>
 
-<!-- Language Switcher -->
-<div id="lang-switch" style="margin-top: 20px;">
-  <button onclick="switchLanguage()" style="padding: 6px 12px;">
-    🌐 Language
-  </button>
-</div>
+  <!-- 3. カード化（既存の UL をそのままカードに） -->
+  <ul class="app-card-list">
+    <li class="app-card">
+      <a href="apps/wpf-standard-control-demo.html">
+        WPF Standard Control Demo (.NET 10)
+      </a>
+    </li>
+  </ul>
+
+  <p>
+    <a href="about.html">About</a> |
+    <a href="privacy.html">Privacy Policy</a>
+  </p>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
 
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
 
-  // 日本語ページ → 英語ページ
   if (path.startsWith('/ja/')) {
-    // /ja/apps/xxx.html → /apps/xxx.html
     const newPath = path.replace('/ja', '');
     window.location.href = newPath === '/' ? '/index.html' : newPath;
     return;
   }
 
-  // 英語ページ → 日本語ページ
   if (path.startsWith('/apps/')) {
-    // /apps/xxx.html → /ja/apps/xxx.html
     window.location.href = '/ja' + path;
     return;
   }
 
-  // トップページなど
   window.location.href = '/ja/index.html';
 }
 </script>

@@ -2,53 +2,57 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>このサイトについて - s-iguchi</title>
+  <title>概要 - s-iguchi Applications</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<h1>このサイトについて</h1>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">s-iguchi Applications</div>
+    <nav class="site-nav">
+      <a href="../index.html">English</a>
+      <a href="about.html">概要</a>
+      <a href="privacy.html">プライバシーポリシー</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 言語</button>
+    </nav>
+  </div>
+</header>
 
-<p>
-このサイトは、s-iguchi が開発したアプリケーションを紹介するためのポートフォリオサイトです。
-各アプリの特徴、目的、機能、開発背景などを分かりやすくまとめています。
-</p>
+<main>
 
-<p>
-開発においては、実用性・保守性・最新技術の活用を重視しており、
-WPF や .NET を中心としたアプリケーション開発を行っています。
-今後も新しいアプリや改善を随時追加していく予定です。
-</p>
+  <section class="hero">
+    <h1>概要</h1>
+    <p>このサイトおよび開発者に関する情報です。</p>
+  </section>
 
-<p><a href="index.html">トップページに戻る</a></p>
+  <section class="content-section">
+    <h2>このサイトについて</h2>
+    <p>
+      このサイトでは、s-iguchi が開発したアプリケーションを紹介しています。
+      各アプリケーションには、詳細な説明、機能、リポジトリリンクが含まれています。
+    </p>
 
-<!-- Language Switcher -->
-<div id="lang-switch" style="margin-top: 20px;">
-  <button onclick="switchLanguage()" style="padding: 6px 12px;">
-    🌐 Language
-  </button>
-</div>
+    <h2>開発者について</h2>
+    <p>
+      s-iguchi は WPF、.NET、UI/UX 改善に注力する開発者です。
+      このサイトはポートフォリオおよび技術紹介として運営されています。
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
 
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
-
-  // 日本語ページ → 英語ページ
-  if (path.startsWith('/ja/')) {
-    // /ja/apps/xxx.html → /apps/xxx.html
-    const newPath = path.replace('/ja', '');
-    window.location.href = newPath === '/' ? '/index.html' : newPath;
-    return;
-  }
-
-  // 英語ページ → 日本語ページ
-  if (path.startsWith('/apps/')) {
-    // /apps/xxx.html → /ja/apps/xxx.html
-    window.location.href = '/ja' + path;
-    return;
-  }
-
-  // トップページなど
-  window.location.href = '/ja/index.html';
+  const newPath = path.replace('/ja', '');
+  window.location.href = newPath === '/' ? '/index.html' : newPath;
 }
 </script>
 

@@ -2,62 +2,65 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>WPF 標準コントロール実践ガイドアプリ</title>
+  <title>WPF 標準コントロールデモ (.NET 10)</title>
+  <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
 
-<h1>WPF 標準コントロール実践ガイドアプリ (.NET 10)</h1>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">s-iguchi Applications</div>
+    <nav class="site-nav">
+      <a href="../../index.html">English</a>
+      <a href="../../ja/about.html">概要</a>
+      <a href="../../ja/privacy.html">プライバシーポリシー</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 言語</button>
+    </nav>
+  </div>
+</header>
 
-<p>
-このアプリは、WPF の標準コントロールを .NET 10 環境でどのように扱うかを実践的に学べるデモアプリです。
-レイアウト、スタイル、コントロールの動作など、実際の開発で役立つポイントを確認できます。
-</p>
+<main>
 
-<h2>主な機能</h2>
-<ul>
-  <li>主要な WPF 標準コントロールの動作確認</li>
-  <li>レイアウト構造や配置のベストプラクティス</li>
-  <li>スタイル適用や UI 挙動のサンプル</li>
-</ul>
+  <section class="hero">
+    <h1>WPF 標準コントロールデモ (.NET 10)</h1>
+    <p>.NET 10 上で動作する WPF 標準コントロールのデモアプリです。</p>
+  </section>
 
-<h2>GitHub リポジトリ</h2>
-<p>
-<a href="https://github.com/s-iguchi09/WpfStandardControlDemo">WpfStandardControlDemo - GitHub</a>
-</p>
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      このアプリケーションは、.NET 10 を使用した WPF 標準コントロールの動作を確認するためのデモです。
+      UI の挙動、レイアウト、スタイルの参考として利用できます。
+    </p>
 
-<p><a href="../index.html">アプリ一覧に戻る</a></p>
+    <h2>機能</h2>
+    <ul>
+      <li>一般的な WPF コントロールの動作デモ</li>
+      <li>最新の .NET 10 ランタイム</li>
+      <li>UI テストや比較に便利</li>
+    </ul>
 
-<!-- Language Switcher -->
-<div id="lang-switch" style="margin-top: 20px;">
-  <button onclick="switchLanguage()" style="padding: 6px 12px;">
-    🌐 Language
-  </button>
-</div>
+    <h2>リポジトリ</h2>
+    <p>
+      <a href="https://github.com/s-iguchi09">GitHub リポジトリ</a>
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
 
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
-
-  // 日本語ページ → 英語ページ
-  if (path.startsWith('/ja/')) {
-    // /ja/apps/xxx.html → /apps/xxx.html
-    const newPath = path.replace('/ja', '');
-    window.location.href = newPath === '/' ? '/index.html' : newPath;
-    return;
-  }
-
-  // 英語ページ → 日本語ページ
-  if (path.startsWith('/apps/')) {
-    // /apps/xxx.html → /ja/apps/xxx.html
-    window.location.href = '/ja' + path;
-    return;
-  }
-
-  // トップページなど
-  window.location.href = '/ja/index.html';
+  const newPath = path.replace('/ja', '');
+  window.location.href = newPath;
 }
 </script>
-
 
 </body>
 </html>

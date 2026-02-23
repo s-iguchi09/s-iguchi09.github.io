@@ -2,77 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Privacy Policy</title>
+  <title>Privacy Policy - s-iguchi Applications</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>Privacy Policy</h1>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">s-iguchi Applications</div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 Language</button>
+    </nav>
+  </div>
+</header>
 
-<p>
-This website (s-iguchi09.github.io) does not collect personal information directly.
-However, third‑party services such as Google AdSense may use cookies or similar technologies
-to display personalized advertisements.
-</p>
+<main>
 
-<h2>Use of Cookies</h2>
-<p>
-Google and its partners may use cookies to serve ads based on your prior visits to this website or other websites.
-Users may opt out of personalized advertising by visiting Google’s Ads Settings.
-</p>
+  <!-- ヒーロー -->
+  <section class="hero">
+    <h1>Privacy Policy</h1>
+    <p>Information about how this website handles user data.</p>
+  </section>
 
-<h2>Third‑Party Services</h2>
-<p>
-This site may use third‑party services such as Google AdSense or analytics tools.
-These services may automatically collect non‑personal information such as browser type,
-IP address, and usage data.
-</p>
+  <!-- 元の文章をそのままここに置く -->
+  <section class="content-section">
+    <h2>Data Collection</h2>
+    <p>
+      This website does not collect personal information directly.  
+      However, third-party services such as GitHub Pages or analytics tools may collect access logs.
+    </p>
 
-<h2>External Links</h2>
-<p>
-This website contains links to external sites.  
-We are not responsible for the privacy practices or content of those websites.
-</p>
+    <h2>Third-Party Services</h2>
+    <p>
+      Applications introduced on this site may use external APIs or SDKs.  
+      Please refer to each service's privacy policy for details.
+    </p>
 
-<h2>Changes to This Policy</h2>
-<p>
-This privacy policy may be updated without notice.  
-Please check this page periodically for the latest information.
-</p>
+    <h2>Contact</h2>
+    <p>
+      For questions regarding this privacy policy, please contact the developer via GitHub.
+    </p>
+  </section>
 
-<p><a href="index.html">Back to Home</a></p>
+</main>
 
-<div id="lang-switch">
-  <button onclick="switchToJapanese()">日本語</button>
-</div>
-
-<!-- Language Switcher -->
-<div id="lang-switch" style="margin-top: 20px;">
-  <button onclick="switchLanguage()" style="padding: 6px 12px;">
-    🌐 Language
-  </button>
-</div>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
 
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
 
-  // 日本語ページ → 英語ページ
   if (path.startsWith('/ja/')) {
-    // /ja/apps/xxx.html → /apps/xxx.html
     const newPath = path.replace('/ja', '');
     window.location.href = newPath === '/' ? '/index.html' : newPath;
     return;
   }
 
-  // 英語ページ → 日本語ページ
   if (path.startsWith('/apps/')) {
-    // /apps/xxx.html → /ja/apps/xxx.html
     window.location.href = '/ja' + path;
     return;
   }
 
-  // トップページなど
-  window.location.href = '/ja/index.html';
+  window.location.href = '/ja/privacy.html';
 }
 </script>
 

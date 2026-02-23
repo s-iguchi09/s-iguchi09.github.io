@@ -2,67 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WPF Standard Control Demo</title>
+  <title>WPF Standard Control Demo (.NET 10)</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
-<h1>WPF Standard Control Demo (.NET 10)</h1>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">s-iguchi Applications</div>
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 Language</button>
+    </nav>
+  </div>
+</header>
 
-<p>
-This application demonstrates how to use standard WPF controls in a modern .NET 10 environment.
-It serves as a practical reference for developers who want to understand layout behavior,
-styling, and control interactions in real-world scenarios.
-</p>
+<main>
 
-<h2>Features</h2>
-<ul>
-  <li>Demonstrates common WPF controls</li>
-  <li>Shows layout patterns and best practices</li>
-  <li>Includes sample interactions and UI behaviors</li>
-</ul>
+  <section class="hero">
+    <h1>WPF Standard Control Demo (.NET 10)</h1>
+    <p>A demonstration of standard WPF controls running on .NET 10.</p>
+  </section>
 
-<h2>Repository</h2>
-<p>
-<a href="https://github.com/s-iguchi09/WpfStandardControlDemo">GitHub Repository</a>
-</p>
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      This application showcases standard WPF controls using .NET 10.
+      It is intended as a reference for UI behavior, layout, and styling.
+    </p>
 
-<p><a href="../index.html">Back to App List</a></p>
+    <h2>Features</h2>
+    <ul>
+      <li>Demonstrates common WPF controls</li>
+      <li>Modern .NET 10 runtime</li>
+      <li>Useful for UI testing and comparison</li>
+    </ul>
 
-<div id="lang-switch">
-  <button onclick="switchToJapanese()">日本語</button>
-</div>
+    <h2>Repository</h2>
+    <p>
+      <a href="https://github.com/s-iguchi09">GitHub Repository</a>
+    </p>
+  </section>
 
-<!-- Language Switcher -->
-<div id="lang-switch" style="margin-top: 20px;">
-  <button onclick="switchLanguage()" style="padding: 6px 12px;">
-    🌐 Language
-  </button>
-</div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
 
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
 
-  // 日本語ページ → 英語ページ
   if (path.startsWith('/ja/')) {
-    // /ja/apps/xxx.html → /apps/xxx.html
     const newPath = path.replace('/ja', '');
-    window.location.href = newPath === '/' ? '/index.html' : newPath;
+    window.location.href = newPath;
     return;
   }
 
-  // 英語ページ → 日本語ページ
-  if (path.startsWith('/apps/')) {
-    // /apps/xxx.html → /ja/apps/xxx.html
-    window.location.href = '/ja' + path;
-    return;
-  }
-
-  // トップページなど
-  window.location.href = '/ja/index.html';
+  window.location.href = '/ja/apps/wpf-standard-control-demo.html';
 }
 </script>
-
 
 </body>
 </html>
