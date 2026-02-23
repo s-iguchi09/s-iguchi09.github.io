@@ -1,65 +1,80 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>プライバシーポリシー | WPF標準コントロール実践ガイドアプリ</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: system-ui, sans-serif; line-height: 1.7; margin: 0; padding: 1.5rem; background: #fafafa; }
-        h1 { border-left: 4px solid #1e88e5; padding-left: 0.5rem; }
-        section { background: #fff; padding: 1.4rem 1.6rem; border-radius: 6px; margin-bottom: 2rem; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Privacy Policy</title>
 </head>
 <body>
 
-<h1>プライバシーポリシー</h1>
+<h1>Privacy Policy</h1>
 
-<section>
-    <h2>Google AdSense について</h2>
-    <p>
-        当サイトでは、第三者配信の広告サービス「Google AdSense」を利用しています。
-        Google を含む第三者配信事業者は、ユーザーの興味に応じた広告を表示するために
-        Cookie（クッキー）を使用することがあります。
-    </p>
+<p>
+This website (s-iguchi09.github.io) does not collect personal information directly.
+However, third‑party services such as Google AdSense may use cookies or similar technologies
+to display personalized advertisements.
+</p>
 
-    <p>
-        Google が広告 Cookie を使用することで、ユーザーが当サイトや他のサイトにアクセスした情報に基づき、
-        適切な広告を表示できます。
-    </p>
+<h2>Use of Cookies</h2>
+<p>
+Google and its partners may use cookies to serve ads based on your prior visits to this website or other websites.
+Users may opt out of personalized advertising by visiting Google’s Ads Settings.
+</p>
 
-    <p>
-        パーソナライズ広告は、<a href="https://www.google.com/settings/ads">広告設定</a>から無効にできます。
-    </p>
+<h2>Third‑Party Services</h2>
+<p>
+This site may use third‑party services such as Google AdSense or analytics tools.
+These services may automatically collect non‑personal information such as browser type,
+IP address, and usage data.
+</p>
 
-    <p>
-        また、<a href="https://policies.google.com/technologies/ads">Google の広告に関するポリシー</a>もご確認ください。
-    </p>
-</section>
+<h2>External Links</h2>
+<p>
+This website contains links to external sites.  
+We are not responsible for the privacy practices or content of those websites.
+</p>
 
-<section>
-    <h2>アクセス解析について</h2>
-    <p>
-        当サイトでは、アクセス解析ツールを使用する場合があります。
-        これらのツールは匿名のトラフィックデータを収集しますが、個人を特定するものではありません。
-    </p>
-</section>
+<h2>Changes to This Policy</h2>
+<p>
+This privacy policy may be updated without notice.  
+Please check this page periodically for the latest information.
+</p>
 
-<section>
-    <h2>免責事項</h2>
-    <p>
-        当サイトの情報は可能な限り正確な内容を掲載していますが、正確性や安全性を保証するものではありません。
-        当サイトの利用によって生じた損害については一切の責任を負いかねます。
-    </p>
-</section>
+<p><a href="index.html">Back to Home</a></p>
 
-<section>
-    <h2>お問い合わせ</h2>
-    <p>ご不明点がありましたら、以下よりお問い合わせください。</p>
-    <ul>
-        <li>メール: （あなたのメールアドレス）</li>
-        <li>GitHub: （リポジトリURL）</li>
-    </ul>
-</section>
+<div id="lang-switch">
+  <button onclick="switchToJapanese()">日本語</button>
+</div>
+
+<!-- Language Switcher -->
+<div id="lang-switch" style="margin-top: 20px;">
+  <button onclick="switchLanguage()" style="padding: 6px 12px;">
+    🌐 Language
+  </button>
+</div>
+
+<script>
+function switchLanguage() {
+  const path = window.location.pathname;
+
+  // 日本語ページ → 英語ページ
+  if (path.startsWith('/ja/')) {
+    // /ja/apps/xxx.html → /apps/xxx.html
+    const newPath = path.replace('/ja', '');
+    window.location.href = newPath === '/' ? '/index.html' : newPath;
+    return;
+  }
+
+  // 英語ページ → 日本語ページ
+  if (path.startsWith('/apps/')) {
+    // /apps/xxx.html → /ja/apps/xxx.html
+    window.location.href = '/ja' + path;
+    return;
+  }
+
+  // トップページなど
+  window.location.href = '/ja/index.html';
+}
+</script>
 
 </body>
 </html>
