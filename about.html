@@ -51,18 +51,14 @@ function switchLanguage() {
 
   if (path.startsWith('/ja/')) {
     const newPath = path.replace('/ja', '');
-    window.location.href = newPath === '/' ? '/index.html' : newPath;
+    window.location.href = newPath;
     return;
   }
 
-  if (path.startsWith('/apps/')) {
-    window.location.href = '/ja' + path;
-    return;
-  }
-
-  window.location.href = '/ja/about.html';
+  window.location.href = '/ja' + path;
 }
 </script>
+
 
 </body>
 </html>

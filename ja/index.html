@@ -54,8 +54,14 @@
 <script>
 function switchLanguage() {
   const path = window.location.pathname;
-  const newPath = path.replace('/ja', '');
-  window.location.href = newPath === '/' ? '/index.html' : newPath;
+
+  if (path.startsWith('/ja/')) {
+    const newPath = path.replace('/ja', '');
+    window.location.href = newPath;
+    return;
+  }
+
+  window.location.href = '/ja' + path;
 }
 </script>
 
