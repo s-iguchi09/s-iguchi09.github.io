@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>WPF MessageBoxサンプル作成ツール (.NET 10)</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">アプリ一覧</div>
+    <nav class="site-nav">
+      <a href="../index.html">ホーム</a>
+      <a href="../about.html">このサイトについて</a>
+      <a href="../privacy.html">プライバシーポリシー</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 English</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h1>WPF MessageBoxサンプル作成ツール (.NET 10)</h1>
+    <p>WPF の MessageBox をリアルタイムにプレビューできるツールです。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      WPFMessageBoxSampleCreator は、WPF の標準 <code>MessageBox</code> をリアルタイムで設定・プレビューできるアプリです。  
+      本文、タイトル、ボタン構成、アイコンを設定し、即座に MessageBox を表示できます。
+    </p>
+
+    <h2>特徴</h2>
+    <ul>
+      <li>MessageBox の本文とタイトルを設定可能</li>
+      <li>ボタン構成を選択（OK、OKCancel、YesNo、YesNoCancel）</li>
+      <li>アイコンを選択（Information、Warning、Error、Question）</li>
+      <li>設定内容を即時プレビュー</li>
+    </ul>
+
+    <h2>リポジトリ</h2>
+    <p>
+      <a href="https://github.com/s-iguchi09">GitHub リポジトリ</a>
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
+
+<script>
+function switchLanguage() {
+  const path = window.location.pathname;
+
+  if (path.startsWith('/ja/')) {
+    const newPath = path.replace('/ja', '');
+    window.location.href = newPath;
+    return;
+  }
+
+  window.location.href = '/ja/apps/wpf-messagebox-sample-creator.html';
+}
+</script>
+
+</body>
+</html>

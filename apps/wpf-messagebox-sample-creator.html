@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WPF MessageBox Sample Creator (.NET 10)</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">Applications</div>
+    <nav class="site-nav">
+      <a href="../index.html">Home</a>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy Policy</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 日本語</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h1>WPF MessageBox Sample Creator (.NET 10)</h1>
+    <p>A tool for previewing and testing WPF MessageBox configurations.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      WPFMessageBoxSampleCreator allows you to configure and preview standard WPF
+      <code>MessageBox</code> options in real time.  
+      You can set the text, caption, button layout, and icon, then instantly display
+      the MessageBox using the selected settings.
+    </p>
+
+    <h2>Features</h2>
+    <ul>
+      <li>Configure MessageBox text and caption</li>
+      <li>Select button layout (OK, OKCancel, YesNo, YesNoCancel)</li>
+      <li>Select icon (Information, Warning, Error, Question)</li>
+      <li>Preview the MessageBox instantly</li>
+    </ul>
+
+    <h2>Repository</h2>
+    <p>
+      <a href="https://github.com/s-iguchi09">GitHub Repository</a>
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
+
+<script>
+function switchLanguage() {
+  const path = window.location.pathname;
+
+  if (path.startsWith('/ja/')) {
+    const newPath = path.replace('/ja', '');
+    window.location.href = newPath;
+    return;
+  }
+
+  window.location.href = '/ja/apps/wpf-messagebox-sample-creator.html';
+}
+</script>
+
+</body>
+</html>
