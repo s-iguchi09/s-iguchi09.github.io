@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>お問い合わせ</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+     crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="site-title">Applications</div>
+    <nav class="site-nav">
+      <a href="index.html">ホーム</a>
+      <a href="about.html">概要</a>
+      <a href="privacy.html">プライバシーポリシー</a>
+      <a href="contact.html">お問い合わせ</a>
+      <button onclick="switchLanguage()" class="lang-btn">🌐 English</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <h1>お問い合わせ</h1>
+    <p>アプリケーションに関するご質問やご意見などがありましたら、以下の連絡先よりお気軽にご連絡ください。</p>
+  </section>
+
+  <h2>メールアドレス</h2>
+  <div class="content-section">
+    <p>お問い合わせ先はこちらです：</p>
+
+    <p style="font-size: 1.2em; font-weight: bold;">
+      <a href="mailto:siguchi09@gmail.com">siguchi09@gmail.com</a>
+    </p>
+  </div>
+
+  <h2>GitHub</h2>
+  <div class="content-section">
+    <p>開発中のプロジェクトや公開リポジトリはこちらからご覧いただけます：</p>
+
+    <p style="font-size: 1.1em; font-weight: bold;">
+      <a href="https://github.com/s-iguchi09" target="_blank">https://github.com/s-iguchi09</a>
+    </p>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>© 2026 s-iguchi</span>
+  </div>
+</footer>
+
+<script>
+function switchLanguage() {
+  const path = window.location.pathname;
+
+  if (path.startsWith('/ja/')) {
+    const newPath = path.replace('/ja', '');
+    window.location.href = newPath;
+    return;
+  }
+
+  window.location.href = '/ja' + path;
+}
+</script>
+
+</body>
+</html>

@@ -16,6 +16,7 @@
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="privacy.html">Privacy Policy</a>
+      <a href="contact.html">Contact</a>
       <button onclick="switchLanguage()" class="lang-btn">🌐 日本語</button>
     </nav>
   </div>
@@ -23,20 +24,41 @@
 
 <main>
 
-  <!-- ヒーロー -->
   <section class="hero">
     <h1>About</h1>
     <p>Information about the developer and the purpose of this website.</p>
   </section>
 
-  <!-- 元の文章をそのままここに置く -->
   <section class="content-section">
     <h2>About This Website</h2>
     <p>
-      This website introduces applications developed by s-iguchi.  
+      This website introduces applications developed by s-iguchi.
       The goal is to provide clear explanations, features, and repository links for each application.
     </p>
+  </section>
 
+  <section class="content-section">
+    <h2>Developer</h2>
+    <p>
+      I develop Windows applications using .NET and WPF, focusing on usability, clean UI design,
+      and practical tools that improve workflow efficiency.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>GitHub</h2>
+    <p>You can view my repositories and ongoing projects here:</p>
+    <p style="font-size: 1.1em; font-weight: bold;">
+      <a href="https://github.com/s-iguchi09" target="_blank">https://github.com/s-iguchi09</a>
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Contact</h2>
+    <p>If you would like to get in touch, feel free to contact me by email:</p>
+    <p style="font-size: 1.1em; font-weight: bold;">
+      <a href="mailto:siguchi09@gmail.com">siguchi09@gmail.com</a>
+    </p>
   </section>
 
 </main>
@@ -60,7 +82,6 @@ function switchLanguage() {
   window.location.href = '/ja' + path;
 }
 </script>
-
 
 </body>
 </html>
