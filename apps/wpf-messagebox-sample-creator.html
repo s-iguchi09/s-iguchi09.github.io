@@ -6,9 +6,15 @@
 <head>
   <meta charset="UTF-8">
   <title>WPF MessageBox Sample Creator</title>
+
+  <!-- SEO -->
+  <meta name="description" content="A tool for configuring and previewing WPF MessageBox settings in real time. Includes development background, features, UI/UX notes, technologies used, and GitHub repository link.">
+
+  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-     crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="../style.css">
+    crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -16,31 +22,84 @@
 
 <main>
 
+  <!-- Hero Section -->
   <section class="hero">
     <h1>WPF MessageBox Sample Creator</h1>
-    <p>A tool for previewing and testing WPF MessageBox configurations.</p>
+    <p>
+      A tool that allows you to configure and preview WPF <code>MessageBox</code> settings in real time.
+      Useful for UI behavior verification and prototyping in Windows application development.
+    </p>
   </section>
 
+  <!-- Overview -->
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      WPFMessageBoxSampleCreator allows you to configure and preview standard WPF
-      <code>MessageBox</code> options in real time.  
-      You can set the text, caption, button layout, and icon, then instantly display
-      the MessageBox using the selected settings.
+      WPF MessageBox Sample Creator is an application that lets you interactively configure the standard WPF
+      <code>MessageBox</code> and preview the result instantly. You can modify the text, caption, button layout, and icon,
+      and immediately display the MessageBox with the selected settings.
+      This tool is practical for UI behavior testing and application flow design, and can also be used by non-developer roles
+      such as system designers or testers who need to review MessageBox configurations in real time.
     </p>
 
+    <!-- Sample Image -->
+    <div class="app-screenshot">
+      <img src="/attachments/WPFMessageBoxSampleCreator.png" alt="Screenshot of the WPF MessageBox Sample Creator and a displayed MessageBox example">
+    </div>
+  </section>
+
+  <!-- Development Background -->
+  <section class="content-section">
+    <h2>Development Background</h2>
+    <p>
+      In Windows application development, MessageBox behavior often needs to be checked repeatedly.
+      However, writing code every time just to verify MessageBox behavior is inefficient and slows down UI flow adjustments.
+      Additionally, non-developer members of a development team—such as system designers, testers, or planners—may need to
+      confirm MessageBox specifications but lack an environment to easily preview them.
+      This tool was created to solve these issues by enabling instant MessageBox previews without writing code.
+      It aims to improve development efficiency and make UI specification review easier for all roles involved in system development.
+    </p>
+  </section>
+
+  <!-- Features -->
+  <section class="content-section">
     <h2>Features</h2>
     <ul>
-      <li>Configure MessageBox text and caption</li>
+      <li>Freely configure MessageBox text and caption</li>
       <li>Select button layout (OK, OKCancel, YesNo, YesNoCancel)</li>
       <li>Select icon (Information, Warning, Error, Question)</li>
-      <li>Preview the MessageBox instantly</li>
+      <li>Instant preview of the configured MessageBox</li>
+      <li>Useful for UI prototyping and behavior verification</li>
+      <li>Can be used by designers and testers, not only developers</li>
     </ul>
+  </section>
 
+  <!-- UI/UX Notes -->
+  <section class="content-section">
+    <h2>UI / UX Notes</h2>
+    <p>
+      The interface is designed to be simple and intuitive, allowing users to focus on MessageBox behavior rather than tool operation.
+      Controls are organized clearly, and the preview button is placed for quick access, enabling users to test multiple configurations efficiently.
+      The layout is intended to be easy to use not only for developers but also for designers and testers who review UI specifications.
+    </p>
+  </section>
+
+  <!-- Technologies Used -->
+  <section class="content-section">
+    <h2>Technologies Used</h2>
+    <ul>
+      <li>WPF (.NET)</li>
+      <li>XAML-based UI layout</li>
+      <li>Standard <code>MessageBox</code> API</li>
+    </ul>
+  </section>
+
+  <!-- Repository -->
+  <section class="content-section">
     <h2>Repository</h2>
     <p>
-      <a href="https://github.com/s-iguchi09">GitHub Repository</a>
+      The source code is available on GitHub:<br>
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank">GitHub Repository</a>
     </p>
   </section>
 

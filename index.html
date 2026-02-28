@@ -5,10 +5,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Applications</title>
+  <title>Application List</title>
+
+  <!-- SEO -->
+  <meta name="description" content="A collection of Windows applications developed by s-iguchi. Each page includes app features, development background, technical details, UI design concepts, and GitHub repository links.">
+
+  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-     crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="style.css">
+    crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -16,29 +22,47 @@
 
 <main>
 
-  <!-- 2. ヒーローセクション（既存の h1 + p を包むだけ） -->
+  <!-- Hero Section -->
   <section class="hero">
-    <h1>Applications</h1>
-    <p>This website introduces applications developed by s-iguchi. Each application includes detailed explanations, features, and repository links.</p>
+    <h1>Application List</h1>
+    <p>
+      This website introduces Windows applications developed by s-iguchi.
+      Each application page includes not only feature descriptions but also the development background, the technologies used, UI/UX considerations, and links to the GitHub repository, providing detailed information for developers.
+    </p>
   </section>
 
-  <h2>Application List</h2>
+  <!-- About the Site -->
+  <section class="site-purpose">
+    <h2>About This Site</h2>
+    <p>
+      The applications featured on this site are built primarily with WPF and serve as practical examples of Windows application development.
+      The goal is to share hands-on knowledge, including UI design, layout techniques, sample applications for testing and verification, and useful libraries or tools.
+      This site aims to provide helpful information for developers interested in Windows app development or looking for implementation references.
+    </p>
+  </section>
 
-  <!-- 3. カード化（既存の UL をそのままカードに） -->
-  <ul class="app-card-list">
-    <li class="app-card">
-      <a href="apps/wpf-standard-control-demo.html">
-        WPF Standard Control Demo App (.NET 10)
-      </a>
-    </li>
-  </ul>
-  <ul class="app-card-list">
-    <li class="app-card">
-      <a href="apps/wpf-messagebox-sample-creator.html">
-        WPF MessageBox Sample Creator
-      </a>
-    </li>
-  </ul>
+  <!-- Application List -->
+  <section class="app-list">
+    <h2>Applications</h2>
+
+    <ul class="app-card-list">
+
+      <li class="app-card">
+        <a href="apps/wpf-standard-control-demo.html">
+          <h3>WPF Standard Control Demo App (.NET 10)</h3>
+          <p>A demo application showcasing standard WPF controls running on the latest .NET. Useful as a reference for UI layout and styling.</p>
+        </a>
+      </li>
+
+      <li class="app-card">
+        <a href="apps/wpf-messagebox-sample-creator.html">
+          <h3>WPF MessageBox Sample Creator</h3>
+          <p>A tool for generating customizable MessageBox samples. Helpful for UI prototyping and behavior testing.</p>
+        </a>
+      </li>
+
+    </ul>
+  </section>
 
 </main>
 

@@ -5,38 +5,63 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Applications</title>
+  <title>アプリケーション一覧</title>
+
+  <!-- SEO -->
+  <meta name="description" content="s-iguchi が開発した Windows アプリケーションの一覧。各アプリの特徴、技術的背景、UI デザイン、GitHub リポジトリへのリンクを掲載しています。">
+
+  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-     crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="../style.css">
+    crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 {% include header-ja.html %}
 
 <main>
-
+  <!-- Hero Section -->
   <section class="hero">
-    <h1>Applications</h1>
-    <p>このサイトでは、s-iguchi が開発したアプリケーションを紹介しています。</p>
+    <h1>アプリケーション一覧</h1>
+    <p>
+      このサイトでは、s-iguchi が開発した Windows アプリケーションを紹介しています。
+      各アプリのページでは、機能紹介だけでなく、開発の背景、使用している技術スタック、UI/UX の工夫、GitHub リポジトリへのリンクなど、開発者向けの詳細な情報を掲載しています。
+    </p>
   </section>
 
-  <h2>アプリ一覧</h2>
+  <!-- About the Site -->
+  <section class="site-purpose">
+    <h2>このサイトについて</h2>
+    <p>
+      掲載しているアプリケーションは、WPF を中心とした Windows アプリ開発の実例として構成されています。
+      UI デザイン、レイアウト、動作確認用のサンプルアプリ、便利なライブラリやツールの紹介など、実践的な知見を共有することを目的としています。
+      Windows アプリ開発に興味のある方や、実装の参考を探している開発者に役立つ情報を提供します。
+    </p>
+  </section>
 
-  <ul class="app-card-list">
-    <li class="app-card">
-      <a href="apps/wpf-standard-control-demo.html">
-        WPF 標準コントロールデモアプリ (.NET 10)
-      </a>
-    </li>
-  </ul>
-  <ul class="app-card-list">
-    <li class="app-card">
-      <a href="apps/wpf-messagebox-sample-creator.html">
-        WPF MessageBoxサンプル作成ツール
-      </a>
-    </li>
-  </ul>
+  <!-- Application List -->
+  <section class="app-list">
+    <h2>アプリ一覧</h2>
+
+    <ul class="app-card-list">
+
+      <li class="app-card">
+        <a href="apps/wpf-standard-control-demo.html">
+          <h3>WPF 標準コントロールデモアプリ (.NET 10)</h3>
+          <p>WPF の標準コントロールを最新の .NET で動作させたデモアプリ。UI レイアウトやスタイルの参考にできます。</p>
+        </a>
+      </li>
+
+      <li class="app-card">
+        <a href="apps/wpf-messagebox-sample-creator.html">
+          <h3>WPF MessageBox サンプル作成ツール</h3>
+          <p>MessageBox のカスタムサンプルを生成できるツール。UI プロトタイピングや動作確認に便利です。</p>
+        </a>
+      </li>
+
+    </ul>
+  </section>
 
 </main>
 
