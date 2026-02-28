@@ -9,18 +9,7 @@
 </head>
 <body>
 
-<header class="site-header">
-  <div class="header-inner">
-    <div class="site-title">Applications</div>
-    <nav class="site-nav">
-      <a href="/index.html">Home</a>
-      <a href="/about.html">About</a>
-      <a href="/privacy.html">Privacy Policy</a>
-      <a href="/contact.html">Contact</a>
-      <button onclick="switchLanguage()" class="lang-btn">🌐 日本語</button>
-    </nav>
-  </div>
-</header>
+{% include header-en.html %}
 
 <main>
 
@@ -62,25 +51,7 @@
 
 </main>
 
-<footer class="site-footer">
-  <div class="footer-inner">
-    <span>© 2026 s-iguchi</span>
-  </div>
-</footer>
-
-<script>
-function switchLanguage() {
-  const path = window.location.pathname;
-
-  if (path.startsWith('/ja/')) {
-    const newPath = path.replace('/ja', '');
-    window.location.href = newPath;
-    return;
-  }
-
-  window.location.href = '/ja' + path;
-}
-</script>
+{% include footer-en.html %}
 
 </body>
 </html>
