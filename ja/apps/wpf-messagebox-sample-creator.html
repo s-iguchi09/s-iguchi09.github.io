@@ -5,12 +5,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>WPF MessageBoxサンプル作成ツール</title>
+  <title>WPF MessageBoxサンプル作成ツール | プロトタイピングと仕様確認の効率化</title>
 
-  <!-- SEO -->
-  <meta name="description" content="WPF の MessageBox をリアルタイムに設定・プレビューできるツール。開発背景、特徴、UI/UX の工夫、技術スタック、GitHub リポジトリへのリンクを掲載。">
+  <meta name="description" content="WPF の MessageBox をリアルタイムに設定・プレビューできる開発支援ツール。GitHub Release でビルド済み exe を公開中のため、環境構築なしで即座に検証可能。設計者やデザイナーとの合意形成を加速させます。">
 
-  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
   <link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
@@ -24,82 +22,78 @@
 
 <main>
 
-  <!-- Hero Section -->
   <section class="hero">
     <h1>WPF MessageBoxサンプル作成ツール</h1>
     <p>
-      WPF の <code>MessageBox</code> をリアルタイムに設定・プレビューできるツールです。
-      Windows アプリ開発における UI 動作確認やプロトタイピングに役立ちます。
+      Windows 標準の <code>MessageBox</code> をリアルタイムにシミュレート。
+      GitHub でビルド済み exe を公開中。開発環境なしで UI の仕様検討を即座に開始。
     </p>
   </section>
 
-  <!-- Overview -->
   <section class="content-section">
-    <h2>概要</h2>
+    <h2>概要：対話的な MessageBox シミュレーター</h2>
     <p>
-      WPF MessageBox サンプル作成ツールは、WPF の標準 <code>MessageBox</code> を対話的に設定し、その場でプレビューできるアプリケーションです。
-      本文、タイトル、ボタン構成、アイコンなどを変更し、選択した設定で即座に MessageBox を表示できます。
-      UI の動作確認やアプリケーションのフロー設計時に役立つ実用的なツールであり、開発者だけでなく、設計者やテスターなど
-      システム開発に関わる幅広い職種の方が、MessageBox の構成をリアルタイムに検討・確認する用途にも利用できます。
+      WPF MessageBox サンプル作成ツールは、WPF の標準 <code>MessageBox</code> を直感的にカスタマイズし、その場で実際の挙動を確認できるプロトタイピングアプリです。
+    </p>
+    <p>
+      本文、タイトル、ボタン（OK/Cancel, Yes/No等）、アイコン（Warning, Error等）を自由に組み合わせ、選択した設定で即座に MessageBox を表示できます。
+      <strong>本ツールは GitHub の Release ページにてビルド済みの実行ファイル（.exe）を公開しているため、Visual Studio などの開発環境がインストールされていない PC でも、ダウンロードするだけで即座に利用可能です。</strong>
     </p>
 
-    <!-- Sample Image -->
     <div class="app-screenshot">
-      <img src="/attachments/WPFMessageBoxSampleCreator.png" alt="WPF MessageBoxサンプル作成ツールの画面と表示されたMessageBoxの例">
+      <img src="/attachments/WPFMessageBoxSampleCreator.png" alt="WPF MessageBoxサンプル作成ツールの画面とプレビュー例">
     </div>
   </section>
 
-  <!-- Development Background -->
   <section class="content-section">
-    <h2>開発背景</h2>
+    <h2>開発背景：「環境構築の壁」を取り払うために</h2>
     <p>
-      Windows アプリ開発では、MessageBox の動作を確認する場面が多くあります。
-      しかし、毎回コードを書いて動作を確かめるのは手間がかかり、UI フローの調整にも時間がかかります。
-      また、開発者以外の設計者やテスターが MessageBox の仕様を検討する際、実際の動作を確認できる環境がないことも課題でした。
-      そこで、MessageBox の設定を変更しながら即座に動作を確認できるツールとしてこのアプリを開発しました。
-      開発効率の向上だけでなく、システム開発に関わるさまざまな立場の人が UI の仕様検討を容易に行えるようにすることを目的としています。
+      WPF 開発において、エラーメッセージや確認ダイアログの挙動を確認するためだけにコードを書き、リビルドを繰り返すのは非効率な作業です。
+      特に、開発者以外のデザイナーや設計者が「実際の挙動を確認したい」と思っても、ソースコードしか公開されていないツールでは、ビルド環境の構築という高いハードルがありました。
+    </p>
+    <p>
+      そこで本ツールでは、誰もがすぐに動かせるよう実行形式での配布を行っています。あえてサードパーティ製ライブラリを一切使わず、WPF 標準コントロールの Style 定義のみで構築したため、軽量で依存関係の少ないツールを実現できました。
     </p>
   </section>
 
-  <!-- Features -->
   <section class="content-section">
-    <h2>特徴</h2>
-    <ul>
-      <li>MessageBox の本文とタイトルを自由に設定</li>
-      <li>ボタン構成を選択（OK、OKCancel、YesNo、YesNoCancel）</li>
-      <li>アイコンを選択（Information、Warning、Error、Question）</li>
-      <li>設定内容を即時プレビュー</li>
-      <li>UI プロトタイピングや動作確認に便利</li>
-      <li>開発者以外の設計者・テスターも利用可能</li>
-    </ul>
-  </section>
-
-  <!-- UI/UX Notes -->
-  <section class="content-section">
-    <h2>UI / UX の工夫</h2>
+    <h2>技術解説：プロパティの独立性と運用の利便性</h2>
+    <h3>1. ビルド不要、ダウンロードして実行するだけ</h3>
     <p>
-      設定項目を分かりやすく整理し、必要な操作が直感的に行えるように UI を設計しています。
-      プレビュー操作をすぐに実行できるようにボタンを配置し、複数の設定を短時間で試せるようにしています。
-      開発者だけでなく、UI の仕様検討を行う設計者やテスターも扱いやすいよう、シンプルで理解しやすいレイアウトを採用しています。
+      エンジニアが作成したツールを非エンジニアに共有する際、ソースコードの提供だけでは不十分です。本プロジェクトでは GitHub Actions 等を活用したリリース管理を想定し、常に最新の実行ファイルを公開しています。これにより、チーム内の誰もが最新の UI 仕様を実機で確認できるフローを構築しました。
+    </p>
+    <h3>2. プロパティ単位の独立設定</h3>
+    <p>
+      各コントロールをプロパティ単位で独立して設定できるように設計されています。これにより、ボタン構成とアイコンの組み合わせ、あるいは長い本文を入れた際の自動サイズ調整など、複数の属性が絡み合う複雑なケースも、コードの依存関係を気にせずパズルのように試すことが可能です。
+    </p>
+    <h3>3. XAML によるクリーンな UI 管理</h3>
+    <p>
+      操作画面のレイアウトは XAML で厳格に定義されており、ロジックとデザインを分離しています。標準コントロールを Style だけでどこまで使いやすくできるか、その実装サンプルとしても価値を持たせています。
     </p>
   </section>
 
-  <!-- Technologies Used -->
   <section class="content-section">
-    <h2>使用している技術</h2>
+    <h2>ターゲット：チーム全体で使う仕様検討ツール</h2>
     <ul>
-      <li>WPF (.NET)</li>
-      <li>XAML による UI レイアウト</li>
-      <li>標準 <code>MessageBox</code> API</li>
+      <li><strong>デザイナー：</strong> 実機環境での視認性を、ビルドの手間なくチェック。</li>
+      <li><strong>設計者・テスター：</strong> システム仕様に即したメッセージをその場でシミュレート。</li>
+      <li><strong>エンジニア：</strong> 複雑な引数の組み合わせによる表示の違いをクイックに確認。</li>
     </ul>
   </section>
 
-  <!-- Repository -->
   <section class="content-section">
-    <h2>リポジトリ</h2>
+    <h2>ダウンロードとリポジトリ</h2>
     <p>
-      ソースコードは GitHub で公開しています：<br>
-      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank">GitHub リポジトリ</a>
+      実行ファイル（exe）のダウンロード、およびソースコードの確認は GitHub より行えます：
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator/releases" target="_blank" class="github-link">
+        🚀 ビルド済み exe をダウンロード (GitHub Releases)
+      </a>
+      <br><br>
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank">
+        GitHub リポジトリ（ソースコード）を見る
+      </a>
     </p>
   </section>
 
