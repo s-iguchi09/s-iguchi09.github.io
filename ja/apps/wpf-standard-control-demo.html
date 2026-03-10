@@ -5,12 +5,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <title>WPF 標準コントロールデモアプリ (.NET 10) | UI設計とスタイルの検証ツール</title>
 
-  <!-- SEO -->
-  <meta name="description" content="WPF 標準コントロールを .NET 10 上で動作させたデモアプリ。UI の挙動、レイアウト、スタイルの確認に利用可能。開発背景、特徴、技術スタック、GitHub リポジトリへのリンクを掲載。">
+  <meta name="description" content=".NET 10 上で動作する WPF 標準コントロールの挙動を確認できるデモアプリ。Style定義のみで視認性を高めたUI設計、エンジニア・デザイナー間の仕様合意を支援するプロトタイピングの知見を公開。">
 
-  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
   <link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
@@ -24,73 +22,87 @@
 
 <main>
 
-  <!-- Hero Section -->
   <section class="hero">
     <h1>WPF 標準コントロールデモアプリ (.NET 10)</h1>
     <p>
-      .NET 10 上で動作する WPF 標準コントロールの挙動を確認できるデモアプリです。
-      UI レイアウトやスタイルの参考として利用できます。
+      最新の .NET 10 環境における WPF 標準 UI の挙動を網羅的に確認。
+      コードを書く前に「実現可能性」を視覚化する、プロフェッショナルのための検証ツール。
     </p>
   </section>
 
-  <!-- Overview -->
   <section class="content-section">
-    <h2>概要</h2>
+    <h2>概要：次世代 .NET 環境での UI 検証</h2>
     <p>
-      このアプリケーションは、WPF の標準コントロールが .NET 10 上でどのように動作するかを確認するためのデモアプリです。
-      ボタン、テキストボックス、チェックボックス、リスト、タブなど、一般的に使用される UI コントロールをまとめて確認できます。
-      UI の挙動やレイアウトの検証、スタイル適用時の見た目の違いを確認する用途に適しています。
+      このアプリケーションは、WPF (Windows Presentation Foundation) の標準コントロールが、最新のランタイムである <strong>.NET 10</strong> 上でどのように動作・描画されるかを一元的に確認するためのデモアプリです。
     </p>
-  </section>
-
-  <!-- Development Background -->
-  <section class="content-section">
-    <h2>開発背景</h2>
     <p>
-      WPF は長年利用されている UI フレームワークですが、.NET のバージョンアップに伴い挙動やスタイルが微妙に変化することがあります。
-      特に .NET 10 のような最新ランタイムでは、既存アプリの移行や UI の再確認が必要になる場面が増えています。
-      そこで、標準コントロールの動作をまとめて確認できるデモアプリとして本ツールを作成しました。
-      UI の比較検証や、アプリ開発の初期段階での動作確認に役立つことを目的としています。
+      ボタン、テキストボックス、チェックボックスといった基本要素から、リストビュー、データグリッド、タブコントロールなどの複雑なレイアウト要素までを網羅。単なるカタログではなく、実際の OS 環境下でのフォーカス遷移やレスポンス、デフォルトのビジュアルスタイルを即座に検証できる「動く仕様書」としての役割を果たします。
     </p>
   </section>
 
-  <!-- Features -->
   <section class="content-section">
-    <h2>特徴</h2>
+    <h2>開発背景：標準機能の「素の美しさ」を追求する理由</h2>
+    <p>
+      WPF は歴史のあるフレームワークですが、.NET の進化に伴い、内部的な挙動やレンダリングには微細な変化が生じ続けています。特に最新の .NET 10 への移行期において、既存の UI 資産が意図通りに動作するかを確認する作業は、開発者にとって避けては通れない課題です。
+    </p>
+    <p>
+      本ツールの開発において私が最も苦労したのは、<strong>「特殊な外部ライブラリに頼らず、標準機能だけでいかに見やすい UI を構築するか」</strong>という点でした。
+    </p>
+    <p>
+      サードパーティ製の UI キットを導入すれば見栄えを整えるのは容易ですが、それでは「標準の挙動」を確認するという目的がぼやけてしまいます。そのため、本アプリでは WPF 標準コントロールの構造を崩さず、<strong>Style の定義のみで情報の整理と視認性の向上</strong>を追求しました。この「制約の中でのデザイン」というプロセスが、結果として最も汎用性の高いデモツールの完成に繋がりました。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>技術解説：WPF 標準コントロールを美しく保つ Style 設計のコツ</h2>
+    <p>
+      本デモアプリの実装過程で得られた、標準コントロールをカスタマイズする際のポイントを共有します。
+    </p>
+    <h3>1. プロパティの直交性を活かした設計</h3>
+    <p>
+      本アプリでは、各コントロールのプロパティを個別に設定できるよう設計されています。WPF の強力なデータバインディング機能を活用し、特定のプロパティ変更が他の属性を破壊しないよう「直交性」を意識した Style 定義を行っています。これにより、エンジニア以外の方が複雑な組み合わせを試しても、レイアウトが崩れにくい堅牢な UI を実現しました。
+    </p>
+    <h3>2. 継承（BasedOn）の適切な活用</h3>
+    <p>
+      コードの重複を避けつつ視認性を高めるため、共通の Base Style を定義し、各コントロールで <code>BasedOn</code> を用いて拡張しています。これにより、.NET 10 の新しいレンダリング特性にも一括で対応できる柔軟性を確保しています。
+    </p>
+    <h3>3. リソースディクショナリによる管理の分離</h3>
+    <p>
+      デザイン（XAML）とロジック（C#）を明確に分離し、UI のスタイルはすべて <code>ResourceDictionary</code> で管理しています。これにより、GitHub からコードを参照した開発者が、特定のコントロールのスタイルだけを自分のプロジェクトに「つまみ食い」して持ち帰りやすい構造にしています。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>ターゲットユーザー：開発の現場でどう活用するか</h2>
+    <p>
+      本ツールは、単なる「見本帳」以上の価値を提供します。
+    </p>
     <ul>
-      <li>一般的な WPF 標準コントロールの動作をまとめて確認可能</li>
-      <li>最新の .NET 10 ランタイム上で動作</li>
-      <li>UI レイアウトやスタイル適用時の見た目を確認できる</li>
-      <li>既存アプリの移行検証や比較テストに便利</li>
+      <li><strong>デザイナー：</strong> 「WPFで何ができるか」を環境構築なしで把握。ビルド済みのアプリを触ることで、エンジニアとの共通言語が生まれます。</li>
+      <li><strong>設計者・ディレクター：</strong> 仕様検討フェーズで「このコントロールを使えばコストを抑えて実装できる」といった判断がその場で可能になります。</li>
+      <li><strong>エンジニア：</strong> 最新 .NET 10 環境での標準的な挙動（フォーカスの当たり方やスクロールの感覚）を、自前でプロジェクトを作ることなくクイックに確認できます。</li>
     </ul>
   </section>
 
-  <!-- UI/UX Notes -->
   <section class="content-section">
-    <h2>UI / UX の工夫</h2>
-    <p>
-      コントロールをカテゴリごとに整理し、必要な UI をすぐに確認できるように構成しています。
-      シンプルな画面構成にすることで、コントロールそのものの挙動やスタイルが分かりやすくなるよう配慮しています。
-      開発者が UI の比較検証を行いやすいよう、余計な装飾を排したミニマルなデザインを採用しています。
-    </p>
-  </section>
-
-  <!-- Technologies Used -->
-  <section class="content-section">
-    <h2>使用している技術</h2>
+    <h2>技術スタック</h2>
     <ul>
-      <li>WPF (.NET 10)</li>
-      <li>XAML による UI レイアウト</li>
-      <li>標準 WPF コントロール</li>
+      <li><strong>Runtime:</strong> .NET 10</li>
+      <li><strong>Framework:</strong> WPF</li>
+      <li><strong>UI Implementation:</strong> XAML (Pure Style Definition)</li>
+      <li><strong>Development Environment:</strong> C# 14 / Visual Studio 2026</li>
     </ul>
   </section>
 
-  <!-- Repository -->
   <section class="content-section">
-    <h2>リポジトリ</h2>
+    <h2>オープンソース・リポジトリ</h2>
     <p>
-      ソースコードは GitHub で公開しています：<br>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp" target="_blank">GitHub リポジトリ</a>
+      ソースコードは GitHub で公開しています。最新ランタイムでの実装サンプルとして、また社内ツール作成のベースとして自由にご活用ください。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp" target="_blank" class="github-link">
+        GitHub リポジトリ: WPFStandardControlDemoApp
+      </a>
     </p>
   </section>
 

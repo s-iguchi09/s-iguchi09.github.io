@@ -5,12 +5,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WPF Standard Control Demo App (.NET 10)</title>
+  <title>WPF Standard Control Demo App (.NET 10) | UI Design & Style Validation Tool</title>
 
-  <!-- SEO -->
-  <meta name="description" content="A demo application showcasing standard WPF controls running on .NET 10. Useful for verifying UI behavior, layout, and styling. Includes development background, features, UI/UX notes, technologies used, and GitHub repository link.">
+  <meta name="description" content="A demo application to verify the behavior of WPF standard controls on .NET 10. Showcasing UI design optimized through Pure Style Definition and insights on prototyping for engineers and designers.">
 
-  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
   <link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
@@ -24,75 +22,87 @@
 
 <main>
 
-  <!-- Hero Section -->
   <section class="hero">
     <h1>WPF Standard Control Demo App (.NET 10)</h1>
     <p>
-      A demo application that showcases how standard WPF controls behave when running on .NET 10.
-      Useful as a reference for UI layout, behavior, and styling.
+      Comprehensively verify the behavior of WPF standard UI in the latest .NET 10 environment. 
+      A professional validation tool to visualize "feasibility" before writing a single line of code.
     </p>
   </section>
 
-  <!-- Overview -->
   <section class="content-section">
-    <h2>Overview</h2>
+    <h2>Overview: UI Validation for the Next-Gen .NET</h2>
     <p>
-      This application demonstrates how standard WPF controls operate on the .NET 10 runtime.
-      It includes commonly used UI elements such as buttons, text boxes, check boxes, lists, and tabs,
-      allowing you to verify their behavior in a single place.
-      It is suitable for checking UI behavior, layout differences, and styling results when working with modern WPF applications.
+      This application is a centralized demo tool designed to verify how WPF (Windows Presentation Foundation) standard controls operate and render on the latest <strong>.NET 10</strong> runtime.
     </p>
-  </section>
-
-  <!-- Development Background -->
-  <section class="content-section">
-    <h2>Development Background</h2>
     <p>
-      WPF has been used for many years as a UI framework, but its behavior and styling can vary slightly
-      depending on the .NET runtime version. With the introduction of .NET 10, developers may need to verify
-      how existing controls behave or how UI elements appear under the latest runtime.
-      This demo app was created to provide a simple way to check standard control behavior collectively.
-      It is intended to support UI comparison, migration checks, and early-stage development verification.
+      It covers everything from basic elements like Buttons, TextBoxes, and CheckBoxes to complex layout components such as ListViews, DataGrids, and TabControls. More than just a catalog, it serves as a "living specification" that allows immediate testing of focus transitions, responsiveness, and default visual styles under real OS conditions.
     </p>
   </section>
 
-  <!-- Features -->
   <section class="content-section">
-    <h2>Features</h2>
+    <h2>Background: Pursuing the "Raw Beauty" of Standard Features</h2>
+    <p>
+      While WPF is a mature framework, its internal behavior and rendering undergo subtle changes as .NET evolves. Especially during the transition to .NET 10, verifying that existing UI assets perform as intended has become an essential task for developers.
+    </p>
+    <p>
+      The greatest challenge in developing this tool was <strong>achieving a highly readable UI using only standard features, without relying on specialized third-party libraries.</strong>
+    </p>
+    <p>
+      While third-party UI kits make it easy to polish an app's appearance, they often obscure the "standard behavior" we need to verify. Therefore, I chose to maintain the integrity of WPF standard controls, focusing solely on <strong>Style definitions to optimize information hierarchy and visibility.</strong> This "design within constraints" approach resulted in a highly versatile demo tool.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Technical Insights: Tips for Clean Style Design in WPF</h2>
+    <p>
+      Here are the key takeaways from implementing this demo app for customizing standard controls effectively.
+    </p>
+    <h3>1. Design Leveraging Property Orthogonality</h3>
+    <p>
+      The app is designed so that each control's properties can be set independently. By utilizing WPF's powerful data binding and focusing on "orthogonality" in Style definitions, I ensured that changing one property doesn't break others. This creates a robust UI that remains stable even when non-engineers experiment with complex combinations.
+    </p>
+    <h3>2. Effective Use of Inheritance (BasedOn)</h3>
+    <p>
+      To improve readability and avoid code duplication, I defined common Base Styles and extended them using <code>BasedOn</code> for specific controls. This provides the flexibility to adapt to new rendering characteristics in .NET 10 across the entire app simultaneously.
+    </p>
+    <h3>3. Separation of Concerns via Resource Dictionaries</h3>
+    <p>
+      UI design (XAML) and logic (C#) are strictly separated, with all styles managed through <code>ResourceDictionary</code>. This structure makes it easy for developers browsing the GitHub repository to "cherry-pick" specific styles for their own projects.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Target Audience: Practical Use Cases</h2>
+    <p>
+      This tool provides value far beyond a simple reference guide:
+    </p>
     <ul>
-      <li>Demonstrates behavior of common WPF standard controls</li>
-      <li>Runs on the latest .NET 10 runtime</li>
-      <li>Useful for checking UI layout and styling differences</li>
-      <li>Helps with migration verification and comparison testing</li>
+      <li><strong>Designers:</strong> Understand "what is possible in WPF" without setting up a development environment. Interacting with the built app creates a common language with engineers.</li>
+      <li><strong>Architects & Directors:</strong> Make on-the-spot decisions during the design phase, such as "using this standard control will reduce implementation costs."</li>
+      <li><strong>Engineers:</strong> Quickly verify standard behaviors (like focus handling and scroll feel) in the latest .NET 10 environment without having to create a new project from scratch.</li>
     </ul>
   </section>
 
-  <!-- UI/UX Notes -->
   <section class="content-section">
-    <h2>UI / UX Notes</h2>
-    <p>
-      Controls are organized by category so that users can quickly find and test the UI elements they need.
-      The layout is intentionally simple, allowing the behavior and appearance of each control to be observed clearly.
-      A minimal design approach is used to make UI comparison and verification easier for developers.
-    </p>
-  </section>
-
-  <!-- Technologies Used -->
-  <section class="content-section">
-    <h2>Technologies Used</h2>
+    <h2>Technology Stack</h2>
     <ul>
-      <li>WPF (.NET 10)</li>
-      <li>XAML-based UI layout</li>
-      <li>Standard WPF controls</li>
+      <li><strong>Runtime:</strong> .NET 10</li>
+      <li><strong>Framework:</strong> WPF</li>
+      <li><strong>UI Implementation:</strong> XAML (Pure Style Definition)</li>
+      <li><strong>Development Environment:</strong> C# 14 / Visual Studio 2026</li>
     </ul>
   </section>
 
-  <!-- Repository -->
   <section class="content-section">
-    <h2>Repository</h2>
+    <h2>Open Source Repository</h2>
     <p>
-      The source code is available on GitHub:<br>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp" target="_blank">GitHub Repository</a>
+      The full source code is available on GitHub. Please feel free to use it as an implementation sample for the latest runtime or as a base for your internal tools.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp" target="_blank" class="github-link">
+        GitHub Repository: WPFStandardControlDemoApp
+      </a>
     </p>
   </section>
 
