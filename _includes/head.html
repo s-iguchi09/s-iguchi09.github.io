@@ -1,0 +1,11 @@
+<link rel="canonical" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
+
+{% if page.url contains '/ja/' %}
+  <link rel="alternate" hreflang="ja" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
+  <link rel="alternate" hreflang="en" href="{{ site.url }}{{ page.url | replace: '/ja/', '/' | replace: 'index.html', '' }}">
+  <link rel="alternate" hreflang="x-default" href="{{ site.url }}{{ page.url | replace: '/ja/', '/' | replace: 'index.html', '' }}">
+{% else %}
+  <link rel="alternate" hreflang="en" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
+  <link rel="alternate" hreflang="ja" href="{{ site.url }}{{ '/ja' | append: page.url | replace: 'index.html', '' }}">
+  <link rel="alternate" hreflang="x-default" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
+{% endif %}
