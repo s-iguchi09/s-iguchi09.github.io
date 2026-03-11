@@ -11,6 +11,7 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/" />
@@ -28,6 +29,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/about.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/about.html" />
@@ -45,6 +47,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/privacy.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/privacy.html" />
@@ -62,6 +65,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/contact.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/contact.html" />
@@ -79,6 +83,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
@@ -96,6 +101,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
