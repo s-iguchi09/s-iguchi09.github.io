@@ -1,0 +1,130 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Xaml.ExtensionPack | WPF MVVM 拡張ライブラリ</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。MVVM の基盤（BindableBase、RelayCommand、AsyncRelayCommand）と WPF 専用アタッチドビヘイビアを NuGet パッケージとして提供します。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>Xaml.ExtensionPack</h1>
+    <p>
+      WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。
+      MVVM の基盤となるユーティリティと WPF 専用のアタッチドビヘイビアを NuGet パッケージとして提供します。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      Xaml.ExtensionPack は、WPF/XAML アプリケーション開発における定型コードを削減するための NuGet ライブラリ群です。
+      依存関係を最小限に抑えるため、以下の 2 つのパッケージに分割されています：
+    </p>
+    <ul>
+      <li>
+        <strong>Xaml.ExtensionPack</strong> — フレームワーク非依存のコアライブラリ。MVVM の基盤ロジックを提供します。
+        .NET 10、.NET 8、.NET Framework 4.7.2 をターゲットとしています。
+      </li>
+      <li>
+        <strong>Xaml.ExtensionPack.Wpf</strong> — コアパッケージを基盤とする WPF 専用の拡張ライブラリ。
+        アタッチドビヘイビアや UI 向けプロパティを提供します。
+        .NET 10（Windows）、.NET 8（Windows）、.NET Framework 4.7.2 をターゲットとしています。
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>開発背景：大規模な依存なしにボイラープレートを排除する</h2>
+    <p>
+      MVVM パターンで構築された WPF アプリケーションには、<code>INotifyPropertyChanged</code> の実装、
+      <code>ICommand</code> のラッパー、非同期対応の fire-and-forget ヘルパーなど、繰り返し記述される定型コードが多く発生しがちです。
+      コミュニティのツールキットも存在しますが、大きな依存関係ツリーを引き込んだり、プロジェクトの要件を超えた
+      アーキテクチャの規約を強制したりすることがあります。
+    </p>
+    <p>
+      Xaml.ExtensionPack は、本当に必要なものだけを提供するために作られました。
+      余分なオーバーヘッドなく、どんな WPF プロジェクトにもクリーンに統合できる、小さく的を絞ったユーティリティ群です。
+      コアパッケージと WPF 専用パッケージへの分割により、WPF 以外のプロジェクトでも MVVM ユーティリティを活用できます。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>含まれる機能</h2>
+
+    <h3>Xaml.ExtensionPack（コア）</h3>
+    <ul>
+      <li>
+        <strong>BindableBase</strong> — <code>INotifyPropertyChanged</code> を実装した抽象基底クラス。
+        コールバック付き <code>SetProperty</code> ヘルパーや、リファクタリングに強いラムダ式ベースの
+        <code>OnPropertyChanged</code> を提供します。
+      </li>
+      <li>
+        <strong>RelayCommand / RelayCommand&lt;T&gt;</strong> — デリゲートで実行ロジックを委譲する軽量な
+        <code>ICommand</code> 実装。省略可能な <code>CanExecute</code> 述語をサポートし、
+        <code>IRaiseCanExecuteChanged</code> インターフェースを通じて <code>RaiseCanExecuteChanged</code> を公開します。
+      </li>
+      <li>
+        <strong>AsyncRelayCommand</strong> — 非同期対応の <code>ICommand</code>。
+        タスク実行中の並行実行を防止し、タスク実行中は <code>CanExecute</code> を自動的に更新します。
+      </li>
+      <li>
+        <strong>TaskExtensions.FireAndForget</strong> — <code>Task</code> 向けの安全な fire-and-forget 拡張メソッド。
+        省略可能な例外ハンドラを受け取り、未観測タスク例外を防ぎます。
+      </li>
+    </ul>
+
+    <h3>Xaml.ExtensionPack.Wpf</h3>
+    <ul>
+      <li>
+        <strong>WPF 専用のアタッチドビヘイビアと UI 向けプロパティ</strong> — コアパッケージを WPF コントロール向けのビヘイビアで拡張し、
+        コードビハインドなしに XAML ドリブンな操作パターンを実現します。
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>技術スタック</h2>
+    <ul>
+      <li><strong>言語：</strong> C#（最新バージョン）</li>
+      <li><strong>ターゲットフレームワーク（コア）：</strong> .NET 10、.NET 8、.NET Framework 4.7.2</li>
+      <li><strong>ターゲットフレームワーク（WPF）：</strong> .NET 10（Windows）、.NET 8（Windows）、.NET Framework 4.7.2</li>
+      <li><strong>ライセンス：</strong> MIT</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>リポジトリ</h2>
+    <p>
+      ソースコードおよびイシュートラッキングは GitHub にて公開しています：
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack.Wpf" target="_blank" rel="noopener noreferrer" class="github-link">
+        GitHub リポジトリを見る — Xaml.ExtensionPack.Wpf
+      </a>
+      <br><br>
+      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer">
+        GitHub リポジトリを見る — Xaml.ExtensionPack（コア）
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>
