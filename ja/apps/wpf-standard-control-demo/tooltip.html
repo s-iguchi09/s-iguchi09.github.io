@@ -1,0 +1,132 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ToolTip | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF ToolTip コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prop-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prop-table th, .prop-table td { border: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+    .prop-table th { background: #f0f4fb; font-weight: 600; }
+    .prop-table tr:hover { background: #f9fbff; }
+    .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+    .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
+    .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToolTip</p>
+    <h1>ToolTip <span class="category-badge">Overlays</span></h1>
+    <p>ToolTip はユーザーが UI 要素にホバーした時に情報を表示する小さなポップアップウィンドウです。プレーンテキストや複雑なコンテンツを格納でき、位置・タイミング・外観の詳細なカスタマイズをサポートします。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の ToolTip デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Placement</code></td>
+          <td><code>Mouse / MousePoint / Absolute / AbsolutePoint / Relative / RelativePoint / Bottom / Top / Left / Right / Center / Custom</code></td>
+          <td>ツールチップの表示位置を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalOffset / VerticalOffset</code></td>
+          <td><code>double</code></td>
+          <td>配置位置からの水平・垂直オフセット量を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>PlacementTarget</code></td>
+          <td><code>UIElement</code></td>
+          <td>ツールチップの位置を基準とする要素を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>PlacementRectangle</code></td>
+          <td><code>Rect</code></td>
+          <td>ツールチップの配置基準となる矩形を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>ShowsToolTipOnKeyboardFocus</code></td>
+          <td><code>bool</code></td>
+          <td>キーボードフォーカス時もツールチップを表示するかどうかを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>HasDropShadow</code></td>
+          <td><code>bool</code></td>
+          <td>ツールチップにドロップシャドウを表示するかどうかを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>InitialShowDelay / ShowDuration / BetweenShowDelay (ToolTipService)</code></td>
+          <td><code>int (ms)</code></td>
+          <td>初回表示までの遅延時間、表示持続時間、連続表示の間隔を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Width / MaxWidth / Height / MaxHeight (FrameworkElement)</code></td>
+          <td><code>double</code></td>
+          <td>ツールチップのサイズを制御します。</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground / BorderBrush / BorderThickness / Padding (Control)</code></td>
+          <td><code>various</code></td>
+          <td>ツールチップの外観プロパティを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
+          <td><code>various</code></td>
+          <td>コンテンツの配置を設定します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolTipUsage" target="_blank">
+        GitHub で ToolTip のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

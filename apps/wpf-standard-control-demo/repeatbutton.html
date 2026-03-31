@@ -1,0 +1,93 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RepeatButton | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF RepeatButton control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prop-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prop-table th, .prop-table td { border: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+    .prop-table th { background: #f0f4fb; font-weight: 600; }
+    .prop-table tr:hover { background: #f9fbff; }
+    .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+    .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
+    .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; RepeatButton</p>
+    <h1>RepeatButton <span class="category-badge">Inputs</span></h1>
+    <p>RepeatButton is a button that continuously fires Click events while it is held down. It is particularly useful for implementing increment/decrement buttons or scroll controls where repeated action is needed without releasing the mouse.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the RepeatButton demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Delay</code></td>
+          <td><code>int (ms, default: 250)</code></td>
+          <td>Delay in milliseconds before repeating starts after the button is first pressed.</td>
+        </tr>
+        <tr>
+          <td><code>Interval</code></td>
+          <td><code>int (ms, default: 250)</code></td>
+          <td>Interval in milliseconds between repeated Click events.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RepeatButtonUsage" target="_blank">
+        View RepeatButton source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

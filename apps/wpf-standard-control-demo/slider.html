@@ -1,0 +1,143 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slider | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF Slider control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prop-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prop-table th, .prop-table td { border: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+    .prop-table th { background: #f0f4fb; font-weight: 600; }
+    .prop-table tr:hover { background: #f9fbff; }
+    .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+    .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
+    .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Slider</p>
+    <h1>Slider <span class="category-badge">Inputs</span></h1>
+    <p>Slider is a control that allows users to select a value from a continuous or stepped range by dragging a thumb along a track. It is commonly used for volume controls, zoom levels, and other range-based inputs.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the Slider demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Minimum / Maximum / Value (RangeBase)</code></td>
+          <td><code>double</code></td>
+          <td>Sets the minimum, maximum, and current values of the slider.</td>
+        </tr>
+        <tr>
+          <td><code>Orientation</code></td>
+          <td><code>Horizontal / Vertical</code></td>
+          <td>Sets the slider orientation to horizontal or vertical.</td>
+        </tr>
+        <tr>
+          <td><code>SmallChange / LargeChange</code></td>
+          <td><code>double</code></td>
+          <td>SmallChange is the step for arrow keys; LargeChange is the step for Page Up/Down.</td>
+        </tr>
+        <tr>
+          <td><code>IsDirectionReversed</code></td>
+          <td><code>bool</code></td>
+          <td>When True, reverses the direction in which the value increases.</td>
+        </tr>
+        <tr>
+          <td><code>TickPlacement</code></td>
+          <td><code>None / TopLeft / BottomRight / Both</code></td>
+          <td>Sets the position of tick marks.</td>
+        </tr>
+        <tr>
+          <td><code>TickFrequency</code></td>
+          <td><code>double</code></td>
+          <td>Sets the interval between tick marks.</td>
+        </tr>
+        <tr>
+          <td><code>IsSnapToTickEnabled</code></td>
+          <td><code>bool</code></td>
+          <td>When True, the thumb snaps to tick mark positions.</td>
+        </tr>
+        <tr>
+          <td><code>Ticks</code></td>
+          <td><code>DoubleCollection</code></td>
+          <td>Specifies custom tick mark positions.</td>
+        </tr>
+        <tr>
+          <td><code>SelectionStart / SelectionEnd / IsSelectionRangeEnabled</code></td>
+          <td><code>double / double / bool</code></td>
+          <td>Sets the start and end of the selection range highlight, and enables it.</td>
+        </tr>
+        <tr>
+          <td><code>AutoToolTipPlacement</code></td>
+          <td><code>None / TopLeft / BottomRight</code></td>
+          <td>Sets the position of the tooltip showing the current value while dragging.</td>
+        </tr>
+        <tr>
+          <td><code>AutoToolTipPrecision</code></td>
+          <td><code>int</code></td>
+          <td>Sets the number of decimal places shown in the auto-tooltip.</td>
+        </tr>
+        <tr>
+          <td><code>Delay / Interval</code></td>
+          <td><code>int (ms)</code></td>
+          <td>Sets the delay and repeat interval for keyboard input (inherited from RepeatButton).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/SliderUsage" target="_blank">
+        View Slider source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

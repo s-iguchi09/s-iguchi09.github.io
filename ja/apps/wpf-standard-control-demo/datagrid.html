@@ -1,0 +1,167 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>DataGrid | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF DataGrid コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prop-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prop-table th, .prop-table td { border: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+    .prop-table th { background: #f0f4fb; font-weight: 600; }
+    .prop-table tr:hover { background: #f9fbff; }
+    .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+    .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
+    .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; DataGrid</p>
+    <h1>DataGrid <span class="category-badge">List</span></h1>
+    <p>DataGrid はソート、フィルタリング、グループ化、列リサイズ、インプレース編集などの機能を持つ表形式データを表示するための強力なコントロールです。データソースのプロパティから自動的に列を生成するか、カスタム列定義を使用できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の DataGrid デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>AutoGenerateColumns</code></td>
+          <td><code>bool</code></td>
+          <td>データソースのプロパティから列を自動生成するかどうかを制御します。</td>
+        </tr>
+        <tr>
+          <td><code>IsReadOnly</code></td>
+          <td><code>bool</code></td>
+          <td>グリッド全体を読み取り専用にします。</td>
+        </tr>
+        <tr>
+          <td><code>SelectionMode / SelectionUnit</code></td>
+          <td><code>Single/Extended / Cell/FullRow/CellOrRowHeader</code></td>
+          <td>選択モードと選択単位（セル/行）を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>ColumnWidth / MaxColumnWidth / MinColumnWidth</code></td>
+          <td><code>DataGridLength / double / double</code></td>
+          <td>列の幅の設定値、最大値、最小値を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>CanUserAddRows / CanUserDeleteRows</code></td>
+          <td><code>bool / bool</code></td>
+          <td>ユーザーが行を追加・削除できるかどうかを制御します。</td>
+        </tr>
+        <tr>
+          <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserResizeRows / CanUserSortColumns</code></td>
+          <td><code>bool</code></td>
+          <td>列の並べ替え・リサイズ、行のリサイズ、列のソートを許可するかどうかを制御します。</td>
+        </tr>
+        <tr>
+          <td><code>RowDetailsVisibilityMode / AreRowDetailsFrozen</code></td>
+          <td><code>Collapsed/Visible/VisibleWhenSelected / bool</code></td>
+          <td>行詳細パネルの表示モードと、スクロール時に固定するかどうかを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>GridLinesVisibility / HorizontalGridLinesBrush / VerticalGridLinesBrush</code></td>
+          <td><code>None/Horizontal/Vertical/All / Brush / Brush</code></td>
+          <td>グリッド線の表示と色を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>AlternatingRowBackground</code></td>
+          <td><code>Brush</code></td>
+          <td>交互行の背景色を設定して視認性を高めます。</td>
+        </tr>
+        <tr>
+          <td><code>FrozenColumnCount</code></td>
+          <td><code>int</code></td>
+          <td>水平スクロール時に固定する列数を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>HeadersVisibility</code></td>
+          <td><code>None / Row / Column / All</code></td>
+          <td>行ヘッダーと列ヘッダーの表示設定を制御します。</td>
+        </tr>
+        <tr>
+          <td><code>ClipboardCopyMode</code></td>
+          <td><code>None / ExcludeHeader / IncludeHeader</code></td>
+          <td>クリップボードへのコピー時のヘッダー包含設定を制御します。</td>
+        </tr>
+        <tr>
+          <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
+          <td><code>bool / bool</code></td>
+          <td>行・列の仮想化を有効にしてパフォーマンスを向上させます。</td>
+        </tr>
+        <tr>
+          <td><code>RowValidationErrorTemplate</code></td>
+          <td><code>ControlTemplate</code></td>
+          <td>行の検証エラーを視覚化するテンプレートを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>RowBackground / RowHeight / MinRowHeight</code></td>
+          <td><code>Brush / double / double</code></td>
+          <td>行の背景色と高さの設定をします。</td>
+        </tr>
+        <tr>
+          <td><code>RowHeaderWidth / RowHeaderStyle / ColumnHeaderHeight / ColumnHeaderStyle</code></td>
+          <td><code>double / Style / double / Style</code></td>
+          <td>行ヘッダーと列ヘッダーのサイズとスタイルを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>RowStyle / CellStyle / ColumnHeaderTemplate</code></td>
+          <td><code>Style / Style / DataTemplate</code></td>
+          <td>行・セル・列ヘッダーのスタイルとテンプレートを設定します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DataGridUsage" target="_blank">
+        GitHub で DataGrid のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

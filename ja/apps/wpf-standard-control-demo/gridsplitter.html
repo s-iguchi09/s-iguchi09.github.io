@@ -1,0 +1,117 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>GridSplitter | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF GridSplitter コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prop-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prop-table th, .prop-table td { border: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+    .prop-table th { background: #f0f4fb; font-weight: 600; }
+    .prop-table tr:hover { background: #f9fbff; }
+    .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+    .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
+    .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; GridSplitter</p>
+    <h1>GridSplitter <span class="category-badge">Resizer</span></h1>
+    <p>GridSplitter は Grid 内に配置して、ユーザーがドラッグで行や列をリサイズできるコントロールです。リサイズ可能なペインレイアウトの作成によく使用されます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の GridSplitter デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ResizeDirection</code></td>
+          <td><code>Auto / Columns / Rows</code></td>
+          <td>リサイズする方向（列または行）を設定します。Auto の場合は配置から自動判断します。</td>
+        </tr>
+        <tr>
+          <td><code>ResizeBehavior</code></td>
+          <td><code>BasedOnAlignment / CurrentAndNext / PreviousAndCurrent / PreviousAndNext</code></td>
+          <td>どの行/列のペアをリサイズするかを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>ShowsPreview</code></td>
+          <td><code>bool</code></td>
+          <td>True にするとドラッグ中にプレビューを表示します。False にすると即座にリサイズします。</td>
+        </tr>
+        <tr>
+          <td><code>DragIncrement</code></td>
+          <td><code>double</code></td>
+          <td>ドラッグによるリサイズの最小単位（ピクセル）を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>KeyboardIncrement</code></td>
+          <td><code>double</code></td>
+          <td>キーボード操作によるリサイズの移動量（ピクセル）を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>PreviewStyle</code></td>
+          <td><code>Style</code></td>
+          <td>プレビュー表示のスタイルをカスタマイズします。</td>
+        </tr>
+        <tr>
+          <td><code>IsDragging (Thumb)</code></td>
+          <td><code>bool (ReadOnly)</code></td>
+          <td>現在ドラッグ中かどうかを示す読み取り専用プロパティです。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridSplitterUsage" target="_blank">
+        GitHub で GridSplitter のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

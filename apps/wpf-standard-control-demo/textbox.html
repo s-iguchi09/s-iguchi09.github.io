@@ -1,0 +1,123 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TextBox | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF TextBox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prop-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    .prop-table th, .prop-table td { border: 1px solid var(--border); padding: 0.6rem 0.8rem; text-align: left; vertical-align: top; }
+    .prop-table th { background: #f0f4fb; font-weight: 600; }
+    .prop-table tr:hover { background: #f9fbff; }
+    .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+    .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
+    .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; TextBox</p>
+    <h1>TextBox <span class="category-badge">Inputs</span></h1>
+    <p>TextBox is a standard input control that allows users to enter and edit text. It is one of the most fundamental controls in WPF and supports rich text editing features including multiline input, text wrapping, and character casing transformation.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the TextBox demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Text</code></td>
+          <td><code>string</code></td>
+          <td>The text value to bind or set directly.</td>
+        </tr>
+        <tr>
+          <td><code>TextWrapping</code></td>
+          <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
+          <td>Controls how text wraps when it exceeds the available width.</td>
+        </tr>
+        <tr>
+          <td><code>TextDecorations</code></td>
+          <td><code>None / Underline / Strikethrough / OverLine / Baseline</code></td>
+          <td>Adds decorations such as underline to the text.</td>
+        </tr>
+        <tr>
+          <td><code>TextAlignment</code></td>
+          <td><code>Left / Right / Center / Justify</code></td>
+          <td>Controls the horizontal alignment of the text.</td>
+        </tr>
+        <tr>
+          <td><code>MaxLength</code></td>
+          <td><code>int (0 = unlimited)</code></td>
+          <td>Sets the maximum number of characters. 0 means unlimited.</td>
+        </tr>
+        <tr>
+          <td><code>MaxLines</code></td>
+          <td><code>int</code></td>
+          <td>Limits the maximum number of visible lines.</td>
+        </tr>
+        <tr>
+          <td><code>MinLines</code></td>
+          <td><code>int</code></td>
+          <td>Sets the minimum number of visible lines.</td>
+        </tr>
+        <tr>
+          <td><code>CharacterCasing</code></td>
+          <td><code>Normal / Upper / Lower</code></td>
+          <td>Automatically converts input characters to upper or lower case.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBoxUsage" target="_blank">
+        View TextBox source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>
