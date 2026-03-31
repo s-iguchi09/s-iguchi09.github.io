@@ -8,7 +8,7 @@
   <title>Xaml.ExtensionPack | WPF MVVM 拡張ライブラリ</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。MVVM の基盤（BindableBase、RelayCommand、AsyncRelayCommand）と WPF 専用アタッチドビヘイビアを NuGet パッケージとして提供します。">
+  <meta name="description" content="WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。MVVM の基盤（BindableBase、RelayCommand、AsyncRelayCommand）を NuGet パッケージとして提供します。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -24,25 +24,19 @@
     <h1>Xaml.ExtensionPack</h1>
     <p>
       WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。
-      MVVM の基盤となるユーティリティと WPF 専用のアタッチドビヘイビアを NuGet パッケージとして提供します。
+      MVVM の基盤となるユーティリティを NuGet パッケージとして提供します。
     </p>
   </section>
 
   <section class="content-section">
     <h2>概要</h2>
     <p>
-      Xaml.ExtensionPack は、WPF/XAML アプリケーション開発における定型コードを削減するための NuGet ライブラリ群です。
-      依存関係を最小限に抑えるため、以下の 2 つのパッケージに分割されています：
+      Xaml.ExtensionPack は、WPF/XAML アプリケーション開発における定型コードを削減するための NuGet ライブラリです。
     </p>
     <ul>
       <li>
         <strong>Xaml.ExtensionPack</strong> — フレームワーク非依存のコアライブラリ。MVVM の基盤ロジックを提供します。
         .NET 10、.NET 8、.NET Framework 4.7.2 をターゲットとしています。
-      </li>
-      <li>
-        <strong>Xaml.ExtensionPack.Wpf</strong> — コアパッケージを基盤とする WPF 専用の拡張ライブラリ。
-        アタッチドビヘイビアや UI 向けプロパティを提供します。
-        .NET 10（Windows）、.NET 8（Windows）、.NET Framework 4.7.2 をターゲットとしています。
       </li>
     </ul>
   </section>
@@ -58,14 +52,12 @@
     <p>
       Xaml.ExtensionPack は、本当に必要なものだけを提供するために作られました。
       余分なオーバーヘッドなく、どんな WPF プロジェクトにもクリーンに統合できる、小さく的を絞ったユーティリティ群です。
-      コアパッケージと WPF 専用パッケージへの分割により、WPF 以外のプロジェクトでも MVVM ユーティリティを活用できます。
     </p>
   </section>
 
   <section class="content-section">
     <h2>含まれる機能</h2>
 
-    <h3>Xaml.ExtensionPack（コア）</h3>
     <ul>
       <li>
         <strong>BindableBase</strong> — <code>INotifyPropertyChanged</code> を実装した抽象基底クラス。
@@ -86,22 +78,13 @@
         省略可能な例外ハンドラを受け取り、未観測タスク例外を防ぎます。
       </li>
     </ul>
-
-    <h3>Xaml.ExtensionPack.Wpf</h3>
-    <ul>
-      <li>
-        <strong>WPF 専用のアタッチドビヘイビアと UI 向けプロパティ</strong> — コアパッケージを WPF コントロール向けのビヘイビアで拡張し、
-        コードビハインドなしに XAML ドリブンな操作パターンを実現します。
-      </li>
-    </ul>
   </section>
 
   <section class="content-section">
     <h2>技術スタック</h2>
     <ul>
       <li><strong>言語：</strong> C#（最新バージョン）</li>
-      <li><strong>ターゲットフレームワーク（コア）：</strong> .NET 10、.NET 8、.NET Framework 4.7.2</li>
-      <li><strong>ターゲットフレームワーク（WPF）：</strong> .NET 10（Windows）、.NET 8（Windows）、.NET Framework 4.7.2</li>
+      <li><strong>ターゲットフレームワーク：</strong> .NET 10、.NET 8、.NET Framework 4.7.2</li>
       <li><strong>ライセンス：</strong> MIT</li>
     </ul>
   </section>
@@ -112,12 +95,8 @@
       ソースコードおよびイシュートラッキングは GitHub にて公開しています：
     </p>
     <p>
-      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack.Wpf" target="_blank" rel="noopener noreferrer" class="github-link">
-        GitHub リポジトリを見る — Xaml.ExtensionPack.Wpf
-      </a>
-      <br><br>
-      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer">
-        GitHub リポジトリを見る — Xaml.ExtensionPack（コア）
+      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer" class="github-link">
+        GitHub リポジトリを見る — Xaml.ExtensionPack
       </a>
     </p>
   </section>

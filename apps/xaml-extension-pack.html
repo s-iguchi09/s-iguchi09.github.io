@@ -8,7 +8,7 @@
   <title>Xaml.ExtensionPack | WPF MVVM Extension Library</title>
   {% include head.html %}
 
-  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) and WPF-specific attached behaviors via NuGet packages.">
+  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) via a NuGet package.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -24,25 +24,19 @@
     <h1>Xaml.ExtensionPack</h1>
     <p>
       A lightweight, dependency-free XAML extension library for WPF.
-      Provides essential MVVM foundations and WPF-specific attached behaviors as NuGet packages.
+      Provides essential MVVM foundations as a NuGet package.
     </p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      Xaml.ExtensionPack is a set of NuGet libraries designed to eliminate boilerplate in WPF/XAML application development.
-      It is split into two packages to keep dependencies minimal:
+      Xaml.ExtensionPack is a NuGet library designed to eliminate boilerplate in WPF/XAML application development.
     </p>
     <ul>
       <li>
         <strong>Xaml.ExtensionPack</strong> — A framework-agnostic core library providing foundational MVVM logic.
         Targets .NET 10, .NET 8, and .NET Framework 4.7.2.
-      </li>
-      <li>
-        <strong>Xaml.ExtensionPack.Wpf</strong> — A WPF-specific extension built on top of the core package,
-        providing attached behaviors and UI-focused properties.
-        Targets .NET 10 (Windows), .NET 8 (Windows), and .NET Framework 4.7.2.
       </li>
     </ul>
   </section>
@@ -57,14 +51,12 @@
     <p>
       Xaml.ExtensionPack was created to provide only what is genuinely necessary — a small, focused set of utilities
       that integrate cleanly into any WPF project without extra overhead.
-      The split into a core package and a WPF-specific package ensures that non-WPF projects can also benefit from the MVVM utilities.
     </p>
   </section>
 
   <section class="content-section">
     <h2>What's Included</h2>
 
-    <h3>Xaml.ExtensionPack (Core)</h3>
     <ul>
       <li>
         <strong>BindableBase</strong> — Abstract base class implementing <code>INotifyPropertyChanged</code>.
@@ -85,22 +77,13 @@
         that accepts an optional exception handler, avoiding unobserved task exceptions.
       </li>
     </ul>
-
-    <h3>Xaml.ExtensionPack.Wpf</h3>
-    <ul>
-      <li>
-        <strong>WPF-specific attached behaviors and UI-focused properties</strong> — Extends the core package with
-        behaviors designed for WPF controls, enabling clean XAML-driven interaction patterns without code-behind.
-      </li>
-    </ul>
   </section>
 
   <section class="content-section">
     <h2>Technology Stack</h2>
     <ul>
       <li><strong>Language:</strong> C# (latest)</li>
-      <li><strong>Target Frameworks (Core):</strong> .NET 10, .NET 8, .NET Framework 4.7.2</li>
-      <li><strong>Target Frameworks (WPF):</strong> .NET 10 (Windows), .NET 8 (Windows), .NET Framework 4.7.2</li>
+      <li><strong>Target Frameworks:</strong> .NET 10, .NET 8, .NET Framework 4.7.2</li>
       <li><strong>License:</strong> MIT</li>
     </ul>
   </section>
@@ -111,12 +94,8 @@
       Source code and issue tracking are available on GitHub:
     </p>
     <p>
-      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack.Wpf" target="_blank" rel="noopener noreferrer" class="github-link">
-        View GitHub Repository — Xaml.ExtensionPack.Wpf
-      </a>
-      <br><br>
-      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer">
-        View GitHub Repository — Xaml.ExtensionPack (Core)
+      <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer" class="github-link">
+        View GitHub Repository — Xaml.ExtensionPack
       </a>
     </p>
   </section>
