@@ -1,0 +1,104 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF Menu control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Menu</p>
+    <h1>Menu <span class="category-badge">Menu</span></h1>
+    <p>Menu is a control that displays a hierarchical list of commands and options, typically displayed as a horizontal menu bar at the top of an application window. Each item can have submenus and supports keyboard shortcut display.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the Menu demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>IsMainMenu</code></td>
+          <td><code>bool</code></td>
+          <td>When True, the menu is activated with Alt key and receives focus with F10.</td>
+        </tr>
+        <tr>
+          <td><code>IsCheckable / IsChecked / StaysOpenOnClick (MenuItem)</code></td>
+          <td><code>bool / bool / bool</code></td>
+          <td>Makes a MenuItem checkable, sets its checked state, and keeps the menu open after click.</td>
+        </tr>
+        <tr>
+          <td><code>Role (MenuItem)</code></td>
+          <td><code>TopLevelItem / TopLevelHeader / SubmenuItem / SubmenuHeader (ReadOnly)</code></td>
+          <td>Read-only property indicating the role of the MenuItem in the menu hierarchy.</td>
+        </tr>
+        <tr>
+          <td><code>Command (MenuItem)</code></td>
+          <td><code>ICommand</code></td>
+          <td>Sets the command to execute when clicked.</td>
+        </tr>
+        <tr>
+          <td><code>Icon / InputGestureText (MenuItem)</code></td>
+          <td><code>object / string</code></td>
+          <td>Sets the icon displayed on the left and the keyboard shortcut text displayed on the right.</td>
+        </tr>
+        <tr>
+          <td><code>IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation (MenuItem)</code></td>
+          <td><code>bool (most ReadOnly)</code></td>
+          <td>Properties indicating various states of the MenuItem (most are read-only).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/MenuUsage" target="_blank" rel="noopener noreferrer">
+        View Menu source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

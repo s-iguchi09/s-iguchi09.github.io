@@ -1,0 +1,84 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF Canvas control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Canvas</p>
+    <h1>Canvas <span class="category-badge">Graphics</span></h1>
+    <p>Canvas is a layout panel that uses absolute positioning. Child elements are placed at explicit coordinates using Canvas attached properties (Top, Left, Right, Bottom). It is ideal for drawing applications and animations requiring precise control.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the Canvas demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Top / Left / Right / Bottom (Canvas attached)</code></td>
+          <td><code>double</code></td>
+          <td>Attached properties to set child element positions within the Canvas. Top/Bottom and Left/Right are mutually exclusive.</td>
+        </tr>
+        <tr>
+          <td><code>ZIndex (Panel attached)</code></td>
+          <td><code>int</code></td>
+          <td>Controls the drawing order. Higher values render in front.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CanvasUsage" target="_blank" rel="noopener noreferrer">
+        View Canvas source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

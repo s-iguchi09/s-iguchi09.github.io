@@ -1,0 +1,104 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ListView | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF ListView control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ListView</p>
+    <h1>ListView <span class="category-badge">List</span></h1>
+    <p>ListView is an advanced list control that extends ListBox with a pluggable view model. The most common view is GridView, which displays items in a tabular format with column headers that support resizing and reordering.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the ListView demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SelectionMode (ListBox)</code></td>
+          <td><code>Single / Multiple / Extended</code></td>
+          <td>Sets the selection mode.</td>
+        </tr>
+        <tr>
+          <td><code>View / Columns (GridView) / AllowsColumnReorder (GridView)</code></td>
+          <td><code>ViewBase / GridViewColumnCollection / bool</code></td>
+          <td>Sets the view. For GridView, sets the columns and whether column reordering is allowed.</td>
+        </tr>
+        <tr>
+          <td><code>Width (GridViewColumn)</code></td>
+          <td><code>double</code></td>
+          <td>Sets the width of each GridView column.</td>
+        </tr>
+        <tr>
+          <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
+          <td><code>int / object</code></td>
+          <td>Gets or sets the selected item index and object.</td>
+        </tr>
+        <tr>
+          <td><code>IsSelected (ListBoxItem)</code></td>
+          <td><code>bool</code></td>
+          <td>Sets the selected state of individual items.</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
+          <td><code>Disabled / Auto / Hidden / Visible</code></td>
+          <td>Controls the scrollbar visibility.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListViewUsage" target="_blank" rel="noopener noreferrer">
+        View ListView source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

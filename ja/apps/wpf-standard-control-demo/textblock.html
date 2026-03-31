@@ -1,0 +1,138 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>TextBlock | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF TextBlock コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TextBlock</p>
+    <h1>TextBlock <span class="category-badge">Display</span></h1>
+    <p>TextBlock は少量のテキストを表示するための軽量コントロールです。Label と異なり、フォーカスやキーボードナビゲーションをサポートしません。表示目的に最適化されており、インラインコンテンツ、テキスト書式設定、フロードキュメント要素をサポートします。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の TextBlock デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Text</code></td>
+          <td><code>string</code></td>
+          <td>表示するテキストを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>TextWrapping</code></td>
+          <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
+          <td>テキストの折り返し方法を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>TextTrimming</code></td>
+          <td><code>None / CharacterEllipsis / WordEllipsis</code></td>
+          <td>テキストが収まらない場合の省略方法を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>TextAlignment</code></td>
+          <td><code>Left / Right / Center / Justify</code></td>
+          <td>テキストの水平配置を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Padding</code></td>
+          <td><code>Thickness</code></td>
+          <td>テキストブロック内のパディングを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>FontWeight</code></td>
+          <td><code>Thin / ExtraLight / Light / Normal / Medium / SemiBold / Bold / ExtraBold / Black</code></td>
+          <td>フォントの太さを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>FontStyle</code></td>
+          <td><code>Normal / Italic / Oblique</code></td>
+          <td>フォントのスタイルを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>FontStretch</code></td>
+          <td><code>Normal / Condensed / Expanded など</code></td>
+          <td>フォントの幅の伸縮を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>FontSize</code></td>
+          <td><code>double</code></td>
+          <td>フォントサイズを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>FontFamily</code></td>
+          <td><code>string</code></td>
+          <td>フォントファミリーを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Background</code></td>
+          <td><code>Brush</code></td>
+          <td>テキストブロックの背景色を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Foreground</code></td>
+          <td><code>Brush</code></td>
+          <td>テキストの文字色を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>LineHeight / LineStackingStrategy</code></td>
+          <td><code>double / BlockLineHeight / MaxHeight</code></td>
+          <td>行の高さとスタッキング戦略を設定します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage" target="_blank" rel="noopener noreferrer">
+        GitHub で TextBlock のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

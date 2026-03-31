@@ -1,0 +1,103 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>GroupBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF GroupBox コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; GroupBox</p>
+    <h1>GroupBox <span class="category-badge">Display</span></h1>
+    <p>GroupBox はヘッダー付きのボーダーコンテナで、関連するコントロールを視覚的にグループ化します。フォーム要素を論理的なセクションに整理するのによく使用されます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の GroupBox デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
+          <td><code>object / bool (ReadOnly)</code></td>
+          <td>グループボックスのヘッダーテキストまたはコンテンツを設定します。HasHeader はヘッダーが設定されているかどうかを示します（読み取り専用）。</td>
+        </tr>
+        <tr>
+          <td><code>HeaderStringFormat (HeaderedContentControl)</code></td>
+          <td><code>string</code></td>
+          <td>ヘッダーが文字列として表示される場合のフォーマット文字列を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Content (ContentControl)</code></td>
+          <td><code>object</code></td>
+          <td>グループボックス内のコンテンツを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Padding / FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
+          <td><code>various</code></td>
+          <td>パディングとフォント関連のプロパティを設定します。</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground (Control)</code></td>
+          <td><code>Brush</code></td>
+          <td>背景色とテキスト色を設定します。</td>
+        </tr>
+        <tr>
+          <td><code>BorderBrush / BorderThickness (Control)</code></td>
+          <td><code>Brush / Thickness</code></td>
+          <td>ボーダーの色と太さを設定します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage" target="_blank" rel="noopener noreferrer">
+        GitHub で GroupBox のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

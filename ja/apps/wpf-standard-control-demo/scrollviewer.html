@@ -1,0 +1,103 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ScrollViewer | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF ScrollViewer コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ScrollViewer</p>
+    <h1>ScrollViewer <span class="category-badge">Layout</span></h1>
+    <p>ScrollViewer はコンテンツが表示領域より大きい場合にスクロール機能を提供するコンテナです。水平・垂直スクロールの両方をサポートし、スクロールバーの表示設定を構成できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の ScrollViewer デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>VerticalScrollBarVisibility</code></td>
+          <td><code>Disabled / Auto / Hidden / Visible</code></td>
+          <td>垂直スクロールバーの表示設定を制御します。Auto は必要時のみ表示します。</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalScrollBarVisibility</code></td>
+          <td><code>Disabled / Auto / Hidden / Visible</code></td>
+          <td>水平スクロールバーの表示設定を制御します。</td>
+        </tr>
+        <tr>
+          <td><code>CanContentScroll</code></td>
+          <td><code>bool</code></td>
+          <td>True の場合、論理スクロール（アイテム単位）を使用します。False の場合は物理スクロール（ピクセル単位）です。</td>
+        </tr>
+        <tr>
+          <td><code>IsDeferredScrollingEnabled</code></td>
+          <td><code>bool</code></td>
+          <td>True の場合、スクロール完了後にコンテンツを更新します（パフォーマンス向上）。</td>
+        </tr>
+        <tr>
+          <td><code>ComputedVerticalScrollBarVisibility / ExtentHeight / ViewportHeight / ScrollableHeight / VerticalOffset / ContentVerticalOffset</code></td>
+          <td><code>ReadOnly</code></td>
+          <td>垂直スクロールに関する読み取り専用の状態プロパティ群です。</td>
+        </tr>
+        <tr>
+          <td><code>ComputedHorizontalScrollBarVisibility / ExtentWidth / ViewportWidth / ScrollableWidth / HorizontalOffset / ContentHorizontalOffset</code></td>
+          <td><code>ReadOnly</code></td>
+          <td>水平スクロールに関する読み取り専用の状態プロパティ群です。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ScrollViewerUsage" target="_blank" rel="noopener noreferrer">
+        GitHub で ScrollViewer のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

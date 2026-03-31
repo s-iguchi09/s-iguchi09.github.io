@@ -1,0 +1,83 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF Canvas コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Canvas</p>
+    <h1>Canvas <span class="category-badge">Graphics</span></h1>
+    <p>Canvas は絶対位置指定を使用するレイアウトパネルです。子要素は Canvas の添付プロパティ（Top、Left、Right、Bottom）を使用して明示的な座標に配置されます。精密なコントロールが必要な描画アプリケーションやアニメーションに最適です。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の Canvas デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Top / Left / Right / Bottom (Canvas attached)</code></td>
+          <td><code>double</code></td>
+          <td>子要素の Canvas 内での位置を設定する添付プロパティです。Top と Bottom、Left と Right は同時に有効にはなりません。</td>
+        </tr>
+        <tr>
+          <td><code>ZIndex (Panel attached)</code></td>
+          <td><code>int</code></td>
+          <td>子要素の描画順序を制御します。値が大きいほど手前に描画されます。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CanvasUsage" target="_blank" rel="noopener noreferrer">
+        GitHub で Canvas のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

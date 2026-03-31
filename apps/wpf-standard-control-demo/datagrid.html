@@ -1,0 +1,159 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DataGrid | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF DataGrid control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; DataGrid</p>
+    <h1>DataGrid <span class="category-badge">List</span></h1>
+    <p>DataGrid is a powerful control for displaying tabular data with features like sorting, filtering, grouping, column resizing, and in-place editing. It automatically generates columns from data source properties or allows custom column definitions.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the DataGrid demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>AutoGenerateColumns</code></td>
+          <td><code>bool</code></td>
+          <td>Controls whether columns are auto-generated from data source properties.</td>
+        </tr>
+        <tr>
+          <td><code>IsReadOnly</code></td>
+          <td><code>bool</code></td>
+          <td>Makes the entire grid read-only.</td>
+        </tr>
+        <tr>
+          <td><code>SelectionMode / SelectionUnit</code></td>
+          <td><code>Single/Extended / Cell/FullRow/CellOrRowHeader</code></td>
+          <td>Sets the selection mode and unit (cell or row).</td>
+        </tr>
+        <tr>
+          <td><code>ColumnWidth / MaxColumnWidth / MinColumnWidth</code></td>
+          <td><code>DataGridLength / double / double</code></td>
+          <td>Sets default, maximum, and minimum column widths.</td>
+        </tr>
+        <tr>
+          <td><code>CanUserAddRows / CanUserDeleteRows</code></td>
+          <td><code>bool / bool</code></td>
+          <td>Controls whether users can add or delete rows.</td>
+        </tr>
+        <tr>
+          <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserResizeRows / CanUserSortColumns</code></td>
+          <td><code>bool</code></td>
+          <td>Controls whether users can reorder/resize columns, resize rows, and sort columns.</td>
+        </tr>
+        <tr>
+          <td><code>RowDetailsVisibilityMode / AreRowDetailsFrozen</code></td>
+          <td><code>Collapsed/Visible/VisibleWhenSelected / bool</code></td>
+          <td>Sets row details panel visibility mode and whether it freezes during scroll.</td>
+        </tr>
+        <tr>
+          <td><code>GridLinesVisibility / HorizontalGridLinesBrush / VerticalGridLinesBrush</code></td>
+          <td><code>None/Horizontal/Vertical/All / Brush / Brush</code></td>
+          <td>Sets grid line visibility and colors.</td>
+        </tr>
+        <tr>
+          <td><code>AlternatingRowBackground</code></td>
+          <td><code>Brush</code></td>
+          <td>Sets the background color of alternating rows to improve readability.</td>
+        </tr>
+        <tr>
+          <td><code>FrozenColumnCount</code></td>
+          <td><code>int</code></td>
+          <td>Sets the number of columns frozen during horizontal scrolling.</td>
+        </tr>
+        <tr>
+          <td><code>HeadersVisibility</code></td>
+          <td><code>None / Row / Column / All</code></td>
+          <td>Controls the visibility of row and column headers.</td>
+        </tr>
+        <tr>
+          <td><code>ClipboardCopyMode</code></td>
+          <td><code>None / ExcludeHeader / IncludeHeader</code></td>
+          <td>Controls whether headers are included when copying to clipboard.</td>
+        </tr>
+        <tr>
+          <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
+          <td><code>bool / bool</code></td>
+          <td>Enables row/column virtualization for improved performance.</td>
+        </tr>
+        <tr>
+          <td><code>RowValidationErrorTemplate</code></td>
+          <td><code>ControlTemplate</code></td>
+          <td>Sets the template to visualize row validation errors.</td>
+        </tr>
+        <tr>
+          <td><code>RowBackground / RowHeight / MinRowHeight</code></td>
+          <td><code>Brush / double / double</code></td>
+          <td>Sets row background color and height values.</td>
+        </tr>
+        <tr>
+          <td><code>RowHeaderWidth / RowHeaderStyle / ColumnHeaderHeight / ColumnHeaderStyle</code></td>
+          <td><code>double / Style / double / Style</code></td>
+          <td>Sets the size and style of row and column headers.</td>
+        </tr>
+        <tr>
+          <td><code>RowStyle / CellStyle / ColumnHeaderTemplate</code></td>
+          <td><code>Style / Style / DataTemplate</code></td>
+          <td>Sets styles and templates for rows, cells, and column headers.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DataGridUsage" target="_blank" rel="noopener noreferrer">
+        View DataGrid source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

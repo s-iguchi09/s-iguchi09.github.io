@@ -1,0 +1,94 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Popup | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF Popup control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Popup</p>
+    <h1>Popup <span class="category-badge">Overlays</span></h1>
+    <p>Popup is a control that displays content in a separate window that floats above the main window. Unlike ToolTip, it does not automatically appear on hover and requires programmatic control. It is used as the base for many overlay controls.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the Popup demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>IsOpen / StaysOpen / AllowsTransparency</code></td>
+          <td><code>bool / bool / bool</code></td>
+          <td>IsOpen: controls open/close state, StaysOpen: keeps it open when clicking outside, AllowsTransparency: enables transparency support.</td>
+        </tr>
+        <tr>
+          <td><code>Placement / HorizontalOffset / VerticalOffset</code></td>
+          <td><code>PlacementMode / double / double</code></td>
+          <td>Sets the popup placement position and offset.</td>
+        </tr>
+        <tr>
+          <td><code>PopupAnimation</code></td>
+          <td><code>None / Fade / Slide / Scroll</code></td>
+          <td>Sets the opening animation (may require AllowsTransparency=True).</td>
+        </tr>
+        <tr>
+          <td><code>Child / PlacementRectangle</code></td>
+          <td><code>UIElement / Rect</code></td>
+          <td>Sets the element to display inside the popup and the rectangle for placement reference.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/PopupUsage" target="_blank" rel="noopener noreferrer">
+        View Popup source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

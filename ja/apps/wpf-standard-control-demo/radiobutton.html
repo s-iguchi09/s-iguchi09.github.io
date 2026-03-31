@@ -1,0 +1,83 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>RadioButton | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF RadioButton コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; RadioButton</p>
+    <h1>RadioButton <span class="category-badge">Inputs</span></h1>
+    <p>RadioButton はグループの中から一つのオプションを選択するコントロールです。同じ GroupName の RadioButton は相互排他的であり、一つを選択すると他は解除されます。ToggleButton を継承しています。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <div class="screenshot-placeholder">
+      📷 スクリーンショットは後で追加予定です — アプリ上の RadioButton デモ画面が表示されます。
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>デモしているプロパティ</h2>
+    <p>
+      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
+      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>プロパティ</th>
+          <th>設定値</th>
+          <th>説明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>GroupName</code></td>
+          <td><code>string (Null = 親コンテナが同じ)</code></td>
+          <td>同じ GroupName を持つ RadioButton は互いに排他的になります。GroupName が Null の場合は同一親コンテナ内で排他的になります。</td>
+        </tr>
+        <tr>
+          <td><code>VerticalContentAlignment (Control)</code></td>
+          <td><code>Top / Center / Bottom / Stretch</code></td>
+          <td>ラベルの垂直方向の配置を設定します。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースコード</h2>
+    <p>
+      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RadioButtonUsage" target="_blank" rel="noopener noreferrer">
+        GitHub で RadioButton のソースコードを見る →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

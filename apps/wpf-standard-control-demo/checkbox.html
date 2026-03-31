@@ -1,0 +1,89 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CheckBox | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF CheckBox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; CheckBox</p>
+    <h1>CheckBox <span class="category-badge">Inputs</span></h1>
+    <p>CheckBox is a toggle control that allows users to select or deselect an option. It inherits from ToggleButton and supports three states when IsThreeState is enabled: checked, unchecked, and indeterminate (null).</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the CheckBox demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>IsChecked (ToggleButton)</code></td>
+          <td><code>bool? (Null / False / True)</code></td>
+          <td>Sets the checkbox state. Null represents the indeterminate state.</td>
+        </tr>
+        <tr>
+          <td><code>IsThreeState (ToggleButton)</code></td>
+          <td><code>bool</code></td>
+          <td>When True, enables three-state toggling, adding the indeterminate (Null) state.</td>
+        </tr>
+        <tr>
+          <td><code>VerticalContentAlignment (Control)</code></td>
+          <td><code>Top / Center / Bottom / Stretch</code></td>
+          <td>Sets the vertical alignment of the checkbox content (label).</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CheckBoxUsage" target="_blank" rel="noopener noreferrer">
+        View CheckBox source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

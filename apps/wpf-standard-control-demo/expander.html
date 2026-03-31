@@ -1,0 +1,109 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Expander | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF Expander control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Expander</p>
+    <h1>Expander <span class="category-badge">Display</span></h1>
+    <p>Expander is a container that can be expanded and collapsed by the user. It shows a header at all times, and the content area is revealed or hidden when the toggle button is clicked.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the Expander demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>IsExpanded</code></td>
+          <td><code>bool</code></td>
+          <td>Sets whether the content is visible. True expands, False collapses.</td>
+        </tr>
+        <tr>
+          <td><code>ExpandDirection</code></td>
+          <td><code>Down / Up / Left / Right</code></td>
+          <td>Sets the direction in which the content expands.</td>
+        </tr>
+        <tr>
+          <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
+          <td><code>object / bool (ReadOnly)</code></td>
+          <td>Sets the text or content to display in the header.</td>
+        </tr>
+        <tr>
+          <td><code>Content (ContentControl)</code></td>
+          <td><code>object</code></td>
+          <td>Sets the content to display when expanded.</td>
+        </tr>
+        <tr>
+          <td><code>Padding / FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
+          <td><code>various</code></td>
+          <td>Sets padding and font-related properties.</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground (Control)</code></td>
+          <td><code>Brush</code></td>
+          <td>Sets background and foreground (text) colors.</td>
+        </tr>
+        <tr>
+          <td><code>BorderBrush / BorderThickness (Control)</code></td>
+          <td><code>Brush / Thickness</code></td>
+          <td>Sets the border color and thickness.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ExpanderUsage" target="_blank" rel="noopener noreferrer">
+        View Expander source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

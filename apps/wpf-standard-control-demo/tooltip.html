@@ -1,0 +1,124 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ToolTip | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF ToolTip control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ToolTip</p>
+    <h1>ToolTip <span class="category-badge">Overlays</span></h1>
+    <p>ToolTip is a small popup window that displays information about a UI element when the user hovers over it. It can contain plain text or complex content, and supports extensive customization for positioning, timing, and appearance.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the ToolTip demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Placement</code></td>
+          <td><code>Mouse / MousePoint / Absolute / AbsolutePoint / Relative / RelativePoint / Bottom / Top / Left / Right / Center / Custom</code></td>
+          <td>Sets the placement position of the tooltip.</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalOffset / VerticalOffset</code></td>
+          <td><code>double</code></td>
+          <td>Sets the horizontal and vertical offset from the placement position.</td>
+        </tr>
+        <tr>
+          <td><code>PlacementTarget</code></td>
+          <td><code>UIElement</code></td>
+          <td>Sets the element relative to which the tooltip is positioned.</td>
+        </tr>
+        <tr>
+          <td><code>PlacementRectangle</code></td>
+          <td><code>Rect</code></td>
+          <td>Sets the rectangle relative to which the tooltip is positioned.</td>
+        </tr>
+        <tr>
+          <td><code>ShowsToolTipOnKeyboardFocus</code></td>
+          <td><code>bool</code></td>
+          <td>Sets whether the tooltip is shown when the element receives keyboard focus.</td>
+        </tr>
+        <tr>
+          <td><code>HasDropShadow</code></td>
+          <td><code>bool</code></td>
+          <td>Sets whether the tooltip has a drop shadow.</td>
+        </tr>
+        <tr>
+          <td><code>InitialShowDelay / ShowDuration / BetweenShowDelay (ToolTipService)</code></td>
+          <td><code>int (ms)</code></td>
+          <td>Sets the delay before first showing, how long it stays visible, and the delay between consecutive tooltips.</td>
+        </tr>
+        <tr>
+          <td><code>Width / MaxWidth / Height / MaxHeight (FrameworkElement)</code></td>
+          <td><code>double</code></td>
+          <td>Controls the size of the tooltip.</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground / BorderBrush / BorderThickness / Padding (Control)</code></td>
+          <td><code>various</code></td>
+          <td>Sets the visual appearance properties of the tooltip.</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
+          <td><code>various</code></td>
+          <td>Sets the content alignment.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolTipUsage" target="_blank" rel="noopener noreferrer">
+        View ToolTip source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

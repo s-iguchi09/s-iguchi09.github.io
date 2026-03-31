@@ -1,0 +1,114 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DatePicker | WPF Standard Control Demo App (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF DatePicker control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; DatePicker</p>
+    <h1>DatePicker <span class="category-badge">Inputs</span></h1>
+    <p>DatePicker is a control that allows users to select a date using a popup calendar. It supports date range restrictions, first day of week configuration, and custom date display formats.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Screen Preview</h2>
+    <div class="screenshot-placeholder">
+      📷 Screenshot will be added later — shows the DatePicker demo screen in the app.
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Demonstrated Properties</h2>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      Each property can be configured in real time within the app to observe its behavior.
+    </p>
+    
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>SelectedDate</code></td>
+          <td><code>DateTime?</code></td>
+          <td>Gets or sets the currently selected date.</td>
+        </tr>
+        <tr>
+          <td><code>DisplayDate</code></td>
+          <td><code>DateTime</code></td>
+          <td>Sets the month displayed in the calendar.</td>
+        </tr>
+        <tr>
+          <td><code>DisplayDateStart / DisplayDateEnd</code></td>
+          <td><code>DateTime?</code></td>
+          <td>Sets the start and end of the selectable date range.</td>
+        </tr>
+        <tr>
+          <td><code>FirstDayOfWeek</code></td>
+          <td><code>DayOfWeek</code></td>
+          <td>Sets the first day of the week displayed in the calendar.</td>
+        </tr>
+        <tr>
+          <td><code>IsDropDownOpen</code></td>
+          <td><code>bool</code></td>
+          <td>Controls whether the calendar popup is open.</td>
+        </tr>
+        <tr>
+          <td><code>IsTodayHighlighted</code></td>
+          <td><code>bool</code></td>
+          <td>Controls whether today's date is highlighted in the calendar.</td>
+        </tr>
+        <tr>
+          <td><code>SelectedDateFormat</code></td>
+          <td><code>Short / Long</code></td>
+          <td>Sets the format for displaying the date in the text box.</td>
+        </tr>
+        <tr>
+          <td><code>Text</code></td>
+          <td><code>string</code></td>
+          <td>Gets the text currently displayed in the text box.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Source Code</h2>
+    <p>
+      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
+      in the app to see the exact XAML for each property.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DatePickerUsage" target="_blank" rel="noopener noreferrer">
+        View DatePicker source code on GitHub →
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>
