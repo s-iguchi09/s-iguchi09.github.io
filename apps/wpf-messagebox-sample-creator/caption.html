@@ -1,0 +1,111 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Caption (TextBox) | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the Caption TextBox control in WPF MessageBox Sample Creator. Learn how the title bar text input works and how different values appear in the MessageBox window.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>Caption — Title Bar Text Input</h1>
+    <p>
+      A single-line <code>TextBox</code> control for entering the title bar text of the <code>MessageBox</code>.
+      This text is displayed in the title bar of the dialog window.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: TextBox</h2>
+    <p>
+      The <code>TextBox</code> is a standard WPF input control that accepts text from the user.
+      In this app, the Caption field uses a single-line TextBox configured with the following properties:
+    </p>
+    <ul>
+      <li><strong><code>HorizontalAlignment="Stretch"</code></strong> — The control stretches to fill the available width.</li>
+      <li><strong><code>VerticalAlignment="Center"</code></strong> — The control is vertically centered within its row.</li>
+    </ul>
+    <p>
+      The <code>Text</code> property is bound to the <code>Caption</code> property in the ViewModel
+      using <code>UpdateSourceTrigger=PropertyChanged</code>, so the binding updates on every keystroke.
+      Unlike the MessageBoxText field, this TextBox does not have <code>AcceptsReturn="True"</code>,
+      meaning it is a single-line input.
+    </p>
+
+    <!-- TODO: Add screenshot of the Caption TextBox control in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/caption-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Property: <code>caption</code></h2>
+    <p>
+      The <code>caption</code> parameter is the second argument of <code>MessageBox.Show()</code>.
+      It sets the text displayed in the title bar of the dialog window.
+    </p>
+
+    <h3>Behavior by Input</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Input</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Empty string</td>
+          <td>The title bar of the MessageBox is blank (no text shown).</td>
+        </tr>
+        <tr>
+          <td>Short text</td>
+          <td>The text appears as-is in the title bar of the dialog.</td>
+        </tr>
+        <tr>
+          <td>Long text</td>
+          <td>The title bar text is truncated with "..." if it exceeds the window width.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- TODO: Add screenshot comparing MessageBox output for different caption values -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/caption-output.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Code Reference</h2>
+    <p>
+      In the app, the value from this TextBox is passed as the second argument to <code>MessageBox.Show()</code>:
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,          // ← This TextBox value
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

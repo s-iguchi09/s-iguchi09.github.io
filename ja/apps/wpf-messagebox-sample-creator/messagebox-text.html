@@ -1,0 +1,116 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxText（TextBox）| WPF MessageBoxサンプル作成ツール</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF MessageBoxサンプル作成ツールのMessageBoxText TextBoxコントロールの詳細ガイド。本文テキスト入力の仕組みと、各入力値がMessageBoxの表示に与える影響を解説します。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxText — 本文テキスト入力</h1>
+    <p>
+      <code>MessageBox</code> の本文（メッセージ内容）を入力するための複数行対応 <code>TextBox</code> コントロールです。
+      入力した内容がダイアログのメインメッセージとして表示されます。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/ja/apps/wpf-messagebox-sample-creator.html">← WPF MessageBoxサンプル作成ツールに戻る</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>コントロール：TextBox</h2>
+    <p>
+      <code>TextBox</code> はユーザーがテキストを入力できる標準の WPF コントロールです。
+      このアプリでは MessageBoxText フィールドに、以下のプロパティを設定した複数行対応の TextBox を使用しています。
+    </p>
+    <ul>
+      <li><strong><code>AcceptsReturn="True"</code></strong> — Enter キーで改行を入力できるようにします。複数行のメッセージを入力可能にします。</li>
+      <li><strong><code>VerticalScrollBarVisibility="Auto"</code></strong> — テキストが表示領域を超えた場合に縦スクロールバーが自動表示されます。</li>
+      <li><strong><code>HorizontalAlignment="Stretch"</code></strong> — コントロールが使用可能な幅いっぱいに広がります。</li>
+      <li><strong><code>VerticalAlignment="Stretch"</code></strong> — コントロールが行内の使用可能な高さいっぱいに広がります。</li>
+    </ul>
+    <p>
+      <code>Text</code> プロパティは ViewModel の <code>MessageBoxText</code> プロパティに
+      <code>UpdateSourceTrigger=PropertyChanged</code> でバインドされており、
+      キーストロークごとにバインディングが更新されます。
+    </p>
+
+    <!-- TODO: アプリ内の MessageBoxText TextBox コントロールのスクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/messagebox-text-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>プロパティ：<code>messageBoxText</code></h2>
+    <p>
+      <code>messageBoxText</code> パラメーターは <code>MessageBox.Show()</code> の第1引数です。
+      ダイアログウィンドウ内に表示されるメインの本文テキストを設定します。
+    </p>
+
+    <h3>入力値と動作</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>入力値</th>
+          <th>動作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>空文字列</td>
+          <td>MessageBox は本文テキストなしで表示されます。設定したボタンとアイコンは通常通り表示されます。</td>
+        </tr>
+        <tr>
+          <td>短いテキスト（1行）</td>
+          <td>MessageBox はコンパクトに表示されます。ダイアログの幅はテキストとボタンのレイアウトに合わせて自動調整されます。</td>
+        </tr>
+        <tr>
+          <td>長いテキスト（1行）</td>
+          <td>システム定義の最大幅まで横方向に自動拡大し、それを超えると折り返して複数行に表示されます。</td>
+        </tr>
+        <tr>
+          <td>複数行テキスト（Enter キーを使用）</td>
+          <td>TextBox で入力した改行が MessageBox にも反映され、複数行に分けて表示されます。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- TODO: 各入力値の MessageBox 出力結果を比較したスクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/messagebox-text-output.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>コード参照</h2>
+    <p>
+      アプリでは、この TextBox の値が <code>MessageBox.Show()</code> の第1引数として渡されます。
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,   // ← この TextBox の値
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

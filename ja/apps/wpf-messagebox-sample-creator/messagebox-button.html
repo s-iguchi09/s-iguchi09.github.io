@@ -1,0 +1,136 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxButton（ComboBox）| WPF MessageBoxサンプル作成ツール</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF MessageBoxサンプル作成ツールの MessageBoxButton ComboBox コントロールの詳細ガイド。OK、OKCancel、YesNo、YesNoCancel、AbortRetryIgnore、RetryCancel の各ボタン構成と動作を解説します。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxButton — ボタン構成</h1>
+    <p>
+      <code>MessageBox</code> に表示するボタンの組み合わせを選択するための <code>ComboBox</code> コントロールです。
+      OK、Cancel、Yes、No、Abort、Retry、Ignore ボタンの表示有無をコントロールします。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/ja/apps/wpf-messagebox-sample-creator.html">← WPF MessageBoxサンプル作成ツールに戻る</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>コントロール：ComboBox</h2>
+    <p>
+      <code>ComboBox</code> はリストから1つの値を選択できる標準の WPF ドロップダウンコントロールです。
+      このアプリでは MessageBoxButton フィールドに以下のプロパティを設定した ComboBox を使用しています。
+    </p>
+    <ul>
+      <li><strong><code>IsEditable="False"</code></strong> — 定義済みの値からしか選択できず、カスタムテキストの入力はできません。</li>
+      <li><strong><code>ItemsSource="{Binding Source={StaticResource MessageBoxButtonDataSource}}"</code></strong> — <code>ObjectDataProvider</code> を使用して <code>MessageBoxButton</code> 列挙型のすべての値で自動的に入力されます。</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — アプリ起動時に2番目の項目（<code>OKCancel</code>）がデフォルト選択されます。</li>
+      <li><strong><code>SelectedItem="{Binding MessageBoxButton}"</code></strong> — 選択された列挙値が ViewModel にバインドされます。</li>
+    </ul>
+
+    <!-- TODO: アプリ内の MessageBoxButton ComboBox コントロールのスクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/messagebox-button-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>プロパティ：<code>MessageBoxButton</code></h2>
+    <p>
+      <code>MessageBoxButton</code> 列挙型は <code>MessageBox.Show()</code> の第3引数です。
+      ダイアログに表示されるボタンの種類を決定します。
+    </p>
+
+    <h3>設定値と動作</h3>
+
+    <h4><code>OK</code></h4>
+    <p>
+      <strong>OK</strong> ボタンのみを表示します。ユーザーは OK をクリックしてダイアログを閉じます。
+      単に確認を促す情報メッセージに使用します。
+      戻り値：<code>MessageBoxResult.OK</code>
+    </p>
+    <!-- TODO: OK ボタンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/button-ok.png -->
+
+    <h4><code>OKCancel</code></h4>
+    <p>
+      <strong>OK</strong> と <strong>Cancel</strong> ボタンを表示します。
+      処理を続行するかキャンセルするかの選択肢を提供する場合に使用します。
+      戻り値：<code>MessageBoxResult.OK</code> または <code>MessageBoxResult.Cancel</code>
+    </p>
+    <!-- TODO: OKCancel ボタンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/button-okcancel.png -->
+
+    <h4><code>YesNo</code></h4>
+    <p>
+      <strong>Yes</strong> と <strong>No</strong> ボタンを表示します（キャンセルなし）。
+      保留やキャンセルを許可しない単純な二択決定に使用します。
+      戻り値：<code>MessageBoxResult.Yes</code> または <code>MessageBoxResult.No</code>
+    </p>
+    <!-- TODO: YesNo ボタンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/button-yesno.png -->
+
+    <h4><code>YesNoCancel</code></h4>
+    <p>
+      <strong>Yes</strong>、<strong>No</strong>、<strong>Cancel</strong> ボタンを表示します。
+      決定を保留したりキャンセルしたりする第3の選択肢が必要な場合に使用します。
+      戻り値：<code>MessageBoxResult.Yes</code>、<code>MessageBoxResult.No</code>、または <code>MessageBoxResult.Cancel</code>
+    </p>
+    <!-- TODO: YesNoCancel ボタンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/button-yesnocancel.png -->
+
+    <h4><code>AbortRetryIgnore</code></h4>
+    <p>
+      <strong>Abort</strong>、<strong>Retry</strong>、<strong>Ignore</strong> ボタンを表示します。
+      エラー回復シナリオで中止・再試行・無視の選択肢を提供する場合に使用します。
+      戻り値：各ボタンに対応する <code>MessageBoxResult</code> 値
+    </p>
+    <!-- TODO: AbortRetryIgnore ボタンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/button-abortretryignore.png -->
+
+    <h4><code>RetryCancel</code></h4>
+    <p>
+      <strong>Retry</strong> と <strong>Cancel</strong> ボタンを表示します。
+      操作が失敗し、再試行またはキャンセルの選択肢を提供する場合に使用します。
+      戻り値：クリックされたボタンに対応する <code>MessageBoxResult</code> 値
+    </p>
+    <!-- TODO: RetryCancel ボタンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/button-retrycancel.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>コード参照</h2>
+    <p>
+      アプリでは、選択した値が <code>MessageBox.Show()</code> の第3引数として渡されます。
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,  // ← この ComboBox の値
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

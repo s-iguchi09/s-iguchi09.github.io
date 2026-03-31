@@ -1,0 +1,136 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxButton (ComboBox) | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the MessageBoxButton ComboBox control in WPF MessageBox Sample Creator. Learn about each button configuration (OK, OKCancel, YesNo, YesNoCancel, AbortRetryIgnore, RetryCancel) and how they affect the MessageBox.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxButton — Button Configuration</h1>
+    <p>
+      A <code>ComboBox</code> control for selecting which buttons appear in the <code>MessageBox</code>.
+      This setting controls whether the dialog shows OK, Cancel, Yes, No, Abort, Retry, or Ignore buttons.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: ComboBox</h2>
+    <p>
+      The <code>ComboBox</code> is a standard WPF dropdown control that lets users select one value from a list.
+      In this app, the MessageBoxButton field uses a ComboBox configured with the following properties:
+    </p>
+    <ul>
+      <li><strong><code>IsEditable="False"</code></strong> — The user can only select from predefined values and cannot type a custom value.</li>
+      <li><strong><code>ItemsSource="{Binding Source={StaticResource MessageBoxButtonDataSource}}"</code></strong> — Automatically populated with all values of the <code>MessageBoxButton</code> enum using <code>ObjectDataProvider</code>.</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — Defaults to the second item (<code>OKCancel</code>) when the app starts.</li>
+      <li><strong><code>SelectedItem="{Binding MessageBoxButton}"</code></strong> — The selected enum value is bound to the ViewModel.</li>
+    </ul>
+
+    <!-- TODO: Add screenshot of the MessageBoxButton ComboBox control in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/messagebox-button-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Property: <code>MessageBoxButton</code></h2>
+    <p>
+      The <code>MessageBoxButton</code> enum is the third argument of <code>MessageBox.Show()</code>.
+      It determines which buttons are displayed in the dialog.
+    </p>
+
+    <h3>Values and Behavior</h3>
+
+    <h4><code>OK</code></h4>
+    <p>
+      Displays a single <strong>OK</strong> button. The user must click OK to close the dialog.
+      Use this for informational messages that simply need to be acknowledged.
+      Return value: <code>MessageBoxResult.OK</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with OK button -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/button-ok.png -->
+
+    <h4><code>OKCancel</code></h4>
+    <p>
+      Displays <strong>OK</strong> and <strong>Cancel</strong> buttons.
+      Use this when offering a choice to proceed or cancel an action.
+      Return values: <code>MessageBoxResult.OK</code> or <code>MessageBoxResult.Cancel</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with OKCancel buttons -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/button-okcancel.png -->
+
+    <h4><code>YesNo</code></h4>
+    <p>
+      Displays <strong>Yes</strong> and <strong>No</strong> buttons (no Cancel option).
+      Use this for simple yes/no decisions where deferring or canceling is not allowed.
+      Return values: <code>MessageBoxResult.Yes</code> or <code>MessageBoxResult.No</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with YesNo buttons -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/button-yesno.png -->
+
+    <h4><code>YesNoCancel</code></h4>
+    <p>
+      Displays <strong>Yes</strong>, <strong>No</strong>, and <strong>Cancel</strong> buttons.
+      Use this when the user needs a third option to defer or cancel the decision entirely.
+      Return values: <code>MessageBoxResult.Yes</code>, <code>MessageBoxResult.No</code>, or <code>MessageBoxResult.Cancel</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with YesNoCancel buttons -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/button-yesnocancel.png -->
+
+    <h4><code>AbortRetryIgnore</code></h4>
+    <p>
+      Displays <strong>Abort</strong>, <strong>Retry</strong>, and <strong>Ignore</strong> buttons.
+      Use this for error recovery scenarios where the user can stop, try again, or skip the error.
+      Return values: the <code>MessageBoxResult</code> value corresponding to the button clicked.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with AbortRetryIgnore buttons -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/button-abortretryignore.png -->
+
+    <h4><code>RetryCancel</code></h4>
+    <p>
+      Displays <strong>Retry</strong> and <strong>Cancel</strong> buttons.
+      Use this when an operation failed and the user can attempt it again or give up.
+      Return values: the <code>MessageBoxResult</code> value corresponding to the button clicked.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with RetryCancel buttons -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/button-retrycancel.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Code Reference</h2>
+    <p>
+      In the app, the selected value is passed as the third argument to <code>MessageBox.Show()</code>:
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,  // ← This ComboBox value
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

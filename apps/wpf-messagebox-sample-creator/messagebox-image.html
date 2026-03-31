@@ -1,0 +1,144 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxImage (ComboBox) | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the MessageBoxImage ComboBox control in WPF MessageBox Sample Creator. Learn about each icon type (None, Error, Question, Warning, Information) and how they appear in the MessageBox dialog.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxImage — Dialog Icon</h1>
+    <p>
+      A <code>ComboBox</code> control for selecting the icon displayed in the <code>MessageBox</code>.
+      The icon visually communicates the nature of the message (error, warning, question, or information).
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: ComboBox</h2>
+    <p>
+      The <code>ComboBox</code> is a standard WPF dropdown control that lets users select one value from a list.
+      In this app, the MessageBoxImage field uses a ComboBox with a special data binding approach:
+    </p>
+    <ul>
+      <li><strong><code>ItemsSource="{Binding MessageBoxImagePair}"</code></strong> — Populated from a <code>Dictionary&lt;string, MessageBoxImage&gt;</code> in the ViewModel. This allows multiple enum aliases (e.g., Error, Hand, Stop) to be shown as distinct items with meaningful names.</li>
+      <li><strong><code>DisplayMemberPath="Key"</code></strong> — The display text shown in the dropdown is the dictionary key (the friendly name string).</li>
+      <li><strong><code>SelectedValuePath="Value"</code></strong> — The actual bound value is the dictionary value (the <code>MessageBoxImage</code> enum).</li>
+      <li><strong><code>IsEditable="False"</code></strong> — Selection is limited to the predefined list.</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — Defaults to the second item (<code>Error</code>) on startup.</li>
+    </ul>
+
+    <!-- TODO: Add screenshot of the MessageBoxImage ComboBox control in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/messagebox-image-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Property: <code>MessageBoxImage</code></h2>
+    <p>
+      The <code>MessageBoxImage</code> enum is the fourth argument of <code>MessageBox.Show()</code>.
+      It determines the icon shown on the left side of the dialog.
+    </p>
+    <p>
+      <strong>Note:</strong> Several enum values map to the same icon. The ViewModel exposes these as separate
+      entries in the dictionary so users can see all available names.
+    </p>
+
+    <h3>Values and Behavior</h3>
+
+    <h4><code>None</code> (value: 0)</h4>
+    <p>
+      No icon is displayed. The dialog shows only the message text and buttons without any visual indicator.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with no icon -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/image-none.png -->
+
+    <h4><code>Error</code> / <code>Hand</code> / <code>Stop</code> (value: 16)</h4>
+    <p>
+      All three values display the same <strong>red circle with a white X</strong> icon.
+      Use this for critical error messages or situations requiring immediate attention.
+      The system error sound plays when the dialog is shown.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with Error icon -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/image-error.png -->
+
+    <h4><code>Question</code> (value: 32)</h4>
+    <p>
+      Displays a <strong>blue circle with a white question mark (?)</strong> icon.
+      Use this for confirmation dialogs where the user needs to make a decision.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with Question icon -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/image-question.png -->
+
+    <h4><code>Exclamation</code> / <code>Warning</code> (value: 48)</h4>
+    <p>
+      Both values display the same <strong>yellow triangle with a black exclamation mark (!)</strong> icon.
+      Use this for warnings about potentially dangerous operations.
+      The system warning sound plays when the dialog is shown.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with Warning icon -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/image-warning.png -->
+
+    <h4><code>Asterisk</code> / <code>Information</code> (value: 64)</h4>
+    <p>
+      Both values display the same <strong>blue circle with a white lowercase "i"</strong> icon.
+      Use this for informational messages that don't require any specific action.
+      The system information sound plays when the dialog is shown.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with Information icon -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/image-information.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Code Reference</h2>
+    <p>
+      In the app, the selected value is passed as the fourth argument to <code>MessageBox.Show()</code>:
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,   // ← This ComboBox value
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+    <p>
+      The ViewModel uses a dictionary to map display names to enum values:
+    </p>
+    <pre><code>public Dictionary&lt;string, MessageBoxImage&gt; MessageBoxImagePair { get; set; } = new()
+{
+    { "None",        MessageBoxImage.None        },
+    { "Error",       MessageBoxImage.Error       },
+    { "Hand",        MessageBoxImage.Hand        },
+    { "Stop",        MessageBoxImage.Stop        },
+    { "Question",    MessageBoxImage.Question    },
+    { "Exclamation", MessageBoxImage.Exclamation },
+    { "Warning",     MessageBoxImage.Warning     },
+    { "Asterisk",    MessageBoxImage.Asterisk    },
+    { "Information", MessageBoxImage.Information }
+};</code></pre>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

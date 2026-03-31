@@ -1,0 +1,128 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxOptions (ComboBox) | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the MessageBoxOptions ComboBox control in WPF MessageBox Sample Creator. Learn about display options (None, DefaultDesktopOnly, RightAlign, RtlReading, ServiceNotification) and their effects on the MessageBox.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxOptions — Display Options</h1>
+    <p>
+      A <code>ComboBox</code> control for selecting special display and behavior options for the <code>MessageBox</code>.
+      These options control text alignment, reading direction, and desktop targeting.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: ComboBox</h2>
+    <p>
+      The <code>ComboBox</code> is a standard WPF dropdown control that lets users select one value from a list.
+      In this app, the MessageBoxOptions field uses a ComboBox configured with the following properties:
+    </p>
+    <ul>
+      <li><strong><code>IsEditable="False"</code></strong> — Selection is limited to predefined enum values.</li>
+      <li><strong><code>ItemsSource="{Binding Source={StaticResource MessageBoxOptionsDataSource}}"</code></strong> — Automatically populated with all values of the <code>MessageBoxOptions</code> enum.</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — Defaults to the second item on startup.</li>
+      <li><strong><code>SelectedItem="{Binding MessageBoxOptions}"</code></strong> — The selected enum value is bound to the ViewModel.</li>
+    </ul>
+
+    <!-- TODO: Add screenshot of the MessageBoxOptions ComboBox control in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/messagebox-options-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Property: <code>MessageBoxOptions</code></h2>
+    <p>
+      The <code>MessageBoxOptions</code> enum is the sixth argument of <code>MessageBox.Show()</code>.
+      It provides additional flags to control how the MessageBox is displayed.
+    </p>
+
+    <h3>Values and Behavior</h3>
+
+    <h4><code>None</code> (value: 0)</h4>
+    <p>
+      No special options applied. The MessageBox is displayed with standard left-aligned text
+      on the active desktop. This is the default setting for most scenarios.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with None options -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/options-none.png -->
+
+    <h4><code>DefaultDesktopOnly</code> (value: 131072)</h4>
+    <p>
+      Forces the MessageBox to appear on the current active (default) desktop only.
+      This is useful for services or background processes to ensure the dialog is visible
+      on the user's active screen. It prevents the dialog from appearing on secure desktops
+      (such as the Windows lock screen or UAC prompt desktop).
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with DefaultDesktopOnly option -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/options-defaultdesktoponly.png -->
+
+    <h4><code>RightAlign</code> (value: 524288)</h4>
+    <p>
+      Right-aligns the message text within the dialog. The text content is displayed
+      aligned to the right margin instead of the default left alignment.
+      Useful for languages that are conventionally right-aligned.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with RightAlign option -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/options-rightalign.png -->
+
+    <h4><code>RtlReading</code> (value: 1048576)</h4>
+    <p>
+      Displays the message text in right-to-left reading order.
+      This is designed for right-to-left languages such as Arabic and Hebrew.
+      The layout of the dialog mirrors horizontally: text flows right-to-left,
+      and the icon appears on the right side.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with RtlReading option -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/options-rtlreading.png -->
+
+    <h4><code>ServiceNotification</code> (value: 2097152)</h4>
+    <p>
+      Intended for use in Windows services or background processes that run without a parent window.
+      When this option is set, the MessageBox is displayed on the active desktop even if no user is
+      currently logged on. This option should not be used from a regular interactive application.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with ServiceNotification option -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/options-servicenotification.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Code Reference</h2>
+    <p>
+      In the app, the selected value is passed as the sixth argument to <code>MessageBox.Show()</code>:
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions  // ← This ComboBox value
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Show MessageBox Button | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the Show MessageBox Button control in WPF MessageBox Sample Creator. Learn how the Button triggers MessageBox.Show() with all configured parameters.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>Show MessageBox — Execute Button</h1>
+    <p>
+      A <code>Button</code> control that triggers <code>MessageBox.Show()</code> with all the
+      currently configured parameters. Clicking this button displays the MessageBox dialog.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: Button</h2>
+    <p>
+      The <code>Button</code> is a standard WPF interactive control that executes a command or
+      event handler when clicked. In this app, the "Show MessageBox." button is configured as follows:
+    </p>
+    <ul>
+      <li><strong><code>x:Name="ShowMessageBox"</code></strong> — Named for reference in the code-behind.</li>
+      <li><strong><code>Grid.ColumnSpan="2"</code></strong> — Spans both columns of the grid layout, filling the full width of the form.</li>
+      <li><strong><code>Click="ShowMessageBox_Click"</code></strong> — Connected to the <code>ShowMessageBox_Click</code> event handler in the code-behind.</li>
+    </ul>
+    <p>
+      Unlike the other controls in the form, the Button does not use data binding for its behavior —
+      it uses a classic event handler approach, directly reading from the ViewModel in the code-behind.
+    </p>
+
+    <!-- TODO: Add screenshot of the Show MessageBox button in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/show-button.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Behavior: Executing MessageBox.Show()</h2>
+    <p>
+      When the button is clicked, the <code>ShowMessageBox_Click</code> event handler is called.
+      It collects all values from the ViewModel and calls <code>MessageBox.Show()</code> with them:
+    </p>
+    <pre><code>private void ShowMessageBox_Click(object sender, RoutedEventArgs e)
+{
+    if (ViewModel is null)
+        return;
+
+    MessageBox.Show(
+        ViewModel.MessageBoxText,
+        ViewModel.Caption,
+        ViewModel.MessageBoxButton,
+        ViewModel.MessageBoxImage,
+        ViewModel.MessageBoxResult,
+        ViewModel.MessageBoxOptions
+    );
+}</code></pre>
+    <p>
+      The method reads the six configured values from the ViewModel at the moment the button is clicked
+      and opens the MessageBox. The dialog is modal — the application is blocked until the user closes it.
+    </p>
+    <p>
+      <strong>Note:</strong> The return value of <code>MessageBox.Show()</code> (a <code>MessageBoxResult</code>
+      indicating which button the user clicked) is not captured or displayed in the current version of the app.
+    </p>
+
+    <!-- TODO: Add screenshot of the resulting MessageBox dialog -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/show-button-result.png -->
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxResult / デフォルトボタン（ComboBox）| WPF MessageBoxサンプル作成ツール</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF MessageBoxサンプル作成ツールの MessageBoxResult ComboBox コントロールの詳細ガイド。MessageBox ダイアログでデフォルト（フォーカス）ボタン（None、OK、Cancel、Yes、No）の設定方法を解説します。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxResult — デフォルトボタン</h1>
+    <p>
+      <code>MessageBox</code> が表示されたときにフォーカス（デフォルト）を持つボタンを選択するための
+      <code>ComboBox</code> コントロールです。
+      ユーザーがすぐに Enter キーを押した場合に実行されるボタンを指定します。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/ja/apps/wpf-messagebox-sample-creator.html">← WPF MessageBoxサンプル作成ツールに戻る</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>コントロール：ComboBox</h2>
+    <p>
+      <code>ComboBox</code> はリストから1つの値を選択できる標準の WPF ドロップダウンコントロールです。
+      このアプリでは MessageBoxResult フィールドに以下のプロパティを設定した ComboBox を使用しています。
+    </p>
+    <ul>
+      <li><strong><code>IsEditable="False"</code></strong> — 定義済みの列挙値からしか選択できません。</li>
+      <li><strong><code>ItemsSource="{Binding Source={StaticResource MessageBoxResultDataSource}}"</code></strong> — <code>MessageBoxResult</code> 列挙型のすべての値で自動的に入力されます。</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — 起動時に2番目の項目（<code>Cancel</code>）がデフォルト選択されます。</li>
+      <li><strong><code>SelectedItem="{Binding MessageBoxResult}"</code></strong> — 選択された列挙値が ViewModel にバインドされます。</li>
+    </ul>
+
+    <!-- TODO: アプリ内の MessageBoxResult ComboBox コントロールのスクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/messagebox-result-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>プロパティ：<code>defaultResult</code>（<code>MessageBoxResult</code>）</h2>
+    <p>
+      <code>defaultResult</code> パラメーター（型：<code>MessageBoxResult</code>）は
+      <code>MessageBox.Show()</code> の第5引数です。
+      ダイアログ表示時にどのボタンがフォーカスを持つか（デフォルト動作）を指定します。
+      ユーザーがボタンをクリックせずに Enter キーを押した場合、デフォルトボタンのアクションが実行されます。
+    </p>
+    <p>
+      <strong>重要：</strong> 指定したデフォルト結果は、現在の <code>MessageBoxButton</code> 設定に存在するボタンに対応している必要があります。
+      対応するボタンが存在しない場合（例：<code>MessageBoxButton.OK</code> を設定しているときに <code>Yes</code> を指定するなど）、
+      ダイアログの最初のボタンがフォーカスを受け取ります。
+    </p>
+
+    <h3>設定値と動作</h3>
+
+    <h4><code>None</code></h4>
+    <p>
+      デフォルトボタンは明示的に指定されません。システムが最初のボタンにフォーカスを設定します。
+    </p>
+    <!-- TODO: None デフォルト結果の MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/result-none.png -->
+
+    <h4><code>OK</code></h4>
+    <p>
+      <strong>OK</strong> ボタンが初期フォーカスを受け取り、デフォルトアクションになります。
+      <code>MessageBoxButton</code> が <code>OK</code> または <code>OKCancel</code> のときに有効です。
+    </p>
+    <!-- TODO: OK をデフォルトとした MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/result-ok.png -->
+
+    <h4><code>Cancel</code></h4>
+    <p>
+      <strong>Cancel</strong> ボタンが初期フォーカスを受け取り、デフォルトアクションになります。
+      <code>MessageBoxButton</code> が <code>OKCancel</code>、<code>YesNoCancel</code>、または <code>RetryCancel</code> のときに有効です。
+    </p>
+    <!-- TODO: Cancel をデフォルトとした MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/result-cancel.png -->
+
+    <h4><code>Yes</code></h4>
+    <p>
+      <strong>Yes</strong> ボタンが初期フォーカスを受け取り、デフォルトアクションになります。
+      <code>MessageBoxButton</code> が <code>YesNo</code> または <code>YesNoCancel</code> のときに有効です。
+    </p>
+    <!-- TODO: Yes をデフォルトとした MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/result-yes.png -->
+
+    <h4><code>No</code></h4>
+    <p>
+      <strong>No</strong> ボタンが初期フォーカスを受け取り、デフォルトアクションになります。
+      <code>MessageBoxButton</code> が <code>YesNo</code> または <code>YesNoCancel</code> のときに有効です。
+    </p>
+    <!-- TODO: No をデフォルトとした MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/result-no.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>コード参照</h2>
+    <p>
+      アプリでは、選択した値が <code>MessageBox.Show()</code> の第5引数として渡されます。
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,  // ← この ComboBox の値（defaultResult として使用）
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

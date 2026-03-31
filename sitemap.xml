@@ -97,7 +97,7 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html" />
-    <lastmod>2026-03-12</lastmod>
+    <lastmod>2026-03-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -106,9 +106,135 @@
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html" />
-    <lastmod>2026-03-12</lastmod>
+    <lastmod>2026-03-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-text.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-text.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-text.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-text.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-text.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-text.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/caption.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/caption.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/caption.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/caption.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/caption.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/caption.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-button.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-button.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-button.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-button.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-button.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-button.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-image.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-image.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-image.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-image.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-image.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-image.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-result.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-result.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-result.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-result.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-result.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-result.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-options.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-options.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-options.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-options.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/messagebox-options.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/messagebox-options.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/show-messagebox-button.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/show-messagebox-button.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/show-messagebox-button.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/show-messagebox-button.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator/show-messagebox-button.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator/show-messagebox-button.html" />
+    <lastmod>2026-03-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 
 </urlset>

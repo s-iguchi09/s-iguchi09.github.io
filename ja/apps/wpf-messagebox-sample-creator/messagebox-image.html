@@ -1,0 +1,143 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxImage（ComboBox）| WPF MessageBoxサンプル作成ツール</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF MessageBoxサンプル作成ツールの MessageBoxImage ComboBox コントロールの詳細ガイド。None、Error、Question、Warning、Information などの各アイコン種別と、MessageBox ダイアログでの表示を解説します。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxImage — ダイアログアイコン</h1>
+    <p>
+      <code>MessageBox</code> に表示するアイコンを選択するための <code>ComboBox</code> コントロールです。
+      アイコンによってメッセージの性質（エラー・警告・質問・情報）を視覚的に伝えます。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/ja/apps/wpf-messagebox-sample-creator.html">← WPF MessageBoxサンプル作成ツールに戻る</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>コントロール：ComboBox</h2>
+    <p>
+      <code>ComboBox</code> はリストから1つの値を選択できる標準の WPF ドロップダウンコントロールです。
+      このアプリでは MessageBoxImage フィールドに特殊なデータバインディングを使用した ComboBox を使用しています。
+    </p>
+    <ul>
+      <li><strong><code>ItemsSource="{Binding MessageBoxImagePair}"</code></strong> — ViewModel の <code>Dictionary&lt;string, MessageBoxImage&gt;</code> からデータを取得します。これにより、同じアイコンを指す複数の列挙値（Error、Hand、Stop など）を個別の項目として分かりやすい名前で表示できます。</li>
+      <li><strong><code>DisplayMemberPath="Key"</code></strong> — ドロップダウンに表示されるテキストはディクショナリのキー（フレンドリー名の文字列）です。</li>
+      <li><strong><code>SelectedValuePath="Value"</code></strong> — バインドされる実際の値はディクショナリの値（<code>MessageBoxImage</code> 列挙型）です。</li>
+      <li><strong><code>IsEditable="False"</code></strong> — 定義済みのリストからしか選択できません。</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — 起動時に2番目の項目（<code>Error</code>）がデフォルト選択されます。</li>
+    </ul>
+
+    <!-- TODO: アプリ内の MessageBoxImage ComboBox コントロールのスクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/messagebox-image-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>プロパティ：<code>MessageBoxImage</code></h2>
+    <p>
+      <code>MessageBoxImage</code> 列挙型は <code>MessageBox.Show()</code> の第4引数です。
+      ダイアログの左側に表示されるアイコンを決定します。
+    </p>
+    <p>
+      <strong>注意：</strong> 複数の列挙値が同じアイコンに対応しています。ViewModel ではこれらをディクショナリの個別エントリとして公開し、すべての名前を確認できるようにしています。
+    </p>
+
+    <h3>設定値と動作</h3>
+
+    <h4><code>None</code>（値：0）</h4>
+    <p>
+      アイコンは表示されません。ダイアログにはメッセージテキストとボタンのみが表示されます。
+    </p>
+    <!-- TODO: アイコンなしの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/image-none.png -->
+
+    <h4><code>Error</code> / <code>Hand</code> / <code>Stop</code>（値：16）</h4>
+    <p>
+      3つの値すべてが同じ<strong>白い X が描かれた赤い円</strong>のアイコンを表示します。
+      重大なエラーメッセージや即座の対応が必要な状況に使用します。
+      ダイアログ表示時にシステムのエラーサウンドが再生されます。
+    </p>
+    <!-- TODO: Error アイコンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/image-error.png -->
+
+    <h4><code>Question</code>（値：32）</h4>
+    <p>
+      <strong>白いクエスチョンマーク（?）が描かれた青い円</strong>のアイコンを表示します。
+      ユーザーが決定を下す必要がある確認ダイアログに使用します。
+    </p>
+    <!-- TODO: Question アイコンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/image-question.png -->
+
+    <h4><code>Exclamation</code> / <code>Warning</code>（値：48）</h4>
+    <p>
+      2つの値が同じ<strong>黒いエクスクラメーションマーク（!）が描かれた黄色い三角形</strong>のアイコンを表示します。
+      危険な操作についての警告に使用します。
+      ダイアログ表示時にシステムの警告サウンドが再生されます。
+    </p>
+    <!-- TODO: Warning アイコンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/image-warning.png -->
+
+    <h4><code>Asterisk</code> / <code>Information</code>（値：64）</h4>
+    <p>
+      2つの値が同じ<strong>白い小文字「i」が描かれた青い円</strong>のアイコンを表示します。
+      特定の操作を必要としない情報メッセージに使用します。
+      ダイアログ表示時にシステムの情報サウンドが再生されます。
+    </p>
+    <!-- TODO: Information アイコンの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/image-information.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>コード参照</h2>
+    <p>
+      アプリでは、選択した値が <code>MessageBox.Show()</code> の第4引数として渡されます。
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,   // ← この ComboBox の値
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+    <p>
+      ViewModel では、表示名と列挙値を対応付けるディクショナリが使用されています。
+    </p>
+    <pre><code>public Dictionary&lt;string, MessageBoxImage&gt; MessageBoxImagePair { get; set; } = new()
+{
+    { "None",        MessageBoxImage.None        },
+    { "Error",       MessageBoxImage.Error       },
+    { "Hand",        MessageBoxImage.Hand        },
+    { "Stop",        MessageBoxImage.Stop        },
+    { "Question",    MessageBoxImage.Question    },
+    { "Exclamation", MessageBoxImage.Exclamation },
+    { "Warning",     MessageBoxImage.Warning     },
+    { "Asterisk",    MessageBoxImage.Asterisk    },
+    { "Information", MessageBoxImage.Information }
+};</code></pre>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

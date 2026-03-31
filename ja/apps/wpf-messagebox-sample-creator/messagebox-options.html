@@ -1,0 +1,126 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxOptions（ComboBox）| WPF MessageBoxサンプル作成ツール</title>
+  {% include head.html %}
+
+  <meta name="description" content="WPF MessageBoxサンプル作成ツールの MessageBoxOptions ComboBox コントロールの詳細ガイド。None、DefaultDesktopOnly、RightAlign、RtlReading、ServiceNotification の各表示オプションと動作を解説します。">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxOptions — 表示オプション</h1>
+    <p>
+      <code>MessageBox</code> の特殊な表示・動作オプションを選択するための <code>ComboBox</code> コントロールです。
+      テキストの配置、文字列の読み取り方向、表示するデスクトップなどを制御します。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/ja/apps/wpf-messagebox-sample-creator.html">← WPF MessageBoxサンプル作成ツールに戻る</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>コントロール：ComboBox</h2>
+    <p>
+      <code>ComboBox</code> はリストから1つの値を選択できる標準の WPF ドロップダウンコントロールです。
+      このアプリでは MessageBoxOptions フィールドに以下のプロパティを設定した ComboBox を使用しています。
+    </p>
+    <ul>
+      <li><strong><code>IsEditable="False"</code></strong> — 定義済みの列挙値からしか選択できません。</li>
+      <li><strong><code>ItemsSource="{Binding Source={StaticResource MessageBoxOptionsDataSource}}"</code></strong> — <code>MessageBoxOptions</code> 列挙型のすべての値で自動的に入力されます。</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — 起動時に2番目の項目がデフォルト選択されます。</li>
+      <li><strong><code>SelectedItem="{Binding MessageBoxOptions}"</code></strong> — 選択された列挙値が ViewModel にバインドされます。</li>
+    </ul>
+
+    <!-- TODO: アプリ内の MessageBoxOptions ComboBox コントロールのスクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/messagebox-options-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>プロパティ：<code>MessageBoxOptions</code></h2>
+    <p>
+      <code>MessageBoxOptions</code> 列挙型は <code>MessageBox.Show()</code> の第6引数です。
+      MessageBox の表示方法を制御する追加フラグを提供します。
+    </p>
+
+    <h3>設定値と動作</h3>
+
+    <h4><code>None</code>（値：0）</h4>
+    <p>
+      特別なオプションは適用されません。MessageBox はアクティブデスクトップに標準の左揃えテキストで表示されます。
+      ほとんどのシナリオでのデフォルト設定です。
+    </p>
+    <!-- TODO: None オプションの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/options-none.png -->
+
+    <h4><code>DefaultDesktopOnly</code>（値：131072）</h4>
+    <p>
+      現在のアクティブ（デフォルト）デスクトップにのみ MessageBox を表示するよう強制します。
+      サービスやバックグラウンドプロセスで、ユーザーのアクティブ画面にダイアログが表示されるようにするために便利です。
+      セキュアデスクトップ（Windows ロック画面や UAC プロンプトのデスクトップなど）にはダイアログが表示されなくなります。
+    </p>
+    <!-- TODO: DefaultDesktopOnly オプションの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/options-defaultdesktoponly.png -->
+
+    <h4><code>RightAlign</code>（値：524288）</h4>
+    <p>
+      ダイアログ内のメッセージテキストを右揃えで表示します。
+      デフォルトの左揃えではなく、右マージンに揃えてテキストコンテンツが表示されます。
+      慣習的に右揃えを使用する言語に便利です。
+    </p>
+    <!-- TODO: RightAlign オプションの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/options-rightalign.png -->
+
+    <h4><code>RtlReading</code>（値：1048576）</h4>
+    <p>
+      メッセージテキストを右から左への読み取り順序で表示します。
+      アラビア語やヘブライ語などの右から左への言語向けに設計されています。
+      ダイアログのレイアウトが水平方向に反転され、テキストが右から左に流れ、アイコンが右側に表示されます。
+    </p>
+    <!-- TODO: RtlReading オプションの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/options-rtlreading.png -->
+
+    <h4><code>ServiceNotification</code>（値：2097152）</h4>
+    <p>
+      親ウィンドウなしで動作する Windows サービスやバックグラウンドプロセスでの使用を想定しています。
+      このオプションを設定すると、ユーザーがログオンしていない場合でもアクティブデスクトップに MessageBox が表示されます。
+      通常のインタラクティブアプリケーションでは使用しないでください。
+    </p>
+    <!-- TODO: ServiceNotification オプションの MessageBox スクリーンショットを追加 -->
+    <!-- 推奨パス: /attachments/wpf-messagebox-sample-creator/options-servicenotification.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>コード参照</h2>
+    <p>
+      アプリでは、選択した値が <code>MessageBox.Show()</code> の第6引数として渡されます。
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions  // ← この ComboBox の値
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

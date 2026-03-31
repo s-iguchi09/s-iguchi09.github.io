@@ -1,0 +1,115 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxText (TextBox) | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the MessageBoxText TextBox control in WPF MessageBox Sample Creator. Learn how the message body text input works and how different values affect the displayed MessageBox.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxText — Message Body Input</h1>
+    <p>
+      A multi-line <code>TextBox</code> control for entering the body text of the <code>MessageBox</code>.
+      This text appears as the main message content in the dialog.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: TextBox</h2>
+    <p>
+      The <code>TextBox</code> is a standard WPF input control that accepts text from the user.
+      In this app, the MessageBoxText field uses a multi-line TextBox configured with the following properties:
+    </p>
+    <ul>
+      <li><strong><code>AcceptsReturn="True"</code></strong> — Allows the user to press Enter to insert a newline, enabling multi-line message input.</li>
+      <li><strong><code>VerticalScrollBarVisibility="Auto"</code></strong> — A vertical scrollbar appears automatically when the text exceeds the visible area.</li>
+      <li><strong><code>HorizontalAlignment="Stretch"</code></strong> — The control stretches to fill the available width.</li>
+      <li><strong><code>VerticalAlignment="Stretch"</code></strong> — The control stretches to fill the available height of its row.</li>
+    </ul>
+    <p>
+      The <code>Text</code> property is bound to the <code>MessageBoxText</code> property in the ViewModel
+      using <code>UpdateSourceTrigger=PropertyChanged</code>, so the binding updates on every keystroke.
+    </p>
+
+    <!-- TODO: Add screenshot of the MessageBoxText TextBox control in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/messagebox-text-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Property: <code>messageBoxText</code></h2>
+    <p>
+      The <code>messageBoxText</code> parameter is the first argument of <code>MessageBox.Show()</code>.
+      It sets the main body text displayed inside the dialog window.
+    </p>
+
+    <h3>Behavior by Input</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Input</th>
+          <th>Behavior</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Empty string</td>
+          <td>The MessageBox displays with no body text. The dialog still shows all configured buttons and icon.</td>
+        </tr>
+        <tr>
+          <td>Short text (single line)</td>
+          <td>The MessageBox is compact. The dialog width adjusts to fit the text and button layout.</td>
+        </tr>
+        <tr>
+          <td>Long text (single line)</td>
+          <td>The MessageBox auto-resizes horizontally up to a system-defined maximum width, then wraps to multiple lines.</td>
+        </tr>
+        <tr>
+          <td>Multi-line text (Enter key used)</td>
+          <td>Line breaks in the input are reflected in the MessageBox, displaying the text across multiple lines.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- TODO: Add screenshot comparing MessageBox output for different input values -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/messagebox-text-output.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Code Reference</h2>
+    <p>
+      In the app, the value from this TextBox is passed as the first argument to <code>MessageBox.Show()</code>:
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,   // ← This TextBox value
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

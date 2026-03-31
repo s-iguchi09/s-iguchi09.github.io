@@ -1,0 +1,131 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MessageBoxResult / Default Button (ComboBox) | WPF MessageBox Sample Creator</title>
+  {% include head.html %}
+
+  <meta name="description" content="Detailed guide on the MessageBoxResult ComboBox control in WPF MessageBox Sample Creator. Learn how to set the default focused button (None, OK, Cancel, Yes, No) in the MessageBox dialog.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>MessageBoxResult — Default Button</h1>
+    <p>
+      A <code>ComboBox</code> control for selecting which button is focused (highlighted as default)
+      when the <code>MessageBox</code> first appears.
+      This is the button that will be activated if the user presses Enter immediately.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <p><a href="/apps/wpf-messagebox-sample-creator.html">← Back to WPF MessageBox Sample Creator</a></p>
+  </section>
+
+  <section class="content-section">
+    <h2>Control: ComboBox</h2>
+    <p>
+      The <code>ComboBox</code> is a standard WPF dropdown control that lets users select one value from a list.
+      In this app, the MessageBoxResult field uses a ComboBox configured with the following properties:
+    </p>
+    <ul>
+      <li><strong><code>IsEditable="False"</code></strong> — Selection is limited to predefined enum values.</li>
+      <li><strong><code>ItemsSource="{Binding Source={StaticResource MessageBoxResultDataSource}}"</code></strong> — Automatically populated with all values of the <code>MessageBoxResult</code> enum.</li>
+      <li><strong><code>SelectedIndex="1"</code></strong> — Defaults to the second item (<code>Cancel</code>) on startup.</li>
+      <li><strong><code>SelectedItem="{Binding MessageBoxResult}"</code></strong> — The selected enum value is bound to the ViewModel.</li>
+    </ul>
+
+    <!-- TODO: Add screenshot of the MessageBoxResult ComboBox control in the app -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/messagebox-result-control.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Property: <code>defaultResult</code> (<code>MessageBoxResult</code>)</h2>
+    <p>
+      The <code>defaultResult</code> parameter (of type <code>MessageBoxResult</code>) is the fifth argument
+      of <code>MessageBox.Show()</code>. It specifies which button receives focus — and thus acts as the
+      default — when the dialog is displayed. If the user presses Enter without clicking a button,
+      the default button's action is triggered.
+    </p>
+    <p>
+      <strong>Important:</strong> The specified default result must correspond to a button that actually
+      exists in the current <code>MessageBoxButton</code> configuration. If the value does not match any
+      available button (for example, specifying <code>Yes</code> when <code>MessageBoxButton.OK</code> is set),
+      the first button in the dialog will receive focus instead.
+    </p>
+
+    <h3>Values and Behavior</h3>
+
+    <h4><code>None</code></h4>
+    <p>
+      No specific default button is set. The system determines which button receives initial focus
+      (typically the first button).
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with None default result -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/result-none.png -->
+
+    <h4><code>OK</code></h4>
+    <p>
+      The <strong>OK</strong> button receives initial focus and is the default action.
+      Applicable when <code>MessageBoxButton</code> is set to <code>OK</code> or <code>OKCancel</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with OK as default -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/result-ok.png -->
+
+    <h4><code>Cancel</code></h4>
+    <p>
+      The <strong>Cancel</strong> button receives initial focus and is the default action.
+      Applicable when <code>MessageBoxButton</code> is set to <code>OKCancel</code>, <code>YesNoCancel</code>, or <code>RetryCancel</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with Cancel as default -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/result-cancel.png -->
+
+    <h4><code>Yes</code></h4>
+    <p>
+      The <strong>Yes</strong> button receives initial focus and is the default action.
+      Applicable when <code>MessageBoxButton</code> is set to <code>YesNo</code> or <code>YesNoCancel</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with Yes as default -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/result-yes.png -->
+
+    <h4><code>No</code></h4>
+    <p>
+      The <strong>No</strong> button receives initial focus and is the default action.
+      Applicable when <code>MessageBoxButton</code> is set to <code>YesNo</code> or <code>YesNoCancel</code>.
+    </p>
+    <!-- TODO: Add screenshot of MessageBox with No as default -->
+    <!-- Suggested image path: /attachments/wpf-messagebox-sample-creator/result-no.png -->
+  </section>
+
+  <section class="content-section">
+    <h2>Code Reference</h2>
+    <p>
+      In the app, the selected value is passed as the fifth argument to <code>MessageBox.Show()</code>:
+    </p>
+    <pre><code>MessageBox.Show(
+    ViewModel.MessageBoxText,
+    ViewModel.Caption,
+    ViewModel.MessageBoxButton,
+    ViewModel.MessageBoxImage,
+    ViewModel.MessageBoxResult,  // ← This ComboBox value (used as defaultResult)
+    ViewModel.MessageBoxOptions
+);</code></pre>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>
