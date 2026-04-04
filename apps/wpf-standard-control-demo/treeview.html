@@ -8,7 +8,7 @@
   <title>TreeView | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF TreeView control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF TreeView control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,40 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; TreeView</p>
     <h1>TreeView <span class="category-badge">List</span></h1>
-    <p>TreeView displays hierarchical data in a tree structure where each item can have child items. Items can be expanded and collapsed to show or hide their children. It supports HierarchicalDataTemplate for data-bound hierarchical display.</p>
+    <p>TreeView displays hierarchical data in an expandable/collapsible tree structure. Each node can have child nodes, and users can expand or collapse branches. It supports data binding via HierarchicalDataTemplate, making it ideal for file system browsers, organizational charts, and nested category navigation.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>TreeView</strong> control inherits from <code>ItemsControl</code> and renders its
+      items as <code>TreeViewItem</code> instances, each of which is itself an <code>ItemsControl</code>
+      that can contain more <code>TreeViewItem</code> children. This recursive structure allows
+      arbitrarily deep trees. Direct XAML construction with nested <code>TreeViewItem</code> elements is
+      simple but limited; for real applications, data-binding with
+      <code>HierarchicalDataTemplate</code> is the standard approach.
+    </p>
+    <p>
+      <code>HierarchicalDataTemplate</code> extends <code>DataTemplate</code> by adding an
+      <code>ItemsSource</code> binding property. This tells WPF where to find the child items for each
+      node in the data model. A single <code>HierarchicalDataTemplate</code> can represent a whole class
+      of nodes — for example, a <code>FolderViewModel</code> — and WPF recursively applies the template
+      to all levels of the hierarchy.
+    </p>
+    <p>
+      Unlike <code>ListBox</code>, TreeView only tracks a single selected item at a time. The
+      <code>SelectedItem</code> property (read-only on TreeView) returns the currently selected
+      <code>TreeViewItem</code>'s data context. To get or set the selected item from a ViewModel,
+      listen to the <code>SelectedItemChanged</code> event and expose a property, or use an
+      attached behavior that makes <code>SelectedItem</code> bindable.
+    </p>
+    <p>
+      TreeView supports scroll bar customization via ScrollViewer attached properties
+      (<code>ScrollViewer.HorizontalScrollBarVisibility</code>, etc.). For large trees with many items,
+      UI virtualization is important for performance. By default, TreeView uses
+      <code>VirtualizingStackPanel</code> as its items host, which virtualizes items at the top level
+      but not nested levels. Fully virtualized trees require additional configuration.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,60 +68,106 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>IsExpanded (TreeViewItem)</code></td>
           <td><code>bool</code></td>
-          <td>Sets whether each tree item is expanded.</td>
+          <td>Controls whether a tree node's children are currently visible. Bind two-way to a ViewModel property to programmatically expand or collapse nodes, for example when navigating to a specific item programmatically.</td>
         </tr>
         <tr>
-          <td><code>IsSelected / IsSelectionActive (TreeViewItem)</code></td>
-          <td><code>bool / bool (ReadOnly)</code></td>
-          <td>Sets the item selection state and indicates whether the TreeView has focus.</td>
+          <td><code>IsSelected (TreeViewItem)</code></td>
+          <td><code>bool</code></td>
+          <td>Indicates or sets whether a particular tree node is the selected item. Setting this to <code>true</code> on a TreeViewItem makes it the selected node. Use this for programmatic selection; for declarative MVVM selection, prefer an attached behavior.</td>
+        </tr>
+        <tr>
+          <td><code>IsSelectionActive (TreeViewItem, ReadOnly)</code></td>
+          <td><code>bool</code></td>
+          <td>Indicates whether the selection is "active" (the TreeView has keyboard focus). When the TreeView loses focus, <code>IsSelected</code> remains true but <code>IsSelectionActive</code> becomes false, allowing the template to show a dimmed selected state.</td>
         </tr>
         <tr>
           <td><code>SelectedValuePath / SelectedValue (TreeView)</code></td>
           <td><code>string / object (ReadOnly)</code></td>
-          <td>Gets a specific property of the selected item as SelectedValue.</td>
+          <td><code>SelectedValuePath</code> specifies a property path on the selected item; <code>SelectedValue</code> returns the value of that property for the currently selected item. Useful for extracting a key or ID from the selected node without exposing the full data object.</td>
         </tr>
         <tr>
-          <td><code>ItemTemplate / HierarchicalDataTemplate (ItemsControl)</code></td>
+          <td><code>ItemTemplate / HierarchicalDataTemplate</code></td>
           <td><code>DataTemplate / HierarchicalDataTemplate</code></td>
-          <td>Uses HierarchicalDataTemplate to display data-bound hierarchical structures.</td>
+          <td>The data template applied to each tree node. Use <code>HierarchicalDataTemplate</code> (which extends DataTemplate) to specify both the node's visual appearance and the binding for its children via the <code>ItemsSource</code> property on the template.</td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Controls the scrollbar visibility.</td>
+          <td>Controls scroll bar display for the tree's content area. <code>Auto</code> is the most common choice, showing bars only when the tree content exceeds the visible area.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>TreeView bound to a hierarchical data model using HierarchicalDataTemplate:</p>
+    <pre><code class="language-xml">&lt;TreeView ItemsSource="{Binding RootNodes}"&gt;
+  &lt;TreeView.ItemTemplate&gt;
+    &lt;HierarchicalDataTemplate ItemsSource="{Binding Children}"&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Image Source="{Binding Icon}" Width="16" Height="16"
+               Margin="0,0,4,0" /&gt;
+        &lt;TextBlock Text="{Binding Name}" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/HierarchicalDataTemplate&gt;
+  &lt;/TreeView.ItemTemplate&gt;
+  &lt;TreeView.ItemContainerStyle&gt;
+    &lt;Style TargetType="TreeViewItem"&gt;
+      &lt;Setter Property="IsExpanded"
+              Value="{Binding IsExpanded, Mode=TwoWay}" /&gt;
+      &lt;Setter Property="IsSelected"
+              Value="{Binding IsSelected, Mode=TwoWay}" /&gt;
+    &lt;/Style&gt;
+  &lt;/TreeView.ItemContainerStyle&gt;
+&lt;/TreeView&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>File system browsers</strong> — Display a drive/folder/file hierarchy where folders can be expanded to reveal their contents.</li>
+      <li><strong>Project explorers</strong> — IDE-style project trees with solution, project, folder, and file nodes at multiple levels.</li>
+      <li><strong>Organizational charts</strong> — Browse company structures, team hierarchies, or reporting chains in an expandable tree.</li>
+      <li><strong>Category navigation</strong> — Product category trees in e-commerce apps or content management systems with nested categories.</li>
+      <li><strong>XML/JSON inspectors</strong> — Visualize nested data structures with expandable nodes for each element or object.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use HierarchicalDataTemplate for data-bound trees</strong> — Avoid hard-coding TreeViewItem elements; bind to a recursive data model so the tree can be driven by data.</li>
+      <li><strong>Expose IsExpanded and IsSelected in the ViewModel</strong> — Bind these via ItemContainerStyle to enable programmatic expand/collapse and selection from the ViewModel.</li>
+      <li><strong>Use an attached behavior for SelectedItem binding</strong> — TreeView.SelectedItem is read-only; use a behavior or event trigger to expose it as a bindable property in the ViewModel.</li>
+      <li><strong>Lazy-load children for large trees</strong> — Populate children only when a node is expanded to avoid loading the entire tree upfront. Check <code>IsExpanded</code> in the ViewModel to trigger the load.</li>
+      <li><strong>Keyboard navigation</strong> — TreeView supports arrow keys for navigation, Space to toggle selection, and Enter to trigger commands; verify this works for your use case.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — Flat single-level list; use when hierarchy is not needed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — Extends ListBox with a GridView for tabular display of flat lists.</li>
+      <li><a href="/apps/wpf-standard-control-demo/expander.html">Expander</a> — A single collapsible section; not for hierarchical data.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TreeViewUsage" target="_blank" rel="noopener noreferrer">
-        View TreeView source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TreeViewUsage" target="_blank" rel="noopener noreferrer">View TreeView source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

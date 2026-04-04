@@ -8,7 +8,7 @@
   <title>UniformGrid | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF UniformGrid control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF UniformGrid control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,35 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; UniformGrid</p>
     <h1>UniformGrid <span class="category-badge">Layout</span></h1>
-    <p>UniformGrid is a simplified Grid that automatically creates equally-sized cells for its children. All cells have the same width and height, making it ideal for creating evenly distributed grids without manually defining rows and columns.</p>
+    <p>UniformGrid is a simplified panel that automatically arranges its children in equally-sized cells. Unlike the standard Grid, you do not need to define RowDefinitions or ColumnDefinitions — just set the desired number of columns and rows, and UniformGrid does the rest.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>UniformGrid</strong> panel creates a grid where every cell has exactly the same
+      width and height. It distributes the available space evenly among the specified number of columns
+      and rows, making it ideal for button grids, icon palettes, image galleries, and any layout where
+      equal sizing is desired without manual column/row definition.
+    </p>
+    <p>
+      You can specify <code>Columns</code> and <code>Rows</code> independently. If only
+      <code>Columns</code> is set, the grid grows as many rows as needed to accommodate all children.
+      If both are set, the grid has a fixed cell count; children beyond the cell count overflow without
+      being displayed. If neither is set, UniformGrid arranges children in a square-ish layout,
+      automatically calculating columns based on the child count.
+    </p>
+    <p>
+      The <code>FirstColumn</code> property introduces an offset — the specified number of cells at
+      the beginning of the first row are left empty. This is useful when you want to start a partial
+      row for alignment purposes, for example when combining UniformGrid items with other elements
+      in a larger layout.
+    </p>
+    <p>
+      UniformGrid is part of the <code>System.Windows.Controls.Primitives</code> namespace, reflecting
+      its lower-level nature compared to Grid. Because it does not support star sizing, auto sizing,
+      or cell spanning, it is less flexible than Grid but much simpler to configure for uniform layouts.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,60 +63,101 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>Columns</code></td>
           <td><code>int</code></td>
-          <td>Sets the number of columns. 0 means auto-calculated.</td>
+          <td>The number of columns in the grid. Each column receives an equal share of the available width. If set to 0 (default), the grid auto-calculates columns to create a near-square layout. Set to a fixed number for predictable layouts like a 4-column button palette.</td>
         </tr>
         <tr>
           <td><code>Rows</code></td>
           <td><code>int</code></td>
-          <td>Sets the number of rows. 0 means auto-calculated.</td>
+          <td>The number of rows in the grid. Each row receives an equal share of the available height. If 0 (default), rows grow automatically as needed to accommodate all children. Specify this together with Columns only when you want a fixed-size grid.</td>
         </tr>
         <tr>
           <td><code>FirstColumn</code></td>
           <td><code>int</code></td>
-          <td>Sets the offset for the first cell in the first row.</td>
+          <td>The number of empty cells at the start of the first row. Useful for creating an offset when the first row should start partway across the grid, for example when the first few cells in row 1 are occupied by other elements in an outer layout.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background color of the panel.</td>
+          <td>Sets the background fill of the panel area. A non-null Background makes the panel hit-testable, allowing mouse events to be caught even in empty cells.</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the drawing order of child elements.</td>
+          <td>Controls the draw order of sibling children when their bounds overlap. Higher values render on top, useful if children have negative margins that cause visual overlap within the grid.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>A 4-column UniformGrid used as a color swatch palette:</p>
+    <pre><code class="language-xml">&lt;UniformGrid Columns="4" Rows="2" Width="200" Height="100"&gt;
+  &lt;Button Background="Red" /&gt;
+  &lt;Button Background="Orange" /&gt;
+  &lt;Button Background="Yellow" /&gt;
+  &lt;Button Background="Green" /&gt;
+  &lt;Button Background="Blue" /&gt;
+  &lt;Button Background="Indigo" /&gt;
+  &lt;Button Background="Violet" /&gt;
+  &lt;Button Background="White" /&gt;
+&lt;/UniformGrid&gt;
+
+&lt;!-- Auto-column count --&gt;
+&lt;UniformGrid Width="300"&gt;
+  &lt;Button Content="1" /&gt;
+  &lt;Button Content="2" /&gt;
+  &lt;Button Content="3" /&gt;
+  &lt;Button Content="4" /&gt;
+  &lt;Button Content="5" /&gt;
+&lt;/UniformGrid&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Color swatches</strong> — Display a palette of color buttons in a uniform grid where all swatches are the same size.</li>
+      <li><strong>Calculator-style button pads</strong> — Arrange digit and operator buttons in an equal-sized grid layout.</li>
+      <li><strong>Icon galleries</strong> — Show a browsable grid of equally-sized image thumbnails or icon buttons.</li>
+      <li><strong>Dashboard tiles</strong> — Display summary tiles or KPI cards in a uniform grid for a clean dashboard layout.</li>
+      <li><strong>Keyboard/numpad layouts</strong> — Render virtual keyboard keys in a grid where all keys have the same base size.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use when all cells need the same size</strong> — If cells need different sizes, use a standard Grid with ColumnDefinitions and RowDefinitions instead.</li>
+      <li><strong>Add Margin to children for spacing</strong> — UniformGrid does not have a gap property; apply a small Margin to each child to create visual spacing between cells.</li>
+      <li><strong>Fix Columns for predictable layouts</strong> — Relying on auto column calculation can produce unexpected results when the child count changes; set an explicit Columns value for stable UI.</li>
+      <li><strong>Prefer WrapPanel for variable-count items</strong> — If the number of items changes dynamically and you want wrapping behavior rather than a fixed grid, use WrapPanel instead.</li>
+      <li><strong>UniformGrid is in Primitives namespace</strong> — Add the XML namespace <code>xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"</code> to use it in XAML.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — More flexible with independent column/row sizes, spanning, and proportional sizing.</li>
+      <li><a href="/apps/wpf-standard-control-demo/wrappanel.html">WrapPanel</a> — Wraps children to new rows when space runs out; useful for dynamic item counts.</li>
+      <li><a href="/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — Simpler single-axis layout without the grid structure.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/UniformGridUsage" target="_blank" rel="noopener noreferrer">
-        View UniformGrid source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/UniformGridUsage" target="_blank" rel="noopener noreferrer">View UniformGrid source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

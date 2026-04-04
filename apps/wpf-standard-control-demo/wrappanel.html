@@ -8,7 +8,7 @@
   <title>WrapPanel | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF WrapPanel control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF WrapPanel control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,38 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; WrapPanel</p>
     <h1>WrapPanel <span class="category-badge">Layout</span></h1>
-    <p>WrapPanel arranges child elements sequentially and wraps them to the next row or column when there is no more space. It is useful for creating tag-like layouts or toolbars that adapt to available space.</p>
+    <p>WrapPanel arranges child elements sequentially from left to right (or top to bottom) and wraps to the next line when there is no more space. It is ideal for dynamically-sized content collections such as tag clouds, photo galleries, toolbar overflow panels, and chip lists that adapt to available width.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>WrapPanel</strong> is a flow-layout panel that places children one after another
+      along the main axis and starts a new row or column when the available space is exhausted. This
+      makes it fundamentally different from <code>StackPanel</code> (which never wraps) and
+      <code>Grid</code> (which requires explicit positioning). WrapPanel naturally adapts to container
+      width changes, making it suitable for responsive UIs that need to rearrange items when the window
+      is resized.
+    </p>
+    <p>
+      The <code>Orientation</code> property sets the primary layout direction. With
+      <code>Horizontal</code> (default), items are placed left to right and wrap to a new row when the
+      row is full. With <code>Vertical</code>, items are placed top to bottom and wrap to a new column
+      when the column is full.
+    </p>
+    <p>
+      The <code>ItemWidth</code> and <code>ItemHeight</code> properties constrain all children to a
+      uniform size, similar to UniformGrid but with wrapping. When set, all children are allocated
+      exactly this much space regardless of their natural size — children that are too large are
+      clipped. When not set (the default), each child takes its natural size, leading to rows of
+      variable height.
+    </p>
+    <p>
+      WrapPanel is commonly used as an <code>ItemsPanel</code> inside <code>ItemsControl</code>,
+      <code>ListBox</code>, or other items-based controls to produce a wrapping collection display.
+      Combined with data binding, this creates automatically-wrapping galleries and chip/tag lists
+      that update as items are added or removed.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,60 +66,105 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Sets the main direction for arranging elements. Horizontal is the default.</td>
+          <td>Sets the primary flow direction. <code>Horizontal</code> (default) flows left-to-right and wraps to new rows. <code>Vertical</code> flows top-to-bottom and wraps to new columns. Choose based on whether you want row-first or column-first ordering.</td>
         </tr>
         <tr>
           <td><code>ItemHeight</code></td>
           <td><code>double</code></td>
-          <td>Sets a uniform height for all child items regardless of orientation. When unset, each item's height is determined by its content. The effect is most visible in Horizontal mode.</td>
+          <td>Forces all children to the same height. When set, each row is exactly this tall regardless of children's natural heights. Children taller than ItemHeight are clipped. Use to create a uniform tile grid where all tiles are the same height.</td>
         </tr>
         <tr>
           <td><code>ItemWidth</code></td>
           <td><code>double</code></td>
-          <td>Sets a uniform width for all child items regardless of orientation. When unset, each item's width is determined by its content. The effect is most visible in Vertical mode.</td>
+          <td>Forces all children to the same width. When set, each column (horizontal orientation) or wrap position is exactly this wide. Combined with ItemHeight, produces a uniform tile grid similar to UniformGrid but with wrapping behavior.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background color of the panel.</td>
+          <td>Sets the background color of the WrapPanel. Setting a non-null Background also enables hit-testing on the panel background area, allowing click events to be handled in empty spaces between items.</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the drawing order of child elements.</td>
+          <td>Controls the Z-order rendering of individual children when they overlap. Higher values render on top. Typically not needed in a WrapPanel unless children have explicit negative margins.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>WrapPanel as an ItemsPanel for a tag/chip list and as a photo thumbnail gallery:</p>
+    <pre><code class="language-xml">&lt;!-- Tag cloud / chip list --&gt;
+&lt;ItemsControl ItemsSource="{Binding Tags}"&gt;
+  &lt;ItemsControl.ItemsPanel&gt;
+    &lt;ItemsPanelTemplate&gt;
+      &lt;WrapPanel Orientation="Horizontal" /&gt;
+    &lt;/ItemsPanelTemplate&gt;
+  &lt;/ItemsControl.ItemsPanel&gt;
+  &lt;ItemsControl.ItemTemplate&gt;
+    &lt;DataTemplate&gt;
+      &lt;Border Background="#E0E0E0" CornerRadius="12"
+              Padding="8,4" Margin="4"&gt;
+        &lt;TextBlock Text="{Binding}" /&gt;
+      &lt;/Border&gt;
+    &lt;/DataTemplate&gt;
+  &lt;/ItemsControl.ItemTemplate&gt;
+&lt;/ItemsControl&gt;
+
+&lt;!-- Uniform photo grid with fixed tile size --&gt;
+&lt;WrapPanel ItemWidth="120" ItemHeight="90" Orientation="Horizontal"&gt;
+  &lt;Image Source="/Photos/img1.jpg" Stretch="UniformToFill" /&gt;
+  &lt;Image Source="/Photos/img2.jpg" Stretch="UniformToFill" /&gt;
+  &lt;Image Source="/Photos/img3.jpg" Stretch="UniformToFill" /&gt;
+&lt;/WrapPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Tag and chip lists</strong> — Display a collection of tags, labels, or filter chips that wrap naturally as tags are added or the window is resized.</li>
+      <li><strong>Photo galleries</strong> — Arrange thumbnail images in a wrapping grid that adapts to available width.</li>
+      <li><strong>Toolbar overflow areas</strong> — Display overflowed toolbar items in a wrap layout within a popup or overflow panel.</li>
+      <li><strong>Responsive button grids</strong> — Display action buttons that reflow as the container width changes without breaking the layout.</li>
+      <li><strong>Color/icon palettes</strong> — Show selectable swatches or icons that wrap to the next row when the palette is too narrow.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Wrap in ScrollViewer for overflow handling</strong> — WrapPanel grows in the perpendicular direction as items wrap; place it inside a ScrollViewer to handle cases where the total height exceeds the available area.</li>
+      <li><strong>Use ItemWidth/ItemHeight for uniform tile layouts</strong> — Setting both properties creates a responsive UniformGrid-like layout that wraps instead of overflowing.</li>
+      <li><strong>Use as ItemsPanel for data-bound wrapping lists</strong> — Set WrapPanel as the ItemsPanel in ListBox or ItemsControl to display bound collections with wrapping behavior.</li>
+      <li><strong>Add Margin to children for spacing</strong> — WrapPanel has no gap property; add consistent Margin to each child for visual spacing between items.</li>
+      <li><strong>Test with varying item counts and widths</strong> — Wrapping layouts can look unexpectedly different with few vs. many items, or with very short vs. very long item widths; test across realistic data ranges.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — Like WrapPanel but never wraps; use for simple linear sequences.</li>
+      <li><a href="/apps/wpf-standard-control-demo/uniformgrid.html">UniformGrid</a> — Uniform-cell grid without wrapping; better when the number of columns should be fixed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — Full-featured grid with explicit column/row definitions and spanning.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/WrapPanelUsage" target="_blank" rel="noopener noreferrer">
-        View WrapPanel source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/WrapPanelUsage" target="_blank" rel="noopener noreferrer">View WrapPanel source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

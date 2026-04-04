@@ -8,7 +8,7 @@
   <title>Viewbox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Viewbox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF Viewbox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,38 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Viewbox</p>
     <h1>Viewbox <span class="category-badge">Layout</span></h1>
-    <p>Viewbox is a decorator that scales its single child to fill the available space. It is useful for creating resolution-independent UI by automatically scaling content while maintaining aspect ratio.</p>
+    <p>Viewbox is a decorator that scales its single child element to fill the available space while preserving or ignoring the aspect ratio. It enables resolution-independent UI by automatically scaling fixed-size designs to fit any container size, making it ideal for icons, logos, and scalable diagrams.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>Viewbox</strong> control is a <code>Decorator</code> (inheriting from
+      <code>FrameworkElement</code>) that accepts exactly one child element and scales it uniformly or
+      non-uniformly to fill the Viewbox's available area. Unlike most panels, Viewbox does not layout
+      its child using the normal available-size mechanism; it measures the child at its natural (desired)
+      size, then applies a scale transform to fit it into the Viewbox.
+    </p>
+    <p>
+      The <code>Stretch</code> property controls the scaling strategy. <code>Uniform</code> (default)
+      maintains the child's aspect ratio, fitting it entirely within the Viewbox with possible letterboxing.
+      <code>UniformToFill</code> also maintains aspect ratio but scales the child to fill the entire
+      Viewbox, potentially cropping edges. <code>Fill</code> stretches independently on both axes,
+      distorting the aspect ratio. <code>None</code> places the child at its natural size without scaling.
+    </p>
+    <p>
+      <code>StretchDirection</code> adds a constraint: <code>UpOnly</code> allows upscaling but prevents
+      downscaling (useful when the content should never appear smaller than its natural size);
+      <code>DownOnly</code> allows downscaling but prevents upscaling (prevents pixelation of small
+      graphics in large containers); <code>Both</code> (default) scales in either direction as needed.
+    </p>
+    <p>
+      Viewbox is particularly powerful for vector-based content like XAML drawings, Path elements, and
+      Canvas-based illustrations. Because WPF uses device-independent units and vector rendering,
+      Viewbox-scaled vector graphics remain crisp at any size. This makes it the standard approach for
+      creating scalable icons in WPF applications that need to look sharp on both standard and
+      high-DPI displays.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,40 +66,84 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>Stretch / StretchDirection</code></td>
-          <td><code>None / Fill / Uniform / UniformToFill / UpOnly / DownOnly / Both</code></td>
-          <td>Stretch sets the scaling method. StretchDirection sets whether to scale up, down, or both.</td>
+          <td><code>Stretch</code></td>
+          <td><code>None / Fill / Uniform / UniformToFill</code></td>
+          <td>Controls how the child is scaled. <code>Uniform</code> (default) scales proportionally to fit entirely within the Viewbox. <code>UniformToFill</code> scales to fill the Viewbox completely, potentially cropping. <code>Fill</code> stretches to fill without preserving aspect ratio. <code>None</code> disables scaling.</td>
+        </tr>
+        <tr>
+          <td><code>StretchDirection</code></td>
+          <td><code>UpOnly / DownOnly / Both</code></td>
+          <td>Constrains the scaling direction. <code>UpOnly</code> only enlarges the child (prevents shrinking); <code>DownOnly</code> only shrinks the child (prevents enlarging); <code>Both</code> (default) allows scaling in either direction as needed to fit the Viewbox.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>Viewbox used to scale a vector icon and a Canvas drawing:</p>
+    <pre><code class="language-xml">&lt;!-- Scale a vector icon to fill a 64x64 area --&gt;
+&lt;Viewbox Width="64" Height="64" Stretch="Uniform"&gt;
+  &lt;Canvas Width="24" Height="24"&gt;
+    &lt;Path Data="M12,2 L15,9 L22,9 L17,14 L19,21 L12,17 L5,21 L7,14 L2,9 L9,9 Z"
+          Fill="Gold" /&gt;
+  &lt;/Canvas&gt;
+&lt;/Viewbox&gt;
+
+&lt;!-- Responsive logo that scales with window size --&gt;
+&lt;Viewbox Stretch="Uniform" StretchDirection="Both"
+         HorizontalAlignment="Left" MaxWidth="300"&gt;
+  &lt;StackPanel Orientation="Horizontal"&gt;
+    &lt;Image Source="/Assets/logo.png" Width="40" Height="40" /&gt;
+    &lt;TextBlock Text="MyApp" FontSize="28" FontWeight="Bold"
+               VerticalAlignment="Center" Margin="8,0,0,0" /&gt;
+  &lt;/StackPanel&gt;
+&lt;/Viewbox&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Scalable icons</strong> — Wrap XAML Path or Canvas icons in a Viewbox to reuse a single vector definition at any size.</li>
+      <li><strong>Responsive logos</strong> — Scale a logo lockup (image + text) proportionally as the header section resizes.</li>
+      <li><strong>Full-screen diagrams</strong> — Display a fixed-size Canvas diagram scaled to fill the window for presentation mode.</li>
+      <li><strong>High-DPI support</strong> — Scale UI elements designed at a standard reference size to render correctly on high-DPI displays.</li>
+      <li><strong>Adaptive thumbnails</strong> — Scale list item thumbnails uniformly within fixed-size cells in an ItemsControl.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Prefer Uniform for icons and logos</strong> — UniformToFill can clip important content; Uniform ensures the complete design is always visible.</li>
+      <li><strong>Use StretchDirection="DownOnly" for bitmap images</strong> — Upscaling raster images causes blurriness; DownOnly prevents enlargement beyond the image's natural size.</li>
+      <li><strong>Viewbox only accepts one child</strong> — Place all content inside a single panel (Grid, StackPanel, Canvas) as the Viewbox child rather than adding multiple children.</li>
+      <li><strong>Vector content looks best</strong> — Viewbox-scaled Path and Canvas elements remain crisp at any size; bitmap-heavy content may appear blurry when upscaled significantly.</li>
+      <li><strong>Set explicit Width/Height or constrain the parent</strong> — Without size constraints, Viewbox fills its available space; set explicit dimensions or place it in a sized container to control its footprint.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/image.html">Image</a> — For displaying raster images with built-in Stretch support; use instead of Viewbox+Image for simple image display.</li>
+      <li><a href="/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — A common child of Viewbox for scaling vector drawings defined with absolute coordinates.</li>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — For layouts that should resize by reallocating space proportionally rather than by scaling.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ViewboxUsage" target="_blank" rel="noopener noreferrer">
-        View Viewbox source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ViewboxUsage" target="_blank" rel="noopener noreferrer">View Viewbox source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

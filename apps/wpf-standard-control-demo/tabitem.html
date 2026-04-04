@@ -8,7 +8,7 @@
   <title>TabItem | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF TabItem control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF TabItem control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,35 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; TabItem</p>
     <h1>TabItem <span class="category-badge">Selectors</span></h1>
-    <p>TabItem is an individual tab within a TabControl. It contains a header and content area. The header is always visible and the content is shown when the tab is selected.</p>
+    <p>TabItem is an individual page within a TabControl. It consists of a header (always visible as the tab strip entry) and a content area (shown only when the tab is selected). TabItem gives each page its own header label, icon, and content.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>TabItem</strong> control inherits from <code>HeaderedContentControl</code>, which
+      provides two key areas: the <code>Header</code> (the visible tab label or custom header content)
+      and the <code>Content</code> (the panel or view shown when this tab is selected). Both areas accept
+      any WPF <code>UIElement</code>, allowing rich headers with icons and badges and complex content areas.
+    </p>
+    <p>
+      The <code>IsSelected</code> property indicates whether this tab is the currently active one. When
+      set to <code>true</code> programmatically, the parent <code>TabControl</code> switches to this tab
+      and deselects the previously active one. This property can be two-way bound to a ViewModel boolean
+      if per-tab activation state tracking is needed, though binding <code>TabControl.SelectedIndex</code>
+      or <code>SelectedItem</code> at the container level is usually simpler.
+    </p>
+    <p>
+      The read-only <code>TabStripPlacement</code> property reflects the placement inherited from the
+      parent <code>TabControl</code>, allowing individual tab items or their templates to adapt their
+      visual layout based on whether the strip is on the top, bottom, left, or right edge.
+    </p>
+    <p>
+      TabItem's visual state system includes states for <code>Normal</code>, <code>MouseOver</code>,
+      <code>Selected</code>, <code>Unselected</code>, <code>Disabled</code>, and <code>Focused</code>,
+      all of which can be targeted in a custom <code>ControlTemplate</code> to produce fully branded
+      tab appearances.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,45 +63,88 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>IsSelected</code></td>
           <td><code>bool</code></td>
-          <td>Sets whether this tab is currently selected.</td>
+          <td>Indicates or sets whether this TabItem is the currently active tab. Setting it to <code>true</code> at runtime programmatically selects this tab and deselects the previous one. Useful for deep-link navigation where a specific tab must be opened on load.</td>
         </tr>
         <tr>
           <td><code>TabStripPlacement (ReadOnly)</code></td>
           <td><code>Dock</code></td>
-          <td>Read-only property reflecting the tab strip placement of the parent TabControl.</td>
+          <td>Read-only property that reflects the parent TabControl's <code>TabStripPlacement</code> setting. Templates can bind to this to rotate tab content or headers based on the strip's edge placement.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>TabItem with a custom header including an icon and a close button:</p>
+    <pre><code class="language-xml">&lt;TabControl&gt;
+  &lt;TabItem IsSelected="{Binding IsFirstTabActive, Mode=TwoWay}"&gt;
+    &lt;TabItem.Header&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Image Source="/Icons/document.png" Width="16" Height="16" Margin="0,0,4,0" /&gt;
+        &lt;TextBlock Text="Document" /&gt;
+        &lt;Button Content="&#x2715;" Width="16" Height="16"
+                Command="{Binding CloseTabCommand}"
+                Margin="4,0,0,0" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/TabItem.Header&gt;
+    &lt;Grid Margin="16"&gt;
+      &lt;TextBlock Text="Document content here." /&gt;
+    &lt;/Grid&gt;
+  &lt;/TabItem&gt;
+  &lt;TabItem Header="Settings"&gt;
+    &lt;StackPanel Margin="16"&gt;
+      &lt;CheckBox Content="Option 1" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/TabItem&gt;
+&lt;/TabControl&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Simple labeled pages</strong> — Set <code>Header</code> to a string for a standard text tab label.</li>
+      <li><strong>Icon tabs</strong> — Use a <code>StackPanel</code> in the Header with an Image and TextBlock for icon-plus-label headers.</li>
+      <li><strong>Closeable tabs</strong> — Add a small close button to the Header template for document-style closeable tabs.</li>
+      <li><strong>Badge notifications</strong> — Overlay a count badge on the Header to show unread items or pending actions in that tab.</li>
+      <li><strong>Conditional tab access</strong> — Bind <code>IsEnabled</code> to a ViewModel property to prevent users from accessing a tab until prerequisite steps are completed.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use the Header property for labels, not Content</strong> — Content is the page body; Header is the tab strip label. Confusing the two is a common mistake for WPF beginners.</li>
+      <li><strong>Lazy content creation</strong> — TabItem content is not created until the tab is first selected, so expensive views load on demand without any extra code.</li>
+      <li><strong>Avoid binding IsSelected on all tabs simultaneously</strong> — Managing multiple IsSelected bindings can cause conflicts; prefer binding SelectedIndex or SelectedItem at the TabControl level.</li>
+      <li><strong>Style headers consistently</strong> — Define a shared HeaderTemplate at the TabControl level using ItemContainerStyle so all tabs have a uniform appearance.</li>
+      <li><strong>Test keyboard navigation</strong> — Users navigate between tabs with Ctrl+Tab (forward) and Ctrl+Shift+Tab (backward); verify the tab order is logical.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — The parent container that manages TabItem selection and layout.</li>
+      <li><a href="/apps/wpf-standard-control-demo/expander.html">Expander</a> — An alternative for collapsible sections within a single view.</li>
+      <li><a href="/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — A bordered container for grouping related controls, similar to a tab page but without tabs.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabItemUsage" target="_blank" rel="noopener noreferrer">
-        View TabItem source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabItemUsage" target="_blank" rel="noopener noreferrer">View TabItem source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

@@ -8,7 +8,7 @@
   <title>TextBox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF TextBox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF TextBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,37 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; TextBox</p>
     <h1>TextBox <span class="category-badge">Inputs</span></h1>
-    <p>TextBox is a standard input control that allows users to enter and edit text. It is one of the most fundamental controls in WPF and supports rich text editing features including multiline input, text wrapping, and character casing transformation.</p>
+    <p>TextBox is the primary editable text input control in WPF. It supports single-line and multiline input, text wrapping, selection, undo/redo, and keyboard/mouse text manipulation. It is one of the most fundamental and frequently used controls in any data-entry form.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>TextBox</strong> inherits from <code>TextBoxBase</code>, which provides the core
+      editing engine including selection, clipboard operations (Cut, Copy, Paste), undo/redo history,
+      and programmatic scroll methods. TextBox adds single-line display features such as
+      <code>CharacterCasing</code>, <code>MaxLength</code>, and <code>TextAlignment</code> on top of
+      the base class.
+    </p>
+    <p>
+      For MVVM data binding, the <code>Text</code> property is the primary binding target. Two-way
+      binding with <code>UpdateSourceTrigger=PropertyChanged</code> pushes every keystroke to the
+      ViewModel, enabling live validation and real-time UI updates. The default
+      <code>UpdateSourceTrigger=LostFocus</code> updates the ViewModel only when the TextBox loses
+      focus, which reduces unnecessary updates but delays validation feedback.
+    </p>
+    <p>
+      Multiline input is enabled by setting <code>TextWrapping="Wrap"</code> and optionally setting
+      <code>MinLines</code> and <code>MaxLines</code> to control the visible height. Combined with
+      <code>AcceptsReturn="True"</code> (inherited from <code>TextBoxBase</code>), this creates a
+      full text area suitable for notes, comments, and code editors.
+    </p>
+    <p>
+      <code>CharacterCasing</code> provides automatic case normalization — setting it to
+      <code>Upper</code> ensures all typed characters are stored as uppercase regardless of the
+      shift key state, useful for postal codes, product codes, and other fixed-case identifiers.
+      <code>Lower</code> enforces lowercase input similarly.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,75 +65,114 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>The text value to bind or set directly.</td>
+          <td>The string value currently entered in the TextBox. Bind two-way to a ViewModel string property for standard data-entry use. Use <code>UpdateSourceTrigger=PropertyChanged</code> for live validation or <code>LostFocus</code> for batched updates on tab-out.</td>
         </tr>
         <tr>
           <td><code>TextWrapping</code></td>
           <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
-          <td>Controls how text wraps when it exceeds the available width.</td>
+          <td>Controls whether long text wraps to new lines. <code>Wrap</code> is needed for multiline text areas; <code>NoWrap</code> (default) keeps single-line behavior with horizontal scrolling. <code>WrapWithOverflow</code> allows individual unbreakable tokens (e.g., long URLs) to overflow rather than clip.</td>
         </tr>
         <tr>
           <td><code>TextDecorations</code></td>
           <td><code>None / Underline / Strikethrough / OverLine / Baseline</code></td>
-          <td>Adds decorations such as underline to the text.</td>
+          <td>Applies text decoration to all text in the box. Commonly used to show Underline for link-style inputs or Strikethrough for deprecation indicators. Multiple decorations can be combined.</td>
         </tr>
         <tr>
           <td><code>TextAlignment</code></td>
           <td><code>Left / Right / Center / Justify</code></td>
-          <td>Controls the horizontal alignment of the text.</td>
+          <td>Aligns the text horizontally within the TextBox. <code>Right</code> is useful for numeric inputs; <code>Center</code> for title-style single-line fields; <code>Justify</code> for paragraph areas.</td>
         </tr>
         <tr>
           <td><code>MaxLength</code></td>
           <td><code>int (0 = unlimited)</code></td>
-          <td>Sets the maximum number of characters. 0 means unlimited.</td>
+          <td>Limits how many characters the user can type. The TextBox silently rejects input beyond this limit. Setting 0 (default) means unlimited. Use this for fields with fixed-length constraints such as postal codes, phone numbers, or PINs.</td>
         </tr>
         <tr>
           <td><code>MaxLines</code></td>
           <td><code>int</code></td>
-          <td>Limits the maximum number of visible lines.</td>
+          <td>Limits the maximum number of visible lines in a multiline TextBox. Additional lines can be scrolled. A common pattern is to set <code>MinLines="3" MaxLines="10"</code> for a textarea that grows up to ten rows.</td>
         </tr>
         <tr>
           <td><code>MinLines</code></td>
           <td><code>int</code></td>
-          <td>Sets the minimum number of visible lines.</td>
+          <td>Sets the minimum height of the TextBox expressed in lines. Even with no content, the control reserves space for at least this many lines, preventing jarring resize when text is added. Useful for comment fields that should always appear as a textarea.</td>
         </tr>
         <tr>
           <td><code>CharacterCasing</code></td>
           <td><code>Normal / Upper / Lower</code></td>
-          <td>Automatically converts input characters to upper or lower case.</td>
+          <td>Automatically converts all typed input to the specified case. <code>Upper</code> forces uppercase — typed "hello" appears as "HELLO" in both the display and the bound Text property. Useful for license keys, locale codes, and identifiers that must be uppercase.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>Various TextBox configurations for common form patterns:</p>
+    <pre><code class="language-xml">&lt;!-- Standard single-line input with live validation --&gt;
+&lt;TextBox Text="{Binding Username, Mode=TwoWay,
+               UpdateSourceTrigger=PropertyChanged}"
+         MaxLength="50" /&gt;
+
+&lt;!-- Multiline comment area --&gt;
+&lt;TextBox Text="{Binding Notes, Mode=TwoWay}"
+         TextWrapping="Wrap" AcceptsReturn="True"
+         MinLines="3" MaxLines="8"
+         VerticalScrollBarVisibility="Auto" /&gt;
+
+&lt;!-- Uppercase postal code field --&gt;
+&lt;TextBox Text="{Binding PostalCode, Mode=TwoWay}"
+         CharacterCasing="Upper"
+         MaxLength="10"
+         TextAlignment="Center"
+         Width="100" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Single-line text input</strong> — Name, email, username, and search fields in forms and dialogs.</li>
+      <li><strong>Multiline text areas</strong> — Notes, comments, address fields, and code snippet editors.</li>
+      <li><strong>Numeric input with formatting</strong> — Currency or quantity fields using TextAlignment="Right" combined with a converter for formatted display.</li>
+      <li><strong>Fixed-format fields</strong> — License keys, postal codes, and phone numbers using MaxLength and CharacterCasing.</li>
+      <li><strong>Search boxes</strong> — Live-filter a collection by binding Text with UpdateSourceTrigger=PropertyChanged to a search string ViewModel property.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use UpdateSourceTrigger wisely</strong> — <code>PropertyChanged</code> enables live validation but triggers frequently; <code>LostFocus</code> is less intrusive for simple forms without live feedback needs.</li>
+      <li><strong>Add a watermark with placeholder text</strong> — WPF's TextBox does not natively support placeholder text, but you can overlay a TextBlock bound to Text with a converter, or use an attached behavior.</li>
+      <li><strong>SpellCheck.IsEnabled</strong> — Set <code>SpellCheck.IsEnabled="True"</code> on any TextBox to enable built-in red-underline spell checking without any extra code.</li>
+      <li><strong>Use PasswordBox for secrets</strong> — Never use a TextBox for passwords; the text is unmasked. Use <code>PasswordBox</code> instead.</li>
+      <li><strong>Validation integration</strong> — Implement <code>INotifyDataErrorInfo</code> in the ViewModel and set <code>ValidatesOnNotifyDataErrors=True</code> on the binding to show red borders and error tooltips automatically.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/passwordbox.html">PasswordBox</a> — For masked password input; does not expose the text as a bindable string by default.</li>
+      <li><a href="/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — The read-only counterpart for displaying text.</li>
+      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — Provides editable text input combined with a dropdown suggestion list.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBoxUsage" target="_blank" rel="noopener noreferrer">
-        View TextBox source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBoxUsage" target="_blank" rel="noopener noreferrer">View TextBox source code on GitHub &rarr;</a></p>
   </section>
 
 </main>
