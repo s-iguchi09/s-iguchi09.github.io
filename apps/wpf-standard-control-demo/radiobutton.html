@@ -8,7 +8,7 @@
   <title>RadioButton | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF RadioButton control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF RadioButton control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,37 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; RadioButton</p>
     <h1>RadioButton <span class="category-badge">Inputs</span></h1>
-    <p>RadioButton allows users to select one option from a group. RadioButtons in the same GroupName are mutually exclusive — selecting one deselects the others. It inherits from ToggleButton.</p>
+    <p>RadioButton allows users to select exactly one option from a mutually exclusive group. RadioButtons sharing the same GroupName are linked together — selecting one automatically deselects all others in the group. RadioButton inherits from ToggleButton, giving it access to checked-state management.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>RadioButton</strong> control implements the classic single-selection pattern. It inherits from
+      <code>ToggleButton</code>, which in turn inherits from <code>ButtonBase</code> and ultimately
+      <code>ContentControl</code>. This means RadioButton can host rich content inside its label area —
+      images, icons, and nested panels — not just plain text.
+    </p>
+    <p>
+      The <code>GroupName</code> property is the key to RadioButton's mutual-exclusion logic. When two or more
+      RadioButtons share the same non-null <code>GroupName</code> string, WPF treats them as a group regardless
+      of where they appear in the visual tree. This lets you place group members inside different panels or even
+      different levels of nesting without losing the mutual-exclusion behavior. When <code>GroupName</code> is
+      not set (null), exclusivity is scoped to the immediate parent container by default.
+    </p>
+    <p>
+      In an MVVM application, bind each RadioButton's <code>IsChecked</code> property (inherited from
+      <code>ToggleButton</code>) to a dedicated boolean property in the ViewModel, or use a converter to map
+      an enum value to the checked state. A common pattern is to create one bool property per option and use
+      two-way bindings; another approach is a single enum property with an <code>IValueConverter</code> that
+      compares the bound value to the RadioButton's tag.
+    </p>
+    <p>
+      Styling RadioButtons is straightforward with WPF's template system. You can replace the entire
+      <code>ControlTemplate</code> to create button-style toggle selectors, tab-strip selectors, or any visual
+      representation while retaining the underlying mutual-exclusion logic. This makes RadioButton a versatile
+      building block for custom selection UI beyond the traditional bullet-point appearance.
+    </p>
   </section>
 
   <section class="content-section">
@@ -39,7 +69,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,15 +82,65 @@
         <tr>
           <td><code>GroupName</code></td>
           <td><code>string (Null = same parent container)</code></td>
-          <td>RadioButtons with the same GroupName are mutually exclusive. When null, exclusivity applies within the same parent container.</td>
+          <td>Assigns the RadioButton to a named mutual-exclusion group. All RadioButtons with the same <code>GroupName</code> value form a group, and only one can be checked at a time. When left null, WPF uses the parent container as the implicit group boundary.</td>
         </tr>
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>Sets the vertical alignment of the label content.</td>
+          <td>Controls the vertical alignment of the RadioButton's content (label) within its allocated space. <code>Center</code> is the most common choice for single-line labels; <code>Top</code> or <code>Stretch</code> are useful when the content spans multiple lines.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following example shows a group of RadioButtons sharing the same <code>GroupName</code>, with MVVM bindings:</p>
+    <pre><code class="language-xml">&lt;StackPanel&gt;
+  &lt;RadioButton Content="Option A" GroupName="MyGroup"
+               IsChecked="{Binding IsOptionASelected, Mode=TwoWay}" /&gt;
+  &lt;RadioButton Content="Option B" GroupName="MyGroup"
+               IsChecked="{Binding IsOptionBSelected, Mode=TwoWay}" /&gt;
+  &lt;RadioButton Content="Option C" GroupName="MyGroup"
+               IsChecked="{Binding IsOptionCSelected, Mode=TwoWay}" /&gt;
+&lt;/StackPanel&gt;
+
+&lt;!-- Enum-based binding with converter --&gt;
+&lt;RadioButton Content="Small"
+             IsChecked="{Binding Size, Converter={StaticResource EnumBoolConverter},
+                         ConverterParameter=Small}" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Settings dialogs</strong> — Offer mutually exclusive configuration options such as theme selection (Light / Dark / System) or language choice.</li>
+      <li><strong>Wizard navigation</strong> — Let users pick a single path or mode before proceeding to the next step.</li>
+      <li><strong>Survey forms</strong> — Present Likert-scale or yes/no questions where only one answer is valid.</li>
+      <li><strong>Custom tab strips</strong> — Re-template RadioButtons as tab headers to build a visually distinct navigation bar backed by the mutual-exclusion logic.</li>
+      <li><strong>Filter selectors</strong> — Offer view filters (All / Active / Completed) where enabling one filter disables the others.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Always set GroupName when mixing groups</strong> — Without explicit group names, WPF uses the parent container as the scope, which can cause unexpected cross-group deselection when multiple groups share a panel.</li>
+      <li><strong>Prefer enum converters over multiple bool properties</strong> — Binding each RadioButton to a boolean ViewModel property creates verbose code. A single enum property plus an <code>IValueConverter</code> is cleaner and scales better.</li>
+      <li><strong>Ensure at least one item is pre-selected</strong> — A group with no selection can surprise users. Set an initial value in the ViewModel constructor or XAML to avoid an indeterminate state on load.</li>
+      <li><strong>Use ControlTemplate for custom visuals</strong> — When the default bullet appearance does not fit your design, replace the template entirely; the underlying IsChecked and GroupName logic still works.</li>
+      <li><strong>Accessibility</strong> — Add <code>AutomationProperties.Name</code> when the content is an image, so screen readers can announce the option label correctly.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — For independent boolean toggles that are not mutually exclusive.</li>
+      <li><a href="/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — The base class that provides <code>IsChecked</code> and <code>IsThreeState</code>.</li>
+      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — An alternative single-selection control suitable for larger option sets.</li>
+      <li><a href="/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — Supports single or multiple selection from a scrollable list.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -71,7 +151,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RadioButtonUsage" target="_blank" rel="noopener noreferrer">
-        View RadioButton source code on GitHub →
+        View RadioButton source code on GitHub &rarr;
       </a>
     </p>
   </section>

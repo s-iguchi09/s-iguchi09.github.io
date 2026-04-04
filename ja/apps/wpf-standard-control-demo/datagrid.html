@@ -8,7 +8,7 @@
   <title>DataGrid | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF DataGrid コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <meta name="description" content="WPF DataGrid コントロールのリファレンス。概要、プロパティ解説、XAML 使用例、活用シナリオ。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,31 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; DataGrid</p>
     <h1>DataGrid <span class="category-badge">List</span></h1>
-    <p>DataGrid はソート、フィルタリング、グループ化、列リサイズ、インプレース編集などの機能を持つ表形式データを表示するための強力なコントロールです。データソースのプロパティから自動的に列を生成するか、カスタム列定義を使用できます。</p>
+    <p>DataGrid は表形式のデータを表示・編集するための強力なコントロールです。ソート、フィルタリング、グルーピング、列のリサイズ、インライン編集などの機能を備えています。データソースのプロパティから自動的に列を生成するか、カスタム列定義を指定できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      WPF の <strong>DataGrid</strong> は、<code>MultiSelector</code> → <code>Selector</code> → <code>ItemsControl</code>
+      という継承チェーンを持つ高機能なグリッドコントロールです。
+      <code>ItemsSource</code> にオブジェクトのコレクションをバインドすることで、
+      各プロパティが自動的に列として生成されます（<code>AutoGenerateColumns="True"</code> の場合）。
+    </p>
+    <p>
+      列は <code>DataGridTextColumn</code>、<code>DataGridCheckBoxColumn</code>、<code>DataGridComboBoxColumn</code>、
+      <code>DataGridHyperlinkColumn</code>、<code>DataGridTemplateColumn</code> の 5 種類から選べます。
+      <code>DataGridTemplateColumn</code> を使うと任意の WPF 要素を列セルに配置でき、完全なカスタマイズが可能です。
+    </p>
+    <p>
+      パフォーマンス面では、<code>EnableRowVirtualization</code> と <code>EnableColumnVirtualization</code> を有効にすることで、
+      表示領域外の行・列は描画されず、大量データでも軽快に動作します。
+      さらに <code>VirtualizingPanel.IsVirtualizing="True"</code> も合わせて設定することを推奨します。
+    </p>
+    <p>
+      編集機能は <code>IsReadOnly</code> で一括制御できるほか、列単位で <code>IsReadOnly</code> を設定したり、
+      <code>CanUserAddRows</code>/<code>CanUserDeleteRows</code> で行の追加・削除権限をユーザーに与えることができます。
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,119 +59,119 @@
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>AutoGenerateColumns</code></td>
           <td><code>bool</code></td>
-          <td>データソースのプロパティから列を自動生成するかどうかを制御します。</td>
+          <td>True のとき、ItemsSource のオブジェクトのパブリックプロパティから自動的に列を生成します。カスタム列定義をする場合は False に設定します。</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>グリッド全体を読み取り専用にします。</td>
+          <td>True のとき、グリッド全体が読み取り専用になりセルの編集ができなくなります。データ表示専用のグリッドに使用します。</td>
         </tr>
         <tr>
           <td><code>SelectionMode / SelectionUnit</code></td>
           <td><code>Single/Extended / Cell/FullRow/CellOrRowHeader</code></td>
-          <td>選択モードと選択単位（セル/行）を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>ColumnWidth / MaxColumnWidth / MinColumnWidth</code></td>
-          <td><code>DataGridLength / double / double</code></td>
-          <td>列の幅の設定値、最大値、最小値を設定します。</td>
+          <td>SelectionMode は単一選択か複数選択かを設定します。SelectionUnit は選択単位（セル単位か行単位か）を設定します。</td>
         </tr>
         <tr>
           <td><code>CanUserAddRows / CanUserDeleteRows</code></td>
-          <td><code>bool / bool</code></td>
-          <td>ユーザーが行を追加・削除できるかどうかを制御します。</td>
-        </tr>
-        <tr>
-          <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserResizeRows / CanUserSortColumns</code></td>
           <td><code>bool</code></td>
-          <td>列の並べ替え・リサイズ、行のリサイズ、列のソートを許可するかどうかを制御します。</td>
+          <td>ユーザーが新しい行を追加・削除できるかどうかを制御します。True の場合、最終行に新規入力行が表示されます。</td>
         </tr>
         <tr>
-          <td><code>RowDetailsVisibilityMode / AreRowDetailsFrozen</code></td>
-          <td><code>Collapsed/Visible/VisibleWhenSelected / bool</code></td>
-          <td>行詳細パネルの表示モードと、スクロール時に固定するかどうかを設定します。</td>
+          <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserSortColumns</code></td>
+          <td><code>bool</code></td>
+          <td>ユーザーが列の並べ替え・リサイズ・ソートを行えるかどうかを制御します。</td>
         </tr>
         <tr>
-          <td><code>GridLinesVisibility / HorizontalGridLinesBrush / VerticalGridLinesBrush</code></td>
-          <td><code>None/Horizontal/Vertical/All / Brush / Brush</code></td>
-          <td>グリッド線の表示と色を設定します。</td>
+          <td><code>GridLinesVisibility</code></td>
+          <td><code>None / Horizontal / Vertical / All</code></td>
+          <td>グリッド線の表示方法を制御します。デフォルトでは水平・垂直両方の線が表示されます。</td>
         </tr>
         <tr>
           <td><code>AlternatingRowBackground</code></td>
           <td><code>Brush</code></td>
-          <td>交互行の背景色を設定して視認性を高めます。</td>
+          <td>1行おきに異なる背景色を設定します。縞模様にすることで行の視認性が向上します。</td>
         </tr>
         <tr>
           <td><code>FrozenColumnCount</code></td>
           <td><code>int</code></td>
-          <td>水平スクロール時に固定する列数を設定します。</td>
+          <td>水平スクロール時に固定する列数を設定します。左端の重要な列（ID や名前など）を常に表示したい場合に使用します。</td>
         </tr>
         <tr>
           <td><code>HeadersVisibility</code></td>
           <td><code>None / Row / Column / All</code></td>
-          <td>行ヘッダーと列ヘッダーの表示設定を制御します。</td>
-        </tr>
-        <tr>
-          <td><code>ClipboardCopyMode</code></td>
-          <td><code>None / ExcludeHeader / IncludeHeader</code></td>
-          <td>クリップボードへのコピー時のヘッダー包含設定を制御します。</td>
+          <td>行ヘッダーと列ヘッダーの表示・非表示を制御します。</td>
         </tr>
         <tr>
           <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
-          <td><code>bool / bool</code></td>
-          <td>行・列の仮想化を有効にしてパフォーマンスを向上させます。</td>
-        </tr>
-        <tr>
-          <td><code>RowValidationErrorTemplate</code></td>
-          <td><code>ControlTemplate</code></td>
-          <td>行の検証エラーを視覚化するテンプレートを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>RowBackground / RowHeight / MinRowHeight</code></td>
-          <td><code>Brush / double / double</code></td>
-          <td>行の背景色と高さの設定をします。</td>
-        </tr>
-        <tr>
-          <td><code>RowHeaderWidth / RowHeaderStyle / ColumnHeaderHeight / ColumnHeaderStyle</code></td>
-          <td><code>double / Style / double / Style</code></td>
-          <td>行ヘッダーと列ヘッダーのサイズとスタイルを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>RowStyle / CellStyle / ColumnHeaderTemplate</code></td>
-          <td><code>Style / Style / DataTemplate</code></td>
-          <td>行・セル・列ヘッダーのスタイルとテンプレートを設定します。</td>
+          <td><code>bool</code></td>
+          <td>行・列の仮想化を有効にして大量データのパフォーマンスを向上させます。大規模なデータセットでは必ず有効にすることを推奨します。</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <pre><code class="language-xml">&lt;DataGrid ItemsSource="{Binding Orders}"
+          AutoGenerateColumns="False"
+          IsReadOnly="False"
+          CanUserAddRows="True"
+          SelectionMode="Single"
+          AlternatingRowBackground="AliceBlue"
+          FrozenColumnCount="1"
+          EnableRowVirtualization="True"&gt;
+  &lt;DataGrid.Columns&gt;
+    &lt;DataGridTextColumn Header="注文ID" Binding="{Binding OrderId}"
+                        IsReadOnly="True" Width="80" /&gt;
+    &lt;DataGridTextColumn Header="顧客名" Binding="{Binding CustomerName}"
+                        Width="*" /&gt;
+    &lt;DataGridCheckBoxColumn Header="処理済" Binding="{Binding IsProcessed}"
+                            Width="70" /&gt;
+  &lt;/DataGrid.Columns&gt;
+&lt;/DataGrid&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>受注・在庫管理画面</strong> — 一覧表示と編集を同一画面で行うビジネスアプリの主力コントロールとして活用します。</li>
+      <li><strong>ログ・履歴ビューアー</strong> — 大量の履歴データを行仮想化で効率よく表示します。</li>
+      <li><strong>一括編集フォーム</strong> — 複数レコードを表形式で一括編集し、一度にコミットするワークフローを実現します。</li>
+      <li><strong>レポート・集計表</strong> — 読み取り専用モードで集計データや統計情報を表形式で表示します。</li>
+      <li><strong>インポートプレビュー</strong> — CSV などからインポートするデータをプレビューし、列マッピングを確認する画面に使用します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>行仮想化を有効にする</strong> — 数百行以上のデータには必ず EnableRowVirtualization="True" を設定してメモリとレンダリングを最適化します。</li>
+      <li><strong>AutoGenerateColumns は開発時のみ</strong> — 本番アプリでは AutoGenerateColumns="False" にして列を明示的に定義し、表示順・幅・書式を制御します。</li>
+      <li><strong>INotifyPropertyChanged の実装</strong> — バインドするデータモデルには INotifyPropertyChanged を実装し、編集内容がリアルタイムで UI に反映されるようにします。</li>
+      <li><strong>選択アイテムのバインド</strong> — SelectedItem を ViewModel にバインドして選択行のデータを取得し、詳細パネルや編集フォームと連動させます。</li>
+      <li><strong>DataGridTemplateColumn でカスタム UI</strong> — ボタンや画像を含む列を作る場合は DataGridTemplateColumn を使い、CellTemplate と CellEditingTemplate を定義します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listview.html">ListView</a> — GridView を使ったシンプルな表形式表示。DataGrid より軽量。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — シンプルな単一列リスト。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DataGridUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で DataGrid のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DataGridUsage" target="_blank" rel="noopener noreferrer">GitHub で DataGrid のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>

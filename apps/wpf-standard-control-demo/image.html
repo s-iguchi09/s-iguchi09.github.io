@@ -7,23 +7,50 @@
   <meta charset="UTF-8">
   <title>Image | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Image control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Image control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-en.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Image</p>
     <h1>Image <span class="category-badge">Graphics</span></h1>
     <p>Image is a control for displaying images from various sources including files, URIs, and resources. It supports various image formats and provides properties to control how the image is stretched to fit its container.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>Image</strong> control is the primary way to display raster and vector images within a
+      layout. It derives directly from <code>FrameworkElement</code> rather than <code>Control</code>, meaning
+      it is a lightweight visual element without the full control template overhead. The image content is
+      provided through the <code>Source</code> property, which accepts any <code>ImageSource</code> — including
+      <code>BitmapImage</code>, <code>BitmapFrame</code>, <code>DrawingImage</code>, and
+      <code>RenderTargetBitmap</code>.
+    </p>
+    <p>
+      WPF's Image control supports all major raster formats natively: BMP, PNG, JPEG, GIF, TIFF, ICO, and
+      WBMP. For vector content, <code>DrawingImage</code> wraps a <code>Drawing</code> object and renders
+      cleanly at any resolution, making it ideal for high-DPI displays. In XAML, you can reference embedded
+      resources using pack URIs (e.g., <code>pack://application:,,,/Images/logo.png</code>), which are
+      compiled into the assembly and do not require external files at deployment.
+    </p>
+    <p>
+      The <code>Stretch</code> property is central to how Image behaves inside its allocated layout space.
+      <code>None</code> renders the image at its natural pixel size; <code>Fill</code> distorts the image to
+      fill the container completely; <code>Uniform</code> scales the image proportionally to fit within the
+      container without distortion; and <code>UniformToFill</code> scales proportionally to fill the container,
+      cropping excess pixels. Choosing the right mode prevents unintentional stretching or blank borders.
+    </p>
+    <p>
+      The <code>StretchDirection</code> property further refines scaling behavior by restricting whether the
+      image is scaled up, scaled down, or both. This is useful when you want to prevent a small thumbnail from
+      being blown up to fill a large area (<code>DownOnly</code>), or when you want an image to expand to fill
+      available space but never shrink below its native size (<code>UpOnly</code>).
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,55 +62,94 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
       <tbody>
         <tr>
           <td><code>Source</code></td>
           <td><code>ImageSource (URI / file path)</code></td>
-          <td>Sets the image source. Can be a file path, URI, or resource.</td>
+          <td>The image data to display, specified as a URI string pointing to a resource, file, or web URL. WPF automatically creates a <code>BitmapImage</code> from the URI during XAML parsing; you can also set this in code by assigning a <code>BitmapImage</code> instance directly.</td>
         </tr>
         <tr>
           <td><code>Stretch</code></td>
           <td><code>None / Fill / Uniform / UniformToFill</code></td>
-          <td>Sets how the image is scaled. None: no scaling, Fill: stretch to fill, Uniform: maintain aspect ratio, UniformToFill: fill without letterboxing.</td>
+          <td>Controls how the image scales to fill its allocated layout bounds. <code>Uniform</code> is the most common choice for photos as it preserves the aspect ratio; <code>UniformToFill</code> is preferred for thumbnail backgrounds where edge-to-edge coverage is required.</td>
         </tr>
         <tr>
           <td><code>StretchDirection</code></td>
           <td><code>UpOnly / DownOnly / Both</code></td>
-          <td>Controls the scaling direction. UpOnly: scale up only, DownOnly: scale down only, Both: both directions.</td>
+          <td>Restricts the direction in which the image is scaled. <code>Both</code> (the default) allows scaling in both directions; <code>DownOnly</code> prevents enlarging a small image beyond its natural size; <code>UpOnly</code> prevents shrinking a large image below its natural size.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates Image usage with different stretch modes and a resource URI:</p>
+    <pre><code class="language-xml">&lt;StackPanel Margin="16" Orientation="Vertical"&gt;
+
+  &lt;!-- Resource image with uniform scaling --&gt;
+  &lt;Image Source="pack://application:,,,/Assets/photo.jpg"
+         Width="300" Height="200"
+         Stretch="Uniform"
+         Margin="4" /&gt;
+
+  &lt;!-- Thumbnail that fills its container, cropping if needed --&gt;
+  &lt;Border Width="80" Height="80" CornerRadius="4"
+          ClipToBounds="True"&gt;
+    &lt;Image Source="{Binding ThumbnailUri}"
+           Stretch="UniformToFill"
+           StretchDirection="Both" /&gt;
+  &lt;/Border&gt;
+
+  &lt;!-- Icon at native size, no scaling --&gt;
+  &lt;Image Source="pack://application:,,,/Icons/info.png"
+         Stretch="None"
+         HorizontalAlignment="Left" /&gt;
+
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Application logos and splash screens:</strong> Displaying a branding image at the top of the main window or on a startup screen with controlled scaling to fit various window sizes.</li>
+      <li><strong>Photo galleries and thumbnails:</strong> Rendering grid cells of images with <code>Stretch="UniformToFill"</code> inside a fixed-size <code>Border</code> to create a uniform thumbnail grid.</li>
+      <li><strong>Button and menu icons:</strong> Embedding a small PNG or vector <code>DrawingImage</code> inside a <code>Button</code> content template to create visually rich icon buttons.</li>
+      <li><strong>Product catalog images:</strong> Binding the <code>Source</code> property to a URL in a data-bound <code>DataGrid</code> or <code>ListView</code> to display product photos alongside text data.</li>
+      <li><strong>Backgrounds and watermarks:</strong> Using an <code>Image</code> with low opacity inside a <code>Grid</code> behind other content to create a subtle watermark or branded background.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use pack URIs for embedded resources:</strong> Mark image files as <em>Resource</em> in their Build Action so they are compiled into the assembly, avoiding missing-file deployment issues.</li>
+      <li><strong>Set explicit Width/Height for performance:</strong> When displaying images in a virtualized list, set explicit dimensions to prevent the layout engine from re-measuring during scroll virtualization.</li>
+      <li><strong>Use <code>DecodePixelWidth</code> / <code>DecodePixelHeight</code>:</strong> When loading large images as small thumbnails, set these on the <code>BitmapImage</code> to decode at the display size and dramatically reduce memory usage.</li>
+      <li><strong>Prefer <code>DrawingImage</code> for icons:</strong> Vector-based icons rendered via <code>DrawingImage</code> or <code>Viewbox</code> remain crisp at all DPI settings, unlike raster PNGs that may appear blurry on high-DPI displays.</li>
+      <li><strong>Handle load failures gracefully:</strong> Subscribe to <code>BitmapImage.DownloadFailed</code> and <code>DecodeFailed</code> events or provide a fallback <code>Source</code> using a value converter to show a placeholder when images cannot be loaded.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/inkcanvas.html">InkCanvas</a> — a drawing surface control that can overlay or work alongside image content.</li>
+      <li><a href="/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — an absolute-positioning panel often used to layer multiple Image controls.</li>
+      <li><a href="/apps/wpf-standard-control-demo/border.html">Border</a> — commonly used to clip and frame Image controls with rounded corners.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ImageUsage" target="_blank" rel="noopener noreferrer">
-        View Image source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ImageUsage" target="_blank" rel="noopener noreferrer">View Image source code on GitHub &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-en.html %}
-
 </body>
 </html>

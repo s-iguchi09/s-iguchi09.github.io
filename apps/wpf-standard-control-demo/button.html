@@ -8,7 +8,7 @@
   <title>Button | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Button control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF Button control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,37 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>Button</strong> control is the primary mechanism for triggering user actions in desktop
+      applications. It descends from <code>ButtonBase</code>, which itself extends <code>ContentControl</code>,
+      meaning a Button can host any arbitrary content — text, images, icons, or complex panel layouts — not just
+      a simple label. This flexibility makes it easy to create richly styled action buttons that match your
+      application's visual design.
+    </p>
+    <p>
+      One of Button's most important features for MVVM (Model-View-ViewModel) architectures is its built-in
+      support for the <code>ICommand</code> interface through the <code>Command</code> property. When a command
+      is bound, WPF automatically disables the button whenever <code>ICommand.CanExecute</code> returns
+      <code>false</code>, and re-enables it when conditions change. This eliminates the need for manual
+      enabled/disabled logic in code-behind and keeps UI state synchronized with application state.
+    </p>
+    <p>
+      The <code>ClickMode</code> property inherited from <code>ButtonBase</code> controls exactly when the
+      <code>Click</code> event fires. The default <code>Release</code> mode fires on mouse-button release,
+      matching standard desktop conventions. <code>Press</code> mode fires immediately on mouse-down, useful
+      for rapid-fire scenarios. <code>Hover</code> mode fires when the pointer merely moves over the button,
+      enabling touchless interaction patterns.
+    </p>
+    <p>
+      Two special boolean properties — <code>IsDefault</code> and <code>IsCancel</code> — simplify dialog
+      implementation. Setting <code>IsDefault="True"</code> makes the button respond to the <kbd>Enter</kbd>
+      key when no other element captures it, while <code>IsCancel="True"</code> binds the button to the
+      <kbd>Escape</kbd> key. Together they let developers build keyboard-accessible dialogs with minimal code.
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the Button demo screen in the app.
@@ -39,7 +70,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,35 +83,99 @@
         <tr>
           <td><code>IsCancel</code></td>
           <td><code>bool</code></td>
-          <td>When True, pressing Escape triggers this button's Click. Used for dialog cancel buttons.</td>
+          <td>When <code>True</code>, pressing <kbd>Escape</kbd> triggers this button's Click event regardless of focus. This is the standard pattern for "Cancel" buttons in dialogs, allowing keyboard-only users to dismiss without clicking.</td>
         </tr>
         <tr>
           <td><code>IsDefault</code></td>
           <td><code>bool</code></td>
-          <td>When True, pressing Enter triggers this button's Click when no other element handles it.</td>
+          <td>When <code>True</code>, pressing <kbd>Enter</kbd> triggers this button's Click when no other focusable element intercepts the key. Commonly applied to the primary "OK" or "Submit" button in a dialog or form.</td>
         </tr>
         <tr>
           <td><code>ClickMode (ButtonBase)</code></td>
           <td><code>Release / Press / Hover</code></td>
-          <td>Controls when the Click event fires. Release: on mouse up, Press: on mouse down, Hover: on hover.</td>
+          <td>Controls the exact moment the Click event fires relative to the mouse interaction. <code>Release</code> is the default and most familiar mode; <code>Press</code> fires on mouse-down; <code>Hover</code> fires when the cursor enters the button's bounds.</td>
         </tr>
         <tr>
           <td><code>IsPressed (ButtonBase)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>Read-only property indicating whether the button is currently pressed.</td>
+          <td>A read-only property that is <code>True</code> while the button is actively being pressed. It is primarily used in control templates and triggers to drive pressed-state visual feedback, such as a depressed animation.</td>
         </tr>
         <tr>
           <td><code>Command (ButtonBase)</code></td>
           <td><code>ICommand</code></td>
-          <td>Sets the command to execute on click. Bind to an ICommand property in the ViewModel.</td>
+          <td>Binds an <code>ICommand</code> implementation to the button. WPF automatically calls <code>CanExecute</code> to enable or disable the button, and invokes <code>Execute</code> when clicked — the cornerstone of MVVM command binding.</td>
         </tr>
         <tr>
           <td><code>CommandParameter (ButtonBase)</code></td>
           <td><code>object</code></td>
-          <td>Sets the parameter to pass when executing the command.</td>
+          <td>An optional parameter forwarded to both <code>CanExecute</code> and <code>Execute</code> when the command fires. Useful when multiple buttons share the same command but need to pass different context values, such as an item identifier.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates typical Button usage, including command binding and keyboard shortcuts:</p>
+    <pre><code class="language-xml">&lt;StackPanel Margin="16" Spacing="8"&gt;
+
+  &lt;!-- Basic button with Click event handler --&gt;
+  &lt;Button Content="Click Me"
+          Width="120" Height="32"
+          Click="OnButtonClick" /&gt;
+
+  &lt;!-- MVVM command binding with a parameter --&gt;
+  &lt;Button Content="Save"
+          Command="{Binding SaveCommand}"
+          CommandParameter="{Binding CurrentItem}"
+          IsDefault="True" /&gt;
+
+  &lt;!-- Cancel button responding to Escape key --&gt;
+  &lt;Button Content="Cancel"
+          Command="{Binding CancelCommand}"
+          IsCancel="True" /&gt;
+
+  &lt;!-- Button with icon content --&gt;
+  &lt;Button Width="140" Height="36"&gt;
+    &lt;StackPanel Orientation="Horizontal" Spacing="6"&gt;
+      &lt;Image Source="/Icons/save.png" Width="16" Height="16" /&gt;
+      &lt;TextBlock Text="Save File" VerticalAlignment="Center" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/Button&gt;
+
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Dialog actions:</strong> "OK", "Cancel", "Apply", and "Save" buttons in modal dialogs, leveraging <code>IsDefault</code> and <code>IsCancel</code> for keyboard accessibility.</li>
+      <li><strong>Toolbar commands:</strong> Icon-and-label buttons in toolbars that trigger document operations such as New, Open, Save, Print, or Undo/Redo.</li>
+      <li><strong>Form submission:</strong> A primary action button at the bottom of a data-entry form that validates input and submits the record to a backend service.</li>
+      <li><strong>Navigation triggers:</strong> Buttons that switch views or pages inside a navigation host, often bound to relay commands in the main view model.</li>
+      <li><strong>Contextual actions in lists:</strong> Edit or Delete buttons placed inside <code>DataGrid</code> or <code>ListView</code> row templates, passing the row item as <code>CommandParameter</code>.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Prefer ICommand over Click events</strong> in MVVM applications. Use <code>RelayCommand</code> or <code>DelegateCommand</code> implementations to keep logic out of code-behind and improve testability.</li>
+      <li><strong>Set meaningful Content</strong> — avoid generic labels like "Button1". Clear, action-oriented labels such as "Save Document" improve usability and accessibility for screen-reader users.</li>
+      <li><strong>Use <code>IsEnabled</code> sparingly</strong>; instead, rely on <code>ICommand.CanExecute</code> to automatically manage the enabled state, which ensures the UI reacts instantly to state changes without manual wiring.</li>
+      <li><strong>Avoid deep nesting in Button content</strong>. If the content template grows complex, consider extracting it into a <code>DataTemplate</code> or a custom style resource to keep XAML maintainable.</li>
+      <li><strong>Test keyboard navigation</strong> in every dialog. Verify that <code>IsDefault</code> and <code>IsCancel</code> behave as expected when focus is on text boxes, combo boxes, or other interactive controls within the same dialog.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — fires Click repeatedly while held down; useful for increment/decrement spinners.</li>
+      <li><a href="/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — base class for CheckBox and RadioButton; maintains an on/off checked state.</li>
+      <li><a href="/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — a two- or three-state toggle control derived from ToggleButton.</li>
+      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — a mutually exclusive toggle within a group, also derived from ToggleButton.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -91,7 +186,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ButtonUsage" target="_blank" rel="noopener noreferrer">
-        View Button source code on GitHub →
+        View Button source code on GitHub &rarr;
       </a>
     </p>
   </section>

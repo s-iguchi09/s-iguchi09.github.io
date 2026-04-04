@@ -7,102 +7,62 @@
   <meta charset="UTF-8">
   <title>Label | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Label コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Label コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Label</p>
     <h1>Label <span class="category-badge">Display</span></h1>
-    <p>Label はテキストを表示し、アクセスキー（ニーモニック）をサポートするコンテンツコントロールです。TextBlock と異なり、フォーカスを受け取れ、Target プロパティを使って他のコントロールとペアにしてキーボードナビゲーションに使用するために設計されています。</p>
+    <p>Label はテキストを表示するコンテンツコントロールで、アクセスキー（ニーモニック）をサポートします。TextBlock と異なり、Target プロパティで別のコントロールとリンクしてキーボードナビゲーションを有効にできます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の Label デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Label</strong> は <code>ContentControl</code> を継承したコントロールで、主にフォームの入力フィールドの隣にラベルを表示するために使用されます。TextBlock との最大の違いは、ラベルテキストに <code>_</code>（アンダースコア）を使ってアクセスキー（ニーモニック）を定義できる点です。</p>
+  <p><code>Target</code> プロパティに別のコントロール（TextBox など）を指定すると、アクセスキー（Alt+文字）を押したときにそのコントロールにフォーカスが移動します。例えば <code>Content="_名前:"</code> と設定した Label に <code>Target="{x:Reference nameTextBox}"</code> を指定すると、Alt+N で名前 TextBox にフォーカスが移動します。</p>
+  <p>Label は <code>ContentControl</code> なので、Content には文字列だけでなく任意の WPF 要素を配置できます。アイコン付きラベルや複合コンテンツのラベルも作成できます。</p>
+  <p>単純なテキスト表示にはより軽量な <code>TextBlock</code> を使うことを推奨します。Label はアクセスキーや Target が必要な場合、または ContentControl の特性が必要な場合に選択します。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の Label デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Target</code></td>
-          <td><code>UIElement</code></td>
-          <td>このラベルに関連付けるコントロールを設定します。アクセスキー（Alt+キー）でターゲットにフォーカスが移ります。</td>
-        </tr>
-        <tr>
-          <td><code>Content (ContentControl)</code></td>
-          <td><code>object</code></td>
-          <td>ラベルに表示するコンテンツを設定します。文字列や UIElement が使用可能です。</td>
-        </tr>
-        <tr>
-          <td><code>Padding (Control)</code></td>
-          <td><code>Thickness</code></td>
-          <td>ラベル内のパディングを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
-          <td><code>various</code></td>
-          <td>フォント関連のプロパティを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Background / Foreground (Control)</code></td>
-          <td><code>Brush</code></td>
-          <td>背景色とテキスト色を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>BorderBrush / BorderThickness (Control)</code></td>
-          <td><code>Brush / Thickness</code></td>
-          <td>ボーダーの色と太さを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
-          <td><code>Left/Center/Right/Stretch / Top/Center/Bottom/Stretch</code></td>
-          <td>コンテンツの水平・垂直配置を設定します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Target</code></td><td><code>UIElement</code></td><td>Alt+アクセスキーが押されたときにフォーカスを移動するコントロールを設定します。フォームの入力フィールド（TextBox など）を指定します。</td></tr>
+<tr><td><code>Content (ContentControl)</code></td><td><code>object</code></td><td>ラベルに表示するコンテンツを設定します。_ で始まる文字がアクセスキーとして機能します。文字列以外にも任意の WPF 要素を設定できます。</td></tr>
+<tr><td><code>Padding (Control)</code></td><td><code>Thickness</code></td><td>コンテンツとコントロール境界線の間の内側余白を設定します。</td></tr>
+<tr><td><code>FontSize / FontWeight / FontFamily (Control)</code></td><td><code>various</code></td><td>フォントサイズ・太さ・フォントファミリーを設定します。アプリ全体でスタイルを統一する場合はリソースで定義します。</td></tr>
+<tr><td><code>Background / Foreground (Control)</code></td><td><code>Brush</code></td><td>ラベルの背景色とテキストの前景色を設定します。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;Grid&gt;
+  &lt;Grid.ColumnDefinitions&gt;
+    &lt;ColumnDefinition Width="Auto" /&gt;
+    &lt;ColumnDefinition Width="*" /&gt;
+  &lt;/Grid.ColumnDefinitions&gt;
+  &lt;Grid.RowDefinitions&gt;
+    &lt;RowDefinition Height="Auto" /&gt;
+    &lt;RowDefinition Height="Auto" /&gt;
+  &lt;/Grid.RowDefinitions&gt;
 
+  &lt;!-- _名 でアクセスキー設定 (Alt+N でフォーカス移動) --&gt;
+  &lt;Label Grid.Row="0" Grid.Column="0"
+         Content="_名前:" Target="{Binding ElementName=nameBox}" /&gt;
+  &lt;TextBox x:Name="nameBox" Grid.Row="0" Grid.Column="1"
+           Text="{Binding Name}" /&gt;
+
+  &lt;Label Grid.Row="1" Grid.Column="0"
+         Content="_メール:" Target="{Binding ElementName=emailBox}" /&gt;
+  &lt;TextBox x:Name="emailBox" Grid.Row="1" Grid.Column="1"
+           Text="{Binding Email}" /&gt;
+&lt;/Grid&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>フォームフィールドのラベル</strong> — 入力フィールドの左側に配置し、Alt+キーでフォーカス移動できるアクセスキー付きラベルとして使用します。</li><li><strong>アクセシビリティ対応フォーム</strong> — スクリーンリーダー利用者のためにすべての入力フィールドに対応するラベルを配置します。</li><li><strong>ステータス表示</strong> — 読み取り専用のステータス情報を表示するラベルとして使用します。</li><li><strong>ウィザードのステップ説明</strong> — ウィザードの各ステップで必要な入力内容の説明をラベルで表示します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>単純なテキスト表示には TextBlock を使う</strong> — アクセスキーや Target が不要な場合は、より軽量な TextBlock を使います。</li><li><strong>_ でアクセスキーを定義する</strong> — Content の文字列中に _ を置くと次の文字がアクセスキーになります。実際の _ を表示したい場合は __ と書きます。</li><li><strong>x:Reference でターゲットを参照する</strong> — <code>{Binding ElementName=xxx}</code> より <code>{x:Reference xxx}</code> の方が推奨されます。</li><li><strong>HorizontalContentAlignment で整列</strong> — ラベルの文字を右揃えにする場合は HorizontalContentAlignment="Right" を設定します。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — アクセスキーが不要なシンプルなテキスト表示には TextBlock が軽量で適しています。</li><li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — ラベルと対になる入力フィールド。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/LabelUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Label のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/LabelUsage" target="_blank" rel="noopener noreferrer">GitHub で Label のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

@@ -8,7 +8,7 @@
   <title>DockPanel | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF DockPanel コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <meta name="description" content="WPF DockPanel コントロールのリファレンス。概要、プロパティ解説、XAML 使用例、活用シナリオ。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,16 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; DockPanel</p>
     <h1>DockPanel <span class="category-badge">Layout</span></h1>
-    <p>DockPanel は子要素をパネルのエッジ（Top/Bottom/Left/Right）にドッキングして配置します。最後の子はデフォルトで残りのスペースを埋めます。アプリケーションのメインウィンドウレイアウトによく使用されます。</p>
+    <p>DockPanel は子要素をパネルの各辺（上・下・左・右）にドッキングして配置するレイアウトパネルです。最後の子要素はデフォルトで残りの空間を埋めます。アプリのメインウィンドウレイアウトによく使われます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>WPF の <strong>DockPanel</strong> は、子要素を上・下・左・右の辺に沿って配置するレイアウトパネルです。メニューバーを上端に、ステータスバーを下端に、ナビゲーションパネルを左端に配置し、残りの中央領域をコンテンツエリアにするといった典型的なアプリレイアウトに最適です。</p>
+    <p>各子要素には <code>DockPanel.Dock</code> 添付プロパティで配置する辺を指定します。要素は XAML に記述した順番にドッキングされ、先にドッキングされた要素が優先的にスペースを確保します。</p>
+    <p><code>LastChildFill</code> が True（デフォルト）の場合、最後の子要素はドッキングされず、残りのすべての空間を埋めます。メインコンテンツエリアはこの最後の子要素として配置するのが一般的なパターンです。</p>
+    <p>DockPanel と <code>Grid</code> の使い分けのポイントは柔軟性です。アプリの枠組みとなるシンプルな 4 辺レイアウトには DockPanel が簡潔で使いやすく、複雑な内部レイアウトには Grid が適しています。</p>
+    
   </section>
 
   <section class="content-section">
@@ -35,54 +44,97 @@
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>LastChildFill</code></td>
           <td><code>bool</code></td>
-          <td>True の場合、最後の子要素がパネルの残りのスペースをすべて埋めます。</td>
+          <td>True のとき（デフォルト）、最後の子要素が残りのすべての空間を埋めます。False にすると最後の子要素も通常のドッキング位置に配置されます。</td>
         </tr>
         <tr>
           <td><code>Dock (DockPanel attached)</code></td>
           <td><code>Left / Top / Right / Bottom</code></td>
-          <td>各子要素をドッキングする方向を指定します。</td>
+          <td>各子要素がドッキングする辺を指定する添付プロパティです。指定しない場合は Left にドッキングされます。</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>パネルの背景色を設定します。</td>
+          <td>パネルの背景色を設定します。Background が null 以外の場合、パネル全体がヒットテスト可能になりマウスイベントを受け取ります。</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>子要素の描画順序を制御します。</td>
+          <td>子要素の描画順序を制御します。値が大きいほど手前に描画されます。</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <pre><code class="language-xml">&lt;DockPanel LastChildFill="True"&gt;
+  &lt;!-- メニューバーを上端に --&gt;
+  &lt;Menu DockPanel.Dock="Top"&gt;
+    &lt;MenuItem Header="ファイル(_F)" /&gt;
+    &lt;MenuItem Header="編集(_E)" /&gt;
+  &lt;/Menu&gt;
+
+  &lt;!-- ツールバーをメニューの下に --&gt;
+  &lt;ToolBarTray DockPanel.Dock="Top"&gt;
+    &lt;ToolBar&gt;&lt;Button Content="保存" /&gt;&lt;/ToolBar&gt;
+  &lt;/ToolBarTray&gt;
+
+  &lt;!-- ステータスバーを下端に --&gt;
+  &lt;StatusBar DockPanel.Dock="Bottom"&gt;
+    &lt;StatusBarItem Content="{Binding StatusMessage}" /&gt;
+  &lt;/StatusBar&gt;
+
+  &lt;!-- 左サイドパネル --&gt;
+  &lt;TreeView DockPanel.Dock="Left" Width="200"
+            ItemsSource="{Binding TreeNodes}" /&gt;
+
+  &lt;!-- 残りの空間がメインコンテンツエリア --&gt;
+  &lt;ContentControl Content="{Binding MainContent}" /&gt;
+&lt;/DockPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>アプリのメインレイアウト</strong> — メニュー・ツールバー・ステータスバー・サイドパネルを持つ典型的なウィンドウ構造を実装します。</li>
+      <li><strong>サイドナビゲーション</strong> — 左右どちらかにナビゲーションツリーやパネルを配置し、残り空間をコンテンツエリアにします。</li>
+      <li><strong>ヘッダー・フッター付きレイアウト</strong> — 上部にタイトルバー、下部にフッター情報を配置した基本的なページレイアウトに使用します。</li>
+      <li><strong>スプリット表示</strong> — 左右に分割したビューで、片方にリスト、もう片方に詳細を表示する 2 ペインレイアウトに使用します。</li>
+      <li><strong>ウィザード UI</strong> — 上部にステップインジケーター、下部に前へ/次へボタン、中央にコンテンツを配置するウィザード型 UI に使用します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>LastChildFill は必ず意識する</strong> — 最後の要素が意図せず全領域を埋めてしまうのを防ぐため、LastChildFill を明示的に設定します。</li>
+      <li><strong>ドッキング順序に注意</strong> — 要素は XAML の記述順にスペースを確保するため、メニュー・ツールバーなど先に必要なものから順に書きます。</li>
+      <li><strong>複雑な内部レイアウトは Grid を使う</strong> — DockPanel はアプリの枠組みに使い、内部の詳細なレイアウトには Grid を使うのが一般的なアプローチです。</li>
+      <li><strong>SplitterGridSplitter との組み合わせ</strong> — サイドパネルとメインエリアの境界に GridSplitter を配置することでリサイズ可能なレイアウトにできます。</li>
+      <li><strong>GridSplitter との組み合わせ</strong> — 外枠は DockPanel、内部の分割可能なペインには Grid+GridSplitter を使うハイブリッドアプローチが効果的です。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/grid.html">Grid</a> — より柔軟なレイアウト制御が必要な場合に使用します。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/gridsplitter.html">GridSplitter</a> — DockPanel 内のサイドパネルをリサイズ可能にする際に組み合わせます。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — 単純な一方向の積み重ねレイアウトに使用します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DockPanelUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で DockPanel のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DockPanelUsage" target="_blank" rel="noopener noreferrer">GitHub で DockPanel のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>

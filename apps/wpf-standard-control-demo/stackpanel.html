@@ -8,7 +8,7 @@
   <title>StackPanel | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF StackPanel control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF StackPanel control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,35 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; StackPanel</p>
     <h1>StackPanel <span class="category-badge">Layout</span></h1>
-    <p>StackPanel arranges child elements in a single line, either horizontally or vertically. It is simple and efficient for linear layouts where elements are stacked one after another.</p>
+    <p>StackPanel arranges child elements in a single line, either horizontally or vertically. It is one of the simplest and most frequently used layout panels in WPF, ideal for linear sequences of controls such as button bars, form rows, and toolbars.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>StackPanel</strong> stacks its children one after another along a single axis. When
+      <code>Orientation</code> is <code>Vertical</code> (the default), children are placed top-to-bottom;
+      when <code>Horizontal</code>, they flow left-to-right. StackPanel does not wrap — once children
+      overflow the available space, they are clipped or cause the panel to grow beyond its container.
+      For wrapping behaviour, use <code>WrapPanel</code> instead.
+    </p>
+    <p>
+      StackPanel measures each child with infinite space along the stacking axis, allowing children to
+      take their natural size. Across the perpendicular axis, each child is stretched to fill the panel's
+      width (vertical stack) or height (horizontal stack) unless the child specifies its own size or
+      alignment. This makes StackPanel very predictable for forms and button bars where you want full-width rows.
+    </p>
+    <p>
+      StackPanel is commonly used inside <code>ScrollViewer</code> to create scrollable lists of elements,
+      inside <code>ItemsControl</code> as the items host, and as the root panel for simple dialog content.
+      It does not support proportional sizing (unlike <code>Grid</code>) or absolute positioning (unlike
+      <code>Canvas</code>), which keeps its implementation lightweight and fast.
+    </p>
+    <p>
+      For the common pattern of evenly spaced children, apply <code>Margin</code> on the children or use
+      a <code>Style</code> with a setter that adds uniform spacing. WPF does not have a built-in gap/spacing
+      property on StackPanel, so margin-based spacing is the idiomatic approach.
+    </p>
   </section>
 
   <section class="content-section">
@@ -39,46 +67,86 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Sets the direction in which elements are stacked. Vertical is the default.</td>
+          <td>Determines the stacking direction. <code>Vertical</code> (default) stacks children top-to-bottom; <code>Horizontal</code> stacks them left-to-right. This is the primary layout-defining property of StackPanel.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background color of the panel.</td>
+          <td>Sets the background fill of the panel area. A non-null Background also makes the panel hit-testable, allowing mouse events to be caught even where no child is present.</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the drawing order of child elements.</td>
+          <td>Controls the draw order of sibling elements when their bounds overlap. Higher ZIndex values render on top. Useful when children have negative margins that cause visual overlap.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>A vertical StackPanel used as a simple form layout:</p>
+    <pre><code class="language-xml">&lt;StackPanel Orientation="Vertical" Margin="16"&gt;
+  &lt;Label Content="Name:" /&gt;
+  &lt;TextBox Text="{Binding Name}" Margin="0,0,0,8" /&gt;
+  &lt;Label Content="Email:" /&gt;
+  &lt;TextBox Text="{Binding Email}" Margin="0,0,0,8" /&gt;
+  &lt;Button Content="Submit" HorizontalAlignment="Right"
+          Command="{Binding SubmitCommand}" /&gt;
+&lt;/StackPanel&gt;
+
+&lt;!-- Horizontal button bar --&gt;
+&lt;StackPanel Orientation="Horizontal" HorizontalAlignment="Right"&gt;
+  &lt;Button Content="OK" Width="80" Margin="0,0,8,0" IsDefault="True" /&gt;
+  &lt;Button Content="Cancel" Width="80" IsCancel="True" /&gt;
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Form layouts</strong> — Stack labels and input controls vertically for clean top-to-bottom form flow.</li>
+      <li><strong>Button bars</strong> — Arrange OK/Cancel or toolbar buttons horizontally with consistent spacing via Margin.</li>
+      <li><strong>Navigation menus</strong> — Stack menu items vertically inside a sidebar or flyout panel.</li>
+      <li><strong>ItemsControl item template</strong> — Use as the ItemsPanel to display a flat list of items in a linear sequence.</li>
+      <li><strong>Notification stacks</strong> — Stack toast notifications or status messages vertically at the edge of the screen.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use Grid for complex layouts</strong> — StackPanel is optimal for simple linear sequences; switch to Grid when you need column alignment or proportional sizing.</li>
+      <li><strong>Apply Margin on children for spacing</strong> — StackPanel has no gap property; use a consistent bottom or right Margin on each child, or define it via a <code>Style</code> targeting the child type.</li>
+      <li><strong>Wrap in ScrollViewer for long lists</strong> — StackPanel itself does not scroll; place it inside a ScrollViewer if the content can exceed the visible area.</li>
+      <li><strong>Prefer VirtualizingStackPanel for large data sets</strong> — When using StackPanel as an ItemsPanel for a ListBox or ItemsControl with many items, switch to VirtualizingStackPanel for better performance.</li>
+      <li><strong>Set HorizontalAlignment/VerticalAlignment on children</strong> — Children in a vertical StackPanel stretch to full width by default; explicitly set HorizontalAlignment to Left/Center/Right when a smaller natural width is desired.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/wrappanel.html">WrapPanel</a> — Like StackPanel but wraps children to new rows/columns when space runs out.</li>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — More powerful layout with rows, columns, and proportional sizing.</li>
+      <li><a href="/apps/wpf-standard-control-demo/dockpanel.html">DockPanel</a> — Docks children to edges; the last child fills remaining space.</li>
+      <li><a href="/apps/wpf-standard-control-demo/uniformgrid.html">UniformGrid</a> — Automatically distributes children in equally-sized cells.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/StackPanelUsage" target="_blank" rel="noopener noreferrer">
-        View StackPanel source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/StackPanelUsage" target="_blank" rel="noopener noreferrer">View StackPanel source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

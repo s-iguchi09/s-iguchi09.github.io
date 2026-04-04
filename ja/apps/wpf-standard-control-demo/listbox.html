@@ -1,103 +1,62 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>ListBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF ListBox コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF ListBox コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ListBox</p>
     <h1>ListBox <span class="category-badge">List</span></h1>
-    <p>ListBox はユーザーが一つまたは複数のアイテムを選択できるリストを表示するコントロールです。単一・複数・拡張の選択モードをサポートし、データコレクションにバインドできます。</p>
+    <p>ListBox はスクロール可能なリストからアイテムを選択できるコントロールです。単一・複数・拡張選択モードをサポートし、データコレクションへのバインドが可能です。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の ListBox デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>ListBox</strong> は <code>Selector</code> を継承したリストコントロールです。<code>ItemsSource</code> にコレクションをバインドすることで、動的なアイテムリストを表示できます。<code>ItemTemplate</code> でアイテムの表示方法をカスタマイズできます。</p>
+  <p><code>SelectionMode</code> プロパティで選択の挙動を制御します。<code>Single</code> は一度に 1 つだけ選択、<code>Multiple</code> は Ctrl キーなしでクリックするたびに選択を切り替え、<code>Extended</code> は Shift+クリックで範囲選択・Ctrl+クリックで個別追加選択が可能です。</p>
+  <p><code>SelectedItems</code>（複数選択モード）や <code>SelectedItem</code>（単一選択モード）を ViewModel にバインドすることで、選択されたアイテムを取得できます。複数選択のバインドは直接は難しいため、<code>IsSelected</code> を各アイテムの ViewModel プロパティにバインドするか、ビヘイビアを使うのが一般的です。</p>
+  <p>大量のアイテムを表示する場合、デフォルトで <code>VirtualizingStackPanel</code> がアイテムホストとして使用されるため、表示領域外のアイテムは仮想化されてメモリを節約できます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の ListBox デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>SelectionMode</code></td>
-          <td><code>Single / Multiple / Extended</code></td>
-          <td>選択モードを設定します。Single: 1つのみ、Multiple: 複数、Extended: Ctrl/Shiftキーで複数選択。</td>
-        </tr>
-        <tr>
-          <td><code>DisplayMemberPath (ItemsControl)</code></td>
-          <td><code>string</code></td>
-          <td>アイテムオブジェクトのどのプロパティを表示するかを指定します。</td>
-        </tr>
-        <tr>
-          <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
-          <td><code>int / object</code></td>
-          <td>選択されているアイテムのインデックスとオブジェクトを取得・設定します。</td>
-        </tr>
-        <tr>
-          <td><code>SelectedValuePath / SelectedValue (Selector)</code></td>
-          <td><code>string / object</code></td>
-          <td>SelectedValuePath で指定したプロパティ値を SelectedValue として取得します。</td>
-        </tr>
-        <tr>
-          <td><code>IsSelected (ListBoxItem)</code></td>
-          <td><code>bool</code></td>
-          <td>各アイテムが選択されているかどうかを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
-          <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>スクロールバーの表示設定を制御します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>SelectionMode</code></td><td><code>Single / Multiple / Extended</code></td><td>選択モードを設定します。Single は 1 アイテムのみ、Multiple はクリックで独立切り替え、Extended は Shift/Ctrl+クリックで範囲・個別選択が可能です。</td></tr><tr><td><code>DisplayMemberPath (ItemsControl)</code></td><td><code>string</code></td><td>各アイテムオブジェクトの表示テキストとして使うプロパティ名を設定します。ItemTemplate なしで簡単なテキストリストを表示する場合に使います。</td></tr><tr><td><code>SelectedIndex (Selector)</code></td><td><code>int</code></td><td>選択されているアイテムのゼロ始まりインデックスを取得・設定します。-1 は未選択を意味します。</td></tr><tr><td><code>SelectedItem (Selector)</code></td><td><code>object</code></td><td>選択されているアイテムオブジェクトを取得・設定します。TwoWay バインドで ViewModel と連動させます。</td></tr><tr><td><code>SelectedValuePath / SelectedValue (Selector)</code></td><td><code>string / object</code></td><td>SelectedValuePath で指定したプロパティ値を SelectedValue として取得します。</td></tr><tr><td><code>IsSelected (ListBoxItem)</code></td><td><code>bool</code></td><td>個々のリストアイテムが選択されているかどうかを設定します。ItemContainerStyle で TwoWay バインドします。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Countries}"
+         DisplayMemberPath="Name"
+         SelectedItem="{Binding SelectedCountry, Mode=TwoWay}"
+         SelectionMode="Extended"
+         ScrollViewer.HorizontalScrollBarVisibility="Disabled"&gt;
+&lt;/ListBox&gt;
 
+&lt;!-- カスタム ItemTemplate --&gt;
+&lt;ListBox ItemsSource="{Binding Files}"
+         SelectionMode="Single"
+         SelectedItem="{Binding SelectedFile, Mode=TwoWay}"&gt;
+  &lt;ListBox.ItemTemplate&gt;
+    &lt;DataTemplate&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Image Source="{Binding Icon}" Width="16" Height="16" /&gt;
+        &lt;TextBlock Text="{Binding Name}" Margin="8,0,0,0" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/DataTemplate&gt;
+  &lt;/ListBox.ItemTemplate&gt;
+&lt;/ListBox&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>国・都市の選択リスト</strong> — スクロールリストから一つの選択肢を選ぶシンプルな単一選択 UI に使用します。</li><li><strong>ファイル一覧</strong> — ファイル名のリストを表示し、選択されたファイルの内容を右ペインに表示する 2 ペイン UI に使用します。</li><li><strong>複数選択フィルター</strong> — Extended モードでカテゴリやタグを複数選択してデータをフィルタリングします。</li><li><strong>選択履歴の表示</strong> — 最近使ったファイルや検索履歴をリスト表示し、再選択できる UI を実装します。</li><li><strong>設定項目の選択</strong> — テーマカラーや言語設定など、複数の選択肢から一つを選ぶ設定 UI に使用します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>SelectedItem を TwoWay バインド</strong> — 選択アイテムを ViewModel で管理するには SelectedItem に Mode=TwoWay を指定します。</li><li><strong>大量データには仮想化を活用</strong> — ListBox はデフォルトで VirtualizingStackPanel を使用します。カスタム ItemsPanel を設定する場合は仮想化が失われないよう注意します。</li><li><strong>ComboBox との使い分け</strong> — 常に選択肢を表示しておく必要がある場合は ListBox、スペースを節約したい場合は ComboBox を使います。</li><li><strong>空リストの表示</strong> — ItemsSource が空の場合に「データがありません」などのメッセージを表示するには、ItemsControl の HasItems プロパティをトリガーに使います。</li><li><strong>スクロールバーのカスタマイズ</strong> — ScrollViewer 添付プロパティで水平・垂直スクロールバーの表示を個別に制御できます。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — スペースを節約したい場合はドロップダウン形式の ComboBox を使います。</li><li><a href="/ja/apps/wpf-standard-control-demo/listview.html">ListView</a> — GridView を使った表形式の表示が必要な場合。</li><li><a href="/ja/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — 複数列の表形式表示と編集が必要な場合。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListBoxUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で ListBox のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListBoxUsage" target="_blank" rel="noopener noreferrer">GitHub で ListBox のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

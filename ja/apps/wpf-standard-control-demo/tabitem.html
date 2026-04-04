@@ -1,83 +1,65 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>TabItem | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>TabItem | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF TabItem コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF TabItem コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TabItem</p>
-    <h1>TabItem <span class="category-badge">Selectors</span></h1>
-    <p>TabItem は TabControl 内の個別タブです。ヘッダーとコンテンツエリアを持ちます。ヘッダーは常に表示され、コンテンツはタブが選択された時に表示されます。</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TabItem</p>
+    <h1>TabItem <span class="category-badge">Layout</span></h1>
+    <p>TabItem は TabControl 内の個々のタブページです。Header プロパティでタブのタイトルを設定し、Content にページの内容を配置します。Header には文字列だけでなく、アイコンや閉じるボタンなどのカスタムコンテンツも配置できます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の TabItem デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>TabItem</strong> は <code>HeaderedContentControl</code> を継承したコントロールで、<code>TabControl</code> の直接の子として配置します。<code>Header</code> にはタブのタイトル（通常は文字列）、<code>Content</code> にはタブが選択されたときに表示するページコンテンツを設定します。</p>
+  <p><code>Header</code> プロパティには任意の WPF 要素を配置できます。これを利用して、アイコン付きのタブヘッダーや、タブを閉じる「✕」ボタンを持つクローザブルタブなど、リッチなタブヘッダーを実装できます。</p>
+  <p><code>IsSelected</code> プロパティで TabItem が現在選択されているかどうかを確認できます。このプロパティをトリガーにして、選択時のスタイル変更やアニメーションを ControlTemplate で実装できます。</p>
+  <p><code>IsEnabled="False"</code> にするとタブをグレーアウトして選択不可にできます。特定の条件（権限チェックなど）に基づいてタブを動的に有効/無効にする場合に使用します。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>IsSelected</code></td>
-          <td><code>bool</code></td>
-          <td>このタブが現在選択されているかどうかを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>TabStripPlacement (ReadOnly)</code></td>
-          <td><code>Dock</code></td>
-          <td>親 TabControl のタブ位置を反映する読み取り専用プロパティです。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Header (HeaderedContentControl)</code></td><td><code>object</code></td><td>タブのヘッダー部分（タブをクリックするラベル）を設定します。文字列だけでなく、アイコン付きパネルや閉じるボタンなどの複合コンテンツも配置できます。</td></tr><tr><td><code>IsSelected</code></td><td><code>bool</code></td><td>このタブが現在選択されているかどうかを示します。TwoWay バインドで ViewModel からタブの選択を制御できます。</td></tr><tr><td><code>IsEnabled (Control)</code></td><td><code>bool</code></td><td>False にするとこのタブをグレーアウトして選択不可にします。権限チェックや入力ステップの条件制御に使用します。</td></tr><tr><td><code>Content (ContentControl)</code></td><td><code>object</code></td><td>タブが選択されたときに表示するコンテンツを設定します。通常は Grid や StackPanel などのパネルを配置します。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;TabControl&gt;
+  &lt;!-- シンプルなタブ --&gt;
+  &lt;TabItem Header="概要"&gt;
+    &lt;TextBlock Text="概要コンテンツ" Margin="16" /&gt;
+  &lt;/TabItem&gt;
 
+  &lt;!-- アイコン付きタブヘッダー --&gt;
+  &lt;TabItem&gt;
+    &lt;TabItem.Header&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Image Source="/Icons/settings.png" Width="16" Margin="0,0,4,0" /&gt;
+        &lt;TextBlock Text="設定" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/TabItem.Header&gt;
+    &lt;StackPanel Margin="16"&gt;
+      &lt;CheckBox Content="通知を有効にする" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/TabItem&gt;
+
+  &lt;!-- 無効タブ --&gt;
+  &lt;TabItem Header="管理" IsEnabled="{Binding IsAdmin}"&gt;
+    &lt;TextBlock Text="管理者専用コンテンツ" Margin="16" /&gt;
+  &lt;/TabItem&gt;
+&lt;/TabControl&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>ページコンテンツのコンテナ</strong> — TabControl の各ページを TabItem として定義し、それぞれのページコンテンツを配置します。</li><li><strong>クローザブルタブ</strong> — Header に「✕」ボタンを配置してタブを閉じる機能を実装します。</li><li><strong>アイコン付きタブ</strong> — Header に画像とテキストを並べたパネルを設定して視認性を高めます。</li><li><strong>権限ベースのタブ有効化</strong> — IsEnabled を ViewModel の権限フラグにバインドして、ユーザーの役割に応じてタブを動的に有効/無効にします。</li><li><strong>バッジ付きタブ</strong> — Header に通知数バッジ（未読件数など）を表示するカスタムタブヘッダーを実装します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>Header にはカスタムコンテンツを活用する</strong> — 文字列だけのヘッダーより、アイコン＋テキストのほうがタブの内容を直感的に伝えられます。</li><li><strong>IsSelected と IsEnabled を使い分ける</strong> — 現在どのタブが選択されているかは IsSelected（TwoWay バインド）で管理し、選択不可はIsEnabled=False で実装します。</li><li><strong>ControlTemplate で外観をカスタマイズ</strong> — タブの見た目（形・色・フォントなど）を変更するには Style と ControlTemplate を使ってカスタマイズします。</li><li><strong>TabItem の幅を固定する場合</strong> — ItemContainerStyle で Width を設定するか、Header の MinWidth/Width で幅を制御します。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — TabItem を管理する親コントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — タブではなくアコーディオン形式でコンテンツを表示する代替。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabItemUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で TabItem のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabItemUsage" target="_blank" rel="noopener noreferrer">GitHub で TabItem のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

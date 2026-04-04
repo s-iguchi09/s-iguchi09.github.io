@@ -8,7 +8,7 @@
   <title>ScrollViewer | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF ScrollViewer control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF ScrollViewer control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,39 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ScrollViewer</p>
     <h1>ScrollViewer <span class="category-badge">Layout</span></h1>
-    <p>ScrollViewer is a container that provides scrolling functionality for its content when the content is larger than the available display area. It supports both horizontal and vertical scrolling with configurable scroll bar visibility.</p>
+    <p>ScrollViewer is a container that provides scrolling functionality for content that is larger than its visible area. It supports both horizontal and vertical scrolling with configurable scroll bar visibility, logical (item-based) and physical (pixel-based) scrolling modes.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>ScrollViewer</strong> wraps a single child element and clips it to the visible area,
+      exposing scroll bars when the child is larger than the available space. It is built into many controls —
+      <code>ListBox</code>, <code>DataGrid</code>, <code>TreeView</code>, and <code>TextBox</code> all use
+      ScrollViewer internally — so understanding its properties lets you fine-tune scrolling behavior across
+      all of these controls through attached properties.
+    </p>
+    <p>
+      The <code>VerticalScrollBarVisibility</code> and <code>HorizontalScrollBarVisibility</code> properties
+      accept four values: <code>Disabled</code> (scrolling not allowed), <code>Hidden</code> (scrolling
+      allowed but bar hidden), <code>Auto</code> (bar appears only when needed), and <code>Visible</code>
+      (bar always shown). <code>Auto</code> is the most common choice for dynamic content, while
+      <code>Disabled</code> is useful when you want to clip content without offering scroll access.
+    </p>
+    <p>
+      The <code>CanContentScroll</code> property controls whether scrolling moves by logical units (items)
+      or physical units (pixels). When <code>true</code>, the content's <code>IScrollInfo</code>
+      implementation drives the scrolling — for a <code>VirtualizingStackPanel</code> this means
+      item-by-item scrolling. When <code>false</code>, scrolling is always pixel-based. Pixel scrolling
+      produces smoother animations but requires all items to be measured, which can hurt performance with
+      large virtualized lists.
+    </p>
+    <p>
+      For performance-sensitive scenarios with large data sets, <code>IsDeferredScrollingEnabled</code>
+      defers content updates until the user stops dragging the scroll thumb. This prevents expensive layout
+      recalculations on every drag pixel, significantly improving responsiveness for virtualized lists with
+      complex item templates.
+    </p>
   </section>
 
   <section class="content-section">
@@ -39,7 +71,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,35 +84,83 @@
         <tr>
           <td><code>VerticalScrollBarVisibility</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Controls the vertical scrollbar visibility. Auto shows it only when needed.</td>
+          <td>Controls vertical scroll bar display. <code>Auto</code> shows the bar only when content overflows; <code>Disabled</code> prevents vertical scrolling entirely; <code>Hidden</code> allows scrolling via code but hides the bar; <code>Visible</code> keeps the bar always shown even when not needed.</td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Controls the horizontal scrollbar visibility.</td>
+          <td>Controls horizontal scroll bar display with the same four options as the vertical bar. Defaults to <code>Disabled</code> in most controls, meaning content is clipped horizontally unless you explicitly enable it.</td>
         </tr>
         <tr>
           <td><code>CanContentScroll</code></td>
           <td><code>bool</code></td>
-          <td>When True, uses logical scrolling (item-by-item). When False, uses physical scrolling (pixel-by-pixel).</td>
+          <td>When <code>true</code>, scrolling jumps by logical units (items) as defined by the panel's <code>IScrollInfo</code>. When <code>false</code>, scrolling is always pixel-based. Set to <code>false</code> for smooth scrolling animations; keep <code>true</code> for virtualized panels to maintain performance.</td>
         </tr>
         <tr>
           <td><code>IsDeferredScrollingEnabled</code></td>
           <td><code>bool</code></td>
-          <td>When True, updates content after scrolling completes (improves performance).</td>
+          <td>When <code>true</code>, the viewport content updates only when the user releases the scroll thumb rather than on every drag movement. This can dramatically improve drag performance in large, complex lists at the cost of less real-time feedback.</td>
         </tr>
         <tr>
           <td><code>ComputedVerticalScrollBarVisibility / ExtentHeight / ViewportHeight / ScrollableHeight / VerticalOffset / ContentVerticalOffset</code></td>
           <td><code>ReadOnly</code></td>
-          <td>Read-only state properties related to vertical scrolling.</td>
+          <td>Read-only diagnostic properties. <code>ExtentHeight</code> is the total content height; <code>ViewportHeight</code> is the visible area height; <code>ScrollableHeight</code> is the difference; <code>VerticalOffset</code> is the current scroll position in device-independent units.</td>
         </tr>
         <tr>
           <td><code>ComputedHorizontalScrollBarVisibility / ExtentWidth / ViewportWidth / ScrollableWidth / HorizontalOffset / ContentHorizontalOffset</code></td>
           <td><code>ReadOnly</code></td>
-          <td>Read-only state properties related to horizontal scrolling.</td>
+          <td>Horizontal counterparts of the vertical read-only properties. Useful for binding scroll-position indicators or implementing synchronized scrolling between two panels.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>ScrollViewer wrapping a large image with auto-show scroll bars and deferred scrolling:</p>
+    <pre><code class="language-xml">&lt;ScrollViewer VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Auto"
+              CanContentScroll="False"
+              IsDeferredScrollingEnabled="True"&gt;
+  &lt;Image Source="large-map.png" Stretch="None" /&gt;
+&lt;/ScrollViewer&gt;
+
+&lt;!-- Customizing scrolling behavior on a ListBox via attached properties --&gt;
+&lt;ListBox ScrollViewer.VerticalScrollBarVisibility="Hidden"
+         ScrollViewer.CanContentScroll="False"
+         ItemsSource="{Binding Items}" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Large image viewer</strong> — Wrap a full-resolution image in a ScrollViewer to allow panning when the image exceeds the window size.</li>
+      <li><strong>Long form layouts</strong> — Place a StackPanel with many form fields inside ScrollViewer to handle resizable or small windows gracefully.</li>
+      <li><strong>Log or output panels</strong> — Display a TextBox or ItemsControl with many lines, auto-scrolling to the bottom when new entries arrive.</li>
+      <li><strong>Customizing control scrolling</strong> — Use ScrollViewer attached properties on ListBox, TreeView, or DataGrid to override the default scroll bar behavior.</li>
+      <li><strong>Performance optimization</strong> — Enable IsDeferredScrollingEnabled on a DataGrid with thousands of rows to keep the UI responsive during scroll-thumb dragging.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Avoid nesting ScrollViewers</strong> — Nested scrollable regions confuse users and cause layout measurement issues. Instead, use a single outer ScrollViewer and size inner panels explicitly.</li>
+      <li><strong>Keep CanContentScroll=true for virtualized panels</strong> — Pixel scrolling forces all items to be realized, defeating UI virtualization and causing memory and performance issues with large lists.</li>
+      <li><strong>Programmatic scrolling</strong> — Call <code>ScrollToEnd()</code>, <code>ScrollToTop()</code>, or <code>ScrollToVerticalOffset()</code> in code-behind or via a behavior to control scroll position from the ViewModel.</li>
+      <li><strong>Keyboard scrolling</strong> — ScrollViewer responds to arrow keys, Page Up/Down, Home, and End, providing full keyboard navigation out of the box without extra code.</li>
+      <li><strong>Touch and mouse-wheel</strong> — WPF's ScrollViewer handles mouse-wheel and touch-pan gestures automatically; you do not need to wire these events manually.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — Contains a ScrollViewer internally; use ScrollViewer attached properties to customize it.</li>
+      <li><a href="/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — Also uses ScrollViewer internally for both row and column scrolling.</li>
+      <li><a href="/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — A common child of ScrollViewer for vertically or horizontally stacked content.</li>
+      <li><a href="/apps/wpf-standard-control-demo/viewbox.html">Viewbox</a> — An alternative for scaling content to fit, rather than scrolling.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -91,7 +171,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ScrollViewerUsage" target="_blank" rel="noopener noreferrer">
-        View ScrollViewer source code on GitHub →
+        View ScrollViewer source code on GitHub &rarr;
       </a>
     </p>
   </section>

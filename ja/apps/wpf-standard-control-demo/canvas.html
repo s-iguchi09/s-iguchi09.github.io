@@ -8,7 +8,7 @@
   <title>Canvas | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Canvas コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <meta name="description" content="WPF Canvas コントロールのリファレンス。概要、プロパティ解説、XAML 使用例、活用シナリオ。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,30 @@
   </section>
 
   <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      WPF の <strong>Canvas</strong> は絶対座標によるレイアウトを提供するパネルです。
+      <code>Grid</code> や <code>StackPanel</code> などが相対的・自動的なサイズ配置を行うのに対し、Canvas では各子要素の位置を
+      ピクセル単位で明示的に指定します。これにより、精密な配置が必要な描画アプリやゲーム UI、カスタムダイアグラムに適しています。
+    </p>
+    <p>
+      子要素の配置は Canvas の添付プロパティ（<code>Canvas.Left</code>、<code>Canvas.Top</code>、
+      <code>Canvas.Right</code>、<code>Canvas.Bottom</code>）を使用します。
+      <code>Left</code> と <code>Right</code>、<code>Top</code> と <code>Bottom</code> は同時に使用できません。
+      設定されていない軸の位置はデフォルトで 0 になります。
+    </p>
+    <p>
+      Canvas は子要素の測定に無限大のサイズを与えるため、子要素は自然なサイズで描画されます。
+      Canvas 自体はデフォルトではコンテンツに合わせたサイズ計算を行わないため、
+      明示的に Width/Height を設定するか、親コンテナからサイズを受け取る必要があります。
+    </p>
+    <p>
+      アニメーションとの組み合わせも強力です。<code>Canvas.Left</code> や <code>Canvas.Top</code> にアニメーションを
+      適用することで、要素を画面上で滑らかに移動させるアニメーションを簡単に実装できます。
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>画面キャプチャ</h2>
     <div class="screenshot-placeholder">
       📷 スクリーンショットは後で追加予定です — アプリ上の Canvas デモ画面が表示されます。
@@ -39,28 +63,84 @@
       以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
       アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
     </p>
-    
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
+        <tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>Top / Left / Right / Bottom (Canvas attached)</code></td>
           <td><code>double</code></td>
-          <td>子要素の Canvas 内での位置を設定する添付プロパティです。Top と Bottom、Left と Right は同時に有効にはなりません。</td>
+          <td>子要素の Canvas 内での位置を設定する添付プロパティです。<code>Left=50, Top=30</code> と設定すると、Canvas の左端から 50px、上端から 30px の位置に配置されます。Left と Right、Top と Bottom は排他的で同時使用はできません。</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>子要素の描画順序を制御します。値が大きいほど手前に描画されます。</td>
+          <td>子要素の描画順序（Z 順）を制御します。値が大きいほど手前に描画されます。複数の要素が重なる場合に、どの要素を最前面に表示するかを制御するために使用します。</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>Canvas を使った絶対位置配置と Z 順の例です：</p>
+    <pre><code class="language-xml">&lt;Canvas Width="400" Height="300" Background="LightGray"&gt;
+  &lt;!-- 左上から 50px, 上から 30px に配置 --&gt;
+  &lt;Rectangle Canvas.Left="50" Canvas.Top="30"
+             Width="100" Height="60" Fill="Blue" /&gt;
+
+  &lt;!-- ZIndex で前面に表示 --&gt;
+  &lt;Ellipse Canvas.Left="80" Canvas.Top="60"
+           Width="80" Height="80" Fill="Red"
+           Panel.ZIndex="1" /&gt;
+
+  &lt;!-- アニメーションで移動 --&gt;
+  &lt;Button Content="移動" Canvas.Left="200" Canvas.Top="150"&gt;
+    &lt;Button.Triggers&gt;
+      &lt;EventTrigger RoutedEvent="Button.Click"&gt;
+        &lt;BeginStoryboard&gt;
+          &lt;Storyboard&gt;
+            &lt;DoubleAnimation Storyboard.TargetProperty="(Canvas.Left)"
+                             To="300" Duration="0:0:1" /&gt;
+          &lt;/Storyboard&gt;
+        &lt;/BeginStoryboard&gt;
+      &lt;/EventTrigger&gt;
+    &lt;/Button.Triggers&gt;
+  &lt;/Button&gt;
+&lt;/Canvas&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>描画アプリケーション</strong> — ユーザーが図形を自由に配置・移動できる描画ツールの描画エリアとして使用します。</li>
+      <li><strong>アニメーション</strong> — 要素を画面上で自由に移動させるアニメーションの配置コンテナとして使用します。</li>
+      <li><strong>カスタムダイアグラム</strong> — フローチャートや組織図など、要素の厳密な配置が必要なダイアグラムの描画に使用します。</li>
+      <li><strong>Viewbox との組み合わせ</strong> — Viewbox でラップすることで、解像度に依存しないスケーラブルなベクター描画を実現できます。</li>
+      <li><strong>ゲーム UI</strong> — 絶対座標で要素を配置・移動する必要がある簡単なゲームのプレイフィールドとして活用します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>通常のフォームには使用しない</strong> — 一般的なフォームやウィンドウレイアウトには Grid や StackPanel が適切です。Canvas は精密な位置制御が必要な場合のみ使用します。</li>
+      <li><strong>Canvas にサイズを設定する</strong> — Canvas は子要素のサイズに合わせた自動リサイズを行わないため、Width/Height を明示的に設定するか、親コンテナからサイズを受け取る設計にします。</li>
+      <li><strong>ZIndex で重なりを制御する</strong> — 要素が重なる場合は Panel.ZIndex 添付プロパティを使って描画順序を明示的に指定します。</li>
+      <li><strong>ヒットテストに注意</strong> — Background が null の Canvas はマウスイベントを受け取りません。クリック検出が必要な場合は Background を Transparent に設定します。</li>
+      <li><strong>Viewbox と組み合わせてスケーラブルに</strong> — 固定サイズで設計した Canvas を Viewbox でラップすれば、どんなサイズの画面でも適切にスケールされます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/inkcanvas.html">InkCanvas</a> — デジタルインクによる手書き描画をサポートする Canvas の拡張版。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/viewbox.html">Viewbox</a> — Canvas などの内容をスケーリングして表示するデコレーター。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/grid.html">Grid</a> — 一般的なレイアウトには Canvas より Grid が適切なケースが多い。</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -70,7 +150,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CanvasUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Canvas のソースコードを見る →
+        GitHub で Canvas のソースコードを見る &rarr;
       </a>
     </p>
   </section>

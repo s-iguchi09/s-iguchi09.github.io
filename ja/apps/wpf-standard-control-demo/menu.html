@@ -1,103 +1,64 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>Menu | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Menu コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Menu コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Menu</p>
     <h1>Menu <span class="category-badge">Menu</span></h1>
-    <p>Menu はコマンドやオプションの階層リストを表示するコントロールで、通常はアプリウィンドウ上部に水平メニューバーとして表示されます。各アイテムはサブメニューを持てて、キーボードショートカットの表示をサポートします。</p>
+    <p>Menu は階層的なコマンドメニューを表示するコントロールです。アプリウィンドウの上部に水平メニューバーとして配置されるのが一般的で、サブメニューや区切り線、アクセスキー、ショートカットキーの表示をサポートします。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の Menu デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Menu</strong> は <code>MenuBase</code> を継承したコントロールで、<code>MenuItem</code> の階層構造からなるコマンドメニューを提供します。アプリウィンドウの最上部に水平バーとして配置し、ファイル・編集・表示などのトップレベルメニューを並べるのが一般的なパターンです。</p>
+  <p>各 <code>MenuItem</code> は <code>Header</code> にメニューテキストを、<code>Command</code> に実行する ICommand を設定します。トップレベルの MenuItem はホバーでサブメニューを展開し、サブメニューの MenuItem はクリックでコマンドを実行します。<code>Icon</code> プロパティでメニューアイテムの左側にアイコンを表示できます。</p>
+  <p><code>IsCheckable</code> を True に設定した MenuItem はチェックボックス付きのトグルメニューアイテムになり、<code>IsChecked</code> でオン/オフ状態を管理します。「表示 &gt; ツールバーを表示」のようなトグル可能なメニューに使用します。</p>
+  <p><code>InputGestureText</code> プロパティでキーボードショートカットの表示テキスト（例：Ctrl+S）を設定できます。実際のショートカット処理は <code>KeyBinding</code> で別途設定しますが、InputGestureText で MenuItem の右端にショートカット文字列を表示します。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の Menu デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>IsMainMenu</code></td>
-          <td><code>bool</code></td>
-          <td>True の場合、Alt キーでメニューが起動し、F10 キーでフォーカスが当たります。</td>
-        </tr>
-        <tr>
-          <td><code>IsCheckable / IsChecked / StaysOpenOnClick (MenuItem)</code></td>
-          <td><code>bool / bool / bool</code></td>
-          <td>MenuItem をチェック可能にし、チェック状態を設定し、クリック後もメニューを開いたままにするかを制御します。</td>
-        </tr>
-        <tr>
-          <td><code>Role (MenuItem)</code></td>
-          <td><code>TopLevelItem / TopLevelHeader / SubmenuItem / SubmenuHeader (ReadOnly)</code></td>
-          <td>MenuItem の役割を示す読み取り専用プロパティです。</td>
-        </tr>
-        <tr>
-          <td><code>Command (MenuItem)</code></td>
-          <td><code>ICommand</code></td>
-          <td>クリック時に実行するコマンドを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Icon / InputGestureText (MenuItem)</code></td>
-          <td><code>object / string</code></td>
-          <td>メニュー項目の左側に表示するアイコンと、右側に表示するキーボードショートカットのテキストを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation (MenuItem)</code></td>
-          <td><code>bool (most ReadOnly)</code></td>
-          <td>MenuItem の各種状態を示すプロパティ群です（多くは読み取り専用）。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>IsMainMenu</code></td><td><code>bool</code></td><td>True のとき、ウィンドウのメインメニューとして登録されます。Alt キーでメニューにフォーカスが移動します。</td></tr><tr><td><code>IsCheckable (MenuItem)</code></td><td><code>bool</code></td><td>True にするとメニューアイテムがチェック可能なトグルメニューになります。</td></tr><tr><td><code>IsChecked (MenuItem)</code></td><td><code>bool</code></td><td>IsCheckable=True の場合に、メニューアイテムがチェックされているかどうかを設定します。</td></tr><tr><td><code>Command (MenuItem)</code></td><td><code>ICommand</code></td><td>クリック時に実行するコマンドを設定します。CanExecute が false の場合、メニューアイテムは自動でグレーアウトします。</td></tr><tr><td><code>Icon (MenuItem)</code></td><td><code>object</code></td><td>メニューアイテムの左端に表示するアイコンを設定します。通常は小さな Image を配置します。</td></tr><tr><td><code>InputGestureText (MenuItem)</code></td><td><code>string</code></td><td>メニューアイテムの右端に表示するキーボードショートカットの説明テキストを設定します（例: Ctrl+S）。</td></tr></tbody></table>
   </section>
-
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;DockPanel&gt;
+  &lt;Menu DockPanel.Dock="Top" IsMainMenu="True"&gt;
+    &lt;MenuItem Header="ファイル(_F)"&gt;
+      &lt;MenuItem Header="新規作成(_N)" Command="ApplicationCommands.New"
+                InputGestureText="Ctrl+N"&gt;
+        &lt;MenuItem.Icon&gt;
+          &lt;Image Source="/Icons/new.png" Width="16" Height="16" /&gt;
+        &lt;/MenuItem.Icon&gt;
+      &lt;/MenuItem&gt;
+      &lt;MenuItem Header="開く(_O)" Command="ApplicationCommands.Open"
+                InputGestureText="Ctrl+O" /&gt;
+      &lt;MenuItem Header="保存(_S)" Command="{Binding SaveCommand}"
+                InputGestureText="Ctrl+S" /&gt;
+      &lt;Separator /&gt;
+      &lt;MenuItem Header="終了(_X)" Command="{Binding ExitCommand}" /&gt;
+    &lt;/MenuItem&gt;
+    &lt;MenuItem Header="表示(_V)"&gt;
+      &lt;MenuItem Header="ツールバーを表示" IsCheckable="True"
+                IsChecked="{Binding IsToolBarVisible}" /&gt;
+    &lt;/MenuItem&gt;
+  &lt;/Menu&gt;
+&lt;/DockPanel&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>アプリのメインメニューバー</strong> — ファイル・編集・表示などのカテゴリ別コマンドメニューをウィンドウ上部に配置します。</li><li><strong>コンテキストに応じたコマンド</strong> — 選択状態や編集モードに応じて MenuItem の IsEnabled を CanExecute で自動制御します。</li><li><strong>トグル可能なビュー設定</strong> — ツールバー・ステータスバーの表示/非表示を IsCheckable な MenuItem でトグルします。</li><li><strong>最近使ったファイル</strong> — 「ファイル」メニューの下部にバインドで動的生成する最近使ったファイルリストを追加します。</li><li><strong>サブメニュー階層</strong> — 「表示 &gt; ズーム &gt; 拡大」のような 3 段階のネストしたサブメニューを実装します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>Command バインドを使う</strong> — MenuItem.Click イベントよりも Command バインドを使い、CanExecute で自動的に有効/無効を制御します。</li><li><strong>アクセスキーは _ で設定</strong> — Header テキストで _ の次の文字がアクセスキーになります。Alt を押すと下線が表示されます。</li><li><strong>ショートカットキーは KeyBinding で設定</strong> — InputGestureText はあくまで表示用です。実際のショートカット処理は Window.InputBindings に KeyBinding を追加して実装します。</li><li><strong>Separator で論理グループを分ける</strong> — 関連するコマンドグループは Separator で区切ってメニューの可読性を向上させます。</li><li><strong>ToolBar との組み合わせ</strong> — よく使うコマンドはメニューとツールバーの両方に配置し、目的に応じて使い分けられるようにします。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/toolbar.html">ToolBar</a> — よく使うコマンドをアイコンボタン形式で提供するツールバー。</li><li><a href="/ja/apps/wpf-standard-control-demo/button.html">Button</a> — コンテキストメニューや画面内のコマンドには Button を使います。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/MenuUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Menu のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/MenuUsage" target="_blank" rel="noopener noreferrer">GitHub で Menu のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

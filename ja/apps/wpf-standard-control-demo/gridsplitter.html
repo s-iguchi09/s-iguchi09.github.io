@@ -7,102 +7,123 @@
   <meta charset="UTF-8">
   <title>GridSplitter | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF GridSplitter コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF GridSplitter コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; GridSplitter</p>
     <h1>GridSplitter <span class="category-badge">Resizer</span></h1>
-    <p>GridSplitter は Grid 内に配置して、ユーザーがドラッグで行や列をリサイズできるコントロールです。リサイズ可能なペインレイアウトの作成によく使用されます。</p>
+    <p>GridSplitter は Grid の中に配置して行・列のサイズをドラッグで変更できるコントロールです。リサイズ可能なペインレイアウトの実装に使用されます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>WPF の <strong>GridSplitter</strong> は <code>Grid</code> 内のセルに配置することで、ユーザーがドラッグして隣接する行や列のサイズを変更できるようにするコントロールです。ファイルエクスプローラーのナビゲーションペインとコンテンツペインの境界線のような UI を実現します。</p>
+    <p><code>ResizeDirection</code> が <code>Auto</code>（デフォルト）の場合、GridSplitter の配置と <code>HorizontalAlignment</code>/<code>VerticalAlignment</code> から自動的にリサイズ方向を判断します。列を分割する垂直スプリッターには <code>HorizontalAlignment="Center"</code>、行を分割する水平スプリッターには <code>VerticalAlignment="Center"</code> を設定するのが一般的です。</p>
+    <p><code>ShowsPreview</code> を True にすると、ドラッグ中に半透明のプレビューが表示され、マウスボタンを離すまでリサイズが確定しません。False（デフォルト）ではドラッグ中にリアルタイムでサイズが変化します。</p>
+    <p>GridSplitter は <code>Control</code> を継承しているため、<code>Background</code>、<code>BorderBrush</code>、<code>Template</code> などをカスタマイズして見た目を変更できます。ドラッグハンドルを示すドットパターンやグラデーションなどのカスタムスプリッターを作成できます。</p>
   </section>
 
   <section class="content-section">
     <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の GridSplitter デモ画面が表示されます。
-    </div>
+    <div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の GridSplitter デモ画面が表示されます。</div>
   </section>
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>        <tr>
           <td><code>ResizeDirection</code></td>
           <td><code>Auto / Columns / Rows</code></td>
-          <td>リサイズする方向（列または行）を設定します。Auto の場合は配置から自動判断します。</td>
+          <td>リサイズする方向を設定します。Auto の場合は HorizontalAlignment/VerticalAlignment から自動判定します。Columns は列幅、Rows は行高さを変更します。</td>
         </tr>
         <tr>
           <td><code>ResizeBehavior</code></td>
           <td><code>BasedOnAlignment / CurrentAndNext / PreviousAndCurrent / PreviousAndNext</code></td>
-          <td>どの行/列のペアをリサイズするかを設定します。</td>
+          <td>どの行・列ペアをリサイズするかを設定します。BasedOnAlignment（デフォルト）は配置から自動決定、CurrentAndNext は現在と次の行・列を対象にします。</td>
         </tr>
         <tr>
           <td><code>ShowsPreview</code></td>
           <td><code>bool</code></td>
-          <td>True にするとドラッグ中にプレビューを表示します。False にすると即座にリサイズします。</td>
-        </tr>
-        <tr>
-          <td><code>DragIncrement</code></td>
-          <td><code>double</code></td>
-          <td>ドラッグによるリサイズの最小単位（ピクセル）を設定します。</td>
+          <td>True のとき、ドラッグ中にプレビューが表示されマウスを離すまでリサイズが確定しません。False（デフォルト）はリアルタイムでサイズが変化します。</td>
         </tr>
         <tr>
           <td><code>KeyboardIncrement</code></td>
           <td><code>double</code></td>
-          <td>キーボード操作によるリサイズの移動量（ピクセル）を設定します。</td>
+          <td>キーボードの矢印キーでリサイズする場合の移動量（device-independent unit）を設定します。デフォルトは 10 です。</td>
         </tr>
         <tr>
-          <td><code>PreviewStyle</code></td>
-          <td><code>Style</code></td>
-          <td>プレビュー表示のスタイルをカスタマイズします。</td>
-        </tr>
-        <tr>
-          <td><code>IsDragging (Thumb)</code></td>
-          <td><code>bool (ReadOnly)</code></td>
-          <td>現在ドラッグ中かどうかを示す読み取り専用プロパティです。</td>
-        </tr>
-      </tbody>
+          <td><code>DragIncrement</code></td>
+          <td><code>double</code></td>
+          <td>ドラッグ時のスナップ間隔を設定します。デフォルトは 1 で、ピクセル単位で連続的にリサイズできます。</td>
+        </tr></tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <pre><code class="language-xml">&lt;Grid&gt;
+  &lt;Grid.ColumnDefinitions&gt;
+    &lt;ColumnDefinition Width="200" MinWidth="100" /&gt;
+    &lt;ColumnDefinition Width="5" /&gt;
+    &lt;ColumnDefinition Width="*" /&gt;
+  &lt;/Grid.ColumnDefinitions&gt;
+
+  &lt;!-- 左ペイン --&gt;
+  &lt;TreeView Grid.Column="0"
+            ItemsSource="{Binding FileTree}" /&gt;
+
+  &lt;!-- 垂直スプリッター --&gt;
+  &lt;GridSplitter Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                ShowsPreview="False"
+                Background="LightGray" /&gt;
+
+  &lt;!-- 右ペイン（残り全スペース） --&gt;
+  &lt;ContentControl Grid.Column="2"
+                  Content="{Binding SelectedContent}" /&gt;
+&lt;/Grid&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>      <li><strong>ファイルエクスプローラー</strong> — ナビゲーションツリーとコンテンツビューの間に垂直スプリッターを配置します。</li>
+      <li><strong>コードエディター</strong> — エディターペインとプレビューペインを水平スプリッターで上下に分割します。</li>
+      <li><strong>ログビューアー</strong> — ログリストと詳細パネルを分割してユーザーが比率を調整できるようにします。</li>
+      <li><strong>開発ツール</strong> — プロパティパネル、デザインサーフェス、出力パネルを複数の GridSplitter で分割した IDE 風 UI を作成します。</li>
+      <li><strong>比較ビュー</strong> — 2 つのデータセットや文書を左右に並べてスプリッターで比率調整できる比較画面に使用します。</li></ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>      <li><strong>スプリッターの幅/高さを十分に確保する</strong> — スプリッターが細すぎるとドラッグしにくくなります。Width（垂直）や Height（水平）を最低 5px 程度に設定します。</li>
+      <li><strong>MinWidth/MinHeight でペインの最小サイズを設定</strong> — ColumnDefinition/RowDefinition に MinWidth/MinHeight を設定して、ペインが消えてしまわないようにします。</li>
+      <li><strong>HorizontalAlignment=Stretch を設定する</strong> — GridSplitter の幅が Column の幅全体に広がるよう Stretch を設定します。そうしないとスプリッターが期待通りに機能しない場合があります。</li>
+      <li><strong>ShowsPreview でリサイズ体験を向上</strong> — ShowsPreview=True にするとドラッグ中のプレビューが表示され、誤操作を防げます。</li>
+      <li><strong>キーボードでもリサイズ可能</strong> — GridSplitter はキーボードフォーカスを受け取り、矢印キーでリサイズできます。KeyboardIncrement でステップ幅を調整します。</li></ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>      <li><a href="/ja/apps/wpf-standard-control-demo/grid.html">Grid</a> — GridSplitter を配置するコンテナ。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/dockpanel.html">DockPanel</a> — 固定レイアウトの場合はこちらが簡単です。</li></ul>
+  </section>
+
+  <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridSplitterUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で GridSplitter のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridSplitterUsage" target="_blank" rel="noopener noreferrer">GitHub で GridSplitter のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

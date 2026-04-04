@@ -1,83 +1,54 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>ToggleButton | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>ToggleButton | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF ToggleButton コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF ToggleButton コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToggleButton</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToggleButton</p>
     <h1>ToggleButton <span class="category-badge">Inputs</span></h1>
-    <p>ToggleButton はクリック間でチェック/非チェック状態を維持するボタンです。CheckBox と RadioButton の基底クラスです。IsThreeState が有効な場合、IsChecked プロパティは 3 つの状態（null/false/true）を持てます。</p>
+    <p>ToggleButton はクリックするたびにオン/オフ状態を切り替えるボタンです。IsChecked プロパティで状態を保持し、CheckBox と RadioButton の基底クラスです。カスタムトグルスイッチや表示切り替えボタンの実装に使われます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の ToggleButton デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>ToggleButton</strong> は <code>ButtonBase</code> を継承したコントロールで、クリックするたびに <code>IsChecked</code> が true と false の間でトグルします。<code>IsThreeState="True"</code> にすると null（不定）状態も追加されます。</p>
+  <p>ToggleButton は <code>CheckBox</code> と <code>RadioButton</code> の基底クラスです。これらの標準コントロールのような外観を持たないカスタムのトグル UI が必要な場合に ToggleButton を直接使用します。例えば、ツールバーのアクティブ/非アクティブなツール切り替えボタンや、表示/非表示をトグルするボタンなど。</p>
+  <p><code>IsChecked</code> プロパティは <code>bool?</code>（null 許容）型です。MVVM では bool または bool? 型の ViewModel プロパティに TwoWay バインドします。</p>
+  <p>外観のカスタマイズには ControlTemplate を使用します。IsChecked の値によって外観が変わるよう、DataTrigger や VisualStateManager をテンプレート内で定義することで、スイッチ形式や押し込みボタン形式などのカスタムトグル UI を作成できます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>IsChecked</code></td>
-          <td><code>bool? (Null / False / True)</code></td>
-          <td>ボタンの現在の状態を設定します。Null は不定（Indeterminate）、False は非チェック、True はチェック済みです。</td>
-        </tr>
-        <tr>
-          <td><code>IsThreeState</code></td>
-          <td><code>bool</code></td>
-          <td>True の場合、IsChecked は Null/False/True の 3 状態をサイクルします。False の場合は False/True の 2 状態のみです。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>IsChecked</code></td><td><code>bool? (True / False / Null)</code></td><td>トグルボタンの現在の状態を設定します。null は不定状態（IsThreeState=True のときのみ有効）を表します。TwoWay バインドで ViewModel と連動させます。</td></tr><tr><td><code>IsThreeState</code></td><td><code>bool</code></td><td>True にするとクリックするたびに False → True → Null のサイクルで状態が変化します。</td></tr><tr><td><code>ClickMode (ButtonBase)</code></td><td><code>Release / Press / Hover</code></td><td>Click イベントが発生するタイミングを設定します。ToggleButton は ButtonBase を継承しているため、この設定が利用可能です。</td></tr><tr><td><code>Command / CommandParameter (ButtonBase)</code></td><td><code>ICommand / object</code></td><td>クリック時に実行するコマンドとパラメータを設定します。MVVM パターンで使用します。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- 表示/非表示トグル --&gt;
+&lt;ToggleButton Content="サイドパネルを表示"
+             IsChecked="{Binding IsSidePanelVisible, Mode=TwoWay}" /&gt;
 
+&lt;!-- Popup との連動 --&gt;
+&lt;ToggleButton x:Name="optBtn" Content="▼ オプション"
+             IsChecked="{Binding IsPopupOpen, Mode=TwoWay}" /&gt;
+
+&lt;!-- ツールバーのモードトグル --&gt;
+&lt;ToggleButton IsChecked="{Binding IsDrawMode, Mode=TwoWay}"
+             ToolTip="描画モード"&gt;
+  &lt;Image Source="/Icons/pencil.png" Width="16" Height="16" /&gt;
+&lt;/ToggleButton&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>サイドパネルの開閉</strong> — サイドパネルや追加情報パネルの表示/非表示を ToggleButton でコントロールします。</li><li><strong>Popup との連動</strong> — IsChecked を Popup の IsOpen にバインドして、ボタンクリックでポップアップの開閉を制御します。</li><li><strong>ツールバーのモード切り替え</strong> — 描画ツール・消しゴムツールなどのアクティブモードをツールバーの ToggleButton で管理します。</li><li><strong>テーマ切り替え</strong> — ライト/ダークテーマの切り替えスイッチとして使用します。ControlTemplate でスイッチ形の外観にカスタマイズします。</li><li><strong>詳細表示の切り替え</strong> — リストアイテムの詳細情報の展開/折りたたみを ToggleButton で実装します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>CheckBox/RadioButton との使い分け</strong> — 標準の見た目が必要なら CheckBox/RadioButton を使います。カスタム外観が必要な場合に ToggleButton を直接使います。</li><li><strong>Popup と組み合わせる</strong> — IsChecked を Popup の IsOpen に TwoWay バインドすると、ボタンクリックで Popup を開閉できます。Popup 外クリックで閉じたときも IsChecked が同期して更新されます。</li><li><strong>ControlTemplate でカスタム外観</strong> — スイッチ（iPhone 風スライドスイッチ）などカスタム外観にするには ControlTemplate を完全に書き換えます。</li><li><strong>GroupName での排他制御</strong> — ToggleButton 自体は GroupName をサポートしませんが、RadioButton を ToggleButton 風の ControlTemplate で使うか、ViewModel で排他ロジックを実装します。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — 標準的なチェックボックス外観のトグルコントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — 排他的な選択が必要なトグルコントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/popup.html">Popup</a> — ToggleButton.IsChecked と連動して開閉するポップアップパネル。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToggleButtonUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で ToggleButton のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToggleButtonUsage" target="_blank" rel="noopener noreferrer">GitHub で ToggleButton のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

@@ -1,123 +1,61 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>ToolTip | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>ToolTip | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF ToolTip コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF ToolTip コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToolTip</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToolTip</p>
     <h1>ToolTip <span class="category-badge">Overlays</span></h1>
-    <p>ToolTip はユーザーが UI 要素にホバーした時に情報を表示する小さなポップアップウィンドウです。プレーンテキストや複雑なコンテンツを格納でき、位置・タイミング・外観の詳細なカスタマイズをサポートします。</p>
+    <p>ToolTip はカーソルをコントロールの上にホバーしたときに表示される小さなポップアップです。任意のコントロールに添付プロパティで追加でき、テキストだけでなく任意の WPF コンテンツを表示できます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の ToolTip デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>ToolTip</strong> は <code>ContentControl</code> を継承したコントロールで、ほぼすべての UI 要素に <code>ToolTip</code> 添付プロパティで簡単にツールチップを追加できます。シンプルなテキストのツールチップは文字列を直接設定するだけです。</p>
+  <p>リッチなツールチップを表示したい場合は、<code>&lt;ToolTip&gt;</code> 要素を展開して、その中に任意の WPF 要素（Image、StackPanel、TextBlock など）を配置できます。これにより、アイコン＋説明テキストや書式付きの詳細情報を含むツールチップを実装できます。</p>
+  <p>表示タイミングは <code>ToolTipService</code> の添付プロパティで細かく制御できます。<code>ToolTipService.InitialShowDelay</code>（ツールチップが表示されるまでの遅延時間）、<code>ToolTipService.ShowDuration</code>（表示を維持する時間）、<code>ToolTipService.BetweenShowDelay</code>（連続表示の間隔）などを設定できます。</p>
+  <p>コントロールが無効（<code>IsEnabled="False"</code>）の状態でもツールチップを表示するには、<code>ToolTipService.ShowOnDisabled="True"</code> を設定します。なぜそのボタンが無効なのかを説明するのに便利です。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Placement</code></td>
-          <td><code>Mouse / MousePoint / Absolute / AbsolutePoint / Relative / RelativePoint / Bottom / Top / Left / Right / Center / Custom</code></td>
-          <td>ツールチップの表示位置を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>HorizontalOffset / VerticalOffset</code></td>
-          <td><code>double</code></td>
-          <td>配置位置からの水平・垂直オフセット量を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>PlacementTarget</code></td>
-          <td><code>UIElement</code></td>
-          <td>ツールチップの位置を基準とする要素を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>PlacementRectangle</code></td>
-          <td><code>Rect</code></td>
-          <td>ツールチップの配置基準となる矩形を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>ShowsToolTipOnKeyboardFocus</code></td>
-          <td><code>bool</code></td>
-          <td>キーボードフォーカス時もツールチップを表示するかどうかを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>HasDropShadow</code></td>
-          <td><code>bool</code></td>
-          <td>ツールチップにドロップシャドウを表示するかどうかを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>InitialShowDelay / ShowDuration / BetweenShowDelay (ToolTipService)</code></td>
-          <td><code>int (ms)</code></td>
-          <td>初回表示までの遅延時間、表示持続時間、連続表示の間隔を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Width / MaxWidth / Height / MaxHeight (FrameworkElement)</code></td>
-          <td><code>double</code></td>
-          <td>ツールチップのサイズを制御します。</td>
-        </tr>
-        <tr>
-          <td><code>Background / Foreground / BorderBrush / BorderThickness / Padding (Control)</code></td>
-          <td><code>various</code></td>
-          <td>ツールチップの外観プロパティを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
-          <td><code>various</code></td>
-          <td>コンテンツの配置を設定します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>ToolTip</code></td><td><code>string または ToolTip オブジェクト</code></td><td>ツールチップのコンテンツを設定します。文字列を直接設定する簡単な形式と、ToolTip 要素を展開してカスタムコンテンツを配置する形式があります。</td></tr><tr><td><code>InitialShowDelay (ToolTipService)</code></td><td><code>int (ms, デフォルト: 400)</code></td><td>カーソルをホバーしてからツールチップが表示されるまでの遅延時間（ミリ秒）を設定します。</td></tr><tr><td><code>ShowDuration (ToolTipService)</code></td><td><code>int (ms, デフォルト: 5000)</code></td><td>ツールチップが表示され続ける最大時間（ミリ秒）を設定します。この時間が経過すると自動的に消えます。</td></tr><tr><td><code>BetweenShowDelay (ToolTipService)</code></td><td><code>int (ms, デフォルト: 100)</code></td><td>一つのツールチップが消えてから、別のコントロールにホバーしたときに次のツールチップが表示されるまでの遅延を設定します。短い値にすると快速なツールチップ表示になります。</td></tr><tr><td><code>ShowOnDisabled (ToolTipService)</code></td><td><code>bool</code></td><td>True にすると IsEnabled=False のコントロールでもツールチップを表示できます。無効な理由を説明するツールチップを表示するのに使用します。</td></tr><tr><td><code>Placement (ToolTip)</code></td><td><code>Left / Top / Right / Bottom / Mouse / etc.</code></td><td>ツールチップの表示位置を設定します。デフォルトは Mouse（カーソル近く）です。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- シンプルなテキストツールチップ --&gt;
+&lt;Button Content="保存" ToolTip="変更をファイルに保存します (Ctrl+S)" /&gt;
 
+&lt;!-- リッチコンテンツのツールチップ --&gt;
+&lt;Button Content="ヘルプ"&gt;
+  &lt;Button.ToolTip&gt;
+    &lt;ToolTip&gt;
+      &lt;StackPanel&gt;
+        &lt;TextBlock Text="ヘルプを表示" FontWeight="Bold" /&gt;
+        &lt;TextBlock Text="オンラインドキュメントを開きます。"
+                   TextWrapping="Wrap" MaxWidth="200" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/ToolTip&gt;
+  &lt;/Button.ToolTip&gt;
+&lt;/Button&gt;
+
+&lt;!-- 無効ボタンでもツールチップを表示 --&gt;
+&lt;Button Content="削除" IsEnabled="{Binding CanDelete}"
+        ToolTipService.ShowOnDisabled="True"
+        ToolTip="アイテムを選択してから削除できます" /&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>ボタン・ツールバーアイコンの説明</strong> — アイコンのみのボタンには必ずツールチップでコマンドの説明を提供します。</li><li><strong>省略テキストの全表示</strong> — TextTrimming で省略されたテキストを全文表示するツールチップを設定します。</li><li><strong>無効状態の理由説明</strong> — ShowOnDisabled=True と組み合わせて、ボタンが無効な理由を説明するツールチップを表示します。</li><li><strong>キーボードショートカットの案内</strong> — ツールチップに「(Ctrl+S)」のようなショートカットキー情報を含めて操作性を向上させます。</li><li><strong>フォームフィールドのヒント</strong> — 入力フィールドにどのような値を入力すればよいかのヒントをツールチップで提供します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>ツールチップはアイコンボタンに必須</strong> — アイコンのみのボタンはツールチップがなければ機能が全くわかりません。必ず設定します。</li><li><strong>テキストには TextWrapping を設定する</strong> — リッチツールチップ内の TextBlock には TextWrapping=Wrap と MaxWidth を設定して長いテキストが適切に折り返されるようにします。</li><li><strong>ToolTipService.ShowDuration を調整する</strong> — デフォルトの 5 秒では長い説明が読み切れない場合があります。コンテンツに応じて長めに設定します。</li><li><strong>Popup との使い分け</strong> — 自動表示・軽量なインフォメーションには ToolTip を、複雑なインタラクティブな UI には Popup を使います。</li><li><strong>アクセシビリティ</strong> — ToolTip は AutomationProperties.HelpText でもスクリーンリーダーに情報を提供できます。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/popup.html">Popup</a> — クリックなどのイベントで開閉する、ToolTip より強力なオーバーレイコントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/button.html">Button</a> — ツールチップを設定する最も代表的なコントロール。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolTipUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で ToolTip のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolTipUsage" target="_blank" rel="noopener noreferrer">GitHub で ToolTip のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

@@ -8,7 +8,7 @@
   <title>ToolBar | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF ToolBar control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF ToolBar control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,37 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ToolBar</p>
     <h1>ToolBar <span class="category-badge">Menu</span></h1>
-    <p>ToolBar is a container for displaying frequently used commands as buttons or other controls in a compact strip. It supports overflow items when there is not enough space, and multiple toolbars can be arranged in a ToolBarTray.</p>
+    <p>ToolBar is a container for displaying frequently used commands as buttons, toggle buttons, separators, and other controls in a horizontal or vertical strip. It supports overflow handling when items exceed available space, and multiple toolbars can be organized in a ToolBarTray that supports dragging and repositioning.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>ToolBar</strong> control provides a compact command surface typically placed at the
+      top of an application window or document editor. It inherits from <code>HeaderedItemsControl</code>
+      and is almost always hosted inside a <code>ToolBarTray</code>, which manages multiple toolbars on
+      the same band, allows users to reorder them by dragging, and coordinates the overflow area.
+    </p>
+    <p>
+      When a ToolBar's items overflow its visible width, the excess items are automatically moved to an
+      overflow popup, which the user can open by clicking the chevron (&gt;&gt;) button at the right end
+      of the toolbar. The <code>OverflowMode</code> attached property on each item controls its overflow
+      behavior: <code>AsNeeded</code> (default) puts the item in overflow only when space is insufficient,
+      <code>Never</code> always keeps it visible, and <code>Always</code> always puts it in the overflow
+      panel.
+    </p>
+    <p>
+      ToolBar automatically applies a stripped-down style to common controls placed inside it. Buttons
+      appear without their default border and background, giving a flat toolbar appearance. ToggleButtons
+      and ComboBoxes also receive toolbar-specific styles. This behavior is driven by WPF's resource
+      dictionary lookup, which applies different templates based on whether a control is inside a ToolBar.
+    </p>
+    <p>
+      The <code>Band</code> and <code>BandIndex</code> properties determine where a ToolBar is positioned
+      within its ToolBarTray. <code>Band</code> is the zero-based row index (for horizontal trays) and
+      <code>BandIndex</code> is the position within that row. Dragging a toolbar at runtime updates these
+      values, enabling persistent toolbar layout saving and restoration.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,50 +65,106 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
+        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>HasOverflowItems / IsOverflowItem / IsOverflowOpen / OverflowMode (ToolBar)</code></td>
-          <td><code>bool / bool / bool / AsNeeded/Never/Always</code></td>
-          <td>Checks overflow item existence, item overflow state, overflow menu open state, and each item's overflow mode.</td>
+          <td><code>HasOverflowItems (ReadOnly)</code></td>
+          <td><code>bool</code></td>
+          <td>Indicates whether any items have been moved to the overflow popup because they did not fit in the visible area. Use this to conditionally show a custom overflow indicator or to disable overflow-sensitive commands.</td>
+        </tr>
+        <tr>
+          <td><code>IsOverflowOpen</code></td>
+          <td><code>bool</code></td>
+          <td>Gets or sets whether the overflow popup is currently open. Can be bound to programmatically show or hide the overflow panel, though users normally interact with it via the chevron button.</td>
+        </tr>
+        <tr>
+          <td><code>OverflowMode (ToolBar attached)</code></td>
+          <td><code>AsNeeded / Never / Always</code></td>
+          <td>Applied to individual items inside the toolbar to control their overflow behavior. Set <code>Never</code> on critical commands (e.g., Save) to ensure they are always visible. Set <code>Always</code> on rarely used items to keep the main bar clean.</td>
         </tr>
         <tr>
           <td><code>Band / BandIndex (ToolBar)</code></td>
           <td><code>int / int</code></td>
-          <td>Sets the row (Band) and position within that row (BandIndex) in a ToolBarTray.</td>
+          <td>Determines placement within the ToolBarTray. <code>Band</code> is the row (0-based) and <code>BandIndex</code> is the position within that row. Save and restore these values to persist the user's toolbar layout across sessions.</td>
         </tr>
         <tr>
-          <td><code>Background / IsLocked / Orientation (ToolBarTray)</code></td>
-          <td><code>Brush / bool / Horizontal/Vertical</code></td>
-          <td>Sets ToolBarTray background, locks toolbar movement, and sets layout orientation.</td>
+          <td><code>IsLocked (ToolBarTray)</code></td>
+          <td><code>bool</code></td>
+          <td>When <code>true</code>, prevents the user from dragging toolbars within the tray. Use this for fixed application layouts where toolbar reordering is not a supported feature.</td>
+        </tr>
+        <tr>
+          <td><code>Orientation (ToolBarTray)</code></td>
+          <td><code>Horizontal / Vertical</code></td>
+          <td>Sets whether the ToolBarTray lays out toolbars horizontally (typical top/bottom placement) or vertically (side panel placement). The contained ToolBars are oriented accordingly.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>A ToolBarTray with two toolbars — a main editing bar and a formatting bar:</p>
+    <pre><code class="language-xml">&lt;ToolBarTray DockPanel.Dock="Top" IsLocked="False"&gt;
+  &lt;ToolBar Band="0" BandIndex="0"&gt;
+    &lt;Button Command="ApplicationCommands.New" ToolTip="New"&gt;
+      &lt;Image Source="/Icons/new.png" Width="16" Height="16" /&gt;
+    &lt;/Button&gt;
+    &lt;Button Command="ApplicationCommands.Open" ToolTip="Open" /&gt;
+    &lt;Button Command="ApplicationCommands.Save" ToolTip="Save"
+            ToolBar.OverflowMode="Never" /&gt;
+    &lt;Separator /&gt;
+    &lt;Button Command="ApplicationCommands.Cut" ToolTip="Cut" /&gt;
+    &lt;Button Command="ApplicationCommands.Copy" ToolTip="Copy" /&gt;
+    &lt;Button Command="ApplicationCommands.Paste" ToolTip="Paste" /&gt;
+  &lt;/ToolBar&gt;
+  &lt;ToolBar Band="1" BandIndex="0"&gt;
+    &lt;ToggleButton IsChecked="{Binding IsBold}" ToolTip="Bold"
+                  ToolBar.OverflowMode="Never"&gt;B&lt;/ToggleButton&gt;
+    &lt;ToggleButton IsChecked="{Binding IsItalic}" ToolTip="Italic"&gt;I&lt;/ToggleButton&gt;
+  &lt;/ToolBar&gt;
+&lt;/ToolBarTray&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Application command bars</strong> — New/Open/Save/Print and Edit commands grouped in a standard application toolbar.</li>
+      <li><strong>Text formatting toolbars</strong> — Bold, Italic, Underline, font selector, and size picker in a document editor.</li>
+      <li><strong>Drawing tool palettes</strong> — Tool selection buttons for paint, select, zoom, and erase modes in a graphics application.</li>
+      <li><strong>Context-sensitive toolbars</strong> — Show different toolbars depending on the selected content type (table, image, text) by toggling toolbar visibility.</li>
+      <li><strong>Customizable user toolbars</strong> — Allow users to drag toolbars into their preferred positions and save the Band/BandIndex layout to user settings.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Always host ToolBar inside ToolBarTray</strong> — Without a tray, overflow and drag-reorder features do not work. Even a single toolbar benefits from being inside a tray.</li>
+      <li><strong>Set OverflowMode="Never" on critical commands</strong> — Ensure Save, Undo, and other high-priority commands are always visible regardless of window width.</li>
+      <li><strong>Use ToolTip on every item</strong> — Toolbar buttons typically show icons only; always add ToolTip so users can discover the action without hunting through menus.</li>
+      <li><strong>Separate groups with Separator</strong> — Use <code>&lt;Separator /&gt;</code> to visually group related commands (file operations vs. edit operations vs. format commands).</li>
+      <li><strong>Avoid complex content in overflow items</strong> — Items in the overflow popup should be self-contained; avoid items that rely on adjacent items being visible.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/menu.html">Menu</a> — A full hierarchical menu bar alternative for commands; shows text labels rather than icons by default.</li>
+      <li><a href="/apps/wpf-standard-control-demo/button.html">Button</a> — The most common item placed inside a ToolBar.</li>
+      <li><a href="/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — Used for persistent-state items (Bold, Italic) inside a toolbar.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolBarUsage" target="_blank" rel="noopener noreferrer">
-        View ToolBar source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolBarUsage" target="_blank" rel="noopener noreferrer">View ToolBar source code on GitHub &rarr;</a></p>
   </section>
 
 </main>

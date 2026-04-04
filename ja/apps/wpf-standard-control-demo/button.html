@@ -8,7 +8,7 @@
   <title>Button | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Button コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <meta name="description" content="WPF Button コントロールのリファレンス。概要、プロパティ解説、XAML 使用例、活用シナリオ。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,29 @@
   </section>
 
   <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      WPF の <strong>Button</strong> コントロールは、デスクトップアプリにおけるユーザーアクションのトリガーとして最も基本的な役割を担います。
+      <code>ButtonBase</code> を継承し、さらに <code>ContentControl</code> を拡張しているため、Button の中にはテキストだけでなく
+      画像・アイコン・複雑なパネルなど任意の WPF 要素を配置できます。
+    </p>
+    <p>
+      MVVM アーキテクチャにおいて特に重要なのが、<code>Command</code> プロパティによる <code>ICommand</code> インターフェイスのサポートです。
+      コマンドをバインドすると、<code>ICommand.CanExecute</code> が <code>false</code> を返すたびに WPF が自動でボタンを無効化し、
+      条件が変化すると再び有効にします。これによりコードビハインドでの有効・無効切り替えロジックが不要になります。
+    </p>
+    <p>
+      <code>ButtonBase</code> から継承された <code>ClickMode</code> プロパティは、Click イベントがいつ発火するかを制御します。
+      デフォルトの <code>Release</code> はマウスボタンを離したとき、<code>Press</code> は押し下げた瞬間、
+      <code>Hover</code> はホバー時に発火します。
+    </p>
+    <p>
+      <code>IsDefault</code> と <code>IsCancel</code> の 2 つの bool プロパティはダイアログの実装を大幅に簡略化します。
+      <code>IsDefault="True"</code> で Enter キー、<code>IsCancel="True"</code> で Escape キーとボタンを関連付けられます。
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>画面キャプチャ</h2>
     <div class="screenshot-placeholder">
       📷 スクリーンショットは後で追加予定です — アプリ上の Button デモ画面が表示されます。
@@ -39,48 +62,92 @@
       以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
       アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
     </p>
-    
+
     <table class="prop-table">
       <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
+        <tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr>
       </thead>
       <tbody>
         <tr>
           <td><code>IsCancel</code></td>
           <td><code>bool</code></td>
-          <td>True に設定すると、Escape キー押下でこのボタンの Click が発生します。ダイアログのキャンセルボタンに使用します。</td>
+          <td>True に設定すると、Escape キー押下でこのボタンの Click が発生します。ダイアログのキャンセルボタンに使用します。<code>Window.DialogResult = false</code> と組み合わせると、標準的なキャンセル動作を実現できます。</td>
         </tr>
         <tr>
           <td><code>IsDefault</code></td>
           <td><code>bool</code></td>
-          <td>True に設定すると、Enter キー押下で最初にフォーカスがない場合でもこのボタンの Click が発生します。</td>
+          <td>True に設定すると、他の要素が Enter を処理しない場合にこのボタンの Click が発生します。フォームの「OK」ボタンや「検索」ボタンに使用し、Enter キーで送信できるようにします。</td>
         </tr>
         <tr>
           <td><code>ClickMode (ButtonBase)</code></td>
           <td><code>Release / Press / Hover</code></td>
-          <td>クリックイベントが発生するタイミングを制御します。Release: ボタンを離したとき、Press: 押したとき、Hover: ホバー時。</td>
+          <td>Click イベントが発生するタイミングを制御します。<code>Release</code> はマウスボタンを離したとき（デフォルト）、<code>Press</code> は押し下げた瞬間、<code>Hover</code> はカーソルが乗ったときに発火します。</td>
         </tr>
         <tr>
           <td><code>IsPressed (ButtonBase)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>ボタンが現在押されているかどうかを示す読み取り専用プロパティ。</td>
+          <td>ボタンが現在押されているかどうかを示す読み取り専用プロパティです。ControlTemplate 内でこの値をトリガーにして、押し込んだ際の視覚的変化（色変更・スケール縮小など）を実装できます。</td>
         </tr>
         <tr>
           <td><code>Command (ButtonBase)</code></td>
           <td><code>ICommand</code></td>
-          <td>ボタンクリック時に実行するコマンドを設定します。ViewModel の ICommand プロパティをバインドします。</td>
+          <td>ボタンクリック時に実行するコマンドを設定します。ViewModel の ICommand プロパティをバインドします。CanExecute が false の場合、ボタンは自動で無効化されます。</td>
         </tr>
         <tr>
           <td><code>CommandParameter (ButtonBase)</code></td>
           <td><code>object</code></td>
-          <td>コマンド実行時に渡すパラメータを設定します。</td>
+          <td>コマンド実行時に渡すパラメータを設定します。同一のコマンドを複数のボタンで共有し、パラメータで動作を切り替える際に活用します。</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>MVVM バインドと IsDefault/IsCancel を組み合わせた典型的なダイアログボタンの例です：</p>
+    <pre><code class="language-xml">&lt;StackPanel Orientation="Horizontal" HorizontalAlignment="Right"&gt;
+  &lt;Button Content="OK" Width="80" Margin="0,0,8,0"
+          IsDefault="True"
+          Command="{Binding OkCommand}" /&gt;
+  &lt;Button Content="キャンセル" Width="80"
+          IsCancel="True"
+          Command="{Binding CancelCommand}" /&gt;
+&lt;/StackPanel&gt;
+
+&lt;!-- ClickMode の例 --&gt;
+&lt;Button Content="ホバーで発火" ClickMode="Hover"
+        Command="{Binding HoverCommand}" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>ダイアログの OK/キャンセル</strong> — IsDefault と IsCancel を使ってキーボード操作に対応したダイアログボタンを実装します。</li>
+      <li><strong>フォームの送信</strong> — IsDefault="True" を設定することで Enter キーによるフォーム送信を実現します。</li>
+      <li><strong>MVVM コマンドバインド</strong> — Command プロパティで ViewModel の ICommand をバインドし、CanExecute による自動有効/無効を活用します。</li>
+      <li><strong>リッチコンテンツボタン</strong> — ContentControl の特性を活かし、アイコン＋テキストや複数行のコンテンツを持つボタンを作成します。</li>
+      <li><strong>ツールバーアクション</strong> — ツールバー内に配置し、アイコンのみのシンプルなアクションボタンとして使用します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>コードビハインドの Click イベントより Command を優先</strong> — MVVM パターンでは Click イベントをコードビハインドで処理するよりも、ICommand バインドを使うとテストしやすく疎結合な設計になります。</li>
+      <li><strong>CanExecute を活用する</strong> — 入力検証や処理中フラグを CanExecute に反映させると、ボタンの有効/無効が自動で更新され、余分なロジックが不要になります。</li>
+      <li><strong>コンテンツには文字列以外も可能</strong> — テキストだけでなく、Image や StackPanel を Content として設定すると、アイコン付きボタンやリッチレイアウトのボタンを簡単に作れます。</li>
+      <li><strong>ToolTip を設定する</strong> — アイコンのみのボタンには必ず ToolTip を設定し、ユーザーがホバーで機能を確認できるようにしましょう。</li>
+      <li><strong>アクセシビリティ対応</strong> — コンテンツが画像の場合は AutomationProperties.Name を設定してスクリーンリーダーが読み上げられるようにします。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — クリックするたびに押下状態を保持するトグルボタン。CheckBox と RadioButton の基底クラス。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — 押し続けている間、Click イベントを連続発火するボタン。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/menu.html">Menu</a> — コマンドを階層メニュー形式で提供する代替手段。</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -90,7 +157,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ButtonUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Button のソースコードを見る →
+        GitHub で Button のソースコードを見る &rarr;
       </a>
     </p>
   </section>

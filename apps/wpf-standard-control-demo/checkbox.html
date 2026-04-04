@@ -8,7 +8,7 @@
   <title>CheckBox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF CheckBox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF CheckBox control reference: three-state toggling, XAML examples, and best practices. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,37 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>CheckBox</strong> control extends <code>ToggleButton</code>, giving it a persistent
+      checked state that users can toggle between <code>True</code> (checked) and <code>False</code>
+      (unchecked) with a single click. The checked state is exposed through the nullable boolean property
+      <code>IsChecked</code>, which integrates seamlessly with WPF data binding. Binding <code>IsChecked</code>
+      to a <code>bool</code> property in your ViewModel creates a two-way link that keeps the UI and business
+      logic in sync without any code-behind.
+    </p>
+    <p>
+      When <code>IsThreeState</code> is set to <code>True</code>, a third state — indeterminate, represented
+      by <code>null</code> — becomes available. The indeterminate state is visually rendered as a filled or
+      dash-mark inside the box, signalling that the underlying value is neither definitively on nor off. This
+      is the standard pattern for "select all / select some / select none" scenarios, such as a parent node in
+      a hierarchical checklist where only some children are selected.
+    </p>
+    <p>
+      Like all <code>ContentControl</code> descendants, a CheckBox can contain any WPF element as its label —
+      not just plain text. You can embed <code>TextBlock</code> elements with rich typography, inline images,
+      or even interactive controls. The content is rendered to the right of the checkbox glyph by default, but
+      this can be overridden through <code>ContentTemplate</code> and <code>ControlTemplate</code> customisation.
+    </p>
+    <p>
+      CheckBox raises <code>Checked</code>, <code>Unchecked</code>, and <code>Indeterminate</code> routed events
+      that bubble up the visual tree, allowing parent containers to handle state changes without subscribing
+      to individual checkboxes. This is particularly useful in dynamic lists where checkboxes are generated
+      at runtime.
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the CheckBox demo screen in the app.
@@ -39,7 +70,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,20 +83,84 @@
         <tr>
           <td><code>IsChecked (ToggleButton)</code></td>
           <td><code>bool? (Null / False / True)</code></td>
-          <td>Sets the checkbox state. Null represents the indeterminate state.</td>
+          <td>Gets or sets the current state of the checkbox. <code>True</code> renders a checkmark, <code>False</code> renders an empty box, and <code>null</code> renders the indeterminate (dash) glyph. This property supports two-way data binding to <code>bool?</code> or <code>bool</code> ViewModel properties.</td>
         </tr>
         <tr>
           <td><code>IsThreeState (ToggleButton)</code></td>
           <td><code>bool</code></td>
-          <td>When True, enables three-state toggling, adding the indeterminate (Null) state.</td>
+          <td>When <code>True</code>, clicking cycles through all three states: unchecked → checked → indeterminate. When <code>False</code> (default), clicking toggles only between unchecked and checked, and the indeterminate state can only be set programmatically.</td>
         </tr>
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>Sets the vertical alignment of the checkbox content (label).</td>
+          <td>Controls the vertical alignment of the content (label) relative to the checkbox glyph. <code>Center</code> is the default and appropriate for single-line labels; <code>Top</code> is preferred when the label wraps to multiple lines so it aligns with the top of the glyph.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates common CheckBox patterns including data binding and three-state usage:</p>
+    <pre><code class="language-xml">&lt;StackPanel Margin="16" Spacing="8"&gt;
+
+  &lt;!-- Simple two-state checkbox bound to a bool property --&gt;
+  &lt;CheckBox Content="Enable notifications"
+            IsChecked="{Binding IsNotificationsEnabled}" /&gt;
+
+  &lt;!-- Three-state checkbox for partial selection --&gt;
+  &lt;CheckBox Content="Select All"
+            IsThreeState="True"
+            IsChecked="{Binding SelectAllState}" /&gt;
+
+  &lt;!-- Rich content label with an image --&gt;
+  &lt;CheckBox IsChecked="{Binding IsDarkMode}"&gt;
+    &lt;StackPanel Orientation="Horizontal" Spacing="6"&gt;
+      &lt;Image Source="/Icons/moon.png" Width="16" Height="16" /&gt;
+      &lt;TextBlock Text="Dark mode" VerticalAlignment="Center" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/CheckBox&gt;
+
+  &lt;!-- Multi-line label aligned to top of glyph --&gt;
+  &lt;CheckBox VerticalContentAlignment="Top"
+            IsChecked="{Binding AcceptsTerms}"&gt;
+    &lt;TextBlock TextWrapping="Wrap" MaxWidth="280"
+               Text="I agree to the terms and conditions of this application." /&gt;
+  &lt;/CheckBox&gt;
+
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Settings and preferences panels:</strong> Individual boolean settings such as "Start at login", "Enable spell check", or "Show tooltips", each bound to a ViewModel property.</li>
+      <li><strong>Filter controls:</strong> A group of checkboxes that represent filter categories (e.g., file types, status values) where any combination can be active simultaneously.</li>
+      <li><strong>Hierarchical selection:</strong> A parent CheckBox with <code>IsThreeState="True"</code> that reflects whether all, some, or none of its child items are selected in a tree or list.</li>
+      <li><strong>Terms-of-service acceptance:</strong> A single CheckBox requiring the user to confirm acceptance before a form submit button becomes enabled via <code>CanExecute</code>.</li>
+      <li><strong>Bulk-edit forms:</strong> Multi-record editing forms where a CheckBox next to a field indicates "apply this value to all selected records".</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Bind to <code>bool?</code> for three-state scenarios</strong> to preserve the indeterminate value across round-trips. Binding to a plain <code>bool</code> will lose the null value and coerce it to <code>False</code>.</li>
+      <li><strong>Use <code>Checked</code> / <code>Unchecked</code> routed events</strong> in code-behind only when you cannot use data binding. In MVVM applications, prefer binding <code>IsChecked</code> and using property-change callbacks in the ViewModel.</li>
+      <li><strong>Group related checkboxes visually</strong> using a <code>GroupBox</code> or a labelled <code>Border</code> to help users understand which options belong together, especially in dense settings dialogs.</li>
+      <li><strong>Never use CheckBox for mutually exclusive choices.</strong> If only one option should be active at a time, use <code>RadioButton</code> instead, which enforces single-selection within a group automatically.</li>
+      <li><strong>Provide accessible labels.</strong> Always set meaningful <code>Content</code> text or use <code>AutomationProperties.LabeledBy</code> so screen readers can announce the purpose of each checkbox to visually impaired users.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — mutually exclusive toggle derived from ToggleButton; use when only one option is allowed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — the base class; useful when you need a checked-state button with a fully custom appearance.</li>
+      <li><a href="/apps/wpf-standard-control-demo/button.html">Button</a> — a stateless command trigger; use when no persistent on/off state is needed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — a common host for checkbox-per-row selection patterns in data lists.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -76,7 +171,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CheckBoxUsage" target="_blank" rel="noopener noreferrer">
-        View CheckBox source code on GitHub →
+        View CheckBox source code on GitHub &rarr;
       </a>
     </p>
   </section>

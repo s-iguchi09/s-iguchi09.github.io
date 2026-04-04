@@ -8,7 +8,7 @@
   <title>DockPanel | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF DockPanel control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF DockPanel layout panel reference: edge docking, LastChildFill, XAML examples, and best practices. Part of the WPF Standard Control Demo App.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,41 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>DockPanel</strong> is a layout container designed for edge-anchoring patterns. Each
+      child specifies a <code>DockPanel.Dock</code> attached property value — <code>Top</code>,
+      <code>Bottom</code>, <code>Left</code>, or <code>Right</code> — and the panel progressively
+      allocates space from that edge inward. Children are processed in XAML order: the first child
+      claims its docked edge from the full available space, the second child claims from the remaining
+      space, and so on. This stacking behaviour makes DockPanel extremely intuitive for building
+      structured shells.
+    </p>
+    <p>
+      The most important behavioural property is <code>LastChildFill</code>. When <code>True</code>
+      (the default), the last child in the panel fills whatever space remains after all preceding
+      children have been docked. This is the classic "content area" pattern: dock a menu to the top,
+      a status bar to the bottom, a navigation sidebar to the left, and let the last child —
+      typically a <code>Frame</code>, <code>ScrollViewer</code>, or <code>Grid</code> — fill the
+      central content area automatically.
+    </p>
+    <p>
+      DockPanel is deliberately simple and does not support row/column spanning, proportional sizing,
+      or auto-fitting in the way <code>Grid</code> does. Its strength is clarity: the XAML ordering
+      of children directly communicates the visual structure, making it easy to read and maintain.
+      For the main window chrome of a desktop application — toolbar, sidebar, status bar, content
+      area — DockPanel is often the most readable choice.
+    </p>
+    <p>
+      The <code>Panel.ZIndex</code> attached property works on DockPanel children just as on any
+      other panel, allowing overlapping elements to stack visually without changing their layout
+      positions. <code>Background</code> fills the entire panel area including any space not covered
+      by children, which matters when <code>LastChildFill</code> is <code>False</code> and there is
+      unclaimed central space.
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the DockPanel demo screen in the app.
@@ -39,7 +74,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,25 +87,95 @@
         <tr>
           <td><code>LastChildFill</code></td>
           <td><code>bool</code></td>
-          <td>When True, the last child fills all remaining space in the panel.</td>
+          <td>When <code>True</code> (default), the final child in the panel is stretched to occupy all remaining space after the other docked children have been laid out. When <code>False</code>, the last child is also docked to an edge and the centre of the panel may be empty.</td>
         </tr>
         <tr>
-          <td><code>Dock (DockPanel attached)</code></td>
+          <td><code>DockPanel.Dock (attached)</code></td>
           <td><code>Left / Top / Right / Bottom</code></td>
-          <td>Specifies which edge to dock each child element to.</td>
+          <td>Set on each child element to specify which edge of the remaining available area the child should be anchored to. Children are processed sequentially, and each docked child reduces the remaining space available for subsequent children.</td>
         </tr>
         <tr>
-          <td><code>Background (Panel)</code></td>
+          <td><code>Background</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background color of the panel.</td>
+          <td>Sets the background brush painted behind all children. When <code>LastChildFill</code> is <code>False</code>, the background shows through in the unclaimed central area. Setting a background is also required for the panel to participate in hit-testing when no opaque child covers the area.</td>
         </tr>
         <tr>
-          <td><code>ZIndex (Panel attached)</code></td>
+          <td><code>Panel.ZIndex (attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the drawing order of child elements.</td>
+          <td>Controls the render order of overlapping children. Higher values render on top. Although DockPanel children do not overlap in a typical layout, setting a high <code>ZIndex</code> on a floating panel or overlay child ensures it renders above all other content.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML shows a typical main window chrome layout using DockPanel:</p>
+    <pre><code class="language-xml">&lt;DockPanel LastChildFill="True"&gt;
+
+  &lt;!-- Top menu bar --&gt;
+  &lt;Menu DockPanel.Dock="Top"&gt;
+    &lt;MenuItem Header="_File"&gt;
+      &lt;MenuItem Header="_New" /&gt;
+      &lt;MenuItem Header="_Open" /&gt;
+    &lt;/MenuItem&gt;
+  &lt;/Menu&gt;
+
+  &lt;!-- Top toolbar --&gt;
+  &lt;ToolBar DockPanel.Dock="Top"&gt;
+    &lt;Button Content="New" /&gt;
+    &lt;Button Content="Save" /&gt;
+  &lt;/ToolBar&gt;
+
+  &lt;!-- Bottom status bar --&gt;
+  &lt;StatusBar DockPanel.Dock="Bottom"&gt;
+    &lt;StatusBarItem Content="Ready" /&gt;
+  &lt;/StatusBar&gt;
+
+  &lt;!-- Left navigation panel --&gt;
+  &lt;Border DockPanel.Dock="Left" Width="200"
+          Background="#F0F0F0" Padding="8"&gt;
+    &lt;TextBlock Text="Navigation" /&gt;
+  &lt;/Border&gt;
+
+  &lt;!-- Centre content area (LastChildFill) --&gt;
+  &lt;ScrollViewer&gt;
+    &lt;TextBlock Text="Main content goes here." Margin="16" /&gt;
+  &lt;/ScrollViewer&gt;
+
+&lt;/DockPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Main window chrome:</strong> The canonical use — docking a <code>Menu</code> and <code>ToolBar</code> to the top, a <code>StatusBar</code> to the bottom, and letting the content area fill the rest.</li>
+      <li><strong>Two-pane layouts:</strong> Docking a navigation or tree panel to the left and using <code>LastChildFill</code> to give the remaining width to a details or preview panel.</li>
+      <li><strong>Header/footer forms:</strong> Docking a <code>Border</code> header to the top and a button row to the bottom, with a <code>ScrollViewer</code> filling the middle for a long data-entry form.</li>
+      <li><strong>Toolbar rows:</strong> Stacking multiple <code>ToolBarTray</code> or custom <code>Border</code> elements at the top by docking each one to <code>Top</code> in sequence.</li>
+      <li><strong>Sidebar panels:</strong> Docking optional inspector or properties panels to the right side of the window, which can be collapsed by setting their width to zero or using a <code>Visibility</code> binding.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Order children deliberately.</strong> DockPanel processes children in XAML order. A child docked to <code>Top</code> that appears before a child docked to <code>Left</code> will span the full panel width; reversing the order would shorten it.</li>
+      <li><strong>Use Grid for complex layouts.</strong> DockPanel excels at simple shell structures but becomes cumbersome for more than 4–5 regions. Switch to a <code>Grid</code> when you need proportional sizing, spanning, or more than one content row.</li>
+      <li><strong>Set <code>Background</code> when hit-testing matters.</strong> An empty DockPanel (or any panel with a <code>null</code> background) will not receive mouse events in the uncovered region. Set <code>Background="Transparent"</code> to capture clicks without painting a colour.</li>
+      <li><strong>Avoid deeply nested DockPanels.</strong> While it is tempting to nest DockPanels for sub-sections, each level adds layout passes. Flatten the hierarchy with a single <code>Grid</code> to improve rendering performance and maintain readability.</li>
+      <li><strong>Use <code>GridSplitter</code> for resizable regions.</strong> DockPanel itself does not support user-resizable panes. Place the docked panels inside a <code>Grid</code> and add a <code>GridSplitter</code> to enable drag-to-resize behaviour.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — the most powerful layout panel; use for multi-row/column layouts with proportional or absolute sizing.</li>
+      <li><a href="/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — stacks children sequentially in one direction without edge-docking semantics.</li>
+      <li><a href="/apps/wpf-standard-control-demo/gridsplitter.html">GridSplitter</a> — adds drag-to-resize capability inside a Grid, complementing DockPanel-like pane layouts.</li>
+      <li><a href="/apps/wpf-standard-control-demo/wrappanel.html">WrapPanel</a> — flows children with automatic wrapping; suited for dynamic item counts.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -81,7 +186,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DockPanelUsage" target="_blank" rel="noopener noreferrer">
-        View DockPanel source code on GitHub →
+        View DockPanel source code on GitHub &rarr;
       </a>
     </p>
   </section>

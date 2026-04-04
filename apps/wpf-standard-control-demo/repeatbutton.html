@@ -8,7 +8,7 @@
   <title>RepeatButton | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF RepeatButton control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF RepeatButton control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,37 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; RepeatButton</p>
     <h1>RepeatButton <span class="category-badge">Inputs</span></h1>
-    <p>RepeatButton is a button that continuously fires Click events while it is held down. It is particularly useful for implementing increment/decrement buttons or scroll controls where repeated action is needed without releasing the mouse.</p>
+    <p>RepeatButton is a button that continuously fires Click events while it is held down. It is particularly useful for implementing increment/decrement buttons or scroll controls where repeated action is needed without releasing the mouse button.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>RepeatButton</strong> control extends the standard <code>ButtonBase</code> with
+      auto-repeat behavior. While a regular <code>Button</code> fires its <code>Click</code> event exactly
+      once per mouse-press-release cycle, RepeatButton fires <code>Click</code> repeatedly at a configurable
+      rate for as long as the mouse button (or touch contact) is held down. This makes it the natural choice
+      for controls that need continuous incremental updates.
+    </p>
+    <p>
+      The repeat timing is governed by two properties: <code>Delay</code> and <code>Interval</code>. When the
+      button is first pressed, the initial <code>Click</code> fires immediately. WPF then waits for
+      <code>Delay</code> milliseconds before starting the repeat sequence. After that initial pause, subsequent
+      <code>Click</code> events fire every <code>Interval</code> milliseconds until the button is released.
+      Both default to 250 ms, matching standard Windows system repeat settings.
+    </p>
+    <p>
+      RepeatButton is the building block for the scroll arrows inside <code>ScrollBar</code> and the
+      up/down arrows in <code>Slider</code>. When you need to build a custom numeric input spinner or a
+      custom scroll control, RepeatButton provides the repeat-fire mechanism out of the box without any
+      timer code in your ViewModel.
+    </p>
+    <p>
+      Like all ButtonBase-derived controls, RepeatButton supports the <code>Command</code> and
+      <code>CommandParameter</code> properties for MVVM binding, allowing the repeated action to be
+      encapsulated in an <code>ICommand</code> implementation. The command is executed on each repeated
+      <code>Click</code> event, enabling clean separation of UI logic.
+    </p>
   </section>
 
   <section class="content-section">
@@ -39,7 +69,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,15 +82,58 @@
         <tr>
           <td><code>Delay</code></td>
           <td><code>int (ms, default: 250)</code></td>
-          <td>Delay in milliseconds before repeating starts after the button is first pressed.</td>
+          <td>The time in milliseconds to wait after the initial press before the repeat sequence begins. A higher value gives users a moment to release the button before the repeat kicks in, reducing accidental over-increments. The default 250 ms matches standard Windows keyboard auto-repeat delay.</td>
         </tr>
         <tr>
           <td><code>Interval</code></td>
           <td><code>int (ms, default: 250)</code></td>
-          <td>Interval in milliseconds between repeated Click events.</td>
+          <td>The time in milliseconds between successive <code>Click</code> events once repeating has started. Smaller values produce faster repeat rates. Tune this together with <code>Delay</code> to match the expected precision of the operation — fast intervals suit coarse adjustments, while slower intervals work better for fine-grained numeric inputs.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>A simple numeric spinner using two RepeatButtons to increment and decrement a value:</p>
+    <pre><code class="language-xml">&lt;StackPanel Orientation="Horizontal"&gt;
+  &lt;RepeatButton Content="&#x25BC;" Width="24" Delay="300" Interval="100"
+               Command="{Binding DecrementCommand}" /&gt;
+  &lt;TextBox Width="60" Text="{Binding Value}" TextAlignment="Center" /&gt;
+  &lt;RepeatButton Content="&#x25B2;" Width="24" Delay="300" Interval="100"
+               Command="{Binding IncrementCommand}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Numeric spinners</strong> — Increment or decrement a numeric value continuously while the arrow button is held.</li>
+      <li><strong>Custom scroll controls</strong> — Provide up/down or left/right scroll arrows that scroll content as long as the button is pressed.</li>
+      <li><strong>Volume and zoom controls</strong> — Allow users to hold a button to smoothly raise or lower a value.</li>
+      <li><strong>Game-style controls</strong> — Implement continuous-fire actions in mini-games or interactive demos embedded in a WPF app.</li>
+      <li><strong>Carousel navigation</strong> — Advance slides or items rapidly when the next/previous button is held down.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Match Delay and Interval to the operation granularity</strong> — For fine-grained inputs (e.g., pixel-level adjustments), use a longer Interval (200–500 ms). For coarse operations (e.g., page scrolling), shorter intervals (50–100 ms) feel more responsive.</li>
+      <li><strong>Cap values in the ViewModel</strong> — RepeatButton fires Click rapidly; ensure your bound property or command clamps the value to its valid range to prevent overflow or underflow.</li>
+      <li><strong>Use Command instead of Click event</strong> — Binding to an ICommand keeps the repeat logic decoupled from the view and is easier to unit-test.</li>
+      <li><strong>Accessibility</strong> — Add a meaningful <code>AutomationProperties.Name</code> (e.g., "Increment quantity") so screen readers can announce the button's purpose rather than just its visual label.</li>
+      <li><strong>Visual feedback</strong> — Consider updating the display value on every repeat tick so users see the number changing in real time, reinforcing that the button is working.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/button.html">Button</a> — Single-fire click; use when repeat behavior is not needed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/slider.html">Slider</a> — Uses RepeatButton internally for its track; better for direct drag-based value selection.</li>
+      <li><a href="/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — Uses RepeatButton in its default scroll-bar template for the arrow buttons.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -71,7 +144,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RepeatButtonUsage" target="_blank" rel="noopener noreferrer">
-        View RepeatButton source code on GitHub →
+        View RepeatButton source code on GitHub &rarr;
       </a>
     </p>
   </section>

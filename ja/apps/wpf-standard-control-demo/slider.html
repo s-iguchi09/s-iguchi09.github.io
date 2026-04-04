@@ -1,133 +1,55 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Slider | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>Slider | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Slider コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Slider コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Slider</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Slider</p>
     <h1>Slider <span class="category-badge">Inputs</span></h1>
-    <p>Slider はトラック上でつまみをドラッグして、連続値または段階値を選択するコントロールです。音量コントロール、ズームレベル、その他の範囲ベースの入力に一般的に使用されます。</p>
+    <p>Slider はトラック上のサムをドラッグして値を選択するコントロールです。音量・ズームレベル・不透明度などの連続または段階的な値選択に使われます。目盛り表示やスナップ、選択範囲のハイライトをサポートします。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の Slider デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Slider</strong> は <code>RangeBase</code> を継承したコントロールで、<code>ProgressBar</code> と同じ <code>Minimum</code>、<code>Maximum</code>、<code>Value</code> プロパティを持ちます。サムをドラッグして値を設定し、<code>Value</code> を ViewModel にバインドするのが標準的な MVVM パターンです。</p>
+  <p><code>IsSnapToTickEnabled="True"</code> と <code>TickFrequency</code> を組み合わせることで、値を目盛りに吸着させて段階的な選択にできます。<code>Ticks</code> プロパティに <code>DoubleCollection</code> を設定すると、均等間隔でなく任意の位置に吸着点を設定できます。</p>
+  <p>目盛り表示は <code>TickPlacement</code> で制御します。<code>TopLeft</code> は上側（水平）または左側（垂直）、<code>BottomRight</code> は下側または右側、<code>Both</code> は両側に表示します。</p>
+  <p><code>AutoToolTipPlacement</code> を設定すると、ドラッグ中にサム近くに現在の値をツールチップ表示できます。<code>AutoToolTipPrecision</code> で小数点以下の桁数を指定します。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Minimum / Maximum / Value (RangeBase)</code></td>
-          <td><code>double</code></td>
-          <td>スライダーの最小値、最大値、現在値を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Orientation</code></td>
-          <td><code>Horizontal / Vertical</code></td>
-          <td>スライダーの向きを横方向または縦方向に設定します。</td>
-        </tr>
-        <tr>
-          <td><code>SmallChange / LargeChange</code></td>
-          <td><code>double</code></td>
-          <td>SmallChange は矢印キーでの移動量、LargeChange はPage Up/Downでの移動量です。</td>
-        </tr>
-        <tr>
-          <td><code>IsDirectionReversed</code></td>
-          <td><code>bool</code></td>
-          <td>True にすると値の増加方向が逆になります。</td>
-        </tr>
-        <tr>
-          <td><code>TickPlacement</code></td>
-          <td><code>None / TopLeft / BottomRight / Both</code></td>
-          <td>目盛りの表示位置を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>TickFrequency</code></td>
-          <td><code>double</code></td>
-          <td>目盛りの間隔を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>IsSnapToTickEnabled</code></td>
-          <td><code>bool</code></td>
-          <td>True にするとつまみが目盛りの位置にスナップします。</td>
-        </tr>
-        <tr>
-          <td><code>Ticks</code></td>
-          <td><code>DoubleCollection</code></td>
-          <td>カスタムな目盛りの位置を指定します。</td>
-        </tr>
-        <tr>
-          <td><code>SelectionStart / SelectionEnd / IsSelectionRangeEnabled</code></td>
-          <td><code>double / double / bool</code></td>
-          <td>選択範囲（ハイライト領域）の開始値・終了値と有効化を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>AutoToolTipPlacement</code></td>
-          <td><code>None / TopLeft / BottomRight</code></td>
-          <td>ドラッグ中に現在値を表示するツールチップの位置を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>AutoToolTipPrecision</code></td>
-          <td><code>int</code></td>
-          <td>ツールチップに表示する小数点以下の桁数を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Delay / Interval</code></td>
-          <td><code>int (ms)</code></td>
-          <td>キーボード入力の遅延と繰り返し間隔を設定します（RepeatButton から継承）。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Minimum / Maximum / Value (RangeBase)</code></td><td><code>double</code></td><td>値の最小値・最大値・現在値を設定します。Value は Minimum〜Maximum の範囲に収まります。</td></tr><tr><td><code>Orientation</code></td><td><code>Horizontal / Vertical</code></td><td>スライダーの向きを設定します。Horizontal（デフォルト）は左右方向、Vertical は上下方向です。</td></tr><tr><td><code>SmallChange / LargeChange</code></td><td><code>double</code></td><td>矢印キー/PageUp・Down での値変化量を設定します。キーボードアクセシビリティのために適切に設定します。</td></tr><tr><td><code>IsDirectionReversed</code></td><td><code>bool</code></td><td>True のとき値の増減方向を逆にします。最大値を左端（水平）や上端（垂直）に配置したい場合に使用します。</td></tr><tr><td><code>TickPlacement</code></td><td><code>None / TopLeft / BottomRight / Both</code></td><td>目盛りの表示位置を設定します。</td></tr><tr><td><code>TickFrequency</code></td><td><code>double</code></td><td>目盛りを表示する間隔と、IsSnapToTickEnabled=True のときの吸着間隔を設定します。</td></tr><tr><td><code>IsSnapToTickEnabled</code></td><td><code>bool</code></td><td>True のとき、値が目盛り位置または Ticks コレクションの値に吸着します。</td></tr><tr><td><code>AutoToolTipPlacement</code></td><td><code>None / TopLeft / BottomRight</code></td><td>ドラッグ中に現在の値を表示するツールチップの位置を設定します。</td></tr><tr><td><code>AutoToolTipPrecision</code></td><td><code>int</code></td><td>自動ツールチップに表示する小数点以下の桁数を設定します。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;Slider Minimum="0" Maximum="100"
+        Value="{Binding Volume, Mode=TwoWay,
+               UpdateSourceTrigger=PropertyChanged}"
+        Orientation="Horizontal"
+        TickPlacement="BottomRight" TickFrequency="10"
+        IsSnapToTickEnabled="True"
+        AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0"
+        SmallChange="1" LargeChange="10"
+        Width="300" /&gt;
 
+&lt;!-- 方向を逆にした垂直スライダー --&gt;
+&lt;Slider Orientation="Vertical" Minimum="0" Maximum="1"
+        Value="{Binding Opacity, Mode=TwoWay}"
+        IsDirectionReversed="True" Height="200" /&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>音量・オーディオコントロール</strong> — スピーカーの音量やバランスを直感的に調整する UI に使用します。</li><li><strong>ズームコントロール</strong> — 地図・画像・ドキュメントのズームレベルをスライダーで調整します。</li><li><strong>カラーピッカー</strong> — R・G・B チャンネルを 3 本のスライダーで調整するカスタムカラーピッカーを実装します。</li><li><strong>メディアタイムライン</strong> — 動画の再生位置をスライダーで表示・シークします。</li><li><strong>不透明度調整</strong> — 要素の Opacity を Slider の Value にバインドしてリアルタイムプレビューします。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>UpdateSourceTrigger=PropertyChanged でリアルタイム更新</strong> — 標準のバインドはフォーカスを失ったときに更新されます。ドラッグ中にリアルタイム更新するには UpdateSourceTrigger=PropertyChanged を使います。</li><li><strong>数値表示と組み合わせる</strong> — Slider と TextBlock（またはTextBox）を同じ Value にバインドして、数値もリアルタイム表示します。</li><li><strong>連続値には目盛り吸着を無効に</strong> — 0.0〜1.0 の不透明度のような連続値では IsSnapToTickEnabled=False、TickPlacement=None が自然な操作感を提供します。</li><li><strong>SmallChange/LargeChange をドメイン単位に合わせる</strong> — キーボード操作のためにドメインに合った増減量を設定します（1音量単位、5%ズームなど）。</li><li><strong>値の範囲を ViewModel でクランプ</strong> — TextBox から同じプロパティを編集する場合、[Minimum, Maximum] の範囲内に収まるようクランプ処理を実装します。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/progressbar.html">ProgressBar</a> — RangeBase の同じ継承元を持つ読み取り専用の進捗表示コントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — 内部でスライダー状のスクロールバーを使用。</li><li><a href="/ja/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — ドラッグなしで段階的に値を変えるボタン操作の代替。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/SliderUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Slider のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/SliderUsage" target="_blank" rel="noopener noreferrer">GitHub で Slider のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

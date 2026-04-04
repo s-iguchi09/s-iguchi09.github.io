@@ -8,7 +8,7 @@
   <title>Expander | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Expander control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF Expander control reference: collapsible sections, expand direction, XAML examples, and best practices. Part of the WPF Standard Control Demo App.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,38 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>Expander</strong> control is a <code>HeaderedContentControl</code> that wraps any
+      content in a collapsible section. It always displays a clickable header — which can contain plain
+      text or any complex WPF element — and shows or hides the content area based on the
+      <code>IsExpanded</code> state. When collapsed, only the header is visible, conserving vertical
+      (or horizontal, depending on <code>ExpandDirection</code>) space.
+    </p>
+    <p>
+      Internally, the default Expander template uses a <code>ToggleButton</code> as the header clickable
+      area and a <code>ContentPresenter</code> inside a collapsible region animated with a
+      <code>DoubleAnimation</code> on height or width. This means the expand/collapse transition is
+      smoothly animated by default in the standard WPF theme. Custom templates can replace this
+      animation with any transition style that suits the application's design language.
+    </p>
+    <p>
+      The <code>ExpandDirection</code> property determines how the content area grows relative to the
+      header. <code>Down</code> (default) expands the content below the header — the typical behaviour
+      for accordion-style vertical lists. <code>Up</code> reveals content above the header, useful for
+      panels anchored to the bottom of a window. <code>Left</code> and <code>Right</code> create
+      horizontal sliding panels, which can be used for sidebars or tool windows that expand in-line.
+    </p>
+    <p>
+      Because Expander inherits from <code>ContentControl</code>, its content can be any UIElement,
+      including complex nested layouts with forms, lists, or other interactive controls. The
+      <code>IsExpanded</code> property is bindable, making it easy to programmatically control
+      expansion state from a ViewModel — for example, automatically expanding an error section when
+      validation fails, or collapsing all sections except the active step in a wizard flow.
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the Expander demo screen in the app.
@@ -39,7 +71,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,40 +84,106 @@
         <tr>
           <td><code>IsExpanded</code></td>
           <td><code>bool</code></td>
-          <td>Sets whether the content is visible. True expands, False collapses.</td>
+          <td>Gets or sets whether the content area is currently visible. Bind this two-way to a ViewModel boolean to programmatically open or close sections — for example, auto-expanding the section that contains a validation error, or restoring the previously expanded state from user preferences.</td>
         </tr>
         <tr>
           <td><code>ExpandDirection</code></td>
           <td><code>Down / Up / Left / Right</code></td>
-          <td>Sets the direction in which the content expands.</td>
+          <td>Determines the direction in which the content panel grows relative to the header. <code>Down</code> is the most common choice; use <code>Left</code> or <code>Right</code> for horizontal panel-expansion effects in navigation drawers or tool palettes.</td>
         </tr>
         <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
           <td><code>object / bool (ReadOnly)</code></td>
-          <td>Sets the text or content to display in the header.</td>
+          <td>Sets the content shown in the always-visible header area. You can assign a plain string for text headers or assign a UIElement for rich headers containing icons, counters, or status indicators. <code>HasHeader</code> is a read-only flag that is <code>True</code> whenever <code>Header</code> is non-null.</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>Sets the content to display when expanded.</td>
+          <td>The content displayed inside the expandable panel. This can be any WPF element, from a simple <code>TextBlock</code> to a full data-entry <code>Grid</code> with bindings and validation. The content is not unloaded when collapsed — it remains in the visual tree but is hidden.</td>
         </tr>
         <tr>
-          <td><code>Padding / FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
-          <td><code>various</code></td>
-          <td>Sets padding and font-related properties.</td>
+          <td><code>Padding / FontWeight / FontStyle / FontSize / FontFamily (Control)</code></td>
+          <td><code>Thickness / FontWeight / FontStyle / double / FontFamily</code></td>
+          <td>Standard <code>Control</code> typography and spacing properties that affect both the header and content areas. Setting <code>FontWeight="Bold"</code> on the Expander makes header text bold, distinguishing section titles from body content in forms.</td>
         </tr>
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets background and foreground (text) colors.</td>
+          <td>Sets the background brush for the entire Expander area and the foreground (text/icon) colour for the header. Customising these lets Expanders blend into or stand out from their container, e.g. using a tinted background to visually group related form sections.</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Sets the border color and thickness.</td>
+          <td>Controls the colour and width of the border drawn around the Expander. A clear border delineates the collapsible section from adjacent content, which is particularly important in dense settings dialogs where multiple Expanders are stacked.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML shows a stacked accordion-style settings panel using multiple Expanders:</p>
+    <pre><code class="language-xml">&lt;StackPanel Margin="16" Spacing="4"&gt;
+
+  &lt;Expander Header="General Settings" IsExpanded="True"&gt;
+    &lt;StackPanel Margin="8,4,0,8" Spacing="6"&gt;
+      &lt;CheckBox Content="Start application on login"
+                IsChecked="{Binding StartOnLogin}" /&gt;
+      &lt;CheckBox Content="Show notifications"
+                IsChecked="{Binding ShowNotifications}" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/Expander&gt;
+
+  &lt;Expander Header="Appearance" IsExpanded="False"&gt;
+    &lt;StackPanel Margin="8,4,0,8" Spacing="6"&gt;
+      &lt;ComboBox Width="160"
+                ItemsSource="{Binding Themes}"
+                SelectedItem="{Binding SelectedTheme}"
+                HorizontalAlignment="Left" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/Expander&gt;
+
+  &lt;!-- Expander expanding upward (anchored to bottom) --&gt;
+  &lt;Expander Header="Advanced" ExpandDirection="Down"
+             FontWeight="SemiBold"
+             BorderBrush="#DDD" BorderThickness="1"&gt;
+    &lt;TextBlock TextWrapping="Wrap" Margin="8"
+               Text="Advanced settings affect application performance and stability." /&gt;
+  &lt;/Expander&gt;
+
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Accordion settings panels:</strong> A vertical stack of Expanders representing settings categories (General, Appearance, Advanced), where the user expands only the section they need.</li>
+      <li><strong>Optional form sections:</strong> A collapsible "Additional Information" section at the bottom of a data-entry form that most users do not need but that power users can expand.</li>
+      <li><strong>FAQ lists:</strong> A list of question-header Expanders where the answer content is hidden until the user clicks to expand, saving vertical space on help and documentation screens.</li>
+      <li><strong>Wizard steps:</strong> Each step of a multi-step form inside its own Expander, with the ViewModel controlling <code>IsExpanded</code> to reveal the current step and collapse completed ones.</li>
+      <li><strong>Sidebar tool palettes:</strong> Expandable groups of tools or properties in a horizontal <code>ExpandDirection="Right"</code> configuration, mimicking IDE-style collapsible tool sections.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Bind <code>IsExpanded</code></strong> to ViewModel properties to persist and restore expansion state across sessions. Saving each section's state to user settings gives a polished, professional experience.</li>
+      <li><strong>Use rich <code>Header</code> content</strong> to convey section status. Embedding a <code>TextBlock</code> showing an item count, a warning icon, or a completion checkmark in the header tells users what to expect before expanding.</li>
+      <li><strong>Avoid placing heavyweight controls</strong> (large <code>DataGrid</code>, video players) inside collapsed Expanders if their initialisation cost is high. Use lazy loading via <code>DataTemplateSelector</code> or deferred content patterns to construct content only when the Expander is expanded.</li>
+      <li><strong>Consider mutual exclusion</strong> in accordion patterns. Implement a ViewModel that collapses all sections when one is expanded, preventing the page from becoming excessively tall when the user opens multiple sections at once.</li>
+      <li><strong>Test keyboard navigation.</strong> The Expander header is focusable and responds to <kbd>Space</kbd> and <kbd>Enter</kbd> to toggle expansion. Verify that all content inside is reachable via <kbd>Tab</kbd> when expanded, and that focus moves correctly when the section collapses.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — a non-collapsible bordered group with a header; use when content should always be visible but still visually grouped.</li>
+      <li><a href="/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — organises content into tabs instead of collapsible sections; better when all sections can be open simultaneously.</li>
+      <li><a href="/apps/wpf-standard-control-demo/treeview.html">TreeView</a> — hierarchical collapsible nodes; use when items have a parent-child data relationship rather than a flat section structure.</li>
+      <li><a href="/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — wrap a stack of Expanders in a ScrollViewer so the page remains scrollable when many sections are expanded simultaneously.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -96,7 +194,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ExpanderUsage" target="_blank" rel="noopener noreferrer">
-        View Expander source code on GitHub →
+        View Expander source code on GitHub &rarr;
       </a>
     </p>
   </section>

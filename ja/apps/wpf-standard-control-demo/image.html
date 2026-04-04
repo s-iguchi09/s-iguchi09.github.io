@@ -7,82 +7,50 @@
   <meta charset="UTF-8">
   <title>Image | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Image コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Image コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Image</p>
     <h1>Image <span class="category-badge">Graphics</span></h1>
-    <p>Image はファイル、URI、リソースなどさまざまなソースから画像を表示するコントロールです。多様な画像形式をサポートし、コンテナに合わせて画像を引き伸ばす方法を制御するプロパティを提供します。</p>
+    <p>Image は URI、ファイルパス、アプリケーションリソースなどさまざまなソースから画像を表示するコントロールです。複数の画像フォーマットに対応し、コンテナに対する画像の拡大縮小方法を制御できます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の Image デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Image</strong> コントロールは <code>FrameworkElement</code> を継承したシンプルな画像表示要素です。<code>Source</code> プロパティに <code>BitmapImage</code>、<code>DrawingImage</code>、<code>RenderTargetBitmap</code> などの <code>ImageSource</code> 派生クラスを設定して使用します。</p>
+  <p>XAML では <code>Source</code> に URI 文字列を設定するだけで、WPF が自動的に <code>BitmapImage</code> に変換します。アプリのリソースに埋め込んだ画像は <code>/AssemblyName;component/Images/logo.png</code> 形式の URI でアクセスできます。</p>
+  <p><code>Stretch</code> プロパティで Image がコンテナに対してどのようにサイズ調整されるかを制御します。<code>Uniform</code> はアスペクト比を保ちながら収まるようにスケール、<code>UniformToFill</code> はアスペクト比を保ちながらコンテナを完全に埋めます（端がクリップされる場合あり）。</p>
+  <p>高 DPI 環境では、<code>RenderOptions.BitmapScalingMode</code> 添付プロパティで補間方法を制御します。<code>HighQuality</code> は滑らかな拡大縮小を提供し、<code>NearestNeighbor</code> はピクセルアート画像をシャープに表示します。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の Image デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Source</code></td>
-          <td><code>ImageSource (URI / file path)</code></td>
-          <td>表示する画像のソースを設定します。ファイルパス、URI、またはリソースを指定できます。</td>
-        </tr>
-        <tr>
-          <td><code>Stretch</code></td>
-          <td><code>None / Fill / Uniform / UniformToFill</code></td>
-          <td>画像をコンテナに合わせるスケーリング方法を設定します。None: そのまま、Fill: 引き伸ばし、Uniform: アスペクト比維持、UniformToFill: 余白なしでアスペクト比維持。</td>
-        </tr>
-        <tr>
-          <td><code>StretchDirection</code></td>
-          <td><code>UpOnly / DownOnly / Both</code></td>
-          <td>スケーリングの方向を制御します。UpOnly: 拡大のみ、DownOnly: 縮小のみ、Both: 両方。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Source</code></td><td><code>ImageSource (URI / file path)</code></td><td>表示する画像のソースを設定します。URI 文字列、BitmapImage オブジェクト、またはリソース URI を指定できます。DataBinding でバインドする場合は ImageSource 型か URI → BitmapImage の変換が必要です。</td></tr>
+<tr><td><code>Stretch</code></td><td><code>None / Fill / Uniform / UniformToFill</code></td><td>画像がコンテナに対してどのようにスケールされるかを設定します。Uniform はアスペクト比を保ちながら収まるようスケール、Fill はアスペクト比を無視して引き伸ばします。</td></tr>
+<tr><td><code>StretchDirection</code></td><td><code>UpOnly / DownOnly / Both</code></td><td>スケールの方向を制限します。UpOnly は拡大のみ許可（縮小しない）、DownOnly は縮小のみ許可（拡大しない）、Both は両方向にスケールします。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- リソース画像 --&gt;
+&lt;Image Source="/Images/logo.png" Stretch="Uniform"
+       Width="200" Height="100" /&gt;
 
+&lt;!-- ViewModel からバインド --&gt;
+&lt;Image Source="{Binding ThumbnailUri}" Stretch="UniformToFill"
+       Width="120" Height="90" /&gt;
+
+&lt;!-- 高 DPI 向け品質設定 --&gt;
+&lt;Image Source="/Icons/save.png" Stretch="None"
+       RenderOptions.BitmapScalingMode="HighQuality" /&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>アプリロゴの表示</strong> — ウィンドウヘッダーや起動画面にアプリアイコンを表示します。</li><li><strong>製品・商品画像</strong> — ECサイト風アプリで製品の写真をサムネイルや拡大表示に使います。</li><li><strong>ユーザーアバター</strong> — プロフィール画像をサークル形にクリップして表示します（Border の ClipToBounds と組み合わせ）。</li><li><strong>地図・チャート画像</strong> — 外部サービスから取得した地図画像や生成したチャート画像をバインドして表示します。</li><li><strong>ツールバーアイコン</strong> — ツールバーボタンの Content として小さなアイコン画像を配置します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>アスペクト比を保つには Uniform を使う</strong> — 写真など比率が重要な画像には Stretch="Uniform" を使って歪まないようにします。</li><li><strong>BitmapImage の CacheOption</strong> — 大量の画像を扱う場合は BitmapImage の CacheOption に BitmapCacheOption.OnLoad を設定してデコードを前倒しにします。</li><li><strong>Viewbox との違いを理解する</strong> — Image 自体に Stretch プロパティがあります。Viewbox でラップするより Image の Stretch を使うほうがシンプルです。</li><li><strong>StretchDirection でダウンスケールのみ許可</strong> — 小さなアイコン画像が大きなコンテナで拡大してぼけないよう StretchDirection="DownOnly" を設定します。</li><li><strong>SVG は直接表示不可</strong> — WPF の Image は SVG に対応していません。SVG を表示するにはサードパーティライブラリまたは Path/Canvas での再実装が必要です。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/viewbox.html">Viewbox</a> — 任意の要素をスケーリングして表示するデコレーター。</li><li><a href="/ja/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — 画像に重ねて要素を配置する場合に組み合わせます。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ImageUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Image のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ImageUsage" target="_blank" rel="noopener noreferrer">GitHub で Image のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>
