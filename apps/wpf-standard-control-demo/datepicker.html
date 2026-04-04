@@ -8,7 +8,7 @@
   <title>DatePicker | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF DatePicker control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF DatePicker control reference: date selection, range restrictions, format options, XAML examples, and best practices.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,38 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>DatePicker</strong> provides a compact, user-friendly way to select a calendar date
+      without requiring the user to type raw date strings. It renders as a text field showing the selected
+      date and a small calendar-button that, when clicked, opens a popup <code>Calendar</code> control.
+      Users can navigate months by clicking the month/year header and select any date with a single click.
+      The calendar closes automatically on selection, placing the chosen date into the text field.
+    </p>
+    <p>
+      The core value is exposed through <code>SelectedDate</code>, a nullable <code>DateTime?</code>
+      property that integrates cleanly with WPF data binding. When bound to a ViewModel property
+      two-way, the selected date updates the model immediately on selection. The <code>Text</code>
+      property reflects the formatted text in the input field and can differ from the
+      <code>SelectedDate</code> value if the user has typed an invalid or partial date string.
+    </p>
+    <p>
+      Date range restrictions are applied through <code>DisplayDateStart</code> and
+      <code>DisplayDateEnd</code>, which cause out-of-range dates to appear greyed out and
+      unselectable in the popup calendar. <code>DisplayDate</code> controls which month is
+      initially shown when the calendar opens, regardless of the currently selected date. This
+      is useful for booking systems where you want to pre-navigate to a relevant month.
+    </p>
+    <p>
+      The <code>SelectedDateFormat</code> property toggles between <code>Short</code> (e.g., "12/31/2025")
+      and <code>Long</code> (e.g., "Wednesday, December 31, 2025") display formats, using the
+      current culture settings. <code>FirstDayOfWeek</code> lets you configure which day starts
+      each week row in the calendar — important for applications targeting multiple locales where
+      conventions differ (Sunday vs. Monday).
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the DatePicker demo screen in the app.
@@ -39,7 +71,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,45 +84,107 @@
         <tr>
           <td><code>SelectedDate</code></td>
           <td><code>DateTime?</code></td>
-          <td>Gets or sets the currently selected date.</td>
+          <td>The currently selected date as a nullable <code>DateTime</code>. A <code>null</code> value means no date is selected and the text field shows as empty. Bind this two-way to a ViewModel <code>DateTime?</code> property to read and set the selected date from code.</td>
         </tr>
         <tr>
           <td><code>DisplayDate</code></td>
           <td><code>DateTime</code></td>
-          <td>Sets the month displayed in the calendar.</td>
+          <td>Controls which month is shown when the calendar popup first opens. By default this matches <code>SelectedDate</code>, but you can override it to pre-navigate to a specific month — for example, opening a booking calendar one month in the future.</td>
         </tr>
         <tr>
-          <td><code>DisplayDateStart / DisplayDateEnd</code></td>
+          <td><code>DisplayDateStart</code></td>
           <td><code>DateTime?</code></td>
-          <td>Sets the start and end of the selectable date range.</td>
+          <td>The earliest date the user can select. Dates before this value appear greyed out in the calendar and cannot be clicked. Use this to prevent selecting past dates in booking or scheduling scenarios.</td>
+        </tr>
+        <tr>
+          <td><code>DisplayDateEnd</code></td>
+          <td><code>DateTime?</code></td>
+          <td>The latest date the user can select. Dates after this value are greyed out. Combine with <code>DisplayDateStart</code> to define a valid selection window, such as "next 30 days only" for appointment booking.</td>
         </tr>
         <tr>
           <td><code>FirstDayOfWeek</code></td>
           <td><code>DayOfWeek</code></td>
-          <td>Sets the first day of the week displayed in the calendar.</td>
+          <td>Sets which day of the week appears in the leftmost column of the calendar grid. The default is determined by the thread's current culture. Override this to <code>Monday</code> for European locales or <code>Sunday</code> for US conventions.</td>
         </tr>
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether the calendar popup is open.</td>
+          <td>Gets or sets whether the calendar popup is open. You can bind or set this programmatically to open the calendar without a button click — useful for keyboard-driven workflows where pressing a key should reveal the picker.</td>
         </tr>
         <tr>
           <td><code>IsTodayHighlighted</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether today's date is highlighted in the calendar.</td>
+          <td>When <code>True</code> (the default), today's date is visually highlighted with a distinct style in the popup calendar. Set to <code>False</code> to remove this highlight if your date selection is not relative to today and the highlight could mislead users.</td>
         </tr>
         <tr>
           <td><code>SelectedDateFormat</code></td>
           <td><code>Short / Long</code></td>
-          <td>Sets the format for displaying the date in the text box.</td>
+          <td>Controls how the selected date is formatted in the text field. <code>Short</code> uses the culture's short date pattern; <code>Long</code> uses the long date pattern including the full day name and month name. Both are localisation-aware.</td>
         </tr>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>Gets the text currently displayed in the text box.</td>
+          <td>The raw string currently shown in the text field. This may differ from <code>SelectedDate</code> if the user has typed a partial or invalid date. Monitoring <code>Text</code> is useful for real-time validation feedback before the date is committed.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates common DatePicker configurations including range restriction and format selection:</p>
+    <pre><code class="language-xml">&lt;StackPanel Margin="16" Spacing="12"&gt;
+
+  &lt;!-- Basic date picker bound to a ViewModel property --&gt;
+  &lt;DatePicker SelectedDate="{Binding BirthDate}"
+              IsTodayHighlighted="True"
+              SelectedDateFormat="Short" /&gt;
+
+  &lt;!-- Booking date restricted to today or later --&gt;
+  &lt;DatePicker SelectedDate="{Binding CheckInDate}"
+              DisplayDateStart="{x:Static sys:DateTime.Today}"
+              FirstDayOfWeek="Monday"
+              SelectedDateFormat="Long" /&gt;
+
+  &lt;!-- Date range: only current month --&gt;
+  &lt;DatePicker SelectedDate="{Binding ReportDate}"
+              DisplayDateStart="{Binding MonthStart}"
+              DisplayDateEnd="{Binding MonthEnd}"
+              DisplayDate="{Binding MonthStart}"
+              IsTodayHighlighted="False" /&gt;
+
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Date of birth entry:</strong> A DatePicker with <code>DisplayDateEnd</code> set to today and <code>DisplayDateStart</code> set 120 years ago, preventing obviously invalid selections.</li>
+      <li><strong>Hotel/flight booking:</strong> Check-in and check-out DatePickers where the check-out <code>DisplayDateStart</code> is bound to the check-in <code>SelectedDate</code> plus one day.</li>
+      <li><strong>Report date range selector:</strong> Two DatePickers (From / To) where the To picker's minimum date is always constrained by the From picker's selection.</li>
+      <li><strong>Event scheduling:</strong> A calendar-style booking form with <code>FirstDayOfWeek</code> set appropriately for the target locale and today highlighted to help users orient quickly.</li>
+      <li><strong>Deadline or expiry date fields:</strong> Contract or subscription expiry fields where past dates are greyed out and the user can only select future dates.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Bind to <code>DateTime?</code></strong> (nullable) in your ViewModel rather than <code>DateTime</code>, because unset date fields are naturally represented as <code>null</code>, not a sentinel value like <code>DateTime.MinValue</code>.</li>
+      <li><strong>Validate the <code>Text</code> property</strong> alongside <code>SelectedDate</code>. If a user types an invalid date string, <code>SelectedDate</code> may remain <code>null</code> while <code>Text</code> contains the user input, requiring a clear validation message.</li>
+      <li><strong>Set <code>DisplayDate</code> on open</strong> for future-biased pickers (booking forms). Opening the calendar three months ahead saves the user navigation steps when selecting future dates.</li>
+      <li><strong>Use <code>StringFormat</code> in binding</strong> if you need a custom display pattern beyond Short/Long. Bind <code>Text</code> with <code>StringFormat='{0:yyyy-MM-dd}'</code> for ISO 8601 display, though this requires parsing logic for user input.</li>
+      <li><strong>Test localisation.</strong> Date format, first day of week, and month names all vary by culture. Always test DatePicker behaviour with representative non-English locales to ensure formatting is correct and usable.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/calendar.html">Calendar</a> — the standalone calendar control embedded inside DatePicker; use it directly when always-visible date selection is needed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — plain text entry; an alternative for date input when a calendar popup would feel excessive, combined with a masked input converter.</li>
+      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — useful for selecting from a short, fixed list of date-related options such as month or year when a full calendar is unnecessary.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -101,7 +195,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DatePickerUsage" target="_blank" rel="noopener noreferrer">
-        View DatePicker source code on GitHub →
+        View DatePicker source code on GitHub &rarr;
       </a>
     </p>
   </section>

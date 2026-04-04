@@ -8,7 +8,7 @@
   <title>GridSplitter | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF GridSplitter control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF GridSplitter control reference: resizable pane layouts, resize direction, preview, XAML examples, and best practices. Part of the WPF Standard Control Demo App.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,42 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>GridSplitter</strong> is a specialised thumb control that lives inside a
+      <code>Grid</code> cell and allows users to resize adjacent rows or columns by dragging. Unlike a
+      window resize handle, GridSplitter operates entirely within the layout tree — it redistributes
+      pixel space between the star-sized or fixed-pixel rows and columns on either side of it without
+      changing the window size. This makes it the standard technique for building split-pane and
+      multi-pane IDE-style layouts in WPF.
+    </p>
+    <p>
+      GridSplitter descends from <code>Thumb</code>, so it inherits all thumb behaviour: it raises
+      <code>DragStarted</code>, <code>DragDelta</code>, and <code>DragCompleted</code> events, and it
+      exposes the read-only <code>IsDragging</code> property while a drag is in progress. In practice,
+      most applications only need to configure a handful of properties — <code>ResizeDirection</code>,
+      <code>ResizeBehavior</code>, and optionally <code>ShowsPreview</code> — to get a fully functional
+      resizable splitter.
+    </p>
+    <p>
+      The <code>ResizeDirection</code> property specifies whether the splitter resizes columns or rows.
+      When set to <code>Auto</code>, WPF infers the direction from the splitter's alignment: a
+      <code>HorizontalAlignment="Stretch"</code> splitter in a grid column that spans one column will
+      resize columns; a <code>VerticalAlignment="Stretch"</code> splitter spanning one row will resize
+      rows. Making the direction explicit removes this ambiguity and prevents surprising behaviour when
+      the splitter is placed in a shared-size or spanning cell.
+    </p>
+    <p>
+      <code>ResizeBehavior</code> controls which pair of rows or columns changes size during a drag.
+      <code>PreviousAndNext</code> — the most intuitive choice for evenly balanced panes — shrinks one
+      neighbour while growing the other, keeping the total size constant. The <code>CurrentAndNext</code>
+      and <code>PreviousAndCurrent</code> modes grow or shrink only one side, pushing or pulling the
+      splitter's own cell. Understanding this distinction is essential for multi-pane layouts with more
+      than two resizable regions.
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the GridSplitter demo screen in the app.
@@ -39,7 +75,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,40 +88,124 @@
         <tr>
           <td><code>ResizeDirection</code></td>
           <td><code>Auto / Columns / Rows</code></td>
-          <td>Sets the resize direction (columns or rows). Auto infers from placement.</td>
+          <td>Determines whether the splitter resizes adjacent columns or rows. <code>Auto</code> infers the direction from the splitter's alignment properties, but setting this explicitly to <code>Columns</code> or <code>Rows</code> avoids ambiguity and makes XAML intent immediately clear to future maintainers.</td>
         </tr>
         <tr>
           <td><code>ResizeBehavior</code></td>
           <td><code>BasedOnAlignment / CurrentAndNext / PreviousAndCurrent / PreviousAndNext</code></td>
-          <td>Sets which pair of rows/columns to resize.</td>
+          <td>Specifies which adjacent rows or columns are redistributed when the splitter is dragged. <code>PreviousAndNext</code> keeps the total combined size constant by shrinking one neighbour and growing the other. <code>BasedOnAlignment</code> infers the pair from the splitter's alignment, similar to how <code>ResizeDirection="Auto"</code> works.</td>
         </tr>
         <tr>
           <td><code>ShowsPreview</code></td>
           <td><code>bool</code></td>
-          <td>When True, shows a preview while dragging. When False, resizes immediately.</td>
+          <td>When <code>True</code>, dragging shows a translucent preview bar at the target position and only commits the resize on mouse-up. When <code>False</code> (default), the actual column or row sizes update in real time as the user drags, giving immediate visual feedback. Use <code>True</code> for heavy layouts where live resize causes noticeable lag.</td>
         </tr>
         <tr>
           <td><code>DragIncrement</code></td>
           <td><code>double</code></td>
-          <td>Sets the minimum resize increment (pixels) when dragging.</td>
+          <td>The minimum pixel distance the splitter moves per drag event. The default is 1 pixel (effectively continuous). Increase this value to snap the splitter to coarser increments, for example to enforce that panes stay at multiples of 8 pixels in a design-tool-style layout.</td>
         </tr>
         <tr>
           <td><code>KeyboardIncrement</code></td>
           <td><code>double</code></td>
-          <td>Sets the resize increment (pixels) for keyboard operations.</td>
+          <td>The number of pixels the splitter moves per keyboard arrow-key press when the splitter has focus. The default is 10 pixels. This is an important accessibility setting — ensure that keyboard increment is large enough to be useful but small enough for precise adjustment.</td>
         </tr>
         <tr>
           <td><code>PreviewStyle</code></td>
           <td><code>Style</code></td>
-          <td>Customizes the style of the drag preview.</td>
+          <td>Customises the visual style of the drag preview element shown when <code>ShowsPreview="True"</code>. By default the preview is a translucent rectangle, but you can apply a <code>Style</code> targeting <code>Control</code> to change its colour, opacity, or border to match your application's theme.</td>
         </tr>
         <tr>
           <td><code>IsDragging (Thumb)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>Read-only property indicating whether dragging is in progress.</td>
+          <td>A read-only inherited property from <code>Thumb</code> that is <code>True</code> while the user is actively dragging the splitter. Use it in triggers within a custom control template to provide visual feedback — such as highlighting the splitter bar — during an active drag operation.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML creates a horizontal two-pane layout with a resizable vertical splitter and a vertical two-pane layout with a horizontal splitter:</p>
+    <pre><code class="language-xml">&lt;!-- Horizontal split: left tree + right content --&gt;
+&lt;Grid&gt;
+  &lt;Grid.ColumnDefinitions&gt;
+    &lt;ColumnDefinition Width="200" MinWidth="100" /&gt;
+    &lt;ColumnDefinition Width="4" /&gt;     &lt;!-- splitter column --&gt;
+    &lt;ColumnDefinition Width="*" MinWidth="200" /&gt;
+  &lt;/Grid.ColumnDefinitions&gt;
+
+  &lt;TreeView Grid.Column="0" /&gt;
+
+  &lt;GridSplitter Grid.Column="1"
+                Width="4"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                ResizeDirection="Columns"
+                ResizeBehavior="PreviousAndNext"
+                ShowsPreview="False"
+                KeyboardIncrement="10"
+                Background="#CCCCCC" /&gt;
+
+  &lt;ScrollViewer Grid.Column="2"&gt;
+    &lt;TextBlock Text="Main content" Margin="8" /&gt;
+  &lt;/ScrollViewer&gt;
+&lt;/Grid&gt;
+
+&lt;!-- Vertical split: top list + bottom details --&gt;
+&lt;Grid&gt;
+  &lt;Grid.RowDefinitions&gt;
+    &lt;RowDefinition Height="*" MinHeight="80" /&gt;
+    &lt;RowDefinition Height="4" /&gt;     &lt;!-- splitter row --&gt;
+    &lt;RowDefinition Height="160" MinHeight="60" /&gt;
+  &lt;/Grid.RowDefinitions&gt;
+
+  &lt;ListView Grid.Row="0" /&gt;
+
+  &lt;GridSplitter Grid.Row="1"
+                Height="4"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                ResizeDirection="Rows"
+                ResizeBehavior="PreviousAndNext"
+                Background="#CCCCCC" /&gt;
+
+  &lt;Border Grid.Row="2" Background="#F9F9F9" Padding="8"&gt;
+    &lt;TextBlock Text="Details panel" /&gt;
+  &lt;/Border&gt;
+&lt;/Grid&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>IDE-style split views:</strong> File explorer tree on the left and editor pane on the right, with a vertical GridSplitter allowing users to widen the tree or give more space to the editor.</li>
+      <li><strong>Master-detail layouts:</strong> A top list of records with a detail panel below, separated by a horizontal GridSplitter so users can allocate more height to whichever section they are working in.</li>
+      <li><strong>Multi-pane dashboards:</strong> Three-column dashboards (navigation | main content | inspector) with two vertical splitters, each independently resizable.</li>
+      <li><strong>Log viewers:</strong> A code or document view on top and a log/output panel below, with a horizontal splitter to balance the two panes as the user switches focus between writing and reading output.</li>
+      <li><strong>Comparison tools:</strong> Side-by-side text or image comparison panels separated by a centred splitter, allowing users to temporarily maximise one side for closer inspection.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Dedicate a row or column to the splitter.</strong> Place the GridSplitter in its own zero-or-thin-sized row/column rather than sharing a cell with content. This makes hit-testing reliable and keeps XAML intent clear.</li>
+      <li><strong>Set <code>MinWidth</code> / <code>MinHeight</code></strong> on resizable rows and columns to prevent panes from being dragged to zero size, which can leave the UI in an unusable state the user cannot recover from without restarting.</li>
+      <li><strong>Use <code>ShowsPreview="True"</code></strong> in layouts with expensive rendering (large <code>DataGrid</code> with thousands of rows, embedded browser controls) to prevent continuous layout recalculations during drag, which cause stuttering.</li>
+      <li><strong>Persist pane sizes</strong> between sessions by binding column <code>Width</code> or row <code>Height</code> to ViewModel properties that are saved to user settings. Users strongly prefer having their customised pane layout restored when they reopen the application.</li>
+      <li><strong>Ensure keyboard accessibility.</strong> A focused GridSplitter responds to arrow keys for resizing. Set a reasonable <code>KeyboardIncrement</code> and verify via keyboard-only testing that the splitter is reachable with <kbd>Tab</kbd> and operable without a mouse.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — GridSplitter only works inside a Grid; understanding Grid row/column definitions is a prerequisite.</li>
+      <li><a href="/apps/wpf-standard-control-demo/dockpanel.html">DockPanel</a> — an alternative for fixed-edge layouts; does not support runtime resizing by the user.</li>
+      <li><a href="/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — typically wraps the content panels on either side of a GridSplitter when content may exceed the pane size.</li>
+      <li><a href="/apps/wpf-standard-control-demo/treeview.html">TreeView</a> — a common occupant of the left pane in a GridSplitter-divided layout, such as a file-browser tree.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -96,7 +216,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridSplitterUsage" target="_blank" rel="noopener noreferrer">
-        View GridSplitter source code on GitHub →
+        View GridSplitter source code on GitHub &rarr;
       </a>
     </p>
   </section>

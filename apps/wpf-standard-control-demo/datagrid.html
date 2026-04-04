@@ -8,7 +8,7 @@
   <title>DataGrid | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF DataGrid control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF DataGrid control reference: sorting, editing, column types, XAML examples, and best practices. Part of the WPF Standard Control Demo App.">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -27,6 +27,43 @@
   </section>
 
   <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>DataGrid</strong> is the most feature-rich data-presentation control in the WPF
+      standard library. It renders a two-dimensional table of rows and columns, directly analogous to a
+      spreadsheet or database table view. Columns can be auto-generated from the bound data source's
+      property reflection, or defined explicitly in XAML using typed column classes:
+      <code>DataGridTextColumn</code>, <code>DataGridCheckBoxColumn</code>,
+      <code>DataGridComboBoxColumn</code>, <code>DataGridHyperlinkColumn</code>, and the highly
+      flexible <code>DataGridTemplateColumn</code> for fully custom cell content.
+    </p>
+    <p>
+      Editing is built in: double-clicking or pressing <kbd>F2</kbd> puts a cell into edit mode, where
+      the appropriate editor for the column type is shown. <code>DataGridTextColumn</code> shows a
+      <code>TextBox</code>; <code>DataGridCheckBoxColumn</code> shows a <code>CheckBox</code>; and
+      <code>DataGridComboBoxColumn</code> shows a <code>ComboBox</code>. Changes are committed on focus
+      loss or <kbd>Enter</kbd>, and cancelled with <kbd>Escape</kbd>. Row-level validation is supported
+      through <code>IDataErrorInfo</code> or <code>INotifyDataErrorInfo</code>, and error indicators
+      appear automatically in the row header.
+    </p>
+    <p>
+      Sorting is enabled by default for auto-generated columns and for explicitly defined columns when
+      <code>CanUserSortColumns="True"</code>. Clicking a column header sorts ascending; clicking again
+      sorts descending; a third click reverts to unsorted. Grouping and filtering require a
+      <code>CollectionViewSource</code> wrapper in the ViewModel — the DataGrid renders group headers
+      automatically when the source view has group descriptions applied.
+    </p>
+    <p>
+      Performance is a key consideration for large datasets. Enable
+      <code>EnableRowVirtualization="True"</code> (the default) and
+      <code>EnableColumnVirtualization="True"</code> so that only visible cells are realized in the
+      visual tree. Frozen columns (<code>FrozenColumnCount</code>) allow a fixed number of leading
+      columns to remain visible during horizontal scrolling, which is essential for usability in
+      wide grids.
+    </p>
+  </section>
+
+  <section class="content-section">
     <h2>Screen Preview</h2>
     <div class="screenshot-placeholder">
       📷 Screenshot will be added later — shows the DataGrid demo screen in the app.
@@ -39,7 +76,7 @@
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
       Each property can be configured in real time within the app to observe its behavior.
     </p>
-    
+
     <table class="prop-table">
       <thead>
         <tr>
@@ -52,90 +89,146 @@
         <tr>
           <td><code>AutoGenerateColumns</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether columns are auto-generated from data source properties.</td>
+          <td>When <code>True</code>, WPF inspects the bound data source via reflection and creates a column for each public property. This is the fastest way to display a data object but provides no control over column order, width, or cell templates — use explicit column definitions for production UIs.</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>Makes the entire grid read-only.</td>
+          <td>Prevents all in-place editing across the entire grid when set to <code>True</code>. Individual columns can independently set <code>IsReadOnly</code> even when the grid is editable, allowing mixed read/write grids where certain columns (e.g., IDs) are display-only.</td>
         </tr>
         <tr>
           <td><code>SelectionMode / SelectionUnit</code></td>
           <td><code>Single/Extended / Cell/FullRow/CellOrRowHeader</code></td>
-          <td>Sets the selection mode and unit (cell or row).</td>
+          <td><code>SelectionMode</code> controls whether one or multiple items can be selected; <code>SelectionUnit</code> controls the granularity — cell-level or full-row. Combining <code>Extended</code> and <code>FullRow</code> replicates the behaviour of a traditional multi-select list.</td>
         </tr>
         <tr>
           <td><code>ColumnWidth / MaxColumnWidth / MinColumnWidth</code></td>
           <td><code>DataGridLength / double / double</code></td>
-          <td>Sets default, maximum, and minimum column widths.</td>
+          <td>Sets the default width for all columns as a <code>DataGridLength</code> value (pixel, star, or auto), while <code>MaxColumnWidth</code> and <code>MinColumnWidth</code> clamp resizing. <code>DataGridLength.SizeToCells</code> auto-sizes to the widest cell value.</td>
         </tr>
         <tr>
           <td><code>CanUserAddRows / CanUserDeleteRows</code></td>
-          <td><code>bool / bool</code></td>
-          <td>Controls whether users can add or delete rows.</td>
+          <td><code>bool</code></td>
+          <td>Enables or disables the new-row placeholder at the bottom of the grid and the <kbd>Delete</kbd> key row removal. Both require the bound collection to implement <code>IEditableCollectionView</code> (e.g., <code>ObservableCollection&lt;T&gt;</code> wrapped in a <code>ListCollectionView</code>).</td>
         </tr>
         <tr>
           <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserResizeRows / CanUserSortColumns</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether users can reorder/resize columns, resize rows, and sort columns.</td>
+          <td>Fine-grained user-interaction flags. Disable column reordering or resizing to enforce a fixed layout, or disable sorting if the data has a meaningful intrinsic order that should not be disturbed by the user.</td>
         </tr>
         <tr>
           <td><code>RowDetailsVisibilityMode / AreRowDetailsFrozen</code></td>
           <td><code>Collapsed/Visible/VisibleWhenSelected / bool</code></td>
-          <td>Sets row details panel visibility mode and whether it freezes during scroll.</td>
+          <td><code>RowDetailsVisibilityMode</code> controls whether a row detail template is shown below each row. <code>VisibleWhenSelected</code> is the most common choice, expanding the selected row to show additional information defined in <code>RowDetailsTemplate</code>.</td>
         </tr>
         <tr>
           <td><code>GridLinesVisibility / HorizontalGridLinesBrush / VerticalGridLinesBrush</code></td>
           <td><code>None/Horizontal/Vertical/All / Brush / Brush</code></td>
-          <td>Sets grid line visibility and colors.</td>
+          <td>Controls which grid lines are drawn and their colours. Setting <code>GridLinesVisibility="None"</code> and using alternating row backgrounds creates a modern, borderless table look popular in flat design applications.</td>
         </tr>
         <tr>
           <td><code>AlternatingRowBackground</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background color of alternating rows to improve readability.</td>
+          <td>Sets the background brush for even-numbered rows (index 0, 2, 4…), creating a zebra-stripe effect that helps the eye track across wide rows. Combine with a contrasting <code>RowBackground</code> for odd rows.</td>
         </tr>
         <tr>
           <td><code>FrozenColumnCount</code></td>
           <td><code>int</code></td>
-          <td>Sets the number of columns frozen during horizontal scrolling.</td>
+          <td>Specifies how many leading columns remain stationary during horizontal scrolling. Setting this to 1 or 2 for an identifier column (Name, ID) makes wide grids much easier to navigate without losing context of which row you are editing.</td>
         </tr>
         <tr>
           <td><code>HeadersVisibility</code></td>
-          <td><code>None / Row / Column / All</code></td>
-          <td>Controls the visibility of row and column headers.</td>
-        </tr>
-        <tr>
-          <td><code>ClipboardCopyMode</code></td>
-          <td><code>None / ExcludeHeader / IncludeHeader</code></td>
-          <td>Controls whether headers are included when copying to clipboard.</td>
+          <td><code>None/Column/Row/All</code></td>
+          <td>Controls which header areas are shown. Hiding the row header (<code>Column</code> only) saves horizontal space when row-level features like drag-reorder or row selection indicators are not needed.</td>
         </tr>
         <tr>
           <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
-          <td><code>bool / bool</code></td>
-          <td>Enables row/column virtualization for improved performance.</td>
-        </tr>
-        <tr>
-          <td><code>RowValidationErrorTemplate</code></td>
-          <td><code>ControlTemplate</code></td>
-          <td>Sets the template to visualize row validation errors.</td>
+          <td><code>bool</code></td>
+          <td>Enables UI virtualisation for rows and columns respectively, significantly reducing memory usage and render time for large datasets. Column virtualisation should be enabled cautiously as it can cause slight rendering artefacts on horizontal scroll in some WPF versions.</td>
         </tr>
         <tr>
           <td><code>RowBackground / RowHeight / MinRowHeight</code></td>
           <td><code>Brush / double / double</code></td>
-          <td>Sets row background color and height values.</td>
+          <td>Sets the default row background brush and the height of each row. <code>MinRowHeight</code> prevents rows from collapsing to zero when content is empty, maintaining visual consistency.</td>
         </tr>
         <tr>
-          <td><code>RowHeaderWidth / RowHeaderStyle / ColumnHeaderHeight / ColumnHeaderStyle</code></td>
-          <td><code>double / Style / double / Style</code></td>
-          <td>Sets the size and style of row and column headers.</td>
-        </tr>
-        <tr>
-          <td><code>RowStyle / CellStyle / ColumnHeaderTemplate</code></td>
-          <td><code>Style / Style / DataTemplate</code></td>
-          <td>Sets styles and templates for rows, cells, and column headers.</td>
+          <td><code>RowStyle / CellStyle / ColumnHeaderStyle / ColumnHeaderTemplate</code></td>
+          <td><code>Style / Style / Style / DataTemplate</code></td>
+          <td>Apply uniform styling to all rows, cells, or column headers via <code>Style</code> resources. Use <code>ColumnHeaderTemplate</code> to embed custom header content such as a filter TextBox directly inside the column header area.</td>
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML defines a DataGrid with explicit columns, alternating row colours, and frozen column:</p>
+    <pre><code class="language-xml">&lt;DataGrid ItemsSource="{Binding Employees}"
+          AutoGenerateColumns="False"
+          IsReadOnly="False"
+          SelectionMode="Extended"
+          SelectionUnit="FullRow"
+          FrozenColumnCount="1"
+          AlternatingRowBackground="#F5F5F5"
+          GridLinesVisibility="Horizontal"
+          CanUserAddRows="False"
+          CanUserDeleteRows="True"
+          EnableRowVirtualization="True"&gt;
+  &lt;DataGrid.Columns&gt;
+    &lt;DataGridTextColumn Header="Name"
+                        Binding="{Binding Name}"
+                        Width="160"
+                        IsReadOnly="True" /&gt;
+    &lt;DataGridTextColumn Header="Department"
+                        Binding="{Binding Department}"
+                        Width="140" /&gt;
+    &lt;DataGridCheckBoxColumn Header="Active"
+                            Binding="{Binding IsActive}"
+                            Width="60" /&gt;
+    &lt;DataGridTemplateColumn Header="Actions" Width="80"&gt;
+      &lt;DataGridTemplateColumn.CellTemplate&gt;
+        &lt;DataTemplate&gt;
+          &lt;Button Content="Edit"
+                  Command="{Binding DataContext.EditCommand,
+                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                  CommandParameter="{Binding}" /&gt;
+        &lt;/DataTemplate&gt;
+      &lt;/DataGridTemplateColumn.CellTemplate&gt;
+    &lt;/DataGridTemplateColumn&gt;
+  &lt;/DataGrid.Columns&gt;
+&lt;/DataGrid&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>CRUD data management screens:</strong> Employee lists, product catalogues, or order management views where users view, add, edit, and delete records in-place.</li>
+      <li><strong>Financial and reporting tables:</strong> Read-only summary grids with alternating row colours, frozen identifier columns, and custom number formatting in cell templates.</li>
+      <li><strong>Configuration editors:</strong> Property-grid-style tables where rows represent settings and values are edited inline, often with a <code>DataGridComboBoxColumn</code> for enumerated options.</li>
+      <li><strong>Log and event viewers:</strong> Read-only, auto-scroll grids displaying real-time event streams, leveraging row virtualisation to handle thousands of entries without performance degradation.</li>
+      <li><strong>Expandable row details:</strong> Master-detail layouts using <code>RowDetailsTemplate</code> to show related child data below the selected row, avoiding a separate detail panel.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Always define columns explicitly</strong> in production applications. <code>AutoGenerateColumns</code> exposes all public properties including internal ones, and column order depends on reflection order, which is not guaranteed.</li>
+      <li><strong>Enable virtualisation</strong> (<code>EnableRowVirtualization="True"</code>) for any list that could contain more than a few dozen rows. Without it, the DataGrid instantiates visual elements for every row at load, causing sluggish startup for large datasets.</li>
+      <li><strong>Use <code>ObservableCollection&lt;T&gt;</code></strong> as the ItemsSource so the grid automatically reflects adds and removes without a full refresh. For sorted or filtered views, wrap it in a <code>CollectionViewSource</code>.</li>
+      <li><strong>Freeze identifier columns</strong> using <code>FrozenColumnCount</code> when your grid has more columns than fit in the viewport. This simple setting dramatically improves horizontal-scroll usability.</li>
+      <li><strong>Validate with <code>INotifyDataErrorInfo</code></strong> rather than exception-based validation. It provides per-property error messages that the DataGrid can display in tooltips without crashing the edit session.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — a simpler list with a <code>GridView</code> mode; suitable when editing, sorting, and grouping are not needed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/treeview.html">TreeView</a> — hierarchical data display; use when rows have a parent-child relationship.</li>
+      <li><a href="/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — this page.</li>
+      <li><a href="/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — the DataGrid embeds a ScrollViewer internally; useful to understand scroll behaviour customisation.</li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -146,7 +239,7 @@
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DataGridUsage" target="_blank" rel="noopener noreferrer">
-        View DataGrid source code on GitHub →
+        View DataGrid source code on GitHub &rarr;
       </a>
     </p>
   </section>
