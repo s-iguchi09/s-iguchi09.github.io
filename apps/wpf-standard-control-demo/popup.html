@@ -7,23 +7,53 @@
   <meta charset="UTF-8">
   <title>Popup | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Popup control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Popup control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-en.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Popup</p>
     <h1>Popup <span class="category-badge">Overlays</span></h1>
     <p>Popup is a control that displays content in a separate window that floats above the main window. Unlike ToolTip, it does not automatically appear on hover and requires programmatic control. It is used as the base for many overlay controls.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>Popup</strong> control renders its <code>Child</code> content in a separate top-level
+      window that floats above all other application content. Unlike <code>AdornerLayer</code> or
+      <code>Canvas</code> overlays, a Popup escapes the bounds of its parent window and can appear over
+      the taskbar and other application windows. It inherits from <code>FrameworkElement</code> and is
+      not a visual child of its placement target, which means it exists in a separate visual tree.
+    </p>
+    <p>
+      The visibility of a Popup is controlled by the <code>IsOpen</code> property. Setting it to
+      <code>true</code> shows the popup window; setting it to <code>false</code> hides it. This property
+      is commonly bound two-way to a view model boolean so the popup can be opened and closed
+      programmatically without event handlers. The <code>StaysOpen</code> property determines whether
+      the popup closes automatically when the user clicks outside it — setting it to <code>false</code>
+      enables light-dismiss behavior common in drop-down and flyout patterns.
+    </p>
+    <p>
+      The <code>Placement</code> property with the <code>PlacementMode</code> enum controls where the
+      popup appears relative to its <code>PlacementTarget</code>. Common values include
+      <code>Bottom</code> (below the target, like a drop-down), <code>Right</code> (to the right),
+      <code>Mouse</code> (near the cursor), and <code>Absolute</code> (at a fixed screen coordinate).
+      The <code>HorizontalOffset</code> and <code>VerticalOffset</code> properties allow fine-tuning the
+      exact position within the chosen placement mode.
+    </p>
+    <p>
+      The <code>PopupAnimation</code> property adds an opening animation to improve perceived performance
+      and polish. <code>Fade</code> opacity-animates the popup into view; <code>Slide</code> slides it in
+      from the placement direction; <code>Scroll</code> reveals it with a scroll effect. To use animations,
+      <code>AllowsTransparency</code> must be set to <code>true</code>. Popup is the foundational mechanism
+      behind <code>ComboBox</code> drop-downs, <code>Menu</code> pop-outs, <code>ToolTip</code>, and
+      <code>ContextMenu</code> in WPF.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,60 +65,136 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
       <tbody>
         <tr>
-          <td><code>IsOpen / StaysOpen / AllowsTransparency</code></td>
-          <td><code>bool / bool / bool</code></td>
-          <td>IsOpen: controls open/close state, StaysOpen: keeps it open when clicking outside, AllowsTransparency: enables transparency support.</td>
+          <td><code>IsOpen</code></td>
+          <td><code>bool</code></td>
+          <td>The primary visibility toggle for the Popup. Binding this two-way to a view model property is the standard MVVM pattern for controlling popup state, enabling the popup to be opened or closed from both the UI and the application logic layer.</td>
         </tr>
         <tr>
-          <td><code>Placement / HorizontalOffset / VerticalOffset</code></td>
-          <td><code>PlacementMode / double / double</code></td>
-          <td>Sets the popup placement position and offset.</td>
+          <td><code>StaysOpen</code></td>
+          <td><code>bool</code></td>
+          <td>When <code>false</code>, the Popup implements light-dismiss behavior and closes automatically when the user clicks outside the popup bounds. Setting it to <code>true</code> makes the popup persistent until <code>IsOpen</code> is explicitly set to <code>false</code>.</td>
+        </tr>
+        <tr>
+          <td><code>AllowsTransparency</code></td>
+          <td><code>bool</code></td>
+          <td>Enables transparent backgrounds and rounded corners in the popup window by using a layered OS window. Required for <code>PopupAnimation</code> effects and for popups with drop shadows or non-rectangular shapes created via <code>DropShadowEffect</code>.</td>
+        </tr>
+        <tr>
+          <td><code>Placement</code></td>
+          <td><code>PlacementMode</code></td>
+          <td>Determines the anchor point and direction for popup positioning relative to its <code>PlacementTarget</code> or the mouse cursor. The most commonly used values are <code>Bottom</code> for drop-down patterns, <code>Right</code> for flyouts, and <code>Mouse</code> for context overlays.</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalOffset / VerticalOffset</code></td>
+          <td><code>double</code></td>
+          <td>Pixel offsets applied after the <code>Placement</code> position is calculated, allowing fine-grained control over the popup's final screen position. Positive values move the popup right/down; negative values move it left/up relative to the calculated placement anchor.</td>
         </tr>
         <tr>
           <td><code>PopupAnimation</code></td>
           <td><code>None / Fade / Slide / Scroll</code></td>
-          <td>Sets the opening animation (may require AllowsTransparency=True).</td>
+          <td>The opening animation style for the popup window. Requires <code>AllowsTransparency="True"</code> to function. <code>Fade</code> provides the most subtle and polished effect; <code>Slide</code> matches the feel of native Windows dropdown controls.</td>
         </tr>
         <tr>
-          <td><code>Child / PlacementRectangle</code></td>
-          <td><code>UIElement / Rect</code></td>
-          <td>Sets the element to display inside the popup and the rectangle for placement reference.</td>
+          <td><code>Child</code></td>
+          <td><code>UIElement</code></td>
+          <td>The single root UIElement that defines the popup's visual content. Typically a <code>Border</code> with a drop shadow wrapping a <code>StackPanel</code>, <code>Grid</code>, or other layout panel containing the actual popup UI.</td>
+        </tr>
+        <tr>
+          <td><code>PlacementRectangle</code></td>
+          <td><code>Rect</code></td>
+          <td>An optional rectangle in the coordinate space of the <code>PlacementTarget</code> that overrides the target's bounds for placement calculations. Useful for anchoring a popup to a specific cell within a larger control such as a <code>DataGrid</code> row.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates a Popup used as a custom tooltip-style information flyout, opened by a button click:</p>
+    <pre><code class="language-xml">&lt;StackPanel Margin="16"&gt;
+
+  &lt;Button x:Name="infoButton"
+          Content="Show Info"
+          Width="100" Height="32"
+          Click="OnShowInfo" /&gt;
+
+  &lt;Popup x:Name="infoPopup"
+         PlacementTarget="{Binding ElementName=infoButton}"
+         Placement="Bottom"
+         HorizontalOffset="0"
+         VerticalOffset="4"
+         StaysOpen="False"
+         AllowsTransparency="True"
+         PopupAnimation="Fade"
+         IsOpen="{Binding IsInfoOpen, Mode=TwoWay}"&gt;
+    &lt;Border Background="White"
+            BorderBrush="#CCCCCC"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="12"&gt;
+      &lt;Border.Effect&gt;
+        &lt;DropShadowEffect Color="#888888"
+                          BlurRadius="8"
+                          Opacity="0.3"
+                          ShadowDepth="2" /&gt;
+      &lt;/Border.Effect&gt;
+      &lt;StackPanel Width="220"&gt;
+        &lt;TextBlock Text="Information"
+                   FontWeight="Bold"
+                   Margin="0,0,0,6" /&gt;
+        &lt;TextBlock Text="{Binding InfoMessage}"
+                   TextWrapping="Wrap" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/Border&gt;
+  &lt;/Popup&gt;
+
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Custom dropdown panels:</strong> Used internally by <code>ComboBox</code> and <code>Menu</code>; replicated in custom controls that need a drop-down panel (e.g., a date range picker or color picker flyout).</li>
+      <li><strong>Rich tooltips:</strong> A Popup with <code>StaysOpen="False"</code> and <code>Placement="Mouse"</code> as an alternative to <code>ToolTip</code> when the tooltip content needs interactive elements like links or buttons.</li>
+      <li><strong>Notification banners:</strong> Transient overlays that appear near the corner of the screen to show success or error messages, automatically closing after a timer sets <code>IsOpen</code> to <code>false</code>.</li>
+      <li><strong>Inline editors:</strong> Clicking a cell in a read-only list opens a Popup with an editable form for that item, combining the compactness of a list view with the richness of a form.</li>
+      <li><strong>Auto-complete suggestions:</strong> A Popup positioned below a <code>TextBox</code> that shows a <code>ListBox</code> of matching suggestions as the user types, implementing a custom auto-complete control.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Always set <code>PlacementTarget</code> explicitly:</strong> Without it, the Popup uses the visual tree parent for placement, which can produce unexpected positions when the Popup is declared inside templates or data templates.</li>
+      <li><strong>Use <code>StaysOpen="False"</code> for light-dismiss overlays:</strong> This matches the user expectation that clicking away from a drop-down or flyout closes it, following standard OS overlay conventions.</li>
+      <li><strong>Set <code>AllowsTransparency</code> only when needed:</strong> Transparent popup windows consume more GPU resources. Only enable it when animations or non-rectangular shapes are required.</li>
+      <li><strong>Handle <code>Closed</code> event for cleanup:</strong> When the Popup is dismissed via light-dismiss (<code>StaysOpen="False"</code>), update the view model boolean so the state stays in sync and the popup can be reopened correctly.</li>
+      <li><strong>Avoid putting too much content in a Popup:</strong> Popups are temporary overlay surfaces. Heavy content should use a dialog or a side panel instead, as Popup windows are separate OS windows with limited accessibility tree integration.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/tooltip.html">ToolTip</a> — a simpler overlay that appears automatically on hover; Popup is more powerful but requires manual show/hide management.</li>
+      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — uses Popup internally for its drop-down list.</li>
+      <li><a href="/apps/wpf-standard-control-demo/menu.html">Menu</a> — uses Popup for rendering drop-down menus and submenus.</li>
+      <li><a href="/apps/wpf-standard-control-demo/contextmenu.html">ContextMenu</a> — a light-dismiss Popup-based menu that appears on right-click.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/PopupUsage" target="_blank" rel="noopener noreferrer">
-        View Popup source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/PopupUsage" target="_blank" rel="noopener noreferrer">View Popup source code on GitHub &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-en.html %}
-
 </body>
 </html>

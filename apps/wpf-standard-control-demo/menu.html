@@ -7,23 +7,51 @@
   <meta charset="UTF-8">
   <title>Menu | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Menu control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Menu control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-en.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Menu</p>
     <h1>Menu <span class="category-badge">Menu</span></h1>
     <p>Menu is a control that displays a hierarchical list of commands and options, typically displayed as a horizontal menu bar at the top of an application window. Each item can have submenus and supports keyboard shortcut display.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>Menu</strong> control renders a horizontal strip of top-level menu items, each of which
+      can expand into a vertical drop-down containing nested <code>MenuItem</code> elements, separators, and
+      further submenus. Menu descends from <code>MenuBase</code>, which extends <code>ItemsControl</code>,
+      so its items are defined either inline as XAML children or bound via <code>ItemsSource</code> with an
+      appropriate <code>HierarchicalDataTemplate</code>.
+    </p>
+    <p>
+      The <code>IsMainMenu</code> property, when set to <code>true</code>, registers the Menu with the
+      application's main menu infrastructure so that the <kbd>F10</kbd> or <kbd>Alt</kbd> key activates the
+      menu bar. This is the expected behavior for top-level application menus. Each <code>MenuItem</code>
+      participates in WPF's command infrastructure through its <code>Command</code> property, which wires up
+      both the execution and the automatic enabled/disabled state management via <code>ICommand.CanExecute</code>.
+    </p>
+    <p>
+      The <code>Role</code> read-only property on <code>MenuItem</code> reports how the item is being used
+      within the hierarchy. <code>TopLevelHeader</code> items open drop-downs; <code>TopLevelItem</code> items
+      execute directly without a dropdown; <code>SubmenuHeader</code> items open nested submenus; and
+      <code>SubmenuItem</code> items are leaf commands. This role information is set automatically based on
+      the item's position in the hierarchy and is used by the default control template to render the correct
+      visual style for each level.
+    </p>
+    <p>
+      The <code>InputGestureText</code> property allows displaying a keyboard shortcut hint text (e.g., "Ctrl+S")
+      in the menu item's right margin, next to the command label. This is purely visual — it does not actually
+      bind the keyboard shortcut. The actual shortcut must be registered separately via
+      <code>KeyBinding</code> in the window's <code>InputBindings</code> collection or through the command's
+      registered gesture.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,70 +63,140 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
       <tbody>
         <tr>
           <td><code>IsMainMenu</code></td>
           <td><code>bool</code></td>
-          <td>When True, the menu is activated with Alt key and receives focus with F10.</td>
+          <td>When <code>true</code>, the Menu responds to <kbd>F10</kbd> and <kbd>Alt</kbd> keystrokes to activate the menu bar, matching standard Windows application conventions. Only the primary application menu bar should have this set to <code>true</code>.</td>
         </tr>
         <tr>
-          <td><code>IsCheckable / IsChecked / StaysOpenOnClick (MenuItem)</code></td>
-          <td><code>bool / bool / bool</code></td>
-          <td>Makes a MenuItem checkable, sets its checked state, and keeps the menu open after click.</td>
+          <td><code>IsCheckable (MenuItem)</code></td>
+          <td><code>bool</code></td>
+          <td>Enables the menu item to function as a toggle, displaying a check mark when selected. Commonly used for "View &gt; Show Toolbar" or "Options &gt; Dark Mode" menu items where the state persists between clicks.</td>
+        </tr>
+        <tr>
+          <td><code>IsChecked (MenuItem)</code></td>
+          <td><code>bool</code></td>
+          <td>The current checked state of a checkable menu item. Two-way binding on this property allows the view model to read and control the checked state, and the check mark in the menu reflects the model state automatically.</td>
+        </tr>
+        <tr>
+          <td><code>StaysOpenOnClick (MenuItem)</code></td>
+          <td><code>bool</code></td>
+          <td>When <code>true</code>, the menu remains open after the item is clicked. Useful for checkable items in a menu-based toolbar where users want to toggle multiple options without reopening the menu each time.</td>
         </tr>
         <tr>
           <td><code>Role (MenuItem)</code></td>
           <td><code>TopLevelItem / TopLevelHeader / SubmenuItem / SubmenuHeader (ReadOnly)</code></td>
-          <td>Read-only property indicating the role of the MenuItem in the menu hierarchy.</td>
+          <td>A read-only enum that WPF sets automatically based on the item's position in the menu hierarchy. It drives the control template's visual variations (arrow indicators for headers, flat style for leaf items) without any developer configuration.</td>
         </tr>
         <tr>
           <td><code>Command (MenuItem)</code></td>
           <td><code>ICommand</code></td>
-          <td>Sets the command to execute when clicked.</td>
+          <td>Binds an <code>ICommand</code> to the menu item, enabling MVVM-based command invocation and automatic enabled/disabled state management. The menu item is grayed out automatically when <code>CanExecute</code> returns <code>false</code>.</td>
         </tr>
         <tr>
-          <td><code>Icon / InputGestureText (MenuItem)</code></td>
-          <td><code>object / string</code></td>
-          <td>Sets the icon displayed on the left and the keyboard shortcut text displayed on the right.</td>
+          <td><code>Icon (MenuItem)</code></td>
+          <td><code>object</code></td>
+          <td>An optional icon displayed to the left of the menu item text, typically a 16x16 <code>Image</code> or vector icon. Icons greatly improve menu scannability by providing visual recognition cues alongside the text label.</td>
+        </tr>
+        <tr>
+          <td><code>InputGestureText (MenuItem)</code></td>
+          <td><code>string</code></td>
+          <td>A display-only shortcut hint shown on the right side of the menu item, such as "Ctrl+S" or "F5". This text is purely cosmetic and does not register the shortcut; the binding must be established separately via <code>KeyBinding</code>.</td>
         </tr>
         <tr>
           <td><code>IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation (MenuItem)</code></td>
           <td><code>bool (most ReadOnly)</code></td>
-          <td>Properties indicating various states of the MenuItem (most are read-only).</td>
+          <td>Read-only state properties used by control templates and triggers to drive hover highlight, press depression, open submenu arrow, and popup animation suppression effects. These enable rich interactive visual feedback in custom menu styles.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates a typical application Menu bar with submenus, checkable items, and command bindings:</p>
+    <pre><code class="language-xml">&lt;Menu IsMainMenu="True" DockPanel.Dock="Top"&gt;
+
+  &lt;MenuItem Header="_File"&gt;
+    &lt;MenuItem Header="_New"
+              Command="{Binding NewCommand}"
+              InputGestureText="Ctrl+N"&gt;
+      &lt;MenuItem.Icon&gt;
+        &lt;Image Source="pack://application:,,,/Icons/new.png"
+               Width="16" Height="16" /&gt;
+      &lt;/MenuItem.Icon&gt;
+    &lt;/MenuItem&gt;
+    &lt;MenuItem Header="_Open..."
+              Command="{Binding OpenCommand}"
+              InputGestureText="Ctrl+O" /&gt;
+    &lt;MenuItem Header="_Save"
+              Command="{Binding SaveCommand}"
+              InputGestureText="Ctrl+S" /&gt;
+    &lt;Separator /&gt;
+    &lt;MenuItem Header="E_xit"
+              Command="{Binding ExitCommand}" /&gt;
+  &lt;/MenuItem&gt;
+
+  &lt;MenuItem Header="_View"&gt;
+    &lt;MenuItem Header="Show _Toolbar"
+              IsCheckable="True"
+              IsChecked="{Binding IsToolbarVisible}" /&gt;
+    &lt;MenuItem Header="Show _Status Bar"
+              IsCheckable="True"
+              IsChecked="{Binding IsStatusBarVisible}"
+              StaysOpenOnClick="True" /&gt;
+  &lt;/MenuItem&gt;
+
+  &lt;MenuItem Header="_Help"&gt;
+    &lt;MenuItem Header="_About"
+              Command="{Binding AboutCommand}" /&gt;
+  &lt;/MenuItem&gt;
+
+&lt;/Menu&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Application menu bars:</strong> The primary navigation and command surface at the top of MDI and standard document applications, containing File, Edit, View, and Help menus.</li>
+      <li><strong>Context menus via ContextMenu:</strong> WPF's <code>ContextMenu</code> shares the same <code>MenuItem</code> infrastructure, so skills learned with Menu transfer directly to right-click context menus.</li>
+      <li><strong>Settings and preferences:</strong> View-level toggles such as "Show Grid Lines", "Dark Mode", or "Auto Save" represented as checkable menu items in a View or Tools menu.</li>
+      <li><strong>Recently opened files list:</strong> A dynamically populated submenu under "File &gt; Recent Files" built by binding <code>ItemsSource</code> to a recent-files collection in the view model.</li>
+      <li><strong>Role-based feature access:</strong> Disabling or hiding menu items based on user permissions by binding <code>IsEnabled</code> or <code>Visibility</code> to permission properties in the view model.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use access keys consistently:</strong> Define underscore-prefixed access keys (e.g., <code>_File</code>, <code>_Edit</code>) for all top-level and submenu items to ensure full keyboard accessibility without a mouse.</li>
+      <li><strong>Register KeyBindings separately:</strong> <code>InputGestureText</code> only shows the shortcut label; register actual key bindings in the <code>Window.InputBindings</code> collection or via <code>RoutedUICommand</code> with registered gestures.</li>
+      <li><strong>Use <code>Separator</code> to group related items:</strong> Visual separators between logical command groups (create/open/save vs. exit) improve menu scannability and match standard OS menu conventions.</li>
+      <li><strong>Bind <code>IsEnabled</code> via CanExecute:</strong> Let <code>ICommand.CanExecute</code> manage the enabled state automatically rather than manually binding <code>IsEnabled</code> on each menu item.</li>
+      <li><strong>Limit submenu depth:</strong> Keep menu hierarchies to two or at most three levels. Deeply nested submenus are difficult to navigate and a signal that the command should be moved to a dialog or toolbar instead.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/contextmenu.html">ContextMenu</a> — uses the same <code>MenuItem</code> items and appears on right-click, sharing the full menu item feature set.</li>
+      <li><a href="/apps/wpf-standard-control-demo/toolbar.html">ToolBar</a> — a companion control for frequently used commands, typically docked below the Menu bar.</li>
+      <li><a href="/apps/wpf-standard-control-demo/popup.html">Popup</a> — the underlying overlay mechanism used to display drop-down menu content.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/MenuUsage" target="_blank" rel="noopener noreferrer">
-        View Menu source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/MenuUsage" target="_blank" rel="noopener noreferrer">View Menu source code on GitHub &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-en.html %}
-
 </body>
 </html>

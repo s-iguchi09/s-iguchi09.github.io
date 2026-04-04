@@ -7,23 +7,52 @@
   <meta charset="UTF-8">
   <title>ListBox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF ListBox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF ListBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-en.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ListBox</p>
     <h1>ListBox <span class="category-badge">List</span></h1>
     <p>ListBox is a control that displays a list of items from which users can select one or multiple items. It supports single, multiple, and extended selection modes, and can be bound to data collections.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>ListBox</strong> control presents a scrollable list of selectable items and inherits from
+      <code>Selector</code>, which itself extends <code>ItemsControl</code>. This means ListBox participates
+      in WPF's full data-binding infrastructure: you can bind its <code>ItemsSource</code> to any
+      <code>IEnumerable</code>, define a <code>DataTemplate</code> for rich visual item rendering, and use
+      <code>DisplayMemberPath</code> for simple string property display without a template.
+    </p>
+    <p>
+      Selection is one of ListBox's key differentiators from <code>ComboBox</code>. The
+      <code>SelectionMode</code> property offers three options: <code>Single</code> for single-item selection
+      (the default), <code>Multiple</code> for toggling individual items independently with a single click,
+      and <code>Extended</code> for contiguous range selection with <kbd>Shift</kbd>+click and
+      <kbd>Ctrl</kbd>+click for non-contiguous multi-selection. This flexibility makes ListBox suitable for
+      both simple pickers and complex multi-select scenarios.
+    </p>
+    <p>
+      The <code>SelectedIndex</code>, <code>SelectedItem</code>, and <code>SelectedValue</code> properties all
+      provide access to the current selection from different angles. <code>SelectedIndex</code> gives the
+      zero-based position; <code>SelectedItem</code> gives the actual data object; and
+      <code>SelectedValue</code>, combined with <code>SelectedValuePath</code>, extracts a specific property
+      from the selected item — for example, binding only the <code>Id</code> property of a complex object
+      without exposing the entire object to the view model.
+    </p>
+    <p>
+      ListBox wraps its items in a <code>ScrollViewer</code>, and the attached
+      <code>ScrollViewer.HorizontalScrollBarVisibility</code> and <code>ScrollViewer.VerticalScrollBarVisibility</code>
+      properties let you control scroll bar visibility without subclassing. Setting these to
+      <code>Disabled</code> removes the scrollbars entirely, <code>Auto</code> shows them only when needed,
+      and <code>Visible</code> always shows them.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,70 +64,110 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
       <tbody>
         <tr>
           <td><code>SelectionMode</code></td>
           <td><code>Single / Multiple / Extended</code></td>
-          <td>Sets the selection mode. Single: one item, Multiple: any items, Extended: Ctrl/Shift multi-select.</td>
+          <td>Determines how many items can be selected and how selection interactions work. <code>Extended</code> is the richest mode, supporting Shift-click for range selection and Ctrl-click for non-contiguous selection, matching the behavior of file explorer list views.</td>
         </tr>
         <tr>
           <td><code>DisplayMemberPath (ItemsControl)</code></td>
           <td><code>string</code></td>
-          <td>Specifies which property of the item object to display.</td>
+          <td>The name of a property on the data item to display as the item's text. When set, ListBox automatically renders each item using that property value as a <code>TextBlock</code>, eliminating the need for a <code>DataTemplate</code> for simple string-display scenarios.</td>
         </tr>
         <tr>
-          <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
-          <td><code>int / object</code></td>
-          <td>Gets or sets the index and object of the selected item.</td>
+          <td><code>SelectedIndex (Selector)</code></td>
+          <td><code>int</code></td>
+          <td>The zero-based index of the currently selected item, or -1 when no item is selected. Two-way binding on this property allows the view model to both read the current selection and programmatically select an item by its list position.</td>
+        </tr>
+        <tr>
+          <td><code>SelectedItem (Selector)</code></td>
+          <td><code>object</code></td>
+          <td>The actual data object that is currently selected in the list. This is the most MVVM-friendly binding target, as it directly exposes the domain model object rather than requiring index-based lookups in code.</td>
         </tr>
         <tr>
           <td><code>SelectedValuePath / SelectedValue (Selector)</code></td>
           <td><code>string / object</code></td>
-          <td>Gets SelectedValue from the property path set by SelectedValuePath.</td>
+          <td><code>SelectedValuePath</code> names a property on the data item (e.g., <code>"Id"</code>) and <code>SelectedValue</code> reflects only that property from the selected item. This is useful for binding a foreign key or identifier without needing the full object reference.</td>
         </tr>
         <tr>
           <td><code>IsSelected (ListBoxItem)</code></td>
           <td><code>bool</code></td>
-          <td>Sets whether each individual item is selected.</td>
+          <td>An item-level property on each <code>ListBoxItem</code> container that indicates whether that specific item is selected. It can be used in item data templates within triggers to change item appearance based on selection state.</td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Controls the scrollbar visibility.</td>
+          <td>Attached properties from <code>ScrollViewer</code> that control scroll bar display. <code>Auto</code> is the typical choice — scrollbars appear only when content overflows — while <code>Disabled</code> completely prevents scrolling for fixed-height lists.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates a data-bound ListBox with a custom DataTemplate and extended multi-selection:</p>
+    <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Employees}"
+         SelectionMode="Extended"
+         SelectedItem="{Binding SelectedEmployee}"
+         ScrollViewer.VerticalScrollBarVisibility="Auto"
+         Margin="8"&gt;
+  &lt;ListBox.ItemTemplate&gt;
+    &lt;DataTemplate&gt;
+      &lt;StackPanel Orientation="Horizontal" Margin="4"&gt;
+        &lt;TextBlock Text="{Binding Name}"
+                   FontWeight="SemiBold"
+                   Width="140" /&gt;
+        &lt;TextBlock Text="{Binding Department}"
+                   Foreground="#555"
+                   Margin="8,0,0,0" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/DataTemplate&gt;
+  &lt;/ListBox.ItemTemplate&gt;
+&lt;/ListBox&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Settings option pickers:</strong> Displaying a list of configuration options where the user selects one or more items, such as a list of enabled plugins or export formats.</li>
+      <li><strong>File selection panels:</strong> Showing a list of files or records from which the user selects one or more for a batch operation like delete, export, or process.</li>
+      <li><strong>Navigation panels:</strong> Sidebar lists that show categories, tags, or sections, where selecting an item updates the main content area.</li>
+      <li><strong>Transfer list UIs:</strong> Dual-ListBox patterns where items are moved between "Available" and "Selected" lists using Add/Remove buttons.</li>
+      <li><strong>Filtered data views:</strong> Binding ListBox to a <code>CollectionView</code> with filtering so the list dynamically narrows based on a search term entered in a linked <code>TextBox</code>.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Use <code>VirtualizingStackPanel</code> for large lists:</strong> By default, ListBox already uses a virtualizing panel, so only visible items are rendered. Avoid replacing it with a non-virtualizing panel for collections with hundreds of items.</li>
+      <li><strong>Bind <code>SelectedItem</code> two-way:</strong> Setting <code>Mode=TwoWay</code> on the <code>SelectedItem</code> binding ensures that programmatic selection from the view model is reflected in the UI without additional event handling.</li>
+      <li><strong>Use <code>ObservableCollection</code> as ItemsSource:</strong> Collections implementing <code>INotifyCollectionChanged</code> automatically keep the ListBox in sync when items are added or removed.</li>
+      <li><strong>Define keyboard shortcuts for selection:</strong> For Extended mode, document <kbd>Ctrl+A</kbd> (select all) in the UI so users know it is available — it works by default but is not obvious.</li>
+      <li><strong>Consider ListView for tabular data:</strong> If items have multiple columns, switch to <code>ListView</code> with <code>GridView</code> for a proper columnar display with resizable headers.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — extends ListBox with a pluggable view model, most commonly used for tabular GridView layouts.</li>
+      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — a compact dropdown list for single-item selection where screen space is limited.</li>
+      <li><a href="/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — a fully featured grid for tabular data with inline editing, sorting, and grouping.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListBoxUsage" target="_blank" rel="noopener noreferrer">
-        View ListBox source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListBoxUsage" target="_blank" rel="noopener noreferrer">View ListBox source code on GitHub &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-en.html %}
-
 </body>
 </html>

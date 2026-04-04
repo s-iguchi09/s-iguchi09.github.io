@@ -7,23 +7,48 @@
   <meta charset="UTF-8">
   <title>GroupBox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF GroupBox control reference: overview, properties, and demo behavior. Part of the WPF Standard Control Demo App running on .NET 10.">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF GroupBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-en.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; GroupBox</p>
     <h1>GroupBox <span class="category-badge">Display</span></h1>
     <p>GroupBox is a bordered container with a header that visually groups related controls. It is commonly used to organize form elements into logical sections.</p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      The WPF <strong>GroupBox</strong> control provides a titled border that visually encloses a related set of
+      child controls. It descends from <code>HeaderedContentControl</code>, which itself extends
+      <code>ContentControl</code>, giving GroupBox both a <code>Header</code> area and a main
+      <code>Content</code> area. The border and header work together to communicate visual hierarchy to users,
+      making it immediately clear which controls belong to the same functional group.
+    </p>
+    <p>
+      The <code>Header</code> property accepts any object, not just a string. You can place an icon, a
+      <code>CheckBox</code>, or a fully styled <code>StackPanel</code> inside the header area to create rich
+      group titles. When the header is a string, the <code>HeaderStringFormat</code> property lets you apply
+      standard .NET format strings — for example, displaying a numeric count within the header text without
+      any code-behind.
+    </p>
+    <p>
+      GroupBox is frequently used to partition large forms into sections such as "Personal Information",
+      "Shipping Address", and "Payment Details". This grouping reduces cognitive load and improves usability
+      because users can scan form sections at a glance. Accessibility tools such as screen readers also benefit
+      from the explicit grouping, as they can announce the group header when focus moves inside the container.
+    </p>
+    <p>
+      In MVVM applications, GroupBox integrates naturally by binding its <code>Header</code> property to a
+      view model string and its <code>Content</code> property to a nested view or data template. The
+      <code>HasHeader</code> read-only property reports whether a non-null header has been set, which can be
+      used in data triggers to conditionally adjust the layout when headers are absent.
+    </p>
   </section>
 
   <section class="content-section">
@@ -35,70 +60,127 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>
-      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
-    </p>
-    
+    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Values</th>
-          <th>Description</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
       <tbody>
         <tr>
-          <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
-          <td><code>object / bool (ReadOnly)</code></td>
-          <td>Sets the header text or content. HasHeader indicates whether a header is set (read-only).</td>
+          <td><code>Header (HeaderedContentControl)</code></td>
+          <td><code>object</code></td>
+          <td>The content displayed in the group header area, typically rendered at the top of the border. Accepts any object including strings, images, or composite panels, making it highly customizable for rich header designs.</td>
         </tr>
         <tr>
-          <td><code>HeaderStringFormat (HeaderedContentControl)</code></td>
+          <td><code>HasHeader (HeaderedContentControl)</code></td>
+          <td><code>bool (ReadOnly)</code></td>
+          <td>A read-only boolean that returns <code>true</code> when the <code>Header</code> property is set to a non-null value. It is useful in control template triggers to adjust the visual state of the header region when no header is provided.</td>
+        </tr>
+        <tr>
+          <td><code>HeaderStringFormat</code></td>
           <td><code>string</code></td>
-          <td>Sets the format string when the header is displayed as a string.</td>
+          <td>A composite format string applied to the header content when it is displayed as text. For example, setting <code>HeaderStringFormat="Section: {0}"</code> will prepend "Section: " to the bound header value without any code-behind.</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>Sets the content inside the GroupBox.</td>
+          <td>The main body content of the GroupBox, typically a layout panel such as <code>Grid</code> or <code>StackPanel</code> containing child controls. Like all <code>ContentControl</code> descendants, it can host any single UIElement or data object.</td>
         </tr>
         <tr>
-          <td><code>Padding / FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
+          <td><code>Padding (Control)</code></td>
+          <td><code>Thickness</code></td>
+          <td>The space between the GroupBox border and its inner content area. Increasing padding provides breathing room around the child controls and prevents them from appearing cramped against the border edges.</td>
+        </tr>
+        <tr>
+          <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
           <td><code>various</code></td>
-          <td>Sets padding and font-related properties.</td>
+          <td>Typography properties inherited from <code>Control</code> that affect the header text rendering. These also cascade down to child controls unless explicitly overridden, allowing a single font setting to style the entire group.</td>
         </tr>
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets background and foreground (text) colors.</td>
+          <td><code>Background</code> fills the content area behind the child controls; <code>Foreground</code> sets the default text color for both the header and child text elements that inherit it. Both accept solid colors, gradients, or image brushes.</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Sets the border color and thickness.</td>
+          <td><code>BorderBrush</code> sets the color of the surrounding border, while <code>BorderThickness</code> controls its width on each side independently. Adjusting these properties is the primary way to customize GroupBox's visual frame.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML Example</h2>
+    <p>The following XAML demonstrates a typical GroupBox usage for a settings form section:</p>
+    <pre><code class="language-xml">&lt;GroupBox Header="Personal Information"
+          Margin="16" Padding="12"
+          FontSize="14"
+          BorderBrush="#0078D4"
+          BorderThickness="1.5"&gt;
+  &lt;Grid&gt;
+    &lt;Grid.RowDefinitions&gt;
+      &lt;RowDefinition Height="Auto" /&gt;
+      &lt;RowDefinition Height="Auto" /&gt;
+      &lt;RowDefinition Height="Auto" /&gt;
+    &lt;/Grid.RowDefinitions&gt;
+    &lt;Grid.ColumnDefinitions&gt;
+      &lt;ColumnDefinition Width="120" /&gt;
+      &lt;ColumnDefinition Width="*" /&gt;
+    &lt;/Grid.ColumnDefinitions&gt;
+
+    &lt;Label Grid.Row="0" Grid.Column="0" Content="First Name:" /&gt;
+    &lt;TextBox Grid.Row="0" Grid.Column="1" Margin="4"
+             Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}" /&gt;
+
+    &lt;Label Grid.Row="1" Grid.Column="0" Content="Last Name:" /&gt;
+    &lt;TextBox Grid.Row="1" Grid.Column="1" Margin="4"
+             Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}" /&gt;
+
+    &lt;Label Grid.Row="2" Grid.Column="0" Content="Email:" /&gt;
+    &lt;TextBox Grid.Row="2" Grid.Column="1" Margin="4"
+             Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" /&gt;
+  &lt;/Grid&gt;
+&lt;/GroupBox&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Common Use Cases</h2>
+    <ul>
+      <li><strong>Form section dividers:</strong> Wrapping related input fields (name, address, phone) in separate GroupBoxes to provide clear visual separation on complex data-entry forms.</li>
+      <li><strong>Option panels:</strong> Grouping radio buttons or checkboxes that represent mutually exclusive or related configuration choices, such as "Output Format" or "Sort Order".</li>
+      <li><strong>Settings dialogs:</strong> Organizing application preferences into labeled sections like "Appearance", "Network", and "Advanced" within a tabbed settings window.</li>
+      <li><strong>Dashboard widgets:</strong> Wrapping charts or summary statistics in titled frames so users can identify each widget at a glance.</li>
+      <li><strong>Wizard steps:</strong> Using a GroupBox per step in a multi-step form to clearly indicate which fields belong to the current wizard stage.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Tips and Best Practices</h2>
+    <ul>
+      <li><strong>Keep group size manageable:</strong> A GroupBox with more than six or seven child controls becomes hard to scan. Consider splitting large groups into tabs or accordion panels using <code>Expander</code>.</li>
+      <li><strong>Use a rich header for interactive groups:</strong> Placing a <code>CheckBox</code> in the header allows users to enable or disable the entire group at once, a common pattern in installer UIs.</li>
+      <li><strong>Avoid default border color on dark themes:</strong> The default <code>BorderBrush</code> may have poor contrast on dark backgrounds. Always test GroupBox visibility in all application themes and set an explicit brush if needed.</li>
+      <li><strong>Bind <code>Header</code> for localization:</strong> Rather than hard-coding header strings, bind to localized string resources so the header automatically updates when the UI language changes.</li>
+      <li><strong>Do not nest GroupBoxes too deeply:</strong> More than two levels of nested GroupBoxes creates visual clutter. Prefer using a flat layout with distinct section headings via <code>TextBlock</code> separators instead.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Related Controls</h2>
+    <ul>
+      <li><a href="/apps/wpf-standard-control-demo/expander.html">Expander</a> — a collapsible container similar to GroupBox, but with a toggle to show or hide its content.</li>
+      <li><a href="/apps/wpf-standard-control-demo/border.html">Border</a> — a lightweight bordered container without a header, useful for simple visual framing.</li>
+      <li><a href="/apps/wpf-standard-control-demo/label.html">Label</a> — often paired with GroupBox children to provide accessible field labels with mnemonic support.</li>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — the most common layout panel used inside GroupBox to arrange child controls in rows and columns.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>Source Code</h2>
-    <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage" target="_blank" rel="noopener noreferrer">
-        View GroupBox source code on GitHub →
-      </a>
-    </p>
+    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage" target="_blank" rel="noopener noreferrer">View GroupBox source code on GitHub &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-en.html %}
-
 </body>
 </html>
