@@ -1,83 +1,56 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>RadioButton | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF RadioButton コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF RadioButton コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; RadioButton</p>
     <h1>RadioButton <span class="category-badge">Inputs</span></h1>
-    <p>RadioButton はグループの中から一つのオプションを選択するコントロールです。同じ GroupName の RadioButton は相互排他的であり、一つを選択すると他は解除されます。ToggleButton を継承しています。</p>
+    <p>RadioButton は同一グループ内で排他的に1つだけ選択できるコントロールです。同じ GroupName を持つ RadioButton は連動しており、一つを選ぶと他が自動的に解除されます。ToggleButton を継承しています。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の RadioButton デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>RadioButton</strong> は <code>ToggleButton</code> を継承したコントロールで、同一グループ内での単一選択を実現します。<code>GroupName</code> が同じ RadioButton 同士は排他的に動作し、一方を選ぶと同じグループの他のボタンが自動で解除されます。</p>
+  <p><code>GroupName</code> を設定しない場合は親コンテナが暗黙のグループとなります。<code>GroupName</code> を使うと、異なる親コンテナに配置された RadioButton でも同一グループとして排他的に動作させることができます。</p>
+  <p>MVVM での実装パターンとしては、各 RadioButton の <code>IsChecked</code> を ViewModel の bool プロパティにバインドする方法と、列挙型プロパティと IValueConverter を組み合わせる方法があります。列挙型コンバーターを使うと、選択肢が増えても ViewModel プロパティが一つで済むため管理しやすくなります。</p>
+  <p>ContentControl を継承しているため、テキストだけでなくアイコンや複合パネルをラベルとして使用できます。ControlTemplate を変更することで、ボタン形式のトグルセレクターや任意のカスタム外観に変えることができます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の RadioButton デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>GroupName</code></td>
-          <td><code>string (Null = 親コンテナが同じ)</code></td>
-          <td>同じ GroupName を持つ RadioButton は互いに排他的になります。GroupName が Null の場合は同一親コンテナ内で排他的になります。</td>
-        </tr>
-        <tr>
-          <td><code>VerticalContentAlignment (Control)</code></td>
-          <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>ラベルの垂直方向の配置を設定します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>GroupName</code></td><td><code>string (Null = 親コンテナが範囲)</code></td><td>同じ GroupName を持つ RadioButton はひとつのグループとして排他的に動作します。null の場合、同じ親コンテナ内の RadioButton が自動的にグループを形成します。</td></tr><tr><td><code>IsChecked (ToggleButton)</code></td><td><code>bool?</code></td><td>RadioButton が現在選択されているかどうかを示します。TwoWay バインドで ViewModel の bool プロパティと接続します。</td></tr><tr><td><code>VerticalContentAlignment (Control)</code></td><td><code>Top / Center / Bottom / Stretch</code></td><td>RadioButton のコンテンツ（ラベル）の垂直方向の配置を設定します。複数行のラベルを持つ場合にボタンアイコンとの整合に使用します。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;StackPanel&gt;
+  &lt;RadioButton Content="オプション A" GroupName="MyGroup"
+               IsChecked="{Binding IsOptionASelected, Mode=TwoWay}" /&gt;
+  &lt;RadioButton Content="オプション B" GroupName="MyGroup"
+               IsChecked="{Binding IsOptionBSelected, Mode=TwoWay}" /&gt;
+  &lt;RadioButton Content="オプション C" GroupName="MyGroup"
+               IsChecked="{Binding IsOptionCSelected, Mode=TwoWay}" /&gt;
+&lt;/StackPanel&gt;
 
+&lt;!-- 列挙型バインド（IValueConverter を使用） --&gt;
+&lt;RadioButton Content="小" GroupName="SizeGroup"
+             IsChecked="{Binding SelectedSize,
+               Converter={StaticResource EnumBoolConverter},
+               ConverterParameter=Small}" /&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>設定ダイアログ</strong> — テーマ（ライト/ダーク/システム）や言語など、相互排他的な設定選択肢に使用します。</li><li><strong>ウィザードのパス選択</strong> — ウィザードで複数のルートから一つを選択する画面に使用します。</li><li><strong>アンケート・調査フォーム</strong> — リッカートスケールや選択肢問題で一つだけ回答できる質問に使用します。</li><li><strong>カスタムタブストリップ</strong> — ControlTemplate を変更して RadioButton をタブヘッダーとして使用するカスタムナビゲーション UI を作成します。</li><li><strong>フィルター選択</strong> — 「すべて/アクティブ/完了」のような排他的なフィルター切り替え UI に使用します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>グループが混在するときは GroupName を必ず設定</strong> — 同一パネル内に複数のグループがある場合、GroupName なしでは意図しないグループ化が起きます。</li><li><strong>列挙型コンバーターを使うと管理しやすい</strong> — 選択肢が 3 つ以上ある場合、bool プロパティを個別に持つより列挙型1つ＋コンバーターのほうが ViewModel がすっきりします。</li><li><strong>初期値を設定する</strong> — グループ内でどれも選択されていない状態は混乱を招きます。ViewModel コンストラクタまたは XAML でデフォルト選択を設定します。</li><li><strong>カスタム外観には ControlTemplate を使う</strong> — 標準のバレット（●○）表示ではなく、ボタン形式やピル形式の外観にするには ControlTemplate を差し替えます。</li><li><strong>アクセシビリティ</strong> — コンテンツが画像の場合は AutomationProperties.Name を設定してスクリーンリーダーが読み上げられるようにします。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — 独立したオン/オフ選択（相互排他でない）に使用します。</li><li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — RadioButton の基底クラス。カスタムトグル UI の作成に使用します。</li><li><a href="/ja/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — 選択肢が多い場合のドロップダウン形式の単一選択コントロール。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RadioButtonUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で RadioButton のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RadioButtonUsage" target="_blank" rel="noopener noreferrer">GitHub で RadioButton のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

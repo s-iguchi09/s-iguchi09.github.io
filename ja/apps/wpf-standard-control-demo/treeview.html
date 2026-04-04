@@ -1,98 +1,60 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>TreeView | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>TreeView | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF TreeView コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF TreeView コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TreeView</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TreeView</p>
     <h1>TreeView <span class="category-badge">List</span></h1>
-    <p>TreeView は各アイテムに子アイテムを持つツリー構造で階層データを表示します。アイテムは展開・折りたたみして子アイテムを表示・非表示にできます。データバインドされた階層表示のために HierarchicalDataTemplate をサポートします。</p>
+    <p>TreeView は階層的なデータを木構造で表示するコントロールです。TreeViewItem をネストして静的な木構造を作るか、HierarchicalDataTemplate を使って動的な階層データをバインドできます。ファイルエクスプローラーや組織図の表示に使われます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の TreeView デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>TreeView</strong> は <code>ItemsControl</code> を継承したコントロールで、階層的なデータを木構造として表示します。各ノードは <code>TreeViewItem</code> で表現され、ノードを展開・折りたたみして子ノードを表示・非表示にできます。</p>
+  <p>静的な木構造は XAML で <code>TreeViewItem</code> を直接ネストして作成します。動的な階層データには <code>ItemsSource</code> と <code>HierarchicalDataTemplate</code> を組み合わせます。<code>HierarchicalDataTemplate</code> は各ノードの表示方法と子ノードのコレクションプロパティを指定します。</p>
+  <p>選択されたノードは <code>SelectedItem</code> で取得できます（読み取り専用）。双方向バインドはサポートされていないため、<code>SelectedItemChanged</code> イベントをコードビハインドで処理するか、ビヘイビアを使って ViewModel に通知します。</p>
+  <p>TreeView は VirtualizingStackPanel を ItemsPanel として使うことで、大量のノードでもパフォーマンスを維持できます。また、TreeViewItem の <code>IsExpanded</code> と <code>IsSelected</code> プロパティを ItemContainerStyle でバインドすることで、展開・選択状態を ViewModel で管理できます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>IsExpanded (TreeViewItem)</code></td>
-          <td><code>bool</code></td>
-          <td>各ツリーアイテムが展開されているかどうかを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>IsSelected / IsSelectionActive (TreeViewItem)</code></td>
-          <td><code>bool / bool (ReadOnly)</code></td>
-          <td>アイテムの選択状態と、ツリービューがフォーカスを持っているかどうかを示します。</td>
-        </tr>
-        <tr>
-          <td><code>SelectedValuePath / SelectedValue (TreeView)</code></td>
-          <td><code>string / object (ReadOnly)</code></td>
-          <td>選択アイテムの特定プロパティ値を SelectedValue として取得します。</td>
-        </tr>
-        <tr>
-          <td><code>ItemTemplate / HierarchicalDataTemplate (ItemsControl)</code></td>
-          <td><code>DataTemplate / HierarchicalDataTemplate</code></td>
-          <td>HierarchicalDataTemplate を使ってデータバインドされた階層構造を表示します。</td>
-        </tr>
-        <tr>
-          <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
-          <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>スクロールバーの表示設定を制御します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>ItemsSource (ItemsControl)</code></td><td><code>IEnumerable</code></td><td>ルートノードのコレクションをバインドします。HierarchicalDataTemplate と組み合わせて階層データを表示します。</td></tr><tr><td><code>SelectedItem (ReadOnly)</code></td><td><code>object</code></td><td>現在選択されているノードのオブジェクトを取得します。読み取り専用のため、直接バインドはできません。SelectedItemChanged イベントかビヘイビアを使います。</td></tr><tr><td><code>IsExpanded (TreeViewItem)</code></td><td><code>bool</code></td><td>TreeViewItem の展開状態を取得・設定します。ItemContainerStyle で ViewModel の対応するプロパティに TwoWay バインドして展開状態を管理します。</td></tr><tr><td><code>IsSelected (TreeViewItem)</code></td><td><code>bool</code></td><td>TreeViewItem の選択状態を取得・設定します。ItemContainerStyle でバインドすることで ViewModel からノードを選択状態にできます。</td></tr><tr><td><code>IsExpanded / IsSelected (TreeViewItem)</code></td><td><code>bool</code></td><td>TreeViewItem の展開状態と選択状態を設定します。</td></tr></tbody></table>
   </section>
-
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;TreeView ItemsSource="{Binding RootNodes}"&gt;
+  &lt;TreeView.Resources&gt;
+    &lt;HierarchicalDataTemplate DataType="{x:Type vm:FolderNode}"
+                              ItemsSource="{Binding Children}"&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Image Source="/Icons/folder.png" Width="16" Margin="0,0,4,0" /&gt;
+        &lt;TextBlock Text="{Binding Name}" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/HierarchicalDataTemplate&gt;
+  &lt;/TreeView.Resources&gt;
+  &lt;TreeView.ItemContainerStyle&gt;
+    &lt;Style TargetType="TreeViewItem"&gt;
+      &lt;Setter Property="IsExpanded"
+              Value="{Binding IsExpanded, Mode=TwoWay}" /&gt;
+      &lt;Setter Property="IsSelected"
+              Value="{Binding IsSelected, Mode=TwoWay}" /&gt;
+    &lt;/Style&gt;
+  &lt;/TreeView.ItemContainerStyle&gt;
+&lt;/TreeView&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>ファイルエクスプローラー</strong> — フォルダとファイルの階層構造をツリー表示するファイルナビゲーションに使用します。</li><li><strong>組織図・ナビゲーション</strong> — 会社の組織図や製品カテゴリの階層をツリーで表示します。</li><li><strong>XML/JSON ビューアー</strong> — XML や JSON の木構造をツリービューで可視化するデータビューアーに使用します。</li><li><strong>設定ツリー</strong> — 設定カテゴリの階層をツリー表示して、選択したカテゴリの設定を右ペインに表示する 2 ペイン設定画面に使用します。</li><li><strong>プロジェクト構造ビュー</strong> — IDE 風のプロジェクトツリー（ソリューション・プロジェクト・ファイル）を表示します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>HierarchicalDataTemplate を活用する</strong> — 再帰的な階層データには HierarchicalDataTemplate を使うと、どの深さのノードにも同じテンプレートが適用されます。</li><li><strong>SelectedItem を ViewModel にバインドする方法</strong> — SelectedItem は読み取り専用のため、ItemContainerStyle で各 TreeViewItem の IsSelected を ViewModel のプロパティに TwoWay バインドします。</li><li><strong>展開状態の永続化</strong> — IsExpanded を ViewModel のノードクラスに TwoWay バインドして、アプリ終了時に展開状態を保存・復元できます。</li><li><strong>遅延ロード（Lazy Loading）</strong> — 初期ロードを高速にするため、子ノードをダミーアイテムで初期化し、ノード展開時（IsExpanded 変化）に実際の子ノードをロードする遅延ロードを実装します。</li><li><strong>仮想化でパフォーマンス向上</strong> — ノード数が多い場合は VirtualizingStackPanel をItemsPanel に設定して描画コストを削減します。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/listview.html">ListView</a> — フラットなリスト形式の表示（階層なし）。</li><li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — 単純な 1 レベルの展開/折りたたみが必要な場合に使用します。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TreeViewUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で TreeView のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TreeViewUsage" target="_blank" rel="noopener noreferrer">GitHub で TreeView のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

@@ -7,97 +7,118 @@
   <meta charset="UTF-8">
   <title>GroupBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF GroupBox コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF GroupBox コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; GroupBox</p>
     <h1>GroupBox <span class="category-badge">Display</span></h1>
-    <p>GroupBox はヘッダー付きのボーダーコンテナで、関連するコントロールを視覚的にグループ化します。フォーム要素を論理的なセクションに整理するのによく使用されます。</p>
+    <p>GroupBox は枠線とヘッダーを持つコンテナコントロールです。関連するコントロールを視覚的にグループ化するために使用され、フォームのセクション分けによく使われます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>WPF の <strong>GroupBox</strong> は <code>HeaderedContentControl</code> を継承したコントロールで、タイトル（Header）付きの枠線でコンテンツを囲みます。フォームの入力セクションや設定グループを視覚的に区切る際に使用されます。</p>
+    <p>Header プロパティには文字列だけでなく任意の WPF 要素を配置できます。アイコン付きタイトルや、折りたたみボタンを含む複合ヘッダーなど、リッチな表示が可能です。</p>
+    <p>Content プロパティには StackPanel や Grid などのパネルを配置して、複数のコントロールをグループとして収納します。GroupBox 自体は 1 つの子要素しか持てないため、通常は Grid や StackPanel をルートコンテナとして使います。</p>
+    <p>Expander と GroupBox の使い分け：GroupBox は常にコンテンツを表示する固定コンテナで、Expander はユーザーが折りたたみを切り替えられる点が異なります。折りたたみが不要なシンプルなグループ化には GroupBox が適しています。</p>
   </section>
 
   <section class="content-section">
     <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の GroupBox デモ画面が表示されます。
-    </div>
+    <div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の GroupBox デモ画面が表示されます。</div>
   </section>
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>        <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
-          <td><code>object / bool (ReadOnly)</code></td>
-          <td>グループボックスのヘッダーテキストまたはコンテンツを設定します。HasHeader はヘッダーが設定されているかどうかを示します（読み取り専用）。</td>
+          <td><code>object / bool</code></td>
+          <td>ヘッダー部分に表示するコンテンツを設定します。文字列が一般的ですが、任意の WPF 要素も設定可能です。HasHeader は Header が設定されているかどうかの読み取り専用プロパティです。</td>
         </tr>
         <tr>
-          <td><code>HeaderStringFormat (HeaderedContentControl)</code></td>
+          <td><code>HeaderStringFormat</code></td>
           <td><code>string</code></td>
-          <td>ヘッダーが文字列として表示される場合のフォーマット文字列を設定します。</td>
+          <td>Header がシンプルなオブジェクトの場合の表示フォーマット文字列を設定します。例：'Selected: {0}' のように指定します。</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>グループボックス内のコンテンツを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Padding / FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
-          <td><code>various</code></td>
-          <td>パディングとフォント関連のプロパティを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Background / Foreground (Control)</code></td>
-          <td><code>Brush</code></td>
-          <td>背景色とテキスト色を設定します。</td>
+          <td>GroupBox 内部に表示するコンテンツを設定します。通常は Grid や StackPanel などのパネルを指定して複数の子コントロールを収納します。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>ボーダーの色と太さを設定します。</td>
+          <td>GroupBox の枠線の色と太さを設定します。デフォルトではテーマに合った枠線が表示されます。</td>
         </tr>
-      </tbody>
+        <tr>
+          <td><code>Background / Foreground (Control)</code></td>
+          <td><code>Brush</code></td>
+          <td>GroupBox の背景色とテキスト（ヘッダー）の前景色を設定します。</td>
+        </tr></tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <pre><code class="language-xml">&lt;GroupBox Header="ユーザー情報" Margin="8"&gt;
+  &lt;Grid Margin="8"&gt;
+    &lt;Grid.ColumnDefinitions&gt;
+      &lt;ColumnDefinition Width="Auto" /&gt;
+      &lt;ColumnDefinition Width="*" /&gt;
+    &lt;/Grid.ColumnDefinitions&gt;
+    &lt;Grid.RowDefinitions&gt;
+      &lt;RowDefinition Height="Auto" /&gt;
+      &lt;RowDefinition Height="Auto" /&gt;
+    &lt;/Grid.RowDefinitions&gt;
+    &lt;Label Grid.Row="0" Grid.Column="0" Content="名前:" /&gt;
+    &lt;TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name}" /&gt;
+    &lt;Label Grid.Row="1" Grid.Column="0" Content="メール:" /&gt;
+    &lt;TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Email}" /&gt;
+  &lt;/Grid&gt;
+&lt;/GroupBox&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>      <li><strong>フォームのセクション分け</strong> — 「基本情報」「連絡先情報」「支払情報」などのセクションを GroupBox で区切ります。</li>
+      <li><strong>設定の論理グループ</strong> — 設定画面で関連する設定項目をまとめてグループとして表示します。</li>
+      <li><strong>オプション選択グループ</strong> — RadioButton グループを GroupBox で囲み、選択肢のグループであることを視覚的に示します。</li>
+      <li><strong>統計情報パネル</strong> — 集計値や KPI 指標をグループごとに GroupBox で表示するダッシュボードに使用します。</li>
+      <li><strong>ウィザードのステップ情報</strong> — ウィザードの各ステップで必要な入力項目を GroupBox でグループ化します。</li></ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>      <li><strong>内側に Padding を設定する</strong> — GroupBox の Content 直下のパネルに Margin を設定して、枠線とコンテンツの間に適切な余白を作ります。</li>
+      <li><strong>Header には簡潔なラベルを</strong> — Header は短い説明的なテキストが最適です。長すぎるとレイアウトが崩れる場合があります。</li>
+      <li><strong>折りたたみが必要なら Expander を使う</strong> — コンテンツの表示・非表示を切り替える必要がある場合は GroupBox ではなく Expander を使います。</li>
+      <li><strong>RadioButton との相性が良い</strong> — 排他的な選択肢（RadioButton グループ）を GroupBox で囲むと、選択グループの範囲が視覚的に明確になります。</li>
+      <li><strong>スタイルで統一感を出す</strong> — アプリ全体の GroupBox スタイルをリソースで定義し、枠線の色・太さ・ヘッダーフォントを統一します。</li></ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>      <li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — 折りたたみ可能なコンテナ。GroupBox の展開可能版。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/border.html">Border</a> — GroupBox よりシンプルな枠線コンテナ（ヘッダーなし）。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — 複数グループをタブで切り替える場合に使用します。</li></ul>
+  </section>
+
+  <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で GroupBox のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage" target="_blank" rel="noopener noreferrer">GitHub で GroupBox のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

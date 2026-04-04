@@ -1,93 +1,64 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>Popup | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Popup コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Popup コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Popup</p>
     <h1>Popup <span class="category-badge">Overlays</span></h1>
-    <p>Popup はメインウィンドウの上にフロートする別ウィンドウにコンテンツを表示するコントロールです。ToolTip と異なり、ホバーで自動表示されず、プログラムによる制御が必要です。多くのオーバーレイコントロールのベースとして使用されます。</p>
+    <p>Popup は独立したウィンドウとしてコンテンツをフローティング表示するコントロールです。ToolTip とは異なり、ホバーで自動表示されず、プログラムから開閉を制御します。多くのオーバーレイコントロールの基盤として使われています。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の Popup デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Popup</strong> は <code>FrameworkElement</code> を継承したコントロールで、メインウィンドウの上にフローティングするコンテンツを表示します。<code>IsOpen</code> プロパティを True に設定するとポップアップが表示され、False にすると非表示になります。</p>
+  <p>Popup は ToolTip、ComboBox のドロップダウン、Menu のサブメニューなど多くの標準コントロールで内部的に使用されています。低レベルなオーバーレイ UI を直接実装する場合に Popup を使用します。</p>
+  <p><code>StaysOpen</code> が False（デフォルト）の場合、Popup 外をクリックすると自動的に閉じます。True にすると手動で閉じるまで表示されたままになります。</p>
+  <p><code>PlacementMode</code> の多彩なオプションにより、対象要素の上下左右や画面座標など、柔軟な配置が可能です。<code>HorizontalOffset</code> と <code>VerticalOffset</code> で位置を微調整できます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の Popup デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>IsOpen / StaysOpen / AllowsTransparency</code></td>
-          <td><code>bool / bool / bool</code></td>
-          <td>IsOpen: ポップアップの開閉状態、StaysOpen: ポップアップ外クリックで閉じないかどうか、AllowsTransparency: 透明度サポートの有効化を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Placement / HorizontalOffset / VerticalOffset</code></td>
-          <td><code>PlacementMode / double / double</code></td>
-          <td>ポップアップの表示位置とオフセットを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>PopupAnimation</code></td>
-          <td><code>None / Fade / Slide / Scroll</code></td>
-          <td>ポップアップが開く際のアニメーションを設定します（AllowsTransparency=True が必要な場合あり）。</td>
-        </tr>
-        <tr>
-          <td><code>Child / PlacementRectangle</code></td>
-          <td><code>UIElement / Rect</code></td>
-          <td>ポップアップ内に表示する要素と、配置基準となる矩形を設定します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>IsOpen</code></td><td><code>bool</code></td><td>True のときポップアップが表示されます。TwoWay バインドで ViewModel から開閉を制御するか、トグルボタンの IsChecked にバインドするパターンがよく使われます。</td></tr><tr><td><code>StaysOpen</code></td><td><code>bool</code></td><td>False（デフォルト）のときポップアップ外をクリックすると自動的に閉じます。True にすると手動で閉じるまで表示が続きます。</td></tr><tr><td><code>AllowsTransparency</code></td><td><code>bool</code></td><td>True にするとポップアップウィンドウが透明をサポートします。ドロップシャドウや角丸のポップアップを作成する際に必要です。</td></tr><tr><td><code>Placement</code></td><td><code>PlacementMode</code></td><td>ポップアップの配置基準を設定します。Mouse はカーソル付近、Bottom/Top は対象要素の上下、Absolute は画面座標で配置します。</td></tr><tr><td><code>HorizontalOffset / VerticalOffset</code></td><td><code>double</code></td><td>配置基準点からの水平・垂直オフセットを設定します。微調整に使用します。</td></tr><tr><td><code>PopupAnimation</code></td><td><code>None/Fade/Slide/Scroll</code></td><td>ポップアップが開閉する際のアニメーションを設定します。AllowsTransparency=True の場合に効果があります。</td></tr><tr><td><code>Child</code></td><td><code>UIElement</code></td><td>ポップアップ内に表示するコンテンツを設定します。任意の WPF 要素を配置できます。</td></tr></tbody></table>
   </section>
-
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- トグルボタンに連動するポップアップ --&gt;
+&lt;Grid&gt;
+  &lt;ToggleButton x:Name="toggleBtn" Content="オプションを開く"
+               IsChecked="{Binding IsPopupOpen, Mode=TwoWay}" /&gt;
+  &lt;Popup IsOpen="{Binding IsPopupOpen, Mode=TwoWay}"
+         StaysOpen="False"
+         PlacementTarget="{Binding ElementName=toggleBtn}"
+         Placement="Bottom"
+         AllowsTransparency="True"
+         PopupAnimation="Fade"&gt;
+    &lt;Border Background="White" BorderBrush="Gray"
+            BorderThickness="1" CornerRadius="4"
+            Padding="12"&gt;
+      &lt;StackPanel&gt;
+        &lt;CheckBox Content="オプション 1" IsChecked="{Binding Opt1}" /&gt;
+        &lt;CheckBox Content="オプション 2" IsChecked="{Binding Opt2}" /&gt;
+        &lt;Button Content="適用" Command="{Binding ApplyCommand}"
+                Margin="0,8,0,0" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/Border&gt;
+  &lt;/Popup&gt;
+&lt;/Grid&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>カスタムドロップダウンパネル</strong> — ボタンに連動してフィルターオプションや設定パネルをポップアップ表示します。</li><li><strong>カラーピッカー</strong> — ボタンをクリックするとカラーパレットがポップアップ表示されるカスタムカラー選択 UI を実装します。</li><li><strong>日付ピッカーのカレンダー</strong> — DatePicker のカレンダー部分は内部的に Popup で実装されています。カスタム日付ピッカーを作成する際に使用します。</li><li><strong>通知バナー</strong> — 画面の端にフローティングで通知メッセージを表示する非モーダルな通知 UI に使用します。</li><li><strong>コンテキストヘルプ</strong> — ヘルプボタンをクリックすると詳細な説明がポップアップ表示されるインラインヘルプを実装します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>StaysOpen=False で自動クローズを活用</strong> — ほとんどのケースでは StaysOpen=False が適切です。ポップアップ外をクリックすると自動で閉じる自然な動作を提供します。</li><li><strong>アニメーションには AllowsTransparency が必要</strong> — PopupAnimation を設定する場合は AllowsTransparency=True も設定します。</li><li><strong>Popup は視覚ツリーから独立している</strong> — Popup 内の要素は、メインウィンドウの DataContext を継承しないことがあります。RelativeSource や Freezable を使ってバインドコンテキストを渡します。</li><li><strong>フォーカス管理に注意</strong> — Popup を開いてもフォーカスは自動では移動しません。Popup が開いたら内部の最初の要素にフォーカスを設定するコードが必要な場合があります。</li><li><strong>Window の外に出られる</strong> — Popup は専用の HWND ウィンドウとして描画されるため、親ウィンドウの境界をはみ出して表示できます。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/tooltip.html">ToolTip</a> — ホバーで自動表示される軽量なポップアップ。</li><li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — Popup の IsOpen と連動させるのによく使われるコントロール。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/PopupUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Popup のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/PopupUsage" target="_blank" rel="noopener noreferrer">GitHub で Popup のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

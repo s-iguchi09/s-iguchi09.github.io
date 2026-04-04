@@ -1,83 +1,53 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>RepeatButton | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF RepeatButton コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF RepeatButton コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; RepeatButton</p>
     <h1>RepeatButton <span class="category-badge">Inputs</span></h1>
-    <p>RepeatButton はボタンを押し続けている間、継続的に Click イベントを発生させるボタンです。マウスを離さずに繰り返しの動作が必要な、インクリメント/デクリメントボタンやスクロールコントロールの実装に特に有用です。</p>
+    <p>RepeatButton は押し続けている間、定期的に Click イベントを発火し続けるボタンです。スピナーやスクロールバーの矢印ボタンのように、ボタンを押し続けることで継続的に値を変化させる UI に使用します。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の RepeatButton デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>RepeatButton</strong> は <code>ButtonBase</code> を継承したコントロールで、押し続けている間、設定した間隔で Click イベントを連続発火します。通常の Button がマウスを離したときに 1 回だけ発火するのとは異なります。</p>
+  <p>発火のタイミングは 2 つのプロパティで制御します。<code>Delay</code> は最初のリピートが始まるまでの待機時間（ミリ秒）、<code>Interval</code> はその後の繰り返し間隔（ミリ秒）です。両方ともデフォルト値は 250ms で、Windows の標準キーボードリピート設定と一致しています。</p>
+  <p>RepeatButton は WPF の <code>ScrollBar</code> や <code>Slider</code> の矢印ボタンとして内部的に使用されています。カスタムの数値入力スピナーやカスタムスクロールコントロールを作成する際の基盤コントロールとして活用できます。</p>
+  <p>Button と同様に <code>Command</code> と <code>CommandParameter</code> をサポートしているため、MVVM パターンで使用できます。ボタンが押されるたびにコマンドが実行されます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の RepeatButton デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Delay</code></td>
-          <td><code>int (ms, default: 250)</code></td>
-          <td>ボタンを押してから繰り返しが始まるまでの遅延時間（ミリ秒）です。</td>
-        </tr>
-        <tr>
-          <td><code>Interval</code></td>
-          <td><code>int (ms, default: 250)</code></td>
-          <td>繰り返し発火の間隔（ミリ秒）です。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Delay</code></td><td><code>int (ms, デフォルト: 250)</code></td><td>ボタンを押し続けたとき、最初の Click 発火から繰り返しが始まるまでの待機時間（ミリ秒）です。250ms（デフォルト）は Windows の標準キーボードオートリピート遅延と一致します。</td></tr><tr><td><code>Interval</code></td><td><code>int (ms, デフォルト: 250)</code></td><td>繰り返し発火の間隔（ミリ秒）です。短いほど高速なリピート、長いほど低速なリピートになります。操作の精度要件に合わせて Delay と共に調整します。</td></tr></tbody></table>
   </section>
-
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- 数値スピナー --&gt;
+&lt;StackPanel Orientation="Horizontal"&gt;
+  &lt;RepeatButton Content="&#x25BC;" Width="24"
+               Delay="300" Interval="100"
+               Command="{Binding DecrementCommand}" /&gt;
+  &lt;TextBox Width="60" Text="{Binding Value}"
+           TextAlignment="Center" /&gt;
+  &lt;RepeatButton Content="&#x25B2;" Width="24"
+               Delay="300" Interval="100"
+               Command="{Binding IncrementCommand}" /&gt;
+&lt;/StackPanel&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>数値スピナー</strong> — 上下の矢印ボタンを押し続けると数値が連続的に増減するスピナー UI を実装します。</li><li><strong>カスタムスクロール</strong> — 上下/左右のスクロール矢印ボタンを押し続けるとスクロールし続けるカスタムスクロール UI に使用します。</li><li><strong>音量・ズームコントロール</strong> — ボタンを押し続けることで滑らかに音量やズームレベルを調整する UI に使用します。</li><li><strong>ゲームコントロール</strong> — ミニゲームやインタラクティブデモで継続的な操作が必要なコントロールに活用します。</li><li><strong>カルーセルナビゲーション</strong> — 前へ/次へボタンを押し続けると複数のスライドを高速移動できるカルーセルに使用します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>Delay と Interval を操作の粒度に合わせる</strong> — 細かい調整が必要な操作は Interval を長く（200〜500ms）、粗い操作は短く（50〜100ms）設定します。</li><li><strong>ViewModel で値の上限・下限を制御</strong> — RepeatButton は高速に Click を発火するため、バインドされたプロパティで確実に最大値・最小値のクランプ処理を実装します。</li><li><strong>Command を使う</strong> — Click イベントより Command バインドを使い、ViewModel でロジックを管理します。</li><li><strong>視覚フィードバック</strong> — RepeatButton を押している間にリアルタイムで値が変化するよう、UpdateSourceTrigger=PropertyChanged を使用します。</li><li><strong>アクセシビリティ</strong> — AutomationProperties.Name で「数量を増やす」などの説明を付けてスクリーンリーダーが目的を読み上げられるようにします。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/button.html">Button</a> — 1 回だけ Click を発火する通常のボタン。</li><li><a href="/ja/apps/wpf-standard-control-demo/slider.html">Slider</a> — ドラッグで値を選択するコントロール。RepeatButton より直感的な範囲選択 UI。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RepeatButtonUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で RepeatButton のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/RepeatButtonUsage" target="_blank" rel="noopener noreferrer">GitHub で RepeatButton のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

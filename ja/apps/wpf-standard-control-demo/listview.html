@@ -1,103 +1,63 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>ListView | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF ListView コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF ListView コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ListView</p>
     <h1>ListView <span class="category-badge">List</span></h1>
-    <p>ListView は差し替え可能なビューモデルで ListBox を拡張した高度なリストコントロールです。最も一般的なビューは GridView で、サイズ変更や並べ替えをサポートする列ヘッダー付きの表形式でアイテムを表示します。</p>
+    <p>ListView は ListBox を拡張したリストコントロールです。GridView を使うことで列ヘッダー付きの表形式表示が可能になります。列のリサイズや並べ替えもサポートしています。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の ListView デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>ListView</strong> は <code>ListBox</code> を継承したコントロールで、<code>View</code> プロパティに <code>GridView</code> を設定することで列ヘッダー付きの表形式リストを表示できます。DataGrid より軽量で、読み取り専用の表形式表示に適しています。</p>
+  <p><code>GridView</code> は <code>ViewBase</code> を継承したクラスで、<code>Columns</code> プロパティに <code>GridViewColumn</code> の集合を定義します。各列には <code>Header</code>（列ヘッダーテキスト）と <code>DisplayMemberBinding</code>（表示するプロパティへのバインド）または <code>CellTemplate</code>（カスタム表示）を設定します。</p>
+  <p><code>AllowsColumnReorder="True"</code> を GridView に設定すると、ユーザーが列ヘッダーをドラッグして列の順序を変更できます。列幅はドラッグでリサイズ可能です。</p>
+  <p>ListBox と同様に <code>SelectionMode</code> で選択モードを制御でき、<code>SelectedItem</code> や <code>SelectedItems</code> を通じて選択アイテムを取得できます。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です — アプリ上の ListView デモ画面が表示されます。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>SelectionMode (ListBox)</code></td>
-          <td><code>Single / Multiple / Extended</code></td>
-          <td>選択モードを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>View / Columns (GridView) / AllowsColumnReorder (GridView)</code></td>
-          <td><code>ViewBase / GridViewColumnCollection / bool</code></td>
-          <td>表示ビューを設定します。GridView の場合は列定義と列の並べ替え許可を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Width (GridViewColumn)</code></td>
-          <td><code>double</code></td>
-          <td>GridView の各列の幅を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
-          <td><code>int / object</code></td>
-          <td>選択されているアイテムのインデックスとオブジェクトを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>IsSelected (ListBoxItem)</code></td>
-          <td><code>bool</code></td>
-          <td>各アイテムの選択状態を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
-          <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>スクロールバーの表示設定を制御します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>View</code></td><td><code>ViewBase (GridView)</code></td><td>ListView の表示モードを設定します。GridView を指定すると列ヘッダー付きの表形式表示になります。</td></tr><tr><td><code>Columns (GridView)</code></td><td><code>GridViewColumnCollection</code></td><td>表示する列の定義コレクションです。各 GridViewColumn に Header と DisplayMemberBinding または CellTemplate を設定します。</td></tr><tr><td><code>AllowsColumnReorder (GridView)</code></td><td><code>bool</code></td><td>True にするとユーザーが列ヘッダーをドラッグして列の順序を変更できます。</td></tr><tr><td><code>Width (GridViewColumn)</code></td><td><code>double</code></td><td>列の幅を設定します。Double.NaN を指定すると列幅が自動調整されます。</td></tr><tr><td><code>SelectedIndex / SelectedItem (Selector)</code></td><td><code>int / object</code></td><td>選択されているアイテムのインデックスとオブジェクトを取得・設定します。</td></tr></tbody></table>
   </section>
-
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;ListView ItemsSource="{Binding Employees}"
+          SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}"&gt;
+  &lt;ListView.View&gt;
+    &lt;GridView AllowsColumnReorder="True"&gt;
+      &lt;GridViewColumn Header="ID" Width="60"
+                      DisplayMemberBinding="{Binding Id}" /&gt;
+      &lt;GridViewColumn Header="名前" Width="150"
+                      DisplayMemberBinding="{Binding Name}" /&gt;
+      &lt;GridViewColumn Header="部署" Width="120"
+                      DisplayMemberBinding="{Binding Department}" /&gt;
+      &lt;!-- カスタム列 --&gt;
+      &lt;GridViewColumn Header="操作" Width="80"&gt;
+        &lt;GridViewColumn.CellTemplate&gt;
+          &lt;DataTemplate&gt;
+            &lt;Button Content="詳細" Command="{Binding ViewDetailCommand}" /&gt;
+          &lt;/DataTemplate&gt;
+        &lt;/GridViewColumn.CellTemplate&gt;
+      &lt;/GridViewColumn&gt;
+    &lt;/GridView&gt;
+  &lt;/ListView.View&gt;
+&lt;/ListView&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>ファイル一覧（エクスプローラー形式）</strong> — ファイル名・サイズ・更新日時を列ヘッダー付きリストで表示します。</li><li><strong>検索結果の表示</strong> — 検索結果を複数のプロパティ列で見やすく表示します。</li><li><strong>ユーザー/従業員リスト</strong> — ID・名前・部署など複数の属性を列で表示するマスターデータ一覧に使用します。</li><li><strong>ログビューアー</strong> — 日時・レベル・メッセージなどを列で表示するログ表示 UI に使用します。</li><li><strong>設定アイテム一覧</strong> — 設定名と現在の値を列で並べた設定概要画面に使用します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>DataGrid との使い分け</strong> — 読み取り専用の表形式表示には ListView が軽量です。編集が必要な場合や高度な機能（フリーズ列、グルーピングなど）が必要な場合は DataGrid を使います。</li><li><strong>列幅の自動調整</strong> — Width="Auto" を指定すると列幅がコンテンツに合わせて自動調整されます。</li><li><strong>ColumnHeader スタイルで見た目を変更</strong> — GridView の ColumnHeaderContainerStyle で列ヘッダーの外観をカスタマイズします。</li><li><strong>ソート機能の追加</strong> — 列ヘッダーのクリックでソートする機能は標準では含まれませんが、ColumnHeader の Click イベントと ICollectionView のソートを組み合わせて実装できます。</li><li><strong>ItemContainerStyle で行を装飾</strong> — 特定の行を色分けするには ItemContainerStyle にトリガーを設定します。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — 単純なリスト表示（列なし）。</li><li><a href="/ja/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — 編集機能や高度な表機能が必要な場合。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListViewUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で ListView のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListViewUsage" target="_blank" rel="noopener noreferrer">GitHub で ListView のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

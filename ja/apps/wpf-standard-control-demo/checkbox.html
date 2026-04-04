@@ -8,7 +8,7 @@
   <title>CheckBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF CheckBox コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <meta name="description" content="WPF CheckBox コントロールのリファレンス。概要、プロパティ解説、XAML 使用例、活用シナリオ。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,32 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; CheckBox</p>
     <h1>CheckBox <span class="category-badge">Inputs</span></h1>
-    <p>CheckBox はユーザーがオプションを選択・解除できるトグルコントロールです。ToggleButton を継承しており、IsThreeState が有効な場合、チェック済み・非チェック・不定（null）の 3 状態をサポートします。</p>
+    <p>CheckBox はユーザーがオプションを選択・解除できるトグルコントロールです。ToggleButton を継承しており、IsThreeState を有効にすると チェック済み・非チェック・不定（null）の 3 状態をサポートします。独立した複数の選択肢を並べる場合に最適です。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>
+      WPF の <strong>CheckBox</strong> は <code>ToggleButton</code> を継承したコントロールで、
+      ユーザーが独立してオン/オフを切り替えられる選択肢を提供します。RadioButton とは異なり、
+      同一グループ内でも複数の CheckBox を同時にチェックできます。
+    </p>
+    <p>
+      <code>IsChecked</code> プロパティは <code>bool?</code>（null 許容）型です。
+      <code>IsThreeState="True"</code> にすると、ユーザーがクリックするたびに
+      <code>false</code> → <code>true</code> → <code>null</code>（不定）→ <code>false</code> とサイクルします。
+      不定状態は「一部選択」を表す「全選択」チェックボックスなどに使用されます。
+    </p>
+    <p>
+      MVVM での実装では、<code>IsChecked</code> を <code>bool?</code> 型の ViewModel プロパティに TwoWay バインドするのが標準です。
+      単純な true/false の場合は <code>bool</code> プロパティへのバインドも可能で、
+      WPF が <code>null</code> ↔ <code>false</code> の変換を自動で行います。
+    </p>
+    <p>
+      ContentControl を継承しているため、ラベル部分には文字列だけでなく画像やパネルなど
+      任意の WPF 要素を配置できます。これにより、アイコン付きの CheckBox や
+      複数行ラベルを持つ選択肢を簡単に作成できます。
+    </p>
   </section>
 
   <section class="content-section">
@@ -39,45 +64,85 @@
       以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
       アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
     </p>
-    
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>IsChecked (ToggleButton)</code></td>
           <td><code>bool? (Null / False / True)</code></td>
-          <td>チェックボックスの状態を設定します。Null は不定状態（Indeterminate）です。</td>
+          <td>チェックボックスの状態を設定します。<code>null</code> は不定状態（Indeterminate）を表します。TwoWay バインドで ViewModel の <code>bool?</code> プロパティに接続するのが標準的なパターンです。</td>
         </tr>
         <tr>
           <td><code>IsThreeState (ToggleButton)</code></td>
           <td><code>bool</code></td>
-          <td>True にすると 3 段階の状態切り替えが可能になります。不定状態（Null）が追加されます。</td>
+          <td>True にすると 3 段階の状態切り替えが可能になります。false → true → null のサイクルが有効になります。「全選択」チェックボックスで一部選択時の不定状態を表現する際に使用します。</td>
         </tr>
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>チェックボックスのコンテンツ（ラベル）の垂直方向の配置を設定します。</td>
+          <td>チェックボックスのコンテンツ（ラベル）の垂直方向の配置を設定します。コンテンツが複数行のテキストやパネルの場合に、チェックボックス記号との垂直整合を調整するために使用します。</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>3 状態 CheckBox と「全選択」パターンの例です：</p>
+    <pre><code class="language-xml">&lt;StackPanel&gt;
+  &lt;!-- 通常の CheckBox --&gt;
+  &lt;CheckBox Content="メール通知を有効にする"
+            IsChecked="{Binding IsEmailEnabled, Mode=TwoWay}" /&gt;
+
+  &lt;!-- 3 状態 CheckBox（全選択パターン） --&gt;
+  &lt;CheckBox Content="すべて選択" IsThreeState="True"
+            IsChecked="{Binding AllSelected, Mode=TwoWay}" /&gt;
+
+  &lt;!-- アイコン付き CheckBox --&gt;
+  &lt;CheckBox IsChecked="{Binding IsStarred, Mode=TwoWay}"&gt;
+    &lt;StackPanel Orientation="Horizontal"&gt;
+      &lt;TextBlock Text="&#x2605;" Foreground="Gold" /&gt;
+      &lt;TextBlock Text=" お気に入りに追加" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/CheckBox&gt;
+&lt;/StackPanel&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>設定オプション</strong> — 「通知を受け取る」「ログを保存する」など、独立したオン/オフ設定項目に使用します。</li>
+      <li><strong>全選択/解除</strong> — IsThreeState を使って、リスト全体の選択状態（全選択/一部選択/全解除）を一つの CheckBox で管理します。</li>
+      <li><strong>複数選択フィルター</strong> — 検索フィルターやカテゴリ選択で、複数条件を同時に有効にできる選択UIを作成します。</li>
+      <li><strong>利用規約への同意</strong> — 「利用規約に同意する」のような確認チェックボックスをフォームに配置します。</li>
+      <li><strong>データグリッドの行選択</strong> — DataGrid の列として CheckBox を配置し、複数行の一括選択 UI を実装します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>TwoWay バインドを使用する</strong> — IsChecked には必ず Mode=TwoWay を指定し、ViewModel から初期値を設定できるようにします。</li>
+      <li><strong>RadioButton との使い分け</strong> — 相互排他的な選択（どれか一つのみ）には RadioButton を、独立した複数選択には CheckBox を使います。</li>
+      <li><strong>全選択パターンには null チェックを</strong> — 3 状態モードで null を扱う場合は、ViewModel で null の意味（一部選択）を明確に定義します。</li>
+      <li><strong>ラベルのクリック範囲</strong> — CheckBox はチェックマーク部分だけでなく、ラベル部分をクリックしても状態が切り替わります。ラベルの範囲を広げることでクリックしやすくなります。</li>
+      <li><strong>アクセシビリティ</strong> — 画像コンテンツを使う場合は AutomationProperties.Name を設定してスクリーンリーダーが正しく読み上げられるようにします。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — 同じグループ内で排他的な選択を提供するコントロール。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — CheckBox の基底クラス。カスタムトグル UI の作成に使用します。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — SelectionMode="Multiple" で複数選択可能なリスト。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CheckBoxUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で CheckBox のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CheckBoxUsage" target="_blank" rel="noopener noreferrer">GitHub で CheckBox のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>

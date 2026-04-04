@@ -1,78 +1,55 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Viewbox | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>Viewbox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF Viewbox コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF Viewbox コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Viewbox</p>
-    <h1>Viewbox <span class="category-badge">Layout</span></h1>
-    <p>Viewbox は単一の子要素を利用可能なスペースに合わせてスケールするデコレーターです。アスペクト比を維持しながらコンテンツを自動スケールすることで、解像度に依存しない UI を作成するのに便利です。</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Viewbox</p>
+    <h1>Viewbox <span class="category-badge">Graphics</span></h1>
+    <p>Viewbox はコンテンツをスケーリングして表示するデコレーターコンテナです。固定サイズのコンテンツ（アイコン、図形、UI パーツ）を任意のサイズに拡大縮小して表示します。ベクターグラフィックスのサイズフリーな表示に使われます。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の Viewbox デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Viewbox</strong> は <code>Decorator</code> を継承したコンテナで、子要素を Stretch と StretchDirection の設定に従ってスケーリングして表示します。固定サイズで設計した UI コンポーネントやアイコンを、任意のサイズのコンテナに収めて表示するために使用します。</p>
+  <p><code>Stretch</code> プロパティは <code>Image</code> と同じ 4 つのモードを持ちます。<code>Uniform</code>（デフォルト）はアスペクト比を保ちながら収まるようスケール、<code>Fill</code> はアスペクト比を無視して引き伸ばし、<code>UniformToFill</code> はアスペクト比を保ちながらコンテナを完全に埋めます。</p>
+  <p>Viewbox は子要素を無限大のサイズで測定してから、コンテナのサイズに合わせてスケールを計算します。これにより、Path や Polygon などのベクター図形をすべてのスケールで滑らかに表示できます（ラスター画像のようにぼけません）。</p>
+  <p>Canvas に描かれた複雑な図形や、固定 Width/Height で設計した UI パーツを Viewbox でラップすることで、どんなサイズの親コンテナにも適切にスケーリングできます。レスポンシブでないレガシー UI コンポーネントを再利用する際にも便利です。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Stretch / StretchDirection</code></td>
-          <td><code>None / Fill / Uniform / UniformToFill / UpOnly / DownOnly / Both</code></td>
-          <td>Stretch はスケーリング方法、StretchDirection はスケーリングを行う方向（拡大のみ・縮小のみ・両方）を設定します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Stretch</code></td><td><code>None / Fill / Uniform / UniformToFill</code></td><td>コンテンツのスケーリング方法を設定します。Uniform（デフォルト）はアスペクト比を保ちながら収まるようスケール、Fill はアスペクト比を無視して引き伸ばします。</td></tr><tr><td><code>StretchDirection</code></td><td><code>UpOnly / DownOnly / Both</code></td><td>スケーリングの方向を制限します。UpOnly は拡大のみ、DownOnly は縮小のみ、Both（デフォルト）は両方向に適用します。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- 固定サイズの図形を Viewbox でスケーラブルに --&gt;
+&lt;Viewbox Width="200" Height="200" Stretch="Uniform"&gt;
+  &lt;Canvas Width="100" Height="100"&gt;
+    &lt;Ellipse Canvas.Left="10" Canvas.Top="10"
+             Width="80" Height="80" Fill="Gold" /&gt;
+    &lt;Path Fill="Black"
+          Data="M 50,30 L 55,45 L 70,45 L 60,55 L 65,70 L 50,60 L 35,70 L 40,55 L 30,45 L 45,45 Z" /&gt;
+  &lt;/Canvas&gt;
+&lt;/Viewbox&gt;
 
+&lt;!-- アイコンのスケーリング --&gt;
+&lt;Viewbox Width="{Binding IconSize}" Height="{Binding IconSize}"&gt;
+  &lt;Path Data="M 0,0 L 24,0 L 24,24 L 0,24 Z" Fill="Blue" /&gt;
+&lt;/Viewbox&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>アイコンのスケーリング</strong> — ベクター（Path）で描いたアイコンを Viewbox でラップして、任意のサイズで鮮明に表示します。</li><li><strong>固定 UI のスケーリング</strong> — レガシーな固定サイズ UI コンポーネントを現代的なレスポンシブレイアウトに組み込む際に使用します。</li><li><strong>プレゼンテーションスライド</strong> — 固定解像度で設計したスライドコンテンツを様々なウィンドウサイズに対応させます。</li><li><strong>ゲームの拡大表示</strong> — 固定サイズのゲームエリア（Canvas）を Viewbox でラップして、ウィンドウサイズに合わせて全画面表示します。</li><li><strong>ダッシュボードのゲージ</strong> — ベクター描画のゲージや計器を Viewbox でスケーラブルにして、様々なサイズのダッシュボードタイルに配置します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>ベクター要素に最適</strong> — Viewbox は Path や Canvas のベクター描画と相性が最良です。ビットマップ画像は Viewbox でスケールするとぼけることがあります（Image の Stretch を直接使う方が良い）。</li><li><strong>StretchDirection で縮小のみ許可</strong> — アイコンが小さなコンテナに入れても拡大してほしくない場合は StretchDirection="DownOnly" を設定します。</li><li><strong>レイアウト問題に注意</strong> — Viewbox は子要素のサイズを無限大で測定するため、子要素に MaxWidth/MaxHeight が設定されていないと予期しない動作をすることがあります。</li><li><strong>フォントを含む場合はテキスト品質に注意</strong> — Viewbox でテキストを含む要素をスケールすると、フォントのヒンティングが無効になり品質が低下することがあります。テキストには直接 FontSize を変更することを検討します。</li><li><strong>パフォーマンス</strong> — Viewbox は毎フレームのレイアウト計算でスケールを再計算します。アニメーション中のViewbox は重くなる可能性があります。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — Viewbox でラップしてスケーラブルな描画エリアを作成。</li><li><a href="/ja/apps/wpf-standard-control-demo/image.html">Image</a> — ビットマップ画像のスケーリングには Image の Stretch プロパティを直接使います。</li><li><a href="/ja/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — スケーリングではなくスクロールでコンテンツを表示する代替。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ViewboxUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Viewbox のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ViewboxUsage" target="_blank" rel="noopener noreferrer">GitHub で Viewbox のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

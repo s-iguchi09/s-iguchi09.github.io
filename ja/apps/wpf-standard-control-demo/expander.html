@@ -8,7 +8,7 @@
   <title>Expander | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Expander コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
+  <meta name="description" content="WPF Expander コントロールのリファレンス。概要、プロパティ解説、XAML 使用例、活用シナリオ。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
@@ -23,7 +23,16 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Expander</p>
     <h1>Expander <span class="category-badge">Display</span></h1>
-    <p>Expander はユーザーが展開・折りたたみできるコンテナです。常にヘッダーを表示し、トグルボタンをクリックすると内容エリアが表示または非表示になります。</p>
+    <p>Expander はユーザーが展開・折りたたみを切り替えられるコンテナコントロールです。ヘッダーは常に表示され、コンテンツエリアはトグルボタンのクリックで表示・非表示が切り替わります。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p>WPF の <strong>Expander</strong> は <code>HeaderedContentControl</code> を継承したコントロールで、ヘッダー部分とコンテンツ部分から構成されます。ヘッダーには矢印（トグルボタン）が表示され、クリックすると <code>IsExpanded</code> が切り替わってコンテンツの表示・非表示が変わります。</p>
+    <p><code>ExpandDirection</code> プロパティでコンテンツが展開される方向を設定できます。デフォルトは <code>Down</code>（下方向）で、ヘッダーの下にコンテンツが現れます。<code>Up</code>、<code>Left</code>、<code>Right</code> も指定可能です。</p>
+    <p>MVVM では <code>IsExpanded</code> を ViewModel の bool プロパティに TwoWay バインドすることで、プログラムから展開・折りたたみを制御できます。アプリの状態として展開状態を保存・復元する場合にも使用します。</p>
+    <p>スタイルをカスタマイズすることで、アコーディオン UI（複数の Expander を縦に並べて一つだけ展開できるようにしたもの）を実装できます。WPF にはアコーディオンコントロールは標準では含まれていませんが、Expander の組み合わせで実現できます。</p>
+    
   </section>
 
   <section class="content-section">
@@ -35,69 +44,88 @@
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。</p>
     <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>IsExpanded</code></td>
           <td><code>bool</code></td>
-          <td>コンテンツが表示されているかどうかを設定します。True で展開、False で折りたたみです。</td>
+          <td>True のときコンテンツが表示（展開）されます。False のときは折りたたまれ、ヘッダーのみ表示されます。TwoWay バインドで ViewModel から展開状態を制御できます。</td>
         </tr>
         <tr>
           <td><code>ExpandDirection</code></td>
           <td><code>Down / Up / Left / Right</code></td>
-          <td>コンテンツが展開される方向を設定します。</td>
+          <td>コンテンツが展開される方向を設定します。Down（デフォルト）はヘッダーの下に展開、Up はヘッダーの上、Left/Right は横方向に展開します。</td>
         </tr>
         <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
           <td><code>object / bool (ReadOnly)</code></td>
-          <td>ヘッダーに表示するテキストまたはコンテンツを設定します。</td>
+          <td>ヘッダー部分に表示するコンテンツを設定します。文字列だけでなく任意の WPF 要素を配置できます。HasHeader は Header が設定されているかどうかを示す読み取り専用プロパティです。</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>展開時に表示するコンテンツを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Padding / FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
-          <td><code>various</code></td>
-          <td>パディングとフォント関連のプロパティを設定します。</td>
-        </tr>
-        <tr>
-          <td><code>Background / Foreground (Control)</code></td>
-          <td><code>Brush</code></td>
-          <td>背景色とテキスト色を設定します。</td>
+          <td>展開時に表示するコンテンツを設定します。任意の WPF 要素を配置できます。コンテンツは折りたたみ時でも論理ツリー上は存在していますが、視覚的に非表示になります。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>ボーダーの色と太さを設定します。</td>
+          <td>Expander の枠線の色と太さを設定します。デフォルトではテーマカラーの細い枠線が表示されます。</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <pre><code class="language-xml">&lt;Expander Header="詳細設定" IsExpanded="{Binding IsAdvancedExpanded, Mode=TwoWay}"
+           ExpandDirection="Down"&gt;
+  &lt;StackPanel Margin="16,8"&gt;
+    &lt;CheckBox Content="デバッグログを有効にする"
+              IsChecked="{Binding EnableDebugLog}" /&gt;
+    &lt;CheckBox Content="詳細なエラー情報を表示する"
+              IsChecked="{Binding ShowDetailedErrors}" /&gt;
+    &lt;TextBox Text="{Binding LogPath}" /&gt;
+  &lt;/StackPanel&gt;
+&lt;/Expander&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>詳細設定の折りたたみ</strong> — 基本設定は常に表示し、上級者向けの詳細設定を Expander で折りたたんで初期非表示にします。</li>
+      <li><strong>アコーディオン UI</strong> — FAQ や設定カテゴリを複数の Expander で表現し、必要な項目だけ展開して見る UI を実装します。</li>
+      <li><strong>フォームのセクション分け</strong> — 長いフォームを複数のセクションに分けて Expander で管理し、必要なセクションのみ展開して入力します。</li>
+      <li><strong>サイドバーのパネル</strong> — サイドバーに複数のカテゴリパネルを Expander で折りたたみ可能にし、必要なパネルだけ展開して使います。</li>
+      <li><strong>コードサンプルの表示</strong> — ドキュメント UI でコードサンプルを折りたたみ可能にして、画面の占有スペースを最小化します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>初期状態を適切に設定する</strong> — IsExpanded の初期値を ViewModel で設定し、ユーザーが最初に見るべきセクションが開いた状態で表示されるようにします。</li>
+      <li><strong>展開状態を永続化する</strong> — IsExpanded を設定ファイルに保存・復元することで、前回のセッションで開いていたパネルを次回も同じ状態で表示できます。</li>
+      <li><strong>アニメーション</strong> — Expander は標準でアニメーションなしですが、ControlTemplate をカスタマイズしてアコーディオンアニメーションを追加できます。</li>
+      <li><strong>コンテンツの遅延初期化</strong> — コンテンツは折りたたまれていても論理ツリー上に存在するため、重い処理が必要な場合は IsExpanded の変化をトリガーに遅延初期化します。</li>
+      <li><strong>Header にもリッチコンテンツを</strong> — Header プロパティには文字列だけでなく、アイコン＋テキストのパネルや件数バッジなどを配置してリッチなヘッダーを実現できます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — 折りたたみ機能のないグループ化コンテナ。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — 複数のページを切り替えるタブ型コンテナ。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — 複数の Expander を縦に並べてアコーディオンを構成する際のコンテナとして使用します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ExpanderUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で Expander のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ExpanderUsage" target="_blank" rel="noopener noreferrer">GitHub で Expander のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>

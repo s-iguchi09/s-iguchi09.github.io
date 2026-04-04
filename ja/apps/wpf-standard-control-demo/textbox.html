@@ -1,113 +1,62 @@
 ---
 ---
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>TextBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8"><title>TextBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF TextBox コントロールのリファレンス。概要、プロパティ解説、デモの動作説明。.NET 10 対応 WPF 標準コントロールデモアプリの詳細ページ。">
-
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="WPF TextBox コントロールのリファレンス。概要、プロパティ解説、XAML 使用例。.NET 10 対応の詳細ページ。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
-
   <section class="hero">
-    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TextBox</p>
+    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TextBox</p>
     <h1>TextBox <span class="category-badge">Inputs</span></h1>
-    <p>TextBox はユーザーがテキストを入力・編集できる標準入力コントロールです。WPF で最も基本的なコントロールの一つであり、複数行入力、テキスト折り返し、文字種変換など豊富なテキスト編集機能をサポートします。</p>
+    <p>TextBox はユーザーがテキストを入力・編集できる最も基本的な入力コントロールです。単一行・複数行モード、テキストの折り返し、読み取り専用モード、テキスト選択のカスタマイズをサポートします。</p>
   </section>
-
-  <section class="content-section">
-    <h2>画面キャプチャ</h2>
-    <div class="screenshot-placeholder">
-      📷 スクリーンショットは後で追加予定です — アプリ上の TextBox デモ画面が表示されます。
-    </div>
-  </section>
-
+  <section class="content-section"><h2>概要</h2><p>WPF の <strong>TextBox</strong> は <code>TextBoxBase</code> を継承したテキスト入力コントロールです。<code>Text</code> プロパティを ViewModel の string プロパティに TwoWay バインドするのが標準的な MVVM パターンです。</p>
+  <p><code>AcceptsReturn="True"</code> にすると Enter キーで改行できる複数行テキストボックスになります。<code>TextWrapping="Wrap"</code> と組み合わせると、コンテンツが幅を超えた場合に自動で折り返します。垂直スクロールバーは <code>VerticalScrollBarVisibility="Auto"</code> で追加できます。</p>
+  <p>リアルタイム入力検証や検索フィルタリングなど、入力のたびに処理が必要な場合は <code>UpdateSourceTrigger="PropertyChanged"</code> を使います。これにより、フォーカスを失ったときではなく文字を入力するたびにバインドソースが更新されます。</p>
+  <p><code>IsReadOnly="True"</code> にするとユーザーがテキストを編集できなくなりますが、テキストの選択・コピーは可能な点が <code>TextBlock</code> との大きな違いです。読み取り専用でも選択してコピーできる TextBox は、エラーメッセージや技術情報の表示に便利です。</p></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>
-      以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。
-      アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。
-    </p>
-    
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th>プロパティ</th>
-          <th>設定値</th>
-          <th>説明</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>Text</code></td>
-          <td><code>string</code></td>
-          <td>バインドまたは直接設定するテキスト値。</td>
-        </tr>
-        <tr>
-          <td><code>TextWrapping</code></td>
-          <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
-          <td>テキストが領域を超えた場合の折り返し方法を制御します。</td>
-        </tr>
-        <tr>
-          <td><code>TextDecorations</code></td>
-          <td><code>None / Underline / Strikethrough / OverLine / Baseline</code></td>
-          <td>テキストに装飾を追加します（下線など）。</td>
-        </tr>
-        <tr>
-          <td><code>TextAlignment</code></td>
-          <td><code>Left / Right / Center / Justify</code></td>
-          <td>テキストの水平方向の配置を制御します。</td>
-        </tr>
-        <tr>
-          <td><code>MaxLength</code></td>
-          <td><code>int (0 = 無制限)</code></td>
-          <td>入力可能な最大文字数を設定します。0 は無制限です。</td>
-        </tr>
-        <tr>
-          <td><code>MaxLines</code></td>
-          <td><code>int</code></td>
-          <td>表示できる最大行数を制限します。</td>
-        </tr>
-        <tr>
-          <td><code>MinLines</code></td>
-          <td><code>int</code></td>
-          <td>最小表示行数を設定します。</td>
-        </tr>
-        <tr>
-          <td><code>CharacterCasing</code></td>
-          <td><code>Normal / Upper / Lower</code></td>
-          <td>入力文字を大文字・小文字に自動変換します。</td>
-        </tr>
-      </tbody>
-    </table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Text</code></td><td><code>string</code></td><td>テキストボックスに表示・編集するテキストを設定します。ViewModel の string プロパティに TwoWay バインドします。</td></tr><tr><td><code>AcceptsReturn</code></td><td><code>bool</code></td><td>True のとき Enter キーで改行できる複数行モードになります。単一行（False/デフォルト）では Enter キーはデフォルトの IsDefault ボタンをアクティブにします。</td></tr><tr><td><code>TextWrapping</code></td><td><code>NoWrap / Wrap / WrapWithOverflow</code></td><td>テキストの折り返し方法を設定します。AcceptsReturn=True の複数行モードで Wrap にすると、長い行が自動で折り返されます。</td></tr><tr><td><code>IsReadOnly</code></td><td><code>bool</code></td><td>True のとき編集不可になりますが、テキストの選択とコピーは可能です。TextBlock と異なり選択できる点が特徴です。</td></tr><tr><td><code>MaxLength</code></td><td><code>int</code></td><td>入力できる最大文字数を設定します。0（デフォルト）は無制限です。</td></tr><tr><td><code>CaretBrush</code></td><td><code>Brush</code></td><td>テキストカーソル（キャレット）の色を設定します。</td></tr><tr><td><code>SelectionBrush / SelectionOpacity</code></td><td><code>Brush / double</code></td><td>テキスト選択時のハイライト色と不透明度を設定します。</td></tr><tr><td><code>ScrollToEnd() / ScrollToHome() / LineDown()</code></td><td><code>methods</code></td><td>テキストボックスのスクロール位置をプログラムから制御するメソッドです。ログ表示で最新行に自動スクロールする場合に ScrollToEnd() を使用します。</td></tr><tr><td><code>VerticalScrollBarVisibility / HorizontalScrollBarVisibility</code></td><td><code>Disabled / Auto / Visible</code></td><td>スクロールバーの表示方法を設定します。複数行モードでは VerticalScrollBarVisibility="Auto" が一般的です。</td></tr></tbody></table>
   </section>
+  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- 単一行テキストボックス --&gt;
+&lt;TextBox Text="{Binding Name, Mode=TwoWay}"
+         MaxLength="100" /&gt;
 
+&lt;!-- リアルタイム検索フィルター --&gt;
+&lt;TextBox Text="{Binding SearchText, Mode=TwoWay,
+               UpdateSourceTrigger=PropertyChanged}"
+         PlaceholderText="検索..." /&gt;
+
+&lt;!-- 複数行テキストボックス --&gt;
+&lt;TextBox AcceptsReturn="True"
+         TextWrapping="Wrap"
+         VerticalScrollBarVisibility="Auto"
+         MinHeight="100"
+         Text="{Binding Notes, Mode=TwoWay}"
+         VerticalAlignment="Stretch" /&gt;
+
+&lt;!-- 読み取り専用でコピー可能 --&gt;
+&lt;TextBox IsReadOnly="True"
+         Text="{Binding GeneratedCode}"
+         FontFamily="Consolas" FontSize="12" /&gt;</code></pre></section>
+  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>フォームの入力フィールド</strong> — 名前・メール・住所など、基本的なテキスト入力フォームに使用します。</li><li><strong>検索バー</strong> — UpdateSourceTrigger=PropertyChanged を使ってリアルタイムで検索結果をフィルタリングします。</li><li><strong>メモ・コメント欄</strong> — AcceptsReturn=True の複数行モードで自由記述フィールドを実装します。</li><li><strong>コード・ログビューアー</strong> — IsReadOnly=True と固定幅フォント（Consolas など）で、コードスニペットやログをコピー可能な形式で表示します。</li><li><strong>入力バリデーション</strong> — Text バインドに ValidationRule や INotifyDataErrorInfo を組み合わせてリアルタイム検証とエラー表示を実装します。</li></ul></section>
+  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>UpdateSourceTrigger は用途に合わせる</strong> — リアルタイム検索や検証には PropertyChanged を、送信前の一括検証には LostFocus（デフォルト）を使います。</li><li><strong>StringFormat でバインド時のフォーマット指定</strong> — 数値を TextBox に表示する場合、StringFormat='{}{0:F2}' でフォーマットを指定できます。</li><li><strong>Validation.ErrorTemplate をカスタマイズ</strong> — バリデーションエラー時の赤枠の代わりにカスタムエラー表示にする場合は Validation.ErrorTemplate を設定します。</li><li><strong>複数行モードは AcceptsReturn + TextWrapping</strong> — 複数行 TextBox には AcceptsReturn=True と TextWrapping=Wrap を両方設定します。</li><li><strong>SelectAll() でフォーカス時に全選択</strong> — GotFocus イベントで SelectAll() を呼ぶと、フォーカスした瞬間に既存テキストが全選択されて簡単に上書き入力できます。</li></ul></section>
+  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — 読み取り専用（選択・コピー不可）のテキスト表示。</li><li><a href="/ja/apps/wpf-standard-control-demo/passwordbox.html">PasswordBox</a> — パスワード（マスク表示）のテキスト入力。</li><li><a href="/ja/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — IsEditable=True で TextBox 機能を持つドロップダウン。</li></ul></section>
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>
-      このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。
-    </p>
-    <p>
-      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBoxUsage" target="_blank" rel="noopener noreferrer">
-        GitHub で TextBox のソースコードを見る →
-      </a>
-    </p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBoxUsage" target="_blank" rel="noopener noreferrer">GitHub で TextBox のソースコードを見る &rarr;</a></p>
   </section>
-
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>
