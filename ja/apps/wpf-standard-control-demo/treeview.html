@@ -21,7 +21,7 @@
   <p>静的な木構造は XAML で <code>TreeViewItem</code> を直接ネストして作成します。動的な階層データには <code>ItemsSource</code> と <code>HierarchicalDataTemplate</code> を組み合わせます。<code>HierarchicalDataTemplate</code> は各ノードの表示方法と子ノードのコレクションプロパティを指定します。</p>
   <p>選択されたノードは <code>SelectedItem</code> で取得できます（読み取り専用）。双方向バインドはサポートされていないため、<code>SelectedItemChanged</code> イベントをコードビハインドで処理するか、ビヘイビアを使って ViewModel に通知します。</p>
   <p>TreeView は VirtualizingStackPanel を ItemsPanel として使うことで、大量のノードでもパフォーマンスを維持できます。また、TreeViewItem の <code>IsExpanded</code> と <code>IsSelected</code> プロパティを ItemContainerStyle でバインドすることで、展開・選択状態を ViewModel で管理できます。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><div class="screenshot-placeholder">📷 スクリーンショットは後で追加予定です。</div></section>
+  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/treeview.png" alt="treeview demo screen" class="screenshot-img"></section>
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
     <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
