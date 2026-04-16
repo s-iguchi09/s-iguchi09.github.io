@@ -2,32 +2,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  <!-- Top -->
-  <url>
-    <loc>https://s-iguchi09.github.io/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://s-iguchi09.github.io/ja/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <!-- About -->
   <url>
     <loc>https://s-iguchi09.github.io/about.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/about.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/about.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/about.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -36,73 +16,17 @@
     <loc>https://s-iguchi09.github.io/ja/about.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/about.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/about.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-
-  <!-- Privacy -->
-  <url>
-    <loc>https://s-iguchi09.github.io/privacy.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/privacy.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/privacy.html" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://s-iguchi09.github.io/ja/privacy.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/privacy.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/privacy.html" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- Contact -->
-  <url>
-    <loc>https://s-iguchi09.github.io/contact.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/contact.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/contact.html" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>https://s-iguchi09.github.io/ja/contact.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/contact.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/contact.html" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <!-- Apps (top pages) -->
-  <url>
-    <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html" />
-    <lastmod>2026-03-31</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -111,43 +35,45 @@
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://s-iguchi09.github.io/apps/xaml-extension-pack.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html" />
-    <lastmod>2026-03-31</lastmod>
+    <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html" />
-    <lastmod>2026-03-31</lastmod>
+    <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- Apps: wpf-standard-control-demo (detail pages) -->
   <url>
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/button.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/button.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/button.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/button.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/button.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/button.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/button.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -156,15 +82,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/canvas.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/canvas.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/canvas.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/canvas.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/canvas.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/canvas.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/canvas.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -173,15 +101,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/checkbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/checkbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/checkbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/checkbox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/checkbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/checkbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/checkbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -190,15 +120,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/combobox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/combobox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/combobox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -207,15 +139,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datagrid.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datagrid.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/datagrid.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datagrid.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/datagrid.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datagrid.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/datagrid.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -224,15 +158,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datepicker.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datepicker.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/datepicker.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datepicker.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/datepicker.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datepicker.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/datepicker.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -241,15 +177,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/dockpanel.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/dockpanel.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/dockpanel.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/dockpanel.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/dockpanel.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/dockpanel.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/dockpanel.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -258,15 +196,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/expander.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/expander.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/expander.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/expander.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/expander.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/expander.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/expander.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -275,15 +215,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/grid.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/grid.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/grid.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/grid.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/grid.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/grid.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/grid.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -292,15 +234,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/gridsplitter.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/gridsplitter.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/gridsplitter.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -309,15 +253,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/groupbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/groupbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/groupbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/groupbox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/groupbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/groupbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/groupbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -326,15 +272,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/image.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/image.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/image.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/image.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/image.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/image.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/image.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -343,15 +291,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/inkcanvas.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/inkcanvas.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/inkcanvas.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/inkcanvas.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/inkcanvas.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/inkcanvas.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/inkcanvas.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -360,15 +310,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/label.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/label.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/label.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/label.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/label.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/label.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/label.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -377,15 +329,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listbox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -394,15 +348,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listview.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listview.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listview.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listview.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listview.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listview.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listview.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -411,15 +367,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/menu.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/menu.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/menu.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/menu.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/menu.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/menu.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/menu.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -428,15 +386,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/passwordbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/passwordbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/passwordbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/passwordbox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/passwordbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/passwordbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/passwordbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -445,15 +405,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/popup.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/popup.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/popup.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/popup.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/popup.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/popup.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/popup.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -462,15 +424,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/progressbar.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/progressbar.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/progressbar.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/progressbar.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/progressbar.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/progressbar.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/progressbar.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -479,15 +443,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/radiobutton.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/radiobutton.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/radiobutton.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/radiobutton.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/radiobutton.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/radiobutton.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/radiobutton.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -496,15 +462,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/repeatbutton.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/repeatbutton.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/repeatbutton.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/repeatbutton.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/repeatbutton.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/repeatbutton.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/repeatbutton.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -513,15 +481,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/scrollviewer.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/scrollviewer.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/scrollviewer.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/scrollviewer.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/scrollviewer.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/scrollviewer.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/scrollviewer.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -530,15 +500,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/slider.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/slider.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/slider.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/slider.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/slider.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/slider.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/slider.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -547,15 +519,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/stackpanel.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/stackpanel.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/stackpanel.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/stackpanel.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/stackpanel.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/stackpanel.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/stackpanel.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -564,15 +538,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabcontrol.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabcontrol.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabcontrol.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabcontrol.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabcontrol.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabcontrol.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabcontrol.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -581,15 +557,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabitem.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabitem.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabitem.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabitem.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabitem.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabitem.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabitem.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -598,15 +576,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textblock.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textblock.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textblock.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textblock.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textblock.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textblock.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textblock.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -615,15 +595,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textbox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -632,15 +614,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/togglebutton.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/togglebutton.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/togglebutton.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/togglebutton.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/togglebutton.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/togglebutton.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/togglebutton.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -649,15 +633,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/toolbar.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/toolbar.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/toolbar.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/toolbar.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/toolbar.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/toolbar.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/toolbar.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -666,15 +652,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tooltip.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tooltip.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tooltip.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tooltip.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tooltip.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tooltip.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tooltip.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -683,15 +671,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/treeview.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/treeview.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/treeview.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/treeview.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/treeview.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/treeview.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/treeview.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -700,15 +690,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/uniformgrid.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/uniformgrid.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/uniformgrid.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/uniformgrid.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/uniformgrid.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/uniformgrid.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/uniformgrid.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -717,15 +709,17 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/viewbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/viewbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/viewbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/viewbox.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/viewbox.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/viewbox.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/viewbox.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -734,17 +728,95 @@
     <loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/wrappanel.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/wrappanel.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/wrappanel.html" />
-    <lastmod>2026-03-31</lastmod>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/wrappanel.html" />
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
   <url>
     <loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/wrappanel.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/wrappanel.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/wrappanel.html" />
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/apps/xaml-extension-pack.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/contact.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/contact.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/contact.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/contact.html" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/contact.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/contact.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/contact.html" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/privacy.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/privacy.html" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/privacy.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/privacy.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/privacy.html" />
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>

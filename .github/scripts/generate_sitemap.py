@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+"""
+Generate sitemap.xml for s-iguchi09.github.io.
+
+This script scans all HTML files in the repository root,
+builds a multilingual sitemap with hreflang annotations
+for English and Japanese pages, and writes sitemap.xml.
+
+URL structure:
+  - English pages: https://s-iguchi09.github.io/<path>
+  - Japanese pages: https://s-iguchi09.github.io/ja/<path>
+  - index.html  → trailing-slash URL  (e.g. / or /ja/)
+"""
+
+import os
+import glob
+import datetime
+from typing import Optional
+
+BASE_URL = "https://s-iguchi09.github.io"
+REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
+TODAY = datetime.date.today().isoformat()
+
+# Directories to exclude from scanning
+EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"}
+
+# Priority rules (matched in order, first match wins)
+PRIORITY_RULES = [
+    # index pages
+    (lambda p: p in ("index.html", "ja/index.html"), "1.0", "weekly"),
+    # top-level app pages
+    (lambda p: p.startswith("apps/") and p.count("/") == 1, "0.9", "weekly"),
+    (lambda p: p.startswith("ja/apps/") and p.count("/") == 2, "0.9", "weekly"),
+    # about
+    (lambda p: os.path.basename(p) == "about.html", "0.8", "monthly"),
+    # contact
+    (lambda p: os.path.basename(p) == "contact.html", "0.5", "monthly"),
+    # privacy
+    (lambda p: os.path.basename(p) == "privacy.html", "0.3", "monthly"),
+    # app detail pages (default)
+    (lambda p: True, "0.6", "monthly"),
+]
+
+
+def get_priority_and_freq(rel_path: str):
+    for rule, priority, freq in PRIORITY_RULES:
+        if rule(rel_path):
+            return priority, freq
+    return "0.5", "monthly"
+
+
+def rel_path_to_url(rel_path: str) -> str:
+    """Convert a relative file path to the public URL."""
+    # index.html files → directory-style URL
+    parts = rel_path.replace("\\", "/").split("/")
+    if parts[-1] == "index.html":
+        dir_part = "/".join(parts[:-1])
+        return f"{BASE_URL}/{dir_part}/" if dir_part else f"{BASE_URL}/"
+    return f"{BASE_URL}/{rel_path.replace(chr(92), '/')}"
+
+
+def collect_english_paths() -> list:
+    """Return sorted list of English HTML file paths relative to REPO_ROOT."""
+    paths = []
+    for html_file in glob.glob(
+        os.path.join(REPO_ROOT, "**", "*.html"), recursive=True
+    ):
+        rel = os.path.relpath(html_file, REPO_ROOT).replace("\\", "/")
+        # Skip files inside excluded directories
+        top_dir = rel.split("/")[0]
+        if top_dir in EXCLUDE_DIRS:
+            continue
+        # Skip Japanese pages (handled separately via pairing)
+        if rel.startswith("ja/"):
+            continue
+        paths.append(rel)
+    return sorted(paths)
+
+
+def find_ja_counterpart(en_path: str) -> Optional[str]:
+    """Return the Japanese counterpart path if it exists, else None."""
+    ja_path = "ja/" + en_path
+    full = os.path.join(REPO_ROOT, ja_path)
+    return ja_path if os.path.exists(full) else None
+
+
+def build_url_entry(en_path: str, ja_path: Optional[str]) -> str:
+    """Build one or two <url> XML blocks for an English (and optional Japanese) page."""
+    en_url = rel_path_to_url(en_path)
+    priority, changefreq = get_priority_and_freq(en_path)
+    lines = []
+
+    # English entry
+    lines.append("  <url>")
+    lines.append(f"    <loc>{en_url}</loc>")
+    lines.append(
+        f'    <xhtml:link rel="alternate" hreflang="en" href="{en_url}" />'
+    )
+    if ja_path:
+        ja_url = rel_path_to_url(ja_path)
+        lines.append(
+            f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />'
+        )
+    # x-default points to the English version
+    lines.append(
+        f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />'
+    )
+    lines.append(f"    <lastmod>{TODAY}</lastmod>")
+    lines.append(f"    <changefreq>{changefreq}</changefreq>")
+    lines.append(f"    <priority>{priority}</priority>")
+    lines.append("  </url>")
+
+    if ja_path:
+        ja_url = rel_path_to_url(ja_path)
+        ja_priority, ja_changefreq = get_priority_and_freq(ja_path)
+        lines.append("")
+        lines.append("  <url>")
+        lines.append(f"    <loc>{ja_url}</loc>")
+        lines.append(
+            f'    <xhtml:link rel="alternate" hreflang="en" href="{en_url}" />'
+        )
+        lines.append(
+            f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />'
+        )
+        lines.append(f"    <lastmod>{TODAY}</lastmod>")
+        lines.append(f"    <changefreq>{ja_changefreq}</changefreq>")
+        lines.append(f"    <priority>{ja_priority}</priority>")
+        lines.append("  </url>")
+
+    return "\n".join(lines)
+
+
+def generate_sitemap() -> str:
+    en_paths = collect_english_paths()
+    blocks = []
+    for en_path in en_paths:
+        ja_path = find_ja_counterpart(en_path)
+        blocks.append(build_url_entry(en_path, ja_path))
+
+    body = "\n\n".join(blocks)
+    sitemap = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n'
+        '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n\n'
+        + body
+        + "\n\n</urlset>\n"
+    )
+    return sitemap
+
+
+def main():
+    sitemap = generate_sitemap()
+    output_path = os.path.join(REPO_ROOT, "sitemap.xml")
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(sitemap)
+    print(f"sitemap.xml written to {output_path}")
+
+
+if __name__ == "__main__":
+    main()
