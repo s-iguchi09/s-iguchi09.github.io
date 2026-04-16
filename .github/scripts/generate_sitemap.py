@@ -15,6 +15,7 @@ URL structure:
 import os
 import glob
 import datetime
+from typing import Optional
 
 BASE_URL = "https://s-iguchi09.github.io"
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
@@ -76,14 +77,14 @@ def collect_english_paths() -> list:
     return sorted(paths)
 
 
-def find_ja_counterpart(en_path: str) -> str | None:
+def find_ja_counterpart(en_path: str) -> Optional[str]:
     """Return the Japanese counterpart path if it exists, else None."""
     ja_path = "ja/" + en_path
     full = os.path.join(REPO_ROOT, ja_path)
     return ja_path if os.path.exists(full) else None
 
 
-def build_url_entry(en_path: str, ja_path: str | None) -> str:
+def build_url_entry(en_path: str, ja_path: Optional[str]) -> str:
     """Build one or two <url> XML blocks for an English (and optional Japanese) page."""
     en_url = rel_path_to_url(en_path)
     priority, changefreq = get_priority_and_freq(en_path)
