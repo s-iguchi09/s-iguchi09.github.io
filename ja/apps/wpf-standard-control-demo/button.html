@@ -69,32 +69,32 @@
         <tr>
           <td><code>IsCancel</code></td>
           <td><code>bool</code></td>
-          <td>True に設定すると、Escape キー押下でこのボタンの Click が発生します。ダイアログのキャンセルボタンに使用します。<code>Window.DialogResult = false</code> と組み合わせると、標準的なキャンセル動作を実現できます。</td>
+          <td>ダイアログの「キャンセル」ボタンに使用し、Escape キーでの閉じる操作をキーボードのみで完結させたいときに設定します。True にすると、Escape キー押下でこのボタンの Click が発生し、<code>Window.DialogResult = false</code> と組み合わせることで標準的なキャンセル動作を実現できます。注意点として、このプロパティは <code>Window</code> のスコープ内でのみ機能し、<code>UserControl</code> 単体では動作しません。また、同一 Window 内に複数の <code>IsCancel="True"</code> のボタンが存在すると、意図しない競合が発生する可能性があるため、1 つの Window につき 1 つのみ設定してください。</td>
         </tr>
         <tr>
           <td><code>IsDefault</code></td>
           <td><code>bool</code></td>
-          <td>True に設定すると、他の要素が Enter を処理しない場合にこのボタンの Click が発生します。フォームの「OK」ボタンや「検索」ボタンに使用し、Enter キーで送信できるようにします。</td>
+          <td>フォームの「OK」ボタンや「検索」ボタンに使用し、Enter キーでの送信をキーボードのみで完結させたいときに設定します。True にすると、フォーカスを持つ要素が Enter を消費しない場合にこのボタンの Click が発生します。注意点として、1 つの Window につき <code>IsDefault="True"</code> のボタンは 1 つだけにしてください。また、AcceptsReturn="True" に設定された複数行の TextBox にフォーカスがある場合は Enter が TextBox 側で消費されるため、IsDefault ボタンは発火しません。</td>
         </tr>
         <tr>
           <td><code>ClickMode (ButtonBase)</code></td>
           <td><code>Release / Press / Hover</code></td>
-          <td>Click イベントが発生するタイミングを制御します。<code>Release</code> はマウスボタンを離したとき（デフォルト）、<code>Press</code> は押し下げた瞬間、<code>Hover</code> はカーソルが乗ったときに発火します。</td>
+          <td>Click イベントが発生するタイミングを制御します。<code>Press</code> はゲームコントローラーの入力や、ドラッグ開始のトリガーなど即時反応が求められる場面で使用します。<code>Hover</code> はリボン UI のような、マウスオーバーで展開するメニューボタンに活用できます。デフォルトの <code>Release</code> はマウスボタンを離したときに発火し、押したままキャンセルするユーザー操作（ボタン外へドラッグして離す）に対応した最も標準的な動作です。注意点として、<code>Hover</code> モードは意図せずマウスが通過した際にも発火するため、誤操作を招く可能性があります。用途を限定して慎重に使用してください。</td>
         </tr>
         <tr>
           <td><code>IsPressed (ButtonBase)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>ボタンが現在押されているかどうかを示す読み取り専用プロパティです。ControlTemplate 内でこの値をトリガーにして、押し込んだ際の視覚的変化（色変更・スケール縮小など）を実装できます。</td>
+          <td>カスタム ControlTemplate でボタンの押し込み状態に応じたアニメーションや色変更を実装したいときに使用します。ControlTemplate 内の DataTrigger でこの値を監視することで、押し込み時にスケール縮小や背景色変化などの視覚的フィードバックを与えられます。読み取り専用プロパティのため、外部から直接変更することはできません。注意点として、マウスクリックによる押し込みは確実に反映されますが、Space キーによるキーボード操作では IsPressed が一貫して更新されない場合があり、キーボード専用操作での視覚フィードバックには別の手段（FocusVisualStyle など）を検討してください。</td>
         </tr>
         <tr>
           <td><code>Command (ButtonBase)</code></td>
           <td><code>ICommand</code></td>
-          <td>ボタンクリック時に実行するコマンドを設定します。ViewModel の ICommand プロパティをバインドします。CanExecute が false の場合、ボタンは自動で無効化されます。</td>
+          <td>MVVM パターンで、コードビハインドを持たずにボタンのアクションを ViewModel に委譲したいときに使用します。ViewModel の ICommand プロパティをバインドすると、CanExecute が false の場合に WPF がボタンを自動で無効化し、CanExecute が変化するたびに UI を更新します。この再評価は <code>CommandManager.RequerySuggested</code> イベントが発火するタイミング（フォーカス移動や入力イベントなど）に行われます。注意点として、CanExecute の処理が重い場合（DB アクセスや時間のかかる計算など）は、UI スレッドが頻繁にブロックされパフォーマンスが低下します。CanExecute は必ず軽量なキャッシュ済みフラグの確認のみにとどめてください。</td>
         </tr>
         <tr>
           <td><code>CommandParameter (ButtonBase)</code></td>
           <td><code>object</code></td>
-          <td>コマンド実行時に渡すパラメータを設定します。同一のコマンドを複数のボタンで共有し、パラメータで動作を切り替える際に活用します。</td>
+          <td>同一コマンドを複数のボタンで共有し、ボタンごとに異なる動作をさせたいときに使用します。例えば <code>CommandParameter="{Binding SelectedItem}"</code> のように動的な値をバインドして渡すことも可能です。パラメータを渡すと、Execute および CanExecute の引数として受け取れます。注意点として、CommandParameter は WPF バインディング式の評価タイミングで一度確定されるため、その後データが変化しても自動的には更新されません。動的に変わる値を渡す場合は、バインディングが正しく TwoWay または OneWay で設定されているかを確認してください。</td>
         </tr>
       </tbody>
     </table>
@@ -133,9 +133,11 @@
     <ul>
       <li><strong>コードビハインドの Click イベントより Command を優先</strong> — MVVM パターンでは Click イベントをコードビハインドで処理するよりも、ICommand バインドを使うとテストしやすく疎結合な設計になります。</li>
       <li><strong>CanExecute を活用する</strong> — 入力検証や処理中フラグを CanExecute に反映させると、ボタンの有効/無効が自動で更新され、余分なロジックが不要になります。</li>
-      <li><strong>コンテンツには文字列以外も可能</strong> — テキストだけでなく、Image や StackPanel を Content として設定すると、アイコン付きボタンやリッチレイアウトのボタンを簡単に作れます。</li>
+      <li><strong>コンテンツには文字列以外も可能</strong> — テキストだけでなく、Image や StackPanel を Content として設定すると、アイコン付きボタンやリッチレイアウトのボタンを簡単に作れます。Button は ContentControl を継承しているため、任意の WPF 要素を配置できます。</li>
       <li><strong>ToolTip を設定する</strong> — アイコンのみのボタンには必ず ToolTip を設定し、ユーザーがホバーで機能を確認できるようにしましょう。</li>
-      <li><strong>アクセシビリティ対応</strong> — コンテンツが画像の場合は AutomationProperties.Name を設定してスクリーンリーダーが読み上げられるようにします。</li>
+      <li><strong>アクセシビリティ対応</strong> — Content が画像のみのボタンには <code>AutomationProperties.Name</code> を必ず設定してください。スクリーンリーダーは Content の文字列を読み上げますが、画像だけでは読み上げられないため、視覚障害のあるユーザーがボタンの目的を理解できなくなります。</li>
+      <li><strong>Command vs Click イベントの使い分け</strong> — Command はバインディング経由で ViewModel にロジックを集約できますが、CanExecute の再評価タイミングに依存します。CanExecute が即座に更新されない場合（カスタム ICommand 実装で RaiseCanExecuteChanged を呼び忘れるケースなど）、ボタンが期待どおりに有効/無効化されません。コマンドが不要な単純な UI 操作（アニメーション開始など）にはコードビハインドの Click イベントを使う方がシンプルな場合もあります。</li>
+      <li><strong>IsDefault/IsCancel はダイアログ専用</strong> — これらのプロパティは Window のキーボードスコープに依存するため、Page や UserControl 内では機能しません。ダイアログ以外の画面でキーボードショートカットを実装する場合は <code>KeyBinding</code> を使用してください。</li>
     </ul>
   </section>
 

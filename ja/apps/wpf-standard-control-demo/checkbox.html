@@ -68,17 +68,17 @@
         <tr>
           <td><code>IsChecked (ToggleButton)</code></td>
           <td><code>bool? (Null / False / True)</code></td>
-          <td>チェックボックスの状態を設定します。<code>null</code> は不定状態（Indeterminate）を表します。TwoWay バインドで ViewModel の <code>bool?</code> プロパティに接続するのが標準的なパターンです。</td>
+          <td>選択状態を ViewModel と同期させるために TwoWay バインドで使用します。<code>bool?</code> 型のプロパティにバインドすると <code>null</code>（不定状態）も正しく扱えますが、<code>bool</code> 型のプロパティにバインドした場合は WPF が自動で <code>null ↔ false</code> の変換を行います。ただし <code>IsThreeState="True"</code> の状態で <code>bool</code> 型バインドを使うと、ユーザーが null 状態を通過した際に ConvertBack が変換できずにバインドエラーが発生することがあります。3 状態を使う場合は必ず <code>bool?</code> 型バインドを使用してください。</td>
         </tr>
         <tr>
           <td><code>IsThreeState (ToggleButton)</code></td>
           <td><code>bool</code></td>
-          <td>True にすると 3 段階の状態切り替えが可能になります。false → true → null のサイクルが有効になります。「全選択」チェックボックスで一部選択時の不定状態を表現する際に使用します。</td>
+          <td>リストやグリッドの「すべて選択」チェックボックスで、全選択・一部選択・全解除の 3 状態を 1 つの CheckBox で表現したいときに使用します。True にすると、ユーザーがクリックするたびに <code>false → true → null（不定）→ false</code> のサイクルで状態が変化し、<code>null</code> は視覚的にハイフンやグレーのチェックで表示されます。注意点として、<code>IsThreeState="True"</code> を設定する際は必ず <code>bool?</code> 型のバインドを使用してください。<code>bool</code> 型でバインドすると null 状態の変換に失敗してバインドエラーになります。</td>
         </tr>
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>チェックボックスのコンテンツ（ラベル）の垂直方向の配置を設定します。コンテンツが複数行のテキストやパネルの場合に、チェックボックス記号との垂直整合を調整するために使用します。</td>
+          <td>CheckBox のラベル部分に複数行のテキストやパネルを配置するとき、チェックボックス記号と縦方向の位置を揃えたい場合に使用します。例えば <code>Center</code> にするとチェックボックス記号がラベル全体の中央に揃い、<code>Top</code> にすると先頭行に揃います。デフォルト値は <code>Top</code> であるため、ラベルの高さが低い場合は問題になりませんが、複数行の長いラベルを持つ場合はチェックボックス記号が上端に寄ってしまい見た目が不自然になることがあります。その場合は <code>Center</code> を指定すると自然に見えます。</td>
         </tr>
       </tbody>
     </table>
@@ -122,8 +122,11 @@
     <ul>
       <li><strong>TwoWay バインドを使用する</strong> — IsChecked には必ず Mode=TwoWay を指定し、ViewModel から初期値を設定できるようにします。</li>
       <li><strong>RadioButton との使い分け</strong> — 相互排他的な選択（どれか一つのみ）には RadioButton を、独立した複数選択には CheckBox を使います。</li>
+      <li><strong>全選択パターンの実装</strong> — 「すべて選択」CheckBox を実装する際は、ViewModel 側で子項目の IsChecked をすべて監視し、全て true なら <code>true</code>、全て false なら <code>false</code>、混在なら <code>null</code> を AllSelected プロパティに返すロジックを実装します。AllSelected が変更されたときは子項目を一括で true/false に更新します。null をセットしても子項目には何もしないようにすることで無限ループを防げます。</li>
       <li><strong>全選択パターンには null チェックを</strong> — 3 状態モードで null を扱う場合は、ViewModel で null の意味（一部選択）を明確に定義します。</li>
       <li><strong>ラベルのクリック範囲</strong> — CheckBox はチェックマーク部分だけでなく、ラベル部分をクリックしても状態が切り替わります。ラベルの範囲を広げることでクリックしやすくなります。</li>
+      <li><strong>Space キーで状態を切り替えられる</strong> — CheckBox にフォーカスがある状態で Space キーを押すと、マウスクリックと同様に状態が切り替わります。キーボード操作のユーザビリティを確認する際にこの動作を考慮してください。</li>
+      <li><strong>MVVM での状態変化検知</strong> — コードビハインドで Checked/Unchecked イベントを使う代わりに、MVVM では IsChecked を TwoWay バインドし、ViewModel の setter で変化を検知・処理する方法が推奨されます。Interaction.Triggers の EventTrigger を使えば、コードビハインドなしにイベントを Command に変換することもできます。</li>
       <li><strong>アクセシビリティ</strong> — 画像コンテンツを使う場合は AutomationProperties.Name を設定してスクリーンリーダーが正しく読み上げられるようにします。</li>
     </ul>
   </section>
