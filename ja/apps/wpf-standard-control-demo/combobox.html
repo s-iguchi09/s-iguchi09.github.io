@@ -65,47 +65,47 @@
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>ドロップダウンリストが現在開いているかどうかを制御します。プログラムから開閉を制御する場合や、バインドで状態を追跡する場合に使用します。</td>
+          <td>ドロップダウンリストの開閉をプログラムから制御したい場合や、バインドで現在の開閉状態を追跡したい場合に使用します。<code>True</code> にするとドロップダウンが開き、<code>False</code> にすると閉じます。デフォルトは <code>False</code> です。はまりポイント: このプロパティを <code>TwoWay</code> バインドすると、ユーザーがドロップダウンを閉じた直後に ViewModel 側の値が <code>False</code> に更新され、さらにそれが <code>True</code> に変更されると即座に再オープンしてしまいます。バインド変更のタイミングに十分注意してください。</td>
         </tr>
         <tr>
           <td><code>IsEditable</code></td>
           <td><code>bool</code></td>
-          <td>True にすると ComboBox 部分にテキスト入力が可能になります。リストにない値も入力できる自由入力型のドロップダウンを作る際に使用します。</td>
+          <td>リストの選択肢に限らずユーザーが自由な値を入力できるようにしたい場合（オートコンプリート、フリー入力型ドロップダウンなど）に <code>True</code> に設定します。<code>True</code> にすると <code>Text</code> プロパティがアクティブになり、ユーザーが入力したテキストを取得・バインドできます。はまりポイント: <code>IsEditable=True</code> のとき、ユーザーがリストにない値を入力すると <code>SelectedItem</code> は <code>null</code> になります。<code>SelectedItem</code> だけを参照する ViewModel の実装では、フリー入力値が失われる場合があるため <code>Text</code> プロパティも合わせて参照してください。</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>IsEditable が True の場合に、テキスト入力を読み取り専用にします。ドロップダウンからの選択のみ許可し、直接入力を禁止する場合に使用します。</td>
+          <td><code>IsEditable=True</code> の状態で、テキスト入力は禁止しつつドロップダウンからの選択は許可したい場合に使用します。<code>IsEditable=True</code> かつ <code>IsReadOnly=True</code> に設定すると、テキスト部分は読み取り専用（直接入力不可）になりますが、ドロップダウンを開いてリストから選択する操作は引き続き可能です。<code>IsEditable=False</code>（デフォルト）の場合はこのプロパティは効果がありません。はまりポイント: <code>IsReadOnly</code> 単体でドロップダウン全体を無効化することはできません。コントロール全体を無効化したい場合は <code>IsEnabled=False</code> を使ってください。</td>
         </tr>
         <tr>
           <td><code>MaxDropDownHeight</code></td>
           <td><code>double</code></td>
-          <td>ドロップダウンリストの最大表示高さを設定します。アイテム数が多い場合に高さを制限してスクロールバーを表示するために使用します。</td>
+          <td>アイテム数が多い場合にドロップダウンが画面からはみ出すのを防ぎ、スクロールバーで探せるようにしたい場合に設定します。デフォルトは制限なし（<code>double.PositiveInfinity</code>）で、アイテム数が多いとドロップダウンが画面全体を占領することがあります。設定した高さを超えるとドロップダウン内にスクロールバーが表示されます。はまりポイント: 小さすぎる値（例: アイテム1件分以下）を設定すると、ドロップダウンを開いてもほとんど何も見えない状態になります。アイテムの高さ × 最低表示件数（5〜8件程度）を目安に設定してください。</td>
         </tr>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>IsEditable が True の場合の現在のテキスト値です。選択されたアイテムの表示テキストか、ユーザーが入力したテキストを表します。</td>
+          <td><code>IsEditable=True</code> のときに現在のテキスト値（選択アイテムの表示文字列またはユーザー入力テキスト）を取得・バインドするために使用します。選択アイテムが変わると <code>SelectedItem.ToString()</code> の代わりに <code>DisplayMemberPath</code> で指定したプロパティの値が <code>Text</code> に反映されます。はまりポイント: <code>IsEditable=False</code>（デフォルト）の状態でプログラムから <code>Text</code> プロパティを設定しても表示に反映されません。表示を変えたい場合は <code>SelectedItem</code> または <code>SelectedIndex</code> を設定してください。</td>
         </tr>
         <tr>
           <td><code>StaysOpenOnEdit</code></td>
           <td><code>bool</code></td>
-          <td>IsEditable=True のとき、テキスト編集中もドロップダウンが開いたままにするかどうかを制御します。入力候補をリアルタイムで絞り込む UI に使用します。</td>
+          <td><code>IsEditable=True</code> のとき、入力に応じて候補リストをリアルタイムで絞り込む UI（オートコンプリート）を実現する場合に <code>True</code> に設定します。<code>True</code> にするとテキスト編集中もドロップダウンが開いたままになります。デフォルト（<code>False</code>）ではテキストを編集するとドロップダウンが閉じます。はまりポイント: <code>True</code> に設定すると、ユーザーが意図せずリストを閉じたいのに閉じられないという操作上の混乱を招くことがあります。リアルタイム候補絞り込みが必要なシナリオ以外では使用しないことを推奨します。</td>
         </tr>
         <tr>
           <td><code>SelectedIndex (Selector)</code></td>
           <td><code>int</code></td>
-          <td>選択されているアイテムのゼロ始まりインデックスを設定します。プログラムから特定のアイテムを選択状態にする場合に便利です。-1 は未選択を意味します。</td>
+          <td>プログラムから特定のアイテムを選択状態にしたい場合に使用します。0始まりのインデックスで選択アイテムを指定し、指定したインデックスのアイテムが選択されハイライト表示されます。<code>-1</code> は未選択状態を意味し、デフォルト値でもあります。はまりポイント: <code>SelectedIndex=-1</code> を設定するとインデックスによる選択がクリアされますが、<code>SelectedItem</code> が必ずしも <code>null</code> にリセットされるわけではありません。選択を完全にクリアしたい場合は <code>SelectedItem=null</code> と合わせて設定してください。</td>
         </tr>
         <tr>
           <td><code>SelectedItem (Selector)</code></td>
           <td><code>object</code></td>
-          <td>選択されているアイテムオブジェクトを取得・設定します。オブジェクトコレクションにバインドしている場合は、選択されたオブジェクト全体を ViewModel で受け取れます。</td>
+          <td>オブジェクトコレクションにバインドしている場合に、選択されたオブジェクト全体を ViewModel で受け取りたいときに使用します。<code>Mode=TwoWay</code> でバインドすると ViewModel から選択アイテムをプログラムで変更することもできます。はまりポイント: WPF は <code>SelectedItem</code> の比較に参照等価性（同じオブジェクトインスタンスかどうか）を使用します。ViewModel で別途作成したオブジェクト（例: データベースから再取得したもの）を設定しても、<code>ItemsSource</code> 内の参照と一致しない場合は選択状態になりません。<code>ItemsSource</code> と同じインスタンスを設定するか、<code>SelectedValue</code> + <code>SelectedValuePath</code> の使用を検討してください。</td>
         </tr>
         <tr>
           <td><code>SelectedValue / SelectedValuePath / DisplayMemberPath</code></td>
           <td><code>object / string / string</code></td>
-          <td>SelectedValuePath で指定したプロパティ値を SelectedValue として取得します。DisplayMemberPath で各アイテムの表示テキストとして使用するプロパティを指定します。</td>
+          <td>オブジェクトのコレクション（例: 製品リスト）から特定のプロパティ値（例: ID）だけを ViewModel にバインドしたい場合の典型的なパターンで使用します。<code>SelectedValuePath="ProductId"</code> と設定すると選択された製品オブジェクトの <code>ProductId</code> プロパティ値が <code>SelectedValue</code> として取得でき、<code>DisplayMemberPath="Name"</code> でドロップダウンに <code>Name</code> プロパティが表示されます。はまりポイント: <code>SelectedValuePath</code> の値はプロパティ名の大文字・小文字を区別します（例: <code>"productId"</code> と <code>"ProductId"</code> は別物）。一致しない場合は <code>SelectedValue</code> が常に <code>null</code> になるため、プロパティ名のスペルを必ず確認してください。</td>
         </tr>
       </tbody>
     </table>
@@ -145,11 +145,12 @@
   <section class="content-section">
     <h2>ヒントとベストプラクティス</h2>
     <ul>
-      <li><strong>SelectedItem vs SelectedValue</strong> — オブジェクト全体が必要な場合は SelectedItem を、特定のプロパティ値（ID など）だけ必要な場合は SelectedValue + SelectedValuePath を使います。</li>
-      <li><strong>デフォルト選択を設定する</strong> — アプリ起動時やダイアログ表示時に ViewModel から SelectedItem または SelectedIndex を設定して初期値を表示します。</li>
-      <li><strong>空の選択を許可する場合</strong> — コレクションの先頭に「選択してください」という null 値を追加するか、SelectedItem が null の場合の処理を ViewModel に実装します。</li>
-      <li><strong>大量のアイテム</strong> — アイテム数が多い場合は MaxDropDownHeight でリストの高さを制限し、スクロールで探せるようにします。</li>
-      <li><strong>ItemTemplate でリッチ表示</strong> — 単純なテキストリストではなく、アイコンや詳細情報を含む複雑なリストアイテムを表示する場合は ItemTemplate を定義します。</li>
+      <li><strong>SelectedItem vs SelectedValue</strong> — オブジェクト全体が必要な場合は <code>SelectedItem</code> を、特定のプロパティ値（ID など）だけ必要な場合は <code>SelectedValue</code> + <code>SelectedValuePath</code> を使います。ただし <code>SelectedItem</code> は参照等価性で比較されるため、同じデータを別のインスタンスとして設定しても選択状態にならない点に注意してください。</li>
+      <li><strong>デフォルト選択を設定する</strong> — アプリ起動時やダイアログ表示時に ViewModel から <code>SelectedItem</code> または <code>SelectedIndex</code> を設定して初期値を表示します。<code>SelectedItem</code> を使う場合は <code>ItemsSource</code> のコレクションと同じオブジェクトインスタンスを参照するように注意してください。</li>
+      <li><strong>空の選択を許可する場合</strong> — コレクションの先頭に「選択してください」という <code>null</code> 値を追加するか、<code>SelectedItem</code> が <code>null</code> の場合の処理を ViewModel に実装します。<code>CompositeCollection</code> を使うと既存のコレクションを変更せずに先頭に固定アイテムを追加できます。</li>
+      <li><strong>大量のアイテム</strong> — アイテム数が多い場合は <code>MaxDropDownHeight</code> でリストの高さを制限し、スクロールで探せるようにします。数百件以上のアイテムを扱う場合は仮想化（<code>VirtualizingStackPanel</code>）が自動的に有効になりますが、<code>ItemTemplate</code> を使う場合は明示的に有効化することを確認してください。</li>
+      <li><strong>ItemTemplate でリッチ表示</strong> — 単純なテキストリストではなく、アイコンや詳細情報を含む複雑なリストアイテムを表示する場合は <code>ItemTemplate</code> を定義します。<code>DisplayMemberPath</code> は <code>ItemTemplate</code> と併用できないため、どちらかを選択してください。</li>
+      <li><strong>IsEditable=True 時の SelectedItem null チェック</strong> — <code>IsEditable=True</code> のとき、ユーザーがリスト外の値を入力すると <code>SelectedItem</code> は <code>null</code> になります。フリー入力を許可する場合は <code>SelectedItem</code> と <code>Text</code> の両方を参照して処理を実装してください。</li>
     </ul>
   </section>
 
