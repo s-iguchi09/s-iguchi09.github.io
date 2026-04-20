@@ -122,6 +122,10 @@ def build_url_entry(en_path: str, ja_path: Optional[str]) -> str:
         lines.append(
             f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />'
         )
+        # x-default points to the English version
+        lines.append(
+            f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />'
+        )
         lines.append(f"    <lastmod>{TODAY}</lastmod>")
         lines.append(f"    <changefreq>{ja_changefreq}</changefreq>")
         lines.append(f"    <priority>{ja_priority}</priority>")
