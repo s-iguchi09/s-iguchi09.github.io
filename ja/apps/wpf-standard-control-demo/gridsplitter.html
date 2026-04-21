@@ -42,27 +42,27 @@
       <tbody>        <tr>
           <td><code>ResizeDirection</code></td>
           <td><code>Auto / Columns / Rows</code></td>
-          <td>リサイズする方向を設定します。Auto の場合は HorizontalAlignment/VerticalAlignment から自動判定します。Columns は列幅、Rows は行高さを変更します。</td>
+          <td>ユーザーが実行時にペイン幅や高さを自由に調整できるようにしたい場合（ファイルエクスプローラー・コードエディター・IDE 風 UI など）に使います。ユーザーがドラッグすると対象の Grid 列幅または行高さがリアルタイムに変化します。GridSplitter は必ず変更対象の Grid 行・列の中に配置する必要があり、Grid の外や別のパネル内に置いてもリサイズは機能しません。手動でサイズ変更不要なレイアウトには GridSplitter ではなく ColumnDefinition/RowDefinition の固定値を使うほうがシンプルです。</td>
         </tr>
         <tr>
           <td><code>ResizeBehavior</code></td>
           <td><code>BasedOnAlignment / CurrentAndNext / PreviousAndCurrent / PreviousAndNext</code></td>
-          <td>どの行・列ペアをリサイズするかを設定します。BasedOnAlignment（デフォルト）は配置から自動決定、CurrentAndNext は現在と次の行・列を対象にします。</td>
+          <td>リサイズ対象のペアを明示的に指定したい場合に設定します。BasedOnAlignment（デフォルト）は HorizontalAlignment/VerticalAlignment から自動的にリサイズするペアを決定し、通常はこれで十分です。複雑なレイアウトで自動判定が意図と異なる場合に CurrentAndNext（現在と次）や PreviousAndCurrent（前と現在）などを明示指定します。設定を誤ると期待しない行・列がリサイズされるため、自動判定がうまくいかないときだけ変更を検討してください。</td>
         </tr>
         <tr>
           <td><code>ShowsPreview</code></td>
           <td><code>bool</code></td>
-          <td>True のとき、ドラッグ中にプレビューが表示されマウスを離すまでリサイズが確定しません。False（デフォルト）はリアルタイムでサイズが変化します。</td>
+          <td>誤操作によるサイズ変更ミスを防ぎたい場合や、ドラッグ確定前に結果を確認させたい UX が必要なときに True に設定します。True にすると半透明のプレビューが表示され、マウスボタンを離したときにリサイズが確定します。False（デフォルト）はドラッグ中にリアルタイムでサイズが変化します。ShowsPreview=True の場合は PreviewStyle プロパティでプレビューの見た目をカスタマイズできます。</td>
         </tr>
         <tr>
           <td><code>KeyboardIncrement</code></td>
           <td><code>double</code></td>
-          <td>キーボードの矢印キーでリサイズする場合の移動量（device-independent unit）を設定します。デフォルトは 10 です。</td>
+          <td>アクセシビリティ要件や細かいサイズ調整が必要な場面で、キーボード操作によるリサイズのステップ幅を調整したいときに設定します。矢印キーを押すたびにこの値（device-independent unit）分だけサイズが変化します。デフォルトは 10 です。大きな値を設定するとキーボードでの操作が粗くなり、小さい値では細かく調整できます。キーボードリサイズを完全に無効化する方法はないため、必要なら MinWidth/MinHeight で最小値を設定してサイズが 0 になることを防いでください。</td>
         </tr>
         <tr>
           <td><code>DragIncrement</code></td>
           <td><code>double</code></td>
-          <td>ドラッグ時のスナップ間隔を設定します。デフォルトは 1 で、ピクセル単位で連続的にリサイズできます。</td>
+          <td>ドラッグ時のサイズ変化をグリッド状にスナップさせたい場合（例：10px 単位で吸い付かせる）に使います。デフォルトは 1 で、1 device-independent unit 単位で連続的にリサイズできます。値を大きくするとドラッグがスナップし、特定の間隔にしか止まれなくなります。スナップが不自然な操作感につながる場合があるため、特別な要件がなければデフォルトの 1 のままにしてください。</td>
         </tr></tbody>
     </table>
   </section>
@@ -108,7 +108,9 @@
       <li><strong>MinWidth/MinHeight でペインの最小サイズを設定</strong> — ColumnDefinition/RowDefinition に MinWidth/MinHeight を設定して、ペインが消えてしまわないようにします。</li>
       <li><strong>HorizontalAlignment=Stretch を設定する</strong> — GridSplitter の幅が Column の幅全体に広がるよう Stretch を設定します。そうしないとスプリッターが期待通りに機能しない場合があります。</li>
       <li><strong>ShowsPreview でリサイズ体験を向上</strong> — ShowsPreview=True にするとドラッグ中のプレビューが表示され、誤操作を防げます。</li>
-      <li><strong>キーボードでもリサイズ可能</strong> — GridSplitter はキーボードフォーカスを受け取り、矢印キーでリサイズできます。KeyboardIncrement でステップ幅を調整します。</li></ul>
+      <li><strong>キーボードでもリサイズ可能</strong> — GridSplitter はキーボードフォーカスを受け取り、矢印キーでリサイズできます。KeyboardIncrement でステップ幅を調整します。</li>
+      <li><strong>GridSplitter は正しい Grid セルに配置する</strong> — GridSplitter は変更したい列・行の境界となる専用列（または行）に Grid.Column（または Grid.Row）を設定して配置します。誤った列・行に置くと隣接するペインのサイズが変わらず動作しません。垂直スプリッターの場合は HorizontalAlignment=Stretch、水平スプリッターは VerticalAlignment=Stretch を必ず設定してください。</li>
+      <li><strong>GridSplitter vs 手動リサイズ</strong> — ユーザーが実行時にペイン幅を自由に調整できる必要がある場合に GridSplitter を使います。デザイン時に決まった固定レイアウトや、コードで動的にサイズを変えるだけの場合は GridSplitter ではなく ColumnDefinition/RowDefinition の Width/Height をバインディングで変更する方法がシンプルで保守しやすいです。</li></ul>
   </section>
 
   <section class="content-section">
