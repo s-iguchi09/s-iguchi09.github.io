@@ -109,7 +109,7 @@
       <li><strong>コンテンツの遅延初期化</strong> — コンテンツは折りたたまれていても論理ツリー上に存在するため、重い処理が必要な場合は IsExpanded の変化をトリガーに遅延初期化します。</li>
       <li><strong>Header にもリッチコンテンツを</strong> — Header プロパティには文字列だけでなく、アイコン＋テキストのパネルや件数バッジなどを配置してリッチなヘッダーを実現できます。</li>
       <li><strong>コンテンツの遅延ロード</strong> — IsExpanded が True になったときに初めてコンテンツを生成するには、bool フラグを ViewModel に持ち DataTemplate を切り替えるパターンが有効です。展開前は軽量なプレースホルダーを表示し、初回展開時のみ重い UI を生成することでアプリ起動時のパフォーマンスを改善できます。</li>
-      <li><strong>展開・折りたたみアニメーション</strong> — Expander は標準でアニメーションなしですが、ControlTemplate をカスタマイズすることで展開時のアニメーションを追加できます。Height を 0 から Auto へ直接アニメーションさせることはできないため、Grid の RowDefinition の Height をアニメーション対象にする方法が一般的です。</li></ul>
+      <li><strong>展開・折りたたみアニメーション</strong> — 実装時は、Height を 0 から Auto へ直接アニメーションできない点に注意します。Storyboard の対象には Grid の RowDefinition の Height や ScaleTransform など、数値で補間できるプロパティを選ぶと安定して実装できます。</li></ul>
   </section>
 
   <section class="content-section">
