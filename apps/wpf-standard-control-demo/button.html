@@ -81,32 +81,32 @@
         <tr>
           <td><code>IsCancel</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, pressing <kbd>Escape</kbd> triggers this button's Click event regardless of focus. This is the standard pattern for "Cancel" buttons in dialogs, allowing keyboard-only users to dismiss without clicking.</td>
+          <td>Use this on a "Cancel" button in a dialog when you want the <kbd>Escape</kbd> key to dismiss the window without the user needing to click. When <code>True</code>, pressing <kbd>Escape</kbd> triggers this button's Click regardless of where focus is. Combined with <code>Window.DialogResult = false</code>, it implements the standard cancel pattern. <strong>Pitfall:</strong> This property only works within a <code>Window</code> scope — it has no effect inside a <code>UserControl</code> or <code>Page</code>. Also, setting <code>IsCancel="True"</code> on more than one button in the same Window can cause unexpected conflicts; keep it to one per Window.</td>
         </tr>
         <tr>
           <td><code>IsDefault</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, pressing <kbd>Enter</kbd> triggers this button's Click when no other focusable element intercepts the key. Commonly applied to the primary "OK" or "Submit" button in a dialog or form.</td>
+          <td>Use this on the primary action button (e.g., "OK" or "Search") in a dialog or form so users can confirm with <kbd>Enter</kbd> without tabbing to the button. When <code>True</code>, pressing <kbd>Enter</kbd> triggers this button's Click as long as the focused element does not consume the key itself. <strong>Pitfall:</strong> Only one button per Window should have <code>IsDefault="True"</code>. Also, when a multi-line <code>TextBox</code> with <code>AcceptsReturn="True"</code> has focus, <kbd>Enter</kbd> inserts a new line and the IsDefault button is never fired.</td>
         </tr>
         <tr>
           <td><code>ClickMode (ButtonBase)</code></td>
           <td><code>Release / Press / Hover</code></td>
-          <td>Controls the exact moment the Click event fires relative to the mouse interaction. <code>Release</code> is the default and most familiar mode; <code>Press</code> fires on mouse-down; <code>Hover</code> fires when the cursor enters the button's bounds.</td>
+          <td>Controls when the Click event fires relative to the mouse interaction. <code>Release</code> (default) fires when the mouse button is released — it also allows the user to cancel by dragging off the button before releasing. <code>Press</code> fires immediately on mouse-down, making it suitable for game controls or drag-start triggers where instant response is required. <code>Hover</code> fires as soon as the cursor enters the button bounds, which is useful for ribbon-style menus that open on hover. <strong>Pitfall:</strong> <code>Hover</code> mode can fire accidentally when the mouse merely passes over the button. Limit its use to intentional hover-activation patterns and always provide clear visual feedback so users know the button is activated.</td>
         </tr>
         <tr>
           <td><code>IsPressed (ButtonBase)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>A read-only property that is <code>True</code> while the button is actively being pressed. It is primarily used in control templates and triggers to drive pressed-state visual feedback, such as a depressed animation.</td>
+          <td>Use this inside a custom <code>ControlTemplate</code> to drive pressed-state visuals — for example, a scale-down animation or background color change while the button is held. A <code>DataTrigger</code> in the template can watch this value to apply the effect. <strong>Pitfall:</strong> Mouse clicks reliably set <code>IsPressed</code>, but pressing <kbd>Space</kbd> on a focused button may not update it consistently. For keyboard-only visual feedback, rely on <code>FocusVisualStyle</code> or a separate keyboard-focused state rather than <code>IsPressed</code> alone.</td>
         </tr>
         <tr>
           <td><code>Command (ButtonBase)</code></td>
           <td><code>ICommand</code></td>
-          <td>Binds an <code>ICommand</code> implementation to the button. WPF automatically calls <code>CanExecute</code> to enable or disable the button, and invokes <code>Execute</code> when clicked — the cornerstone of MVVM command binding.</td>
+          <td>Use this in MVVM applications to bind a ViewModel's <code>ICommand</code> to the button, eliminating click-handling code in code-behind. WPF automatically disables the button when <code>CanExecute</code> returns <code>false</code> and re-enables it when conditions change. The re-evaluation is triggered by <code>CommandManager.RequerySuggested</code>, which fires on UI interactions like focus changes. <strong>Pitfall:</strong> If <code>CanExecute</code> performs expensive work (database queries, slow computations), it will block the UI thread every time WPF re-evaluates it. Keep <code>CanExecute</code> fast by checking only a cached flag, and update that flag when state actually changes.</td>
         </tr>
         <tr>
           <td><code>CommandParameter (ButtonBase)</code></td>
           <td><code>object</code></td>
-          <td>An optional parameter forwarded to both <code>CanExecute</code> and <code>Execute</code> when the command fires. Useful when multiple buttons share the same command but need to pass different context values, such as an item identifier.</td>
+          <td>Use this when multiple buttons share the same command but need to pass different context values — for example, <code>CommandParameter="{Binding SelectedItem}"</code> to pass the currently selected item to a shared Delete command. The parameter is received by both <code>Execute</code> and <code>CanExecute</code>. When set via a normal <code>Binding</code>, the parameter updates automatically as the source changes. <strong>Pitfall:</strong> If you use <code>Mode=OneTime</code> or assign a static value directly, the parameter will not update when the underlying data changes. Always verify that the binding mode matches the dynamic or static nature of the value you intend to pass.</td>
         </tr>
       </tbody>
     </table>
@@ -161,6 +161,8 @@
       <li><strong>Prefer ICommand over Click events</strong> in MVVM applications. Use <code>RelayCommand</code> or <code>DelegateCommand</code> implementations to keep logic out of code-behind and improve testability.</li>
       <li><strong>Set meaningful Content</strong> — avoid generic labels like "Button1". Clear, action-oriented labels such as "Save Document" improve usability and accessibility for screen-reader users.</li>
       <li><strong>Use <code>IsEnabled</code> sparingly</strong>; instead, rely on <code>ICommand.CanExecute</code> to automatically manage the enabled state, which ensures the UI reacts instantly to state changes without manual wiring.</li>
+      <li><strong>Any WPF element can be Button content</strong> — Button inherits from <code>ContentControl</code>, so you can nest <code>StackPanel</code>, <code>Image</code>, <code>TextBlock</code>, or any other element as the <code>Content</code>. This makes icon-and-label buttons straightforward to build without custom templates.</li>
+      <li><strong>Set <code>AutomationProperties.Name</code> for icon-only buttons</strong> — When the button's <code>Content</code> is an image or icon with no text, screen readers have nothing to announce. Always add <code>AutomationProperties.Name="Save"</code> (or similar) so visually impaired users understand the button's purpose.</li>
       <li><strong>Avoid deep nesting in Button content</strong>. If the content template grows complex, consider extracting it into a <code>DataTemplate</code> or a custom style resource to keep XAML maintainable.</li>
       <li><strong>Test keyboard navigation</strong> in every dialog. Verify that <code>IsDefault</code> and <code>IsCancel</code> behave as expected when focus is on text boxes, combo boxes, or other interactive controls within the same dialog.</li>
     </ul>

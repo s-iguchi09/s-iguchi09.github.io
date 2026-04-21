@@ -75,12 +75,22 @@
         <tr>
           <td><code>IsChecked</code></td>
           <td><code>bool? (Null / False / True)</code></td>
-          <td>The current toggle state. Bind two-way to a <code>bool?</code> (or <code>bool</code>) ViewModel property. When <code>IsThreeState</code> is disabled, the value cycles between <code>false</code> and <code>true</code> on click; setting <code>null</code> programmatically enters the indeterminate visual state.</td>
+          <td>Use this with a two-way binding to synchronize the button's on/off state with a ViewModel property. <code>true</code> renders the pressed/active visual, <code>false</code> the normal visual, and <code>null</code> renders an indeterminate appearance (a partially-pressed look in the default template). <strong>Pitfall:</strong> If the ViewModel property is a plain <code>bool</code> (non-nullable) and <code>IsThreeState</code> is enabled, binding will fail with a ConvertBack error when the user cycles to the null state. Always use <code>bool?</code> when three-state mode is active.</td>
         </tr>
         <tr>
           <td><code>IsThreeState</code></td>
           <td><code>bool</code></td>
-          <td>Enables three-state cycling: unchecked → checked → indeterminate → unchecked. When <code>false</code> (default), clicking only toggles between checked and unchecked. Use three-state mode for "Select all" or "Mixed" indicators where the null state has semantic meaning.</td>
+          <td>Use this for rare scenarios where three distinct states — such as "Auto / On / Off" — need to be expressed through a single button. When <code>True</code>, each click cycles through <code>false → true → null → false</code>. <strong>Pitfall:</strong> For the vast majority of toggle use cases (on/off switching), two states are sufficient and clearer to users. If you do enable three-state mode, you must define distinct visuals for each state in the <code>ControlTemplate</code>; without clear visual differentiation, users cannot tell what the null state means.</td>
+        </tr>
+        <tr>
+          <td><code>ClickMode (ButtonBase)</code></td>
+          <td><code>Release / Press / Hover</code></td>
+          <td>ToggleButton inherits <code>ClickMode</code> from <code>ButtonBase</code>. The default <code>Release</code> is appropriate for almost all toggle scenarios. <code>Press</code> toggles the state immediately on mouse-down, which can be useful for "hold to preview" interactions where the toggled state is only active while the button is physically depressed. <code>Hover</code> toggles on mouse-enter and is rarely suitable for ToggleButton since accidental hover would flip the state unexpectedly.</td>
+        </tr>
+        <tr>
+          <td><code>Command / CommandParameter (ButtonBase)</code></td>
+          <td><code>ICommand / object</code></td>
+          <td>Use this to execute a ViewModel command on each click. <code>CommandParameter</code> can pass any context value to <code>Execute</code> and <code>CanExecute</code>. <strong>Pitfall:</strong> The <code>CommandParameter</code> does not automatically include the new <code>IsChecked</code> value after the click. If the command handler needs to know the resulting state, bind <code>IsChecked</code> directly to the ViewModel and read it there, or use <code>Interaction.Triggers</code> with an <code>EventTrigger</code> on the <code>Checked</code>/<code>Unchecked</code> events to pass the state through a separate mechanism.</td>
         </tr>
       </tbody>
     </table>
@@ -123,6 +133,8 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Bind IsChecked two-way</strong> — Always use Mode=TwoWay for the IsChecked binding so the ViewModel can programmatically set the initial state.</li>
+      <li><strong>Checked/Unchecked events vs Command</strong> — When you need to react to state transitions, prefer binding <code>IsChecked</code> two-way and detecting the change in the ViewModel's property setter rather than handling <code>Checked</code>/<code>Unchecked</code> events in code-behind. If a Command is required, use <code>Interaction.Triggers</code> with an <code>EventTrigger</code> on those events to forward them to a Command without code-behind.</li>
+      <li><strong>Use DataTrigger in ControlTemplate for custom visuals</strong> — When replacing the ControlTemplate, add a <code>DataTrigger</code> that binds to <code>IsChecked</code> and applies distinct background color, transform, or content for each state. This keeps the visual logic self-contained in XAML rather than scattered across event handlers.</li>
       <li><strong>Use visual states for custom styling</strong> — ToggleButton's control template includes Checked, Unchecked, and Indeterminate visual states; target these in your template to show distinct visuals for each state.</li>
       <li><strong>Prefer CheckBox for standard on/off options</strong> — ToggleButton looks like a button; CheckBox visually communicates "optional setting." Use ToggleButton where the button metaphor fits, such as toolbars and toggles.</li>
       <li><strong>GroupName does not apply to ToggleButton directly</strong> — GroupName is a RadioButton-level property. If you need mutual exclusion between ToggleButtons, use RadioButton with a custom template instead.</li>

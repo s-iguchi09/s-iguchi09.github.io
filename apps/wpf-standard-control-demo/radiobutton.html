@@ -80,12 +80,17 @@
         <tr>
           <td><code>GroupName</code></td>
           <td><code>string (Null = same parent container)</code></td>
-          <td>Assigns the RadioButton to a named mutual-exclusion group. All RadioButtons with the same <code>GroupName</code> value form a group, and only one can be checked at a time. When left null, WPF uses the parent container as the implicit group boundary.</td>
+          <td>Use this when you have multiple independent RadioButton groups on the same screen. All RadioButtons sharing the same non-null <code>GroupName</code> form a mutual-exclusion group regardless of where they appear in the visual tree. <strong>Pitfall:</strong> <code>GroupName</code> works across different parent containers — a RadioButton inside one <code>StackPanel</code> and another inside a different <code>StackPanel</code> will still be linked if they share the same <code>GroupName</code>. This can cause surprising deselection across visually separate sections. Always use a unique, descriptive name per logical group to avoid unintended cross-container exclusion.</td>
+        </tr>
+        <tr>
+          <td><code>IsChecked (ToggleButton)</code></td>
+          <td><code>bool?</code></td>
+          <td>Use this with a two-way binding to synchronize the selected option with a ViewModel property. Setting <code>IsChecked = true</code> from code automatically unchecks all other RadioButtons in the same group. <strong>Pitfall:</strong> When binding each RadioButton to a separate <code>bool</code> ViewModel property, you must manually set all sibling properties to <code>false</code> when one is set to <code>true</code>; otherwise the ViewModel state becomes inconsistent even though the UI looks correct. For three or more options, prefer a single enum property with an <code>IValueConverter</code> to avoid this synchronization problem entirely.</td>
         </tr>
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>Controls the vertical alignment of the RadioButton's content (label) within its allocated space. <code>Center</code> is the most common choice for single-line labels; <code>Top</code> or <code>Stretch</code> are useful when the content spans multiple lines.</td>
+          <td>Use this when a RadioButton's label contains multi-line text or a tall panel, to control how the radio glyph aligns vertically against that content. <code>Center</code> is generally the most natural choice for tall labels, centering the glyph alongside the full label height. <strong>Pitfall:</strong> The default is <code>Top</code>, which places the glyph at the top edge of the content. For short single-line labels this is unnoticeable, but for labels that wrap to two or more lines the glyph floats at the top while the text runs below it — set <code>VerticalContentAlignment="Center"</code> to fix this.</td>
         </tr>
       </tbody>
     </table>
@@ -124,8 +129,9 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Always set GroupName when mixing groups</strong> — Without explicit group names, WPF uses the parent container as the scope, which can cause unexpected cross-group deselection when multiple groups share a panel.</li>
-      <li><strong>Prefer enum converters over multiple bool properties</strong> — Binding each RadioButton to a boolean ViewModel property creates verbose code. A single enum property plus an <code>IValueConverter</code> is cleaner and scales better.</li>
-      <li><strong>Ensure at least one item is pre-selected</strong> — A group with no selection can surprise users. Set an initial value in the ViewModel constructor or XAML to avoid an indeterminate state on load.</li>
+      <li><strong>Ensure at least one item is pre-selected</strong> — A group with no selection can surprise users. Set an initial value in the ViewModel constructor or via <code>IsChecked="True"</code> in XAML. Without a default, the group has no selection until the user clicks, which can be confusing and break validation.</li>
+      <li><strong>Prefer enum converters over multiple bool properties</strong> — Binding each RadioButton to a separate <code>bool</code> ViewModel property creates verbose code and risks state synchronization bugs. A single enum property plus an <code>IValueConverter</code> is cleaner: the converter receives the current enum value and the <code>ConverterParameter</code> for each button, returning <code>true</code> when they match. This scales cleanly as options are added.</li>
+      <li><strong>Set TabIndex for keyboard navigation between groups</strong> — Within a RadioButton group, arrow keys move selection. Between groups, <kbd>Tab</kbd> should jump to the next group. Assign <code>TabIndex</code> values so the tab order matches the visual layout, ensuring keyboard-only users can navigate predictably across multiple groups.</li>
       <li><strong>Use ControlTemplate for custom visuals</strong> — When the default bullet appearance does not fit your design, replace the template entirely; the underlying IsChecked and GroupName logic still works.</li>
       <li><strong>Accessibility</strong> — Add <code>AutomationProperties.Name</code> when the content is an image, so screen readers can announce the option label correctly.</li>
     </ul>
