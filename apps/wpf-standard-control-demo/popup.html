@@ -70,27 +70,27 @@
         <tr>
           <td><code>IsOpen</code></td>
           <td><code>bool</code></td>
-          <td>The primary visibility toggle for the Popup. Binding this two-way to a view model property is the standard MVVM pattern for controlling popup state, enabling the popup to be opened or closed from both the UI and the application logic layer.</td>
+          <td>The primary visibility toggle for the Popup. Setting it to <code>true</code> shows the popup window immediately; <code>false</code> hides it. Binding this two-way to a ViewModel boolean is the standard MVVM pattern. <strong>Pitfall:</strong> Many developers bind <code>IsOpen</code> but find that clicking outside the popup does not close it. This is almost always because <code>StaysOpen</code> was not set to <code>false</code> — always pair <code>IsOpen</code> two-way binding with <code>StaysOpen="False"</code> to get the expected light-dismiss behavior.</td>
         </tr>
         <tr>
           <td><code>StaysOpen</code></td>
           <td><code>bool</code></td>
-          <td>When <code>false</code>, the Popup implements light-dismiss behavior and closes automatically when the user clicks outside the popup bounds. Setting it to <code>true</code> makes the popup persistent until <code>IsOpen</code> is explicitly set to <code>false</code>.</td>
+          <td>When <code>false</code> (default), the Popup implements light-dismiss behavior and closes automatically when the user clicks outside the popup bounds — <code>IsOpen</code> is set to <code>false</code> automatically. When <code>true</code>, the popup stays visible until <code>IsOpen</code> is explicitly set to <code>false</code> in code. Use <code>true</code> when the popup contains interactive controls the user needs to operate while keeping it open. <strong>Pitfall:</strong> Setting <code>StaysOpen="True"</code> without providing an explicit close button traps users with no way to dismiss the popup.</td>
         </tr>
         <tr>
           <td><code>AllowsTransparency</code></td>
           <td><code>bool</code></td>
-          <td>Enables transparent backgrounds and rounded corners in the popup window by using a layered OS window. Required for <code>PopupAnimation</code> effects and for popups with drop shadows or non-rectangular shapes created via <code>DropShadowEffect</code>.</td>
+          <td>Enables transparent backgrounds and rounded corners in the popup window by using a layered OS window. Required for <code>PopupAnimation</code> effects and for popups with drop shadows or non-rectangular shapes created via <code>DropShadowEffect</code>. Only enable it when animations or non-rectangular shapes are required, as transparent popup windows consume more GPU resources.</td>
         </tr>
         <tr>
           <td><code>Placement</code></td>
           <td><code>PlacementMode</code></td>
-          <td>Determines the anchor point and direction for popup positioning relative to its <code>PlacementTarget</code> or the mouse cursor. The most commonly used values are <code>Bottom</code> for drop-down patterns, <code>Right</code> for flyouts, and <code>Mouse</code> for context overlays.</td>
+          <td>Determines the anchor point and direction for popup positioning relative to its <code>PlacementTarget</code> or the mouse cursor. <code>Bottom</code> places the popup directly below the target (ideal for drop-downs); <code>Mouse</code> places it near the cursor; <code>Left</code>/<code>Right</code> place it beside the target for flyout panels. <strong>Pitfall:</strong> <code>Absolute</code> ignores <code>PlacementTarget</code> entirely and uses screen coordinates, so if you use <code>Absolute</code> without also setting <code>PlacementRectangle</code> or <code>HorizontalOffset</code>/<code>VerticalOffset</code>, the popup appears at or near screen origin (0, 0).</td>
         </tr>
         <tr>
           <td><code>HorizontalOffset / VerticalOffset</code></td>
           <td><code>double</code></td>
-          <td>Pixel offsets applied after the <code>Placement</code> position is calculated, allowing fine-grained control over the popup's final screen position. Positive values move the popup right/down; negative values move it left/up relative to the calculated placement anchor.</td>
+          <td>Pixel offsets applied after the <code>Placement</code> position is calculated, allowing fine-grained control over the popup's final position. Positive values generally move the popup right/down. <strong>Pitfall:</strong> The exact direction depends on the <code>Placement</code> mode — for example, with <code>Placement="Top"</code> a positive <code>VerticalOffset</code> can move the popup in the opposite direction than expected. If the popup moves the wrong way, try reversing the sign.</td>
         </tr>
         <tr>
           <td><code>PopupAnimation</code></td>
@@ -103,9 +103,14 @@
           <td>The single root UIElement that defines the popup's visual content. Typically a <code>Border</code> with a drop shadow wrapping a <code>StackPanel</code>, <code>Grid</code>, or other layout panel containing the actual popup UI.</td>
         </tr>
         <tr>
+          <td><code>PlacementTarget</code></td>
+          <td><code>UIElement</code></td>
+          <td>The element used as the reference for placement calculations. When not set, the Popup uses its visual-tree parent. <strong>Pitfall:</strong> Inside a <code>DataTemplate</code> the visual parent is often an internal container, not the item you expect. Always set <code>PlacementTarget</code> explicitly in templates using <code>ElementName</code> or <code>RelativeSource={RelativeSource TemplatedParent}</code> to ensure the popup anchors to the correct element.</td>
+        </tr>
+        <tr>
           <td><code>PlacementRectangle</code></td>
           <td><code>Rect</code></td>
-          <td>An optional rectangle in the coordinate space of the <code>PlacementTarget</code> that overrides the target's bounds for placement calculations. Useful for anchoring a popup to a specific cell within a larger control such as a <code>DataGrid</code> row.</td>
+          <td>An optional rectangle in the coordinate space of the <code>PlacementTarget</code> that overrides the target's bounds for placement calculations. Required when using <code>Placement="Absolute"</code> to specify exact screen coordinates. Also useful for anchoring a popup to a specific cell within a larger control such as a <code>DataGrid</code> row.</td>
         </tr>
       </tbody>
     </table>

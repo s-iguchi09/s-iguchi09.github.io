@@ -82,57 +82,57 @@
         <tr>
           <td><code>Minimum / Maximum / Value (RangeBase)</code></td>
           <td><code>double</code></td>
-          <td>Defines the range of selectable values. <code>Value</code> is clamped between <code>Minimum</code> and <code>Maximum</code> at all times. Bind <code>Value</code> two-way to a ViewModel property to read or set the slider position programmatically.</td>
+          <td>Defines the range of selectable values and the current position. Use this for continuous inputs such as volume (0–100), zoom (10–400%), or opacity (0.0–1.0). <code>Value</code> is always clamped between <code>Minimum</code> and <code>Maximum</code>. Bind <code>Value</code> two-way to a ViewModel property to read or set the slider position programmatically. Pitfall: setting <code>Maximum &lt; Minimum</code> raises a validation error. When binding both properties dynamically, set <code>Minimum</code> before (or simultaneously with) <code>Maximum</code> to avoid a transient invalid state.</td>
         </tr>
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Sets the slider's layout direction. Horizontal (default) increases value left-to-right; Vertical increases value bottom-to-top by default. Use <code>IsDirectionReversed</code> to flip the direction if needed.</td>
+          <td>Sets the slider's layout direction. Horizontal (default) increases value left-to-right; Vertical increases value bottom-to-top by default. Use <code>IsDirectionReversed</code> to flip the direction if needed. Pitfall: for a vertical slider where large values should be at the top (e.g., audio fader), set <code>IsDirectionReversed="True"</code> — without this, the maximum is at the bottom, which is counterintuitive for most designs.</td>
         </tr>
         <tr>
           <td><code>SmallChange / LargeChange</code></td>
           <td><code>double</code></td>
-          <td><code>SmallChange</code> is the value increment for arrow-key navigation; <code>LargeChange</code> is the increment for Page Up/Down. Setting these to meaningful domain units (e.g., 1 for integer steps, 0.1 for fine-grained floats) improves keyboard accessibility.</td>
+          <td><code>SmallChange</code> is the value increment for arrow-key navigation; <code>LargeChange</code> is the increment for Page Up/Down. Set these to meaningful domain units (e.g., 1 for integer steps, 0.1 for fine-grained floats) for keyboard accessibility. Pitfall: values too close to the full range make keyboard fine-tuning impossible. For a 0–100 volume slider, <code>SmallChange=1</code> and <code>LargeChange=10</code> is appropriate; overly large values lock users into coarse steps.</td>
         </tr>
         <tr>
           <td><code>IsDirectionReversed</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, reverses the value direction so the maximum is at the left (horizontal) or top (vertical). Useful for controls like audio balance where right means more of one channel.</td>
+          <td>When <code>true</code>, reverses the value direction so the maximum is at the left (horizontal) or top (vertical). Useful for scenarios like a thermometer where higher values are visually at the top, or an audio balance control. Pitfall: reversing the direction does not automatically flip custom tick labels — if you have a <code>Ticks</code>-based label overlay, the labels must be manually reordered to match the reversed direction.</td>
         </tr>
         <tr>
           <td><code>TickPlacement</code></td>
           <td><code>None / TopLeft / BottomRight / Both</code></td>
-          <td>Controls where tick marks are rendered relative to the track. <code>None</code> hides ticks; <code>TopLeft</code> shows them above (horizontal) or to the left (vertical); <code>Both</code> shows ticks on both sides.</td>
+          <td>Controls where tick marks are rendered relative to the track. Use this when visual step indicators improve usability — for example, showing 0/25/50/75/100 marks on a volume slider. Pitfall: <code>TickPlacement</code> only controls rendering; it does not enable snap-to-tick behavior. Set <code>IsSnapToTickEnabled="True"</code> separately to make the thumb snap to tick positions.</td>
         </tr>
         <tr>
           <td><code>TickFrequency</code></td>
           <td><code>double</code></td>
-          <td>The interval between rendered tick marks and snap positions (when <code>IsSnapToTickEnabled</code> is true). A value of 10 on a 0–100 slider creates ticks at 0, 10, 20, …, 100.</td>
+          <td>The interval between rendered tick marks and snap positions (when <code>IsSnapToTickEnabled</code> is true). A value of 10 on a 0–100 slider creates ticks at 0, 10, 20, …, 100. Pitfall: if <code>TickFrequency</code> does not evenly divide the range, the last tick will not coincide with <code>Maximum</code> (e.g., <code>Minimum=0</code>, <code>Maximum=100</code>, <code>TickFrequency=30</code> gives ticks at 0, 30, 60, 90 — the 100 mark is missing).</td>
         </tr>
         <tr>
           <td><code>IsSnapToTickEnabled</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, restricts <code>Value</code> to positions defined by tick marks (either from <code>TickFrequency</code> or the custom <code>Ticks</code> collection). The thumb snaps to the nearest valid position on drag release.</td>
+          <td>When <code>true</code>, restricts <code>Value</code> to positions defined by tick marks (from <code>TickFrequency</code> or the custom <code>Ticks</code> collection). The thumb snaps to the nearest valid position on drag release. Pitfall: with <code>TickFrequency=1</code> on a 0–100 slider, only integers can be selected. If your scenario requires float precision (e.g., 0.5), keep <code>IsSnapToTickEnabled="False"</code>.</td>
         </tr>
         <tr>
           <td><code>Ticks</code></td>
           <td><code>DoubleCollection</code></td>
-          <td>An explicit list of tick positions. When provided, ticks are drawn only at these values rather than at uniform <code>TickFrequency</code> intervals. Useful for non-linear scales or labeled breakpoints.</td>
+          <td>An explicit list of tick positions. When provided, ticks are drawn only at these values rather than at uniform <code>TickFrequency</code> intervals. Useful for non-linear scales or labeled breakpoints such as font sizes (8, 9, 10, 11, 12, 14, 16).</td>
         </tr>
         <tr>
           <td><code>SelectionStart / SelectionEnd / IsSelectionRangeEnabled</code></td>
           <td><code>double / double / bool</code></td>
-          <td>Highlights a sub-range on the track between <code>SelectionStart</code> and <code>SelectionEnd</code> when <code>IsSelectionRangeEnabled</code> is <code>true</code>. Useful for showing valid or recommended value zones.</td>
+          <td>Highlights a sub-range on the track between <code>SelectionStart</code> and <code>SelectionEnd</code> when <code>IsSelectionRangeEnabled</code> is <code>true</code>. Useful for showing valid or recommended value zones on the slider track.</td>
         </tr>
         <tr>
           <td><code>AutoToolTipPlacement</code></td>
           <td><code>None / TopLeft / BottomRight</code></td>
-          <td>Enables a tooltip that shows the current numeric value while dragging. <code>TopLeft</code> positions it above (horizontal) or to the left (vertical) of the thumb; <code>BottomRight</code> positions it below or to the right.</td>
+          <td>Enables a tooltip showing the current numeric value while dragging — useful when exact values matter, such as zoom percentage or volume level. <code>TopLeft</code> positions the tooltip above (horizontal) or to the left (vertical) of the thumb. Pitfall: the tooltip only shows the raw number with decimal precision controlled by <code>AutoToolTipPrecision</code>. Custom formats (e.g., "50%" or "120 bpm") are not supported. Use a separate <code>TextBlock</code> bound to <code>Value</code> with a <code>StringFormat</code> for custom displays.</td>
         </tr>
         <tr>
           <td><code>AutoToolTipPrecision</code></td>
           <td><code>int</code></td>
-          <td>The number of decimal places displayed in the auto-tooltip. Set to 0 for integer display, or higher for floating-point precision feedback.</td>
+          <td>The number of decimal places displayed in the auto-tooltip. Set to 0 for integer display, or higher for floating-point precision feedback. Pitfall: setting <code>AutoToolTipPrecision=0</code> truncates the display to integers even when the actual <code>Value</code> is a float. The displayed value may differ from the stored value if <code>IsSnapToTickEnabled</code> is <code>false</code>.</td>
         </tr>
         <tr>
           <td><code>Delay / Interval</code></td>
@@ -175,10 +175,10 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use UpdateSourceTrigger=PropertyChanged for live preview</strong> — By default, two-way bindings update on focus loss. Set <code>UpdateSourceTrigger=PropertyChanged</code> to push every drag movement to the ViewModel for real-time feedback.</li>
-      <li><strong>Show a numeric readout</strong> — Pair the slider with a <code>TextBlock</code> or <code>TextBox</code> bound to the same Value so users know the exact number without relying on the tooltip alone.</li>
-      <li><strong>Disable snap for continuous values</strong> — For opacity (0.0–1.0) or other continuous ranges, keep <code>IsSnapToTickEnabled="False"</code> and <code>TickPlacement="None"</code> for a cleaner look.</li>
-      <li><strong>Set meaningful SmallChange/LargeChange</strong> — These drive keyboard navigation, which is critical for accessibility. Match the step sizes to the domain units (e.g., 1 volume unit, 5% zoom).</li>
+      <li><strong>Use UpdateSourceTrigger=PropertyChanged for live preview</strong> — By default, two-way bindings update on focus loss. Set <code>UpdateSourceTrigger=PropertyChanged</code> to push every drag movement to the ViewModel for real-time feedback. Be aware that if the ViewModel setter does heavy work, dragging performance will suffer; consider throttling updates in that case.</li>
+      <li><strong>Show a numeric readout</strong> — Pair the slider with a <code>TextBlock</code> or <code>TextBox</code> bound to the same Value so users know the exact number. Use <code>StringFormat</code> or an <code>IValueConverter</code> to display custom units such as "50%" or "120 bpm".</li>
+      <li><strong>Disable snap for continuous values</strong> — For opacity (0.0–1.0) or other continuous ranges, keep <code>IsSnapToTickEnabled="False"</code> and <code>TickPlacement="None"</code> for a cleaner, unconstrained look.</li>
+      <li><strong>Set meaningful SmallChange/LargeChange</strong> — These drive keyboard navigation, which is critical for accessibility. Match the step sizes to the domain units (e.g., 1 volume unit, 5% zoom). Overly large values prevent fine-grained keyboard control.</li>
       <li><strong>Validate input bounds</strong> — If users can also type a value in an adjacent TextBox, clamp the ViewModel property to [Minimum, Maximum] to prevent the thumb from going out of range.</li>
     </ul>
   </section>

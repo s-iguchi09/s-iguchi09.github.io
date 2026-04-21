@@ -68,17 +68,17 @@
         <tr>
           <td><code>IsMainMenu</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, the Menu responds to <kbd>F10</kbd> and <kbd>Alt</kbd> keystrokes to activate the menu bar, matching standard Windows application conventions. Only the primary application menu bar should have this set to <code>true</code>.</td>
+          <td>When <code>true</code>, the Menu responds to <kbd>F10</kbd> and <kbd>Alt</kbd> keystrokes to activate the menu bar, matching standard Windows application conventions. Only the primary application menu bar should have this set to <code>true</code>. Pitfall: <code>IsMainMenu="True"</code> combined without <code>DockPanel.Dock="Top"</code> placement may result in the menu not being positioned correctly at the top of the window.</td>
         </tr>
         <tr>
           <td><code>IsCheckable (MenuItem)</code></td>
           <td><code>bool</code></td>
-          <td>Enables the menu item to function as a toggle, displaying a check mark when selected. Commonly used for "View &gt; Show Toolbar" or "Options &gt; Dark Mode" menu items where the state persists between clicks.</td>
+          <td>Enables the menu item to function as a toggle with a check mark, used for view settings such as "Show Toolbar" or "Dark Mode". When <code>true</code>, clicking the item toggles the check mark automatically. Pitfall: if you do not bind <code>IsChecked</code> to the ViewModel, the checked state in the menu will drift out of sync with the underlying model state after clicks.</td>
         </tr>
         <tr>
           <td><code>IsChecked (MenuItem)</code></td>
           <td><code>bool</code></td>
-          <td>The current checked state of a checkable menu item. Two-way binding on this property allows the view model to read and control the checked state, and the check mark in the menu reflects the model state automatically.</td>
+          <td>The current checked state of a checkable menu item. Bind two-way to a ViewModel boolean property (e.g., <code>IsChecked="{Binding IsToolbarVisible}"</code>) so the menu and the model stay synchronized. Pitfall: WPF does not provide automatic mutual-exclusion between multiple <code>IsCheckable</code> items. For radio-group behavior (only one item checked at a time), manage the exclusivity logic manually in the ViewModel.</td>
         </tr>
         <tr>
           <td><code>StaysOpenOnClick (MenuItem)</code></td>
@@ -93,17 +93,17 @@
         <tr>
           <td><code>Command (MenuItem)</code></td>
           <td><code>ICommand</code></td>
-          <td>Binds an <code>ICommand</code> to the menu item, enabling MVVM-based command invocation and automatic enabled/disabled state management. The menu item is grayed out automatically when <code>CanExecute</code> returns <code>false</code>.</td>
+          <td>Binds an <code>ICommand</code> to the menu item for MVVM-based command invocation. The menu item is automatically grayed out when <code>CanExecute</code> returns <code>false</code>. Pitfall: <code>CanExecute</code> is evaluated each time the menu opens. If the method performs expensive work (e.g., a database query), the menu will appear sluggish. Keep <code>CanExecute</code> logic as lightweight as possible.</td>
         </tr>
         <tr>
           <td><code>Icon (MenuItem)</code></td>
           <td><code>object</code></td>
-          <td>An optional icon displayed to the left of the menu item text, typically a 16x16 <code>Image</code> or vector icon. Icons greatly improve menu scannability by providing visual recognition cues alongside the text label.</td>
+          <td>An optional icon displayed to the left of the menu item text, typically a 16×16 <code>Image</code> or vector icon. Icons greatly improve menu scannability by providing visual cues. Pitfall: setting a large image without explicit dimensions will distort the menu item layout; always constrain icon images with <code>Width="16" Height="16"</code>.</td>
         </tr>
         <tr>
           <td><code>InputGestureText (MenuItem)</code></td>
           <td><code>string</code></td>
-          <td>A display-only shortcut hint shown on the right side of the menu item, such as "Ctrl+S" or "F5". This text is purely cosmetic and does not register the shortcut; the binding must be established separately via <code>KeyBinding</code>.</td>
+          <td>A display-only shortcut hint shown on the right side of the menu item, such as "Ctrl+S". This text is purely cosmetic and does not register the keyboard shortcut. Pitfall: forgetting to add a matching <code>KeyBinding</code> in <code>Window.InputBindings</code> results in the shortcut being displayed but non-functional, which is confusing for users. Always pair <code>InputGestureText</code> with a real <code>KeyBinding</code>.</td>
         </tr>
         <tr>
           <td><code>IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation (MenuItem)</code></td>
@@ -172,9 +172,9 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Use access keys consistently:</strong> Define underscore-prefixed access keys (e.g., <code>_File</code>, <code>_Edit</code>) for all top-level and submenu items to ensure full keyboard accessibility without a mouse.</li>
-      <li><strong>Register KeyBindings separately:</strong> <code>InputGestureText</code> only shows the shortcut label; register actual key bindings in the <code>Window.InputBindings</code> collection or via <code>RoutedUICommand</code> with registered gestures.</li>
+      <li><strong>Register KeyBindings separately:</strong> <code>InputGestureText</code> only shows the shortcut label; register actual key bindings in the <code>Window.InputBindings</code> collection or via <code>RoutedUICommand</code> with registered gestures. Omitting this step produces visible-but-non-functional shortcuts.</li>
+      <li><strong>Keep <code>CanExecute</code> lightweight:</strong> The <code>CanExecute</code> method is called each time the menu opens. Database queries or file I/O in <code>CanExecute</code> will cause noticeable lag when the user opens a menu. Cache the availability state in the ViewModel and raise <code>CanExecuteChanged</code> only when it actually changes.</li>
       <li><strong>Use <code>Separator</code> to group related items:</strong> Visual separators between logical command groups (create/open/save vs. exit) improve menu scannability and match standard OS menu conventions.</li>
-      <li><strong>Bind <code>IsEnabled</code> via CanExecute:</strong> Let <code>ICommand.CanExecute</code> manage the enabled state automatically rather than manually binding <code>IsEnabled</code> on each menu item.</li>
       <li><strong>Limit submenu depth:</strong> Keep menu hierarchies to two or at most three levels. Deeply nested submenus are difficult to navigate and a signal that the command should be moved to a dialog or toolbar instead.</li>
     </ul>
   </section>

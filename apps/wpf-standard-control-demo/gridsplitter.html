@@ -86,27 +86,27 @@
         <tr>
           <td><code>ResizeDirection</code></td>
           <td><code>Auto / Columns / Rows</code></td>
-          <td>Determines whether the splitter resizes adjacent columns or rows. <code>Auto</code> infers the direction from the splitter's alignment properties, but setting this explicitly to <code>Columns</code> or <code>Rows</code> avoids ambiguity and makes XAML intent immediately clear to future maintainers.</td>
+          <td>Use this when you want users to resize panes at runtime — for example, widening a file-explorer tree or adjusting an output log panel. When the user drags the splitter, the adjacent Grid column widths or row heights change in real time (or on mouse-up if <code>ShowsPreview="True"</code>). Setting this explicitly to <code>Columns</code> or <code>Rows</code> removes ambiguity and makes the intent clear. <strong>Pitfall:</strong> the GridSplitter <em>must</em> be placed in the correct Grid row or column that sits between the panels you want to resize. Placing it in the wrong cell, or outside a Grid entirely, means it renders but has no effect on any adjacent pane sizes. For layouts that do not need runtime resizing, a simple fixed or star-sized <code>ColumnDefinition</code> / <code>RowDefinition</code> is simpler and has less overhead than a GridSplitter.</td>
         </tr>
         <tr>
           <td><code>ResizeBehavior</code></td>
           <td><code>BasedOnAlignment / CurrentAndNext / PreviousAndCurrent / PreviousAndNext</code></td>
-          <td>Specifies which adjacent rows or columns are redistributed when the splitter is dragged. <code>PreviousAndNext</code> keeps the total combined size constant by shrinking one neighbour and growing the other. <code>BasedOnAlignment</code> infers the pair from the splitter's alignment, similar to how <code>ResizeDirection="Auto"</code> works.</td>
+          <td>Use <code>PreviousAndNext</code> for the most intuitive two-pane behaviour — dragging shrinks one side while growing the other, keeping the combined size constant. <code>BasedOnAlignment</code> (default) infers the pair from the splitter's alignment and is sufficient for most straightforward layouts. Use <code>CurrentAndNext</code> or <code>PreviousAndCurrent</code> only in multi-pane layouts where the automatic inference does not produce the intended result. <strong>Pitfall:</strong> an incorrect setting causes a different row or column pair to resize — the most visible symptom is that the wrong pane changes size when dragging. Change this setting only when the default automatic inference is not working as expected.</td>
         </tr>
         <tr>
           <td><code>ShowsPreview</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, dragging shows a translucent preview bar at the target position and only commits the resize on mouse-up. When <code>False</code> (default), the actual column or row sizes update in real time as the user drags, giving immediate visual feedback. Use <code>True</code> for heavy layouts where live resize causes noticeable lag.</td>
+          <td>Use <code>True</code> when the layout is expensive to re-render during a live drag — for example, when the resizable pane contains a large <code>DataGrid</code>, an embedded browser, or a resource-heavy chart. A translucent preview indicator is shown while dragging; the resize is committed only when the mouse button is released. <code>False</code> (default) causes pane sizes to update in real time during the drag, giving immediate feedback. <strong>Pitfall:</strong> with <code>ShowsPreview="True"</code>, users may be surprised that the layout does not move until they release the mouse. Use <code>PreviewStyle</code> to style the preview indicator to clearly signal that it is a preview, not the final position.</td>
         </tr>
         <tr>
           <td><code>DragIncrement</code></td>
           <td><code>double</code></td>
-          <td>The minimum pixel distance the splitter moves per drag event. The default is 1 pixel (effectively continuous). Increase this value to snap the splitter to coarser increments, for example to enforce that panes stay at multiples of 8 pixels in a design-tool-style layout.</td>
+          <td>Use this when you want the splitter to snap to fixed increments during mouse drag — for example, multiples of 8 pixels in a design-tool layout. The default is 1 (effectively continuous movement). <strong>Pitfall:</strong> large values create coarse, jerky snapping that can feel unnatural. Unless there is a specific design requirement to snap to grid intervals, leave this at the default.</td>
         </tr>
         <tr>
           <td><code>KeyboardIncrement</code></td>
           <td><code>double</code></td>
-          <td>The number of pixels the splitter moves per keyboard arrow-key press when the splitter has focus. The default is 10 pixels. This is an important accessibility setting — ensure that keyboard increment is large enough to be useful but small enough for precise adjustment.</td>
+          <td>The number of pixels the splitter moves per arrow-key press when it has keyboard focus. The default is 10. This is an important accessibility setting — ensure the value is large enough to be practical for coarse adjustment, while still being small enough for fine-tuning. <strong>Pitfall:</strong> there is no built-in way to fully disable keyboard resizing. Use <code>MinWidth</code> / <code>MinHeight</code> constraints on the adjacent row or column definitions to prevent accidental keyboard-driven collapse to zero size.</td>
         </tr>
         <tr>
           <td><code>PreviewStyle</code></td>
@@ -193,6 +193,7 @@
       <li><strong>Use <code>ShowsPreview="True"</code></strong> in layouts with expensive rendering (large <code>DataGrid</code> with thousands of rows, embedded browser controls) to prevent continuous layout recalculations during drag, which cause stuttering.</li>
       <li><strong>Persist pane sizes</strong> between sessions by binding column <code>Width</code> or row <code>Height</code> to ViewModel properties that are saved to user settings. Users strongly prefer having their customised pane layout restored when they reopen the application.</li>
       <li><strong>Ensure keyboard accessibility.</strong> A focused GridSplitter responds to arrow keys for resizing. Set a reasonable <code>KeyboardIncrement</code> and verify via keyboard-only testing that the splitter is reachable with <kbd>Tab</kbd> and operable without a mouse.</li>
+      <li><strong>Know when GridSplitter is overkill.</strong> GridSplitter is the right choice when users need to freely adjust pane sizes at runtime. If pane proportions are fixed by design or are only changed programmatically via code or data binding, a simpler approach — binding <code>ColumnDefinition.Width</code> or <code>RowDefinition.Height</code> directly to ViewModel properties — is easier to implement and maintain without the overhead of a drag handle.</li>
     </ul>
   </section>
 

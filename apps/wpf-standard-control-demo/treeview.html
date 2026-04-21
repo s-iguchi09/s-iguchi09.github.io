@@ -74,24 +74,45 @@
       </thead>
       <tbody>
         <tr>
+          <td><code>ItemsSource (ItemsControl)</code></td>
+          <td><code>IEnumerable</code></td>
+          <td>
+            <strong>When to use:</strong> Use whenever the tree is driven by a runtime data model rather than hard-coded XAML. Always pair it with a <code>HierarchicalDataTemplate</code> that specifies both how each node looks and which property contains its children.<br>
+            <strong>What happens:</strong> WPF recursively applies the template at every depth of the hierarchy — one template definition covers the entire tree. Each node's children are populated by following the <code>ItemsSource</code> binding declared on the template.<br>
+            <strong>Pitfalls:</strong> The <code>DataType</code> on <code>HierarchicalDataTemplate</code> must match the runtime type of your node ViewModel exactly. A mismatch causes nodes to render with no visual content, which can be very hard to diagnose.
+          </td>
+        </tr>
+        <tr>
+          <td><code>SelectedItem (ReadOnly)</code></td>
+          <td><code>object</code></td>
+          <td>
+            <strong>When to use:</strong> Read this property (or listen to <code>SelectedItemChanged</code>) in code-behind to react to selection changes when a full MVVM setup is not needed.<br>
+            <strong>What happens:</strong> Returns the data object of the currently selected node. Because this property is read-only by WPF design, it reflects selection state but cannot be used to <em>set</em> selection from the ViewModel directly.<br>
+            <strong>Pitfalls:</strong> Attempting to create a <code>TwoWay</code> binding on <code>SelectedItem</code> throws a runtime exception. The correct MVVM approach is to bind each node's <code>IsSelected</code> property via <code>ItemContainerStyle</code> to a ViewModel property and manage selection that way.
+          </td>
+        </tr>
+        <tr>
           <td><code>IsExpanded (TreeViewItem)</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether a tree node's children are currently visible. Bind two-way to a ViewModel property to programmatically expand or collapse nodes, for example when navigating to a specific item programmatically.</td>
+          <td>
+            <strong>When to use:</strong> Use when you need to save and restore expanded state between sessions, or when you want to programmatically expand the path to a specific node (e.g., a search result).<br>
+            <strong>What happens:</strong> Setting this to <code>true</code> in the ViewModel via an <code>ItemContainerStyle</code> two-way binding expands the node and reveals its children. Setting it back to <code>false</code> collapses it.<br>
+            <strong>Pitfalls:</strong> When UI virtualization is enabled, collapsed nodes that have not yet been rendered may not respond to programmatic <code>IsExpanded</code> changes because their <code>TreeViewItem</code> container has not been created yet. Expanding parent nodes first (forcing them into the visual tree) resolves this.
+          </td>
         </tr>
         <tr>
           <td><code>IsSelected (TreeViewItem)</code></td>
           <td><code>bool</code></td>
-          <td>Indicates or sets whether a particular tree node is the selected item. Setting this to <code>true</code> on a TreeViewItem makes it the selected node. Use this for programmatic selection; for declarative MVVM selection, prefer an attached behavior.</td>
+          <td>
+            <strong>When to use:</strong> The primary way to control selection from the ViewModel in MVVM patterns. Add an <code>IsSelected</code> property to your node class and bind it via <code>ItemContainerStyle</code> with <code>Mode=TwoWay</code>.<br>
+            <strong>What happens:</strong> Setting the property to <code>true</code> selects that node in the TreeView. Because TreeView only allows one selected node at a time, making one node selected automatically deselects the previously selected one.<br>
+            <strong>Pitfalls:</strong> If multiple nodes have <code>IsSelected = true</code> in the ViewModel simultaneously, only one will actually appear selected. Manage this centrally in the ViewModel to ensure at most one node has <code>IsSelected = true</code> at any given time.
+          </td>
         </tr>
         <tr>
           <td><code>IsSelectionActive (TreeViewItem, ReadOnly)</code></td>
           <td><code>bool</code></td>
           <td>Indicates whether the selection is "active" (the TreeView has keyboard focus). When the TreeView loses focus, <code>IsSelected</code> remains true but <code>IsSelectionActive</code> becomes false, allowing the template to show a dimmed selected state.</td>
-        </tr>
-        <tr>
-          <td><code>SelectedValuePath / SelectedValue (TreeView)</code></td>
-          <td><code>string / object (ReadOnly)</code></td>
-          <td><code>SelectedValuePath</code> specifies a property path on the selected item; <code>SelectedValue</code> returns the value of that property for the currently selected item. Useful for extracting a key or ID from the selected node without exposing the full data object.</td>
         </tr>
         <tr>
           <td><code>ItemTemplate / HierarchicalDataTemplate</code></td>
@@ -150,6 +171,8 @@
       <li><strong>Use an attached behavior for SelectedItem binding</strong> — TreeView.SelectedItem is read-only; use a behavior or event trigger to expose it as a bindable property in the ViewModel.</li>
       <li><strong>Lazy-load children for large trees</strong> — Populate children only when a node is expanded to avoid loading the entire tree upfront. Check <code>IsExpanded</code> in the ViewModel to trigger the load.</li>
       <li><strong>Keyboard navigation</strong> — TreeView supports arrow keys for navigation, Space to toggle selection, and Enter to trigger commands; verify this works for your use case.</li>
+      <li><strong>Implement search by expanding nodes programmatically</strong> — To highlight a search result in the tree, walk the path from root to the matching node and set <code>IsExpanded = true</code> on each ancestor, then set <code>IsSelected = true</code> on the target node. This makes the result visible even if it was buried in a collapsed branch.</li>
+      <li><strong>Add a context menu via ItemContainerStyle</strong> — Define a <code>ContextMenu</code> inside <code>ItemContainerStyle</code> to attach right-click menus to tree nodes. The <code>DataContext</code> of the context menu is automatically the node's ViewModel, so command bindings work naturally without any <code>RelativeSource</code> gymnastics.</li>
     </ul>
   </section>
 

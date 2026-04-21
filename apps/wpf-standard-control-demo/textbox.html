@@ -73,42 +73,72 @@
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>The string value currently entered in the TextBox. Bind two-way to a ViewModel string property for standard data-entry use. Use <code>UpdateSourceTrigger=PropertyChanged</code> for live validation or <code>LostFocus</code> for batched updates on tab-out.</td>
+          <td>Use this to bind the TextBox content two-way to a ViewModel string property — the standard MVVM pattern for any data-entry field. With <code>UpdateSourceTrigger=PropertyChanged</code> the ViewModel is updated on every keystroke, enabling live search filters and real-time validation; with the default <code>LostFocus</code> it updates only when the user tabs away, reducing unnecessary updates. Pitfall: <code>UpdateSourceTrigger=PropertyChanged</code> fires during IME composition (Japanese, Chinese, Korean input), so the ViewModel may receive incomplete, unconverted characters mid-word — always check for empty or whitespace (using <code>string.IsNullOrWhiteSpace()</code>) in validation logic when supporting CJK input.</td>
+        </tr>
+        <tr>
+          <td><code>AcceptsReturn</code></td>
+          <td><code>bool</code></td>
+          <td>Set to <code>True</code> when you need a multiline textarea — for example, a notes or comments field. When <code>True</code>, pressing Enter inserts a newline; when <code>False</code> (the default), Enter activates the window's default button (the <code>IsDefault="True"</code> button such as a Submit button). Pitfall: enabling <code>AcceptsReturn</code> alone does not add a scrollbar — always pair it with <code>TextWrapping="Wrap"</code> and <code>VerticalScrollBarVisibility="Auto"</code>, otherwise the TextBox expands vertically without limit and never shows a scrollbar.</td>
         </tr>
         <tr>
           <td><code>TextWrapping</code></td>
           <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
-          <td>Controls whether long text wraps to new lines. <code>Wrap</code> is needed for multiline text areas; <code>NoWrap</code> (default) keeps single-line behavior with horizontal scrolling. <code>WrapWithOverflow</code> allows individual unbreakable tokens (e.g., long URLs) to overflow rather than clip.</td>
+          <td>Use <code>Wrap</code> for multiline text areas to break long lines at word boundaries. <code>NoWrap</code> (the default) keeps text on a single line and triggers horizontal scrolling when it overflows. <code>WrapWithOverflow</code> wraps at word boundaries but lets individual unbreakable tokens — such as long URLs or file paths — overflow the control width rather than being clipped. Pitfall: <code>TextTrimming</code>, which trims with an ellipsis, is a TextBlock-only feature and has no effect in TextBox — do not confuse the two.</td>
         </tr>
         <tr>
-          <td><code>TextDecorations</code></td>
-          <td><code>None / Underline / Strikethrough / OverLine / Baseline</code></td>
-          <td>Applies text decoration to all text in the box. Commonly used to show Underline for link-style inputs or Strikethrough for deprecation indicators. Multiple decorations can be combined.</td>
-        </tr>
-        <tr>
-          <td><code>TextAlignment</code></td>
-          <td><code>Left / Right / Center / Justify</code></td>
-          <td>Aligns the text horizontally within the TextBox. <code>Right</code> is useful for numeric inputs; <code>Center</code> for title-style single-line fields; <code>Justify</code> for paragraph areas.</td>
+          <td><code>IsReadOnly</code></td>
+          <td><code>bool</code></td>
+          <td>Use when you want to display content the user can read and copy but not edit — for example, generated code snippets, error details, or computed values. Unlike <code>TextBlock</code>, a read-only TextBox still allows the user to select and copy text. The editing operations are blocked, but the caret and selection remain active. Pitfall: by default there is no visual difference between a normal and a read-only TextBox. Always add a <code>Style</code> trigger on <code>IsReadOnly</code> to change the background or border color so users can tell the field is not editable.</td>
         </tr>
         <tr>
           <td><code>MaxLength</code></td>
           <td><code>int (0 = unlimited)</code></td>
-          <td>Limits how many characters the user can type. The TextBox silently rejects input beyond this limit. Setting 0 (default) means unlimited. Use this for fields with fixed-length constraints such as postal codes, phone numbers, or PINs.</td>
+          <td>Use when the field has a hard character limit driven by a database column width, a protocol constraint, or a fixed-format rule such as a postal code or PIN. Once the limit is reached the TextBox silently blocks further input — no error is shown. The default <code>0</code> means unlimited. Pitfall: <code>MaxLength</code> is a UI-layer restriction only. If text is set programmatically through code-behind or a behavior, the limit is not enforced. Always implement server-side or ViewModel validation in addition to this property.</td>
+        </tr>
+        <tr>
+          <td><code>CaretBrush</code></td>
+          <td><code>Brush</code></td>
+          <td>Use when a custom theme or high-contrast mode makes the default black caret invisible against the background — for example, a dark-themed login form. The caret is drawn in the specified brush color, making the insertion point clearly visible. Pitfall: <code>CaretBrush</code> is only honored by the <code>aero2</code> WPF theme (Windows 10 and later). On older Windows themes the property is ignored, so test caret visibility across target environments if your app must support older OS versions.</td>
+        </tr>
+        <tr>
+          <td><code>SelectionBrush / SelectionOpacity</code></td>
+          <td><code>Brush / double</code></td>
+          <td>Use these together when the default OS selection highlight clashes with your application's color scheme. <code>SelectionBrush</code> sets the highlight color and <code>SelectionOpacity</code> (range 0.0–1.0, default 0.4) controls how transparent the highlight is. Combining both lets you match theme accent colors while maintaining a readable contrast ratio between the highlighted text and the selection background. Pitfall: setting <code>SelectionOpacity</code> to <code>0</code> makes the selection completely invisible, which severely harms accessibility — always keep it high enough that users can tell text is selected.</td>
+        </tr>
+        <tr>
+          <td><code>ScrollToEnd() / ScrollToHome() / LineDown()</code></td>
+          <td><code>methods</code></td>
+          <td>Use these scroll methods in log viewers, chat windows, and output consoles where new content is appended continuously and you need the latest entry to stay in view. <code>ScrollToEnd()</code> jumps to the last line, <code>ScrollToHome()</code> to the first, and <code>LineDown()</code> scrolls one line at a time. Pitfall: all three methods must be called on the UI thread. When appending text from a background thread, always wrap the call in <code>Dispatcher.Invoke()</code> or <code>Dispatcher.BeginInvoke()</code>; calling them directly from a worker thread throws an <code>InvalidOperationException</code>.</td>
+        </tr>
+        <tr>
+          <td><code>VerticalScrollBarVisibility / HorizontalScrollBarVisibility</code></td>
+          <td><code>Disabled / Auto / Visible</code></td>
+          <td>Use <code>Auto</code> (recommended for most cases) to show a scrollbar only when content exceeds the control bounds, keeping the UI clean when the text is short. <code>Visible</code> reserves scrollbar space at all times, and <code>Disabled</code> removes scroll capability entirely. Pitfall: <code>Visible</code> always renders the scrollbar track even when there is nothing to scroll, which can look broken when the TextBox contains only one or two lines — use <code>Auto</code> unless you explicitly need the scrollbar to always be present for layout stability reasons.</td>
+        </tr>
+        <tr>
+          <td><code>TextDecorations</code></td>
+          <td><code>None / Underline / Strikethrough / OverLine / Baseline</code></td>
+          <td>Applies a text decoration to all content in the TextBox. Useful for link-style inputs (Underline) or deprecation indicators (Strikethrough). Multiple decorations can be combined by providing a collection. This property is typically set in a style or template rather than directly on individual instances.</td>
+        </tr>
+        <tr>
+          <td><code>TextAlignment</code></td>
+          <td><code>Left / Right / Center / Justify</code></td>
+          <td>Aligns the text horizontally within the TextBox. <code>Right</code> is conventional for numeric fields, making digits align at the decimal point; <code>Center</code> works well for short title-style inputs; <code>Justify</code> is appropriate for paragraph-style multiline fields. The default <code>Left</code> is correct for most text inputs.</td>
         </tr>
         <tr>
           <td><code>MaxLines</code></td>
           <td><code>int</code></td>
-          <td>Limits the maximum number of visible lines in a multiline TextBox. Additional lines can be scrolled. A common pattern is to set <code>MinLines="3" MaxLines="10"</code> for a textarea that grows up to ten rows.</td>
+          <td>Limits the maximum number of visible lines in a multiline TextBox. Additional lines can be scrolled with the vertical scrollbar. A common pattern is to set <code>MinLines="3" MaxLines="10"</code> for a comment or notes textarea that grows as the user types but caps at ten rows.</td>
         </tr>
         <tr>
           <td><code>MinLines</code></td>
           <td><code>int</code></td>
-          <td>Sets the minimum height of the TextBox expressed in lines. Even with no content, the control reserves space for at least this many lines, preventing jarring resize when text is added. Useful for comment fields that should always appear as a textarea.</td>
+          <td>Reserves vertical space for at least this many lines even when the TextBox is empty. This prevents the control from visually collapsing to a single line on an empty form, which would be jarring once the user starts typing. Use it for comment or address fields that should always appear as a textarea regardless of content.</td>
         </tr>
         <tr>
           <td><code>CharacterCasing</code></td>
           <td><code>Normal / Upper / Lower</code></td>
-          <td>Automatically converts all typed input to the specified case. <code>Upper</code> forces uppercase — typed "hello" appears as "HELLO" in both the display and the bound Text property. Useful for license keys, locale codes, and identifiers that must be uppercase.</td>
+          <td>Automatically normalizes all typed input to the specified case. <code>Upper</code> forces uppercase — typing "hello" produces "HELLO" in both the displayed text and the bound <code>Text</code> property. Useful for license keys, locale codes, product identifiers, and other fields that must contain only uppercase characters regardless of the shift key state.</td>
         </tr>
       </tbody>
     </table>
@@ -150,11 +180,14 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use UpdateSourceTrigger wisely</strong> — <code>PropertyChanged</code> enables live validation but triggers frequently; <code>LostFocus</code> is less intrusive for simple forms without live feedback needs.</li>
-      <li><strong>Add a watermark with placeholder text</strong> — WPF's TextBox does not natively support placeholder text, but you can overlay a TextBlock bound to Text with a converter, or use an attached behavior.</li>
-      <li><strong>SpellCheck.IsEnabled</strong> — Set <code>SpellCheck.IsEnabled="True"</code> on any TextBox to enable built-in red-underline spell checking without any extra code.</li>
-      <li><strong>Use PasswordBox for secrets</strong> — Never use a TextBox for passwords; the text is unmasked. Use <code>PasswordBox</code> instead.</li>
-      <li><strong>Validation integration</strong> — Implement <code>INotifyDataErrorInfo</code> in the ViewModel and set <code>ValidatesOnNotifyDataErrors=True</code> on the binding to show red borders and error tooltips automatically.</li>
+      <li><strong>Match UpdateSourceTrigger to the use case</strong> — Use <code>PropertyChanged</code> for live search filters and real-time validation, and the default <code>LostFocus</code> for standard form fields where batch validation on submit is sufficient. When supporting CJK IME input with <code>PropertyChanged</code>, always null/empty-check the ViewModel value because the binding fires during composition with unconverted characters.</li>
+      <li><strong>Format numeric display with StringFormat</strong> — When displaying a number in a TextBox, you can specify <code>StringFormat='{}{0:F2}'</code> on the binding to show two decimal places. Note that the format is removed while the user is actively editing, so for dedicated numeric entry consider a <code>ValidationRule</code> or a purpose-built numeric input control.</li>
+      <li><strong>Customize Validation.ErrorTemplate for richer feedback</strong> — The default validation error style shows a red border. Replace it with <code>Validation.ErrorTemplate</code> to show an inline error message below the field. Reference the error text via a trigger on <code>Validation.HasError</code> and <code>Validation.Errors[0].ErrorContent</code>.</li>
+      <li><strong>Multiline TextBox needs three properties together</strong> — For a proper textarea, always set <code>AcceptsReturn="True"</code>, <code>TextWrapping="Wrap"</code>, and <code>VerticalScrollBarVisibility="Auto"</code> together. Any one of these missing will produce a control that either doesn't wrap, doesn't scroll, or won't accept newlines.</li>
+      <li><strong>Select all text on focus with SelectAll()</strong> — Calling <code>SelectAll()</code> in the <code>GotFocus</code> event handler instantly selects the existing text so the user can overwrite it with a single keystroke. Implement this as an attached behavior to keep it reusable across the application from XAML.</li>
+      <li><strong>Provide visual feedback for IsReadOnly</strong> — When <code>IsReadOnly="True"</code>, add a <code>Style</code> trigger to change the <code>Background</code> or <code>BorderBrush</code> so users can immediately see the field is view-only. Without this, a read-only TextBox looks identical to an editable one.</li>
+      <li><strong>Add a watermark with placeholder text</strong> — WPF's TextBox does not natively support placeholder text. Overlay a transparent TextBlock with a converter that shows the placeholder only when <code>Text</code> is empty, or use an attached behavior for a reusable solution.</li>
+      <li><strong>Use PasswordBox for secrets</strong> — Never use a TextBox for passwords; the content is stored and displayed as plain text. Use <code>PasswordBox</code>, which masks the input and stores it as a <code>SecureString</code>.</li>
     </ul>
   </section>
 

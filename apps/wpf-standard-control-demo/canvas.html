@@ -82,27 +82,27 @@
         <tr>
           <td><code>Canvas.Left</code></td>
           <td><code>double</code></td>
-          <td>Positions a child element a given number of device-independent pixels from the left edge of the Canvas. When set together with <code>Canvas.Right</code>, <code>Left</code> takes precedence for positioning, though both values are stored.</td>
+          <td>Use this when you need to place an element at a specific horizontal offset from the Canvas's left edge — for example, positioning a node in a diagram editor or a sprite in a game surface. The element is placed exactly that many device-independent pixels from the left edge. Pitfall: setting both <code>Canvas.Left</code> and <code>Canvas.Right</code> on the same element does not resize it; the element keeps its natural size and <code>Left</code> takes precedence, so the <code>Right</code> value is effectively ignored for positioning.</td>
         </tr>
         <tr>
           <td><code>Canvas.Top</code></td>
           <td><code>double</code></td>
-          <td>Positions a child element a given number of device-independent pixels from the top edge of the Canvas. It is the vertical counterpart to <code>Canvas.Left</code> and together they form the most common coordinate pair for absolute positioning.</td>
+          <td>The vertical counterpart to <code>Canvas.Left</code>. Together, <code>Left</code> and <code>Top</code> form the most common absolute-coordinate pair for placing elements on a Canvas. Setting <code>Canvas.Top="30"</code> places the element 30 device-independent pixels below the Canvas's top edge. Pitfall: if neither <code>Canvas.Top</code> nor <code>Canvas.Bottom</code> is set, the element defaults to the top edge (y = 0), which can cause elements to stack invisibly.</td>
         </tr>
         <tr>
           <td><code>Canvas.Right</code></td>
           <td><code>double</code></td>
-          <td>Positions a child element relative to the <em>right</em> edge of the Canvas rather than the left. This is useful when anchoring elements to the right side of a fixed-size canvas, similar to right-aligned absolute positioning in CSS.</td>
+          <td>Anchors an element to the right edge of the Canvas, useful for watermarks, fixed-position overlays, or elements that should stay in the bottom-right corner regardless of the Canvas's size. The element is placed so its right edge is the specified number of pixels from the Canvas's right edge. Pitfall: <code>Canvas.Right</code> does not work like CSS <code>right</code> in a stretched container — it is always measured from the Canvas's declared right boundary, so the Canvas must have an explicit width for <code>Right</code> to be meaningful.</td>
         </tr>
         <tr>
           <td><code>Canvas.Bottom</code></td>
           <td><code>double</code></td>
-          <td>Positions a child element relative to the bottom edge of the Canvas. Combined with <code>Canvas.Right</code>, it lets you anchor elements to the bottom-right corner of the drawing surface without calculating offsets manually.</td>
+          <td>Anchors an element to the bottom edge of the Canvas. Combining <code>Canvas.Right</code> and <code>Canvas.Bottom</code> is a common pattern for placing a label or badge in the bottom-right corner of a drawing surface. Like <code>Canvas.Right</code>, this requires the Canvas to have an explicit <code>Height</code> to produce the intended result. Pitfall: setting <code>Canvas.Top</code> and <code>Canvas.Bottom</code> simultaneously does not stretch the element; the element retains its natural height and <code>Top</code> takes precedence.</td>
         </tr>
         <tr>
           <td><code>Panel.ZIndex</code></td>
           <td><code>int</code></td>
-          <td>Controls the rendering order when child elements overlap. Elements with a higher <code>ZIndex</code> are drawn on top of elements with a lower value. The default is 0 for all children; negative values push an element behind its siblings.</td>
+          <td>Use this when elements overlap and you need explicit control over which element renders on top — for instance, bringing a selected handle or tooltip above the drawing content. Higher values render on top of lower values. Pitfall: the default <code>ZIndex</code> is 0 for all children, so when you don't set it explicitly, the element that appears later in XAML (later in the child collection) is rendered on top. Don't rely on this implicit ordering; set <code>ZIndex</code> explicitly on any element whose stacking matters.</td>
         </tr>
       </tbody>
     </table>
@@ -157,6 +157,7 @@
       <li><strong>Combine with <code>Viewbox</code></strong> to achieve resolution-independent scaling of canvas-based drawings without rewriting coordinates for every target resolution or DPI setting.</li>
       <li><strong>Leverage <code>Panel.ZIndex</code></strong> dynamically in code to bring focused or hovered elements to the front, creating a natural layering interaction without rebuilding the visual tree.</li>
       <li><strong>Avoid Canvas for data-driven layouts.</strong> If the number of elements changes at runtime via data binding, prefer an <code>ItemsControl</code> with a Canvas <code>ItemsPanel</code> template, which properly recycles containers and supports virtualization.</li>
+      <li><strong>Set <code>Background="Transparent"</code> to capture mouse events.</strong> A Canvas with <code>Background=null</code> (the default) does not participate in hit-testing, so mouse events pass through to underlying elements. Set <code>Background="Transparent"</code> when you need the Canvas itself to handle clicks or pointer events.</li>
     </ul>
   </section>
 

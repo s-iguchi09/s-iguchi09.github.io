@@ -87,17 +87,29 @@
         <tr>
           <td><code>AutoGenerateColumns</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, WPF inspects the bound data source via reflection and creates a column for each public property. This is the fastest way to display a data object but provides no control over column order, width, or cell templates — use explicit column definitions for production UIs.</td>
+          <td>
+            <strong>When to use:</strong> Useful during prototyping or in developer tools where you want to quickly visualize a data object without writing column definitions.<br>
+            <strong>What happens:</strong> WPF reflects all public read/write properties of the bound data objects and generates a text column for each, ordered alphabetically by property name.<br>
+            <strong>Pitfalls:</strong> In production UIs this is almost always wrong — it exposes all properties including sensitive ones (e.g., internal IDs, passwords), the column order is non-deterministic across .NET versions, and columns have no display-friendly headers. Always set <code>AutoGenerateColumns="False"</code> and define columns explicitly in production code.
+          </td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>Prevents all in-place editing across the entire grid when set to <code>True</code>. Individual columns can independently set <code>IsReadOnly</code> even when the grid is editable, allowing mixed read/write grids where certain columns (e.g., IDs) are display-only.</td>
+          <td>
+            <strong>When to use:</strong> Use for display-only grids such as logs, reports, and audit trails where accidental edits would be harmful.<br>
+            <strong>What happens:</strong> Setting <code>True</code> disables cell editing across the entire grid. It also automatically sets <code>CanUserAddRows</code> to <code>False</code>, since adding a row implies editing it.<br>
+            <strong>Pitfalls:</strong> Individual column-level <code>IsReadOnly</code> overrides the grid-level setting — a column with <code>IsReadOnly="False"</code> remains editable even when the grid itself is read-only. Use this intentionally for mixed read/write grids, but be aware it can create unexpected edit behavior if set accidentally.
+          </td>
         </tr>
         <tr>
           <td><code>SelectionMode / SelectionUnit</code></td>
           <td><code>Single/Extended / Cell/FullRow/CellOrRowHeader</code></td>
-          <td><code>SelectionMode</code> controls whether one or multiple items can be selected; <code>SelectionUnit</code> controls the granularity — cell-level or full-row. Combining <code>Extended</code> and <code>FullRow</code> replicates the behaviour of a traditional multi-select list.</td>
+          <td>
+            <strong>When to use:</strong> Use <code>Single + FullRow</code> for master-detail screens where selecting a row loads its details in a side panel. Use <code>Extended + Cell</code> for spreadsheet-style editing where the user copies or fills ranges of cells.<br>
+            <strong>What happens:</strong> <code>SelectionMode</code> controls how many items can be selected (one or many); <code>SelectionUnit</code> controls what is selected (a whole row, a single cell, or a row when clicking the row header).<br>
+            <strong>Pitfalls:</strong> Combining <code>SelectionUnit="Cell"</code> with <code>SelectionMode="Single"</code> means only one cell at a time can be selected. Users who click on a row expecting row-level selection will find the behavior disorienting — choose this combination only when per-cell selection is the explicit requirement.
+          </td>
         </tr>
         <tr>
           <td><code>ColumnWidth / MaxColumnWidth / MinColumnWidth</code></td>
@@ -107,7 +119,11 @@
         <tr>
           <td><code>CanUserAddRows / CanUserDeleteRows</code></td>
           <td><code>bool</code></td>
-          <td>Enables or disables the new-row placeholder at the bottom of the grid and the <kbd>Delete</kbd> key row removal. Both require the bound collection to implement <code>IEditableCollectionView</code> (e.g., <code>ObservableCollection&lt;T&gt;</code> wrapped in a <code>ListCollectionView</code>).</td>
+          <td>
+            <strong>When to use:</strong> Enable when the grid serves as a direct data-entry surface and you want users to add or remove records in-place without a separate form.<br>
+            <strong>What happens:</strong> <code>CanUserAddRows="True"</code> displays a blank placeholder row at the bottom of the grid. When the user types into it, a new data object is created and added to the source collection. <code>CanUserDeleteRows="True"</code> lets users remove selected rows by pressing <kbd>Delete</kbd>.<br>
+            <strong>Pitfalls:</strong> <code>CanUserAddRows</code> requires the data model class to have a public parameterless constructor. Without it, WPF cannot instantiate a new object when the user starts typing in the placeholder row, and a runtime exception is thrown. The source collection must also implement <code>IEditableCollectionView</code> — <code>ObservableCollection&lt;T&gt;</code> wrapped in a <code>ListCollectionView</code> satisfies this requirement.
+          </td>
         </tr>
         <tr>
           <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserResizeRows / CanUserSortColumns</code></td>
@@ -127,12 +143,20 @@
         <tr>
           <td><code>AlternatingRowBackground</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background brush for even-numbered rows (index 0, 2, 4…), creating a zebra-stripe effect that helps the eye track across wide rows. Combine with a contrasting <code>RowBackground</code> for odd rows.</td>
+          <td>
+            <strong>When to use:</strong> Use in wide grids with many columns where zebra striping helps the eye track horizontally across a row without losing its place.<br>
+            <strong>What happens:</strong> Even-indexed rows (0, 2, 4…) use the standard <code>RowBackground</code>; odd-indexed rows use <code>AlternatingRowBackground</code>, creating the alternating pattern.<br>
+            <strong>Pitfalls:</strong> When row grouping is active, <code>AlternatingRowBackground</code> may not be applied correctly because group headers break the row index sequence. In grouped grids, control row coloring explicitly via a custom <code>DataGridRow</code> style instead.
+          </td>
         </tr>
         <tr>
           <td><code>FrozenColumnCount</code></td>
           <td><code>int</code></td>
-          <td>Specifies how many leading columns remain stationary during horizontal scrolling. Setting this to 1 or 2 for an identifier column (Name, ID) makes wide grids much easier to navigate without losing context of which row you are editing.</td>
+          <td>
+            <strong>When to use:</strong> Use when the grid has more columns than fit in the viewport and users need to always see an identifier (e.g., Name, Order ID) while scrolling through data columns.<br>
+            <strong>What happens:</strong> The specified number of leftmost columns are pinned and do not scroll horizontally. All remaining columns scroll normally to the right.<br>
+            <strong>Pitfalls:</strong> Only the leftmost N consecutive columns can be frozen. It is not possible to freeze a column in the middle of the column list — the frozen columns are always anchored to the left edge.
+          </td>
         </tr>
         <tr>
           <td><code>HeadersVisibility</code></td>
@@ -142,7 +166,11 @@
         <tr>
           <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
           <td><code>bool</code></td>
-          <td>Enables UI virtualisation for rows and columns respectively, significantly reducing memory usage and render time for large datasets. Column virtualisation should be enabled cautiously as it can cause slight rendering artefacts on horizontal scroll in some WPF versions.</td>
+          <td>
+            <strong>When to use:</strong> Enable row virtualization for any grid with more than a few dozen rows. Enable column virtualization for grids with many columns. Both are on by default for rows.<br>
+            <strong>What happens:</strong> With virtualization enabled, only the cells currently visible in the viewport are created in the visual tree. For thousands of rows this reduces memory use and initial render time dramatically.<br>
+            <strong>Pitfalls:</strong> Row virtualization and row grouping conflict — when both are active, group headers can flicker during scrolling. If you use grouping, test virtualization behavior carefully and consider disabling row virtualization for grouped views.
+          </td>
         </tr>
         <tr>
           <td><code>RowBackground / RowHeight / MinRowHeight</code></td>
@@ -216,6 +244,9 @@
       <li><strong>Use <code>ObservableCollection&lt;T&gt;</code></strong> as the ItemsSource so the grid automatically reflects adds and removes without a full refresh. For sorted or filtered views, wrap it in a <code>CollectionViewSource</code>.</li>
       <li><strong>Freeze identifier columns</strong> using <code>FrozenColumnCount</code> when your grid has more columns than fit in the viewport. This simple setting dramatically improves horizontal-scroll usability.</li>
       <li><strong>Validate with <code>INotifyDataErrorInfo</code></strong> rather than exception-based validation. It provides per-property error messages that the DataGrid can display in tooltips without crashing the edit session.</li>
+      <li><strong>Implement <code>INotifyPropertyChanged</code> on data models</strong> — When users edit a cell in-place, the change is reflected in the bound property immediately. However, if the model does not implement <code>INotifyPropertyChanged</code>, other UI elements bound to the same property will not update until a full refresh occurs.</li>
+      <li><strong>Call <code>CommitEdit</code> before collection operations</strong> — If you programmatically sort, filter, or delete rows while the user is in the middle of editing a cell, WPF may throw an exception or produce data corruption. Always call <code>dataGrid.CommitEdit()</code> (or <code>CancelEdit()</code>) to close any open edit session before modifying the underlying collection.</li>
+      <li><strong>Use <code>RowDetailsTemplate</code> for expandable row details</strong> — Define a <code>DataTemplate</code> in <code>RowDetailsTemplate</code> to show additional related information beneath the selected row. Set <code>RowDetailsVisibilityMode="VisibleWhenSelected"</code> so the detail panel appears only for the active row, keeping the grid compact.</li>
     </ul>
   </section>
 

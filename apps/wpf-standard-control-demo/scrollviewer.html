@@ -82,32 +82,32 @@
         <tr>
           <td><code>VerticalScrollBarVisibility</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Controls vertical scroll bar display. <code>Auto</code> shows the bar only when content overflows; <code>Disabled</code> prevents vertical scrolling entirely; <code>Hidden</code> allows scrolling via code but hides the bar; <code>Visible</code> keeps the bar always shown even when not needed.</td>
+          <td>Controls vertical scroll bar display. Use <code>Auto</code> for dynamic content that may or may not overflow — the bar appears only when needed. Use <code>Disabled</code> when you want horizontal-only scrolling and need to prevent any vertical scroll. <code>Hidden</code> allows programmatic or touch scrolling without showing the bar. <strong>Pitfall:</strong> <code>Visible</code> always reserves scroll bar space even when content fits, which shifts your layout width — in most cases <code>Auto</code> is the better choice.</td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Controls horizontal scroll bar display with the same four options as the vertical bar. Defaults to <code>Disabled</code> in most controls, meaning content is clipped horizontally unless you explicitly enable it.</td>
+          <td>Controls horizontal scroll bar display with the same four options as the vertical bar. Most controls default to <code>Disabled</code>, clipping content horizontally. <strong>Pitfall:</strong> To enable horizontal scrolling in a <code>ListBox</code> or <code>TextBox</code>, you must set <code>ScrollViewer.HorizontalScrollBarVisibility</code> as an <em>attached property directly on the control</em>, not on a wrapping <code>ScrollViewer</code>. The control's built-in ScrollViewer takes precedence, so a surrounding ScrollViewer setting has no effect.</td>
         </tr>
         <tr>
           <td><code>CanContentScroll</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, scrolling jumps by logical units (items) as defined by the panel's <code>IScrollInfo</code>. When <code>false</code>, scrolling is always pixel-based. Set to <code>false</code> for smooth scrolling animations; keep <code>true</code> for virtualized panels to maintain performance.</td>
+          <td>When <code>true</code>, scrolling jumps by logical units (items) as defined by the panel's <code>IScrollInfo</code> — for a <code>VirtualizingStackPanel</code> this means item-by-item scrolling with full virtualization. When <code>false</code>, scrolling is pixel-based and smooth. <strong>Pitfall:</strong> Setting <code>CanContentScroll="False"</code> on an <code>ItemsControl</code> destroys UI virtualization — <em>all</em> items are rendered at once regardless of <code>VirtualizingPanel.IsVirtualizing</code>. On lists with thousands of items this causes severe memory and performance degradation.</td>
         </tr>
         <tr>
           <td><code>IsDeferredScrollingEnabled</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, the viewport content updates only when the user releases the scroll thumb rather than on every drag movement. This can dramatically improve drag performance in large, complex lists at the cost of less real-time feedback.</td>
+          <td>When <code>true</code>, the viewport content updates only when the user releases the scroll thumb rather than on every drag movement. For large data sets (thousands of DataGrid rows), this eliminates the continuous re-render during drag and dramatically improves responsiveness. <strong>Tradeoff:</strong> The user cannot see intermediate content while dragging, which can make it harder to navigate to a specific position. Enable only when data volume genuinely warrants it.</td>
         </tr>
         <tr>
           <td><code>ComputedVerticalScrollBarVisibility / ExtentHeight / ViewportHeight / ScrollableHeight / VerticalOffset / ContentVerticalOffset</code></td>
           <td><code>ReadOnly</code></td>
-          <td>Read-only diagnostic properties. <code>ExtentHeight</code> is the total content height; <code>ViewportHeight</code> is the visible area height; <code>ScrollableHeight</code> is the difference; <code>VerticalOffset</code> is the current scroll position in device-independent units.</td>
+          <td>Read-only diagnostic properties. <code>ExtentHeight</code> is the total content height; <code>ViewportHeight</code> is the visible area height; <code>ScrollableHeight</code> is the difference; <code>VerticalOffset</code> is the current scroll position. <strong>Pitfall:</strong> Reading these values during or before layout completes returns stale data. Always read them after the <code>Loaded</code> event or via <code>Dispatcher.BeginInvoke</code> to ensure layout has finished.</td>
         </tr>
         <tr>
           <td><code>ComputedHorizontalScrollBarVisibility / ExtentWidth / ViewportWidth / ScrollableWidth / HorizontalOffset / ContentHorizontalOffset</code></td>
           <td><code>ReadOnly</code></td>
-          <td>Horizontal counterparts of the vertical read-only properties. Useful for binding scroll-position indicators or implementing synchronized scrolling between two panels.</td>
+          <td>Horizontal counterparts of the vertical read-only properties. Useful for binding scroll-position indicators or implementing synchronized scrolling between two panels. Subject to the same stale-value pitfall as the vertical equivalents.</td>
         </tr>
       </tbody>
     </table>
@@ -145,7 +145,8 @@
     <ul>
       <li><strong>Avoid nesting ScrollViewers</strong> — Nested scrollable regions confuse users and cause layout measurement issues. Instead, use a single outer ScrollViewer and size inner panels explicitly.</li>
       <li><strong>Keep CanContentScroll=true for virtualized panels</strong> — Pixel scrolling forces all items to be realized, defeating UI virtualization and causing memory and performance issues with large lists.</li>
-      <li><strong>Programmatic scrolling</strong> — Call <code>ScrollToEnd()</code>, <code>ScrollToTop()</code>, or <code>ScrollToVerticalOffset()</code> in code-behind or via a behavior to control scroll position from the ViewModel.</li>
+      <li><strong>Use ScrollToBottom() for reliable bottom-scrolling</strong> — Calling <code>ScrollToVerticalOffset(double.MaxValue)</code> is unreliable because values beyond the actual maximum are silently ignored. Use <code>ScrollToBottom()</code> or <code>ScrollToVerticalOffset(scrollViewer.ScrollableHeight)</code> instead for dependable scroll-to-end behavior.</li>
+      <li><strong>Nested ScrollViewer mouse-wheel routing</strong> — An inner ScrollViewer consumes mouse-wheel events, preventing them from reaching the outer ScrollViewer. If you need the outer ScrollViewer to also scroll, handle <code>PreviewMouseWheel</code> on the inner ScrollViewer and manually re-raise the event on the outer one.</li>
       <li><strong>Keyboard scrolling</strong> — ScrollViewer responds to arrow keys, Page Up/Down, Home, and End, providing full keyboard navigation out of the box without extra code.</li>
       <li><strong>Touch and mouse-wheel</strong> — WPF's ScrollViewer handles mouse-wheel and touch-pan gestures automatically; you do not need to wire these events manually.</li>
     </ul>

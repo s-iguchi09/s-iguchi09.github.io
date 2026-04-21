@@ -67,32 +67,32 @@
         <tr>
           <td><code>EditingMode</code></td>
           <td><code>None / Ink / GestureOnly / InkAndGesture / Select / EraseByPoint / EraseByStroke</code></td>
-          <td>The primary interaction mode that determines how mouse and stylus input is interpreted. <code>Ink</code> is the default drawing mode; <code>Select</code> enables lasso selection and manipulation of existing strokes; the erase modes remove strokes on contact.</td>
+          <td>The primary interaction mode that determines how mouse and stylus input is interpreted. Use <code>Ink</code> for drawing, <code>Select</code> to enable lasso selection and movement of existing strokes, and the erase modes to remove strokes on contact. <code>GestureOnly</code> dedicates input to gesture recognition (e.g., drawing a circle to delete). Pitfall: <code>EditingMode="None"</code> blocks all ink input, making InkCanvas a passive display surface — useful for read-only views, but don't forget to restore the mode when editing is re-enabled. Also note that tablet stylus input uses <code>ActiveEditingMode</code>, which may differ from <code>EditingMode</code> when the inverted stylus tip is in use.</td>
         </tr>
         <tr>
           <td><code>ActiveEditingMode</code></td>
           <td><code>InkCanvasEditingMode (ReadOnly)</code></td>
-          <td>A read-only property reflecting the currently active editing mode, which may differ from <code>EditingMode</code> when a stylus eraser tip is in use. It is useful for UI feedback such as updating a toolbar indicator to show the current mode.</td>
+          <td>A read-only property reflecting the currently active editing mode. This may differ from <code>EditingMode</code> when a stylus eraser tip is in use (the inverted end activates <code>EditingModeInverted</code>). Bind this to a status bar or toolbar indicator to show the user's current mode in real time. Pitfall: this property is read-only — to change the mode you must set <code>EditingMode</code>, not <code>ActiveEditingMode</code>.</td>
         </tr>
         <tr>
           <td><code>EditingModeInverted</code></td>
           <td><code>InkCanvasEditingMode</code></td>
-          <td>Specifies the editing mode activated when the inverted (eraser) end of a stylus is used. Defaults to <code>EraseByStroke</code>, mirroring a physical pen's eraser behavior and providing a natural two-ended stylus experience.</td>
+          <td>Specifies the editing mode activated when the inverted (eraser) end of a physical stylus is used. Set to <code>EraseByStroke</code> (default) to mirror a real pen's eraser behavior. Pitfall: this property has no effect in mouse-only environments. If your application relies on the inverted tip for erasing, users without a tablet stylus will have no way to trigger that behavior — provide a toolbar button to switch to erase mode as an alternative.</td>
         </tr>
         <tr>
           <td><code>DefaultDrawingAttributes</code></td>
           <td><code>DrawingAttributes</code></td>
-          <td>The rendering attributes applied to new strokes drawn by the user, including <code>Color</code>, <code>Width</code>, <code>Height</code>, <code>StylusTip</code> (Ellipse or Rectangle), and <code>IsHighlighter</code>. Changing this at runtime lets users pick pen color and thickness interactively.</td>
+          <td>The rendering attributes applied to new strokes: <code>Color</code>, <code>Width</code>, <code>Height</code>, <code>StylusTip</code> (Ellipse or Rectangle), and <code>IsHighlighter</code>. Change this at runtime to let users pick pen color and thickness interactively. Setting <code>IsHighlighter=true</code> produces a semi-transparent highlighter stroke. Pitfall: changes to <code>DefaultDrawingAttributes</code> only apply to strokes drawn after the change. Existing strokes in the <code>Strokes</code> collection retain their original attributes; to re-color past strokes you must iterate the collection and update each stroke's <code>DrawingAttributes</code> individually.</td>
         </tr>
         <tr>
           <td><code>Strokes</code></td>
           <td><code>StrokeCollection</code></td>
-          <td>The collection of all ink strokes currently on the canvas. You can programmatically add, remove, or clear strokes, as well as serialize the entire collection for saving and restoring ink data across sessions.</td>
+          <td>The collection of all ink strokes currently on the canvas. Use this to programmatically add, remove, or clear strokes, and to serialize ink data with <code>StrokeCollection.Save(stream)</code> (ISF format) for persistence across sessions. Pitfall: removing strokes from the collection does not provide built-in undo support. If you need undo/redo, maintain your own history stack by subscribing to the <code>StrokesChanged</code> event and recording added/removed strokes.</td>
         </tr>
         <tr>
           <td><code>Background</code></td>
           <td><code>Brush</code></td>
-          <td>The background fill of the drawing surface. Setting a white or light-colored background creates a realistic paper-like canvas, while a transparent background allows InkCanvas to overlay other content for annotation purposes.</td>
+          <td>The background fill of the drawing surface. Setting <code>Background="White"</code> creates a realistic paper-like canvas with a clear drawing boundary; the default transparent background allows InkCanvas to act as an overlay for annotation over other content. Pitfall: a transparent (null) background makes the drawing area boundary invisible, which can confuse users about where they can draw. For standalone drawing applications, always set a visible background or wrap the InkCanvas in a <code>Border</code> to define its boundaries.</td>
         </tr>
       </tbody>
     </table>
@@ -144,10 +144,11 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Save strokes in ISF format:</strong> Use <code>StrokeCollection.Save(stream, StrokeCollectionPersistenceFormat.Isf)</code> for a compact binary format; use the XAML format for human-readable serialization.</li>
-      <li><strong>Undo/redo support:</strong> Maintain a stack of <code>StrokeCollection</code> snapshots or use the <code>StrokesChanged</code> event to implement a custom undo/redo system for user-facing drawing applications.</li>
+      <li><strong>Save strokes in ISF format:</strong> Use <code>StrokeCollection.Save(stream)</code> to write compact binary ISF data; use the XAML serialization format for human-readable persistence. Load saved strokes with <code>new StrokeCollection(stream)</code>.</li>
+      <li><strong>Undo/redo support:</strong> InkCanvas has no built-in undo. Subscribe to the <code>StrokesChanged</code> event and maintain a stack of added/removed strokes to implement a custom undo/redo system.</li>
       <li><strong>Limit stroke complexity:</strong> Very long continuous strokes with thousands of points can impact rendering performance. Consider splitting strokes or simplifying point data using <code>Stroke.GetBounds()</code> heuristics.</li>
       <li><strong>Use <code>IsHighlighter = true</code> carefully:</strong> Highlighter strokes use additive blending, which looks great over text but may behave unexpectedly over images or colored backgrounds.</li>
+      <li><strong>Overlay InkCanvas on an image for annotations:</strong> Place a transparent-background InkCanvas on top of an Image using a Grid to create an annotation layer that lets users mark up photos or documents with ink.</li>
       <li><strong>Test with both mouse and touch:</strong> InkCanvas behavior differs between mouse input and genuine stylus/touch events. Always test on a touch device or with the Windows Simulator to verify the experience.</li>
     </ul>
   </section>

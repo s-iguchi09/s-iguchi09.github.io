@@ -72,7 +72,38 @@
         <tr>
           <td><code>TabStripPlacement</code></td>
           <td><code>Top / Bottom / Left / Right</code></td>
-          <td>Specifies on which side of the content area the tab headers are rendered. <code>Top</code> is the classic browser/dialog style; <code>Left</code> is commonly used for settings panels with many categories. Changing this at runtime updates the layout immediately.</td>
+          <td>
+            <strong>When to use:</strong> Use <code>Left</code> for Outlook-style navigation panels or settings dialogs that have many categories — vertical strips scale better when there are more than five or six tabs. Use <code>Top</code> (the default) for standard dialogs with a small number of pages.<br>
+            <strong>What happens:</strong> The tab header strip moves to the specified edge of the control. With <code>Left</code> or <code>Right</code>, headers stack vertically. Content area layout adjusts accordingly.<br>
+            <strong>Pitfalls:</strong> When using <code>Left</code> or <code>Right</code>, header text remains horizontally oriented but is displayed in a vertical list, so each header occupies its natural text width. With many long-named tabs the strip can become very wide; set <code>MinWidth</code> or <code>MaxWidth</code> on the item container style to control this.
+          </td>
+        </tr>
+        <tr>
+          <td><code>SelectedIndex / SelectedItem</code></td>
+          <td><code>int / object</code></td>
+          <td>
+            <strong>When to use:</strong> Bind two-way to the ViewModel to control the active tab programmatically — for example, in a wizard where a "Next" button advances to the next step, or a navigation service that opens a specific tab by name.<br>
+            <strong>What happens:</strong> Setting <code>SelectedIndex</code> switches the active tab to the specified zero-based position. Setting it to <code>-1</code> deselects all tabs and leaves the content area empty. Setting <code>SelectedItem</code> selects the matching tab item object.<br>
+            <strong>Pitfalls:</strong> Out-of-range index values are silently ignored — no exception and no selection change. Similarly, setting <code>SelectedItem</code> to an object not present in <code>ItemsSource</code> does nothing. Always verify the value is valid before applying it.
+          </td>
+        </tr>
+        <tr>
+          <td><code>ItemsSource</code></td>
+          <td><code>IEnumerable</code></td>
+          <td>
+            <strong>When to use:</strong> Use when the set of tabs is determined at runtime from a ViewModel collection — for example, a list of open documents or a dynamic set of configuration categories.<br>
+            <strong>What happens:</strong> Each item in the collection is wrapped in a <code>TabItem</code> container. Define <code>HeaderTemplate</code> to control how the tab header looks for each data object, and <code>ContentTemplate</code> for the tab's content area.<br>
+            <strong>Pitfalls:</strong> <code>ItemsSource</code> and static <code>TabItem</code> children in XAML are mutually exclusive. If you set <code>ItemsSource</code>, you cannot also add <code>TabItem</code> elements directly in the XAML markup — doing so throws a runtime exception.
+          </td>
+        </tr>
+        <tr>
+          <td><code>Header / IsEnabled (TabItem)</code></td>
+          <td><code>object / bool</code></td>
+          <td>
+            <strong>When to use:</strong> Use <code>IsEnabled="False"</code> to restrict access to a tab based on user permissions or wizard prerequisites — the tab appears grayed out and is not clickable.<br>
+            <strong>What happens:</strong> Setting <code>IsEnabled="False"</code> grays out the tab header so users cannot click it. <code>Header</code> accepts any WPF element, enabling rich labels with icons or badges.<br>
+            <strong>Pitfalls:</strong> <code>IsEnabled="False"</code> only prevents <em>user</em> interaction — it does not prevent <em>programmatic</em> access. Code can still switch to a disabled tab by setting <code>SelectedIndex</code> or <code>SelectedItem</code>. If access control is a security requirement, enforce it on the content side as well.
+          </td>
         </tr>
         <tr>
           <td><code>ContentStringFormat</code></td>
@@ -83,11 +114,6 @@
           <td><code>SelectedContent (ReadOnly)</code></td>
           <td><code>object</code></td>
           <td>The content object of the currently selected tab. Read-only; reflects which TabItem is active. Bind to this in the ViewModel if other parts of the UI need to react to the currently displayed content.</td>
-        </tr>
-        <tr>
-          <td><code>SelectedContentStringFormat (ReadOnly)</code></td>
-          <td><code>string</code></td>
-          <td>The effective string format from the currently selected TabItem's ContentStringFormat. Useful for debugging which format is active for the selected tab.</td>
         </tr>
       </tbody>
     </table>
@@ -133,8 +159,9 @@
       <li><strong>Bind SelectedIndex or SelectedItem for navigation control</strong> — Programmatic tab switching from the ViewModel requires a two-way binding on one of these properties.</li>
       <li><strong>Use data binding for dynamic tabs</strong> — Bind <code>ItemsSource</code> with <code>HeaderTemplate</code> and <code>ContentTemplate</code> to create tabs from a collection rather than hard-coding TabItems.</li>
       <li><strong>Do not put a TabControl inside a ScrollViewer for tab-header scrolling</strong> — TabControl does not natively scroll tab headers; consider a custom control or limit the number of tabs to fit the available space.</li>
-      <li><strong>Lazy initialization for heavy content</strong> — Content inside a TabItem is created when the tab is first selected, so expensive operations (data loads, chart renders) can be deferred naturally.</li>
-      <li><strong>Style tab headers with DataTemplates</strong> — Use <code>ItemTemplate</code> to add icons, close buttons, or badges to tab headers beyond plain text.</li>
+      <li><strong>Tab content is always created on first activation</strong> — By default all TabItem content is instantiated when the TabControl loads, so expensive views inside inactive tabs still consume memory and startup time. To defer initialization, trigger data loading in the ViewModel when <code>SelectedIndex</code> changes, or use a <code>ContentTemplate</code> with a <code>DataTemplate</code> whose content is created on demand.</li>
+      <li><strong>Keyboard tab switching with Ctrl+Tab</strong> — Users can cycle through tabs with <kbd>Ctrl+Tab</kbd> (forward) and <kbd>Ctrl+Shift+Tab</kbd> (backward) by default. If this conflicts with an inner control (e.g., a text editor), suppress it in a <code>KeyDown</code> handler by setting <code>e.Handled = true</code>.</li>
+      <li><strong>Custom HeaderTemplate for close buttons and badges</strong> — When using <code>ItemsSource</code>, define a <code>HeaderTemplate</code> with a <code>DataTemplate</code> containing a close button or notification badge. Bind the close button's command using <code>RelativeSource</code> to reference the parent ViewModel, since the header's <code>DataContext</code> is the individual tab item object.</li>
     </ul>
   </section>
 

@@ -80,12 +80,12 @@
         <tr>
           <td><code>Delay</code></td>
           <td><code>int (ms, default: 250)</code></td>
-          <td>The time in milliseconds to wait after the initial press before the repeat sequence begins. A higher value gives users a moment to release the button before the repeat kicks in, reducing accidental over-increments. The default 250 ms matches standard Windows keyboard auto-repeat delay.</td>
+          <td>Use this to tune how quickly the repeat sequence starts after the initial press, giving users a natural "intentional hold" window before the button fires repeatedly. Increasing the value (e.g., 400–500 ms) reduces accidental over-increments when users just want a single click. Decreasing it makes the repeat feel more immediate. <strong>Pitfall:</strong> Setting <code>Delay</code> to an extremely short value (below 50 ms) can cause the repeat sequence to begin so quickly that on slower or heavily loaded machines the initial single-click intent is skipped entirely and the value jumps by multiple steps. Aim for 200–500 ms to match natural user expectations.</td>
         </tr>
         <tr>
           <td><code>Interval</code></td>
           <td><code>int (ms, default: 250)</code></td>
-          <td>The time in milliseconds between successive <code>Click</code> events once repeating has started. Smaller values produce faster repeat rates. Tune this together with <code>Delay</code> to match the expected precision of the operation — fast intervals suit coarse adjustments, while slower intervals work better for fine-grained numeric inputs.</td>
+          <td>Use this to control how fast the value changes once the repeat sequence is running. A shorter interval (e.g., 100 ms) produces faster acceleration, good for coarse adjustments like page scrolling. A longer interval (e.g., 300–500 ms) is better for fine-grained inputs like pixel-level positioning. <code>Delay</code> and <code>Interval</code> work together — <code>Delay</code> governs the initial pause and <code>Interval</code> governs the ongoing rate. <strong>Pitfall:</strong> Setting <code>Interval</code> below 50 ms means the command can fire 20+ times per second. If the Click handler or ICommand performs non-trivial work (UI redraws, database writes, heavy calculations), the UI thread will become overloaded. Keep the handler lightweight and consider throttling if you need to support very short intervals.</td>
         </tr>
       </tbody>
     </table>
@@ -120,6 +120,8 @@
       <li><strong>Match Delay and Interval to the operation granularity</strong> — For fine-grained inputs (e.g., pixel-level adjustments), use a longer Interval (200–500 ms). For coarse operations (e.g., page scrolling), shorter intervals (50–100 ms) feel more responsive.</li>
       <li><strong>Cap values in the ViewModel</strong> — RepeatButton fires Click rapidly; ensure your bound property or command clamps the value to its valid range to prevent overflow or underflow.</li>
       <li><strong>Use Command instead of Click event</strong> — Binding to an ICommand keeps the repeat logic decoupled from the view and is easier to unit-test.</li>
+      <li><strong>Mouse vs touch behavior</strong> — RepeatButton's Delay and Interval govern mouse hold-down behavior. On touch devices, the long-press recognition timing may differ from mouse input. Test on real touch hardware to verify that your Delay and Interval values feel natural for touch users, and adjust if the repeat starts too early or too late.</li>
+      <li><strong>Throttle heavy processing for short intervals</strong> — When Interval is very short, the command can fire dozens of times per second. If each execution performs expensive work, the UI thread stalls. Keep the command handler to a simple property update and apply throttling (e.g., accumulate changes and flush on a timer) if the downstream processing is costly.</li>
       <li><strong>Accessibility</strong> — Add a meaningful <code>AutomationProperties.Name</code> (e.g., "Increment quantity") so screen readers can announce the button's purpose rather than just its visual label.</li>
       <li><strong>Visual feedback</strong> — Consider updating the display value on every repeat tick so users see the number changing in real time, reinforcing that the button is working.</li>
     </ul>

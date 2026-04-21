@@ -70,12 +70,12 @@
         <tr>
           <td><code>Top / Left / Right / Bottom (Canvas attached)</code></td>
           <td><code>double</code></td>
-          <td>子要素の Canvas 内での位置を設定する添付プロパティです。<code>Left=50, Top=30</code> と設定すると、Canvas の左端から 50px、上端から 30px の位置に配置されます。Left と Right、Top と Bottom は排他的で同時使用はできません。</td>
+          <td>子要素の Canvas 内での位置を設定する添付プロパティです。<code>Left=50, Top=30</code> と設定すると、Canvas の左端から 50px、上端から 30px の位置に配置されます。<code>Right</code> や <code>Bottom</code> は Canvas の右端・下端を基準にした配置（例えばウォーターマークや固定フッター要素を右下に固定）に使います。設定した結果、要素は指定した端からのオフセット位置に描画されます。はまりやすいポイント：<code>Left</code> と <code>Right</code> を同一要素に同時に設定しても要素はリサイズされません。要素は自然サイズのままで <code>Left</code> の値が優先されて位置が決まるため、両方設定しても「両端に合わせて伸縮する」とはなりません。</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>子要素の描画順序（Z 順）を制御します。値が大きいほど手前に描画されます。複数の要素が重なる場合に、どの要素を最前面に表示するかを制御するために使用します。</td>
+          <td>子要素の描画順序（Z 順）を制御します。選択ハンドルを内容の上に重ねたい場合やツールチップを他要素の上に表示したいなど、特定の要素を前面に出したい時に使用します。値が大きい要素は小さい要素の上に描画されます。はまりやすいポイント：すべての要素の ZIndex は既定値が 0 のため、明示的に設定しない場合は XAML 上で後に定義された要素（子コレクションで後の要素）が前面に来ます。この暗黙の順序に頼らず、重なりを制御したい要素には ZIndex を明示的に設定してください。</td>
         </tr>
       </tbody>
     </table>
@@ -128,6 +128,8 @@
       <li><strong>Canvas にサイズを設定する</strong> — Canvas は子要素のサイズに合わせた自動リサイズを行わないため、Width/Height を明示的に設定するか、親コンテナからサイズを受け取る設計にします。</li>
       <li><strong>ZIndex で重なりを制御する</strong> — 要素が重なる場合は Panel.ZIndex 添付プロパティを使って描画順序を明示的に指定します。</li>
       <li><strong>ヒットテストに注意</strong> — Background が null の Canvas はマウスイベントを受け取りません。クリック検出が必要な場合は Background を Transparent に設定します。</li>
+      <li><strong>null 背景でのヒットテスト透過</strong> — <code>Background=null</code>（デフォルト）の Canvas はマウスイベントが透過して下層の要素に届きます。Canvas 全体でマウスイベントをキャプチャしたい場合は必ず <code>Background="Transparent"</code> を設定します。</li>
+      <li><strong>要素の重なりと ZIndex</strong> — 同じ ZIndex 値を持つ要素が重なった場合、XAML で後に定義された子（子コレクションの後ろにある要素）が前面に表示されます。重なりを意図的に制御するには子要素の順序を変えるか <code>Panel.ZIndex</code> を明示的に設定します。</li>
       <li><strong>Viewbox と組み合わせてスケーラブルに</strong> — 固定サイズで設計した Canvas を Viewbox でラップすれば、どんなサイズの画面でも適切にスケールされます。</li>
     </ul>
   </section>

@@ -74,27 +74,27 @@
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Sets the primary flow direction. <code>Horizontal</code> (default) flows left-to-right and wraps to new rows. <code>Vertical</code> flows top-to-bottom and wraps to new columns. Choose based on whether you want row-first or column-first ordering.</td>
+          <td>Use <code>Horizontal</code> (default) for tag clouds, chip lists, or photo galleries where items should flow left-to-right and wrap to a new row when the row is full. Use <code>Vertical</code> when items should flow top-to-bottom and wrap to a new column when the column is full. <strong>Pitfall:</strong> if the WrapPanel is placed inside a horizontally-scrolling <code>ScrollViewer</code>, the container provides infinite width and the panel never wraps. Use a <em>vertically</em>-scrolling ScrollViewer (set <code>VerticalScrollBarVisibility="Auto"</code>) around a Horizontal WrapPanel so that wrapping works correctly and the scroll bar appears when rows exceed the available height.</td>
         </tr>
         <tr>
           <td><code>ItemHeight</code></td>
           <td><code>double</code></td>
-          <td>Forces all children to the same height. When set, each row is exactly this tall regardless of children's natural heights. Children taller than ItemHeight are clipped. Use to create a uniform tile grid where all tiles are the same height.</td>
+          <td>Use this when all rows should have the same height — for example, a thumbnail gallery where every image tile must align uniformly. When set, each child is allocated exactly this much vertical space and the row height is fixed to this value regardless of children's natural heights. <strong>Pitfall:</strong> children whose natural height exceeds <code>ItemHeight</code> are clipped rather than shrunk. Set an appropriate value and ensure child content fits, or leave it as <code>NaN</code> (the default) to allow each row height to be determined by its tallest child.</td>
         </tr>
         <tr>
           <td><code>ItemWidth</code></td>
           <td><code>double</code></td>
-          <td>Forces all children to the same width. When set, each column (horizontal orientation) or wrap position is exactly this wide. Combined with ItemHeight, produces a uniform tile grid similar to UniformGrid but with wrapping behavior.</td>
+          <td>Use this when all children should occupy the same width — for example, a color swatch palette or icon palette where uniform tile width is required. Each child is allocated exactly this width in horizontal orientation, producing a predictable tile-grid layout that wraps when rows are full. <strong>Pitfall:</strong> like <code>ItemHeight</code>, children wider than <code>ItemWidth</code> are clipped. Leave as <code>NaN</code> (the default) when children have varying natural widths and you want each item to take only as much space as it needs.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background color of the WrapPanel. Setting a non-null Background also enables hit-testing on the panel background area, allowing click events to be handled in empty spaces between items.</td>
+          <td>Use this when the WrapPanel background area — including the gaps between wrapped items — should respond to mouse events. <code>Background="Transparent"</code> enables hit-testing on the entire panel area without painting any colour. <strong>Pitfall:</strong> the default is <code>null</code>, which disables background hit-testing. Clicks in the spaces between items pass through to elements behind the panel. If you need click or hover events to fire over the full panel area, set <code>Background="Transparent"</code> explicitly.</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the Z-order rendering of individual children when they overlap. Higher values render on top. Typically not needed in a WrapPanel unless children have explicit negative margins.</td>
+          <td>Controls the draw order of individual children when they visually overlap — for example when a child has a negative margin that causes it to overlap its neighbour. Higher values render in front. Typically unnecessary in a WrapPanel because items are laid out sequentially without overlap, but useful for deliberate visual effects.</td>
         </tr>
       </tbody>
     </table>
@@ -142,11 +142,12 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Wrap in ScrollViewer for overflow handling</strong> — WrapPanel grows in the perpendicular direction as items wrap; place it inside a ScrollViewer to handle cases where the total height exceeds the available area.</li>
+      <li><strong>Wrap in ScrollViewer for overflow handling</strong> — WrapPanel grows in the perpendicular direction as items wrap; place it inside a vertically-scrolling ScrollViewer (<code>VerticalScrollBarVisibility="Auto"</code>) to handle cases where the total height exceeds the available area. Avoid placing a Horizontal WrapPanel inside a horizontal-scroll ScrollViewer — this eliminates wrapping entirely.</li>
       <li><strong>Use ItemWidth/ItemHeight for uniform tile layouts</strong> — Setting both properties creates a responsive UniformGrid-like layout that wraps instead of overflowing.</li>
       <li><strong>Use as ItemsPanel for data-bound wrapping lists</strong> — Set WrapPanel as the ItemsPanel in ListBox or ItemsControl to display bound collections with wrapping behavior.</li>
       <li><strong>Add Margin to children for spacing</strong> — WrapPanel has no gap property; add consistent Margin to each child for visual spacing between items.</li>
       <li><strong>Test with varying item counts and widths</strong> — Wrapping layouts can look unexpectedly different with few vs. many items, or with very short vs. very long item widths; test across realistic data ranges.</li>
+      <li><strong>WrapPanel does not virtualise.</strong> Unlike <code>VirtualizingStackPanel</code>, WrapPanel renders all children immediately. For large collections (100+ items) consider a virtualizing alternative such as a <code>VirtualizingStackPanel</code> or a third-party wrapping virtualizing panel.</li>
     </ul>
   </section>
 

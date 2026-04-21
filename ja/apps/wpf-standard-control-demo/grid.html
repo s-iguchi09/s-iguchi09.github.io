@@ -42,32 +42,32 @@
       <tbody>        <tr>
           <td><code>Column / Row (Grid attached)</code></td>
           <td><code>int</code></td>
-          <td>子要素が配置される列・行のインデックス（0始まり）を設定します。設定しない場合は 0 行 0 列に配置されます。</td>
+          <td>複数のセルを持つ Grid で子要素を特定のセルに配置したいときに使います。設定した行・列インデックスのセルに要素が配置されます。デフォルト値は両方とも 0 であり、<code>Grid.Row</code>/<code>Grid.Column</code> を設定しない要素はすべて 0 行 0 列に配置されて互いに重なり合います。Grid に複数の子要素を置くときは必ず設定漏れがないか確認してください。</td>
         </tr>
         <tr>
           <td><code>ColumnSpan / RowSpan (Grid attached)</code></td>
           <td><code>int</code></td>
-          <td>子要素が占める列数・行数を設定します。デフォルトは 1。複数セルにまたがる大きな要素を配置する際に使用します。</td>
+          <td>ヘッダー行やフッター行が全カラムにまたがる場合、または複数セルを占める大きなコンテンツを配置する場合に使います。設定した値だけ連続するセルを占有し、要素が複数セルにまたがって表示されます。スパン値が定義済みの列数・行数を超えた場合、Grid は超過分を無視して利用可能な最大セル数に黙って制限するため、意図した見た目にならない場合があります。定義している行・列の数と合っているか確認してください。</td>
         </tr>
         <tr>
           <td><code>ShowGridLines</code></td>
           <td><code>bool</code></td>
-          <td>グリッド線を表示します。開発・デバッグ時にレイアウトを確認するために使用します。本番環境では False に設定します。</td>
+          <td>レイアウトの組み方を確認したい開発・デバッグ時に True にします。点線のグリッド線が表示され、各セルの境界が一目でわかるようになります。ShowGridLines は通常の Border とは異なる専用のレンダリング機構を使っており、見た目を本番 UI のグリッド線として流用することは推奨されません。本番環境では必ず False に戻してください。</td>
         </tr>
         <tr>
           <td><code>Width / MinWidth / MaxWidth (ColumnDefinition)</code></td>
           <td><code>GridLength / double</code></td>
-          <td>列幅を設定します。* は残りスペースを比率分配、Auto は内容に合わせたサイズ、数値は固定幅（device-independent unit）を意味します。</td>
+          <td>ラベル列に Auto、入力フィールド列に * を組み合わせるなど、列の役割に応じたサイズ戦略を選ぶ際に設定します。<code>*</code> は残りスペースを比率で分配（2* と 1* なら 2:1）、<code>Auto</code> は内容幅に合わせ自動調整、数値は device-independent unit での固定幅を意味します。ScrollViewer や StackPanel の内部など有限の幅が与えられない場所では <code>*</code> サイズが 0 に潰れるため、Grid を ScrollViewer の直接の子にする際は注意が必要です。</td>
         </tr>
         <tr>
           <td><code>Height / MinHeight / MaxHeight (RowDefinition)</code></td>
           <td><code>GridLength / double</code></td>
-          <td>行の高さを設定します。Width と同様に *、Auto、数値の 3 種類で指定できます。</td>
+          <td>Width/MinWidth/MaxWidth と同様の考え方で行の高さを制御します。<code>Auto</code> は内容の高さに合わせて行が伸縮し、<code>*</code> は残りの縦スペースを比率分配、数値は固定高さを指定します。ScrollViewer の中で <code>Auto</code> 行を使うと、コンテンツが増えるにつれ行が可視領域を超えて伸長しても縦スクロールバーが現れないことがあります。縦スクロールが必要な場合は ScrollViewer を正しく設定しているか確認してください。</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Grid の背景色を設定します。null の場合はヒットテスト（マウスイベント受け取り）が不可能になるため、クリックを検出する場合は Transparent を設定します。</td>
+          <td>Grid 全体にホバーやクリックのマウスイベントを受け取らせたいときに設定します。<code>Transparent</code>（透明）を設定するとパネル全体がヒットテスト可能になり、マウスイベントを受け取れます。<code>null</code>（デフォルト）はヒットテストが無効なためクリックや MouseEnter が発生せず、背後の要素にイベントが素通りします。色ではなく透明にしたいが操作は受け付けたい場合は必ず <code>Transparent</code> を明示してください。</td>
         </tr></tbody>
     </table>
   </section>
@@ -114,7 +114,8 @@
       <li><strong>ネストを深くしない</strong> — Grid をむやみにネストするとパフォーマンスが低下します。可能であれば ColumnSpan/RowSpan を活用して一つの Grid で解決します。</li>
       <li><strong>ShowGridLines はデバッグ専用</strong> — レイアウトの確認には ShowGridLines を使いますが、本番ビルドでは必ず False に戻します。</li>
       <li><strong>ColumnDefinition/RowDefinition は省略可</strong> — 定義なしの場合、Grid は 1 行 1 列として動作します。全要素が重なる形になるため、重ねてレイアウトしたい場合に活用できます。</li>
-      <li><strong>GridSplitter でリサイズ可能に</strong> — 列や行の間に GridSplitter を配置することで、ユーザーが実行時にサイズを変更できるペインを実装できます。</li></ul>
+      <li><strong>Auto の使いすぎに注意</strong> — <code>Auto</code> 行・列は内容に応じてサイズ計算されるため便利ですが、多用すると Measure/Arrange のコストが増えます。固定値や <code>*</code> で十分な箇所はそちらを優先すると、複雑な画面でもレイアウトが安定しやすくなります。</li>
+      <li><strong>SharedSizeGroup で複数 Grid の列幅を揃える</strong> — <code>Grid.IsSharedSizeScope="True"</code> をスコープ要素に設定し、揃えたい ColumnDefinition に同じ <code>SharedSizeGroup</code> 名を付けると、スコープ内の複数 Grid で列幅が自動的に同期されます。リストの各行に Grid を使いラベル列を揃えたい場合などに有効です。</li></ul>
   </section>
 
   <section class="content-section">

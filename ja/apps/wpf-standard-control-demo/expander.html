@@ -49,27 +49,27 @@
         <tr>
           <td><code>IsExpanded</code></td>
           <td><code>bool</code></td>
-          <td>True のときコンテンツが表示（展開）されます。False のときは折りたたまれ、ヘッダーのみ表示されます。TwoWay バインドで ViewModel から展開状態を制御できます。</td>
+          <td>True のときコンテンツが表示（展開）されます。False のときは折りたたまれ、ヘッダーのみ表示されます。TwoWay バインドで ViewModel から展開状態を制御でき、変更時には Expanded / Collapsed ルーティングイベントが発生するためイベントハンドラでの追加処理も可能です。展開状態をアプリ設定として保存・復元したい場合にも TwoWay バインドが有効です。注意点として、コンテンツは折りたたまれていても視覚ツリー上に存在し続けるため、データバインドされたグリッドや重い UI はユーザーが開く前から描画リソースを消費します。</td>
         </tr>
         <tr>
           <td><code>ExpandDirection</code></td>
           <td><code>Down / Up / Left / Right</code></td>
-          <td>コンテンツが展開される方向を設定します。Down（デフォルト）はヘッダーの下に展開、Up はヘッダーの上、Left/Right は横方向に展開します。</td>
+          <td>コンテンツが展開される方向を設定します。Down（デフォルト）はヘッダーの下にコンテンツが現れ、Up はヘッダーの上方向、Left は左、Right は右に展開します。Up は画面下部にある固定ツールバーからコンテンツが上方向に展開する場合に便利です。Left や Right を指定するとヘッダーの向きも変わり、矢印インジケーターやテキストの配置がデフォルトスタイルでは意図どおりにならない場合があります。Left/Right で見た目を整えるにはカスタムスタイルが必要になることを念頭に置いてください。</td>
         </tr>
         <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
           <td><code>object / bool (ReadOnly)</code></td>
-          <td>ヘッダー部分に表示するコンテンツを設定します。文字列だけでなく任意の WPF 要素を配置できます。HasHeader は Header が設定されているかどうかを示す読み取り専用プロパティです。</td>
+          <td>ヘッダー部分に表示するコンテンツを設定します。文字列だけでなく、アイコン＋テキストのパネルや件数バッジなど任意の WPF 要素を配置したリッチなヘッダーも作成できます。HasHeader は Header が設定されているかどうかを示す読み取り専用プロパティで、Header が設定されると自動的に True になります。ただし Header に null を設定してもヘッダー領域（矢印トグルボタンのエリア）は完全には消えません。ヘッダー自体を非表示にするにはカスタム ControlTemplate が必要です。</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>展開時に表示するコンテンツを設定します。任意の WPF 要素を配置できます。コンテンツは折りたたみ時でも論理ツリー上は存在していますが、視覚的に非表示になります。</td>
+          <td>展開時に表示するコンテンツを設定します。任意の WPF 要素を配置できます。コンテンツは折りたたみ時でも論理ツリー上は存在していますが、視覚的に非表示になります。重要な点として、コンテンツは Expander が初期化された時点で生成され、ユーザーが初めて展開するまで遅延されません。コンテンツにデータベースクエリを起動するデータバインドコントロールや重い初期化コードがある場合、ユーザーがパネルを開く前から実行されます。重い処理が必要な場合は遅延初期化パターン（IsExpanded のトリガーで DataTemplate を切り替えるなど）を検討してください。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Expander の枠線の色と太さを設定します。デフォルトではテーマカラーの細い枠線が表示されます。</td>
+          <td>Expander の枠線の色と太さを設定します。デフォルトではテーマカラーの細い枠線が表示されます。カード型 UI やテーマに合わせた Expander を実装する際に BorderBrush と BorderThickness をカスタマイズすることで、デザインの統一感を高められます。アプリ全体に統一したスタイルを適用するにはリソースに Style を定義し、各 Expander に個別設定するのではなくスタイルで一括管理することを推奨します。</td>
         </tr>
       </tbody>
     </table>
@@ -108,7 +108,8 @@
       <li><strong>アニメーション</strong> — Expander は標準でアニメーションなしですが、ControlTemplate をカスタマイズしてアコーディオンアニメーションを追加できます。</li>
       <li><strong>コンテンツの遅延初期化</strong> — コンテンツは折りたたまれていても論理ツリー上に存在するため、重い処理が必要な場合は IsExpanded の変化をトリガーに遅延初期化します。</li>
       <li><strong>Header にもリッチコンテンツを</strong> — Header プロパティには文字列だけでなく、アイコン＋テキストのパネルや件数バッジなどを配置してリッチなヘッダーを実現できます。</li>
-    </ul>
+      <li><strong>コンテンツの遅延ロード</strong> — IsExpanded が True になったときに初めてコンテンツを生成するには、bool フラグを ViewModel に持ち DataTemplate を切り替えるパターンが有効です。展開前は軽量なプレースホルダーを表示し、初回展開時のみ重い UI を生成することでアプリ起動時のパフォーマンスを改善できます。</li>
+      <li><strong>展開・折りたたみアニメーション</strong> — 実装時は、Height を 0 から Auto へ直接アニメーションできない点に注意します。Storyboard の対象には Grid の RowDefinition の Height や ScaleTransform など、数値で補間できるプロパティを選ぶと安定して実装できます。</li></ul>
   </section>
 
   <section class="content-section">

@@ -82,22 +82,22 @@
         <tr>
           <td><code>IsExpanded</code></td>
           <td><code>bool</code></td>
-          <td>Gets or sets whether the content area is currently visible. Bind this two-way to a ViewModel boolean to programmatically open or close sections — for example, auto-expanding the section that contains a validation error, or restoring the previously expanded state from user preferences.</td>
+          <td>Gets or sets whether the content area is currently visible. Changing this property fires the <code>Expanded</code> or <code>Collapsed</code> routed events, which you can handle for additional logic. Bind two-way to a ViewModel boolean to programmatically control expansion state — for example, auto-expanding a section when validation fails, or restoring the last-opened section from user settings. <strong>Pitfall:</strong> Content is created at initialization time, <em>not</em> lazily on first expand. A data-bound <code>DataGrid</code> or heavy UI inside a collapsed Expander will render and consume resources immediately even before the user opens it.</td>
         </tr>
         <tr>
           <td><code>ExpandDirection</code></td>
           <td><code>Down / Up / Left / Right</code></td>
-          <td>Determines the direction in which the content panel grows relative to the header. <code>Down</code> is the most common choice; use <code>Left</code> or <code>Right</code> for horizontal panel-expansion effects in navigation drawers or tool palettes.</td>
+          <td>Determines the direction in which the content panel grows relative to the header. <code>Down</code> is the most common choice for accordion-style vertical lists. <code>Up</code> is useful for panels anchored to the bottom of a window (content grows upward). <code>Left</code> and <code>Right</code> create horizontal expanding panels for sidebars. <strong>Pitfall:</strong> With <code>Left</code> or <code>Right</code>, the header area orientation changes and the default arrow indicator or text layout may look unexpected. Plan for a custom <code>ControlTemplate</code> or <code>Style</code> when using horizontal directions.</td>
         </tr>
         <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
           <td><code>object / bool (ReadOnly)</code></td>
-          <td>Sets the content shown in the always-visible header area. You can assign a plain string for text headers or assign a UIElement for rich headers containing icons, counters, or status indicators. <code>HasHeader</code> is a read-only flag that is <code>True</code> whenever <code>Header</code> is non-null.</td>
+          <td>Sets the content shown in the always-visible header area. Assign a plain string for a simple text header, or assign any <code>UIElement</code> for rich headers with icons, item counts, or status badges. <code>HasHeader</code> is a read-only flag that is <code>true</code> whenever <code>Header</code> is non-null. <strong>Pitfall:</strong> Setting <code>Header</code> to <code>null</code> does not fully remove the header area — the toggle button region remains visible. To completely hide the header you need a custom <code>ControlTemplate</code>.</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>The content displayed inside the expandable panel. This can be any WPF element, from a simple <code>TextBlock</code> to a full data-entry <code>Grid</code> with bindings and validation. The content is not unloaded when collapsed — it remains in the visual tree but is hidden.</td>
+          <td>The content displayed inside the expandable panel. Can be any WPF element — from a simple <code>TextBlock</code> to a full data-entry <code>Grid</code>. The content is not unloaded when collapsed — it remains in the logical tree and stays hidden. <strong>Pitfall:</strong> Heavy content (data queries, complex bindings) executes at startup, before the user ever opens the Expander. For content that is expensive to initialize, use a lazy-loading pattern: hold a flag in the ViewModel and switch to the real <code>DataTemplate</code> only when <code>IsExpanded</code> first becomes <code>true</code>.</td>
         </tr>
         <tr>
           <td><code>Padding / FontWeight / FontStyle / FontSize / FontFamily (Control)</code></td>
@@ -107,12 +107,12 @@
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background brush for the entire Expander area and the foreground (text/icon) colour for the header. Customising these lets Expanders blend into or stand out from their container, e.g. using a tinted background to visually group related form sections.</td>
+          <td>Sets the background brush for the entire Expander area and the foreground (text/icon) colour for the header. Customising these lets Expanders blend into or stand out from their container, e.g. using a tinted background to visually group related form sections. Note that the <code>Background</code> colour cascades to child controls that inherit it.</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Controls the colour and width of the border drawn around the Expander. A clear border delineates the collapsible section from adjacent content, which is particularly important in dense settings dialogs where multiple Expanders are stacked.</td>
+          <td>Controls the colour and width of the border drawn around the Expander. Setting a prominent <code>BorderBrush</code> and <code>BorderThickness</code> creates a card-like appearance, which is useful for visually distinguishing collapsible sections in dense settings dialogs. Define these in a shared <code>Style</code> resource to keep all Expanders visually consistent across the application.</td>
         </tr>
       </tbody>
     </table>
@@ -168,7 +168,8 @@
     <ul>
       <li><strong>Bind <code>IsExpanded</code></strong> to ViewModel properties to persist and restore expansion state across sessions. Saving each section's state to user settings gives a polished, professional experience.</li>
       <li><strong>Use rich <code>Header</code> content</strong> to convey section status. Embedding a <code>TextBlock</code> showing an item count, a warning icon, or a completion checkmark in the header tells users what to expect before expanding.</li>
-      <li><strong>Avoid placing heavyweight controls</strong> (large <code>DataGrid</code>, video players) inside collapsed Expanders if their initialisation cost is high. Use lazy loading via <code>DataTemplateSelector</code> or deferred content patterns to construct content only when the Expander is expanded.</li>
+      <li><strong>Lazy-load heavy content</strong> — Because content is created at initialization (not on first expand), avoid placing heavyweight controls inside Expanders that start collapsed. Use a ViewModel flag to switch from a lightweight placeholder <code>DataTemplate</code> to the real UI only when <code>IsExpanded</code> first becomes <code>true</code>. This significantly improves startup performance.</li>
+      <li><strong>Smooth expand/collapse animation</strong> — The default Expander template does not animate height. To add a smooth open/close transition, animate the <code>Height</code> property of a <code>RowDefinition</code> inside a <code>Grid</code> (animating from <code>0</code> to <code>Auto</code> directly is not supported; use a numeric target height or a <code>GridLength</code> animation helper).</li>
       <li><strong>Consider mutual exclusion</strong> in accordion patterns. Implement a ViewModel that collapses all sections when one is expanded, preventing the page from becoming excessively tall when the user opens multiple sections at once.</li>
       <li><strong>Test keyboard navigation.</strong> The Expander header is focusable and responds to <kbd>Space</kbd> and <kbd>Enter</kbd> to toggle expansion. Verify that all content inside is reachable via <kbd>Tab</kbd> when expanded, and that focus moves correctly when the section collapses.</li>
     </ul>

@@ -81,17 +81,17 @@
         <tr>
           <td><code>IsChecked (ToggleButton)</code></td>
           <td><code>bool? (Null / False / True)</code></td>
-          <td>Gets or sets the current state of the checkbox. <code>True</code> renders a checkmark, <code>False</code> renders an empty box, and <code>null</code> renders the indeterminate (dash) glyph. This property supports two-way data binding to <code>bool?</code> or <code>bool</code> ViewModel properties.</td>
+          <td>Use this with a two-way binding to keep a ViewModel property in sync with the checkbox state. Binding to a <code>bool?</code> property preserves all three states — <code>true</code> (checked), <code>false</code> (unchecked), and <code>null</code> (indeterminate). Binding to a plain <code>bool</code> property works for simple two-state checkboxes; WPF automatically converts <code>null ↔ false</code> in that case. <strong>Pitfall:</strong> If you enable <code>IsThreeState="True"</code> but bind to a <code>bool</code> (non-nullable) property, WPF's ConvertBack will fail when the user cycles to the null state, causing a binding error. Always use <code>bool?</code> binding when three-state mode is active.</td>
         </tr>
         <tr>
           <td><code>IsThreeState (ToggleButton)</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, clicking cycles through all three states: unchecked → checked → indeterminate. When <code>False</code> (default), clicking toggles only between unchecked and checked, and the indeterminate state can only be set programmatically.</td>
+          <td>Use this to implement a "Select All" checkbox that reflects whether all, some, or none of the items in a list are selected. When <code>True</code>, each click cycles through <code>false → true → null (indeterminate) → false</code>; the null state is rendered visually as a dash or partially-filled glyph. This is the standard pattern for parent nodes in hierarchical checklists. <strong>Pitfall:</strong> Setting <code>IsThreeState="True"</code> requires a <code>bool?</code> binding. Using a plain <code>bool</code> binding will produce a ConvertBack failure when the indeterminate state is reached.</td>
         </tr>
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>Controls the vertical alignment of the content (label) relative to the checkbox glyph. <code>Center</code> is the default and appropriate for single-line labels; <code>Top</code> is preferred when the label wraps to multiple lines so it aligns with the top of the glyph.</td>
+          <td>Use this when the checkbox label wraps to multiple lines or contains a tall panel, to control how the checkbox glyph aligns vertically with that content. <code>Center</code> centers the glyph alongside the entire label height, which looks natural for multi-line text. <code>Top</code> aligns the glyph to the top of the label. <strong>Pitfall:</strong> The default value is <code>Top</code>. For short single-line labels this is fine, but for long wrapping labels the glyph sticks to the top edge and the alignment looks unnatural. Set <code>VerticalContentAlignment="Center"</code> whenever the label spans more than one line.</td>
         </tr>
       </tbody>
     </table>
@@ -144,6 +144,9 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Bind to <code>bool?</code> for three-state scenarios</strong> to preserve the indeterminate value across round-trips. Binding to a plain <code>bool</code> will lose the null value and coerce it to <code>False</code>.</li>
+      <li><strong>Space key toggles the checkbox</strong> — When a CheckBox has keyboard focus, pressing <kbd>Space</kbd> cycles its state exactly as a click would. Keep this in mind when testing keyboard usability in forms and settings panels.</li>
+      <li><strong>Implementing the "Select All" pattern</strong> — In the ViewModel, compute the <code>SelectAll</code> property by inspecting all child items: return <code>true</code> if all are checked, <code>false</code> if none are, and <code>null</code> if mixed. When the user sets <code>SelectAll</code> to <code>true</code> or <code>false</code>, update all children accordingly; setting it to <code>null</code> should be a no-op to avoid an infinite loop.</li>
+      <li><strong>MVVM state-change detection</strong> — Rather than handling <code>Checked</code>/<code>Unchecked</code> events in code-behind, bind <code>IsChecked</code> two-way and detect changes in the ViewModel's property setter. If you need to drive a Command from the event, use <code>Interaction.Triggers</code> with an <code>EventTrigger</code> to convert the event to a Command without code-behind.</li>
       <li><strong>Use <code>Checked</code> / <code>Unchecked</code> routed events</strong> in code-behind only when you cannot use data binding. In MVVM applications, prefer binding <code>IsChecked</code> and using property-change callbacks in the ViewModel.</li>
       <li><strong>Group related checkboxes visually</strong> using a <code>GroupBox</code> or a labelled <code>Border</code> to help users understand which options belong together, especially in dense settings dialogs.</li>
       <li><strong>Never use CheckBox for mutually exclusive choices.</strong> If only one option should be active at a time, use <code>RadioButton</code> instead, which enforces single-selection within a group automatically.</li>

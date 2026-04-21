@@ -67,37 +67,37 @@
         <tr>
           <td><code>Target</code></td>
           <td><code>UIElement</code></td>
-          <td>The UI element that receives focus when the Label's access key is pressed. Typically set to a sibling <code>TextBox</code>, <code>ComboBox</code>, or other input control, enabling keyboard-driven form navigation as required by accessibility standards.</td>
+          <td>Use this whenever you place a Label next to an input control so that keyboard users can press <kbd>Alt</kbd>+the access key to jump directly to that field without touching the mouse. When the access key is pressed, WPF moves keyboard focus to the element specified here. Prefer <code>{x:Reference nameBox}</code> over <code>{Binding ElementName=nameBox}</code> because <code>x:Reference</code> is validated at compile time and will catch typos in the element name immediately. Pitfall: <code>Target</code> only works when the Label and the target control share the same <code>FocusScope</code>. Controls inside a <code>ToolBar</code> or <code>Menu</code> maintain their own focus scope, so a Label outside those containers cannot target an element inside them.</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>The text or visual content displayed by the Label. When set to a string containing an underscore prefix (e.g., <code>_Email:</code>), the following character becomes an access key that triggers the <code>Target</code> control on <kbd>Alt</kbd>+key press.</td>
+          <td>Use this to display field description text and optionally define a keyboard shortcut character for the field. Prefix any character in the string with <code>_</code> to make it an access key — for example <code>_Email:</code> registers <kbd>Alt+E</kbd> as the shortcut. When the user presses <kbd>Alt</kbd>, the underscore prefix character is revealed as an underline beneath the access key character. To display a literal underscore character, use a double underscore <code>__</code>. Note: the <code>Target</code> property only controls where focus moves on key press; the access key underline and Alt-key behavior are visible even without a <code>Target</code> set.</td>
         </tr>
         <tr>
           <td><code>Padding (Control)</code></td>
           <td><code>Thickness</code></td>
-          <td>The internal spacing between the Label's border and its content. Adjusting padding helps align label text with the input fields it describes, especially in grid-based form layouts where pixel-perfect alignment matters.</td>
+          <td>Adds internal spacing between the Label's border and its content. The WPF default padding for Label is <code>5,0,0,0</code> (5px left, 0 on other sides). Adjust this when building compact form layouts or when using a larger font size where the default spacing feels too tight or too loose. Pitfall: setting Padding to <code>0</code> on all sides pushes the text flush against the border, which looks cramped. If you change the font size, review the Padding as well to keep the visual proportions correct.</td>
         </tr>
         <tr>
           <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
           <td><code>various</code></td>
-          <td>Typography settings that control the visual appearance of the label text. Bold labels are commonly used for required fields; italic labels for optional or supplementary descriptions; font size variation helps establish visual hierarchy in form sections.</td>
+          <td>These typography properties control the visual appearance of the label text and are all inherited from ancestor elements. Setting them on a shared parent panel or in an application-level <code>Style</code> keeps the form consistent without repeating the same values on every Label. Bold labels are common for required fields; italic for optional or hint labels; larger sizes for section headers. Pitfall: not all fonts support all <code>FontWeight</code> values. If you request <code>Light</code> or <code>ExtraBold</code> and the font doesn't include that weight, WPF substitutes the nearest available weight silently. Always verify the font and weight combination renders as intended.</td>
         </tr>
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td><code>Foreground</code> sets the text color and is the most commonly customized brush property for Label. Using a dimmed gray foreground is a convention for disabled or hint labels, while a red foreground highlights required-field labels.</td>
+          <td><code>Foreground</code> sets the text color and is the most commonly customized brush property for Label. Use a dimmed gray foreground for disabled or hint labels, and red for required-field indicators. For theme-aware apps, use <code>{DynamicResource ControlTextBrush}</code> or your own theme brush rather than a hard-coded color, so the label automatically adapts to light and dark themes. Pitfall: hard-coding colors such as <code>Black</code> or <code>White</code> will make labels unreadable when the OS theme changes or when the user enables high-contrast mode.</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Optional border properties seldom used by default but available when a Label needs a visible frame. Adding a bottom-only border can create an underline-style label that doubles as a visual section separator in a form.</td>
+          <td>Optional border properties seldom used by default but available when a Label needs a visible frame. Adding a bottom-only border can create an underline-style label that doubles as a visual section separator in a form. Keep border usage minimal to avoid visual noise in dense form layouts.</td>
         </tr>
         <tr>
           <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
           <td><code>Left/Center/Right/Stretch / Top/Center/Bottom/Stretch</code></td>
-          <td>Controls where the content is placed within the Label's allocated space. Right-aligning labels in the first column of a two-column form grid creates a cleaner, more professional appearance that aligns label text flush with adjacent input controls.</td>
+          <td>Controls where the content is placed within the Label's allocated space. Right-aligning labels in the first column of a two-column form grid aligns the label text flush against the adjacent input control, producing a clean professional form appearance. The default is <code>Left</code> / <code>Top</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -156,10 +156,12 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Always set <code>Target</code> in forms:</strong> Without a <code>Target</code>, access keys have no effect. Every Label next to an input control should have its <code>Target</code> set for proper keyboard accessibility.</li>
-      <li><strong>Use <code>TextBlock</code> for non-interactive text:</strong> If you do not need access keys or focus delegation, <code>TextBlock</code> is lighter and more flexible for read-only text display.</li>
-      <li><strong>Avoid double underscores for literal underscores:</strong> To display a literal underscore character in a Label, use a double underscore <code>__</code> in the content string, as a single underscore is interpreted as the access key prefix.</li>
-      <li><strong>Right-align labels in two-column forms:</strong> Setting <code>HorizontalContentAlignment="Right"</code> on all labels in the first column produces a cleaner layout where the label text aligns flush against the input field column.</li>
+      <li><strong>Always set <code>Target</code> in forms:</strong> Without a <code>Target</code>, access keys have no effect on focus. Every Label next to an input control should have its <code>Target</code> set for proper keyboard accessibility.</li>
+      <li><strong>Use <code>x:Reference</code> instead of <code>ElementName</code>:</strong> Prefer <code>Target="{x:Reference nameBox}"</code> over <code>Target="{Binding ElementName=nameBox}"</code>. <code>x:Reference</code> is validated at compile time, so a typo in the element name becomes a build error rather than a silent runtime failure.</li>
+      <li><strong>Use <code>TextBlock</code> for non-interactive text:</strong> If you do not need access keys or focus delegation, <code>TextBlock</code> is lighter and more flexible. Label inherits the full <code>ContentControl</code> stack, which adds overhead not needed for simple read-only text.</li>
+      <li><strong>Escape literal underscores with double underscore:</strong> To display an actual underscore character in a Label's content, write <code>__</code> (two underscores). A single underscore is always interpreted as the access-key prefix.</li>
+      <li><strong>Right-align labels in two-column forms:</strong> Setting <code>HorizontalContentAlignment="Right"</code> on all labels in the first column produces a cleaner layout where label text aligns flush against the input field column.</li>
+      <li><strong>Be aware of FocusScope boundaries:</strong> The <code>Target</code> property only works when the Label and the target control are in the same focus scope. Controls inside a <code>ToolBar</code> or <code>Menu</code> have their own isolated focus scope, so a Label defined outside cannot move focus to a control inside them.</li>
       <li><strong>Ensure sufficient color contrast:</strong> Label foreground colors must meet WCAG AA contrast ratio requirements (at least 4.5:1 against the background) to satisfy accessibility guidelines for desktop applications.</li>
     </ul>
   </section>

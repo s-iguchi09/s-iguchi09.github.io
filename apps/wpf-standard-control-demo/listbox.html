@@ -69,32 +69,56 @@
         <tr>
           <td><code>SelectionMode</code></td>
           <td><code>Single / Multiple / Extended</code></td>
-          <td>Determines how many items can be selected and how selection interactions work. <code>Extended</code> is the richest mode, supporting Shift-click for range selection and Ctrl-click for non-contiguous selection, matching the behavior of file explorer list views.</td>
+          <td>
+            <strong>When to use:</strong> Use <code>Extended</code> when users need to select a range of items (like files in Explorer) using Shift-click and Ctrl-click. Use <code>Multiple</code> when users should be able to toggle individual items on/off with a single click — suitable for tag or category pickers.<br>
+            <strong>What happens:</strong> <code>Extended</code> supports Shift+click for contiguous range selection and Ctrl+click for non-contiguous multi-selection; all selected items are accumulated in <code>SelectedItems</code>. <code>Multiple</code> toggles each item's selection on every click without requiring any modifier key.<br>
+            <strong>Pitfalls:</strong> Users accustomed to Windows Explorer expect <code>Extended</code> behavior — <code>Multiple</code> mode, where clicking an already-selected item deselects it, can feel surprising and confusing to most users.
+          </td>
         </tr>
         <tr>
           <td><code>DisplayMemberPath (ItemsControl)</code></td>
           <td><code>string</code></td>
-          <td>The name of a property on the data item to display as the item's text. When set, ListBox automatically renders each item using that property value as a <code>TextBlock</code>, eliminating the need for a <code>DataTemplate</code> for simple string-display scenarios.</td>
+          <td>
+            <strong>When to use:</strong> Use when items are complex objects but only a single text property needs to be displayed — for example, showing just the <code>Name</code> property of a country object.<br>
+            <strong>What happens:</strong> WPF internally generates a <code>TextBlock</code> bound to the specified property path for each item, eliminating the need to write an <code>ItemTemplate</code> for simple text-only lists.<br>
+            <strong>Pitfalls:</strong> <code>DisplayMemberPath</code> and <code>ItemTemplate</code> are mutually exclusive — setting both throws a runtime exception. As soon as you need icons, multiple fields, or any layout beyond a single text line, switch to an explicit <code>ItemTemplate</code>.
+          </td>
         </tr>
         <tr>
           <td><code>SelectedIndex (Selector)</code></td>
           <td><code>int</code></td>
-          <td>The zero-based index of the currently selected item, or -1 when no item is selected. Two-way binding on this property allows the view model to both read the current selection and programmatically select an item by its list position.</td>
+          <td>
+            <strong>When to use:</strong> Use to set an initial selection by position, implement keyboard-driven navigation, or programmatically advance through items (e.g., a "next" button).<br>
+            <strong>What happens:</strong> Setting the value triggers <code>SelectionChanged</code> and automatically updates <code>SelectedItem</code> in sync. Setting it to <code>-1</code> explicitly clears the selection.<br>
+            <strong>Pitfalls:</strong> Setting an out-of-range index is silently ignored — no exception is thrown and no selection change occurs. Always validate the index against the collection size before setting it programmatically.
+          </td>
         </tr>
         <tr>
           <td><code>SelectedItem (Selector)</code></td>
           <td><code>object</code></td>
-          <td>The actual data object that is currently selected in the list. This is the most MVVM-friendly binding target, as it directly exposes the domain model object rather than requiring index-based lookups in code.</td>
+          <td>
+            <strong>When to use:</strong> The standard MVVM binding target for single-selection mode. Bind two-way to a ViewModel property to both read the current selection and set it programmatically (e.g., on navigation or initialization).<br>
+            <strong>What happens:</strong> When the user selects an item, the bound ViewModel property is updated with the actual data object. Setting the property from the ViewModel selects the matching item in the list.<br>
+            <strong>Pitfalls:</strong> Matching is done by reference equality, not by value equality. If the ViewModel creates a <em>new</em> instance of an object with the same data, it will not match any item in the list and the selection will appear to be cleared — even though the data looks identical.
+          </td>
         </tr>
         <tr>
           <td><code>SelectedValuePath / SelectedValue (Selector)</code></td>
           <td><code>string / object</code></td>
-          <td><code>SelectedValuePath</code> names a property on the data item (e.g., <code>"Id"</code>) and <code>SelectedValue</code> reflects only that property from the selected item. This is useful for binding a foreign key or identifier without needing the full object reference.</td>
+          <td>
+            <strong>When to use:</strong> Use for ID-based selection patterns — for example, binding only an integer <code>Id</code> rather than the full object. This is common when persisting the selection to a database or configuration file.<br>
+            <strong>What happens:</strong> <code>SelectedValuePath</code> (e.g., <code>"Id"</code>) tells WPF which property to extract; <code>SelectedValue</code> then reflects that extracted value for the currently selected item. Setting <code>SelectedValue</code> causes WPF to find and select the matching item in <code>ItemsSource</code>.<br>
+            <strong>Pitfalls:</strong> <code>SelectedValue</code> only works after <code>ItemsSource</code> is populated. If you set <code>SelectedValue</code> before the items are loaded, the selection is silently lost. Always ensure the collection is bound before setting the initial selected value.
+          </td>
         </tr>
         <tr>
           <td><code>IsSelected (ListBoxItem)</code></td>
           <td><code>bool</code></td>
-          <td>An item-level property on each <code>ListBoxItem</code> container that indicates whether that specific item is selected. It can be used in item data templates within triggers to change item appearance based on selection state.</td>
+          <td>
+            <strong>When to use:</strong> Use to manage selection state per item in the ViewModel — especially useful in multi-select scenarios where <code>SelectedItems</code> cannot be directly two-way bound. Define a <code>Setter</code> in <code>ItemContainerStyle</code> to bind this property to an <code>IsSelected</code> bool on each item's ViewModel.<br>
+            <strong>What happens:</strong> Setting the ViewModel property to <code>true</code> marks that item as selected in the list. Any change (user click or ViewModel update) flows both ways through the two-way binding.<br>
+            <strong>Pitfalls:</strong> The <code>DataContext</code> of the binding inside <code>ItemContainerStyle</code> is each individual item's ViewModel, not the page-level ViewModel. Binding to a property that doesn't exist on the item type fails silently — verify that each item class actually has the expected property.
+          </td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
@@ -147,6 +171,8 @@
       <li><strong>Use <code>ObservableCollection</code> as ItemsSource:</strong> Collections implementing <code>INotifyCollectionChanged</code> automatically keep the ListBox in sync when items are added or removed.</li>
       <li><strong>Define keyboard shortcuts for selection:</strong> For Extended mode, document <kbd>Ctrl+A</kbd> (select all) in the UI so users know it is available — it works by default but is not obvious.</li>
       <li><strong>Consider ListView for tabular data:</strong> If items have multiple columns, switch to <code>ListView</code> with <code>GridView</code> for a proper columnar display with resizable headers.</li>
+      <li><strong>Getting multi-selection in MVVM:</strong> <code>SelectedItems</code> is a read-only collection and cannot be two-way bound directly. The standard workaround is to add an <code>IsSelected</code> property to each item's ViewModel and bind it via <code>ItemContainerStyle</code>. Alternatively, handle the <code>SelectionChanged</code> event in code-behind and push changes into the ViewModel manually.</li>
+      <li><strong>Scroll to a programmatically selected item:</strong> Changing <code>SelectedItem</code> from the ViewModel does <em>not</em> automatically scroll the list to that item. You must call <code>listBox.ScrollIntoView(listBox.SelectedItem)</code> explicitly — for example, in a <code>SelectionChanged</code> event handler or after updating the binding.</li>
     </ul>
   </section>
 

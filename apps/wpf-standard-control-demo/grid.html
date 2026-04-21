@@ -84,52 +84,52 @@
         <tr>
           <td><code>Grid.Column (attached)</code></td>
           <td><code>int</code></td>
-          <td>Sets the zero-based column index of a child element. Defaults to 0 if not specified, placing the child in the first column. Combine with <code>Grid.Row</code> to precisely position any element within the grid's coordinate system.</td>
+          <td>Use this when you have a Grid with multiple columns and need to place a child in a specific column. The element is rendered in the cell at the given zero-based column index. <strong>Pitfall:</strong> the default is 0, so every child that omits <code>Grid.Column</code> is placed in column 0. When a Grid has multiple children without explicit column assignments, they all pile up in the first cell and render on top of each other. Always double-check that no element is missing its column assignment.</td>
         </tr>
         <tr>
           <td><code>Grid.Row (attached)</code></td>
           <td><code>int</code></td>
-          <td>Sets the zero-based row index of a child element. Defaults to 0. Setting this alongside <code>Grid.Column</code> allows fine-grained, cell-precise placement of any WPF element within the grid without absolute pixel coordinates.</td>
+          <td>Use this to place a child in a specific row of a multi-row Grid. Combined with <code>Grid.Column</code>, it gives cell-precise placement without absolute pixel coordinates. <strong>Pitfall:</strong> the default is also 0, so omitting <code>Grid.Row</code> causes the element to overlap with other row-0 elements. When adding children to a Grid, always set both <code>Grid.Row</code> and <code>Grid.Column</code> explicitly to avoid silent overlapping.</td>
         </tr>
         <tr>
           <td><code>Grid.ColumnSpan (attached)</code></td>
           <td><code>int</code></td>
-          <td>Specifies how many columns a child element spans, starting from its <code>Grid.Column</code> position. A value of 1 is the default (single cell). Use a span equal to the total column count to create a full-width element such as a header or footer band across the grid.</td>
+          <td>Use this when a header banner, footer button bar, or large content block should stretch across multiple columns. The element occupies the specified number of consecutive columns starting from its <code>Grid.Column</code> position. <strong>Pitfall:</strong> if the span value exceeds the number of defined columns, the Grid silently clamps it to the maximum available columns rather than throwing an error. The element may appear narrower than expected — always verify that the span does not exceed the column count.</td>
         </tr>
         <tr>
           <td><code>Grid.RowSpan (attached)</code></td>
           <td><code>int</code></td>
-          <td>Specifies how many rows a child spans. Combined with <code>ColumnSpan</code>, it lets a single element occupy a rectangular block of cells, ideal for placing a large image, map, or preview panel alongside a narrow sidebar of metadata fields.</td>
+          <td>Use this to let a single element occupy a rectangular block of cells spanning multiple rows, such as a tall image or preview panel alongside a narrow column of metadata fields. The element stretches over the specified number of consecutive rows. <strong>Pitfall:</strong> like <code>ColumnSpan</code>, a value that exceeds the defined row count is silently clamped. Check that the span value is consistent with the actual number of <code>RowDefinition</code> entries.</td>
         </tr>
         <tr>
           <td><code>ShowGridLines</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, draws thin dashed lines along all row and column boundaries. Useful as a visual debugging aid during layout development to verify that cells are the expected sizes. Set to <code>False</code> (default) in production builds.</td>
+          <td>Use this during development and debugging to make cell boundaries visible. Setting it to <code>True</code> draws dashed lines along all row and column dividers, making it easy to verify that cells are sized as intended. <strong>Pitfall:</strong> <code>ShowGridLines</code> uses a special internal rendering mechanism that looks different from a real <code>Border</code> control. Do not use it as a substitute for actual grid-line borders in a production UI — always set it back to <code>False</code> before shipping.</td>
         </tr>
         <tr>
           <td><code>Grid.IsSharedSizeScope (attached) / SharedSizeGroup (ColumnDefinition)</code></td>
           <td><code>bool / string</code></td>
-          <td>Enables column-width synchronisation across multiple Grid instances. Set <code>Grid.IsSharedSizeScope="True"</code> on a common ancestor and assign the same <code>SharedSizeGroup</code> name to corresponding <code>ColumnDefinition</code> elements to keep label or control widths aligned across sibling grids.</td>
+          <td>Use this when you have multiple Grid instances stacked vertically (e.g., each form row is its own Grid inside an <code>ItemsControl</code>) and want their label columns to align with each other. Set <code>Grid.IsSharedSizeScope="True"</code> on a common ancestor element, then assign the same <code>SharedSizeGroup</code> string name to corresponding <code>ColumnDefinition</code> elements. All columns sharing the same group name within the scope synchronise their widths automatically, keeping labels perfectly aligned across rows without any code-behind logic.</td>
         </tr>
         <tr>
           <td><code>Width / MinWidth / MaxWidth (ColumnDefinition)</code></td>
           <td><code>GridLength / double / double</code></td>
-          <td><code>Width</code> accepts a pixel value, <code>Auto</code>, or a star value such as <code>2*</code>. <code>MinWidth</code> and <code>MaxWidth</code> constrain how far the column can shrink or grow, preventing input fields from becoming too narrow or too wide during window resizing.</td>
+          <td>Use these when defining column sizing strategy — for example, <code>Auto</code> for a label column and <code>*</code> for an input column. <code>Auto</code> sizes to the widest content; a pixel value sets an absolute width; <code>*</code> distributes remaining space proportionally (<code>2*</code> gets twice the share of <code>1*</code>). <code>MinWidth</code> and <code>MaxWidth</code> cap how far the column can shrink or grow. <strong>Pitfall:</strong> when a Grid is placed inside a <code>ScrollViewer</code> (horizontal scroll enabled) or a <code>StackPanel</code>, the container gives the Grid infinite width, causing <code>*</code>-sized columns to collapse to zero. If your star columns appear invisible, check whether the Grid is inside an unbounded-width container.</td>
         </tr>
         <tr>
           <td><code>Height / MinHeight / MaxHeight (RowDefinition)</code></td>
           <td><code>GridLength / double / double</code></td>
-          <td>Row counterpart to the ColumnDefinition width properties. Use <code>Height="Auto"</code> for rows containing variable-height content such as wrapped text, and <code>Height="*"</code> for the main content row that should expand to fill remaining vertical space.</td>
+          <td>The vertical counterpart to the ColumnDefinition width properties. Use <code>Height="Auto"</code> for rows that contain variable-height content such as wrapped text or expandable controls, and <code>Height="*"</code> for the main content row that should fill remaining vertical space. <strong>Pitfall:</strong> placing a Grid with <code>Auto</code> rows inside a <code>ScrollViewer</code> can produce unexpected behaviour — the Auto rows grow without bound as content expands, and the scroll bar may not appear because the Grid reports its full desired height to the ScrollViewer. If you need vertical scrolling, ensure the ScrollViewer has a bounded height available.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Paints the entire grid area including gaps between cells. Also determines whether the grid participates in mouse hit-testing; a <code>null</code> background makes the grid transparent to mouse events in areas not covered by child elements.</td>
+          <td>Use this when you want the entire Grid area — including empty space between cells — to respond to mouse events such as clicks or hover. Setting <code>Background="Transparent"</code> makes the whole panel hit-testable without painting any visible colour. <strong>Pitfall:</strong> leaving <code>Background</code> as <code>null</code> (the default) disables hit-testing on the panel background; clicks and <code>MouseEnter</code> events pass straight through to whatever is behind the Grid. If your Grid does not react to mouse events in empty areas, the missing <code>Background</code> is almost always the cause — set it to <code>Transparent</code>, not just a visible colour.</td>
         </tr>
         <tr>
           <td><code>Panel.ZIndex (attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls render order for overlapping children within the same grid cell. Higher values appear on top. This is commonly used to render a loading overlay or watermark on top of grid content without restructuring the visual tree.</td>
+          <td>Use this when multiple children share the same Grid cell and you need to control which one appears on top. Higher values render in front of lower values. A typical use case is a loading spinner or modal overlay placed in the same cell as the main content, with a high <code>ZIndex</code> so it covers the content when visible. <strong>Pitfall:</strong> <code>ZIndex</code> only affects draw order among siblings within the same parent panel. Setting a high <code>ZIndex</code> on a child inside a nested Grid will not make it appear above elements in an outer Grid.</td>
         </tr>
       </tbody>
     </table>
@@ -193,9 +193,10 @@
     <ul>
       <li><strong>Use spacer rows/columns</strong> (fixed-pixel empty definitions) instead of <code>Margin</code> on every child to create consistent spacing. This keeps individual element XAML clean and makes spacing adjustments a single-edit operation.</li>
       <li><strong>Prefer <code>Auto</code> rows for variable-height content</strong> like wrapped text or dynamic lists. Using a fixed height can cause content to be clipped or leave empty space as the window is resized.</li>
-      <li><strong>Leverage <code>SharedSizeGroup</code></strong> when building repeating form rows as separate item templates. Without it, label columns in each row size independently, producing misaligned, jagged-looking forms.</li>
-      <li><strong>Keep the visual tree flat.</strong> A single Grid with many rows and columns is almost always more performant and readable than deeply nested Grids. Measure layout passes with the WPF performance profiler if your UI feels sluggish.</li>
+      <li><strong>Leverage <code>SharedSizeGroup</code></strong> when building repeating form rows as separate item templates. Set <code>Grid.IsSharedSizeScope="True"</code> on the common ancestor and assign the same group name to corresponding <code>ColumnDefinition</code> elements. Without it, label columns in each row size independently, producing misaligned, jagged-looking forms.</li>
+      <li><strong>Avoid deeply nested Grids.</strong> Nesting Grids inside other Grids increases the number of layout measure and arrange passes, which can degrade UI responsiveness. Before adding a nested Grid, consider whether <code>ColumnSpan</code> and <code>RowSpan</code> can achieve the same result within a single flat Grid.</li>
       <li><strong>Use <code>ShowGridLines="True"</code> temporarily</strong> during development to verify that row and column boundaries align with your intentions. Remove it before shipping — it is for debugging only and affects visual appearance in all themes.</li>
+      <li><strong>Be aware of <code>ColumnDefinition</code> / <code>RowDefinition</code> omission.</strong> A Grid with no row/column definitions acts as a single 1×1 cell. All children overlap each other. This is useful for intentional layered layouts, but is a common source of accidental overlap bugs when definitions are forgotten.</li>
     </ul>
   </section>
 

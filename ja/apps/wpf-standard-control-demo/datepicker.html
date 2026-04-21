@@ -49,37 +49,37 @@
         <tr>
           <td><code>SelectedDate</code></td>
           <td><code>DateTime?</code></td>
-          <td>現在選択されている日付を取得・設定します。ViewModel の DateTime? プロパティに TwoWay バインドします。null は未選択を表します。</td>
+          <td>現在選択されている日付を取得・設定します。MVVM では ViewModel の <code>DateTime?</code> プロパティに <code>Mode=TwoWay</code> でバインドするのが標準パターンです。ユーザーがテキストフィールドの内容を消去すると <code>SelectedDate</code> が null になります。はまりやすいポイント：バインド先が null 非許容の <code>DateTime</code> プロパティの場合、null が返るとバインドエラーになります。DatePicker のバインドには必ず <code>DateTime?</code>（null 許容型）を使用してください。</td>
         </tr>
         <tr>
           <td><code>DisplayDate</code></td>
           <td><code>DateTime</code></td>
-          <td>カレンダーに表示する月を設定します。SelectedDate とは独立して動作し、プログラムからカレンダーの表示月を変更する際に使用します。</td>
+          <td>カレンダーに表示する月を設定します。DatePicker を開いた時に特定の月へプログラムから自動スクロールしたい場合（例：契約開始月に移動）に使用します。<code>SelectedDate</code> とは独立して動作し、<code>DisplayDate</code> を変えてもカレンダーの表示月が移動するだけです。はまりやすいポイント：<code>DisplayDate</code> を変更しても <code>SelectedDate</code> は変わりません。あくまでカレンダーの「見えている月」を変えるだけのため、日付を選択させたい場合は別途 <code>SelectedDate</code> を設定する必要があります。</td>
         </tr>
         <tr>
           <td><code>DisplayDateStart / DisplayDateEnd</code></td>
           <td><code>DateTime?</code></td>
-          <td>選択・表示可能な日付の開始・終了を設定します。この範囲外の日付はカレンダー上でグレーアウトされ選択できなくなります。</td>
+          <td>選択・表示可能な日付の開始・終了を設定します。例えば今日から 1 年後までの予約受付フォームなら <code>DisplayDateStart=Today, DisplayDateEnd=Today+1年</code> と組み合わせます。範囲外の日付はカレンダー上でグレーアウトされクリックできなくなります。はまりやすいポイント：これらのプロパティはカレンダー UI での表示・選択を制限しますが、ユーザーがテキストボックスに範囲外の日付を直接入力すると <code>SelectedDate</code> がその値になってしまう場合があります。入力検証は ViewModel 側でも別途実装してください。</td>
         </tr>
         <tr>
           <td><code>FirstDayOfWeek</code></td>
           <td><code>DayOfWeek</code></td>
-          <td>カレンダーに表示する週の始まりの曜日を設定します。日本では月曜始まり（Monday）が一般的ですが、アメリカでは日曜始まり（Sunday）がデフォルトです。</td>
+          <td>カレンダーに表示する週の始まりの曜日を設定します。文化的に日本では月曜始まり、米国では日曜始まりが一般的です。設定するとカレンダーの一番左の列の曜日が変わります。はまりやすいポイント：このプロパティは WPF レベルの設定で OS のロケール設定を自動的には参照しません。日本語アプリで月曜始まりにしたい場合は明示的に <code>FirstDayOfWeek="Monday"</code> を設定する必要があります。</td>
         </tr>
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>カレンダーポップアップが現在開いているかどうかを制御します。プログラムからカレンダーの開閉を制御する場合に使用します。</td>
+          <td>カレンダーポップアップが現在開いているかどうかを制御します。フィールドにフォーカスが当たった時にカレンダーを自動的に開くなど、プログラムから開閉を制御する場面に使用します。はまりやすいポイント：DatePicker が完全にレンダリングされる前にプログラムからドロップダウンを開こうとすると、レイアウトの問題が発生することがあります。開く処理は <code>Loaded</code> イベント以降で行ってください。</td>
         </tr>
         <tr>
           <td><code>IsTodayHighlighted</code></td>
           <td><code>bool</code></td>
-          <td>カレンダー上で今日の日付をハイライト表示するかどうかを制御します。デフォルトは True で、今日の日付に下線や色が付きます。</td>
+          <td>カレンダー上で今日の日付をハイライト表示するかどうかを制御します。デフォルトは True で、今日の日付に下線や色が付きます。過去のデータ入力など「今日」に特別な意味がない場面では <code>false</code> にしてハイライトを消すとスッキリした見た目になります。はまりやすいポイント：ハイライトを消しても今日の日付はクリックして選択できる有効な日付のままです。ハイライトの有無は見た目のみであり、選択可能かどうかとは無関係です。</td>
         </tr>
         <tr>
           <td><code>SelectedDateFormat</code></td>
           <td><code>Short / Long</code></td>
-          <td>テキストボックスに表示される日付のフォーマットを設定します。Short は短い形式（例：2026/01/15）、Long は長い形式（例：2026年1月15日）で表示します。</td>
+          <td>テキストボックスに表示される日付のフォーマットを設定します。<code>Short</code> の表示例はロケールにより異なり（en-US では「1/15/2026」、ja-JP では「2026/01/15」）、<code>Long</code> はより詳細な形式で表示されます。はまりやすいポイント：<code>Long</code> フォーマットはロケール依存のため、ターゲットロケール以外では意図しない表示になる可能性があります。特定のフォーマットを確実に表示したい場合は IValueConverter を使った独自変換を検討してください。</td>
         </tr>
       </tbody>
     </table>
@@ -112,6 +112,8 @@
     <ul>
       <li><strong>null チェックを必ず実装</strong> — SelectedDate は null 許容型のため、バインド先の ViewModel で未選択（null）の場合の処理を必ず実装します。</li>
       <li><strong>BlackoutDates で選択不可日を指定</strong> — 祝日や休業日を選択不可にする場合は <code>BlackoutDates</code> コレクションに CalendarDateRange を追加します。</li>
+      <li><strong>日付範囲のバリデーション</strong> — 開始日・終了日を 2 つの DatePicker で入力するフォームでは、開始日 ≤ 終了日であることを ViewModel 側でチェックします。UI ではエラーメッセージを表示して利用者に知らせます。</li>
+      <li><strong>ブラックアウト日付の設定</strong> — 特定の日付を選択不可にするには <code>BlackoutDates.Add(new CalendarDateRange(startDate, endDate))</code> を使います。休業日や祝日をリストから動的に追加できます。</li>
       <li><strong>FirstDayOfWeek をロケールに合わせる</strong> — アプリのターゲット地域に応じて週の始まりを適切に設定します。</li>
       <li><strong>テキスト入力の検証</strong> — ユーザーが直接テキスト入力した場合も SelectedDate が正しく更新されます。無効な日付文字列は SelectedDate が null になります。</li>
       <li><strong>カスタムフォーマットには Converter を使用</strong> — SelectedDateFormat では Short/Long のみ選べます。独自の書式が必要な場合は IValueConverter で変換します。</li>

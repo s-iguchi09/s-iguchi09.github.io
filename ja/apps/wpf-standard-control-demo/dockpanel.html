@@ -49,22 +49,22 @@
         <tr>
           <td><code>LastChildFill</code></td>
           <td><code>bool</code></td>
-          <td>True のとき（デフォルト）、最後の子要素が残りのすべての空間を埋めます。False にすると最後の子要素も通常のドッキング位置に配置されます。</td>
+          <td>最後の子要素をコンテンツエリアとして残りの空間を埋めさせたい（典型的なアプリレイアウト）場合は True（デフォルト）のままにします。False にすると最後の子要素も Dock 設定に従った通常のドッキング配置になり、残りのスペースが空白のまま残ります。LastChildFill=True はその子要素の DockPanel.Dock 設定を無視して強制的に残スペースを埋めるため、最後の子に Dock 設定をしていても効果がなく混乱しやすい点に注意してください。</td>
         </tr>
         <tr>
           <td><code>Dock (DockPanel attached)</code></td>
           <td><code>Left / Top / Right / Bottom</code></td>
-          <td>各子要素がドッキングする辺を指定する添付プロパティです。指定しない場合は Left にドッキングされます。</td>
+          <td>メニューを Top、ステータスバーを Bottom、ナビゲーションツリーを Left など、各 UI パーツをウィンドウの辺に沿って配置したいときに設定します。同じ辺に複数の要素をドッキングすると、XAML の記述順（先の要素ほど外側）にスタックされます。ドッキング順序はスペース確保の優先順に直結するため、先に大きな要素をドッキングすると後の要素が使えるスペースが少なくなります。メニュー・ツールバーなど小さいものから先に書くのが鉄則です。</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>パネルの背景色を設定します。Background が null 以外の場合、パネル全体がヒットテスト可能になりマウスイベントを受け取ります。</td>
+          <td>パネルの背景色を設定します。Background が null の場合（デフォルト）はパネル自体のヒットテストが無効になり、空き領域でのマウスイベントが子要素を素通りします。クリックやホバーをパネル全体で受け取りたいときは <code>Transparent</code> を設定してください。</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>子要素の描画順序を制御します。値が大きいほど手前に描画されます。</td>
+          <td>DockPanel 内で子要素が重なり合うケース（負の Margin や絶対位置で意図的に重ねる場合）に描画順序を制御したいときに使います。値が大きいほど手前（上層）に描画されます。ZIndex は同一 DockPanel 内の兄弟要素間でのみ有効で、別のパネルの子要素に対して効果を及ぼすことはできません。</td>
         </tr>
       </tbody>
     </table>
@@ -117,6 +117,7 @@
       <li><strong>複雑な内部レイアウトは Grid を使う</strong> — DockPanel はアプリの枠組みに使い、内部の詳細なレイアウトには Grid を使うのが一般的なアプローチです。</li>
       <li><strong>SplitterGridSplitter との組み合わせ</strong> — サイドパネルとメインエリアの境界に GridSplitter を配置することでリサイズ可能なレイアウトにできます。</li>
       <li><strong>GridSplitter との組み合わせ</strong> — 外枠は DockPanel、内部の分割可能なペインには Grid+GridSplitter を使うハイブリッドアプローチが効果的です。</li>
+      <li><strong>ウィンドウフレームレイアウトパターン</strong> — DockPanel の典型的な使い方として「メニュー Top → ツールバー Top → ステータスバー Bottom → 残りをコンテンツ（LastChildFill=True）」という構成があります。この 4 辺レイアウトパターンを最初に覚えておくと、ほとんどのアプリの骨格を DockPanel だけで素早く組めます。</li>
     </ul>
   </section>
 

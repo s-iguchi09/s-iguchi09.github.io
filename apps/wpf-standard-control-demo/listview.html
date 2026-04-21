@@ -70,32 +70,32 @@
         <tr>
           <td><code>SelectionMode (ListBox)</code></td>
           <td><code>Single / Multiple / Extended</code></td>
-          <td>Inherited from <code>ListBox</code>, this controls how many items can be selected simultaneously. <code>Extended</code> mode with Shift- and Ctrl-click is commonly used in file-manager-style ListViews where multi-file operations are needed.</td>
+          <td>Inherited from <code>ListBox</code>, this controls how many items can be selected simultaneously. <code>Extended</code> mode with Shift- and Ctrl-click is commonly used in file-manager-style ListViews where multi-file operations are needed. Pitfall: in <code>Multiple</code> and <code>Extended</code> modes, use the <code>SelectedItems</code> collection (not <code>SelectedItem</code>) to retrieve all selected items. <code>SelectedItem</code> only returns the last selected item in multi-select modes.</td>
         </tr>
         <tr>
           <td><code>View</code></td>
           <td><code>ViewBase</code></td>
-          <td>The pluggable view object that defines how list items are rendered. Setting this to a <code>GridView</code> instance activates tabular column display; setting it to <code>null</code> falls back to a plain vertical list similar to <code>ListBox</code>.</td>
+          <td>The pluggable view object that defines how list items are rendered. Setting this to a <code>GridView</code> instance activates tabular column display with column headers — suitable for read-only data tables such as file lists, employee rosters, and log viewers. Setting it to <code>null</code> falls back to a plain vertical list similar to <code>ListBox</code>. The <code>View</code> property accepts any <code>ViewBase</code> subclass; only <code>GridView</code> is provided by default, so complex custom layouts require a <code>DataGrid</code> instead.</td>
         </tr>
         <tr>
           <td><code>Columns (GridView)</code></td>
           <td><code>GridViewColumnCollection</code></td>
-          <td>The collection of <code>GridViewColumn</code> objects that define each column's header, width, and cell binding. Columns can be added or removed at runtime to implement show/hide column features, and they can be reordered by the user when <code>AllowsColumnReorder</code> is enabled.</td>
+          <td>The collection of <code>GridViewColumn</code> objects that define each column's header, width, and cell binding or template. Use <code>DisplayMemberBinding</code> for plain-text columns and <code>CellTemplate</code> for columns that display buttons, images, or custom-formatted content. Pitfall: you cannot set both <code>DisplayMemberBinding</code> and <code>CellTemplate</code> on the same column — doing so throws an exception. Also, column-header click sorting is not built in; you must handle <code>GridViewColumnHeader.Click</code> and apply <code>SortDescription</code> to the <code>ICollectionView</code> manually.</td>
         </tr>
         <tr>
           <td><code>AllowsColumnReorder (GridView)</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, users can drag column headers to reorder the columns. This interactive feature is expected behavior in file-manager and data-grid UIs and significantly improves usability without requiring any code-behind logic.</td>
+          <td>When <code>true</code>, users can drag column headers to reorder the columns — an expected behavior in file-manager and data-grid UIs. The reordering affects display only; the underlying data bindings are unchanged. Pitfall: the column order is not automatically saved. To persist the layout across sessions, handle the <code>ColumnReordered</code> event and save the new column order to user settings.</td>
         </tr>
         <tr>
           <td><code>Width (GridViewColumn)</code></td>
           <td><code>double</code></td>
-          <td>The width of an individual column in device-independent pixels. Setting <code>Width="NaN"</code> (the default when omitted) makes the column auto-size to its content, while a fixed pixel value creates a stable column layout across different data.</td>
+          <td>The width of an individual column in device-independent pixels. Setting <code>Width="NaN"</code> (the default when omitted, or <code>Width="Auto"</code> in XAML) auto-sizes the column to its content on load. Pitfall: <code>Auto</code> width is calculated once from the initially loaded content and then fixed. If data updates or virtualization is active, the column width does not re-expand automatically. For dynamically changing content, use a fixed pixel width or re-measure explicitly.</td>
         </tr>
         <tr>
           <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
           <td><code>int / object</code></td>
-          <td>Zero-based index and data object of the currently selected item. These work identically to <code>ListBox</code>, and two-way binding on <code>SelectedItem</code> is the recommended MVVM pattern for responding to and programmatically controlling selection.</td>
+          <td>Zero-based index and data object of the currently selected item. Two-way binding on <code>SelectedItem</code> is the recommended MVVM pattern for master-detail scenarios. Pitfall: if the backing <code>ObservableCollection</code> is rebuilt (e.g., re-assigned from the ViewModel), <code>SelectedItem</code> may become <code>null</code> even if an equivalent item exists in the new collection. Restore selection after collection updates by re-setting <code>SelectedItem</code> explicitly.</td>
         </tr>
         <tr>
           <td><code>IsSelected (ListBoxItem)</code></td>
@@ -105,7 +105,7 @@
         <tr>
           <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Attached properties that control the ListView's built-in scroll bars. For a table with many columns, enabling <code>HorizontalScrollBarVisibility="Auto"</code> ensures columns are accessible even when the window is narrow.</td>
+          <td>Attached properties that control the ListView's built-in scroll bars. For a table with many columns, enable <code>HorizontalScrollBarVisibility="Auto"</code> so columns remain accessible when the window is narrow. Pitfall: setting <code>VerticalScrollBarVisibility="Disabled"</code> inside a parent <code>ScrollViewer</code> disables virtualization in the ListView's internal panel, loading all rows into memory at once.</td>
         </tr>
       </tbody>
     </table>
@@ -162,8 +162,9 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Use <code>GridViewColumn.CellTemplate</code> for rich cells:</strong> For columns requiring icons, badges, or formatted content beyond plain text, define a <code>DataTemplate</code> in <code>CellTemplate</code> instead of relying on <code>DisplayMemberBinding</code>.</li>
-      <li><strong>Implement column sorting manually:</strong> Unlike <code>DataGrid</code>, ListView/GridView does not sort automatically on header click. Handle the <code>GridViewColumnHeader.Click</code> event and apply a <code>SortDescription</code> to the <code>CollectionView</code>.</li>
-      <li><strong>Size columns with <code>Auto</code> for initial fit:</strong> Setting <code>Width="Auto"</code> on columns sizes them to their content on first load, but users can still resize them manually if <code>AllowsColumnReorder</code> is enabled.</li>
+      <li><strong>Implement column sorting manually:</strong> Unlike <code>DataGrid</code>, ListView/GridView does not sort automatically on header click. Handle the <code>GridViewColumnHeader.Click</code> event, determine the target property name, and apply a <code>SortDescription</code> to the <code>ICollectionView</code> obtained via <code>CollectionViewSource.GetDefaultView(ItemsSource)</code>. Toggle <code>ListSortDirection.Ascending/Descending</code> to support two-way sort.</li>
+      <li><strong>Persist column order when <code>AllowsColumnReorder</code> is enabled:</strong> Subscribe to the <code>GridView.ColumnReordered</code> event and save the new column order to user settings so the layout is restored on the next session.</li>
+      <li><strong>Hide column headers with <code>ColumnHeaderContainerStyle</code>:</strong> If you want a columnar layout without visible headers, set <code>GridView.ColumnHeaderContainerStyle</code> to a style that sets <code>Height="0"</code> or <code>Visibility="Collapsed"</code>.</li>
       <li><strong>Use <code>VirtualizingPanel.IsVirtualizing="True"</code>:</strong> This is on by default but can be accidentally disabled. Verify virtualization is active when binding to large collections to maintain scrolling performance.</li>
       <li><strong>Prefer ListView over DataGrid for read-only tables:</strong> If you don't need inline editing, sorting indicators, or row grouping, ListView is lighter and easier to style than the full <code>DataGrid</code>.</li>
     </ul>
