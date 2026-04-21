@@ -42,7 +42,7 @@
       <tbody>        <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
           <td><code>object / bool</code></td>
-          <td>ヘッダー部分に表示するコンテンツを設定します。文字列が一般的ですが、任意の WPF 要素も設定可能です。HasHeader は Header が設定されているかどうかの読み取り専用プロパティです。</td>
+          <td>ヘッダー部分に表示するコンテンツを設定します。文字列が一般的ですが、アイコン＋テキストの StackPanel やバッジ付きタイトルなど任意の WPF 要素も設定可能です。HasHeader は Header が設定されているかどうかの読み取り専用プロパティです。Header に複数行のテキストを直接設定することはできず、複数行を表示するには TextBlock を Header に配置して TextWrapping を設定します。ヘッダーのフォントやスタイルをカスタマイズするには HeaderTemplate や Style を定義し、直接プロパティで変更するのではなくテンプレートで制御してください。</td>
         </tr>
         <tr>
           <td><code>HeaderStringFormat</code></td>
@@ -52,17 +52,22 @@
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>GroupBox 内部に表示するコンテンツを設定します。通常は Grid や StackPanel などのパネルを指定して複数の子コントロールを収納します。</td>
+          <td>GroupBox 内部に表示するコンテンツを設定します。通常は Grid や StackPanel などのパネルを指定して複数の子コントロールを収納します。GroupBox 自体は 1 つの子要素しか持てないため、複数コントロールを配置するにはパネルをルートとして使います。Content に配置したコントロールは GroupBox の DataContext を自動で継承するため、ViewModel のバインドは通常そのまま機能します。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>GroupBox の枠線の色と太さを設定します。デフォルトではテーマに合った枠線が表示されます。</td>
+          <td>GroupBox の枠線の色と太さを設定します。デフォルトではテーマに合った枠線が表示されます。カード型 UI やアプリのカラーテーマに合わせてカスタマイズする際に使用し、強調したいグループには太めの BorderThickness を設定することで視覚的な優先度を表現できます。アプリ全体で統一した見た目にするには、Style リソースとして定義して個別設定を避けることを推奨します。</td>
         </tr>
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td>GroupBox の背景色とテキスト（ヘッダー）の前景色を設定します。</td>
+          <td>GroupBox の背景色とテキスト（ヘッダー）の前景色を設定します。Background を設定するとグループ内のコンテンツ領域全体に色が適用されます。視覚的なセクション分けを強調するために薄い背景色を設定することがあります。ただし Background の色がコンテンツ内のコントロールに継承されるため、子コントロールの見た目が変わることに注意します。</td>
+        </tr>
+        <tr>
+          <td><code>Padding (Control)</code></td>
+          <td><code>Thickness</code></td>
+          <td>GroupBox の内側の余白を設定します。Padding を設定すると枠線とコンテンツの間にスペースが生まれ、コンテンツが枠線に密着して窮屈に見えることを防ぎます。GroupBox 自体の Padding が効かない場合は、Content 直下のパネルに Margin を設定することで同等の効果が得られます。テーマによっては GroupBox の Padding が正しく反映されないことがあるため、レイアウト確認を行ってから採用してください。</td>
         </tr></tbody>
     </table>
   </section>
