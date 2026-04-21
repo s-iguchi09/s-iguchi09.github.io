@@ -114,8 +114,7 @@
       <li><strong>ネストを深くしない</strong> — Grid をむやみにネストするとパフォーマンスが低下します。可能であれば ColumnSpan/RowSpan を活用して一つの Grid で解決します。</li>
       <li><strong>ShowGridLines はデバッグ専用</strong> — レイアウトの確認には ShowGridLines を使いますが、本番ビルドでは必ず False に戻します。</li>
       <li><strong>ColumnDefinition/RowDefinition は省略可</strong> — 定義なしの場合、Grid は 1 行 1 列として動作します。全要素が重なる形になるため、重ねてレイアウトしたい場合に活用できます。</li>
-      <li><strong>GridSplitter でリサイズ可能に</strong> — 列や行の間に GridSplitter を配置することで、ユーザーが実行時にサイズを変更できるペインを実装できます。</li>
-      <li><strong>Grid のネストは最小限に</strong> — Grid の中に Grid をネストすることは可能ですが、深いネストはレイアウト計算コストを増加させパフォーマンスに影響します。ColumnSpan/RowSpan を活用して単一の Grid で解決できないか検討してください。</li>
+      <li><strong>Auto の使いすぎに注意</strong> — <code>Auto</code> 行・列は内容に応じてサイズ計算されるため便利ですが、多用すると Measure/Arrange のコストが増えます。固定値や <code>*</code> で十分な箇所はそちらを優先すると、複雑な画面でもレイアウトが安定しやすくなります。</li>
       <li><strong>SharedSizeGroup で複数 Grid の列幅を揃える</strong> — <code>Grid.IsSharedSizeScope="True"</code> をスコープ要素に設定し、揃えたい ColumnDefinition に同じ <code>SharedSizeGroup</code> 名を付けると、スコープ内の複数 Grid で列幅が自動的に同期されます。リストの各行に Grid を使いラベル列を揃えたい場合などに有効です。</li></ul>
   </section>
 
