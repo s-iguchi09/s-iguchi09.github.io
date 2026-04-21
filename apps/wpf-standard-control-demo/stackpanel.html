@@ -74,17 +74,17 @@
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Determines the stacking direction. <code>Vertical</code> (default) stacks children top-to-bottom; <code>Horizontal</code> stacks them left-to-right. This is the primary layout-defining property of StackPanel.</td>
+          <td>Use <code>Vertical</code> (default) when stacking form rows, notification items, or navigation menu entries top-to-bottom. Use <code>Horizontal</code> when arranging toolbar buttons or breadcrumb segments left-to-right. In a Vertical StackPanel, children are stretched to full width (<code>HorizontalAlignment="Stretch"</code>) by default; in a Horizontal StackPanel, children are stretched to full height. <strong>Pitfall:</strong> <code>Horizontal</code> orientation in a narrow container does <em>not</em> wrap — items that exceed the available width are simply clipped. If you need wrapping behaviour, use <code>WrapPanel</code> instead.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background fill of the panel area. A non-null Background also makes the panel hit-testable, allowing mouse events to be caught even where no child is present.</td>
+          <td>Use this when you want the entire StackPanel area to respond to mouse events such as hover highlights or click detection. Setting <code>Background="Transparent"</code> makes the whole panel hit-testable without painting any colour. <strong>Pitfall:</strong> the default is <code>null</code>, which disables hit-testing on the background — clicks in the empty space between children pass straight through to whatever is behind the panel. If the panel does not respond to mouse events in empty areas, a missing <code>Background</code> is the most likely cause. Always set <code>Transparent</code> explicitly when you want invisible-but-clickable background coverage.</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the draw order of sibling elements when their bounds overlap. Higher ZIndex values render on top. Useful when children have negative margins that cause visual overlap.</td>
+          <td>Use this when children overlap — for example, when negative margins are applied intentionally to create a stacked card effect. Higher values render in front. <strong>Pitfall:</strong> <code>ZIndex</code> is scoped to siblings within the same parent panel only. A high <code>ZIndex</code> on a child of this StackPanel has no effect on elements outside the panel. If you need an element to visually float above elements in an outer container, you must place it in the outer container directly or use a <code>Popup</code> / <code>AdornerLayer</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -124,10 +124,11 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Use Grid for complex layouts</strong> — StackPanel is optimal for simple linear sequences; switch to Grid when you need column alignment or proportional sizing.</li>
-      <li><strong>Apply Margin on children for spacing</strong> — StackPanel has no gap property; use a consistent bottom or right Margin on each child, or define it via a <code>Style</code> targeting the child type.</li>
+      <li><strong>Apply Margin on children for spacing</strong> — StackPanel has no gap property; use a consistent bottom or right Margin on each child, or define it via a <code>Style</code> targeting the child type. In .NET 8 and later, StackPanel gained a <code>Spacing</code> property that applies uniform spacing between all children in a single setting — a much cleaner approach than per-child Margin when targeting modern WPF.</li>
       <li><strong>Wrap in ScrollViewer for long lists</strong> — StackPanel itself does not scroll; place it inside a ScrollViewer if the content can exceed the visible area.</li>
       <li><strong>Prefer VirtualizingStackPanel for large data sets</strong> — When using StackPanel as an ItemsPanel for a ListBox or ItemsControl with many items, switch to VirtualizingStackPanel for better performance.</li>
       <li><strong>Set HorizontalAlignment/VerticalAlignment on children</strong> — Children in a vertical StackPanel stretch to full width by default; explicitly set HorizontalAlignment to Left/Center/Right when a smaller natural width is desired.</li>
+      <li><strong>Control overflow with ClipToBounds</strong> — By default, StackPanel does not clip children that overflow its bounds; children can render outside the panel area. If you need to prevent overflow rendering, set <code>ClipToBounds="True"</code> on the StackPanel.</li>
     </ul>
   </section>
 

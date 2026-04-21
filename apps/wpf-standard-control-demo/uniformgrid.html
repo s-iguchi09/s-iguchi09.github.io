@@ -71,27 +71,27 @@
         <tr>
           <td><code>Columns</code></td>
           <td><code>int</code></td>
-          <td>The number of columns in the grid. Each column receives an equal share of the available width. If set to 0 (default), the grid auto-calculates columns to create a near-square layout. Set to a fixed number for predictable layouts like a 4-column button palette.</td>
+          <td>Use this to fix the number of columns — for example, <code>Columns="7"</code> for a weekly calendar or <code>Columns="4"</code> for a dashboard tile grid. All columns receive an equal share of the available width, and rows are added automatically to accommodate all children. <strong>Pitfall:</strong> if you specify only <code>Columns</code> and leave <code>Rows</code> at 0, the row count is calculated automatically from the child count. This works well for a growing list of items. However, if both <code>Columns</code> and <code>Rows</code> are set and their product is less than the number of children, the excess children are silently dropped from the layout without any error — keep the child count consistent with the cell count.</td>
         </tr>
         <tr>
           <td><code>Rows</code></td>
           <td><code>int</code></td>
-          <td>The number of rows in the grid. Each row receives an equal share of the available height. If 0 (default), rows grow automatically as needed to accommodate all children. Specify this together with Columns only when you want a fixed-size grid.</td>
+          <td>Use this to fix the number of rows in the grid. When set, each row receives an equal share of the available height. Leave at 0 (default) to let the grid grow as many rows as needed based on the child count and the <code>Columns</code> value. <strong>Pitfall:</strong> when both <code>Rows</code> and <code>Columns</code> are specified, the grid has a fixed cell capacity. Children beyond that capacity are not rendered — there is no automatic expansion or overflow indicator. Monitor the child count carefully when both values are fixed.</td>
         </tr>
         <tr>
           <td><code>FirstColumn</code></td>
           <td><code>int</code></td>
-          <td>The number of empty cells at the start of the first row. Useful for creating an offset when the first row should start partway across the grid, for example when the first few cells in row 1 are occupied by other elements in an outer layout.</td>
+          <td>Use this to insert empty cells at the start of the first row, creating an offset. The classic use case is a monthly calendar: if the month starts on a Wednesday, set <code>FirstColumn="3"</code> (0 = Sunday) so that the day numbers align correctly under the weekday headings. <strong>Pitfall:</strong> if <code>FirstColumn</code> is equal to or greater than the <code>Columns</code> value, the offset is silently ignored. Ensure the day-of-week index (0-based) is always less than the column count.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background fill of the panel area. A non-null Background makes the panel hit-testable, allowing mouse events to be caught even in empty cells.</td>
+          <td>Sets the background fill of the panel area including empty cells. A non-null Background also makes the panel hit-testable, allowing mouse events to be caught in empty cells or gaps between items. <strong>Pitfall:</strong> the default <code>null</code> background disables hit-testing on background areas — set <code>Background="Transparent"</code> if you need the panel to capture mouse events in empty space.</td>
         </tr>
         <tr>
           <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the draw order of sibling children when their bounds overlap. Higher values render on top, useful if children have negative margins that cause visual overlap within the grid.</td>
+          <td>Controls the draw order of sibling children when they overlap. Higher values render in front. Typically not needed in a UniformGrid because cells do not overlap, but useful if a child uses a negative Margin to deliberately extend beyond its cell boundaries. <strong>Pitfall:</strong> <code>ZIndex</code> affects only siblings within the same parent panel and has no effect across different containers.</td>
         </tr>
       </tbody>
     </table>
@@ -140,6 +140,8 @@
       <li><strong>Fix Columns for predictable layouts</strong> — Relying on auto column calculation can produce unexpected results when the child count changes; set an explicit Columns value for stable UI.</li>
       <li><strong>Prefer WrapPanel for variable-count items</strong> — If the number of items changes dynamically and you want wrapping behavior rather than a fixed grid, use WrapPanel instead.</li>
       <li><strong>UniformGrid is in Primitives namespace</strong> — Add the XML namespace <code>xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"</code> to use it in XAML.</li>
+      <li><strong>Cell size depends on the parent container.</strong> UniformGrid divides the available space provided by its parent equally among all cells. If the parent gives no explicit size (e.g., inside an unbounded ScrollViewer or a StackPanel along its stacking axis), the cell size can unexpectedly become zero. Always ensure the parent has a finite width and height, or set explicit Width/Height on the UniformGrid itself.</li>
+      <li><strong>Children stretch to fill cells by default.</strong> Each child's <code>HorizontalAlignment</code> and <code>VerticalAlignment</code> default to <code>Stretch</code>, so children fill their entire cell. Set alignment properties explicitly on individual children when you want them to be smaller than the cell, such as centred icons in a palette.</li>
     </ul>
   </section>
 

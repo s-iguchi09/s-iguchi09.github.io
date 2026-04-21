@@ -85,22 +85,22 @@
         <tr>
           <td><code>LastChildFill</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code> (default), the final child in the panel is stretched to occupy all remaining space after the other docked children have been laid out. When <code>False</code>, the last child is also docked to an edge and the centre of the panel may be empty.</td>
+          <td>Use the default <code>True</code> for the classic application shell pattern: dock peripheral controls (menu, toolbar, status bar, sidebar) first, then let the last child — typically a <code>Frame</code>, <code>ScrollViewer</code>, or <code>Grid</code> — automatically fill whatever space remains. Set to <code>False</code> when all children should be docked to specific edges and the centre may intentionally remain empty (e.g., a floating toolbar row). <strong>Pitfall:</strong> when <code>LastChildFill="True"</code>, the DockPanel completely ignores the <code>DockPanel.Dock</code> setting on the last child and forces it to fill the remaining area. Setting a Dock value on the last element has no effect and can be misleading — remove the Dock attribute from the last child to avoid confusion.</td>
         </tr>
         <tr>
           <td><code>DockPanel.Dock (attached)</code></td>
           <td><code>Left / Top / Right / Bottom</code></td>
-          <td>Set on each child element to specify which edge of the remaining available area the child should be anchored to. Children are processed sequentially, and each docked child reduces the remaining space available for subsequent children.</td>
+          <td>Use this on each child to pin it to a specific edge — for example, <code>Top</code> for a menu bar, <code>Bottom</code> for a status bar, and <code>Left</code> for a navigation tree. Multiple children can be docked to the same edge; they stack outward-to-inward in XAML order. <strong>Pitfall:</strong> the order in which children appear in XAML directly determines how much space each one receives. A child docked earlier claims from the full available area; later children claim from what remains. Always write small UI components (menu, toolbar) before large ones (sidebar, content area). Docking a large element first leaves little room for elements that follow.</td>
         </tr>
         <tr>
           <td><code>Background</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the background brush painted behind all children. When <code>LastChildFill</code> is <code>False</code>, the background shows through in the unclaimed central area. Setting a background is also required for the panel to participate in hit-testing when no opaque child covers the area.</td>
+          <td>Use this to paint the panel background and to control hit-testing. When <code>LastChildFill="False"</code>, the background is visible in the unclaimed centre area. <strong>Pitfall:</strong> a <code>null</code> background (the default) disables hit-testing on the panel itself — mouse events in uncovered areas pass straight through. Set <code>Background="Transparent"</code> to capture clicks without painting a colour.</td>
         </tr>
         <tr>
           <td><code>Panel.ZIndex (attached)</code></td>
           <td><code>int</code></td>
-          <td>Controls the render order of overlapping children. Higher values render on top. Although DockPanel children do not overlap in a typical layout, setting a high <code>ZIndex</code> on a floating panel or overlay child ensures it renders above all other content.</td>
+          <td>Controls the render order of overlapping children. Higher values render on top. Although DockPanel children do not overlap in a typical layout, setting a high <code>ZIndex</code> on a floating panel or overlay child ensures it renders above all other content. <strong>Pitfall:</strong> <code>ZIndex</code> is scoped to siblings within the same DockPanel only — it cannot make a child appear above elements in a different panel.</td>
         </tr>
       </tbody>
     </table>
@@ -158,11 +158,12 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Order children deliberately.</strong> DockPanel processes children in XAML order. A child docked to <code>Top</code> that appears before a child docked to <code>Left</code> will span the full panel width; reversing the order would shorten it.</li>
+      <li><strong>Order children deliberately.</strong> DockPanel processes children in XAML order. A child docked to <code>Top</code> that appears before a child docked to <code>Left</code> will span the full panel width; reversing the order would shorten it. Write small peripheral elements (menus, toolbars) before larger ones (sidebars, content panels) to ensure each component gets the space it needs.</li>
       <li><strong>Use Grid for complex layouts.</strong> DockPanel excels at simple shell structures but becomes cumbersome for more than 4–5 regions. Switch to a <code>Grid</code> when you need proportional sizing, spanning, or more than one content row.</li>
       <li><strong>Set <code>Background</code> when hit-testing matters.</strong> An empty DockPanel (or any panel with a <code>null</code> background) will not receive mouse events in the uncovered region. Set <code>Background="Transparent"</code> to capture clicks without painting a colour.</li>
       <li><strong>Avoid deeply nested DockPanels.</strong> While it is tempting to nest DockPanels for sub-sections, each level adds layout passes. Flatten the hierarchy with a single <code>Grid</code> to improve rendering performance and maintain readability.</li>
       <li><strong>Use <code>GridSplitter</code> for resizable regions.</strong> DockPanel itself does not support user-resizable panes. Place the docked panels inside a <code>Grid</code> and add a <code>GridSplitter</code> to enable drag-to-resize behaviour.</li>
+      <li><strong>Learn the window-frame layout pattern.</strong> The canonical DockPanel structure for a desktop application is: <code>Menu</code> docked <code>Top</code> → <code>ToolBar</code> docked <code>Top</code> → <code>StatusBar</code> docked <code>Bottom</code> → content fills the rest (<code>LastChildFill="True"</code>). Memorising this four-edge pattern lets you scaffold the skeleton of almost any WPF window in minutes.</li>
     </ul>
   </section>
 
