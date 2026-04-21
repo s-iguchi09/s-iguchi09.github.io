@@ -78,17 +78,17 @@
         <tr>
           <td><code>IsOverflowOpen</code></td>
           <td><code>bool</code></td>
-          <td>Gets or sets whether the overflow popup is currently open. Can be bound to programmatically show or hide the overflow panel, though users normally interact with it via the chevron button.</td>
+          <td>Gets or sets whether the overflow popup is currently open. You can bind or set this programmatically to open the overflow panel — for example, after a guided tour step that highlights an overflow item. Pitfall: if all items are visible (no overflow), the overflow button itself is hidden and <code>IsOverflowOpen="True"</code> has no visible effect.</td>
         </tr>
         <tr>
           <td><code>OverflowMode (ToolBar attached)</code></td>
           <td><code>AsNeeded / Never / Always</code></td>
-          <td>Applied to individual items inside the toolbar to control their overflow behavior. Set <code>Never</code> on critical commands (e.g., Save) to ensure they are always visible. Set <code>Always</code> on rarely used items to keep the main bar clean.</td>
+          <td>Applied to individual items inside the toolbar to control their overflow behavior. Set <code>Never</code> on critical commands (Save, Undo) to ensure they are always visible. Set <code>Always</code> on rarely used items to keep the main bar clean. Pitfall: too many <code>Never</code> items will cause buttons to overlap or get clipped when the window is made very narrow. Use this mode sparingly and only for the most essential commands.</td>
         </tr>
         <tr>
           <td><code>Band / BandIndex (ToolBar)</code></td>
           <td><code>int / int</code></td>
-          <td>Determines placement within the ToolBarTray. <code>Band</code> is the row (0-based) and <code>BandIndex</code> is the position within that row. Save and restore these values to persist the user's toolbar layout across sessions.</td>
+          <td>Determines placement within the ToolBarTray. <code>Band</code> is the row (0-based) and <code>BandIndex</code> is the position within that row. Save and restore these values to persist the user's toolbar layout across sessions. Pitfall: <code>Band</code>/<code>BandIndex</code> have no effect on a ToolBar that is not placed inside a <code>ToolBarTray</code>; drag-to-reorder also stops working without a tray.</td>
         </tr>
         <tr>
           <td><code>IsLocked (ToolBarTray)</code></td>
@@ -98,7 +98,7 @@
         <tr>
           <td><code>Orientation (ToolBarTray)</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Sets whether the ToolBarTray lays out toolbars horizontally (typical top/bottom placement) or vertically (side panel placement). The contained ToolBars are oriented accordingly.</td>
+          <td>Sets whether the ToolBarTray lays out toolbars horizontally (typical top/bottom placement) or vertically (side panel placement). The contained ToolBars are oriented accordingly. Pitfall: the <code>Orientation</code> of the <code>ToolBarTray</code> and its contained <code>ToolBar</code>s must be consistent; a mismatch can cause unexpected layout behavior.</td>
         </tr>
       </tbody>
     </table>
@@ -143,9 +143,10 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Always host ToolBar inside ToolBarTray</strong> — Without a tray, overflow and drag-reorder features do not work. Even a single toolbar benefits from being inside a tray.</li>
-      <li><strong>Set OverflowMode="Never" on critical commands</strong> — Ensure Save, Undo, and other high-priority commands are always visible regardless of window width.</li>
-      <li><strong>Use ToolTip on every item</strong> — Toolbar buttons typically show icons only; always add ToolTip so users can discover the action without hunting through menus.</li>
+      <li><strong>Set OverflowMode="Never" on critical commands</strong> — Ensure Save, Undo, and other high-priority commands are always visible regardless of window width. Use this mode sparingly to avoid items overlapping when the window is very narrow.</li>
+      <li><strong>Use ToolTip on every item</strong> — Toolbar buttons typically show icons only; always add a <code>ToolTip</code> so users can discover the action without hunting through menus.</li>
       <li><strong>Separate groups with Separator</strong> — Use <code>&lt;Separator /&gt;</code> to visually group related commands (file operations vs. edit operations vs. format commands).</li>
+      <li><strong>Override background color carefully</strong> — ToolBar has a hard-coded grey background applied by its control template. Setting <code>Background</code> directly may have no effect; override it in a <code>Style</code> targeting <code>ToolBar</code> or replace the <code>ControlTemplate</code> to match your application's color theme.</li>
       <li><strong>Avoid complex content in overflow items</strong> — Items in the overflow popup should be self-contained; avoid items that rely on adjacent items being visible.</li>
     </ul>
   </section>

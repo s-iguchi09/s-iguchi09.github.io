@@ -66,27 +66,27 @@
         <tr>
           <td><code>IsIndeterminate</code></td>
           <td><code>bool</code></td>
-          <td>Switches between determinate (filled bar showing percentage) and indeterminate (looping animation) modes. Setting this to <code>true</code> at the start of an unknown-duration operation and back to <code>false</code> when the scope becomes known is the recommended pattern.</td>
+          <td>Switches between determinate (filled bar showing percentage) and indeterminate (looping animation) modes. Use <code>true</code> for operations where the total work cannot be measured — network requests, file-system enumeration, or initial data loads. Setting back to <code>false</code> and updating <code>Maximum</code>/<code>Value</code> once the scope is known is the recommended pattern. Pitfall: the indeterminate animation continues consuming CPU as long as the control is visible. Always set <code>IsIndeterminate="False"</code> and/or set <code>Visibility="Collapsed"</code> after the operation finishes to release rendering resources.</td>
         </tr>
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Controls whether the progress bar fills horizontally (left to right) or vertically (bottom to top). Vertical orientation is used in dashboard gauges, audio level meters, and bar chart visualizations where upward growth is the expected mental model.</td>
+          <td>Controls whether the progress bar fills horizontally (left to right) or vertically (bottom to top). Use <code>Vertical</code> for dashboard gauges, audio level meters, and bar-chart visualizations where upward growth is the expected mental model. Pitfall: in vertical mode the value increases from the bottom edge up, which is correct for most level-meter designs. If you need the bar to grow from top to bottom, apply a custom <code>ControlTemplate</code> or use a <code>ScaleTransform</code> to flip the rendering.</td>
         </tr>
         <tr>
           <td><code>Minimum (RangeBase)</code></td>
           <td><code>double</code></td>
-          <td>The value at which the progress bar displays as completely empty. Defaults to 0. For operations that start at a non-zero baseline (e.g., resuming a partially complete download), setting a non-zero minimum allows the visual to accurately represent remaining work.</td>
+          <td>The value at which the progress bar displays as completely empty. Defaults to 0. For operations that start at a non-zero baseline (e.g., resuming a partially complete download), setting a non-zero minimum lets the visual accurately represent the remaining work. Pitfall: setting <code>Maximum</code> equal to <code>Minimum</code> causes a divide-by-zero in the internal fill calculation and the bar will not display correctly. Always ensure <code>Maximum &gt; Minimum</code> before binding <code>Value</code>.</td>
         </tr>
         <tr>
           <td><code>Maximum (RangeBase)</code></td>
           <td><code>double</code></td>
-          <td>The value at which the progress bar displays as completely full. Defaults to 100. Setting this to the total number of items to process (e.g., the file count in a batch job) and incrementing <code>Value</code> by 1 per processed item produces an accurate completion percentage without manual math.</td>
+          <td>The value at which the progress bar displays as completely full. Defaults to 100. Setting this to the total item count (e.g., the number of files in a batch job) and incrementing <code>Value</code> by 1 per processed item produces an accurate percentage without manual math. Pitfall: if <code>Maximum</code> is set to 0 or if <code>Maximum == Minimum</code>, the bar will not render correctly. Validate these values before starting any progress reporting loop.</td>
         </tr>
         <tr>
           <td><code>Value (RangeBase)</code></td>
           <td><code>double</code></td>
-          <td>The current progress value, clamped between <code>Minimum</code> and <code>Maximum</code>. In MVVM applications, this is the primary binding target, updated from a background thread via <code>Dispatcher.Invoke</code> or by marshaling progress reports through <code>IProgress&lt;double&gt;</code>.</td>
+          <td>The current progress value, clamped between <code>Minimum</code> and <code>Maximum</code>. In MVVM applications, this is the primary binding target, updated from a background operation. Use <code>IProgress&lt;T&gt;</code> (which captures the UI thread's synchronization context) or <code>Dispatcher.InvokeAsync</code> to push updates safely. Pitfall: updating <code>Value</code> directly from a <code>Task</code> or background thread without marshaling to the UI thread throws an <code>InvalidOperationException</code>. Always use <code>IProgress&lt;T&gt;</code> or <code>Dispatcher</code> for cross-thread updates.</td>
         </tr>
       </tbody>
     </table>
@@ -135,11 +135,11 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Update <code>Value</code> on the UI thread:</strong> Progress updates from background tasks must be marshaled to the UI thread. Use <code>IProgress&lt;double&gt;</code> (which captures the synchronization context) or <code>Dispatcher.InvokeAsync</code> to avoid cross-thread exceptions.</li>
-      <li><strong>Use <code>IsIndeterminate</code> while total is unknown:</strong> Start with <code>IsIndeterminate="True"</code> and switch to <code>false</code> and set <code>Maximum</code> once the total count is determined. This avoids a stuck progress bar at 0%.</li>
-      <li><strong>Add a percentage label alongside the bar:</strong> A <code>TextBlock</code> showing the numeric percentage (e.g., "47%") in addition to the bar provides accessibility for users with color vision deficiency and adds precision to the visual feedback.</li>
+      <li><strong>Use <code>IProgress&lt;T&gt;</code> for thread-safe updates:</strong> Construct a <code>Progress&lt;int&gt;</code> with a callback that updates your ViewModel property. The <code>Progress&lt;T&gt;</code> class captures the synchronization context so the callback runs on the UI thread, eliminating the need for explicit <code>Dispatcher.Invoke</code> calls.</li>
+      <li><strong>Pair with a Cancel button:</strong> Long operations with a progress bar should always offer a cancellation path. Use <code>CancellationTokenSource</code> and <code>CancellationToken</code> in your async task, and reset <code>IsIndeterminate</code> and <code>Visibility</code> in the cancellation handling code.</li>
+      <li><strong>Add a percentage label alongside the bar:</strong> A <code>TextBlock</code> showing the numeric percentage (e.g., "47%") in addition to the bar provides accessibility for users with color vision deficiency. Place it inside a <code>Grid</code> centered over the ProgressBar using <code>HorizontalAlignment="Center"</code> and <code>VerticalAlignment="Center"</code>.</li>
       <li><strong>Set <code>Maximum</code> to item count, not 100:</strong> Using the actual item count (e.g., 500 files) and incrementing by 1 avoids floating-point percentage calculations in the view model and keeps the binding logic simple.</li>
-      <li><strong>Style with custom colors for severity:</strong> Use a green-to-red gradient fill via a custom control template to create warning indicators where color represents thresholds, such as disk usage that turns red above 90%.</li>
+      <li><strong>Hide the bar when idle:</strong> Set <code>Visibility="Collapsed"</code> on the ProgressBar when no operation is in progress to avoid the indeterminate animation consuming CPU and distracting users.</li>
     </ul>
   </section>
 

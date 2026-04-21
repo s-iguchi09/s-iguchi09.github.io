@@ -74,12 +74,12 @@
         <tr>
           <td><code>Stretch</code></td>
           <td><code>None / Fill / Uniform / UniformToFill</code></td>
-          <td>Controls how the child is scaled. <code>Uniform</code> (default) scales proportionally to fit entirely within the Viewbox. <code>UniformToFill</code> scales to fill the Viewbox completely, potentially cropping. <code>Fill</code> stretches to fill without preserving aspect ratio. <code>None</code> disables scaling.</td>
+          <td>Controls how the child is scaled. <code>Uniform</code> (default) scales proportionally to fit entirely within the Viewbox, which is the right choice for icons and logos where the complete design must always be visible. <code>UniformToFill</code> scales to fill completely while preserving the aspect ratio, potentially cropping edges. <code>Fill</code> stretches independently on both axes, distorting the aspect ratio — appropriate only for overlays where distortion is acceptable. <code>None</code> disables scaling entirely. Pitfall: with <code>UniformToFill</code>, the child is still measured and laid out at its full natural size even though it is cropped — this can waste CPU in complex child layouts.</td>
         </tr>
         <tr>
           <td><code>StretchDirection</code></td>
           <td><code>UpOnly / DownOnly / Both</code></td>
-          <td>Constrains the scaling direction. <code>UpOnly</code> only enlarges the child (prevents shrinking); <code>DownOnly</code> only shrinks the child (prevents enlarging); <code>Both</code> (default) allows scaling in either direction as needed to fit the Viewbox.</td>
+          <td>Constrains the scaling direction. <code>UpOnly</code> only enlarges the child (prevents shrinking below its natural size) — use this when content should never appear smaller. <code>DownOnly</code> only shrinks the child (prevents enlarging beyond its natural size) — use this to prevent pixelation of small icons in large containers. <code>Both</code> (default) scales in either direction as needed. Pitfall: with the default <code>Both</code>, a small icon placed inside a large container can be upscaled dramatically, appearing blurry or disproportionate. For icon assets, consider <code>DownOnly</code> to keep them at their natural size when the container is large.</td>
         </tr>
       </tbody>
     </table>
@@ -124,8 +124,9 @@
       <li><strong>Prefer Uniform for icons and logos</strong> — UniformToFill can clip important content; Uniform ensures the complete design is always visible.</li>
       <li><strong>Use StretchDirection="DownOnly" for bitmap images</strong> — Upscaling raster images causes blurriness; DownOnly prevents enlargement beyond the image's natural size.</li>
       <li><strong>Viewbox only accepts one child</strong> — Place all content inside a single panel (Grid, StackPanel, Canvas) as the Viewbox child rather than adding multiple children.</li>
-      <li><strong>Vector content looks best</strong> — Viewbox-scaled Path and Canvas elements remain crisp at any size; bitmap-heavy content may appear blurry when upscaled significantly.</li>
+      <li><strong>Vector content looks best</strong> — Viewbox-scaled Path and Canvas elements remain crisp at any size. For text-heavy content, prefer adjusting <code>FontSize</code> directly rather than wrapping in a Viewbox, because the scale transform bypasses font hinting and can cause blurry rendering at non-integer scale factors.</li>
       <li><strong>Set explicit Width/Height or constrain the parent</strong> — Without size constraints, Viewbox fills its available space; set explicit dimensions or place it in a sized container to control its footprint.</li>
+      <li><strong>Be aware of the double layout pass</strong> — Viewbox measures its child at infinite space, then applies a scale. For complex child layouts this double-pass can increase CPU cost. If performance is a concern, use explicit dimensions on the child or choose a simpler scaling approach.</li>
     </ul>
   </section>
 

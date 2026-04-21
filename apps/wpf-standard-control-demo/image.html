@@ -67,17 +67,17 @@
         <tr>
           <td><code>Source</code></td>
           <td><code>ImageSource (URI / file path)</code></td>
-          <td>The image data to display, specified as a URI string pointing to a resource, file, or web URL. WPF automatically creates a <code>BitmapImage</code> from the URI during XAML parsing; you can also set this in code by assigning a <code>BitmapImage</code> instance directly.</td>
+          <td>The image data to display, specified as a URI string pointing to a resource, file, or web URL. WPF automatically creates a <code>BitmapImage</code> from the URI during XAML parsing. For application resources, use the pack URI format (e.g., <code>pack://application:,,,/Images/logo.png</code>). For large image collections, set <code>BitmapCacheOption.OnLoad</code> on the <code>BitmapImage</code> to decode immediately and release the stream. Pitfall: in code-behind, you cannot assign a plain string to <code>Image.Source</code> — the implicit string-to-ImageSource converter only runs during XAML parsing. In code, create a <code>BitmapImage</code> or use an <code>ImageSourceConverter</code> instead.</td>
         </tr>
         <tr>
           <td><code>Stretch</code></td>
           <td><code>None / Fill / Uniform / UniformToFill</code></td>
-          <td>Controls how the image scales to fill its allocated layout bounds. <code>Uniform</code> is the most common choice for photos as it preserves the aspect ratio; <code>UniformToFill</code> is preferred for thumbnail backgrounds where edge-to-edge coverage is required.</td>
+          <td>Controls how the image scales to fill its allocated layout bounds. <code>Uniform</code> scales proportionally to fit within the container, potentially leaving letterbox bars. <code>UniformToFill</code> scales proportionally to fill the container completely, cropping edges — ideal for profile photos or cover images. <code>Fill</code> ignores the aspect ratio and stretches the image to fill. Pitfall: with <code>UniformToFill</code>, the full image is still decoded into memory even though only part of it is displayed. For very large images, this wastes memory; use <code>DecodePixelWidth</code>/<code>DecodePixelHeight</code> to decode at the display size.</td>
         </tr>
         <tr>
           <td><code>StretchDirection</code></td>
           <td><code>UpOnly / DownOnly / Both</code></td>
-          <td>Restricts the direction in which the image is scaled. <code>Both</code> (the default) allows scaling in both directions; <code>DownOnly</code> prevents enlarging a small image beyond its natural size; <code>UpOnly</code> prevents shrinking a large image below its natural size.</td>
+          <td>Restricts the direction in which the image is scaled. <code>Both</code> (the default) allows scaling in both directions; <code>DownOnly</code> prevents enlarging a small image beyond its natural size, which avoids blurriness when a small icon is placed in a large container; <code>UpOnly</code> prevents shrinking a large image below its natural size. Pitfall: combining <code>StretchDirection="UpOnly"</code> with <code>Stretch="Uniform"</code> means a small image will not be upscaled in a large container, which is intentional for icons but can cause unexpected small rendering for photos.</td>
         </tr>
       </tbody>
     </table>
@@ -129,6 +129,8 @@
       <li><strong>Use <code>DecodePixelWidth</code> / <code>DecodePixelHeight</code>:</strong> When loading large images as small thumbnails, set these on the <code>BitmapImage</code> to decode at the display size and dramatically reduce memory usage.</li>
       <li><strong>Prefer <code>DrawingImage</code> for icons:</strong> Vector-based icons rendered via <code>DrawingImage</code> or <code>Viewbox</code> remain crisp at all DPI settings, unlike raster PNGs that may appear blurry on high-DPI displays.</li>
       <li><strong>Handle load failures gracefully:</strong> Subscribe to <code>BitmapImage.DownloadFailed</code> and <code>DecodeFailed</code> events or provide a fallback <code>Source</code> using a value converter to show a placeholder when images cannot be loaded.</li>
+      <li><strong>Release large images when no longer needed:</strong> Setting <code>Image.Source</code> to <code>null</code> when an image is no longer displayed helps the garbage collector release the decoded bitmap. Large images held in memory can cause significant memory pressure in image-heavy applications.</li>
+      <li><strong>SVG is not natively supported:</strong> WPF's Image control does not support SVG. To display SVG graphics, use a third-party library or re-implement the drawing using <code>Path</code> and <code>Canvas</code> elements.</li>
     </ul>
   </section>
 

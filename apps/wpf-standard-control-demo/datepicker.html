@@ -82,47 +82,42 @@
         <tr>
           <td><code>SelectedDate</code></td>
           <td><code>DateTime?</code></td>
-          <td>The currently selected date as a nullable <code>DateTime</code>. A <code>null</code> value means no date is selected and the text field shows as empty. Bind this two-way to a ViewModel <code>DateTime?</code> property to read and set the selected date from code.</td>
+          <td>The currently selected date as a nullable <code>DateTime</code>. Bind this two-way to a <code>DateTime?</code> ViewModel property to read and set the selected date from code. When the user clears the text field, <code>SelectedDate</code> becomes <code>null</code>. Pitfall: if you bind to a non-nullable <code>DateTime</code> property, a binding error occurs when the value is <code>null</code>. Always use <code>DateTime?</code> (nullable) as the binding target for <code>SelectedDate</code>.</td>
         </tr>
         <tr>
           <td><code>DisplayDate</code></td>
           <td><code>DateTime</code></td>
-          <td>Controls which month is shown when the calendar popup first opens. By default this matches <code>SelectedDate</code>, but you can override it to pre-navigate to a specific month — for example, opening a booking calendar one month in the future.</td>
+          <td>Controls which month is shown when the calendar popup first opens. By default this tracks the selected date, but you can override it to pre-navigate to a specific month — for example, a booking calendar that opens three months ahead. Pitfall: changing <code>DisplayDate</code> only moves the calendar's visible month; it does not change <code>SelectedDate</code>. To pre-select a date you must also set <code>SelectedDate</code> separately.</td>
         </tr>
         <tr>
-          <td><code>DisplayDateStart</code></td>
+          <td><code>DisplayDateStart / DisplayDateEnd</code></td>
           <td><code>DateTime?</code></td>
-          <td>The earliest date the user can select. Dates before this value appear greyed out in the calendar and cannot be clicked. Use this to prevent selecting past dates in booking or scheduling scenarios.</td>
-        </tr>
-        <tr>
-          <td><code>DisplayDateEnd</code></td>
-          <td><code>DateTime?</code></td>
-          <td>The latest date the user can select. Dates after this value are greyed out. Combine with <code>DisplayDateStart</code> to define a valid selection window, such as "next 30 days only" for appointment booking.</td>
+          <td>Sets the earliest and latest dates the user can select. Dates outside this range appear greyed out in the calendar. Combine them to define a valid selection window — for example, "today to 30 days out" for appointment booking. Pitfall: these properties restrict the calendar UI but do not prevent a user from typing an out-of-range date directly into the text field. Always validate <code>SelectedDate</code> in the ViewModel as well.</td>
         </tr>
         <tr>
           <td><code>FirstDayOfWeek</code></td>
           <td><code>DayOfWeek</code></td>
-          <td>Sets which day of the week appears in the leftmost column of the calendar grid. The default is determined by the thread's current culture. Override this to <code>Monday</code> for European locales or <code>Sunday</code> for US conventions.</td>
+          <td>Sets which day of the week appears in the leftmost column of the calendar grid. The default is determined by the thread's current culture. Pitfall: WPF does not automatically derive this from the OS locale at runtime. For Japanese or European audiences where Monday is the conventional first day, set <code>FirstDayOfWeek="Monday"</code> explicitly.</td>
         </tr>
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>Gets or sets whether the calendar popup is open. You can bind or set this programmatically to open the calendar without a button click — useful for keyboard-driven workflows where pressing a key should reveal the picker.</td>
+          <td>Gets or sets whether the calendar popup is open. You can bind or set this programmatically to open the calendar without a button click — useful for keyboard-driven workflows where pressing a key should reveal the picker. Pitfall: attempting to open the dropdown before the DatePicker is fully rendered (e.g., in a constructor before the <code>Loaded</code> event) can cause layout issues. Always open it from within a <code>Loaded</code> handler or later.</td>
         </tr>
         <tr>
           <td><code>IsTodayHighlighted</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code> (the default), today's date is visually highlighted with a distinct style in the popup calendar. Set to <code>False</code> to remove this highlight if your date selection is not relative to today and the highlight could mislead users.</td>
+          <td>When <code>True</code> (the default), today's date is visually highlighted in the popup calendar. Set to <code>False</code> to remove this highlight for scenarios where today has no special significance — such as historical data entry — and the highlight could mislead users. Pitfall: disabling the highlight does not make today unselectable; it is purely cosmetic and has no effect on which dates are valid choices.</td>
         </tr>
         <tr>
           <td><code>SelectedDateFormat</code></td>
           <td><code>Short / Long</code></td>
-          <td>Controls how the selected date is formatted in the text field. <code>Short</code> uses the culture's short date pattern; <code>Long</code> uses the long date pattern including the full day name and month name. Both are localisation-aware.</td>
+          <td>Controls how the selected date is formatted in the text field. <code>Short</code> uses the culture's short date pattern (e.g., "1/15/2026" in en-US, "2026/01/15" in ja-JP); <code>Long</code> uses the long date pattern including the full day and month names. Pitfall: <code>Long</code> format is locale-dependent and may produce unexpected output for non-target locales. If you need a specific fixed format (e.g., ISO 8601), use an <code>IValueConverter</code> rather than relying on this property.</td>
         </tr>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>The raw string currently shown in the text field. This may differ from <code>SelectedDate</code> if the user has typed a partial or invalid date. Monitoring <code>Text</code> is useful for real-time validation feedback before the date is committed.</td>
+          <td>The raw string currently shown in the text field. This may differ from <code>SelectedDate</code> if the user has typed a partial or invalid date. Monitoring <code>Text</code> is useful for real-time validation feedback before the date is committed. Pitfall: when a user types an invalid date string, <code>SelectedDate</code> may remain <code>null</code> while <code>Text</code> still contains the user's input, so checking only <code>SelectedDate</code> for null is not sufficient for detecting invalid user input.</td>
         </tr>
       </tbody>
     </table>
@@ -171,7 +166,8 @@
       <li><strong>Bind to <code>DateTime?</code></strong> (nullable) in your ViewModel rather than <code>DateTime</code>, because unset date fields are naturally represented as <code>null</code>, not a sentinel value like <code>DateTime.MinValue</code>.</li>
       <li><strong>Validate the <code>Text</code> property</strong> alongside <code>SelectedDate</code>. If a user types an invalid date string, <code>SelectedDate</code> may remain <code>null</code> while <code>Text</code> contains the user input, requiring a clear validation message.</li>
       <li><strong>Set <code>DisplayDate</code> on open</strong> for future-biased pickers (booking forms). Opening the calendar three months ahead saves the user navigation steps when selecting future dates.</li>
-      <li><strong>Use <code>StringFormat</code> in binding</strong> if you need a custom display pattern beyond Short/Long. Bind <code>Text</code> with <code>StringFormat='{0:yyyy-MM-dd}'</code> for ISO 8601 display, though this requires parsing logic for user input.</li>
+      <li><strong>Use <code>BlackoutDates</code> for specific unavailable dates</strong> — holidays, weekends, or days already booked. Add <code>CalendarDateRange</code> entries to the <code>BlackoutDates</code> collection to make those days unclickable in the calendar.</li>
+      <li><strong>Use a custom date range with two DatePickers.</strong> For From/To date ranges, bind the second picker's <code>DisplayDateStart</code> to the first picker's <code>SelectedDate</code> so users can only select an end date on or after the start date. Validate both dates in the ViewModel.</li>
       <li><strong>Test localisation.</strong> Date format, first day of week, and month names all vary by culture. Always test DatePicker behaviour with representative non-English locales to ensure formatting is correct and usable.</li>
     </ul>
   </section>
