@@ -69,9 +69,40 @@
       </thead>
       <tbody>
         <tr>
+          <td><code>Header (HeaderedContentControl)</code></td>
+          <td><code>object</code></td>
+          <td>
+            <strong>When to use:</strong> Use a plain string for simple tabs. Use a <code>StackPanel</code> or other UIElement when you need icons, close buttons, or notification badges in the tab strip.<br>
+            <strong>What happens:</strong> A string value is automatically wrapped in a <code>TextBlock</code>. Any <code>UIElement</code> is rendered directly inside the tab header area, giving you full layout control.<br>
+            <strong>Pitfalls:</strong> Long or dynamically changing header content causes the tab's width to vary, which can shift the positions of adjacent tabs and make the tab strip feel jumpy. Set a fixed <code>Width</code> or <code>MinWidth</code> on the <code>TabItem</code> via <code>ItemContainerStyle</code> to prevent this.
+          </td>
+        </tr>
+        <tr>
           <td><code>IsSelected</code></td>
           <td><code>bool</code></td>
-          <td>Indicates or sets whether this TabItem is the currently active tab. Setting it to <code>true</code> at runtime programmatically selects this tab and deselects the previous one. Useful for deep-link navigation where a specific tab must be opened on load.</td>
+          <td>
+            <strong>When to use:</strong> Use when you need per-tab activation tracking from the ViewModel — for example, in wizard-style flows where a specific step must be activated on navigation, or for deep-link scenarios where a URL parameter indicates which tab to open.<br>
+            <strong>What happens:</strong> Setting <code>true</code> activates this tab: the content area switches to this tab's content and the previously active tab is deselected. Bind two-way to a ViewModel bool to keep the ViewModel in sync with user clicks.<br>
+            <strong>Pitfalls:</strong> The parent <code>TabControl</code> enforces exclusive selection internally. If you set multiple TabItems' <code>IsSelected</code> to <code>true</code> simultaneously, only the last one to be processed wins. Prefer managing selection via <code>TabControl.SelectedIndex</code> or <code>SelectedItem</code> at the container level to avoid coordination issues.
+          </td>
+        </tr>
+        <tr>
+          <td><code>IsEnabled (Control)</code></td>
+          <td><code>bool</code></td>
+          <td>
+            <strong>When to use:</strong> Use to enforce access rules — disable a tab until a prerequisite is met (e.g., a wizard step is completed) or based on user role/permissions.<br>
+            <strong>What happens:</strong> Setting <code>False</code> grays out the tab header; clicks on it are ignored. Bind to a ViewModel boolean to enable or disable the tab dynamically as conditions change.<br>
+            <strong>Pitfalls:</strong> <code>IsEnabled="False"</code> only blocks user interaction — code can still navigate to a disabled tab by setting <code>TabControl.SelectedIndex</code>. If access control is security-sensitive, also guard the content itself (e.g., show a "Not authorized" message or collapse the content).
+          </td>
+        </tr>
+        <tr>
+          <td><code>Content (ContentControl)</code></td>
+          <td><code>object</code></td>
+          <td>
+            <strong>When to use:</strong> Set to a <code>Grid</code>, <code>StackPanel</code>, or any layout panel containing the tab page's controls. For heavy content (data grids, charts, large forms) consider deferring initialization.<br>
+            <strong>What happens:</strong> The content is displayed in the main content area of the <code>TabControl</code> when this tab is selected and hidden when another tab is selected. Once created, the content remains in memory for the lifetime of the <code>TabControl</code>.<br>
+            <strong>Pitfalls:</strong> All tab content is initialized when the <code>TabControl</code> loads, not lazily on first selection. If initialization performs expensive work (database queries, file I/O), it will slow down application startup even for tabs the user never opens. Implement lazy loading by triggering data fetch in the ViewModel when <code>IsSelected</code> first becomes <code>true</code>.
+          </td>
         </tr>
         <tr>
           <td><code>TabStripPlacement (ReadOnly)</code></td>
@@ -123,9 +154,9 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Use the Header property for labels, not Content</strong> — Content is the page body; Header is the tab strip label. Confusing the two is a common mistake for WPF beginners.</li>
-      <li><strong>Lazy content creation</strong> — TabItem content is not created until the tab is first selected, so expensive views load on demand without any extra code.</li>
+      <li><strong>Lazy content initialization</strong> — Although TabItem content appears not to load until the tab is selected, the default behavior actually initializes all tab content when the TabControl is first rendered. For tabs with heavy initialization work, explicitly defer loading by watching <code>IsSelected</code> become <code>true</code> for the first time and triggering the actual data fetch from the ViewModel at that point.</li>
       <li><strong>Avoid binding IsSelected on all tabs simultaneously</strong> — Managing multiple IsSelected bindings can cause conflicts; prefer binding SelectedIndex or SelectedItem at the TabControl level.</li>
-      <li><strong>Style headers consistently</strong> — Define a shared HeaderTemplate at the TabControl level using ItemContainerStyle so all tabs have a uniform appearance.</li>
+      <li><strong>Use HeaderTemplate for uniform styling across all tabs</strong> — When using <code>ItemsSource</code> to generate tabs dynamically, define a <code>HeaderTemplate</code> on the <code>TabControl</code> so all tab headers share the same structure (e.g., icon + label + optional badge). This is more maintainable than setting individual <code>Header</code> content on each <code>TabItem</code>.</li>
       <li><strong>Test keyboard navigation</strong> — Users navigate between tabs with Ctrl+Tab (forward) and Ctrl+Shift+Tab (backward); verify the tab order is logical.</li>
     </ul>
   </section>
