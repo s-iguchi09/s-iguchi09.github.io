@@ -83,57 +83,57 @@
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>Gets or sets whether the dropdown list is currently visible. You can bind or set this programmatically to open or close the list from code, for example to show the list automatically when a dialog opens.</td>
+          <td>Use this to programmatically open or close the dropdown — for example, to auto-open the list when a dialog appears, or to close it from code after a selection is processed. Setting it to <code>True</code> opens the list; <code>False</code> closes it. Pitfall: if you use a two-way binding on this property, be careful about timing. When the user closes the dropdown, the binding updates the ViewModel property to <code>False</code>. If your code then immediately sets it back to <code>True</code>, the dropdown reopens involuntarily. Always guard against unintentional re-opens by checking the current state before programmatically opening.</td>
         </tr>
         <tr>
           <td><code>IsEditable</code></td>
           <td><code>bool</code></td>
-          <td>When <code>True</code>, replaces the read-only selection display with an editable text box, allowing the user to type values directly. This enables type-ahead/auto-complete behaviour and is required before <code>IsReadOnly</code> has any effect.</td>
+          <td>Set to <code>True</code> when you want the ComboBox to act as both a dropdown selector and a free-text input — typical for auto-complete search boxes or fields where users may type a value not in the list. When enabled, the <code>Text</code> property becomes active and can be two-way bound to receive typed input. Pitfall: when <code>IsEditable="True"</code> and the user types a value that does not match any item in the list, <code>SelectedItem</code> becomes <code>null</code>. If your ViewModel only observes <code>SelectedItem</code>, the typed text will be silently lost. Always also bind <code>Text</code> to capture free-form input alongside list selections.</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>Effective only when <code>IsEditable</code> is <code>True</code>. Prevents the user from typing in the text field while still allowing dropdown selection, giving you a non-editable combobox that visually looks like a text box.</td>
+          <td>Only effective when <code>IsEditable="True"</code>. Use it when you want the visual appearance of an editable text field but you only want to allow selections from the dropdown list — preventing the user from typing arbitrary values. With <code>IsEditable="True"</code> and <code>IsReadOnly="True"</code>, the text portion is non-editable but the dropdown still opens for list selection. Pitfall: setting <code>IsReadOnly="True"</code> without also setting <code>IsEditable="True"</code> has no effect. To disable the entire control including the dropdown, use <code>IsEnabled="False"</code> instead.</td>
         </tr>
         <tr>
           <td><code>MaxDropDownHeight</code></td>
           <td><code>double</code></td>
-          <td>Limits the maximum pixel height of the open dropdown list. When the list contains more items than fit in this height, a scrollbar appears automatically. Setting a reasonable value prevents the dropdown from obscuring large portions of the screen.</td>
+          <td>Use this when the dropdown list contains many items and could extend off-screen or obscure important UI elements. Setting a maximum height caps the dropdown and adds a scrollbar automatically when the content overflows. The default value is <code>double.PositiveInfinity</code> (no limit), meaning a very long list can cover the entire screen. Pitfall: setting an extremely small value — smaller than a single item's height — will make the dropdown nearly unusable. As a rule of thumb, set this to approximately the item height multiplied by 5–8 to show a comfortable number of choices.</td>
         </tr>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>Represents the current text in the editable portion of the ComboBox when <code>IsEditable</code> is <code>True</code>. Binding this property two-way allows you to read user input and also programmatically set the displayed text without changing the selection.</td>
+          <td>Represents the current text shown in the editable portion of the ComboBox. This property is active only when <code>IsEditable="True"</code>. Two-way binding it allows the ViewModel to both read the user's typed input and programmatically set the displayed text. When the selected item changes, <code>Text</code> automatically reflects the item's display string (based on <code>DisplayMemberPath</code> or <code>ToString()</code>). Pitfall: setting <code>Text</code> programmatically has no visual effect when <code>IsEditable="False"</code> (the default). To change the displayed value in a non-editable ComboBox, set <code>SelectedItem</code> or <code>SelectedIndex</code> instead.</td>
         </tr>
         <tr>
           <td><code>StaysOpenOnEdit</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether the dropdown list remains open while the user is typing (requires <code>IsEditable="True"</code>). When <code>True</code>, the list stays visible during text entry, enabling inline filtering of options as the user types.</td>
+          <td>Controls whether the dropdown list stays open while the user is typing (requires <code>IsEditable="True"</code>). When <code>True</code>, the list remains visible during text entry, which is the foundation of inline filtering — as the user types, you update the <code>ItemsSource</code> to match the input and the updated suggestions appear immediately. Pitfall: keeping the dropdown open continuously while typing can feel intrusive and disrupt the user's flow in contexts where free-form input is the primary goal. Only enable this when the inline suggestion list genuinely adds value.</td>
         </tr>
         <tr>
           <td><code>ShouldPreserveUserEnteredPrefix</code></td>
           <td><code>bool</code></td>
-          <td>Determines whether the text the user has typed is preserved as they navigate the dropdown with the keyboard. When <code>True</code>, the typed prefix is kept, aiding auto-complete scenarios where partial input guides list navigation.</td>
+          <td>Determines whether the text typed by the user is preserved as they navigate the dropdown with the keyboard. When <code>True</code>, the typed prefix is maintained as the user arrows through the list, so the auto-complete highlight is applied on top of the original input. This aids auto-complete scenarios where partial input guides navigation without overwriting what the user typed.</td>
         </tr>
         <tr>
           <td><code>SelectedIndex (Selector)</code></td>
           <td><code>int</code></td>
-          <td>Gets or sets the zero-based index of the currently selected item. A value of <code>-1</code> means no item is selected. This property is useful for programmatically selecting the first item on load or resetting the selection.</td>
+          <td>Gets or sets the zero-based index of the currently selected item. A value of <code>-1</code> means nothing is selected. Useful for programmatically selecting the first item on load or resetting the selection to empty. Pitfall: setting <code>SelectedIndex=-1</code> clears the index-based selection, but <code>SelectedItem</code> may not automatically update to <code>null</code> in all scenarios. To guarantee a full selection clear, set both <code>SelectedIndex=-1</code> and <code>SelectedItem=null</code>.</td>
         </tr>
         <tr>
           <td><code>SelectedItem (Selector)</code></td>
           <td><code>object</code></td>
-          <td>Gets or sets the selected item object directly. When the ItemsSource is a collection of complex objects, binding <code>SelectedItem</code> two-way to a ViewModel property gives you the full item object on selection, not just the display string.</td>
+          <td>Gets or sets the currently selected item object directly. When <code>ItemsSource</code> contains complex objects, two-way binding <code>SelectedItem</code> to a ViewModel property gives you the full selected object on every selection change. Pitfall: WPF compares <code>SelectedItem</code> using reference equality — it checks whether the set value is the exact same object instance as one in the <code>ItemsSource</code> collection. If you set it to a freshly loaded object from a database (different instance, same data), the selection will not match. Either ensure you use the same instance from the existing collection, or use <code>SelectedValue</code> + <code>SelectedValuePath</code> to match by a key property instead.</td>
         </tr>
         <tr>
           <td><code>SelectedValue / SelectedValuePath / DisplayMemberPath (ItemsControl)</code></td>
           <td><code>object / string / string</code></td>
-          <td><code>SelectedValuePath</code> names the property of the data object to expose as <code>SelectedValue</code>. <code>DisplayMemberPath</code> names the property shown in the list. This pair lets you bind a foreign key integer (<code>SelectedValue</code>) while displaying a friendly name to the user.</td>
+          <td>Use <code>SelectedValuePath</code> to name the property of your data objects whose value should be exposed as <code>SelectedValue</code>. This is the standard pattern for foreign-key selection: set <code>SelectedValuePath="Id"</code> and bind <code>SelectedValue</code> to an integer ID in the ViewModel, while <code>DisplayMemberPath="Name"</code> shows the friendly name in the list. Pitfall: <code>SelectedValuePath</code> is case-sensitive — if the property name is <code>ProductId</code> but you write <code>productId</code>, <code>SelectedValue</code> will always be <code>null</code>. Also note that <code>DisplayMemberPath</code> and <code>ItemTemplate</code> are mutually exclusive: setting both causes <code>DisplayMemberPath</code> to be ignored.</td>
         </tr>
         <tr>
           <td><code>IsSynchronizedWithCurrentItem (ItemsControl)</code></td>
           <td><code>bool?</code></td>
-          <td>When <code>True</code>, the ComboBox selection is kept in sync with the current item of the underlying <code>CollectionView</code>. This is the standard way to create master-detail views where selecting a ComboBox item automatically updates a bound details panel.</td>
+          <td>When <code>True</code>, the ComboBox selection is kept in sync with the current item of the underlying <code>CollectionView</code>. This is the standard way to create master-detail views where selecting a ComboBox item automatically updates a bound details panel without extra event wiring.</td>
         </tr>
       </tbody>
     </table>
@@ -183,11 +183,12 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Prefer <code>SelectedItem</code> binding</strong> over <code>SelectedIndex</code> when working with data-bound collections. Index-based selection breaks when the collection is sorted or filtered.</li>
-      <li><strong>Use <code>SelectedValuePath</code> for foreign keys.</strong> Rather than binding <code>SelectedItem</code> to a full entity object, bind <code>SelectedValue</code> to a simple ID property to keep ViewModel dependencies minimal.</li>
-      <li><strong>Set <code>MaxDropDownHeight</code></strong> for large collections. Without a height limit, a dropdown with hundreds of items can extend off-screen, degrading the user experience.</li>
-      <li><strong>Provide an empty/placeholder item</strong> (e.g., "— Select —" at index 0) rather than leaving the combobox blank at startup. This makes it clear to the user that a selection is required.</li>
-      <li><strong>Use <code>ItemTemplate</code> for complex items.</strong> If list items need icons or multi-line content, define a <code>DataTemplate</code> as <code>ItemTemplate</code> rather than relying solely on <code>DisplayMemberPath</code>.</li>
+      <li><strong>Choose between <code>SelectedItem</code> and <code>SelectedValue</code> deliberately</strong> — Use <code>SelectedItem</code> when the ViewModel needs the whole object; use <code>SelectedValue</code> + <code>SelectedValuePath</code> when you only need a key property (such as an ID). Remember that <code>SelectedItem</code> uses reference equality — setting it to a freshly loaded object with the same data as an item in <code>ItemsSource</code> will not produce a match unless it is the exact same instance.</li>
+      <li><strong>Set an initial selection explicitly</strong> — On dialog open, set <code>SelectedItem</code> or <code>SelectedIndex</code> from the ViewModel to show a meaningful default. When using <code>SelectedItem</code>, make sure you reference the same object instance that is in the <code>ItemsSource</code> collection.</li>
+      <li><strong>Add an empty placeholder item for required fields</strong> — Rather than leaving the ComboBox blank at startup, add a "— Select —" entry at the top of the collection (using <code>CompositeCollection</code> to avoid modifying the source data), so users clearly understand a selection is required.</li>
+      <li><strong>Always set <code>MaxDropDownHeight</code> for large collections</strong> — Without a height limit, a dropdown with hundreds of items will extend off-screen on small monitors. Set it to a value that shows 5–8 items comfortably.</li>
+      <li><strong>Handle <code>IsEditable=True</code> null SelectedItem gracefully</strong> — When <code>IsEditable="True"</code> and the user types a value not in the list, <code>SelectedItem</code> is <code>null</code>. Always check both <code>SelectedItem</code> and <code>Text</code> in your ViewModel logic to handle free-form input correctly.</li>
+      <li><strong>Use <code>ItemTemplate</code> for rich item appearance, but not with <code>DisplayMemberPath</code></strong> — If list items need icons or multi-line content, define a <code>DataTemplate</code> as <code>ItemTemplate</code>. Note that <code>DisplayMemberPath</code> and <code>ItemTemplate</code> are mutually exclusive — setting both will cause <code>DisplayMemberPath</code> to be silently ignored.</li>
     </ul>
   </section>
 

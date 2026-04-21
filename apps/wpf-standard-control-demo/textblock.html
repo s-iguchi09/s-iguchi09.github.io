@@ -77,67 +77,67 @@
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>The plain text content to display. Data-bind this to a string property in the ViewModel for dynamic text. When using inline elements, <code>Text</code> returns the concatenated plain-text equivalent.</td>
+          <td>Use this property for plain data-bound text — the standard pattern is a <code>OneWay</code> binding to a ViewModel string property so the display updates automatically when the property changes. It is the simplest way to show dynamic text. Pitfall: the <code>Text</code> property and inline child elements (such as <code>&lt;Bold&gt;</code> or <code>&lt;Run&gt;</code>) are mutually exclusive. If you add inline elements in XAML, setting <code>Text</code> simultaneously will throw an exception. When you need both dynamic binding and rich formatting, use <code>&lt;Run Text="{Binding ...}" /&gt;</code> inside the <code>Inlines</code> collection instead.</td>
         </tr>
         <tr>
           <td><code>TextWrapping</code></td>
           <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
-          <td><code>Wrap</code> breaks long text across multiple lines at word boundaries; <code>WrapWithOverflow</code> allows individual words that exceed the width to overflow rather than being clipped; <code>NoWrap</code> (default) keeps all text on one line.</td>
+          <td>Use <code>Wrap</code> for description text, tooltips, and paragraphs that must stay within a fixed column width. <code>WrapWithOverflow</code> wraps at word boundaries but lets individual long tokens — such as URLs or file paths — overflow rather than be clipped. <code>NoWrap</code> (the default) keeps all text on one line. Pitfall: using <code>NoWrap</code> without constraining the width causes the TextBlock to grow beyond its parent container and break the layout. If you use <code>NoWrap</code>, always set <code>MaxWidth</code> on the TextBlock or place it inside a width-constrained column, and pair it with <code>TextTrimming</code> to handle overflow gracefully.</td>
         </tr>
         <tr>
           <td><code>TextTrimming</code></td>
           <td><code>None / CharacterEllipsis / WordEllipsis</code></td>
-          <td>Controls how overflowing text is trimmed. <code>CharacterEllipsis</code> cuts at the character level and appends "…"; <code>WordEllipsis</code> cuts at a word boundary for a cleaner ellipsis. Pair with a ToolTip binding to show the full text on hover.</td>
+          <td>Use this for list cells and grid columns where the available width is fixed and long text must be shortened to fit. <code>CharacterEllipsis</code> cuts at the character level and appends "…"; <code>WordEllipsis</code> preserves whole words for a cleaner result. Pitfall: <code>TextTrimming</code> does nothing unless the TextBlock has a width constraint — either an explicit <code>Width</code> / <code>MaxWidth</code>, or placement in a container that limits the available width (such as a Grid column). Always pair trimming with a <code>ToolTip</code> binding to the full text so users can read the complete content on hover.</td>
         </tr>
         <tr>
           <td><code>TextAlignment</code></td>
           <td><code>Left / Right / Center / Justify</code></td>
-          <td>Sets the horizontal alignment of text within the TextBlock. <code>Justify</code> distributes whitespace to align both left and right edges, similar to newspaper columns. Useful for paragraph-style content blocks.</td>
+          <td>Use <code>Center</code> for dialog titles and instruction text, <code>Right</code> for currency and numeric values in table cells, and <code>Justify</code> for long prose paragraphs that should span the full column width. The default <code>Left</code> is appropriate for most body text. Pitfall: <code>Justify</code> on short lines or single-word text can produce large, unnatural gaps between words because WPF distributes all whitespace to fill the line — limit <code>Justify</code> to multi-line paragraphs with enough content per line.</td>
         </tr>
         <tr>
           <td><code>Padding</code></td>
           <td><code>Thickness</code></td>
-          <td>Adds internal spacing between the TextBlock boundary and the text content. Useful when using Background to create a colored label effect without nesting inside a Border element.</td>
+          <td>Adds internal spacing between the TextBlock's boundary and its text content, and also expands the hit-test area for mouse events. Useful when you set a <code>Background</code> to create a badge or chip appearance without wrapping in a <code>Border</code>. Pitfall: do not confuse <code>Padding</code> (inner spacing, between text and the control edge) with <code>Margin</code> (outer spacing, between the control and neighboring elements). Use <code>Padding</code> for internal breathing room and <code>Margin</code> for layout spacing.</td>
         </tr>
         <tr>
           <td><code>FontWeight</code></td>
           <td><code>Thin / ExtraLight / Light / Normal / Medium / SemiBold / Bold / ExtraBold / Black</code></td>
-          <td>Sets the weight (thickness) of the font strokes. <code>Bold</code> is the most common alternative to <code>Normal</code>. Note that not all fonts include all weight variants; missing weights fall back to the nearest available.</td>
+          <td>Sets the stroke weight (thickness) of the rendered font. <code>Bold</code> is the most common alternative to <code>Normal</code> for headings and emphasis. Font properties are inherited from ancestor elements, so setting <code>FontWeight</code> on a parent panel applies it to all TextBlocks inside. Pitfall: not all fonts include every weight variant. If a requested weight is unavailable, WPF silently substitutes the nearest available weight, which may not match the intended design. Always verify the font and weight combination renders as expected.</td>
         </tr>
         <tr>
           <td><code>FontStyle</code></td>
           <td><code>Normal / Italic / Oblique</code></td>
-          <td><code>Italic</code> uses a dedicated italic font face when available; <code>Oblique</code> slants the regular face algorithmically when no italic face exists. Most fonts only provide Normal and Italic.</td>
+          <td><code>Italic</code> uses the font's dedicated italic face when one is available; <code>Oblique</code> algorithmically slants the regular face when no italic face exists. Most fonts only provide Normal and Italic. Use italic for supplementary or descriptive text that needs visual distinction from the surrounding body text.</td>
         </tr>
         <tr>
           <td><code>FontStretch</code></td>
           <td><code>Normal / Condensed / Expanded / etc.</code></td>
-          <td>Sets the horizontal stretch factor of the font. Values range from <code>UltraCondensed</code> to <code>UltraExpanded</code>. As with FontWeight, the font must include the specific stretch variant; otherwise WPF scales the nearest available face.</td>
+          <td>Controls the horizontal stretch factor of the font glyphs, ranging from <code>UltraCondensed</code> to <code>UltraExpanded</code>. Condensed variants are useful for fitting labels into narrow columns. As with <code>FontWeight</code>, the font must contain the specific stretch variant or WPF will scale the nearest available face, which may look blurry.</td>
         </tr>
         <tr>
           <td><code>FontSize</code></td>
           <td><code>double</code></td>
-          <td>The size of the text in device-independent units (1/96 inch). A value of 12 is approximately 9 points. Bind this to a ViewModel property or a resource to support dynamic font size scaling across the application.</td>
+          <td>The text size in WPF device-independent units (1/96 inch per unit). A value of 12 is approximately 9 points. <code>FontSize</code> is also inherited from parent elements, so setting it once on a window or resource style propagates throughout the tree. Bind to a user-configurable resource when supporting dynamic font scaling for accessibility.</td>
         </tr>
         <tr>
           <td><code>FontFamily</code></td>
           <td><code>string</code></td>
-          <td>The typeface to use. Accepts a font family name (e.g., "Segoe UI"), a comma-separated fallback list, or a URI pointing to a font file embedded in the application. Use font families consistently via application-level resources.</td>
+          <td>Specifies the typeface to use — a font family name such as <code>"Segoe UI"</code>, a comma-separated fallback list, or a URI to a font file embedded in the application. Define shared font families in application-level resources for consistency. Pitfall: hard-coding a font that is not installed on the user's machine causes WPF to fall back to a generic font (typically Times New Roman or Arial), which can break your layout's spacing assumptions.</td>
         </tr>
         <tr>
           <td><code>Background</code></td>
           <td><code>Brush</code></td>
-          <td>Fills the entire TextBlock area, including padding. Useful for creating highlighted text spans. Note that setting a Background makes the TextBlock opaque in that region.</td>
+          <td>Fills the TextBlock's entire bounding area including padding. Use this to create highlighted badges, colored labels, or emphasis spans. A non-transparent Background also makes the TextBlock intercept mouse events (hit-testing), which is required for hover effects. Note that Background is transparent by default, meaning the TextBlock is click-through to elements beneath it.</td>
         </tr>
         <tr>
           <td><code>Foreground</code></td>
           <td><code>Brush</code></td>
-          <td>Sets the text color. Any WPF brush is valid — <code>SolidColorBrush</code> for flat colors, <code>LinearGradientBrush</code> for gradient text effects. Inherits from the parent element if not set explicitly.</td>
+          <td>Sets the text color. Any WPF brush is valid — use <code>SolidColorBrush</code> for flat colors or <code>LinearGradientBrush</code> for gradient effects. <code>Foreground</code> is inherited from parent elements, so setting it on a panel propagates to all child TextBlocks. Pitfall: hard-coding a color such as <code>Black</code> or <code>White</code> will make text unreadable when the user switches between light and dark themes. Use system theme brushes (<code>{DynamicResource ControlTextBrush}</code>) or your application's theme brushes so the color adapts automatically.</td>
         </tr>
         <tr>
           <td><code>LineHeight / LineStackingStrategy</code></td>
           <td><code>double / BlockLineHeight / MaxHeight</code></td>
-          <td><code>LineHeight</code> overrides the font's natural line spacing for uniform multi-line layout. <code>BlockLineHeight</code> applies the same height to every line; <code>MaxHeight</code> uses each line's tallest glyph as the line height, which is more natural for mixed-size text.</td>
+          <td>Use these when you need uniform row heights in a data grid or when mixing multiple font sizes in one TextBlock. <code>LineHeight</code> specifies the exact pixel height of each line, overriding the font's natural leading. <code>BlockLineHeight</code> applies that fixed height uniformly to every line; <code>MaxHeight</code> uses the tallest glyph in each individual line, which behaves more naturally for mixed-size text. Pitfall: setting <code>LineHeight</code> smaller than the font size causes lines to overlap, making text unreadable. Always set <code>LineHeight</code> to at least 1.2× the font size.</td>
         </tr>
       </tbody>
     </table>
@@ -181,11 +181,12 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Prefer TextBlock over Label for read-only text</strong> — TextBlock is lighter-weight and does not add a border or padding; use Label only when you need access-key (mnemonic) support.</li>
-      <li><strong>Use Run elements for partial text binding</strong> — Bind individual <code>Run.Text</code> properties to update portions of a mixed-format TextBlock without rebuilding the entire Inlines collection.</li>
-      <li><strong>Define fonts via resources</strong> — Centralize FontFamily, FontSize, and Foreground in application or window resources to maintain a consistent typographic scale.</li>
-      <li><strong>Combine TextTrimming with a ToolTip</strong> — Always provide the full text in a ToolTip when trimming, so users can read the complete content on hover.</li>
-      <li><strong>Use LineHeight for dense tables</strong> — Setting a consistent LineHeight across all cells in a data grid ensures rows align perfectly regardless of content variations.</li>
+      <li><strong>Prefer TextBlock over Label for read-only text</strong> — TextBlock derives from <code>FrameworkElement</code> and is significantly lighter than <code>Label</code>, which inherits the full <code>ContentControl</code> stack. Use Label only when you need access-key (mnemonic) support with a <code>Target</code> binding.</li>
+      <li><strong>TextTrimming requires a width constraint</strong> — <code>TextTrimming</code> only activates when the TextBlock has a bounded width — either via an explicit <code>Width</code> / <code>MaxWidth</code>, or by being inside a width-constrained layout container such as a Grid column. Without a constraint, the TextBlock grows to fit its content and trimming never fires.</li>
+      <li><strong>Always pair TextTrimming with a ToolTip</strong> — When trimming text with <code>CharacterEllipsis</code> or <code>WordEllipsis</code>, bind the ToolTip to the same source as the text — for example <code>ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"</code> — so users can always hover to read the full content regardless of whether trimming is active.</li>
+      <li><strong>Use Run elements for partial text coloring</strong> — Set individual <code>Foreground</code> colors on <code>Run</code> elements within the <code>Inlines</code> collection to highlight specific words or segments in different colors. Note that once you use inline elements the <code>Text</code> property becomes read-only; the entire text must be composed from <code>Run</code> and other inline elements.</li>
+      <li><strong>Centralize font settings in parent elements or resources</strong> — When multiple TextBlocks share the same font configuration, set <code>FontFamily</code>, <code>FontSize</code>, and <code>Foreground</code> on a common parent panel or in a <code>Style</code> resource in <code>App.xaml</code>. This way, you can update the whole application's typography from a single location.</li>
+      <li><strong>Use LineHeight for consistent row heights in tables</strong> — Setting a uniform <code>LineHeight</code> across all TextBlocks in a data grid or list ensures rows align precisely even when their text content varies in glyph height.</li>
     </ul>
   </section>
 
