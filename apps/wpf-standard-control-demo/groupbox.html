@@ -65,42 +65,42 @@
         <tr>
           <td><code>Header (HeaderedContentControl)</code></td>
           <td><code>object</code></td>
-          <td>The content displayed in the group header area, typically rendered at the top of the border. Accepts any object including strings, images, or composite panels, making it highly customizable for rich header designs.</td>
+          <td>The content displayed in the group header area, typically rendered at the top of the border. Accepts any object including strings, images, or composite panels for rich group titles. Use a <code>CheckBox</code> in the header to let users enable or disable the entire group at once — a common pattern in installer UIs. <strong>Pitfall:</strong> Multi-line text cannot be set directly as a string header; place a <code>TextBlock</code> with <code>TextWrapping="Wrap"</code> inside the header instead. To customise header font or style, use a <code>HeaderTemplate</code> or <code>Style</code> rather than setting properties directly.</td>
         </tr>
         <tr>
           <td><code>HasHeader (HeaderedContentControl)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>A read-only boolean that returns <code>true</code> when the <code>Header</code> property is set to a non-null value. It is useful in control template triggers to adjust the visual state of the header region when no header is provided.</td>
+          <td>A read-only boolean that returns <code>true</code> when the <code>Header</code> property is set to a non-null value. Use it in control template triggers or data triggers to adjust the visual state of the header region when no header is provided — for example, collapsing the header area height to zero in a borderless variation.</td>
         </tr>
         <tr>
           <td><code>HeaderStringFormat</code></td>
           <td><code>string</code></td>
-          <td>A composite format string applied to the header content when it is displayed as text. For example, setting <code>HeaderStringFormat="Section: {0}"</code> will prepend "Section: " to the bound header value without any code-behind.</td>
+          <td>A composite format string applied to the header content when it is a simple data value. For example, <code>HeaderStringFormat="Section: {0}"</code> prepends a label to a bound numeric or string value without any code-behind. Useful for dynamically titled groups whose header text is data-driven.</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>The main body content of the GroupBox, typically a layout panel such as <code>Grid</code> or <code>StackPanel</code> containing child controls. Like all <code>ContentControl</code> descendants, it can host any single UIElement or data object.</td>
+          <td>The main body content of the GroupBox, typically a <code>Grid</code> or <code>StackPanel</code> containing child controls. GroupBox can host only a single child element, so always use a layout panel as the root when placing multiple controls. Child controls automatically inherit the GroupBox's <code>DataContext</code>, so ViewModel bindings work without additional wiring.</td>
         </tr>
         <tr>
           <td><code>Padding (Control)</code></td>
           <td><code>Thickness</code></td>
-          <td>The space between the GroupBox border and its inner content area. Increasing padding provides breathing room around the child controls and prevents them from appearing cramped against the border edges.</td>
+          <td>The space between the GroupBox border and its inner content area. Increasing padding prevents child controls from appearing cramped against the border edges. <strong>Pitfall:</strong> Some themes may not correctly apply <code>Padding</code> to a GroupBox. If padding has no visible effect, add a <code>Margin</code> to the root panel inside <code>Content</code> to achieve the same result.</td>
         </tr>
         <tr>
           <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
           <td><code>various</code></td>
-          <td>Typography properties inherited from <code>Control</code> that affect the header text rendering. These also cascade down to child controls unless explicitly overridden, allowing a single font setting to style the entire group.</td>
+          <td>Typography properties inherited from <code>Control</code> that affect the header text rendering. These cascade down to child controls unless explicitly overridden, so setting <code>FontSize</code> on the GroupBox changes text size across the entire group. Define font properties in a shared <code>Style</code> resource to keep typography consistent application-wide.</td>
         </tr>
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td><code>Background</code> fills the content area behind the child controls; <code>Foreground</code> sets the default text color for both the header and child text elements that inherit it. Both accept solid colors, gradients, or image brushes.</td>
+          <td><code>Background</code> fills the content area behind the child controls and can be used to add a subtle tint that visually separates the group. <code>Foreground</code> sets the default text colour for the header and cascades to child text elements. <strong>Pitfall:</strong> Setting a non-transparent <code>Background</code> affects all child controls that inherit it, which may alter the look of nested controls unexpectedly — test thoroughly when applying background colours.</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td><code>BorderBrush</code> sets the color of the surrounding border, while <code>BorderThickness</code> controls its width on each side independently. Adjusting these properties is the primary way to customize GroupBox's visual frame.</td>
+          <td><code>BorderBrush</code> sets the colour of the surrounding border; <code>BorderThickness</code> controls its width on each side independently. Use a thicker border or an accent colour to visually emphasise a high-priority group. Define border styles in a <code>Style</code> resource rather than per-control to maintain visual consistency across the application.</td>
         </tr>
       </tbody>
     </table>

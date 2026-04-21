@@ -73,49 +73,59 @@
       </thead>
       <tbody>
         <tr>
+          <td><code>ToolTip</code></td>
+          <td><code>string or ToolTip element</code></td>
+          <td>Sets the tooltip content on any <code>FrameworkElement</code>. Use the string form (<code>ToolTip="Save document"</code>) for simple text — WPF wraps it in a ToolTip control automatically. Use the <code>&lt;ToolTip&gt;</code> element form when you need icons, formatted text, or multiple children. Note that the string form re-creates the ToolTip object on every hover; for complex content shown frequently, declare a <code>ToolTip</code> resource (e.g., via <code>StaticResource</code>) to avoid repeated object allocation.</td>
+        </tr>
+        <tr>
           <td><code>Placement</code></td>
           <td><code>Mouse / MousePoint / Absolute / AbsolutePoint / Relative / RelativePoint / Bottom / Top / Left / Right / Center / Custom</code></td>
-          <td>Determines where the tooltip popup appears. <code>Mouse</code> (default) follows the cursor; <code>Bottom</code> places it below the target element's bounding box; <code>Absolute</code> uses explicit screen coordinates. Choose based on whether you want cursor-relative or element-relative placement.</td>
+          <td>Determines where the tooltip popup appears. <code>Mouse</code> (default) follows the cursor; <code>Bottom</code> places it below the target element's bounding box; <code>Absolute</code> uses explicit screen coordinates. <strong>Pitfall:</strong> When using <code>Absolute</code>, you must also set <code>PlacementRectangle</code> — without it, the tooltip appears near screen origin (0, 0) instead of near your control.</td>
         </tr>
         <tr>
           <td><code>HorizontalOffset / VerticalOffset</code></td>
           <td><code>double</code></td>
-          <td>Fine-tune the tooltip position by shifting it horizontally or vertically from the base placement point. Positive values move right/down; negative values move left/up. Use these to avoid the tooltip overlapping important UI elements.</td>
+          <td>Fine-tune the tooltip position by shifting it horizontally or vertically from the base placement point. Positive values move right/down; negative values move left/up. Use these to nudge the tip away from the cursor or to prevent it from obscuring important UI elements near the control.</td>
         </tr>
         <tr>
           <td><code>PlacementTarget</code></td>
           <td><code>UIElement</code></td>
-          <td>The element relative to which element-based placement modes (Bottom, Top, Left, Right, Center) are calculated. Defaults to the element that owns the ToolTip. Override to position the tip relative to a different element.</td>
+          <td>The element relative to which element-based placement modes (<code>Bottom</code>, <code>Top</code>, <code>Left</code>, <code>Right</code>, <code>Center</code>) are calculated. Defaults to the element that owns the ToolTip. Override when the tooltip should appear relative to a different element — for example, anchoring a field hint to a label rather than the input box itself.</td>
         </tr>
         <tr>
           <td><code>PlacementRectangle</code></td>
           <td><code>Rect</code></td>
-          <td>An explicit rectangle (in coordinates relative to PlacementTarget) used as the reference area for placement. Useful when you want the tip to appear relative to a specific region within the target element rather than its entire bounds.</td>
+          <td>An explicit rectangle in the coordinate space of <code>PlacementTarget</code> used as the reference area for placement. Required when using <code>Placement="Absolute"</code> to position the tooltip at specific screen coordinates. Useful when you want the tip to appear relative to a specific region within the target rather than its entire bounds.</td>
         </tr>
         <tr>
           <td><code>ShowsToolTipOnKeyboardFocus</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, the tooltip appears when the element is focused via keyboard (Tab navigation), not only on mouse hover. Essential for accessibility — always set this on toolbar buttons and icon-only controls that rely on tooltips for labeling.</td>
+          <td>When <code>true</code>, the tooltip appears when the element receives keyboard focus (Tab navigation), not only on mouse hover. Essential for accessibility — always enable this on toolbar buttons and icon-only controls. Without it, keyboard-only and screen-reader users cannot discover tooltip content.</td>
         </tr>
         <tr>
           <td><code>HasDropShadow</code></td>
           <td><code>bool</code></td>
-          <td>Adds a drop shadow to the tooltip popup window, giving it visual depth. When <code>AllowsTransparency</code> is enabled on the popup, the shadow renders with transparency. Default is determined by the system theme.</td>
+          <td>Adds a drop shadow to the tooltip popup window, giving it visual depth and helping it stand out against complex backgrounds. When <code>AllowsTransparency</code> is enabled, the shadow renders with smooth transparency. Default is determined by the system theme.</td>
         </tr>
         <tr>
           <td><code>InitialShowDelay (ToolTipService)</code></td>
-          <td><code>int (ms)</code></td>
-          <td>The delay in milliseconds before the tooltip appears after the user starts hovering. The default 400 ms prevents tips from flashing when the cursor moves across the screen. Reduce this for quick-help scenarios; increase it to avoid noise.</td>
+          <td><code>int (ms, default: 400)</code></td>
+          <td>The delay in milliseconds before the tooltip appears after the user starts hovering. The default 400 ms matches Windows system settings and prevents tips from flashing during casual cursor movement. For professional tools where quick lookup is important, 100–200 ms is a good compromise. <strong>Pitfall:</strong> Setting this to <code>0</code> causes tooltips to appear instantly and flash on every mouse movement, which disrupts normal UI interaction and should generally be avoided.</td>
         </tr>
         <tr>
           <td><code>ShowDuration (ToolTipService)</code></td>
-          <td><code>int (ms)</code></td>
-          <td>How long the tooltip remains visible before auto-closing. Default is 5000 ms (5 seconds). Set a higher value or 0 for educational tooltips with complex content that users need more time to read.</td>
+          <td><code>int (ms, default: 5000)</code></td>
+          <td>How long the tooltip remains visible before auto-closing. Default is 5000 ms (5 seconds). Increase this for tooltips with lengthy explanations that users need time to read — a value of 10000 ms or more suits complex help text. Set to <code>Int32.MaxValue</code> to keep the tooltip visible indefinitely, but use this sparingly since users often expect tooltips to auto-dismiss.</td>
         </tr>
         <tr>
           <td><code>BetweenShowDelay (ToolTipService)</code></td>
-          <td><code>int (ms)</code></td>
-          <td>The time window after a tooltip closes during which hovering over another element immediately shows its tooltip without the InitialShowDelay. Default 100 ms provides a snappy experience when scanning multiple toolbar buttons.</td>
+          <td><code>int (ms, default: 100)</code></td>
+          <td>The time window after a tooltip closes during which hovering over another element immediately shows its tooltip without waiting for <code>InitialShowDelay</code>. This "hot zone" effect makes scanning adjacent toolbar buttons feel snappy. <strong>Pitfall:</strong> Setting this to <code>0</code> means every hover triggers an immediate tooltip, which becomes overwhelming in dense UIs with many tooltipped controls. Keep the value at 50–100 ms for a comfortable experience.</td>
+        </tr>
+        <tr>
+          <td><code>ShowOnDisabled (ToolTipService)</code></td>
+          <td><code>bool</code></td>
+          <td>When <code>true</code>, the tooltip displays even when the control is disabled (<code>IsEnabled="False"</code>). Use this to explain <em>why</em> an action is unavailable — for example, "Select an item before deleting" on a greyed-out Delete button. <strong>Pitfall:</strong> This property must be set directly on the disabled control itself; setting it on a container (<code>StackPanel</code>, <code>Grid</code>) has no effect. To apply it to many controls at once, use a <code>Style</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -163,8 +173,10 @@
     <ul>
       <li><strong>Always set tooltips on icon-only buttons</strong> — Icon meanings are not universally understood; a tooltip makes every icon self-documenting.</li>
       <li><strong>Enable ShowsToolTipOnKeyboardFocus</strong> — Many users navigate with keyboard only; ensure tooltips are accessible without a mouse.</li>
-      <li><strong>Set ShowOnDisabled for disabled controls</strong> — Add <code>ToolTipService.ShowOnDisabled="True"</code> to explain why an action is currently unavailable.</li>
+      <li><strong>Set ShowOnDisabled for disabled controls</strong> — Add <code>ToolTipService.ShowOnDisabled="True"</code> directly on the disabled control (not its parent) to explain why an action is currently unavailable.</li>
       <li><strong>Keep content concise</strong> — Tooltips should supplement, not replace, visible UI labels. Long paragraphs in tooltips are often missed or ignored.</li>
+      <li><strong>DataBinding inside ToolTip</strong> — When the <code>ToolTip</code> property is set as a plain string, the ToolTip control does not automatically inherit the parent element's <code>DataContext</code>. If you need data binding inside a tooltip, declare it as a <code>&lt;ToolTip&gt;</code> element and use <code>{Binding RelativeSource=...}</code> or explicitly set <code>DataContext</code> on the ToolTip element.</li>
+      <li><strong>ToolTip in virtualized lists</strong> — Tooltips on items inside a virtualized <code>ListBox</code> or <code>DataGrid</code> work correctly because the item's <code>DataContext</code> is set to the data object. However, avoid triggering heavy operations (image loading, database queries) on hover, as virtualization recycles containers and lightweight tooltip content is essential.</li>
       <li><strong>Test placement near screen edges</strong> — WPF automatically repositions tooltips to stay on screen, but verify complex custom placements do not clip near monitor edges or with multi-monitor setups.</li>
     </ul>
   </section>
