@@ -64,22 +64,22 @@
         <tr>
           <td><code>AutoGenerateColumns</code></td>
           <td><code>bool</code></td>
-          <td>True のとき、ItemsSource のオブジェクトのパブリックプロパティから自動的に列を生成します。カスタム列定義をする場合は False に設定します。</td>
+          <td>True のとき、ItemsSource のオブジェクトのすべての公開読み書きプロパティから自動的に列を生成します。開発初期やプロトタイプ時に素早くデータを確認したい場面で便利です。生成される列はデフォルトでアルファベット順に並び、各プロパティ名がそのままヘッダーになります。本番アプリでは機密プロパティが意図せず表示される恐れがあるため、常に False に設定して列を明示的に定義することを推奨します。</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>True のとき、グリッド全体が読み取り専用になりセルの編集ができなくなります。データ表示専用のグリッドに使用します。</td>
+          <td>True のとき、グリッド全体が読み取り専用になりセルの編集ができなくなります。ログ表示やレポート画面など、データを表示するだけで編集させたくない場合に使います。IsReadOnly=True を設定すると CanUserAddRows も自動的に False になります。個別の列に独自の IsReadOnly を設定すると DataGrid の IsReadOnly より優先されるため、列単位で編集可否を細かく制御できます。</td>
         </tr>
         <tr>
           <td><code>SelectionMode / SelectionUnit</code></td>
           <td><code>Single/Extended / Cell/FullRow/CellOrRowHeader</code></td>
-          <td>SelectionMode は単一選択か複数選択かを設定します。SelectionUnit は選択単位（セル単位か行単位か）を設定します。</td>
+          <td>SelectionMode は単一選択か複数選択かを設定し、SelectionUnit は選択単位（セル単位か行単位か）を設定します。マスター詳細画面では Single+FullRow の組み合わせが定番で、スプレッドシート風の編集には Extended+Cell が適しています。SelectionUnit=Cell と SelectionMode=Single を組み合わせると 1 セルしか選択できず、行全体の選択を期待するユーザーが混乱しやすいという落とし穴があります。</td>
         </tr>
         <tr>
           <td><code>CanUserAddRows / CanUserDeleteRows</code></td>
           <td><code>bool</code></td>
-          <td>ユーザーが新しい行を追加・削除できるかどうかを制御します。True の場合、最終行に新規入力行が表示されます。</td>
+          <td>ユーザーが新しい行を追加・削除できるかどうかを制御します。True の場合、最終行に新規入力行が表示され、ユーザーが直接データを入力して追加できます。この機能を利用するにはバインドするコレクションが ObservableCollection か IEditableCollectionView を実装している必要があります。落とし穴として、CanUserAddRows=True の場合はモデルクラスにパラメーターなしのデフォルトコンストラクターが必要で、なければ行追加時にランタイムエラーが発生します。</td>
         </tr>
         <tr>
           <td><code>CanUserReorderColumns / CanUserResizeColumns / CanUserSortColumns</code></td>
@@ -94,12 +94,12 @@
         <tr>
           <td><code>AlternatingRowBackground</code></td>
           <td><code>Brush</code></td>
-          <td>1行おきに異なる背景色を設定します。縞模様にすることで行の視認性が向上します。</td>
+          <td>1行おきに異なる背景色を設定します。行数が多い一覧画面でユーザーが行を視覚的に追いやすくするために使います。縞模様が適用されると偶数行に通常の Background、奇数行に AlternatingRowBackground が描画されます。行グルーピングやカスタムの DataGridRow スタイルを使っている場合はこのプロパティが正しく適用されないことがあるため、その際は DataGridRow の Style で直接制御します。</td>
         </tr>
         <tr>
           <td><code>FrozenColumnCount</code></td>
           <td><code>int</code></td>
-          <td>水平スクロール時に固定する列数を設定します。左端の重要な列（ID や名前など）を常に表示したい場合に使用します。</td>
+          <td>水平スクロール時に固定する列数を設定します。ID や名前など識別に必要な左端の列を常に表示しておきたい場合に使います。設定した数の列は水平スクロールしても常に左側に固定され、残りの列がスクロールします。固定できるのは左端から連続した列のみで、中間の列だけを固定することはできません。</td>
         </tr>
         <tr>
           <td><code>HeadersVisibility</code></td>
@@ -109,7 +109,7 @@
         <tr>
           <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
           <td><code>bool</code></td>
-          <td>行・列の仮想化を有効にして大量データのパフォーマンスを向上させます。大規模なデータセットでは必ず有効にすることを推奨します。</td>
+          <td>行・列の仮想化を有効にして大量データのパフォーマンスを向上させます。数百行・数十列以上のデータを扱う場面では必ず有効にすることを推奨します。EnableRowVirtualization=True の場合、表示領域外の行は描画されないためメモリと描画コストを大幅に削減でき、数万行でもスムーズに動作します。ただし行仮想化とグルーピングを同時に使うとスクロール中にグループヘッダーがちらつくことがあるため、グルーピングを使う場合は仮想化の挙動を事前に確認してください。</td>
         </tr>
       </tbody>
     </table>
@@ -155,6 +155,9 @@
       <li><strong>INotifyPropertyChanged の実装</strong> — バインドするデータモデルには INotifyPropertyChanged を実装し、編集内容がリアルタイムで UI に反映されるようにします。</li>
       <li><strong>選択アイテムのバインド</strong> — SelectedItem を ViewModel にバインドして選択行のデータを取得し、詳細パネルや編集フォームと連動させます。</li>
       <li><strong>DataGridTemplateColumn でカスタム UI</strong> — ボタンや画像を含む列を作る場合は DataGridTemplateColumn を使い、CellTemplate と CellEditingTemplate を定義します。</li>
+      <li><strong>編集と INotifyPropertyChanged</strong> — インライン編集した値をリアルタイムで ViewModel に反映するには、データモデルに INotifyPropertyChanged を実装する必要があります。実装していない場合、セルの編集値がコミットされても他の UI に伝播しません。</li>
+      <li><strong>CommitEdit / CancelEdit を使う</strong> — プログラムでコレクション操作（並べ替え・削除など）を行う前に <code>dataGrid.CommitEdit()</code> か <code>dataGrid.CancelEdit()</code> を呼び出して編集状態を確定または破棄してください。編集中のまま操作すると例外やデータ不整合が発生します。</li>
+      <li><strong>行詳細には RowDetailsTemplate を使う</strong> — 行をクリックすると展開される詳細パネルを実装するには <code>RowDetailsTemplate</code> に DataTemplate を定義します。<code>RowDetailsVisibilityMode</code> で「選択時のみ表示」「常に表示」などを制御できます。</li>
     </ul>
   </section>
 
