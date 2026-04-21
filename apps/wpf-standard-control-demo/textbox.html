@@ -73,7 +73,7 @@
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>Use this to bind the TextBox content two-way to a ViewModel string property — the standard MVVM pattern for any data-entry field. With <code>UpdateSourceTrigger=PropertyChanged</code> the ViewModel is updated on every keystroke, enabling live search filters and real-time validation; with the default <code>LostFocus</code> it updates only when the user tabs away, reducing unnecessary updates. Pitfall: <code>UpdateSourceTrigger=PropertyChanged</code> fires during IME composition (Japanese, Chinese, Korean input), so the ViewModel may receive incomplete, unconverted characters mid-word — always null/empty-check the value in validation logic when supporting CJK input.</td>
+          <td>Use this to bind the TextBox content two-way to a ViewModel string property — the standard MVVM pattern for any data-entry field. With <code>UpdateSourceTrigger=PropertyChanged</code> the ViewModel is updated on every keystroke, enabling live search filters and real-time validation; with the default <code>LostFocus</code> it updates only when the user tabs away, reducing unnecessary updates. Pitfall: <code>UpdateSourceTrigger=PropertyChanged</code> fires during IME composition (Japanese, Chinese, Korean input), so the ViewModel may receive incomplete, unconverted characters mid-word — always check for empty or whitespace (using <code>string.IsNullOrWhiteSpace()</code>) in validation logic when supporting CJK input.</td>
         </tr>
         <tr>
           <td><code>AcceptsReturn</code></td>
@@ -98,7 +98,7 @@
         <tr>
           <td><code>CaretBrush</code></td>
           <td><code>Brush</code></td>
-          <td>Use when a custom theme or high-contrast mode makes the default black caret invisible against the background — for example, a dark-themed login form. The caret is drawn in the specified brush color, making the insertion point clearly visible. Pitfall: <code>CaretBrush</code> is only honoured by the <code>aero2</code> WPF theme (Windows 10 and later). On older Windows themes the property is ignored, so test caret visibility across target environments if your app must support older OS versions.</td>
+          <td>Use when a custom theme or high-contrast mode makes the default black caret invisible against the background — for example, a dark-themed login form. The caret is drawn in the specified brush color, making the insertion point clearly visible. Pitfall: <code>CaretBrush</code> is only honored by the <code>aero2</code> WPF theme (Windows 10 and later). On older Windows themes the property is ignored, so test caret visibility across target environments if your app must support older OS versions.</td>
         </tr>
         <tr>
           <td><code>SelectionBrush / SelectionOpacity</code></td>
