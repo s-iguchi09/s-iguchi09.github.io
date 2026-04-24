@@ -3,16 +3,16 @@ layout: article-en
 title: "How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox"
 date: 2026-04-24
 category: WPF
-excerpt: "Learn why ListBox selection can appear to disappear when UI virtualization is enabled, and how to keep selection state stable with an IsSelected-based MVVM pattern."
+excerpt: "Learn why ListBox selection can appear to disappear when UI virtualization is enabled, and how to keep selection state stable with an IsSelected-based MVVM pattern (including Shift-range selection)."
 ---
 
 ## Overview
 
-When a WPF `ListBox` displays a large number of items, UI virtualization is typically enabled through `VirtualizingStackPanel`. With virtualization, item containers (`ListBoxItem`) are created, destroyed, or recycled as you scroll.
+When a WPF `ListBox` displays a large number of items, UI virtualization is typically enabled through `VirtualizingStackPanel`. With virtualization, item containers (`ListBoxItem`) are created and destroyed based on the visible range.
 
-If your selection logic depends on containers, you may observe a situation where an item selected earlier seems to disappear from `SelectedItems` after scrolling and selecting another item. This becomes especially noticeable in multi-select scenarios and when using `Shift` range selection.
+If selection management depends on containers, a previously selected item can appear to disappear from `SelectedItems` after scrolling and selecting another item.
 
-The safest approach is to keep selection state on the **data items**, not on the visual containers. Add an `IsSelected` property to each item ViewModel and bind `ListBoxItem.IsSelected` to it with a two-way binding. This keeps selection stable even when virtualization is active.
+A robust approach is to keep selection state on the **data items**, not on the visual containers. Add an `IsSelected` property to each item ViewModel and bind `ListBoxItem.IsSelected` to it with two-way binding.
 
 ## Why the issue happens
 
@@ -114,13 +114,11 @@ public class MainViewModel
 </ListBox>
 ```
 
-## Does this also fix Shift-range selection?
+## Shift-range selection support
 
-Yes.
+This pattern keeps `SelectionMode="Extended"`, so built-in multi-selection behavior (including `Shift` range selection and `Ctrl` additive selection) remains handled by WPF.
 
-If you keep `SelectionMode="Extended"`, WPF continues to handle normal multi-selection behavior, including `Ctrl` and `Shift` selection. The `IsSelected` binding above is only responsible for persisting the resulting selection state on the data items.
-
-That means when a user selects a range with `Shift`, the selected items in that range are marked as selected on the ViewModel. Even if their containers are later virtualized away, the selection state remains in the data and is restored when the containers are realized again.
+When a range is selected with `Shift`, the `IsSelected` property for each item in the range is set to `true`. Even if containers are later virtualized away, the selection state remains on the data items, preventing selection from appearing lost.
 
 ## Common pitfalls
 
@@ -130,11 +128,11 @@ That means when a user selects a range with `Shift`, the selected items in that 
 
 ### 2. Do not set CanContentScroll to false
 
-`ScrollViewer.CanContentScroll="False"` often disables virtualization behavior and causes all items to be rendered. For large lists, keep it `True` unless you specifically need pixel-based scrolling.
+`ScrollViewer.CanContentScroll="False"` often disables virtualization behavior and causes all items to be rendered. For large lists, keep it `True` unless pixel-based scrolling is explicitly required.
 
 ### 3. Avoid container-dependent logic
 
-Using `ItemContainerGenerator.ContainerFromIndex` or walking the visual tree makes your selection logic fragile under virtualization and container recycling. Keep selection state in the data layer.
+Using `ItemContainerGenerator.ContainerFromIndex` or walking the visual tree makes selection logic fragile under virtualization and container recycling. Keep selection state in the data layer.
 
 ## Summary
 
