@@ -11,7 +11,9 @@ Use this checklist before publishing any technical article.
 - [ ] Prerequisites / Environment section is present with framework, version, and architecture
 - [ ] Problem section describes the situation concretely
 - [ ] Cause or Background section explains why the problem occurs
+- [ ] Solution section explains the recommended approach
 - [ ] Implementation section is present with code examples
+- [ ] Alternatives / Comparison section explains other options and trade-offs
 - [ ] Notes section covers at least one constraint, edge case, or pitfall
 - [ ] Summary states a concrete recommendation with selection criteria
 
