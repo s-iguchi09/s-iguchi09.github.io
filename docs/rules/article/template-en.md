@@ -41,9 +41,9 @@ This article covers [technical topic] and explains [what the article provides] f
 
 ## Implementation
 
-[Describe what the following code does and why this approach is used before the code block.]
+[Describe what the following code does and why this approach is used before the code block. Set the fenced code block language to match the language used in the article.]
 
-```csharp
+```(language)
 // Code sample
 ```
 

@@ -1,7 +1,7 @@
 # Article Writing Guidelines
 
 Rules for technical articles published on this site.  
-Both Japanese (`_articles_ja/`) and English (`_articles_en/`) articles follow these guidelines.
+Both Japanese and English articles follow these guidelines.
 
 ---
 
