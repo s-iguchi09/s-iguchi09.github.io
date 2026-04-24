@@ -31,6 +31,9 @@ PRIORITY_RULES = [
     # top-level app pages
     (lambda p: p.startswith("apps/") and p.count("/") == 1, "0.9", "weekly"),
     (lambda p: p.startswith("ja/apps/") and p.count("/") == 2, "0.9", "weekly"),
+    # article pages
+    (lambda p: p.startswith("articles/"), "0.8", "monthly"),
+    (lambda p: p.startswith("ja/articles/"), "0.8", "monthly"),
     # about
     (lambda p: os.path.basename(p) == "about.html", "0.8", "monthly"),
     # contact
@@ -82,6 +85,60 @@ def find_ja_counterpart(en_path: str) -> Optional[str]:
     ja_path = "ja/" + en_path
     full = os.path.join(REPO_ROOT, ja_path)
     return ja_path if os.path.exists(full) else None
+
+
+def collect_article_en_paths() -> list:
+    """Return sorted list of English article slugs from _articles_en/*.md."""
+    slugs = []
+    collection_dir = os.path.join(REPO_ROOT, "_articles_en")
+    if os.path.isdir(collection_dir):
+        for md_file in glob.glob(os.path.join(collection_dir, "*.md")):
+            slug = os.path.splitext(os.path.basename(md_file))[0]
+            slugs.append(slug)
+    return sorted(slugs)
+
+
+def find_ja_article_counterpart(slug: str) -> bool:
+    """Return True if a Japanese article counterpart exists for the given slug."""
+    ja_path = os.path.join(REPO_ROOT, "_articles_ja", slug + ".md")
+    return os.path.exists(ja_path)
+
+
+def build_article_url_entry(slug: str, has_ja: bool) -> str:
+    """Build one or two <url> XML blocks for an English (and optional Japanese) article."""
+    en_rel = f"articles/{slug}/"
+    ja_rel = f"ja/articles/{slug}/"
+    en_url = f"{BASE_URL}/{en_rel}"
+    ja_url = f"{BASE_URL}/{ja_rel}"
+    priority, changefreq = get_priority_and_freq(en_rel)
+    lines = []
+
+    # English entry
+    lines.append("  <url>")
+    lines.append(f"    <loc>{en_url}</loc>")
+    lines.append(f'    <xhtml:link rel="alternate" hreflang="en" href="{en_url}" />')
+    if has_ja:
+        lines.append(f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />')
+    lines.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />')
+    lines.append(f"    <lastmod>{TODAY}</lastmod>")
+    lines.append(f"    <changefreq>{changefreq}</changefreq>")
+    lines.append(f"    <priority>{priority}</priority>")
+    lines.append("  </url>")
+
+    if has_ja:
+        ja_priority, ja_changefreq = get_priority_and_freq(ja_rel)
+        lines.append("")
+        lines.append("  <url>")
+        lines.append(f"    <loc>{ja_url}</loc>")
+        lines.append(f'    <xhtml:link rel="alternate" hreflang="en" href="{en_url}" />')
+        lines.append(f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />')
+        lines.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />')
+        lines.append(f"    <lastmod>{TODAY}</lastmod>")
+        lines.append(f"    <changefreq>{ja_changefreq}</changefreq>")
+        lines.append(f"    <priority>{ja_priority}</priority>")
+        lines.append("  </url>")
+
+    return "\n".join(lines)
 
 
 def build_url_entry(en_path: str, ja_path: Optional[str]) -> str:
@@ -140,6 +197,10 @@ def generate_sitemap() -> str:
     for en_path in en_paths:
         ja_path = find_ja_counterpart(en_path)
         blocks.append(build_url_entry(en_path, ja_path))
+
+    for slug in collect_article_en_paths():
+        has_ja = find_ja_article_counterpart(slug)
+        blocks.append(build_article_url_entry(slug, has_ja))
 
     body = "\n\n".join(blocks)
     sitemap = (
