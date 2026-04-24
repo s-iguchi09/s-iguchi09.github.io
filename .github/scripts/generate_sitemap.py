@@ -106,8 +106,8 @@ def find_ja_article_counterpart(slug: str) -> bool:
 
 def build_article_url_entry(slug: str, has_ja: bool) -> str:
     """Build one or two <url> XML blocks for an English (and optional Japanese) article."""
-    en_rel = f"articles/{slug}/"
-    ja_rel = f"ja/articles/{slug}/"
+    en_rel = f"articles/{slug}.html"
+    ja_rel = f"ja/articles/{slug}.html"
     en_url = f"{BASE_URL}/{en_rel}"
     ja_url = f"{BASE_URL}/{ja_rel}"
     priority, changefreq = get_priority_and_freq(en_rel)
