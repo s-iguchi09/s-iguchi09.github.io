@@ -1,0 +1,33 @@
+---
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }} - 技術記事</title>
+  {% include head.html %}
+  <meta name="description" content="{{ page.excerpt }}">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+  <section class="hero">
+    <p class="article-meta">{{ page.date | date: "%Y-%m-%d" }} · {{ page.category }}</p>
+    <h1>{{ page.title }}</h1>
+    <p>{{ page.excerpt }}</p>
+  </section>
+
+  <article class="content-section">
+    {{ content }}
+  </article>
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

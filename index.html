@@ -42,10 +42,34 @@
     </p>
   </section>
 
-  <!-- Application List -->
-  <section class="app-list">
-    <h2>Applications</h2>
+  <!-- Latest Articles -->
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>Latest Articles</h2>
+      <a href="/articles/" class="more-link">View all articles →</a>
+    </div>
+    <div class="article-grid">
+      {% assign latest_articles = site.articles_en | sort: 'date' | reverse %}
+      {% for article in latest_articles limit:3 %}
+      <article class="article-card">
+        <a href="{{ article.url }}">
+          <div class="article-card-body">
+            <p class="article-meta">{{ article.date | date: "%Y-%m-%d" }} · {{ article.category }}</p>
+            <h3>{{ article.title }}</h3>
+            <p class="article-excerpt">{{ article.excerpt }}</p>
+          </div>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
 
+  <!-- Application List -->
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>Applications</h2>
+      <a href="/apps/" class="more-link">View all apps →</a>
+    </div>
     <ul class="app-card-list">
 
       <li class="app-card">

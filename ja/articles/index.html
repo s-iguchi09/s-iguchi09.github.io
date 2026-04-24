@@ -1,0 +1,45 @@
+---
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>技術記事 - s-iguchi</title>
+  {% include head.html %}
+  <meta name="description" content="WPF・XAML・C# および Windows アプリ開発に関する技術記事。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+  <section class="hero">
+    <h1>技術記事</h1>
+    <p>WPF・XAML・C# および Windows アプリ開発に関する技術記事を掲載しています。</p>
+  </section>
+
+  <section class="content-section">
+    <div class="article-grid">
+      {% assign sorted_articles = site.articles_ja | sort: 'date' | reverse %}
+      {% for article in sorted_articles %}
+      <article class="article-card">
+        <a href="{{ article.url }}">
+          <div class="article-card-body">
+            <p class="article-meta">{{ article.date | date: "%Y-%m-%d" }} · {{ article.category }}</p>
+            <h3>{{ article.title }}</h3>
+            <p class="article-excerpt">{{ article.excerpt }}</p>
+          </div>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

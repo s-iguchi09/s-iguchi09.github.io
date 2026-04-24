@@ -1,1 +1,9 @@
 url: "https://s-iguchi09.github.io"
+
+collections:
+  articles_en:
+    output: true
+    permalink: /articles/:name/
+  articles_ja:
+    output: true
+    permalink: /ja/articles/:name/

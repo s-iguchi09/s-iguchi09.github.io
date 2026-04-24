@@ -40,10 +40,34 @@
     </p>
   </section>
 
-  <!-- Application List -->
-  <section class="app-list">
-    <h2>アプリ一覧</h2>
+  <!-- Latest Articles -->
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>最新記事</h2>
+      <a href="/ja/articles/" class="more-link">記事一覧を見る →</a>
+    </div>
+    <div class="article-grid">
+      {% assign latest_articles = site.articles_ja | sort: 'date' | reverse %}
+      {% for article in latest_articles limit:3 %}
+      <article class="article-card">
+        <a href="{{ article.url }}">
+          <div class="article-card-body">
+            <p class="article-meta">{{ article.date | date: "%Y-%m-%d" }} · {{ article.category }}</p>
+            <h3>{{ article.title }}</h3>
+            <p class="article-excerpt">{{ article.excerpt }}</p>
+          </div>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
 
+  <!-- Application List -->
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>アプリ一覧</h2>
+      <a href="/ja/apps/" class="more-link">すべて見る →</a>
+    </div>
     <ul class="app-card-list">
 
       <li class="app-card">
