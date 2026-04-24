@@ -1,5 +1,8 @@
 url: "https://s-iguchi09.github.io"
 
+plugins:
+  - jekyll-sitemap
+
 collections:
   articles_en:
     output: true
@@ -7,3 +10,9 @@ collections:
   articles_ja:
     output: true
     permalink: /ja/articles/:name/
+  apps_en:
+    output: true
+    permalink: /apps/:name/
+  apps_ja:
+    output: true
+    permalink: /ja/apps/:name/
