@@ -1,7 +1,8 @@
 <header class="site-header">
   <div class="header-inner">
     <div class="site-title">Applications</div>
-    <nav class="site-nav">
+    <button class="hamburger-btn" aria-label="ナビゲーションを開く" aria-expanded="false" onclick="toggleNav(this)">☰</button>
+    <nav class="site-nav" id="site-nav">
       <a href="/ja/index.html">ホーム</a>
       <a href="/ja/apps/">アプリ一覧</a>
       <a href="/ja/articles/">技術記事</a>
@@ -12,5 +13,14 @@
     </nav>
   </div>
 </header>
+
+<script>
+function toggleNav(btn) {
+  var nav = document.getElementById('site-nav');
+  var open = nav.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open);
+  btn.textContent = open ? '✕' : '☰';
+}
+</script>
 
 {% include scripts/switchLanguage.html %}
