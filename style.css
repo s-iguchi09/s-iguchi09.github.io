@@ -174,8 +174,11 @@ h2 {
 
   .site-nav {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   .site-nav a,
@@ -183,6 +186,8 @@ h2 {
     margin-left: 0;
     margin-right: 0.75rem;
     font-size: 0.82rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .hero {
@@ -213,6 +218,11 @@ h2 {
 .content-section table:not(.prop-table) {
   overflow-x: auto;
   display: block;
+  max-width: 100%;
+}
+
+.content-section pre {
+  overflow-x: auto;
   max-width: 100%;
 }
 
