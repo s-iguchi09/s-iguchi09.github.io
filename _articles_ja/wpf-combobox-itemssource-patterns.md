@@ -164,6 +164,8 @@ public int SelectedDepartmentId
 </ComboBox>
 ```
 
+この XAML で参照する `Employee` モデルの定義例は次のとおりである。
+
 ```csharp
 public class Employee
 {
@@ -208,8 +210,8 @@ public Priority SelectedPriority
 
 ## 注意点
 
-- **`DisplayMemberPath` と `ItemTemplate` の同時指定は無効**  
-  両方を指定すると `ItemTemplate` が優先されるが、予期しない表示になる場合がある。いずれか一方のみを使用する。
+- **`DisplayMemberPath` と `ItemTemplate` を同時に設定した場合の挙動**  
+  両方を設定すると `ItemTemplate` が優先されて `DisplayMemberPath` は無視される。意図しない挙動を防ぐため、カスタム表示が必要な場合は `ItemTemplate` を使用し、`DisplayMemberPath` を併用しない。
 
 - **`SelectedValue` の初期値を正しく設定する**  
   `SelectedValuePath` を使う場合、ViewModel 側の初期値が `ItemsSource` 内に存在しない値だと選択状態が空になる。`ItemsSource` がセットされる前に `SelectedValue` が設定されるとバインドが空振りすることがある。`ItemsSource` を先に設定してから選択値を設定する順序を守る。
@@ -250,3 +252,4 @@ public Priority SelectedPriority
 
 <!-- 関連記事 -->
 <!-- - [WPF DataGrid の並び替えを実装する方法](/articles/wpf-datagrid-sorting) -->
+<!-- - [英語版: WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/en/articles/wpf-combobox-itemssource-patterns) -->
