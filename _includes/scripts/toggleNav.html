@@ -1,0 +1,10 @@
+<script>
+function toggleNav(btn) {
+  var nav = document.getElementById('site-nav');
+  var open = nav.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open);
+  btn.textContent = open ? '✕' : '☰';
+  var label = open ? btn.dataset.labelClose : btn.dataset.labelOpen;
+  if (label) btn.setAttribute('aria-label', label);
+}
+</script>
