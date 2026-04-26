@@ -196,6 +196,7 @@ public Priority SelectedPriority
 }
 ```
 
+この ViewModel に対して、XAML 側では `ItemsSource` と `SelectedItem` を次のようにバインドする。
 ```xml
 <ComboBox ItemsSource="{Binding Priorities}"
           SelectedItem="{Binding SelectedPriority}" />
