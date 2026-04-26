@@ -145,7 +145,7 @@ public int SelectedDepartmentId
 
 ### パターン D：ItemTemplate を使ったカスタム表示
 
-1 行の表示に複数フィールドを含めたい場合や、アイコン付きの選択肢を実装したい場合は `ItemTemplate` を使う。`DisplayMemberPath` と `ItemTemplate` は同時に指定できないため、カスタム表示が必要なときは必ず `ItemTemplate` を採用する。
+1 行の表示に複数フィールドを含めたい場合や、アイコン付きの選択肢を実装したい場合は `ItemTemplate` を使う。`DisplayMemberPath` と `ItemTemplate` は両方を設定できるが、表示には `ItemTemplate` が優先されて `DisplayMemberPath` は無視される。そのため、カスタム表示が必要なときは `ItemTemplate` を使用し、通常は `DisplayMemberPath` を併用しない。
 
 ```xml
 <ComboBox ItemsSource="{Binding Employees}"
