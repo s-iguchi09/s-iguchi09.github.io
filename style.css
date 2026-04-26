@@ -186,12 +186,12 @@ h2 {
     gap: 0;
   }
 
-  .hamburger-btn {
+  .js-enabled .hamburger-btn {
     display: inline-flex;
     align-items: center;
   }
 
-  .site-nav {
+  .js-enabled .site-nav {
     display: none;
     flex-direction: column;
     width: 100%;
@@ -200,7 +200,7 @@ h2 {
     padding: 0.5rem 0;
   }
 
-  .site-nav.open {
+  .js-enabled .site-nav.open {
     display: flex;
   }
 
