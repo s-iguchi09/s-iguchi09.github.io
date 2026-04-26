@@ -226,7 +226,6 @@ h2 {
 .prop-table tr:hover { background: #f9fbff; }
 .prop-table code { background: #eef2fb; padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
 
-.prop-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .category-badge { display: inline-block; background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 0.5rem; vertical-align: middle; }
 .screenshot-placeholder { background: #f0f4fb; border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; color: #888; margin: 1rem 0; }
 .screenshot-img { max-width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); margin: 1rem 0; display: block; }
