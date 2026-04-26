@@ -210,7 +210,7 @@ h2 {
   height: auto;
 }
 
-.content-section table {
+.content-section table:not(.prop-table) {
   overflow-x: auto;
   display: block;
   max-width: 100%;
