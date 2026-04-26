@@ -213,8 +213,8 @@ public Priority SelectedPriority
 - **`SelectedValue` の初期値を正しく設定する**  
   `SelectedValuePath` を使う場合、ViewModel 側の初期値が `ItemsSource` 内に存在しない値だと選択状態が空になる。`ItemsSource` がセットされる前に `SelectedValue` が設定されるとバインドが空振りすることがある。`ItemsSource` を先に設定してから選択値を設定する順序を守る。
 
-- **`SelectedItem` の同一性判定は参照比較**  
-  `SelectedItem` は参照の同一性で一致を判定する。別インスタンスだが同じ内容のオブジェクトを初期値として設定しても選択状態にならない。`IEquatable<T>` の実装か `SelectedValuePath` を使う方法で回避する。
+- **`SelectedItem` の一致判定は `Equals` を考慮する**  
+  `SelectedItem` は「常に参照比較」とは限らず、`Equals` による一致判定が関わる。既定の実装では別インスタンス同士は一致しないことが多いため、同じ内容のオブジェクトを初期値として設定しても選択されない場合がある。値同値で一致させたい場合は、対象型で `Equals` と `GetHashCode` をオーバーライドし、必要に応じて `IEquatable<T>` も実装する。識別子やコード値のような特定プロパティで選択を管理したい場合は、`SelectedValuePath` と `SelectedValue` を使う。
 
 - **`null` の扱い**  
   選択肢として「未選択」を表す `null` を含める場合、ComboBox は空欄として表示する。ViewModel 側で `null` を許容する型（例: `string?`, `int?`）を使う。
