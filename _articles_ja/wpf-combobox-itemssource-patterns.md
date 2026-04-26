@@ -132,6 +132,7 @@ public Department? SelectedDepartment
           SelectedValue="{Binding SelectedDepartmentId}" />
 ```
 
+対応する ViewModel 側では、選択された `Id` を保持するプロパティを次のように定義する。
 ```csharp
 private int _selectedDepartmentId;
 public int SelectedDepartmentId
