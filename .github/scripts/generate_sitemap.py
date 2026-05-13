@@ -95,7 +95,7 @@ def extract_images_from_file(abs_path: str) -> list:
     if abs_path.endswith(".md"):
         # Markdown image syntax: ![alt](path)
         for src in re.findall(r'!\[[^\]]*\]\(([^)]+)\)', content):
-            src = src.strip().split()[0]  # drop optional title
+            src = src.strip().split()[0]  # strip optional title (e.g. "url title")
             if src.startswith("/"):
                 images.append(BASE_URL + src)
     else:
