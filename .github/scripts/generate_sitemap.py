@@ -7,8 +7,9 @@ builds a multilingual sitemap with hreflang annotations
 for English and Japanese pages, and writes sitemap.xml.
 
 URL structure:
-  - English pages: https://s-iguchi09.github.io/<path>
-  - Japanese pages: https://s-iguchi09.github.io/ja/<path>
+  - Base URL: loaded from _config.yml (url), fallback to DEFAULT_BASE_URL
+  - English pages: <base-url>/<path>
+  - Japanese pages: <base-url>/ja/<path>
   - index.html  → trailing-slash URL  (e.g. / or /ja/)
 """
 
@@ -19,9 +20,28 @@ import datetime
 import subprocess
 from typing import Optional
 
-BASE_URL = "https://s-iguchi09.github.io"
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 TODAY = datetime.date.today().isoformat()
+DEFAULT_BASE_URL = "https://s-iguchi09.github.io"
+
+
+def load_base_url() -> str:
+    """Load site URL from _config.yml, falling back to DEFAULT_BASE_URL."""
+    config_path = os.path.join(REPO_ROOT, "_config.yml")
+    try:
+        with open(config_path, encoding="utf-8", errors="replace") as fh:
+            content = fh.read()
+    except OSError:
+        return DEFAULT_BASE_URL
+
+    match = re.search(r'^\s*url:\s*["\']?([^"\n\']+)', content, re.MULTILINE)
+    if not match:
+        return DEFAULT_BASE_URL
+
+    return match.group(1).strip().rstrip("/") or DEFAULT_BASE_URL
+
+
+BASE_URL = load_base_url()
 
 # Directories to exclude from scanning
 EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"}
