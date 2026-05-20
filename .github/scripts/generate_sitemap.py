@@ -7,8 +7,9 @@ builds a multilingual sitemap with hreflang annotations
 for English and Japanese pages, and writes sitemap.xml.
 
 URL structure:
-  - English pages: https://s-iguchi09.github.io/<path>
-  - Japanese pages: https://s-iguchi09.github.io/ja/<path>
+  - Base URL: loaded from _config.yml (url), fallback to DEFAULT_BASE_URL
+  - English pages: <base-url>/<path>
+  - Japanese pages: <base-url>/ja/<path>
   - index.html  → trailing-slash URL  (e.g. / or /ja/)
 """
 
