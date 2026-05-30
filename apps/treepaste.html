@@ -1,0 +1,101 @@
+---
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TreePaste | Preserve Folder Structure When Pasting Files</title>
+  {% include head.html %}
+
+  <meta name="description" content="TreePaste is a Windows app that pastes copied files while preserving the original folder structure. Select the paste starting level in a tree view and launch quickly with Ctrl+Alt+V.">
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+
+  <section class="hero">
+    <h1>TreePaste</h1>
+    <p>
+      A Windows tool that pastes copied files while preserving their folder structure.
+      Choose the paste starting level from a tree view and paste from exactly where you need.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Overview</h2>
+    <p>
+      TreePaste is a desktop application for preserving source folder hierarchy when pasting files and folders copied in Explorer.
+      Instead of a one-step paste, it visualizes copied items as a tree so you can choose the exact hierarchy level used as the paste starting point.
+    </p>
+
+    <div class="app-screenshot">
+      <img src="/attachments/TreePaste.png" alt="TreePaste main window showing folder hierarchy and paste level selection">
+    </div>
+  </section>
+
+  <section class="content-section">
+    <h2>Background</h2>
+    <p>
+      In real file management workflows, a normal paste often includes too many parent folders or loses structure that should remain intact.
+      TreePaste was built to reduce these mistakes by making folder hierarchy visible before execution and letting you select where the paste begins.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Key Features</h2>
+    <ul>
+      <li>Starts in the system tray and runs in the background</li>
+      <li>Press <strong>Ctrl+Alt+V</strong> anytime to open the window</li>
+      <li>Shows copied files and folders from the clipboard as a tree</li>
+      <li>Select the paste starting level by clicking a folder node</li>
+      <li>Automatically detects the active Explorer path as the paste destination</li>
+      <li>Falls back to Desktop when no Explorer window is found</li>
+      <li>Supports Fluent Design and automatically adapts colors to the current Windows color mode</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>How to Use</h2>
+    <ol>
+      <li>Launch TreePaste (it stays in the system tray).</li>
+      <li>Copy files or folders in Explorer (Ctrl+C).</li>
+      <li>Open the destination folder in Explorer.</li>
+      <li>Press <strong>Ctrl+Alt+V</strong> to open TreePaste.</li>
+      <li>Select the paste starting point from the tree.</li>
+      <li>Execute the paste.</li>
+    </ol>
+  </section>
+
+  <section class="content-section">
+    <h2>System Requirements</h2>
+    <ul>
+      <li><strong>OS:</strong> Windows 10 / 11 (x64)</li>
+      <li><strong>.NET:</strong> .NET 10</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Repository</h2>
+    <p>
+      Source code and usage details are available on GitHub.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/TreePaste" target="_blank" rel="noopener noreferrer" class="github-link">
+        View GitHub Repository - TreePaste
+      </a>
+    </p>
+  </section>
+
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>
