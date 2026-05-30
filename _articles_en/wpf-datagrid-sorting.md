@@ -8,7 +8,9 @@ excerpt: "Learn the basics of DataGrid sorting and practical implementation patt
 
 ## Overview
 
-The WPF `DataGrid` control provides built-in column sorting out of the box. When `CanUserSortColumns` is set to `true` (the default), clicking a column header sorts the rows by that column. In this article we cover the essentials and explore patterns for customising sort behaviour.
+The WPF `DataGrid` control provides built-in column sorting out of the box.  
+When `CanUserSortColumns` is set to `true` (the default), clicking a column header sorts the rows by that column.  
+In this article we cover the essentials and explore patterns for customising sort behaviour.  
 
 ## Enabling Default Sorting
 
@@ -25,7 +27,7 @@ By default, every column in a `DataGrid` is sortable as long as its `SortMemberP
 </DataGrid>
 ```
 
-Clicking the **Name** header once sorts ascending; clicking again reverses to descending; a third click clears the sort.
+Clicking the **Name** header once sorts ascending; clicking again reverses to descending; a third click clears the sort.  
 
 ## Sorting via Code-Behind
 
@@ -60,14 +62,15 @@ view.CustomSort = Comparer<Product>.Create((a, b) =>
     StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
 ```
 
-`CustomSort` takes precedence over `SortDescriptions`, so clear `SortDescriptions` first if you switch between the two approaches.
+`CustomSort` takes precedence over `SortDescriptions`, so clear `SortDescriptions` first if you switch between the two approaches.  
 
 ## Summary
 
-| Scenario | Recommended approach |
-|---|---|
-| Simple column sorting | `CanUserSortColumns="True"` (default) |
-| Programmatic sort | `SortDescriptions` + update `SortDirection` |
-| Custom sort logic | `ICollectionView.CustomSort` |
+| Scenario              | Recommended approach                        |
+| --------------------- | ------------------------------------------- |
+| Simple column sorting | `CanUserSortColumns="True"` (default)       |
+| Programmatic sort     | `SortDescriptions` + update `SortDirection` |
+| Custom sort logic     | `ICollectionView.CustomSort`                |
 
-For most line-of-business apps the default mechanism covers the common cases. Reach for `CustomSort` only when the data requires special ordering that `SortDescription` cannot express.
+For most line-of-business apps the default mechanism covers the common cases.  
+Reach for `CustomSort` only when the data requires special ordering that `SortDescription` cannot express.  

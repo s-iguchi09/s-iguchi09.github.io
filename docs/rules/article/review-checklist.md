@@ -36,6 +36,14 @@ Use this checklist before publishing any technical article.
 - [ ] No filler connectives (e.g., "結論としては" / "つまり" / "As you can see")
 - [ ] Sentences are declarative and impersonal
 - [ ] The article covers one topic only
+- [ ] Sentence line breaks are inserted at sentence endings (not at commas)
+
+---
+
+## Formatting and Lint
+
+- [ ] If tables are present, Format Document has been run to normalize table formatting
+- [ ] markdownlint has been run and no warnings remain
 
 ---
 

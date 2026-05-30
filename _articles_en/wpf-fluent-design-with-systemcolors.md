@@ -8,7 +8,8 @@ excerpt: "This article explains how to apply Fluent styling in WPF using only bu
 
 ## Overview
 
-This article describes how to bring Fluent-style visual design to a WPF application without adding external UI libraries. The approach uses built-in WPF styling, spacing, corner radius, visual hierarchy, and `SystemColors` so the UI can stay aligned with Windows color settings.
+This article describes how to bring Fluent-style visual design to a WPF application without adding external UI libraries.  
+The approach uses built-in WPF styling, spacing, corner radius, visual hierarchy, and `SystemColors` so the UI can stay aligned with Windows color settings.  
 
 ---
 
@@ -23,20 +24,22 @@ This article describes how to bring Fluent-style visual design to a WPF applicat
 
 ## Problem
 
-The default WPF theme is stable and predictable, but its visual density and spacing often diverge from current Windows design language. In multi-window business applications, default control styles can make interaction priority less clear, especially when all elements have similar weight and low hierarchy contrast.
+The default WPF theme is stable and predictable, but its visual density and spacing often diverge from current Windows design language.  
+In multi-window business applications, default control styles can make interaction priority less clear, especially when all elements have similar weight and low hierarchy contrast.  
 
 ---
 
 ## Cause / Background
 
-WPF provides flexible rendering and templating, but Fluent-specific visuals are not automatically applied by default. A Fluent-like result requires explicit decisions for:
+WPF provides flexible rendering and templating, but Fluent-specific visuals are not automatically applied by default.  
+A Fluent-like result requires explicit decisions for:
 
 - corner radius and spacing,
 - hierarchy separation through background and border contrast,
 - limited and intentional accent usage,
 - colors that remain consistent with OS-level settings.
 
-`SystemColors` is important in this context because it allows referencing colors derived from Windows configuration instead of hard-coded values.
+`SystemColors` is important in this context because it allows referencing colors derived from Windows configuration instead of hard-coded values.  
 
 ---
 
@@ -49,7 +52,8 @@ Without external libraries, combine the following:
 - Define control templates for corner radius, spacing, and hover/press feedback.
 - Separate page background, card surface, and accent roles to improve visual hierarchy and readability.
 
-For .NET 9 Fluent theme adoption across an entire app, `App.xaml` configuration is the key step. If setup is done only per window, consistency becomes difficult as new screens are added.
+For .NET 9 Fluent theme adoption across an entire app, `App.xaml` configuration is the key step.  
+If setup is done only per window, consistency becomes difficult as new screens are added.  
 
 ---
 
@@ -57,7 +61,8 @@ For .NET 9 Fluent theme adoption across an entire app, `App.xaml` configuration 
 
 ### 1. Enable Fluent Theme in App.xaml
 
-To apply Fluent styling at the application level, configure `App.xaml`. In .NET 9, there are two valid options.
+To apply Fluent styling at the application level, configure `App.xaml`.  
+In .NET 9, there are two valid options.  
 
 Use `ThemeMode`:
 
@@ -90,11 +95,13 @@ Use the Fluent resource dictionary:
 </Application>
 ```
 
-Either option is sufficient. Defining one of them in `App.xaml` first keeps window-level styling focused on local adjustments and reduces theme drift across screens.
+Either option is sufficient.  
+Defining one of them in `App.xaml` first keeps window-level styling focused on local adjustments and reduces theme drift across screens.  
 
 ### 2. Use SystemColors in Window-Level Styling
 
-After app-level theme setup, define local styles for layout hierarchy and interaction feedback. The following sample uses `SystemColors` through `DynamicResource`.
+After app-level theme setup, define local styles for layout hierarchy and interaction feedback.  
+The following sample uses `SystemColors` through `DynamicResource`.  
 
 ```xml
 <Window x:Class="Sample.MainWindow"
@@ -176,7 +183,9 @@ After app-level theme setup, define local styles for layout hierarchy and intera
 </Window>
 ```
 
-This keeps the implementation dependency-free while improving hierarchy and interaction feedback. Because key brushes are resolved through `DynamicResource`, changes in Windows color settings can propagate during runtime. `SystemColors.AccentColorBrushKey` can be used where accent emphasis is needed.
+This keeps the implementation dependency-free while improving hierarchy and interaction feedback.  
+Because key brushes are resolved through `DynamicResource`, changes in Windows color settings can propagate during runtime.  
+`SystemColors.AccentColorBrushKey` can be used where accent emphasis is needed.  
 
 ---
 
@@ -191,17 +200,19 @@ This keeps the implementation dependency-free while improving hierarchy and inte
 
 ## Alternatives / Comparison
 
-| Method | Advantages | Disadvantages | Best suited for |
-|---|---|---|---|
-| WPF built-in styles + `SystemColors` | No additional package dependencies, easier long-term maintenance, OS color alignment | Limited advanced Fluent material effects | Existing WPF systems with maintenance-first priorities |
-| External Fluent UI library | Faster visual unification with ready-made themes | Dependency lifecycle and compatibility checks are required | New apps with high UI delivery speed requirements |
-| Fully custom rendering | Maximum visual freedom | Highest implementation and testing cost | Products with strict custom branding requirements |
+| Method                               | Advantages                                                                           | Disadvantages                                              | Best suited for                                        |
+| ------------------------------------ | ------------------------------------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------------------------ |
+| WPF built-in styles + `SystemColors` | No additional package dependencies, easier long-term maintenance, OS color alignment | Limited advanced Fluent material effects                   | Existing WPF systems with maintenance-first priorities |
+| External Fluent UI library           | Faster visual unification with ready-made themes                                     | Dependency lifecycle and compatibility checks are required | New apps with high UI delivery speed requirements      |
+| Fully custom rendering               | Maximum visual freedom                                                               | Highest implementation and testing cost                    | Products with strict custom branding requirements      |
 
 ---
 
 ## Summary
 
-Fluent-style UI in WPF can be implemented without extra libraries. The practical baseline is: configure Fluent activation in `App.xaml` (either `ThemeMode` or Fluent dictionary), then build visual hierarchy with spacing and corner radius, and reference `SystemColors` through `DynamicResource` for Windows-aware color behavior. This approach is generally the most maintainable option for long-lived WPF applications.
+Fluent-style UI in WPF can be implemented without extra libraries.  
+The practical baseline is: configure Fluent activation in `App.xaml` (either `ThemeMode` or Fluent dictionary), then build visual hierarchy with spacing and corner radius, and reference `SystemColors` through `DynamicResource` for Windows-aware color behavior.  
+This approach is generally the most maintainable option for long-lived WPF applications.  
 
 ---
 

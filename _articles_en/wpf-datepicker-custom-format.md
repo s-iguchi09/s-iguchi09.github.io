@@ -8,11 +8,14 @@ excerpt: "A practical guide to changing the date display format of WPF DatePicke
 
 ## Overview
 
-By default, the WPF `DatePicker` renders selected dates using the system locale format (e.g. `4/15/2026` on en-US). This article shows how to customise that format so the control always renders dates in the format your application requires.
+By default, the WPF `DatePicker` renders selected dates using the system locale format (e.g.  
+`4/15/2026` on en-US).  
+This article shows how to customise that format so the control always renders dates in the format your application requires.  
 
 ## Setting the Format in XAML
 
-`DatePicker` exposes a `SelectedDateFormat` property with two values: `Short` (default) and `Long`. For full control you need to reach into the control template's `DatePickerTextBox` via a style:
+`DatePicker` exposes a `SelectedDateFormat` property with two values: `Short` (default) and `Long`.  
+For full control you need to reach into the control template's `DatePickerTextBox` via a style:
 
 ```xml
 <DatePicker x:Name="datePicker" SelectedDate="{Binding SelectedDate}">
@@ -65,10 +68,11 @@ Bind with:
 
 ## Summary
 
-| Method | Pros | Cons |
-|---|---|---|
-| Style + StringFormat | Declarative, no code | Limited to StringFormat syntax |
-| SelectedDateChanged | Simple, explicit | Code-behind coupling |
-| Value Converter | MVVM-friendly, reusable | Requires extra class |
+| Method               | Pros                    | Cons                           |
+| -------------------- | ----------------------- | ------------------------------ |
+| Style + StringFormat | Declarative, no code    | Limited to StringFormat syntax |
+| SelectedDateChanged  | Simple, explicit        | Code-behind coupling           |
+| Value Converter      | MVVM-friendly, reusable | Requires extra class           |
 
-Choose the approach that fits your project's architecture. For new MVVM projects the converter approach scales best as the number of date-displaying controls grows.
+Choose the approach that fits your project's architecture.  
+For new MVVM projects the converter approach scales best as the number of date-displaying controls grows.  

@@ -129,3 +129,14 @@ Titles must make the technical subject immediately clear.
 | DataGrid を便利に使う | WPF DataGrid の並び替えを実装する方法 |
 | WPF の小技 | WPF ListBox の仮想化環境における選択状態の管理 |
 | Useful Tips for WPF | Implementing Column Sorting in WPF DataGrid |
+
+---
+
+## 9. Markdown Formatting and Lint
+
+- End each sentence with a line break.
+  - Japanese articles: break at sentence-ending punctuation such as `。`.
+  - English articles: break at sentence-ending punctuation such as `.`, `!`, or `?`.
+  - Do not insert line breaks at commas.
+- If the article includes tables, run Format Document to normalize table formatting.
+- Before finalizing edits, run markdownlint and confirm there are no warnings.
