@@ -124,4 +124,3 @@ Following this policy improves rendering performance while preserving form usabi
 
 <!-- Related articles -->
 - [WPF の Label でアンダーバーが消える理由と回避方法](/ja/articles/wpf-label-underscore-issue)
-- [WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針](/ja/articles/wpf-label-vs-textblock-performance)

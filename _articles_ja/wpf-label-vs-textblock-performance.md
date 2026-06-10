@@ -123,4 +123,3 @@ WPF で `Label` を大量配置した場合の遅延要因は、`ContentControl`
 
 <!-- 関連記事 -->
 - [WPF の Label でアンダーバーが消える理由と回避方法](/ja/articles/wpf-label-underscore-issue)
-- [English: Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance)
