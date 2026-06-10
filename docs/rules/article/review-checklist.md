@@ -52,7 +52,7 @@ Use this checklist before publishing any technical article.
 - [ ] Content provides original value beyond public documentation
 - [ ] Article length meets minimum density (700–1,500 chars in Japanese / 400–900 words in English; quality takes priority over word count)
 - [ ] Internal links to related articles are included where relevant
-- [ ] Japanese and English counterpart link is included if applicable
+- [ ] No reciprocal links are added between Japanese and English counterpart articles
 
 ---
 

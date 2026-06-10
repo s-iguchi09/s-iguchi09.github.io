@@ -116,7 +116,7 @@ Articles are published with Google AdSense. The following practices are required
 Where relevant, include links to:
 
 - Related articles on this site
-- The corresponding Japanese or English counterpart article
+- Do not add reciprocal links between Japanese and English counterpart articles
 
 ---
 
