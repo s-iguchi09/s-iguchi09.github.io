@@ -123,4 +123,4 @@ Following this policy improves rendering performance while preserving form usabi
 ---
 
 <!-- Related articles -->
-- [WPF の Label でアンダーバーが消える理由と回避方法](/ja/articles/wpf-label-underscore-issue)
+- [Why WPF Label Hides Underscores and How to Fix It](/articles/wpf-label-underscore-issue)
