@@ -152,7 +152,7 @@ Controls using `StaticResource` for the same keys will not update.
 
 ## Notes
 
-- **Frozen objects cannot be changed even with `DynamicResource`:** If `Freeze()` has been called on a resource object, further modifications throw an `InvalidOperationException`. Check `IsFrozen` before replacing the resource.
+- **Frozen objects cannot be mutated (even when referenced via `DynamicResource`):** If `Freeze()` has been called on a `Freezable` resource (e.g., a `SolidColorBrush`), modifying its properties throws an `InvalidOperationException`. Check `IsFrozen` before mutating an existing instance; if you replace the dictionary entry with a new instance, freezing is typically not an issue.
 - **Overusing `DynamicResource` degrades performance:** WPF maintains internal listeners for each `DynamicResource` binding. Applying `DynamicResource` to every resource in a large application can increase memory usage and slow initial rendering. Retain `StaticResource` for values that never change at runtime.
 - **`DynamicResource` is not supported in all contexts:** Certain markup locations—such as triggers inside a `ControlTemplate`—restrict the use of `DynamicResource`. Errors in these cases surface at runtime rather than compile time, so runtime testing is required.
 
