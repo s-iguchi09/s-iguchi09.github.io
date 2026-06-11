@@ -1199,6 +1199,26 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-tray-contextmenu-close-on-focus-loss/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-tray-contextmenu-close-on-focus-loss/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-tray-contextmenu-close-on-focus-loss/" />
