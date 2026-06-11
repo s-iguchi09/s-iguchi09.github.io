@@ -149,7 +149,7 @@ private void SwitchTheme(string themeName)
 
 ## 注意点
 
-- **`StaticResource` でも `Freeze` 済みオブジェクトは変更できない:** `SolidColorBrush` はデフォルトで Freeze されない場合があるが、明示的に `Freeze()` を呼び出したオブジェクトは変更不可となる。DynamicResource に切り替える前に `IsFrozen` を確認する。
+- **`Freeze` の影響は既存 `Freezable` インスタンスを変更するときに限られる:** たとえば `((SolidColorBrush)Resources["ThemeColor"]).Color = ...` のように既存の `SolidColorBrush` を直接変更する場合、`Freeze()` 済みなら変更できない。一方、今回のように `Resources["ThemeColor"]` に新しい `SolidColorBrush` を代入して差し替えるだけなら、通常は `IsFrozen` の確認は不要である。
 - **`DynamicResource` の乱用はパフォーマンスに影響する:** WPF は変更を監視するための内部リスナーを保持するため、すべてのリソース参照を `DynamicResource` にすると描画速度やメモリ使用量に影響が出る場合がある。変更が不要なリソースには `StaticResource` を維持する。
 - **`DynamicResource` は一部のプロパティでは使用できない:** `Setter.Value` 以外の一部の構文（`ControlTemplate` 内のトリガーなど）では `DynamicResource` が制限される場合がある。コンパイル時ではなく実行時にエラーが発生することがあるため、事前に動作確認が必要である。
 
