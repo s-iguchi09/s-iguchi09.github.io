@@ -389,8 +389,7 @@ public class LogWriter(string logFilePath, LogLevel minimumLevel)
 ```
 
 引数として渡された値（`logFilePath` や `minimumLevel`）は、クラス内のどのメンバーからも直接参照でき、パラメータの状態がそのまま維持される。
-プライマリコンストラクタは .NET 8（C# 12.0）以降でのみ使用可能である。
-
+プライマリコンストラクタは C# 12.0 で導入された構文であり、利用には C# 12.0 に対応したコンパイラ（`LangVersion` 12.0 以上）／SDK が必要である。
 ---
 
 ## 注意点
