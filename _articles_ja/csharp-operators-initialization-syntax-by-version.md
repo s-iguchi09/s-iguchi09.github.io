@@ -106,6 +106,8 @@ int last = array[array.Length - 1];
 int[] sliced = array.Skip(1).Take(3).ToArray();
 ```
 
+上記はいずれも意味を保ったまま旧構文で表現した例である（LINQ 例は `using System.Linq;` が必要）。
+
 ---
 
 ## 実装例
