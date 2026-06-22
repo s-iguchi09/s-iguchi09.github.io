@@ -155,8 +155,7 @@ public void AddNumber(int val)
 }
 ```
 
-.NET Framework では C# 8.0 のサポートが制限されるため、`??=` が使用できない場合は `??` を用いた以下の等価な記述で代替する。
-
+ビルド環境が C# 8.0 未満（例: `LangVersion` が 7.3 以前）としてコンパイルされる場合、`??=` が使用できないため、`??` を用いた以下の等価な記述で代替する。
 ```csharp
 _numbers = _numbers ?? new List<int>();
 ```
