@@ -159,7 +159,7 @@ int secondFromLast = digits[^2]; // 30
 開始インデックスは含まれ、終了インデックスは含まれない（半開区間）。
 
 ```csharp
-int[] dataset = [0, 1, 2, 3, 4, 5];
+int[] dataset = new[] { 0, 1, 2, 3, 4, 5 };
 int[] sliced = dataset[1..4]; // [1, 2, 3]（インデックス 1 から 4 未満）
 
 // 先頭・末尾の省略
