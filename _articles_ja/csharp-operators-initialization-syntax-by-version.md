@@ -120,11 +120,11 @@ int[] sliced = array.Skip(1).Take(3).ToArray();
 対象が `null` であれば評価を行わず `null` を返すため、事前の `null` チェックを省略できる。
 
 ```csharp
-string? title = GetTitle();
+string title = GetTitle();
 int? length = title?.Length; // title が null なら length も null になる
 
-List<string>? items = GetItems();
-string? firstItem = items?[0]; // items が null なら firstItem も null になる
+List<string> items = GetItems();
+string firstItem = items?[0]; // items が null なら firstItem も null になる
 ```
 
 `?.` と `?[]` はメソッドチェーン中に組み合わせて使用できる。
