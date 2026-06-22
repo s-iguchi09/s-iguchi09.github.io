@@ -136,7 +136,7 @@ string firstItem = items?[0]; // items が null なら firstItem も null にな
 `null` 時のデフォルト値を指定する際に使用される。
 
 ```csharp
-string? typedName = GetName();
+string typedName = GetName();
 string displayName = typedName ?? "Anonymous"; // typedName が null なら "Anonymous" になる
 ```
 
