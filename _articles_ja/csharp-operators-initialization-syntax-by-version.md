@@ -296,7 +296,7 @@ var tallSettings = defaultSettings with { Height = 1000 };
 ```
 
 `with` 式は C# 9.0 で導入された言語機能であり、`LangVersion` を C# 9.0 以上に設定することで .NET Framework 上でも使用可能である。
-
+ただし `record` や `init` アクセサーを利用する場合、.NET Framework では `System.Runtime.CompilerServices.IsExternalInit` の追加定義（ポリフィル）が必要になることがある。
 ---
 
 ### 5. 初期化の糖衣構文
