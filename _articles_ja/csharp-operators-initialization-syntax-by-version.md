@@ -345,7 +345,7 @@ public class LogWriter(string logFilePath, LogLevel minimumLevel)
 
 ## 注意点
 
-- .NET Framework では C# 8.0 のサポートが限定的であり、`??=`、`^`、`..`、`!` などの演算子は原則として使用できないものとして扱うことが安全である。
+- .NET Framework をターゲットにする場合でも、`??=` や `!` のような言語機能はビルド環境（コンパイラ／`LangVersion`）が対応していれば使用できる。一方 `^` / `..`（Index / Range）は必要な型・API（`System.Index` / `System.Range` など）の有無に依存するため、追加参照／ポリフィルが必要になるか、利用できない場合がある。
 - `!`（null 免除演算子）はコンパイル時の警告を抑制するだけであり、実行時の `null` チェックを行わない。
   使用した箇所で `null` が渡された場合は `NullReferenceException` が発生するため、使用箇所を最小限に抑える。
 - `with` 式、Target-typed `new`、コレクション式、`required`、プライマリコンストラクタはいずれも .NET Framework では使用できない。
