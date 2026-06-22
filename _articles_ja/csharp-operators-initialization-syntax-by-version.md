@@ -367,8 +367,8 @@ var lightTheme = new AppTheme { ThemeName = "Light Mode" };
 // var invalidTheme = new AppTheme { Author = "s-iguchi" };
 ```
 
-`required` は .NET 7（C# 11.0）以降でのみ使用可能である。
-
+`required` は C# 11.0 で導入された構文であり、.NET 7 以降では `System.Runtime.CompilerServices.RequiredMemberAttribute` が標準で提供される。
+一方 .NET Framework など属性が存在しない環境では、属性の自前定義または追加参照（ポリフィル）が別途必要になる。
 #### プライマリコンストラクタ — C# 12.0 以降
 
 C# 12 から `class` や `struct` でもクラス名の後ろに直接コンストラクタの引数を定義できるようになった。
