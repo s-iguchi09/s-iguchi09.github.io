@@ -148,7 +148,7 @@ string displayName = typedName ?? "Anonymous"; // typedName が null なら "Ano
 遅延初期化（Lazy Initialization）パターンで多用される。
 
 ```csharp
-private List<int>? _numbers;
+private List<int> _numbers;
 
 public void AddNumber(int val)
 {
