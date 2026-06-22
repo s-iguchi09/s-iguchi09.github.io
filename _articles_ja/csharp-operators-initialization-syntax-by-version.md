@@ -189,9 +189,8 @@ int last = digits[^1];         // 40（digits[digits.Length - 1] と等価）
 int secondFromLast = digits[^2]; // 30
 ```
 
-.NET Framework では `System.Index` 型を利用できないため、`^` 演算子は使用できない。
+.NET Framework では `System.Index` 型が標準では提供されないため、追加参照／ポリフィルなしでは `^` 演算子を使用できない。
 代替として `array[array.Length - 1]` のように明示的なインデックス計算を行う。
-
 #### `..`（範囲演算子）— C# 8.0 以降
 
 開始インデックスと終了インデックスを指定して部分範囲（`System.Range`）を生成し、配列や文字列のスライスを直感的に記述できる。
