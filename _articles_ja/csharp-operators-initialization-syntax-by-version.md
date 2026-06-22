@@ -30,7 +30,7 @@ private List<int>? _numbers;
 
 public void AddNumber(int val)
 {
-    _numbers ??= new List<int>(); // .NET Framework 環境ではコンパイルエラー
+    _numbers ??= new List<int>(); // C# 8.0 未満でコンパイルされる環境ではコンパイルエラー
     _numbers.Add(val);
 }
 ```
