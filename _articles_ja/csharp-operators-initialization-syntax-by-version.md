@@ -256,15 +256,22 @@ var tallSettings = defaultSettings with { Height = 1000 };
 代入先の型またはメソッドの引数の型からインスタンス化すべき型が推論できる場合、`new` の後ろの型名を省略して `new()` と記述できる。
 
 ```csharp
-// 以前の記述
-Dictionary<string, List<string>> map = new Dictionary<string, List<string>>();
+public class Example
+{
+    public void Run()
+    {
+        // 以前の記述
+        Dictionary<string, List<string>> map1 = new Dictionary<string, List<string>>();
 
-// Target-typed new
-Dictionary<string, List<string>> map = new();
+        // Target-typed new
+        Dictionary<string, List<string>> map2 = new();
 
-// メソッド引数への適用
-public void RegisterProfile(UserOptions options) { }
-RegisterProfile(new() { IsActive = true });
+        // メソッド引数への適用（型は引数から推論される）
+        RegisterNumbers(new() { 1, 2, 3 });
+    }
+
+    private void RegisterNumbers(List<int> numbers) { }
+}
 ```
 
 型が左辺または引数の型宣言から明確に推論できる場合のみ省略可能である。
