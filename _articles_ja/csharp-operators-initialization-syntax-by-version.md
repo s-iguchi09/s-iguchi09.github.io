@@ -145,7 +145,7 @@ string solidInput = rawInput!;
 `^1` は最後の要素（`Length - 1`）、`^0` はコレクションの要素数（`Length`）と同じ位置を指す。
 
 ```csharp
-int[] digits = [10, 20, 30, 40];
+int[] digits = new[] { 10, 20, 30, 40 };
 int last = digits[^1];         // 40（digits[digits.Length - 1] と等価）
 int secondFromLast = digits[^2]; // 30
 ```
