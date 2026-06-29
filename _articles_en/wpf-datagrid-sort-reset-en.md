@@ -1,9 +1,9 @@
 ---
+layout: article-en
 title: "How to Reset DataGrid Sorting in WPF"
-emoji: "🧭"
-type: "tech"
-topics: ["wpf", "datagrid", "csharp", "mvvm"]
-published: false
+date: 2026-06-29
+category: WPF
+excerpt: "Practical ways to reset WPF DataGrid sorting, including explicit clearing, Sorting-event control, CollectionView handling, and a reusable Behavior."
 ---
 
 WPF `DataGrid` provides built-in sorting, but many applications need a way to restore the grid to its initial unsorted state.  
@@ -66,7 +66,7 @@ If you want: `Unsorted → Ascending → Descending → Unsorted`, handle the `S
           Sorting="DataGrid_Sorting" />
 ```
 
-### C#
+### C\#
 
 ```csharp
 using System.ComponentModel;

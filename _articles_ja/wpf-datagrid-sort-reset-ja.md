@@ -1,9 +1,9 @@
 ---
+layout: article-ja
 title: "WPFのDataGridのソートを初期化する方法"
-emoji: "🧭"
-type: "tech"
-topics: ["wpf", "datagrid", "csharp", "mvvm"]
-published: false
+date: 2026-06-29
+category: WPF
+excerpt: "WPF DataGrid のソート状態を初期化する代表的な方法を整理し、単一列ソートと複数列ソートの両方で使える実装例を示す。"
 ---
 
 WPF の `DataGrid` は便利なソート機能を持っていますが、要件によっては「初期状態に戻す（ソートを解除する）」動作を明示的に実装したいことがあります。  
@@ -94,7 +94,7 @@ public static class DataGridSortHelper
           Sorting="DataGrid_Sorting" />
 ```
 
-### C#
+### C\#
 
 ```csharp
 using System.ComponentModel;
