@@ -94,6 +94,7 @@ To implement `Ascending -> Descending -> Unsorted`, intercept the `Sorting` even
 ```
 
 This event hook allows custom handling before the default sorting pipeline completes.
+When columns such as `DataGridTemplateColumn` are used, `SortMemberPath` should be set explicitly for columns that need sort-reset handling.
 
 ### C\#
 
@@ -234,6 +235,7 @@ XAML usage remains compact, which helps apply identical sorting rules consistent
 ## Notes
 
 - Clearing `SortDescriptions` alone can leave header arrows out of sync with actual data order.
+- In the `Sorting` event example, if reset logic uses `SortMemberPath` as the key, columns without `SortMemberPath` can fail to reset as expected.
 - For multi-column sorting, requirements should define whether reset means full clear or only target-column clear.
 - Behavior-based reuse should provide extension points when screen-specific sorting rules differ.
 
