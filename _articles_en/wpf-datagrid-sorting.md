@@ -27,7 +27,8 @@ By default, every column in a `DataGrid` is sortable as long as its `SortMemberP
 </DataGrid>
 ```
 
-Clicking the **Name** header once sorts ascending; clicking again reverses to descending; a third click clears the sort.  
+Clicking the **Name** header once sorts ascending, and clicking again reverses to descending.  
+The default behavior does not return to an unsorted state, so clear logic must be implemented explicitly when needed.  
 
 ## Sorting via Code-Behind
 
