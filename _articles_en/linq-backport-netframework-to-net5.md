@@ -1,7 +1,7 @@
 ---
 layout: article-en
 title: "Backporting Missing LINQ Methods from .NET 5 to .NET Framework"
-date: 2026-07-11
+date: 2026-07-10
 category: C#
 excerpt: "A guide to safely backporting the four LINQ methods added between .NET Framework 4.8 and .NET 5 — Append, Prepend, TakeLast, and SkipLast — including the lazy-evaluation pitfall, algorithm walkthrough, and a zero-effort migration path using conditional compilation."
 ---

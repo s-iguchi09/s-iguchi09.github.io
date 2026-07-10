@@ -1,7 +1,7 @@
 ---
 layout: article-ja
 title: ".NET Framework の不足 LINQ メソッドを .NET 5 相当にバックポートする"
-date: 2026-07-11
+date: 2026-07-10
 category: C#
 excerpt: ".NET Framework 4.8 から .NET 5 の間に追加された LINQ の 4 メソッド（Append・Prepend・TakeLast・SkipLast）を、遅延評価の落とし穴と移行時の名前衝突に対処しながら安全にバックポートする方法を解説する。"
 ---
