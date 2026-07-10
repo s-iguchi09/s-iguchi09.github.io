@@ -16,6 +16,14 @@ This article enumerates the four LINQ methods added between .NET Framework 4.8 a
 
 ---
 
+## Prerequisites / Environment
+
+- Frameworks: .NET Framework 4.8 (target) / .NET 5+ (migration target)
+- APIs: LINQ `Append`, `Prepend`, `TakeLast`, `SkipLast`
+- Migration guard: `#if !NETCOREAPP`
+
+---
+
 ## LINQ Changes Between .NET Framework and .NET 5
 
 The period from .NET Core 2.0 through .NET 5 was primarily a migration era focused on **rewriting internals for performance** — reduced allocations and faster execution — rather than adding large numbers of new APIs.
