@@ -1,45 +1,45 @@
-# Article Writing Guidelines
+# 記事執筆ガイドライン
 
-Rules for technical articles published on this site.  
-Both Japanese and English articles follow these guidelines.
-
----
-
-## 1. Scope
-
-These rules apply to all technical articles. Each article must address a single, clearly defined technical topic.
+本サイトに公開する技術記事のルール。
+日本語・英語の両方の記事がこのガイドラインに従う。
 
 ---
 
-## 2. Article Structure
+## 1. 適用範囲
 
-Use the following section order. Omit sections that are genuinely not applicable, but do not skip Overview, Implementation, or Summary.
+このルールはすべての技術記事に適用する。各記事は明確に定義された1つの技術テーマを扱うこと。
 
-| # | Section | Purpose |
+---
+
+## 2. 記事構成
+
+以下のセクション順で構成する。「概要」「実装例」「まとめ」は省略不可。それ以外のセクションは明確に不要な場合のみ省略可。
+
+| # | セクション | 目的 |
 |---|---|---|
-| 1 | Overview | State what the article covers and what problem it solves |
-| 2 | Prerequisites / Environment | Framework, language version, architecture assumptions |
-| 3 | Problem | Describe the situation where the issue occurs |
-| 4 | Cause / Background | Explain why the problem occurs |
-| 5 | Solution | Summarize the approach taken |
-| 6 | Implementation | Code examples with surrounding explanation |
-| 7 | Notes | Constraints, edge cases, pitfalls |
-| 8 | Alternatives / Comparison | Other approaches with trade-off table |
-| 9 | Summary | Final recommendation with selection criteria |
+| 1 | 概要 | 記事が扱う内容と解決する問題を明示する |
+| 2 | 前提・対象環境 | フレームワーク、言語バージョン、アーキテクチャの前提を記述する |
+| 3 | 問題 | 問題が発生する状況を具体的に説明する |
+| 4 | 原因・背景 | 問題が起きる理由を説明する |
+| 5 | 解決方法 | 採用するアプローチの要点を記述する |
+| 6 | 実装例 | 説明を伴うコードサンプルを記述する |
+| 7 | 注意点 | 制約・エッジケース・落とし穴を記述する |
+| 8 | 代替案・比較 | 他のアプローチとトレードオフ表を記述する |
+| 9 | まとめ | 選択基準を含む最終的な推奨を記述する |
 
 ---
 
-## 3. Writing Style
+## 3. 文体
 
-### 3.1 Register
+### 3.1 文体の基本
 
-- Use declarative, descriptive sentences.
-- Write in third-person or impersonal constructions; avoid addressing the reader directly.
-- Prefer formal written forms over colloquial ones.
+- 断定的・説明的な文体を使う。
+- 三人称または無主語構文で記述し、読者への直接的な呼びかけは避ける。
+- 書き言葉の丁寧体ではなく、形式的な書き言葉（常体）を使う。
 
-**Japanese examples:**
+**日本語の例:**
 
-| Avoid | Use instead |
+| 避けること | 代わりに使う表現 |
 |---|---|
 | はい、対応できます。 | 対応可能である。 |
 | 結論としては、 | （削除して断定文にする） |
@@ -50,9 +50,9 @@ Use the following section order. Omit sections that are genuinely not applicable
 | わかりやすいです | 把握しやすい |
 | 〜になります | 〜となる / 〜である |
 
-**English examples:**
+**英語の例:**
 
-| Avoid | Use instead |
+| 避けること | 代わりに使う表現 |
 |---|---|
 | Let's try… | To implement… |
 | It's easy to… | The approach is… |
@@ -60,71 +60,70 @@ Use the following section order. Omit sections that are genuinely not applicable
 | It's useful | This is effective for… |
 | As you can see… | The result shows… |
 
-### 3.2 Headings
+### 3.2 見出し
 
-- Use noun phrases or action phrases, not questions.
-- Avoid Q&A-style headings.
+- 見出しは名詞句または動詞句を使い、疑問文にしない。
+- Q&A形式の見出しは不可。
 
-| Avoid | Use instead |
+| 避けること | 代わりに使う表現 |
 |---|---|
 | なぜ起きるのか？ | 原因 |
 | 対応できるか？ | 対応方法 |
 | Shift 範囲選択にも対応できるか | Shift 範囲選択への対応 |
 
-### 3.3 One Article, One Topic
+### 3.3 1記事1テーマ
 
-An article must cover one clearly scoped technical subject. Do not combine multiple independent topics into a single article.
-
----
-
-## 4. Code Snippets
-
-Every code block must be preceded and followed by explanatory text:
-
-- **Before the code:** state what the code does and why this approach is used.
-- **After the code:** describe any constraints, important points, or expected behavior.
-
-An article consisting primarily of code with minimal prose is not acceptable.
+記事は明確に範囲が定義された1つの技術テーマを扱うこと。独立した複数のトピックを1記事にまとめない。
 
 ---
 
-## 5. Required Content Elements
+## 4. コードスニペット
 
-Each article should include:
+すべてのコードブロックの前後に説明文を記述すること:
 
-- **Prerequisites / Environment** — specify the framework, version, and architecture (e.g., MVVM, code-behind).
-- **Explanation of cause or background** — not just "what to do" but "why."
-- **Decision criteria** — state conditions under which each approach is appropriate.
-- **Limitations** — document what the solution does not handle or where it may break.
-- **Summary with recommendations** — conclude with which approach to choose and under what conditions.
+- **コードの前:** そのコードが何をするのか、なぜこのアプローチを使うのかを説明する。
+- **コードの後:** 制約・注意点・期待される動作を説明する。
 
----
-
-## 6. AdSense Compatibility
-
-Articles are published with Google AdSense. The following practices are required:
-
-- The article must provide original, substantive content beyond what public documentation already covers.
-- Minimum effective length: approximately 700–1,500 characters (Japanese) or 400–900 words (English). Quality and density take priority over word count.
-- Include at least one of: comparison table, pitfall/edge case, practical selection guidance.
-- Avoid thin content — do not publish an article that merely restates official documentation.
+コードが大部分を占め説明文が最小限の記事は不可。
 
 ---
 
-## 7. Internal Navigation
+## 5. 必須コンテンツ要素
 
-Where relevant, include links to:
+各記事に含めるべき内容:
 
-- Related articles on this site
-- Do not add reciprocal links between Japanese and English counterpart articles
+- **前提・対象環境** — フレームワーク、バージョン、アーキテクチャ（例: MVVM、コードビハインド）を明記する。
+- **原因・背景の説明** — 「何をすべきか」だけでなく「なぜそうなるのか」を説明する。
+- **選択基準** — どの条件でどのアプローチが適切かを明示する。
+- **制限事項** — ソリューションが対応しない状況や機能しなくなる条件を記述する。
+- **推奨を含むまとめ** — どの条件でどのアプローチを選ぶべきかの最終的な推奨で締める。
 
 ---
 
-## 8. Titles
+## 6. AdSense 適合性
 
-Titles must make the technical subject immediately clear.
+記事には Google AdSense が掲載される。以下を守ること:
 
-| Avoid | Use instead |
+- 公式ドキュメントを超えた独自性のある内容を提供すること。
+- 推奨最小文量: 約700〜1,500字（日本語）または400〜900語（英語）。文量より品質・密度を優先する。
+- 比較表・落とし穴・実用的な選択ガイダンスのうち、少なくとも1つを含めること。
+- 公式ドキュメントを言い換えるだけの薄いコンテンツは公開しない。
+
+---
+
+## 7. 内部リンク
+
+関連記事がある場合は本サイト内の記事へのリンクを含めること。
+
+- 日本語記事と英語記事の対応するカウンターパート間には相互リンクを追加しない。
+
+---
+
+## 8. タイトル
+
+タイトルは技術テーマが即座に伝わるものにする。
+
+| 避けること | 代わりに使う表現 |
 |---|---|
 | DataGrid を便利に使う | WPF DataGrid の並び替えを実装する方法 |
 | WPF の小技 | WPF ListBox の仮想化環境における選択状態の管理 |
@@ -132,11 +131,11 @@ Titles must make the technical subject immediately clear.
 
 ---
 
-## 9. Markdown Formatting and Lint
+## 9. Markdown フォーマットと Lint
 
-- End each sentence with a line break.
-  - Japanese articles: break at sentence-ending punctuation such as `。`.
-  - English articles: break at sentence-ending punctuation such as `.`, `!`, or `?`.
-  - Do not insert line breaks at commas.
-- If the article includes tables, run Format Document to normalize table formatting.
-- Before finalizing edits, run markdownlint and confirm there are no warnings.
+- 文末ごとに改行を入れる。
+  - 日本語記事: `。` などの句点で改行する。
+  - 英語記事: `.`、`!`、`?` などの終止符で改行する。
+  - 読点・カンマでは改行しない。
+- 記事にテーブルが含まれる場合は、フォーマットを整えるため「ドキュメントのフォーマット」を実行する。
+- 編集を確定する前に markdownlint を実行し、警告がないことを確認する。

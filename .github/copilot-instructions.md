@@ -1,34 +1,36 @@
 # Copilot Instructions
 
-This repository hosts a technical blog site with articles in Japanese and English.
-Rule sets for content creation and review are maintained under `docs/rules/`.
+このリポジトリは日本語・英語の技術ブログサイトです。
+コンテンツ作成・レビュー用のルールセットは `docs/rules/` 以下で管理しています。
 
-## Available Rule Sets
+> **ルール管理の言語:** ルールファイルは日本語で記述・管理する。新しいルールグループやルールファイルを追加する際は、必ず日本語で記述すること。
 
-| Rule Group | Path | Description |
+## 利用可能なルールセット
+
+| ルールグループ | パス | 説明 |
 |---|---|---|
-| Article | `docs/rules/article/` | Rules for technical articles |
+| 記事 | `docs/rules/article/` | 技術記事のルール |
 
-## Quick-Use Guide
+## クイック利用ガイド
 
-Use these prompts directly in Copilot Chat:
+以下のプロンプトを Copilot Chat で直接使用できます:
 
-- **Write a new article**
-  > Use this repository's Article rules to write a new article about [topic].
+- **新しい記事を書く**
+  > このリポジトリの記事ルールを使って、[テーマ] に関する新しい記事を書いてください。
 
-- **Review a draft**
-  > Use this repository's Article rules to review this draft.
+- **下書きをレビューする**
+  > このリポジトリの記事ルールを使って、この下書きをレビューしてください。
 
-- **Rewrite in technical style**
-  > Use this repository's Article rules to rewrite this article in a non-conversational technical style.
+- **技術文体に書き直す**
+  > このリポジトリの記事ルールを使って、この記事を会話的でない技術文体に書き直してください。
 
-- **Create English counterpart**
-  > Use this repository's Article rules to create the English counterpart of this article.
+- **英語版を作成する**
+  > このリポジトリの記事ルールを使って、この記事の英語版を作成してください。
 
-## Rule Files
+## ルールファイル一覧
 
-- `docs/rules/README.md` — Rule system index
-- `docs/rules/article/guidelines.md` — Article writing guidelines
-- `docs/rules/article/template-ja.md` — Japanese article template
-- `docs/rules/article/template-en.md` — English article template
-- `docs/rules/article/review-checklist.md` — Article review checklist
+- `docs/rules/README.md` — ルールシステムのインデックス
+- `docs/rules/article/guidelines.md` — 記事執筆ガイドライン
+- `docs/rules/article/template-ja.md` — 日本語記事テンプレート
+- `docs/rules/article/template-en.md` — 英語記事テンプレート
+- `docs/rules/article/review-checklist.md` — 記事レビューチェックリスト

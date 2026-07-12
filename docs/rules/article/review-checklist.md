@@ -1,65 +1,65 @@
-# Article Review Checklist
+# 記事レビューチェックリスト
 
-Use this checklist before publishing any technical article.
-
----
-
-## Structure
-
-- [ ] Title clearly states the technical subject
-- [ ] Overview explains what the article covers and what problem it addresses
-- [ ] Prerequisites / Environment section is present with framework, version, and architecture
-- [ ] Problem section describes the situation concretely
-- [ ] Cause or Background section explains why the problem occurs
-- [ ] Solution section explains the recommended approach
-- [ ] Implementation section is present with code examples
-- [ ] Alternatives / Comparison section explains other options and trade-offs
-- [ ] Notes section covers at least one constraint, edge case, or pitfall
-- [ ] Summary states a concrete recommendation with selection criteria
+技術記事の公開前にこのチェックリストを使用すること。
 
 ---
 
-## Code and Content
+## 構成
 
-- [ ] Every code block has explanatory text before and after it
-- [ ] The article does not consist primarily of code with minimal prose
-- [ ] Decision criteria are stated (when to use which approach)
-- [ ] Limitations of the solution are documented
-- [ ] At least one of: comparison table / pitfall / practical guidance is included
-
----
-
-## Style
-
-- [ ] No Q&A-style headings (e.g., "Can this handle X?" → "Handling X")
-- [ ] No conversational openers (e.g., "はい、対応できます" / "Let's try…")
-- [ ] No filler connectives (e.g., "結論としては" / "つまり" / "As you can see")
-- [ ] Sentences are declarative and impersonal
-- [ ] The article covers one topic only
-- [ ] Sentence line breaks are inserted at sentence endings (not at commas)
+- [ ] タイトルが技術テーマを明確に示している
+- [ ] 概要セクションに記事が扱う内容と解決する問題が記述されている
+- [ ] 前提・対象環境セクションにフレームワーク、バージョン、アーキテクチャが記述されている
+- [ ] 問題セクションに状況が具体的に記述されている
+- [ ] 原因・背景セクションに問題が起きる理由が説明されている
+- [ ] 解決方法セクションに推奨アプローチが説明されている
+- [ ] 実装例セクションにコードサンプルが含まれている
+- [ ] 代替案・比較セクションに他の選択肢とトレードオフが記述されている
+- [ ] 注意点セクションに制約・エッジケース・落とし穴が少なくとも1つ記述されている
+- [ ] まとめセクションに選択基準を含む具体的な推奨が記述されている
 
 ---
 
-## Formatting and Lint
+## コードとコンテンツ
 
-- [ ] If tables are present, Format Document has been run to normalize table formatting
-- [ ] markdownlint has been run and no warnings remain
-
----
-
-## AdSense Compatibility
-
-- [ ] Content provides original value beyond public documentation
-- [ ] Article length meets minimum density (700–1,500 chars in Japanese / 400–900 words in English; quality takes priority over word count)
-- [ ] Internal links to related articles are included where relevant
-- [ ] No reciprocal links are added between Japanese and English counterpart articles
+- [ ] すべてのコードブロックに前後の説明文がある
+- [ ] コードが大部分を占め説明文が最小限の状態になっていない
+- [ ] 選択基準（どの状況でどのアプローチを使うか）が明示されている
+- [ ] ソリューションの制限事項が記述されている
+- [ ] 比較表・落とし穴・実用的なガイダンスのうち少なくとも1つが含まれている
 
 ---
 
-## Front Matter (Markdown files)
+## 文体
 
-- [ ] `title` is set
-- [ ] `date` is set
-- [ ] `category` is set
-- [ ] `excerpt` is set and is under 160 characters
-- [ ] `layout` matches the language (`article-ja` or `article-en`)
+- [ ] Q&A形式の見出しがない（例: "対応できるか？" → "対応方法"）
+- [ ] 会話的な書き出しがない（例: "はい、対応できます" / "Let's try…"）
+- [ ] 接続詞の埋め草がない（例: "結論としては" / "つまり" / "As you can see"）
+- [ ] 文体が断定的・無主語構文になっている
+- [ ] 記事が1つのテーマのみを扱っている
+- [ ] 文末ごとに改行が入っている（読点・カンマでは改行していない）
+
+---
+
+## フォーマットと Lint
+
+- [ ] テーブルが含まれる場合、「ドキュメントのフォーマット」を実行してテーブル書式を統一している
+- [ ] markdownlint を実行し、警告がないことを確認している
+
+---
+
+## AdSense 適合性
+
+- [ ] 公式ドキュメントを超えた独自の価値を提供するコンテンツになっている
+- [ ] 記事の文量が最小密度を満たしている（日本語: 700〜1,500字 / 英語: 400〜900語；文量より品質優先）
+- [ ] 関連記事への内部リンクが必要な箇所に含まれている
+- [ ] 日本語記事と英語記事の対応するカウンターパート間に相互リンクが追加されていない
+
+---
+
+## フロントマター（Markdown ファイル）
+
+- [ ] `title` が設定されている
+- [ ] `date` が設定されており、UTC 日付で記載されている
+- [ ] `category` が設定されている
+- [ ] `excerpt` が設定されており、160字以内である
+- [ ] `layout` が言語に合っている（`article-ja` または `article-en`）

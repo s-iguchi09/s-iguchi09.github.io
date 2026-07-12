@@ -1,26 +1,28 @@
-# Rule System Index
+# ルールシステム インデックス
 
-This directory contains rule sets for content creation and review in this repository.
+このディレクトリには、リポジトリ内のコンテンツ作成・レビュー用のルールセットが含まれている。
 
-## Rule Groups
+> **ルール管理の言語:** ルールファイルは日本語で記述・管理する。新しいルールグループやルールファイルを追加する際は、必ず日本語で記述すること。
 
-| Group | Path | Status | Description |
+## ルールグループ
+
+| グループ | パス | 状態 | 説明 |
 |---|---|---|---|
-| Article | `article/` | Active | Rules for technical articles (Japanese / English) |
+| 記事 | `article/` | 有効 | 技術記事（日本語・英語）のルール |
 
-## Structure
+## ディレクトリ構造
 
 ```
 docs/rules/
 └── article/
-    ├── guidelines.md        # Writing policy and style rules
-    ├── template-ja.md       # Japanese article template
-    ├── template-en.md       # English article template
-    └── review-checklist.md  # Pre-publish review checklist
+    ├── guidelines.md        # 執筆方針・文体ルール
+    ├── template-ja.md       # 日本語記事テンプレート
+    ├── template-en.md       # 英語記事テンプレート
+    └── review-checklist.md  # 公開前レビューチェックリスト
 ```
 
-Additional rule groups (e.g., `app/`, `page/`, `policy/`) can be added as subdirectories following the same pattern.
+追加のルールグループ（例: `app/`、`page/`、`policy/`）は同じパターンに従いサブディレクトリとして追加できる。
 
-## Usage
+## 使用方法
 
-See `.github/copilot-instructions.md` for quick-use prompts.
+クイック利用プロンプトは `.github/copilot-instructions.md` を参照。
