@@ -1,7 +1,7 @@
 url: "https://s-iguchi09.github.io"
 
-plugins:
-  - jekyll-sitemap
+include:
+  - sitemap.xml
 
 collections:
   articles_en:
