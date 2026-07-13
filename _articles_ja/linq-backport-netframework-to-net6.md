@@ -121,7 +121,7 @@ namespace System.Linq
         // ==========================================
         // 2. MaxBy
         // ==========================================
-        public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        public static TSource MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -129,7 +129,7 @@ namespace System.Linq
             return MaxBy(source, keySelector, comparer: null);
         }
 
-        public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
+        public static TSource MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -139,7 +139,7 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             if (!enumerator.MoveNext())
             {
-                return default;
+                throw new InvalidOperationException("Sequence contains no elements.");
             }
 
             var maxElement = enumerator.Current;
@@ -163,7 +163,7 @@ namespace System.Linq
         // ==========================================
         // 3. MinBy
         // ==========================================
-        public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -171,7 +171,7 @@ namespace System.Linq
             return MinBy(source, keySelector, comparer: null);
         }
 
-        public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
+        public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -181,7 +181,7 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             if (!enumerator.MoveNext())
             {
-                return default;
+                throw new InvalidOperationException("Sequence contains no elements.");
             }
 
             var minElement = enumerator.Current;
@@ -420,7 +420,7 @@ foreach (var item in source)
 
 ## 注意点
 
-- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、`default` を返す。参照型では `null`、値型（`int` など）では `0` などの既定値になる。呼び出し元で null の可能性がある場合は `?.` で扱うこと。
+- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、`InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である。事前に `.Any()` で要素の存在を確認するか、`try-catch` で対処すること。
 - **`Chunk` の末尾チャンクのサイズ**: 入力要素数が `size` の倍数でない場合、最後のチャンクは `size` より小さくなる。チャンクが常に一定サイズであることを前提とした呼び出し元の実装は誤りである。
 - **`DistinctBy` のキーと `null`**: キーに `null` が含まれる場合、`null` 同士は同一キーとして扱われ、最初に現れた `null` キー要素のみが出力される。
 - **`#nullable enable` の適用範囲**: ファイル先頭の `#nullable enable` はファイルスコープで有効化する。プロジェクト全体で `<Nullable>enable</Nullable>` を設定している場合でも、重複して記述することに害はない。
@@ -448,7 +448,7 @@ foreach (var item in source)
 
 - **メソッドの評価戦略を区別する**: `Chunk`・`DistinctBy`（遅延評価）はパブリックメソッドとイテレータを分離する。`MaxBy`・`MinBy`（先行評価）は分離不要である。
 - **`#if !NET6_0_OR_GREATER` を選択する**: .NET 5 にもこれらのメソッドは存在しないため、`!NETCOREAPP` では .NET 5 環境でエラーになる。
-- **空シーケンスの戻り値に注意する**: `MaxBy`・`MinBy` は空のシーケンスに対して `default`（参照型は `null`）を返す。
+- **空シーケンスの例外に注意する**: `MaxBy`・`MinBy` は空のシーケンスに対して `InvalidOperationException` を投げる。これは .NET 6 本家と同一の挙動である。
 
 | メソッド | 評価戦略 | 空間計算量 | アルゴリズムの要点 |
 | --- | --- | --- | --- |
