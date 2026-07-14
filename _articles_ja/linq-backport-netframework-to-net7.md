@@ -185,7 +185,7 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 本実装では `#if !NET7_0_OR_GREATER` を採用している。
 [.NET 5 相当のバックポート記事](/ja/articles/linq-backport-netframework-to-net5/)が `#if !NETCOREAPP` を採用しているのとは異なる。
 
-`Order`・`OrderDescending` は .NET 6 以前には存在しないため、`NETCOREAPP` や `NET6_0_OR_GREATER` を条件に使うと、.NET 5 や .NET 6 向けビルドでポリフィルが無効化され、コンパイルエラーが発生する。
+`Order`・`OrderDescending` は .NET 6 以前には存在しないため、`NETCOREAPP` や `NET6_0_OR_GREATER` を条件に使うと、.NET 6 向けビルドでポリフィルが無効化され、コンパイルエラーが発生する。
 
 | シンボル | .NET Framework | .NET 6 | .NET 7+ |
 | --- | --- | --- | --- |
