@@ -66,7 +66,9 @@ public class DateFormatConverter : IValueConverter
         => value is DateTime d ? d.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture) : string.Empty;
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => DateTime.TryParse(value as string, out var d) ? d : DependencyProperty.UnsetValue;
+        => DateTime.TryParseExact(value as string, "yyyy/MM/dd",
+               CultureInfo.InvariantCulture, DateTimeStyles.None, out var d)
+            ? d : DependencyProperty.UnsetValue;
 }
 ```
 

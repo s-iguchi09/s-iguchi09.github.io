@@ -67,12 +67,14 @@ Without this glyph update the header arrow still points at the previous column, 
 ## Custom Sort Logic with ListCollectionView
 
 For complex scenarios — case-insensitive string sort, multi-level sort, or sorting computed properties — use `ListCollectionView.CustomSort`.  
-`CollectionViewSource.GetDefaultView` returns an `ICollectionView`, which does not expose `CustomSort`, so cast to `ListCollectionView` first:
+`CollectionViewSource.GetDefaultView` returns an `ICollectionView`, which does not expose `CustomSort`. For an in-memory collection the concrete type is `ListCollectionView`, but a view over another source (such as a `DataView`) is not, so narrow the type with a pattern match rather than an unconditional cast that could throw `InvalidCastException`:
 
 ```csharp
-var view = (ListCollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
-view.CustomSort = Comparer<Product>.Create((a, b) =>
-    StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
+if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionView view)
+{
+    view.CustomSort = Comparer<Product>.Create((a, b) =>
+        StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
+}
 ```
 
 `CustomSort` takes precedence over `SortDescriptions`, so clear `SortDescriptions` first when switching between the two approaches.  
@@ -90,7 +92,7 @@ view.CustomSort = Comparer<Product>.Create((a, b) =>
 | --------------------- | ------------------------------------------- |
 | Simple column sorting | `CanUserSortColumns="True"` (default)       |
 | Programmatic sort     | `SortDescriptions` + update `SortDirection` |
-| Custom sort logic     | `ICollectionView.CustomSort`                |
+| Custom sort logic     | `ListCollectionView.CustomSort`             |
 
 For most line-of-business apps the default mechanism covers the common cases.  
 Reach for `CustomSort` only when the data requires special ordering that `SortDescription` cannot express.  
