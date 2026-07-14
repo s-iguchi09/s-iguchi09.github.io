@@ -34,11 +34,13 @@ For full control, the control template's `DatePickerTextBox` must be targeted th
       <Setter Property="Text"
               Value="{Binding SelectedDate,
                               RelativeSource={RelativeSource AncestorType=DatePicker},
-                              StringFormat='yyyy/MM/dd'}" />
+                              StringFormat='yyyy\/MM\/dd'}" />
     </Style>
   </DatePicker.Resources>
 </DatePicker>
 ```
+
+The separators are escaped as `\/` so they render literally. Left unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, which would break the fixed layout the article aims for.  
 
 ## Setting the Format in Code-Behind
 
@@ -49,10 +51,13 @@ private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEvent
 {
     if (datePicker.SelectedDate.HasValue)
     {
-        datePicker.Text = datePicker.SelectedDate.Value.ToString("yyyy/MM/dd");
+        datePicker.Text = datePicker.SelectedDate.Value
+            .ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
     }
 }
 ```
+
+Passing `CultureInfo.InvariantCulture` fixes the separator regardless of the machine's regional settings; without it, `ToString("yyyy/MM/dd")` uses the current culture and the `/` follows that culture's date separator.  
 
 ## Using a Converter for Companion Displays
 
