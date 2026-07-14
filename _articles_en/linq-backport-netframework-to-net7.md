@@ -201,10 +201,18 @@ Guarding with `NETCOREAPP` or `NET6_0_OR_GREATER` would therefore disable the po
 
 ## Caveats
 
-- **Return `IOrderedEnumerable<T>`**: An implementation that returns `IEnumerable<T>` works but cannot chain `ThenBy` / `ThenByDescending`, making it incompatible with the original. `OrderBy` / `OrderByDescending` with an identity lambda already return `IOrderedEnumerable<T>`, so compatibility is preserved simply by declaring that return type.
-- **The element type must have a defined ordering**: The parameterless overload uses `Comparer<T>.Default`. If the element type implements neither `IComparable` nor `IComparable<T>` and the default comparer cannot be resolved, an exception is thrown during enumeration (when the sort runs). The default comparer itself throws `ArgumentException` ("At least one object must implement IComparable."), but the surfaced exception type differs by runtime. .NET Framework's `OrderBy` does not wrap comparer exceptions in its internal sort, so the `ArgumentException` propagates directly. In contrast, .NET Core 3.0 and later (including the .NET 7 `Order`) wrap it in an `InvalidOperationException` ("Failed to compare two elements in the array.", with the `ArgumentException` as its inner exception). Account for this difference when handling by exception type; for arbitrary types, supplying the comparison explicitly through the `IComparer<T>` overload is the safer choice.
-- **Deferred execution**: Like `OrderBy`, `Order` / `OrderDescending` are deferred; the sort runs only when the result is enumerated via `foreach` or `.ToList()`. The `ArgumentNullException` for a `null` source is thrown immediately at the call site, because these methods contain no `yield return`.
-- **Stable sort**: Because the underlying `OrderBy` is a stable sort, elements with equal keys retain their input order. This matches the behavior of the original `Order`.
+- **Return `IOrderedEnumerable<T>`**: An implementation that returns `IEnumerable<T>` works but cannot chain `ThenBy` / `ThenByDescending`, making it incompatible with the original.
+  `OrderBy` / `OrderByDescending` with an identity lambda already return `IOrderedEnumerable<T>`, so compatibility is preserved simply by declaring that return type.
+- **The element type must have a defined ordering**: The parameterless overload uses `Comparer<T>.Default`.
+  If the element type implements neither `IComparable` nor `IComparable<T>` and the default comparer cannot be resolved, an exception is thrown during enumeration (when the sort runs).
+  The default comparer itself throws `ArgumentException` ("At least one object must implement IComparable."), but the surfaced exception type differs by runtime.
+  .NET Framework's `OrderBy` does not wrap comparer exceptions in its internal sort, so the `ArgumentException` propagates directly.
+  In contrast, .NET Core 3.0 and later (including the .NET 7 `Order`) wrap it in an `InvalidOperationException` ("Failed to compare two elements in the array.", with the `ArgumentException` as its inner exception).
+  Account for this difference when handling by exception type; for arbitrary types, supplying the comparison explicitly through the `IComparer<T>` overload is the safer choice.
+- **Deferred execution**: Like `OrderBy`, `Order` / `OrderDescending` are deferred; the sort runs only when the result is enumerated via `foreach` or `.ToList()`.
+  The `ArgumentNullException` for a `null` source is thrown immediately at the call site, because these methods contain no `yield return`.
+- **Stable sort**: Because the underlying `OrderBy` is a stable sort, elements with equal keys retain their input order.
+  This matches the behavior of the original `Order`.
 
 ---
 
@@ -229,7 +237,8 @@ Three implementation points are worth remembering.
 
 - **Return `IOrderedEnumerable<T>`**: Return `IOrderedEnumerable<T>` rather than `IEnumerable<T>` so that `ThenBy` can be chained, just as with the original.
 - **Use `#if !NET7_0_OR_GREATER`**: These methods are absent from .NET 6 and earlier, so `!NETCOREAPP` or `!NET6_0_OR_GREATER` would cause a compile error on .NET 6 builds.
-- **Mind the default-comparer exception**: The parameterless overload assumes the element type has a defined ordering. For arbitrary types, use the `IComparer<T>` overload.
+- **Mind the default-comparer exception**: The parameterless overload assumes the element type has a defined ordering.
+  For arbitrary types, use the `IComparer<T>` overload.
 
 | Method | Evaluation | Return type | Implementation summary |
 | --- | --- | --- | --- |
