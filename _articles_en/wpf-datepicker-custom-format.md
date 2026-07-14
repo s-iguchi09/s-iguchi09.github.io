@@ -47,6 +47,9 @@ The separators are escaped as `\/` so they render literally. Left unescaped, `/`
 In code-behind, subscribe to the `SelectedDateChanged` event and format the text manually:
 
 ```csharp
+using System.Globalization;
+using System.Windows.Controls;
+
 private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
 {
     if (datePicker.SelectedDate.HasValue)
@@ -65,6 +68,11 @@ A converter cannot change what the `DatePicker` itself shows: its displayed text
 Where a converter is the right tool is a companion display — a summary label or status bar that must show the same date in the chosen format:
 
 ```csharp
+using System;
+using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
+
 public class DateFormatConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
