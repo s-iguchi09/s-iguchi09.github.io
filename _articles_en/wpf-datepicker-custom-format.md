@@ -3,7 +3,7 @@ layout: article-en
 title: "Customising the DatePicker Display Format in WPF"
 date: 2026-04-15
 category: WPF
-excerpt: "A practical guide to changing the date display format of WPF DatePicker from both XAML and code-behind."
+excerpt: "A practical guide to changing the date display format of WPF DatePicker from XAML, code-behind, and a value converter."
 ---
 
 ## Overview
@@ -25,7 +25,7 @@ A fully retemplated `DatePicker` may not expose that element, in which case the 
 ## Setting the Format in XAML
 
 `DatePicker` exposes a `SelectedDateFormat` property with two values: `Short` (default) and `Long`.  
-For full control you need to reach into the control template's `DatePickerTextBox` via a style:
+For full control, the control template's `DatePickerTextBox` must be targeted through a style:
 
 ```xml
 <DatePicker x:Name="datePicker" SelectedDate="{Binding SelectedDate}">
@@ -42,7 +42,7 @@ For full control you need to reach into the control template's `DatePickerTextBo
 
 ## Setting the Format in Code-Behind
 
-If you prefer code-behind, subscribe to the `SelectedDateChanged` event and format the text manually:
+In code-behind, subscribe to the `SelectedDateChanged` event and format the text manually:
 
 ```csharp
 private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
@@ -54,43 +54,44 @@ private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEvent
 }
 ```
 
-## Using a Converter
+## Using a Converter for Companion Displays
 
-A cleaner MVVM approach uses a value converter:
+A converter cannot change what the `DatePicker` itself shows: its displayed text is produced by the control template from `SelectedDate`, not by the bound value, and `SelectedDate` is a `DateTime?`, so binding a string-returning converter to it does not apply.  
+Where a converter is the right tool is a companion display — a summary label or status bar that must show the same date in the chosen format:
 
 ```csharp
 public class DateFormatConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        => value is DateTime d ? d.ToString("yyyy/MM/dd") : string.Empty;
+        => value is DateTime d ? d.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture) : string.Empty;
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => DateTime.TryParse(value as string, out var d) ? d : DependencyProperty.UnsetValue;
 }
 ```
 
-Bind with:
+Bind a `TextBlock` to the same source through the converter:
 
 ```xml
-<DatePicker SelectedDate="{Binding SelectedDate,
-                           Converter={StaticResource DateFormatConverter}}" />
+<TextBlock Text="{Binding SelectedDate, ElementName=datePicker,
+                  Converter={StaticResource DateFormatConverter}}" />
 ```
 
-The converter centralises the format string in one place, so a single edit changes every date-displaying control in the application.  
+The converter centralises the format string in one place, so a single edit changes every companion display that reuses it.  
 
 ## Common Format Strings
 
 The format string passed to `ToString` or `StringFormat` follows the standard .NET custom date and time specifiers:
 
-| Pattern            | Example output     | Notes                                |
-| ------------------ | ------------------ | ------------------------------------ |
-| `yyyy/MM/dd`       | `2026/04/15`       | Zero-padded, culture-independent     |
-| `dd MMM yyyy`      | `15 Apr 2026`      | `MMM` depends on the culture         |
-| `MMMM d, yyyy`     | `April 15, 2026`   | `MMMM` uses the full month name      |
-| `yyyy/MM/dd HH:mm` | `2026/04/15 09:30` | Combines date and time in one string |
+| Pattern            | Example output     | Notes                                        |
+| ------------------ | ------------------ | -------------------------------------------- |
+| `yyyy/MM/dd`       | `2026/04/15`       | Zero-padded; `/` follows the culture         |
+| `dd MMM yyyy`      | `15 Apr 2026`      | `MMM` depends on the culture                 |
+| `MMMM d, yyyy`     | `April 15, 2026`   | `MMMM` uses the full month name              |
+| `yyyy/MM/dd HH:mm` | `2026/04/15 09:30` | Combines date and time in one string         |
 
-Any character that is not a format specifier is treated as a literal and preserved verbatim, which is how separators such as `/`, `-`, or a comma are inserted.  
-For culture-sensitive output, pass an explicit `CultureInfo` to `ToString`; otherwise the current UI culture is used, which may differ between machines.  
+Note that `/` and `:` are not literals: they are the date-separator and time-separator placeholders, which the runtime replaces with the current culture's separators (a culture whose separator is `.` renders `2026.04.15`). Characters such as `-` and `,` are literals and are preserved verbatim.  
+To keep a fixed layout regardless of the machine's regional settings, pass `CultureInfo.InvariantCulture` to `ToString` (as the converter above does), or escape the separators as `yyyy'/'MM'/'dd`. Without an explicit culture, `ToString` and `StringFormat` use the current culture, which may differ between machines.  
 
 ## Notes
 
@@ -100,11 +101,11 @@ For culture-sensitive output, pass an explicit `CultureInfo` to `ToString`; othe
 
 ## Summary
 
-| Method               | Pros                    | Cons                           |
-| -------------------- | ----------------------- | ------------------------------ |
-| Style + StringFormat | Declarative, no code    | Limited to StringFormat syntax |
-| SelectedDateChanged  | Simple, explicit        | Code-behind coupling           |
-| Value Converter      | MVVM-friendly, reusable | Requires extra class           |
+| Method               | Pros                    | Cons                                       |
+| -------------------- | ----------------------- | ------------------------------------------ |
+| Style + StringFormat | Declarative, no code    | Limited to StringFormat syntax             |
+| SelectedDateChanged  | Simple, explicit        | Code-behind coupling                       |
+| Value Converter      | MVVM-friendly, reusable | Formats companion displays, not the picker |
 
-Choose the approach that fits your project's architecture.  
-For new MVVM projects the converter approach scales best as the number of date-displaying controls grows.  
+The appropriate approach depends on the project's architecture.  
+To change the picker's own text, the Style + StringFormat or code-behind approach is required; the converter is best for companion displays that must show the same date and grow in number.  

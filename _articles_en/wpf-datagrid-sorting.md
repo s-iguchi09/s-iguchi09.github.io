@@ -37,11 +37,11 @@ By default, every column in a `DataGrid` is sortable as long as its `SortMemberP
 ```
 
 Clicking the **Name** header once sorts ascending, and clicking again reverses to descending.  
-The default behavior does not return to an unsorted state, so clear logic must be implemented explicitly when needed.  
+The default behavior does not return to an unsorted state, so clear logic must be implemented explicitly when needed — see [How to Reset DataGrid Sorting in WPF](/articles/wpf-datagrid-sort-reset/) for that pattern.  
 
 ## Sorting via Code-Behind
 
-You can trigger sorting programmatically by manipulating `DataGrid.Items.SortDescriptions`:
+Sorting can be triggered programmatically by manipulating `DataGrid.Items.SortDescriptions`:
 
 ```csharp
 using System.ComponentModel;
@@ -62,23 +62,26 @@ var priceCol = dataGrid.Columns.First(c => c.SortMemberPath == nameof(Product.Pr
 priceCol.SortDirection = ListSortDirection.Descending;
 ```
 
-## Custom Sort Logic with ICollectionView
+Without this glyph update the header arrow still points at the previous column, even though the rows are ordered correctly, which makes the sorted state look inconsistent to the user.  
 
-For complex scenarios — case-insensitive string sort, multi-level sort, or sorting computed properties — use `ICollectionView.CustomSort`:
+## Custom Sort Logic with ListCollectionView
+
+For complex scenarios — case-insensitive string sort, multi-level sort, or sorting computed properties — use `ListCollectionView.CustomSort`.  
+`CollectionViewSource.GetDefaultView` returns an `ICollectionView`, which does not expose `CustomSort`, so cast to `ListCollectionView` first:
 
 ```csharp
-var view = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
+var view = (ListCollectionView)CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
 view.CustomSort = Comparer<Product>.Create((a, b) =>
     StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
 ```
 
-`CustomSort` takes precedence over `SortDescriptions`, so clear `SortDescriptions` first if you switch between the two approaches.  
+`CustomSort` takes precedence over `SortDescriptions`, so clear `SortDescriptions` first when switching between the two approaches.  
 
 ## Notes
 
 - `SortMemberPath` is required only when it differs from the column's `Binding` path. For a plain `DataGridTextColumn` bound to a simple property, sorting works without it, but specifying it explicitly avoids surprises when the binding path is complex.  
 - Calling `Items.Refresh()` rebuilds the entire view and resets the current cell and selection. On large collections this is noticeable, so prefer setting `SortDescriptions` before the grid is populated when possible.  
-- `CustomSort` is only available on an `ICollectionView` that implements `IComparer` ordering, such as the `ListCollectionView` returned for in-memory collections. A view backed by a data source that sorts server-side (for example, a `DataView`) ignores it.  
+- `CustomSort` is a property of `ListCollectionView`, the default view returned for in-memory collections. Views that wrap other sources — for example the `BindingListCollectionView` returned for a `DataView` — do not support it and throw `NotSupportedException` when it is assigned.  
 - Sorting changes only the display order, not the underlying collection. Code that iterates the bound collection directly still sees the original order.  
 
 ## Summary
