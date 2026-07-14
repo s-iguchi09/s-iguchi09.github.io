@@ -20,7 +20,7 @@ This article shows how to customise that format so the control always renders da
 - Architecture: applicable to both code-behind and MVVM  
 
 The techniques below rely on the default `DatePicker` control template, which contains a `DatePickerTextBox` in its visual tree.  
-A fully retemplated `DatePicker` may not expose that element, in which case the code-behind or converter approaches are safer choices.  
+A fully retemplated `DatePicker` may not expose that element, in which case changing the picker's own text relies on the code-behind approach or on handling the format inside the custom template. The converter shown later formats companion displays, not the picker itself.  
 
 ## Setting the Format in XAML
 

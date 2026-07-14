@@ -83,7 +83,7 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 
 - `SortMemberPath` is required only when it differs from the column's `Binding` path. For a plain `DataGridTextColumn` bound to a simple property, sorting works without it, but specifying it explicitly avoids surprises when the binding path is complex.  
 - Calling `Items.Refresh()` rebuilds the entire view and resets the current cell and selection. On large collections this is noticeable, so prefer setting `SortDescriptions` before the grid is populated when possible.  
-- `CustomSort` is a property of `ListCollectionView`, the default view returned for in-memory collections. Views that wrap other sources — for example the `BindingListCollectionView` returned for a `DataView` — do not support it and throw `NotSupportedException` when it is assigned.  
+- `CustomSort` is a property of `ListCollectionView`, the default view returned for in-memory collections. A view over another source — such as the `BindingListCollectionView` returned for a `DataView` — is not a `ListCollectionView` and offers no `CustomSort`, which is why the pattern match above skips it. For those sources the ordering must come from another mechanism, such as `SortDescriptions` or sorting at the data source.  
 - Sorting changes only the display order, not the underlying collection. Code that iterates the bound collection directly still sees the original order.  
 
 ## Summary
