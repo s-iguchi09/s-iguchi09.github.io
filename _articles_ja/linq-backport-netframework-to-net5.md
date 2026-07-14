@@ -366,6 +366,7 @@ namespace System.Linq
 | `Prepend` | $O(1)$ | 先頭要素を流した後に元データを通過させる |
 | `TakeLast` | $O(count)$ | キューで末尾 N 個を保持し、全走査後に出力する |
 | `SkipLast` | $O(count)$ | キューで N 個遅延させ、溢れたデータを順次出力する |
+
 ---
 
 ## 関連記事
