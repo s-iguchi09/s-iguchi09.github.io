@@ -10,7 +10,16 @@ excerpt: "Learn the basics of DataGrid sorting and practical implementation patt
 
 The WPF `DataGrid` control provides built-in column sorting out of the box.  
 When `CanUserSortColumns` is set to `true` (the default), clicking a column header sorts the rows by that column.  
-In this article we cover the essentials and explore patterns for customising sort behaviour.  
+Built-in sorting covers the common cases, but real applications frequently need programmatic sorting, custom comparison rules, or a way to reset the grid to its unsorted state.  
+This article covers the essentials and explores patterns for each of those requirements.  
+
+## Prerequisites / Environment
+
+- Framework / Language: .NET 6 or later / C# 10  
+- Target control: WPF `DataGrid` (`System.Windows.Controls`)  
+- Architecture: applicable to both code-behind and MVVM  
+
+The examples assume the grid is bound to an observable collection of a `Product` type that exposes `Name` and `Price` properties.  
 
 ## Enabling Default Sorting
 
@@ -64,6 +73,13 @@ view.CustomSort = Comparer<Product>.Create((a, b) =>
 ```
 
 `CustomSort` takes precedence over `SortDescriptions`, so clear `SortDescriptions` first if you switch between the two approaches.  
+
+## Notes
+
+- `SortMemberPath` is required only when it differs from the column's `Binding` path. For a plain `DataGridTextColumn` bound to a simple property, sorting works without it, but specifying it explicitly avoids surprises when the binding path is complex.  
+- Calling `Items.Refresh()` rebuilds the entire view and resets the current cell and selection. On large collections this is noticeable, so prefer setting `SortDescriptions` before the grid is populated when possible.  
+- `CustomSort` is only available on an `ICollectionView` that implements `IComparer` ordering, such as the `ListCollectionView` returned for in-memory collections. A view backed by a data source that sorts server-side (for example, a `DataView`) ignores it.  
+- Sorting changes only the display order, not the underlying collection. Code that iterates the bound collection directly still sees the original order.  
 
 ## Summary
 

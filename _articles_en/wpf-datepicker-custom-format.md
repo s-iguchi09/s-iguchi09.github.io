@@ -10,7 +10,17 @@ excerpt: "A practical guide to changing the date display format of WPF DatePicke
 
 By default, the WPF `DatePicker` renders selected dates using the system locale format (e.g.  
 `4/15/2026` on en-US).  
-This article shows how to customise that format so the control always renders dates in the format your application requires.  
+This behavior is inconvenient when an application must present dates in a fixed layout regardless of the machine's regional settings, such as `yyyy/MM/dd` for logs or `dd MMM yyyy` for reports.  
+This article shows how to customise that format so the control always renders dates in the format the application requires, and compares the trade-offs of each approach.  
+
+## Prerequisites / Environment
+
+- Framework / Language: .NET 6 or later / C# 10  
+- Target control: WPF `DatePicker` (`System.Windows.Controls`)  
+- Architecture: applicable to both code-behind and MVVM  
+
+The techniques below rely on the default `DatePicker` control template, which contains a `DatePickerTextBox` in its visual tree.  
+A fully retemplated `DatePicker` may not expose that element, in which case the code-behind or converter approaches are safer choices.  
 
 ## Setting the Format in XAML
 
@@ -65,6 +75,28 @@ Bind with:
 <DatePicker SelectedDate="{Binding SelectedDate,
                            Converter={StaticResource DateFormatConverter}}" />
 ```
+
+The converter centralises the format string in one place, so a single edit changes every date-displaying control in the application.  
+
+## Common Format Strings
+
+The format string passed to `ToString` or `StringFormat` follows the standard .NET custom date and time specifiers:
+
+| Pattern            | Example output     | Notes                                |
+| ------------------ | ------------------ | ------------------------------------ |
+| `yyyy/MM/dd`       | `2026/04/15`       | Zero-padded, culture-independent     |
+| `dd MMM yyyy`      | `15 Apr 2026`      | `MMM` depends on the culture         |
+| `MMMM d, yyyy`     | `April 15, 2026`   | `MMMM` uses the full month name      |
+| `yyyy/MM/dd HH:mm` | `2026/04/15 09:30` | Combines date and time in one string |
+
+Any character that is not a format specifier is treated as a literal and preserved verbatim, which is how separators such as `/`, `-`, or a comma are inserted.  
+For culture-sensitive output, pass an explicit `CultureInfo` to `ToString`; otherwise the current UI culture is used, which may differ between machines.  
+
+## Notes
+
+- The XAML `StringFormat` approach only affects the displayed text. The underlying `SelectedDate` value is unchanged, so bindings that read the date directly are unaffected.  
+- The `SelectedDateChanged` approach overwrites the `Text` property manually. If the user then types into the box, two-way parsing must still succeed, so avoid formats the parser cannot round-trip.  
+- Converters that return `string.Empty` for a null date prevent a `NullReferenceException` when no date is selected.  
 
 ## Summary
 
