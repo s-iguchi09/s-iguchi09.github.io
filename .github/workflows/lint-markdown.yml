@@ -1,0 +1,32 @@
+name: Lint Markdown
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "_articles_ja/**/*.md"
+      - "_articles_en/**/*.md"
+      - "docs/**/*.md"
+      - "**/*.md"
+      - ".markdownlint.json"
+      - ".github/workflows/lint-markdown.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run markdownlint
+        run: |
+          npx -y markdownlint-cli2 \
+            "_articles_ja/**/*.md" \
+            "_articles_en/**/*.md" \
+            "docs/**/*.md" \
+            "*.md"

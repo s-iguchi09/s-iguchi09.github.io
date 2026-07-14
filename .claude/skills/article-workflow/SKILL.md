@@ -119,8 +119,10 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    - 修正の解釈に曖昧さがある場合や大規模改修が必要な場合は、`AskUserQuestion` で確認する
      (オートモードでも、破壊的・不可逆な判断はユーザー確認を優先する)。
 
-   > 本リポジトリの現状の Workflow は `main` への push 時のみ動作し、PR 必須チェックが無い場合がある。
-   > その場合は「必須チェックが無いこと」を確認したうえでマージ可否判断に進む。
+   > 本リポジトリの PR には `Lint Markdown`(`.github/workflows/lint-markdown.yml`)が走り、
+   > markdownlint(`.markdownlint.json`)で記事を検査する。ローカルでも
+   > `npx -y markdownlint-cli2 "_articles_ja/**/*.md" "_articles_en/**/*.md" "docs/**/*.md" "*.md"`
+   > で同じ検査を再現できる。CI がグリーンになるまで修正・再 push を繰り返す。
 
 ---
 

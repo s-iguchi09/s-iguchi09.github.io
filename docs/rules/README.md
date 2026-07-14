@@ -12,7 +12,7 @@
 
 ## ディレクトリ構造
 
-```
+```text
 docs/rules/
 └── article/
     ├── guidelines.md        # 執筆方針・文体ルール
