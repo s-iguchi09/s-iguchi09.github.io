@@ -200,7 +200,7 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 ## 注意点
 
 - **戻り値型は `IOrderedEnumerable<T>` にする**: `IEnumerable<T>` を返す実装は動作こそするが、`ThenBy` / `ThenByDescending` を連結できず本家と非互換になる。恒等ラムダを渡す `OrderBy` / `OrderByDescending` はそのまま `IOrderedEnumerable<T>` を返すため、戻り値型を明示するだけで互換性を維持できる。
-- **要素型に順序が定義されている必要がある**: 引数なしオーバーロードは `Comparer<T>.Default` を使う。要素型が `IComparable<T>` を実装しておらず、既定の比較子も解決できない場合、列挙時に `ArgumentException`（メッセージ: "At least one object must implement IComparable."）が発生する。任意の型を並び替える場合は `IComparer<T>` オーバーロードを使う。
+- **要素型に順序が定義されている必要がある**: 引数なしオーバーロードは `Comparer<T>.Default` を使う。要素型が `IComparable` / `IComparable<T>` を実装しておらず、既定の比較子も解決できない場合、列挙時（ソート実行時）に例外が発生する。既定比較子自体は `ArgumentException`（メッセージ: "At least one object must implement IComparable."）を投げるが、それが表面化する例外型は実行環境で異なる。.NET Framework の `OrderBy` は内部ソートで比較例外をラップしないため、`ArgumentException` がそのまま伝播する。一方、.NET Core 3.0 以降（本家 .NET 7 の `Order` を含む）は内部ソートが比較例外を `InvalidOperationException`（メッセージ: "Failed to compare two elements in the array."、内側例外が上記 `ArgumentException`）にラップする。例外型でハンドリングする場合はこの差異に注意し、任意の型を並び替える場合はそもそも `IComparer<T>` オーバーロードで比較を明示するのが安全である。
 - **遅延評価である**: `Order` / `OrderDescending` は `OrderBy` と同じく遅延評価であり、`foreach` や `.ToList()` の時点で初めてソートが実行される。`source` が `null` の場合の `ArgumentNullException` は呼び出し時点で即座に投げられる（本メソッドは `yield return` を含まないため）。
 - **並び替えは安定ソート**: 内部の `OrderBy` が安定ソートであるため、同一キーの要素は入力順を保つ。この挙動は本家 `Order` と一致する。
 
