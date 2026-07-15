@@ -72,7 +72,7 @@ target property is 'Text' (type 'String')
 
 このエラーの読み方は次のようになる。
 `TextBox`（`userNameBox`）の `Text` プロパティが、`MainViewModel` 型のデータコンテキスト上で `UserNam` というプロパティを探したが見つからなかった。
-つまり、タイプミスか、ViewModel 側にそのプロパティが存在しないことが原因である。
+したがって、タイプミスか、ViewModel 側にそのプロパティが存在しないことが原因である。
 `DataItem` の型名が期待した ViewModel と異なる場合は、`DataContext` の設定漏れが疑われる。
 
 ---
@@ -117,10 +117,10 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 初期化順序を見直すか、要素の読み込み完了後に `DataContext` を設定する。
 なお、後から `DataContext` が設定されればバインドは再評価されるため、初期化直後の一時的な `DataItem=null` は問題にならないこともある。
 
-### 型変換の失敗（Error: 23 など）
+### 型変換の失敗（Error: 7 など）
 
-`Cannot convert` や `ConvertBack` を含むメッセージは、ソースの値をターゲットの型へ変換できないことを示す。
-数値プロパティに文字列を双方向バインドしていて、入力値が数値に変換できない場合などに発生する。
+`ConvertBack cannot convert value` や `Cannot convert` を含むメッセージは、値をバインド先の型へ変換できないことを示す。
+数値プロパティに文字列を双方向バインドしていて、入力値が数値に変換できない場合、`ConvertBack` 側の変換失敗として `Error: 7` が出力される。
 `IValueConverter` を実装するか、`StringFormat` を使って型を合わせる。
 
 ### コレクション変更が通知されない
@@ -149,6 +149,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        PresentationTraceSources.Refresh();
+
         var source = PresentationTraceSources.DataBindingSource;
         source.Switch.Level = SourceLevels.Warning;
         source.Listeners.Add(new TextWriterTraceListener("binding-errors.log"));
@@ -167,20 +169,15 @@ public partial class App : Application
 ## 注意点
 
 - **バインディングエラーは例外ではない。**
-`try/catch` では捕捉できず、実行も止まらない。
-唯一の一次情報は出力ウィンドウのトレースであるため、Binding が動かないときは推測より先にトレースを読む。
-- **リリースビルドでの挙動。**
-バインディングトレースはデバッグ実行を前提とする。
-リリース配布物では出力ウィンドウを参照できないため、`TraceListener` を使った集約か、開発中の切り分けで対処する。
+`try/catch` では捕捉できず実行も止まらないため、Binding が動かないときは推測より先に出力ウィンドウのトレースを読む。
+- **リリースビルドでは出力ウィンドウを参照できない。**
+バインディングトレースはデバッグ実行を前提とするため、配布物での調査は `TraceListener` によるログ集約で代替する。
 - **`DataItem=null` は必ずしも異常ではない。**
-初期化直後の一時的な状態でこの出力が出ることがある。
-`DataContext` が後から設定され、値が正しく表示されるなら問題ではない。
+初期化直後の一時的な状態で出ることがあり、`DataContext` が後から設定され値が正しく表示されるなら問題ではない。
 - **詳細トレースは出力量が多い。**
-`TraceLevel=High` を付けたまま放置すると出力ウィンドウが冗長になる。
-切り分けが終わったら設定を外す。
-- **エラー番号は種類の目安。**
-番号（40, 23 など）は原因の分類に役立つが、確定情報はメッセージ本文にある。
-番号だけで判断せず、`property not found` や `Cannot convert` などの本文を読む。
+`TraceLevel=High` を付けたまま放置すると出力が冗長になるため、切り分け後は設定を外す。
+- **エラー番号は種類の目安にすぎない。**
+番号（40, 7 など）は分類に役立つが、確定情報は `property not found` や `Cannot convert` などのメッセージ本文にある。
 
 ---
 

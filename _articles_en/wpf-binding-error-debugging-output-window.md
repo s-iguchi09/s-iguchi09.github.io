@@ -3,7 +3,7 @@ layout: article-en
 title: "Reading WPF Binding Errors and Diagnosing Them with the Output Window"
 date: 2026-07-15
 category: WPF
-excerpt: "When a WPF Binding fails silently, Visual Studio records the failure as a trace in the Output window. This article explains how to read the message structure, raise the trace level, and handle common error patterns."
+excerpt: "When a WPF Binding fails silently, Visual Studio logs it as a trace. This article covers reading the message, raising the trace level, and common patterns."
 ---
 
 ## Overview
@@ -62,7 +62,7 @@ target property is 'Text' (type 'String')
 The message is made of several parts, each of which is a clue for locating the cause.
 The meaning of each part is as follows.
 
-| Part | Content | What it tells you |
+| Part | Content | What it reveals |
 |---|---|---|
 | `Error: 40` | Error number | The kind of error (40 is a path resolution failure) |
 | `path error: 'UserNam' property not found` | The failure | Which property name could not be resolved |
@@ -118,10 +118,10 @@ This state occurs when the binding is evaluated before the `DataContext` is assi
 Review the initialization order, or assign the `DataContext` after the element has loaded.
 Because the binding is re-evaluated once the `DataContext` is assigned, a temporary `DataItem=null` right after initialization is sometimes not a problem.
 
-### Type Conversion Failure (Error: 23 and similar)
+### Type Conversion Failure (Error: 7 and similar)
 
-A message containing `Cannot convert` or `ConvertBack` indicates that the source value cannot be converted to the target type.
-This occurs, for example, when a string is two-way bound to a numeric property and the input cannot be converted to a number.
+A message containing `ConvertBack cannot convert value` or `Cannot convert` indicates that a value cannot be converted to the bound type.
+This occurs, for example, when a string is two-way bound to a numeric property and the input cannot be converted to a number, producing `Error: 7` on the `ConvertBack` side.
 Implement an `IValueConverter`, or use `StringFormat` to align the types.
 
 ### Collection Changes Are Not Reported
@@ -150,6 +150,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        PresentationTraceSources.Refresh();
+
         var source = PresentationTraceSources.DataBindingSource;
         source.Switch.Level = SourceLevels.Warning;
         source.Listeners.Add(new TextWriterTraceListener("binding-errors.log"));
@@ -168,20 +170,15 @@ Also note that setting `Switch.Level` below `Warning` prevents failure traces fr
 ## Notes
 
 - **A binding error is not an exception.**
-It cannot be caught with `try/catch` and does not stop execution.
-The Output window trace is the only primary source, so read the trace before guessing when a binding fails.
-- **Behavior in release builds.**
-Binding tracing assumes a debug session.
-A released binary has no accessible Output window, so handle it with `TraceListener` aggregation or with triage during development.
+It cannot be caught with `try/catch` and does not stop execution, so read the Output window trace before guessing when a binding fails.
+- **A released binary has no accessible Output window.**
+Binding tracing assumes a debug session, so handle production investigation with `TraceListener` aggregation instead.
 - **`DataItem=null` is not always a defect.**
-This output can appear as a transient state right after initialization.
-If the `DataContext` is assigned afterward and the value displays correctly, it is not a problem.
+It can appear as a transient state right after initialization, and is not a problem if the `DataContext` is assigned afterward and the value displays correctly.
 - **Detailed tracing produces a lot of output.**
-Leaving `TraceLevel=High` in place makes the Output window verbose.
-Remove the setting once triage is complete.
+Leaving `TraceLevel=High` in place makes the Output window verbose, so remove the setting once triage is complete.
 - **Error numbers are only an indication of kind.**
-Numbers such as 40 or 23 help classify the cause, but the definitive information is in the message body.
-Do not judge by the number alone; read the body such as `property not found` or `Cannot convert`.
+Numbers such as 40 or 7 help classify the cause, but the definitive information is in the message body such as `property not found` or `Cannot convert`.
 
 ---
 
