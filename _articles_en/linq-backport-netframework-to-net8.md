@@ -189,7 +189,7 @@ When `Select` returns two-element tuples, the result can be turned into a dictio
 var files = new[] { "report.pdf", "photo.jpg", "notes.txt" };
 
 // Key by file name, value is the extension
-var byName = files.Select(name => (name, Path.GetExtension(name)))
+var byName = files.Select(name => (name, System.IO.Path.GetExtension(name)))
                   .ToDictionary();
 // byName: { "report.pdf": ".pdf", "photo.jpg": ".jpg", "notes.txt": ".txt" }
 ```

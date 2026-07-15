@@ -187,7 +187,7 @@ var filtered = source.Where(pair => pair.Value >= 3)
 var files = new[] { "report.pdf", "photo.jpg", "notes.txt" };
 
 // ファイル名をキー、拡張子を値にする
-var byName = files.Select(name => (name, Path.GetExtension(name)))
+var byName = files.Select(name => (name, System.IO.Path.GetExtension(name)))
                   .ToDictionary();
 // byName: { "report.pdf": ".pdf", "photo.jpg": ".jpg", "notes.txt": ".txt" }
 ```
