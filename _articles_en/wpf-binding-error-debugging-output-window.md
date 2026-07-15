@@ -122,7 +122,8 @@ Because the binding is re-evaluated once the `DataContext` is assigned, a tempor
 
 A message containing `ConvertBack cannot convert value` or `Cannot convert` indicates that a value cannot be converted to the bound type.
 This occurs, for example, when a string is two-way bound to a numeric property and the input cannot be converted to a number, producing `Error: 7` on the `ConvertBack` side.
-Implement an `IValueConverter`, or use `StringFormat` to align the types.
+Implement the `ConvertBack` method of an `IValueConverter` that turns the input string back into the number, or validate the input with a `ValidationRule` before conversion.
+Note that `StringFormat` only affects display formatting on the `Convert` side and does not resolve a `ConvertBack` conversion failure, so it is not used for this purpose.
 
 ### Collection Changes Are Not Reported
 
@@ -132,10 +133,10 @@ Property changes on individual items are reported through `INotifyPropertyChange
 
 ---
 
-## Aggregating Traces to a File or Collection (TraceListener)
+## Aggregating Traces to a File or Console (TraceListener)
 
 The Output window is only available during a debug session.
-To review binding errors that occur in a test environment or during integration testing, register a `TraceListener` and aggregate the binding traces to a file or memory.
+To review binding errors that occur in a test environment or during integration testing, register a `TraceListener` and aggregate the binding traces to listeners such as a file or console.
 Adding a listener to `PresentationTraceSources.DataBindingSource` lets the application receive binding-related traces.
 
 At application startup, configure the listener and switch level on `DataBindingSource`.
@@ -161,7 +162,9 @@ public partial class App : Application
 ```
 
 Calling `PresentationTraceSources.Refresh()` beforehand ensures the trace source settings take effect.
-This code writes binding warnings to `binding-errors.log` and the console.
+This code writes binding warnings to `binding-errors.log`.
+Output from `ConsoleTraceListener` appears only when a console is attached, such as when a console is allocated or a debugger is connected.
+A typical WPF GUI app has no console by default, so rely on the file listener for durable records.
 Leaving it enabled in a release build increases output volume and file size, so enable it only for diagnostic builds or during investigation.
 Also note that setting `Switch.Level` below `Warning` prevents failure traces from being recorded.
 

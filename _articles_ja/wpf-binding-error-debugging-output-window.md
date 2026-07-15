@@ -121,7 +121,8 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 
 `ConvertBack cannot convert value` や `Cannot convert` を含むメッセージは、値をバインド先の型へ変換できないことを示す。
 数値プロパティに文字列を双方向バインドしていて、入力値が数値に変換できない場合、`ConvertBack` 側の変換失敗として `Error: 7` が出力される。
-`IValueConverter` を実装するか、`StringFormat` を使って型を合わせる。
+入力文字列を数値へ戻す `IValueConverter` の `ConvertBack` を実装するか、`ValidationRule` で入力値を検証してから変換する。
+`StringFormat` は表示（`Convert` 側）の整形にのみ影響し、`ConvertBack` の変換失敗は解決しないため、この用途には使わない。
 
 ### コレクション変更が通知されない
 
@@ -131,10 +132,10 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 
 ---
 
-## トレースをファイルやコレクションに集約する（TraceListener）
+## トレースをファイルやコンソールに集約する（TraceListener）
 
 出力ウィンドウはデバッグ実行中にしか使えない。
-テスト環境や結合テスト中に発生するバインディングエラーを後から確認したい場合は、`TraceListener` を登録し、バインディングトレースをファイルやメモリに集約する。
+テスト環境や結合テスト中に発生するバインディングエラーを後から確認したい場合は、`TraceListener` を登録し、バインディングトレースをファイルやコンソールなどのリスナーへ集約する。
 `PresentationTraceSources.DataBindingSource` にリスナーを追加すると、バインディング関連のトレースをアプリケーション側で受け取れる。
 
 アプリケーション起動時に、`DataBindingSource` へリスナーとスイッチレベルを設定する。
@@ -160,7 +161,9 @@ public partial class App : Application
 ```
 
 `PresentationTraceSources.Refresh()` を事前に呼ぶと、トレースソースの設定が確実に反映される。
-このコードにより、バインディング警告が `binding-errors.log` とコンソールへ書き出される。
+このコードにより、バインディング警告が `binding-errors.log` に書き出される。
+`ConsoleTraceListener` の出力は、コンソールが割り当てられている場合（コンソールを確保した状態やデバッガ接続時）にのみ現れる。
+WPF の GUI アプリは既定でコンソールを持たないため、恒久的な記録はファイルへのリスナーに任せる。
 リリースビルドで常時有効にすると出力量とファイルサイズが増えるため、診断ビルドや調査時に限定して有効化する。
 また、`Switch.Level` を `Warning` 未満にすると失敗トレースが記録されない点に注意する。
 
