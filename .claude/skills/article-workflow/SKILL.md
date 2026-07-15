@@ -120,9 +120,9 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
      (オートモードでも、破壊的・不可逆な判断はユーザー確認を優先する)。
 
    > 本リポジトリの PR には `Lint Markdown`(`.github/workflows/lint-markdown.yml`)が走り、
-   > markdownlint(`.markdownlint.json`)で記事を検査する。ローカルでも
-   > `npx -y markdownlint-cli2 "_articles_ja/**/*.md" "_articles_en/**/*.md" "docs/**/*.md" "*.md"`
-   > で同じ検査を再現できる。CI がグリーンになるまで修正・再 push を繰り返す。
+   > markdownlint(`.markdownlint.json`)でリポジトリ全体の Markdown を検査する。ローカルでも
+   > `npx -y markdownlint-cli2 "**/*.md"` で同じ検査を再現できる。
+   > CI がグリーンになるまで修正・再 push を繰り返す。
 
 ---
 
@@ -141,7 +141,7 @@ CI がグリーンで指摘がすべて解消したら:
 
 ## 全体フロー要約
 
-```
+```text
 Phase 0  モード確認(オート/手動)＋テーマ確認
 Phase 1  記事作成(日英・ルール準拠)
 Phase 2  サブエージェント反復レビュー  ── 指摘ゼロまでループ
