@@ -1,6 +1,7 @@
 name: Update sitemap.xml
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
