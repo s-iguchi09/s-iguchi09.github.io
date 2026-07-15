@@ -21,9 +21,9 @@ The goal is to make initial triage rely on trace output rather than guesswork.
 
 ## Prerequisites / Environment
 
-- Framework / Language: .NET 8 / C# 12 (also applicable to .NET Framework 4.x)
+- Framework / Language: .NET 10 / C# 14 (also applicable to .NET Framework 4.x)
 - Target: WPF data binding (`Binding`)
-- IDE: Visual Studio 2022
+- IDE: Visual Studio 2026
 - Architecture: MVVM (binding through `DataContext`)
 - Assumed knowledge: WPF binding basics, `INotifyPropertyChanged`
 
