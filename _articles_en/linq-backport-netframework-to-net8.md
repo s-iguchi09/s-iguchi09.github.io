@@ -3,7 +3,7 @@ layout: article-en
 title: "Backporting Missing LINQ Methods from .NET 8 to .NET Framework"
 date: 2026-07-15
 category: C#
-excerpt: "A guide to safely backporting the .NET 8 selector-free ToDictionary overloads (for KeyValuePair and value tuples) to .NET Framework, using #nullable enable and conditional compilation."
+excerpt: "Backporting the .NET 8 selector-free ToDictionary overloads (KeyValuePair and tuple) to .NET Framework with #nullable enable and conditional compilation."
 ---
 
 ## Overview
