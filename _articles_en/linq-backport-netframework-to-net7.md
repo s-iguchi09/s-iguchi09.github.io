@@ -1,6 +1,6 @@
 ---
 layout: article-en
-title: "Backporting Missing LINQ Methods from .NET 7 to .NET Framework"
+title: "Backporting Order and OrderDescending to .NET Framework"
 date: 2026-07-14
 category: C#
 excerpt: "A guide to safely backporting the .NET 7 LINQ methods Order and OrderDescending to .NET Framework, preserving IOrderedEnumerable via conditional compilation."
@@ -8,7 +8,7 @@ excerpt: "A guide to safely backporting the .NET 7 LINQ methods Order and OrderD
 
 ## Overview
 
-When migrating from .NET Framework to modern .NET (.NET 7 or later) incrementally, or when a codebase must remain on .NET Framework for the foreseeable future, a persistent source of friction is the set of LINQ methods that exist in modern .NET but not in .NET Framework.
+`Order` and `OrderDescending`, added in .NET 7, sort a sequence by the elements themselves and remove the need for the boilerplate identity lambda `OrderBy(x => x)`. Without them, a .NET Framework codebase keeps writing `x => x` even when sorting by the value itself.
 
 This article enumerates the **two LINQ methods added in .NET 7** (`Order`, `OrderDescending`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
 It also covers preserving the `IOrderedEnumerable<T>` return type and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 7 or later.
@@ -240,5 +240,5 @@ Three implementation points are worth remembering.
 
 ## Related Articles
 
-- [Backporting Missing LINQ Methods from .NET 6 to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Missing LINQ Methods from .NET 5 to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
+- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)

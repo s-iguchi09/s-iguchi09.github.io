@@ -3,33 +3,47 @@ layout: article-ja
 title: "WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法"
 date: 2026-04-24
 category: WPF
-excerpt: "ListBox の仮想化有効時に選択状態が維持されない理由と、IsSelected を各アイテムに持たせて MVVM で安定させる解決方法を解説します。Shift 範囲選択への対応も含めます。"
+excerpt: "ListBox の仮想化有効時に選択状態が維持されない理由と、IsSelected を各アイテムに持たせて MVVM で安定させる解決方法を解説する。Shift 範囲選択への対応も含める。"
 ---
 
 ## 概要
 
-WPF の `ListBox` は、大量データを表示するときに `VirtualizingStackPanel` による UI 仮想化が有効になります。  
-仮想化が有効だと、画面外にあるアイテムのコンテナ（`ListBoxItem`）は破棄され、必要になったタイミングで再生成されます。  
-このとき、選択状態の管理をコンテナに依存していると、スクロール後に「以前選択した項目が `SelectedItems` に残っていない」ように見えることがあります。  
-結論としては、**選択状態はコンテナではなくデータ側に持たせる**のが最も安全です。  
-各アイテムの ViewModel に `IsSelected` を持たせ、`ItemContainerStyle` で `ListBoxItem.IsSelected` を TwoWay バインドします。  
+WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackPanel` による UI 仮想化が有効になる。
+仮想化が有効だと、画面外にあるアイテムのコンテナ(`ListBoxItem`)は破棄され、必要になった時点で再生成される。
+このとき、選択状態の管理をコンテナに依存していると、スクロール後に「以前選択した項目が `SelectedItems` に残っていない」ように見えることがある。
+最も安全なのは、選択状態をコンテナではなくデータ側に持たせる方法である。
+各アイテムの ViewModel に `IsSelected` を持たせ、`ItemContainerStyle` で `ListBoxItem.IsSelected` を TwoWay バインドする。
 
-## なぜ問題が起きるのか
+## 前提・対象環境
 
-`ListBox` の UI 仮想化では、スクロールに応じてコンテナが作り直されます。  
-選択状態を次のように扱っている場合、仮想化の影響を受けやすくなります。  
+- フレームワーク / 言語: .NET 6 以降 / C# 10
+- 対象コントロール: WPF `ListBox`(`System.Windows.Controls`)
+- アーキテクチャ: MVVM(各アイテム ViewModel が `IsSelected` を公開する)
+- OS: Windows(WPF は Windows 専用)
+
+以降の例では、UI 仮想化が有効な状態(`ListBox` の既定)で、1 万件規模のコレクションを `ListBox` にバインドすることを前提とする。
+`SelectionMode` は複数選択を扱う `Extended` を用いる。
+
+## 原因・背景
+
+`ListBox` の UI 仮想化では、スクロールに応じてコンテナが作り直される。
+選択状態を次のように扱っている場合、仮想化の影響を受けやすくなる。
 
 - `ListBoxItem` を直接参照して選択を管理している
 - Visual Tree からコンテナをたどって `SelectedItems` を構築している
 - 再生成されたコンテナに対して選択状態を復元していない
 
-つまり、失われているのはデータそのものではなく、**コンテナ依存の選択同期**です。  
+失われているのはデータそのものではなく、コンテナ依存の選択同期である。
+`VirtualizationMode="Recycling"` ではコンテナが使い回されるため、再利用されたコンテナに前の選択状態が残る、あるいは復元されないといった不整合がさらに起きやすくなる。
 
 ## 解決策: 各アイテムに IsSelected を持たせる
 
-複数選択を MVVM で安定して扱うには、各アイテム ViewModel に `IsSelected` を持たせる方法が定番です。  
+複数選択を MVVM で安定して扱うには、各アイテム ViewModel に `IsSelected` を持たせる方法が定番である。
+選択状態がデータ側にあれば、コンテナが破棄・再生成されても値は保持される。
 
 ### ViewModel の例
+
+各行を表す ViewModel に、変更通知付きの `IsSelected` を実装する。
 
 ```csharp
 using System.ComponentModel;
@@ -66,7 +80,11 @@ public class RowItemViewModel : INotifyPropertyChanged
 }
 ```
 
+`IsSelected` の変更通知は、ViewModel 側で選択状態を変更したときに、実体化済みの `ListBoxItem` へ反映するために必要となる。初期表示やコンテナ再生成の際はバインドが現在値を読み取るため通知は不要だが、双方向に同期させるうえで `INotifyPropertyChanged` を実装しておく。
+
 ### 画面全体の ViewModel の例
+
+リスト全体を保持し、選択済みアイテムをデータ側から取得できるようにする。
 
 ```csharp
 using System.Collections.ObjectModel;
@@ -89,7 +107,11 @@ public class MainViewModel
 }
 ```
 
+`GetSelectedItems` はコンテナではなくデータ(`IsSelected`)を走査するため、スクロール位置や仮想化の状態に関わらず、`IsSelected` に反映済みの選択を漏れなく取得できる。
+
 ### XAML の例
+
+`ItemContainerStyle` で `ListBoxItem.IsSelected` を各アイテムの `IsSelected` に TwoWay バインドする。
 
 ```xml
 <ListBox ItemsSource="{Binding Items}"
@@ -115,37 +137,51 @@ public class MainViewModel
 </ListBox>
 ```
 
+コンテナが再生成されても、バインドが `IsSelected` の値を読み直して選択状態を復元する。
+
 ## Shift 範囲選択への対応
 
-本手法は `SelectionMode="Extended"` を維持するため、`Shift` による範囲選択や `Ctrl` による追加選択は WPF の標準動作に任せられます。  
-`Shift` による範囲選択が行われると、選択された範囲の各アイテムの `IsSelected` が `true` に設定されます。  
-後続のスクロールでコンテナが仮想化されても選択状態はデータ側に残るため、選択が消えたように見える問題を回避できます。  
+本手法は `SelectionMode="Extended"` を維持するため、`Shift` による範囲選択や `Ctrl` による追加選択は WPF の標準動作に任せられる。
+`Shift` による範囲選択が行われると、選択された範囲の各アイテムの `IsSelected` が `true` に設定される。
+後続のスクロールでコンテナが仮想化されても選択状態はデータ側に残るため、選択が消えたように見える問題を回避できる。
 
-## よくある注意点
+## 注意点
 
-### 1. SelectedItems を直接 TwoWay バインドしようとしない
+### 1. SelectedItems を直接 TwoWay バインドしない
 
-`SelectedItems` はコレクションですが、WPF の標準コントロールではそのまま素直に TwoWay バインドするのが難しいです。  
-複数選択を MVVM で扱う場合、`IsSelected` パターンを採用するのが実装・保守の両面で現実的です。  
+`SelectedItems` はコレクションだが、WPF の標準コントロールではそのまま素直に TwoWay バインドできない(依存関係プロパティではなく読み取り専用のコレクションであるため)。
+複数選択を MVVM で扱う場合は、`IsSelected` パターンを採用するのが実装・保守の両面で現実的である。
 
-### 2. CanContentScroll=false にしない
+### 2. CanContentScroll を false にしない
 
-`ScrollViewer.CanContentScroll="False"` にすると、仮想化が壊れてすべてのアイテムが描画されやすくなります。  
-大量件数のリストでは、通常は `True` を維持します。  
+`ScrollViewer.CanContentScroll="False"` にすると、スクロール単位がアイテム単位からピクセル単位に変わり、仮想化が無効化されてすべてのアイテムが描画されやすくなる。
+大量件数のリストでは、通常は `True` を維持する。
 
 ### 3. コンテナ依存のロジックを避ける
 
-`ItemContainerGenerator.ContainerFromIndex` や Visual Tree の走査に依存すると、仮想化と再利用の影響を受けやすくなります。  
-選択状態はデータ側で管理します。  
+`ItemContainerGenerator.ContainerFromIndex` や Visual Tree の走査に依存すると、仮想化とコンテナの再利用の影響を受けやすくなる。
+選択状態はデータ側で管理する。
+
+### 4. 選択集合はコンテナから読み取らない
+
+`ListBox.SelectedItems` は、仮想化で実体化されていないアイテムも含めて選択を反映する。
+一方、コンテナを列挙して選択を集計するコードは、画面外のアイテムを取りこぼす。
+選択集合は上記 `GetSelectedItems` のように `IsSelected` から求める。
+
+### 5. 画面外アイテムへの範囲選択には同期の限界がある
+
+仮想化で実体化されていないアイテムにはコンテナが存在しないため、`Shift` による範囲選択が画面外のアイテムに及ぶ場合、その `IsSelected` が即座に更新されないことがある。
+厳密な選択同期が必要な場合は、`SelectionChanged` イベントで `e.AddedItems` / `e.RemovedItems` を処理し、データ側の `IsSelected` へ明示的に反映する。
 
 ## まとめ
 
-WPF の `ListBox` で仮想化を有効にした場合、選択状態をコンテナに依存して管理していると、スクロール後に `SelectedItems` が消えたように見えることがあります。  
-これを避けるには、次の構成が有効です。  
+WPF の `ListBox` で仮想化を有効にした場合、選択状態をコンテナに依存して管理していると、スクロール後に `SelectedItems` が消えたように見えることがある。
+これを避けるには、次の構成が有効である。
 
 - 各アイテム ViewModel に `IsSelected` を持たせる
 - `ListBoxItem.IsSelected` を `IsSelected` に TwoWay バインドする
 - `SelectionMode="Extended"` のまま標準の Shift / Ctrl 選択を使う
 - 仮想化を維持するため `CanContentScroll="True"` を使う
 
-この方法により、Shift 範囲選択を含めて、仮想化環境でも選択状態を安定して保持できます。  
+数千〜数万件規模のリストで複数選択を扱う場合にこの構成が適する。
+選択が少数かつ仮想化が不要な小さいリストであれば、標準の `SelectedItems` をそのまま使う方が簡潔である。

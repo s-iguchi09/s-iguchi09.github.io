@@ -1,6 +1,6 @@
 ---
 layout: article-en
-title: "Backporting Missing LINQ Methods from .NET 8 to .NET Framework"
+title: "Backporting the KeyValuePair and Tuple ToDictionary Overloads to .NET Framework"
 date: 2026-07-15
 category: C#
 excerpt: "Backporting the .NET 8 selector-free ToDictionary overloads (KeyValuePair and tuple) to .NET Framework with #nullable enable and conditional compilation."
@@ -8,7 +8,7 @@ excerpt: "Backporting the .NET 8 selector-free ToDictionary overloads (KeyValueP
 
 ## Overview
 
-When migrating from .NET Framework to modern .NET (.NET 8 or later) incrementally, or when a codebase must remain on .NET Framework for the foreseeable future, a persistent source of friction is the set of LINQ methods that exist in modern .NET but not in .NET Framework.
+.NET 8 added almost no new operators to the public `Enumerable`; its practical addition is a set of `ToDictionary` overloads that turn a sequence of `KeyValuePair` or tuples into a dictionary without selectors. Their absence in .NET Framework forces an identity selector such as `p => p.Key` even when each element is already a key/value pair.
 
 This article covers the **`ToDictionary` overloads added in .NET 8** (the selector-free `KeyValuePair` and value-tuple forms) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
 It also covers a modern implementation using `#nullable enable` and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 8 or later.
@@ -288,6 +288,6 @@ Three implementation points are worth remembering.
 
 ## Related Articles
 
-- [Backporting Missing LINQ Methods from .NET 7 to .NET Framework](/articles/linq-backport-netframework-to-net7/)
-- [Backporting Missing LINQ Methods from .NET 6 to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Missing LINQ Methods from .NET 5 to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Backporting Order and OrderDescending to .NET Framework](/articles/linq-backport-netframework-to-net7/)
+- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
+- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)

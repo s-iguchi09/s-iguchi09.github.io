@@ -1,6 +1,6 @@
 ---
 layout: article-en
-title: "Backporting Missing LINQ Methods from .NET 9 to .NET Framework"
+title: "Backporting CountBy, AggregateBy and Index to .NET Framework"
 date: 2026-07-16
 category: C#
 excerpt: "Backporting .NET 9 LINQ methods CountBy, AggregateBy, and Index to .NET Framework, preserving deferred execution with conditional compilation."
@@ -8,7 +8,7 @@ excerpt: "Backporting .NET 9 LINQ methods CountBy, AggregateBy, and Index to .NE
 
 ## Overview
 
-When migrating from .NET Framework to modern .NET (.NET 9 or later) incrementally, or when a codebase must remain on .NET Framework for the foreseeable future, a persistent source of friction is the set of LINQ methods that exist in modern .NET but not in .NET Framework.
+`CountBy`, `AggregateBy` and `Index`, added in .NET 9, streamline the per-key aggregation that previously went through `GroupBy`, along with the indexed enumeration previously written as `Select((x, i) => …)`. .NET Framework lacks them, so the same results require verbose workaround code.
 
 This article enumerates the **three LINQ methods added in .NET 9** (`CountBy`, `AggregateBy`, `Index`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
 Because all three use deferred execution, it also covers preserving the boundary between deferred and eager behavior and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 9 or later.
@@ -360,7 +360,7 @@ Three implementation points are worth remembering.
 
 ## Related Articles
 
-- [Backporting Missing LINQ Methods from .NET 8 to .NET Framework](/articles/linq-backport-netframework-to-net8/)
-- [Backporting Missing LINQ Methods from .NET 7 to .NET Framework](/articles/linq-backport-netframework-to-net7/)
-- [Backporting Missing LINQ Methods from .NET 6 to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Missing LINQ Methods from .NET 5 to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Backporting the KeyValuePair and Tuple ToDictionary Overloads to .NET Framework](/articles/linq-backport-netframework-to-net8/)
+- [Backporting Order and OrderDescending to .NET Framework](/articles/linq-backport-netframework-to-net7/)
+- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
+- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)

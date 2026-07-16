@@ -1,14 +1,14 @@
 ---
 layout: article-en
-title: "Backporting Missing LINQ Methods from .NET 6 to .NET Framework"
+title: "Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework"
 date: 2026-07-13
 category: C#
-excerpt: "A guide to safely backporting the four LINQ methods added in .NET 6 — Chunk, MaxBy, MinBy, and DistinctBy — to .NET Framework, using #nullable enable and conditional compilation for a zero-cost migration path."
+excerpt: "Backporting Chunk, MaxBy, MinBy, and DistinctBy to .NET Framework as polyfills, using #nullable enable and conditional compilation for a zero-cost migration."
 ---
 
 ## Overview
 
-When migrating from .NET Framework to modern .NET (.NET 6 or later) incrementally, or when a codebase must remain on .NET Framework for the foreseeable future, a persistent source of friction is the set of LINQ methods that exist in modern .NET but not in .NET Framework.
+The LINQ methods added in .NET 6 — `Chunk`, `MaxBy`, `MinBy` and `DistinctBy` — each express a "key-based or fixed-size" operation in a single call. Because .NET Framework lacks them, the equivalent must be spelled out with verbose combinations of `GroupBy` or `OrderByDescending().First()`.
 
 This article enumerates the **four LINQ methods added in .NET 6** (`Chunk`, `MaxBy`, `MinBy`, `DistinctBy`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals. It also covers a modern implementation style using `#nullable enable` and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 6 or later.
 
@@ -444,4 +444,4 @@ Three implementation points are worth remembering.
 
 ## Related Articles
 
-- [Backporting Missing LINQ Methods from .NET 5 to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)

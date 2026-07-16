@@ -1,6 +1,6 @@
 ---
 layout: article-en
-title: "Backporting Missing LINQ Methods from .NET 10 to .NET Framework"
+title: "Backporting LeftJoin, RightJoin and Shuffle to .NET Framework"
 date: 2026-07-17
 category: C#
 excerpt: "Backporting the .NET 10 LeftJoin, RightJoin, and Shuffle operators to .NET Framework with #nullable enable and conditional compilation."
@@ -8,7 +8,7 @@ excerpt: "Backporting the .NET 10 LeftJoin, RightJoin, and Shuffle operators to 
 
 ## Overview
 
-When migrating from .NET Framework to modern .NET incrementally, or when a codebase must remain on .NET Framework for the foreseeable future, a persistent source of friction is the set of LINQ methods that exist in modern .NET but not in .NET Framework.
+.NET 10 adds genuinely useful operators to the public `Enumerable`: the outer joins `LeftJoin` and `RightJoin`, and `Shuffle`, which reorders a sequence at random. Their absence in .NET Framework means writing boilerplate workaround code for every join or random shuffle.
 
 This article covers the **three LINQ operators added in .NET 10** (the outer-join operators `LeftJoin` and `RightJoin`, and the random-ordering operator `Shuffle`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
 It also covers a modern implementation using `#nullable enable` and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 10 or later.
@@ -373,8 +373,8 @@ Three implementation points are worth remembering.
 
 ## Related Articles
 
-- [Backporting Missing LINQ Methods from .NET 9 to .NET Framework](/articles/linq-backport-netframework-to-net9/)
-- [Backporting Missing LINQ Methods from .NET 8 to .NET Framework](/articles/linq-backport-netframework-to-net8/)
-- [Backporting Missing LINQ Methods from .NET 7 to .NET Framework](/articles/linq-backport-netframework-to-net7/)
-- [Backporting Missing LINQ Methods from .NET 6 to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Missing LINQ Methods from .NET 5 to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Backporting CountBy, AggregateBy and Index to .NET Framework](/articles/linq-backport-netframework-to-net9/)
+- [Backporting the KeyValuePair and Tuple ToDictionary Overloads to .NET Framework](/articles/linq-backport-netframework-to-net8/)
+- [Backporting Order and OrderDescending to .NET Framework](/articles/linq-backport-netframework-to-net7/)
+- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
+- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)

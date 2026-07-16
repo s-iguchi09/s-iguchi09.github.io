@@ -1,6 +1,6 @@
 ---
 layout: article-ja
-title: ".NET Framework の不足 LINQ メソッドを .NET 10 相当にバックポートする"
+title: "LeftJoin・RightJoin・Shuffle を .NET Framework にバックポートする"
 date: 2026-07-17
 category: C#
 excerpt: ".NET 10 で追加された LeftJoin・RightJoin・Shuffle を、#nullable enable と条件付きコンパイルを用いて .NET Framework へ拡張メソッドで実装し、本家と同じ使用感で利用する方法を解説する。"
@@ -8,7 +8,7 @@ excerpt: ".NET 10 で追加された LeftJoin・RightJoin・Shuffle を、#nulla
 
 ## 概要
 
-.NET Framework から新世代 .NET への移行を段階的に進めている場合や、諸事情で .NET Framework 環境のコードをメンテナンスし続けなければならない場合、ストレスの原因となるのが「新世代 .NET にはあるのに、.NET Framework には存在しない LINQ メソッド」の存在である。
+.NET 10 では公開 `Enumerable` に、外部結合を行う `LeftJoin`・`RightJoin` と、シーケンスをランダム順に並べ替える `Shuffle` という実用的な演算子が追加された。.NET Framework 環境ではこれらが使えないため、結合や乱択のたびに定型的な回避コードを書くことになる。
 
 本記事では、**.NET 10 で新たに追加された 3 つの LINQ 演算子**（外部結合を行う `LeftJoin`・`RightJoin`、およびシーケンスをランダム順に並べ替える `Shuffle`）を整理し、**本家と同じ使用感で動作する拡張メソッド（ポリフィル）を安全に実装する方法**を解説する。
 `#nullable enable` を使った現代的な実装と、将来の .NET 10 以降への移行時にコードを無修正で切り替えるための条件付きコンパイル手法も合わせて紹介する。
@@ -370,8 +370,8 @@ var second = query.ToArray(); // 再列挙すると別の順序になる
 
 ## 関連記事
 
-- [.NET Framework の不足 LINQ メソッドを .NET 9 相当にバックポートする](/ja/articles/linq-backport-netframework-to-net9/)
-- [.NET Framework の不足 LINQ メソッドを .NET 8 相当にバックポートする](/ja/articles/linq-backport-netframework-to-net8/)
-- [.NET Framework の不足 LINQ メソッドを .NET 7 相当にバックポートする](/ja/articles/linq-backport-netframework-to-net7/)
-- [.NET Framework の不足 LINQ メソッドを .NET 6 相当にバックポートする](/ja/articles/linq-backport-netframework-to-net6/)
-- [.NET Framework の不足 LINQ メソッドを .NET 5 相当にバックポートする](/ja/articles/linq-backport-netframework-to-net5/)
+- [CountBy・AggregateBy・Index を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net9/)
+- [KeyValuePair・タプル版 ToDictionary を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net8/)
+- [Order・OrderDescending を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net7/)
+- [Chunk・MaxBy・MinBy・DistinctBy を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net6/)
+- [Append・Prepend・TakeLast・SkipLast を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net5/)
