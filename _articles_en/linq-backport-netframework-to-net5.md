@@ -1,6 +1,6 @@
 ---
 layout: article-en
-title: "Backporting Missing LINQ Methods from .NET 5 to .NET Framework"
+title: "Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework"
 date: 2026-07-10
 category: C#
 excerpt: "A guide to safely backporting the four LINQ methods added between .NET Framework 4.8 and .NET 5 — Append, Prepend, TakeLast, and SkipLast — including the lazy-evaluation pitfall, algorithm walkthrough, and a zero-effort migration path using conditional compilation."
@@ -8,7 +8,7 @@ excerpt: "A guide to safely backporting the four LINQ methods added between .NET
 
 ## Overview
 
-When migrating from .NET Framework to .NET 5 incrementally, or when a codebase must remain on .NET Framework for the foreseeable future, a common friction point is the set of LINQ methods that exist in modern .NET but not in .NET Framework.
+The stretch from .NET Framework 4.8 to .NET 5 (.NET Core 2.0 through 3.1) was less about adding LINQ methods than about rewriting the internals for performance. Even so, four practical methods — `Append`, `Prepend`, `TakeLast` and `SkipLast` — arrived during that window, and their absence in .NET Framework forces workaround code every time they are needed.
 
 Workarounds such as calling `Concat(new[] { element })` instead of `Append`, or computing `Count` before subtracting to simulate `TakeLast`, hurt readability and introduce unnecessary allocations.
 

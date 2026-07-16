@@ -1,6 +1,6 @@
 ---
 layout: article-ja
-title: ".NET Framework の不足 LINQ メソッドを .NET 6 相当にバックポートする"
+title: "Chunk・MaxBy・MinBy・DistinctBy を .NET Framework にバックポートする"
 date: 2026-07-13
 category: C#
 excerpt: ".NET 6 で追加された LINQ の 4 メソッド（Chunk・MaxBy・MinBy・DistinctBy）を、#nullable enable と条件付きコンパイルを活用しながら .NET Framework 環境へ安全にバックポートする実装方法を解説する。"
@@ -8,7 +8,7 @@ excerpt: ".NET 6 で追加された LINQ の 4 メソッド（Chunk・MaxBy・Mi
 
 ## 概要
 
-.NET Framework から新世代 .NET（.NET 6 以降）への移行を段階的に進めている場合や、諸事情で .NET Framework 環境のコードをメンテナンスし続けなければならない場合、ストレスの原因となるのが「新世代 .NET にはあるのに、.NET Framework には存在しない LINQ メソッド」の存在である。
+.NET 6 で LINQ に加わった `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` は、いずれも「キーや一定サイズを基準にした操作」を 1 つのメソッドで表現できるようにするものである。.NET Framework 環境ではこれらが存在せず、`GroupBy` や `OrderByDescending().First()` を組み合わせた冗長な回避コードを書かざるを得ない。
 
 本記事では、**.NET 6 で新たに追加された 4 つの LINQ メソッド**（`Chunk`・`MaxBy`・`MinBy`・`DistinctBy`）を整理し、**同一の使用感で動作する拡張メソッド（ポリフィル）を安全に実装する方法**を解説する。
 `#nullable enable` を使った現代的な実装と、将来の .NET 6 以降への移行時にコードを無修正で切り替えるための条件付きコンパイル手法も合わせて紹介する。
@@ -460,4 +460,4 @@ foreach (var item in source)
 
 ## 関連記事
 
-- [.NET Framework の不足 LINQ メソッドを .NET 5 相当にバックポートする](/ja/articles/linq-backport-netframework-to-net5/)
+- [Append・Prepend・TakeLast・SkipLast を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net5/)
