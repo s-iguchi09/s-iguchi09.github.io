@@ -228,7 +228,7 @@ public class PersonViewModel : ViewModelBase
 ## Notes
 
 - `CallerMemberName` applies only to methods with an optional parameter, and an explicit argument at the call site takes precedence over the substitution.
-- The substituted name is the member that encloses the call site. When it is evaluated outside the setter, such as in a field initializer or a delegate passed to another member, the name will not be the intended property.
+- The substituted name is the member that encloses the call site, so evaluating it outside the setter, such as in a field initializer or a delegate passed to another member, does not yield the intended property name.
 - Notification for computed properties and indexers is not automated, so dependency relationships must be managed manually.
 - To invalidate every property at once, pass an empty string or `null` to `PropertyChangedEventArgs`; this is an explicit choice separate from the `CallerMemberName` substitution.
 

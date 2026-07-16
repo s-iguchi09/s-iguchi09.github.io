@@ -175,7 +175,7 @@ public class PersonViewModel : ViewModelBase
 この `ViewModelBase` は `OnPropertyChanged` と `SetProperty` の両方を持ち、以降の節でもそのまま利用できる完成形である。
 `SetProperty` は現在値と新しい値を `EqualityComparer<T>.Default` で比較し、等しければ通知せず `false` を返す。
 値が変化した場合のみフィールドを更新して `OnPropertyChanged` を呼び、`true` を返す。
-戻り値の `bool` は、後述する依存プロパティの追加通知を条件分岐で行う際に利用できる。
+戻り値の `bool` は、後述する算出プロパティの追加通知を条件分岐で行う際に利用できる。
 この形は `CommunityToolkit.Mvvm` の `ObservableObject` などが提供する `SetProperty` と同じ考え方であり、自作の基底クラスでも容易に再現できる。
 
 ---
@@ -183,7 +183,7 @@ public class PersonViewModel : ViewModelBase
 ## 算出プロパティへの変更通知
 
 `CallerMemberName` が補完するのは、あくまで呼び出し元自身のメンバー名である。
-別のプロパティ（他のプロパティから算出される計算プロパティなど）へ通知する場合は、その名前を明示的に渡す必要がある。
+別のプロパティ（他のプロパティから値を導出する算出プロパティなど）へ通知する場合は、その名前を明示的に渡す必要がある。
 なお、ここでの「算出プロパティ」は他プロパティから値を導出する読み取り専用プロパティを指し、WPF の依存関係プロパティ（`DependencyProperty`）とは別概念である。
 
 ```csharp
@@ -228,7 +228,7 @@ public class PersonViewModel : ViewModelBase
 ## 注意点
 
 - `CallerMemberName` が有効なのは省略可能引数を持つメソッドに限られ、呼び出し側で引数を明示するとその値が優先される。
-- 補完される名前は呼び出し箇所を包含するメンバー名である。セッター外（フィールド初期化子や、別メンバーへ渡したデリゲート内など）で評価されると、意図したプロパティ名にならない。
+- 補完される名前は呼び出し箇所を包含するメンバー名であり、セッター外（フィールド初期化子や、別メンバーへ渡したデリゲート内など）で評価されると意図したプロパティ名にならない。
 - 算出プロパティやインデクサーへの通知は自動化されないため、依存関係は自前で管理する。
 - 全プロパティを一括で無効化したい場合は、`PropertyChangedEventArgs` に空文字列または `null` を渡す挙動を利用するが、これは `CallerMemberName` の補完とは別の明示的な指定になる。
 
