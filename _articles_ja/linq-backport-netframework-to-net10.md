@@ -331,7 +331,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になる
 - **`Shuffle` の乱数はセキュリティ用途に不適**: 非暗号論的な乱数生成器を使うため、抽選・シャッフルの再現不可能性が問われる用途には `System.Security.Cryptography` の乱数を別途用いる。
 - **名前衝突は起きない**: これらのポリフィルは本家に存在しないシグネチャであり、既存の `Join` や `OrderBy` とはメソッド名・引数が異なるため、オーバーロード解決で衝突しない。移行後は同名の本家メソッドが優先され、条件付きコンパイルによりポリフィルは無効化される。
 - **C# 9 以上でコンパイルする**: 本ポリフィルは制約なし型パラメータの `null` 許容注釈（`TInner?` / `TOuter?`）と `#nullable enable` を用いるため、コンパイルに C# 9 以上を要する。.NET Framework 4.8 の既定 `LangVersion`（7.3）のままでは `CS8627` などでコンパイルできないため、`.csproj` に `<LangVersion>9.0</LangVersion>`（または `latest`）を指定する。
-- **`IQueryable<T>` に対しては注意する**: 本ポリフィルは `Enumerable`（`IEnumerable<T>`）の拡張メソッドである。`IQueryable<T>` は `IEnumerable<T>` を継承するため、これらのメソッドは `IQueryable<T>` にも束縛され得る。.NET 10 未満で Entity Framework などの DB クエリにそのまま用いると、`Queryable` 版が存在しないぶん `Enumerable` の実装が選択され、クエリがデータソースへ変換されずクライアント側で列挙される。DB クエリでサーバー側の結合を得るには、`AsEnumerable` でクライアント評価の境界を明示するか、プロバイダが翻訳可能な `GroupJoin` + `DefaultIfEmpty` の形で記述する。.NET 10 では `Queryable` にも `LeftJoin`・`RightJoin` が追加されているが、その翻訳可否はプロバイダに依存し、本記事の対象は `Enumerable` に限る。
+- **`IQueryable<T>` に対しては注意する**: 本ポリフィルは `Enumerable`（`IEnumerable<T>`）の拡張メソッドである。`IQueryable<T>` は `IEnumerable<T>` を継承するため、これらのメソッドは `IQueryable<T>` にも束縛され得る。.NET 10 未満で Entity Framework などの DB クエリにそのまま用いると、`Queryable` 版が存在しないぶん `Enumerable` の実装が選択され、クエリがデータソースへ変換されずクライアント側で列挙される。DB クエリでサーバー側の結合を得るには、プロバイダが翻訳可能な `GroupJoin(...).SelectMany(... DefaultIfEmpty())` の形で記述する。`AsEnumerable` はクライアント評価の境界を引くだけで、結合をサーバー側に保つわけではない。.NET 10 では `Queryable` にも `LeftJoin`・`RightJoin` が追加されているが、その翻訳可否はプロバイダに依存し、本記事の対象は `Enumerable` に限る。
 
 ---
 
