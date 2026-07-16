@@ -184,11 +184,18 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
          actionable な未解決指摘がゼロ。
    - [ ] **マージ実行の直前**に、`mcp__github__pull_request_read`(`get_status` /
-         `get_check_runs` / `get_review_comments`)で最新状態を再取得する。この確認から
-         `merge_pull_request` 実行までの間に発生する TOCTOU(time-of-check-to-time-of-use)を
-         避けるため、**再取得で新しい push・コミット・レビューコメントが 1 件でも見つかった
-         場合は、マージを中止してチェックリストを最初からやり直す**。変更が無いことを
-         確認できた場合にのみマージする。
+         `get_check_runs` / `get_review_comments`)で最新状態を再取得し、そのときの
+         HEAD SHA を記録する。この確認から `merge_pull_request` 実行までの間に発生する
+         TOCTOU(time-of-check-to-time-of-use)を避けるため、**再取得で新しい push・コミット・
+         レビューコメントが 1 件でも見つかった場合は、マージを中止してチェックリストを最初から
+         やり直す**。変更が無いことを確認できた場合にのみマージする。
+   - [ ] **原子性の限界を理解する。** 再取得とマージの間には理論上の race window が残る。
+         本来は「確認した HEAD SHA に一致する場合のみマージする」条件付きマージが望ましいが、
+         現行の `mcp__github__merge_pull_request` は SHA 条件付けの引数を持たないため、
+         サーバー側で原子的に保証することはできない。この制約を踏まえ、**再取得から
+         `merge_pull_request` 呼び出しまでは他の操作を挟まず最短で実行**し、マージ後に
+         結果へ記録済み HEAD SHA が含まれることを確認する。想定外(記録した SHA と異なる
+         head がマージされた等)を検知した場合は、マージを続行せず速やかにユーザーへ報告する。
 
    > 画面から手動で行う場合は、PR の「Reviewers」欄にある Copilot 横の 🔄(Re-request review)
    > から再レビューを要求できる。
