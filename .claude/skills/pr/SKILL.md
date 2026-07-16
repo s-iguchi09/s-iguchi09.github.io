@@ -28,14 +28,21 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 
 ## Phase 2. PR 作成
 
-1. **PR を作成する。** GitHub MCP(`mcp__github__create_pull_request`)で `main` 宛の PR を作成する。
+1. **既存の PR を確認する(重複作成の防止)。** PR 作成前に、現在のブランチから `main` 宛ての
+   オープンな PR が既に存在しないかを `mcp__github__list_pull_requests`(`head` にブランチを指定)で検索する。
+   - **既にオープンな PR があれば、それを再利用する。** `create_pull_request` は再実行せず、その PR 番号で
+     手順 3(購読)へ進む。Phase 3 のフォールバックからセッションを再開した場合など、重複した PR や
+     購読を作らないためのガードである。
+   - オープンな PR が無い場合のみ、手順 2 で新規作成する。
+
+2. **PR を作成する。** GitHub MCP(`mcp__github__create_pull_request`)で `main` 宛の PR を作成する。
    - リポジトリに PR テンプレート(`.github/pull_request_template.md` 等)があれば、その見出し構成に沿って本文を埋める。
    - タイトル・本文は日本語で記述する。変更内容を要約し、テンプレートの各節を埋める。
 
-2. **PR を購読する。** `subscribe_pr_activity` で PR を購読し、以降のイベント
+3. **PR を購読する。** `subscribe_pr_activity` で PR を購読し、以降のイベント
    (CI 結果・レビューコメント)を `<github-webhook-activity>` として受け取れるようにする。
 
-3. **購読直後に PR 状態を再取得して同期する。** PR 作成から購読までの間に CI や自動レビューが
+4. **購読直後に PR 状態を再取得して同期する。** PR 作成から購読までの間に CI や自動レビューが
    始まる/完了することがあり、その分の Webhook を取りこぼす可能性がある。購読直後に
    `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments`)で
    状態を再取得し、既に発生済みの CI 結果・レビュー指摘を Phase 3 に持ち込む。
@@ -99,11 +106,17 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 - [ ] 最新コミットに対する CI(`Lint Markdown` 等)が success。
 - [ ] Copilot 再レビューが完了し、未解決スレッドがゼロ。
 - [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし)し、actionable な未解決指摘がゼロ。
-- [ ] **事前スナップショットを記録する。** マージ判定を始める前に、現在の HEAD SHA・直近レビューコメントの ID・
-      check run ID を控える。これが差分比較の基準になる。
+- [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
+      作成者(Copilot・CodeRabbit・人間レビュアー・その他の自動ボットを問わず)に関係なく `is_resolved == true` を要求する。
+      未解決スレッドが 1 件でもあればマージしない。
+- [ ] **事前スナップショットを記録する。** マージ判定を始める前に、差分比較の基準として次を控える:
+      現在の HEAD SHA、直近レビューコメントの ID、各 check run の ID と **status/conclusion**、
+      各レビュースレッドの ID と **is_resolved**。
 - [ ] **マージ実行の直前に最新状態を再取得し、スナップショットと照合する。**
       `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments`)で再取得し、
-      新しい push・コミット・レビューコメント・check run が 1 件でもあれば **マージを中止してチェックリストを最初からやり直す**。
+      以下のいずれかが 1 件でもあれば **マージを中止してチェックリストを最初からやり直す**:
+      新しい push・コミット・レビューコメント・check run の追加、**既存 check run の status/conclusion の変化**、
+      **既存レビュースレッドの is_resolved の変化**(同じ ID のまま状態だけが変わる場合も含む)。
       差分が無い場合のみ次へ進む(TOCTOU 回避)。
 - [ ] **サーバー側ガードが無い場合は自動マージしない。** `main` にブランチ保護(必須ステータスチェック・
       Require branches to be up to date)が構成されておらず、厳密な保証が必要な場合は、
