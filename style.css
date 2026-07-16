@@ -386,9 +386,11 @@ h2 {
    Visual Studio ライトテーマ風の配色
 ================================ */
 
-/* コードブロックの外枠（エディタ風のカード） */
+/* コードブロックの外枠（エディタ風のカード）
+   Rouge は .highlighter-rouge の内側に div.highlight を出力するため、
+   カード枠は外側ラッパー（.highlighter-rouge / figure.highlight）のみに適用し、
+   内側の .highlight には枠を付けない（二重枠の防止）。 */
 .content-section .highlighter-rouge,
-.content-section div.highlight,
 .content-section figure.highlight {
   margin: 1.25rem 0;
   border: 1px solid #d7dce5;
@@ -409,7 +411,7 @@ h2 {
   background: transparent;
   overflow-x: auto;
   color: #1e1e1e;
-  font-family: "Cascadia Code", "Consolas", "SFMono-Regular", "Menlo",
+  font-family: "Cascadia Code", Consolas, SFMono-Regular, Menlo,
                "DejaVu Sans Mono", "Liberation Mono", monospace;
   font-size: 0.88rem;
   line-height: 1.6;
