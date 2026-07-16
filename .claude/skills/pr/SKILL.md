@@ -120,12 +120,15 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
       未解決スレッドが 1 件でもあればマージしない。
 - [ ] **事前スナップショットを記録する。** マージ判定を始める前に、差分比較の基準として次を控える:
       現在の HEAD SHA、直近レビューコメントの ID、各 check run の ID と **status/conclusion**、
-      各レビュースレッドの ID と **is_resolved**。
+      各レビュースレッドの ID と **is_resolved**、
+      各レビュー提出(`get_reviews`)の ID と **state**(`APPROVED` / `CHANGES_REQUESTED` / `DISMISSED` 等)。
 - [ ] **マージ実行の直前に最新状態を再取得し、スナップショットと照合する。**
-      `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments`)で再取得し、
+      `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments` / `get_reviews`)で再取得し、
       以下のいずれかが 1 件でもあれば **マージを中止してチェックリストを最初からやり直す**:
       新しい push・コミット・レビューコメント・check run の追加、**既存 check run の status/conclusion の変化**、
-      **既存レビュースレッドの is_resolved の変化**(同じ ID のまま状態だけが変わる場合も含む)。
+      **既存レビュースレッドの is_resolved の変化**、
+      **既存レビュー提出の state の変化**(`APPROVED` / `CHANGES_REQUESTED` / dismissal。新規コメントや check run を伴わず、
+      同じ ID のまま state だけが変わる場合も含む)。
       差分が無い場合のみ次へ進む(TOCTOU 回避)。
 - [ ] **サーバー側ガードが無い場合は自動マージしない。** `main` にブランチ保護(必須ステータスチェック・
       Require branches to be up to date)が構成されておらず、厳密な保証が必要な場合は、
