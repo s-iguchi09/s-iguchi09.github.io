@@ -381,6 +381,121 @@ h2 {
   }
 }
 
+/* ================================
+   コードブロック（Rouge シンタックスハイライト）
+   Visual Studio ライトテーマ風の配色
+================================ */
+
+/* コードブロックの外枠（エディタ風のカード）
+   Rouge は .highlighter-rouge の内側に div.highlight を出力するため、
+   カード枠は外側ラッパー（.highlighter-rouge / figure.highlight）のみに適用し、
+   内側の .highlight には枠を付けない（二重枠の防止）。 */
+.content-section .highlighter-rouge,
+.content-section figure.highlight {
+  margin: 1.25rem 0;
+  border: 1px solid #d7dce5;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.content-section .highlighter-rouge .highlight {
+  margin: 0;
+}
+
+.content-section .highlight pre,
+.content-section pre.highlight {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  background: transparent;
+  overflow-x: auto;
+  color: #1e1e1e;
+  font-family: "Cascadia Code", Consolas, SFMono-Regular, Menlo,
+               "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  -moz-tab-size: 4;
+  tab-size: 4;
+}
+
+/*
+   配色は Visual Studio（ライトテーマ）の C# / XML エディタに準拠。
+   Rouge は静的レキサのため、フレームワーク型の「使用箇所」（List, Console 等）は
+   ローカル変数と同じ .n となり黒のまま。VS は Roslyn の意味解析でこれらをティールに
+   するが、Rouge では宣言箇所と区別できないため既定色（黒）とする。
+*/
+
+/* コメント（緑・イタリック） */
+.highlight .c,
+.highlight .ch,
+.highlight .cd,
+.highlight .cm,
+.highlight .c1,
+.highlight .cs { color: #008000; font-style: italic; }
+
+/* プリプロセッサ（グレー） */
+.highlight .cp { color: #808080; }
+.highlight .cpf { color: #a31515; }
+
+/* キーワード・組み込み型（青）
+   VS では int / string / bool / var / void も「キーワード＝青」 */
+.highlight .k,
+.highlight .kc,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt,
+.highlight .bp,
+.highlight .ow { color: #0000ff; }
+
+/* ユーザー定義型・クラス／例外型の宣言名（ティール） */
+.highlight .nc,
+.highlight .ne,
+.highlight .nd { color: #2b91af; }
+
+/* メソッド・関数名（ブラウン） */
+.highlight .nf,
+.highlight .fm { color: #74531f; }
+
+/* 文字列（ブリックレッド） */
+.highlight .s,
+.highlight .sa,
+.highlight .sb,
+.highlight .sc,
+.highlight .dl,
+.highlight .sd,
+.highlight .s2,
+.highlight .se,
+.highlight .sh,
+.highlight .si,
+.highlight .sx,
+.highlight .sr,
+.highlight .s1,
+.highlight .ss { color: #a31515; }
+
+/* 数値: VS は既定色（黒）で数値を色付けしないため、既定のまま */
+
+/* XML / HTML: 要素名・属性名 */
+.highlight .nt { color: #800000; }
+.highlight .na { color: #ff0000; }
+
+/* XML の属性値は VS の XML エディタに合わせて青 */
+.content-section .language-xml .s,
+.content-section .language-html .s,
+.content-section .language-xaml .s { color: #0000ff; }
+
+/* diff（追加＝緑 / 削除＝赤 / ヘッダ＝グレー） */
+.highlight .gi { color: #008000; }
+.highlight .gd { color: #a31515; }
+.highlight .gh,
+.highlight .gu,
+.highlight .gp { color: #808080; }
+
+/* エラートークンは見た目を崩さないよう装飾なし */
+.highlight .err { color: inherit; background: none; }
+
 @media (max-width: 640px) {
   .section-heading {
     flex-direction: column;
