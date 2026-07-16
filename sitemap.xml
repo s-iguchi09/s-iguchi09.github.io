@@ -999,26 +999,6 @@
   </url>
 
   <url>
-    <loc>https://s-iguchi09.github.io/articles/adsense-for-tech-site/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/adsense-for-tech-site/" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/adsense-for-tech-site/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/adsense-for-tech-site/" />
-    <lastmod>2026-05-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://s-iguchi09.github.io/ja/articles/adsense-for-tech-site/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/adsense-for-tech-site/" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/adsense-for-tech-site/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/adsense-for-tech-site/" />
-    <lastmod>2026-05-30</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
     <loc>https://s-iguchi09.github.io/articles/csharp-operators-initialization-syntax-by-version/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/csharp-operators-initialization-syntax-by-version/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/csharp-operators-initialization-syntax-by-version/" />
