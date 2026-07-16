@@ -21,7 +21,7 @@ Because all three use deferred execution, it also covers preserving the boundary
 - APIs: the LINQ methods `CountBy`, `AggregateBy`, `Index`, and their overloads
 - Nullable context: `#nullable enable`
 - Migration guard: `#if !NET9_0_OR_GREATER`
-- Project settings (such as the C# language version in `.csproj`) are left unchanged
+- Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0 or later. Since .NET Framework 4.8 defaults to C# 7.3, set `LangVersion` to `8.0` or later in `.csproj`
 
 ---
 
@@ -122,7 +122,7 @@ namespace System.Linq
             {
                 TKey key = keySelector(item); // A null key throws ArgumentNullException on the next line.
                 counts.TryGetValue(key, out int count);
-                counts[key] = count + 1;
+                counts[key] = checked(count + 1); // Matches .NET 9: throws OverflowException past int.MaxValue
             }
 
             foreach (KeyValuePair<TKey, int> entry in counts)
@@ -321,6 +321,7 @@ Guarding with `NETCOREAPP` or `NET8_0_OR_GREATER` would therefore disable the po
 - **Deferred execution**: All three methods are deferred; nothing is computed until enumeration. The return value is a deferred sequence, not a `Dictionary`, so enumerating the same result multiple times recomputes it each time. To materialize and reuse the result, call `.ToList()` or `.ToDictionary()`. The `ArgumentNullException` for a `null` source or delegate is thrown at the call site.
 - **The key type is `notnull`**: The original `CountBy` and `AggregateBy` carry a `where TKey : notnull` constraint, so the polyfill applies the same constraint. This keeps nullable-reference analysis consistent before and after migration. If the key selector returns a `null` key at runtime, the internal dictionary throws `ArgumentNullException` during enumeration, which also matches the originals.
 - **Memory profile**: The polyfill accumulates only per-key state in an internal `Dictionary`, so it does not retain the elements themselves the way a naive `GroupBy`-based implementation would. Its allocation profile is close to the .NET 9 originals.
+- **`CountBy` overflow**: The count is incremented with `checked(count + 1)`, so a key whose count exceeds `int.MaxValue` throws `OverflowException`. The .NET 9 original also increments in a checked context, so this behavior matches.
 - **`Index` tuple order and a confusable type name**: The tuple returned by `Index` is `(Index, Item)`, with the index first. The method name `Index` is also easy to confuse with the `System.Index` type introduced in C# 8 (the element type of index/range syntax), but a method and a type do not collide.
 - **No name collision**: The polyfill defines the same signatures as the originals under `System.Linq`, so it resolves transparently in files with `using System.Linq;`. A collision can occur only if a method of the same name and shape is also defined elsewhere.
 
