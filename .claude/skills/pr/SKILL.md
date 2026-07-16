@@ -118,6 +118,11 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 - [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
       作成者(Copilot・CodeRabbit・人間レビュアー・その他の自動ボットを問わず)に関係なく `is_resolved == true` を要求する。
       未解決スレッドが 1 件でもあればマージしない。
+- [ ] **`CHANGES_REQUESTED` のレビューが残っていない。** `get_reviews` で、dismiss されていないレビュー提出に
+      `state == CHANGES_REQUESTED` が 1 件も無いことを確認する。**本文だけで紐づくスレッドが無い
+      `CHANGES_REQUESTED` レビューでもマージをブロックする**(スレッド解決の確認だけでは漏れるため)。
+      該当レビューは、修正のうえレビュアーに再レビューを依頼して承認/取り下げを得るか、正当な理由で dismiss されるまで解消しない。
+      この条件はマージ直前の再取得後にも再検証する。
 - [ ] **事前スナップショットを記録する。** マージ判定を始める前に、差分比較の基準として次を控える:
       現在の HEAD SHA、直近レビューコメントの ID、各 check run の ID と **status/conclusion**、
       各レビュースレッドの ID と **is_resolved**、
