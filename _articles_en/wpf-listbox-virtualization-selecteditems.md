@@ -16,6 +16,15 @@ If selection management depends on containers, a previously selected item can ap
 A robust approach is to keep selection state on the **data items**, not on the visual containers.  
 Add an `IsSelected` property to each item ViewModel and bind `ListBoxItem.IsSelected` to it with two-way binding.  
 
+## Prerequisites / Environment
+
+- Framework / Language: .NET 6 or later / C# 10  
+- Target control: WPF `ListBox` (`System.Windows.Controls`)  
+- Architecture: MVVM (item ViewModels that expose `IsSelected`)  
+
+The examples assume a collection of roughly 10,000 items bound to the `ListBox` with UI virtualization enabled, which is the default for `ListBox`.  
+`SelectionMode` is set to `Extended` so multiple items can be selected.  
+
 ## Why the issue happens
 
 With ListBox virtualization, containers are not guaranteed to stay alive.  
@@ -140,6 +149,12 @@ For large lists, keep it `True` unless pixel-based scrolling is explicitly requi
 
 Using `ItemContainerGenerator.ContainerFromIndex` or walking the visual tree makes selection logic fragile under virtualization and container recycling.  
 Keep selection state in the data layer.  
+
+### 4. Do not read the selection from containers
+
+`ListBox.SelectedItems` reflects the selection even for items that virtualization has not realized.  
+Code that enumerates containers to collect the selection, by contrast, misses off-screen items.  
+Derive the selection from `IsSelected`, as `GetSelectedItems` above does.  
 
 ## Summary
 
