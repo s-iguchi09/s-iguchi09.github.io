@@ -30,11 +30,13 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 ## Phase 2. PR 作成
 
 1. **既存の PR を確認する(重複作成の防止)。** PR 作成前に、現在のブランチから `main` 宛ての
-   オープンな PR が既に存在しないかを `mcp__github__list_pull_requests`(`head` にブランチを指定)で検索する。
-   - **既にオープンな PR があれば、それを再利用する。** `create_pull_request` は再実行せず、その PR 番号で
+   オープンな PR が既に存在しないかを `mcp__github__list_pull_requests`(`head` にブランチ、`base` に `main` を指定)で検索する。
+   - **ベースが `main` の PR だけを対象にする。** `head` だけで絞ると、同じブランチから別ベース向けに
+     作られた PR を誤って再利用しかねない。`base` でも絞るか、返却結果の `base.ref == "main"` を必ず確認する。
+   - **既にオープンな `main` 宛て PR があれば、それを再利用する。** `create_pull_request` は再実行せず、その PR 番号で
      手順 3(購読)へ進む。Phase 3 のフォールバックからセッションを再開した場合など、重複した PR や
      購読を作らないためのガードである。
-   - オープンな PR が無い場合のみ、手順 2 で新規作成する。
+   - 該当するオープンな PR が無い場合のみ、手順 2 で新規作成する。
 
 2. **PR を作成する。** GitHub MCP(`mcp__github__create_pull_request`)で `main` 宛の PR を作成する。
    - リポジトリに PR テンプレート(`.github/pull_request_template.md` 等)があれば、その見出し構成に沿って本文を埋める。
