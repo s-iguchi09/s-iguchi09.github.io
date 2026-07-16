@@ -67,7 +67,7 @@ priceCol.SortDirection = ListSortDirection.Descending;
 
 ## ListCollectionView によるカスタムソート
 
-大文字小文字を区別しない文字列ソートや計算プロパティによる並び替えなど、標準の `SortDescription` では表現できない比較規則が必要なケースでは `ListCollectionView.CustomSort` を使う。
+大文字小文字を区別しない文字列ソートや、public プロパティとして公開されていない式による並び替えなど、標準の `SortDescription` では表現できない比較規則が必要なケースでは `ListCollectionView.CustomSort` を使う（`SortDescription` は getter が値を計算する public プロパティなら並び替えできるが、プロパティとして公開されていない比較には対応できない）。
 なお、複数キーによる多段ソートは `SortDescriptions` に複数の `SortDescription` を追加すれば表現できるため、`CustomSort` は不要である。
 ここで注意が必要なのは戻り値の型である。
 `CollectionViewSource.GetDefaultView` が返すのは `ICollectionView` であり、この型は `CustomSort` を公開していない。
