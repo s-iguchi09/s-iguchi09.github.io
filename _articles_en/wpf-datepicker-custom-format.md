@@ -8,8 +8,7 @@ excerpt: "A practical guide to changing the date display format of WPF DatePicke
 
 ## Overview
 
-By default, the WPF `DatePicker` renders selected dates using the system locale format (e.g.  
-`4/15/2026` on en-US).  
+By default, the WPF `DatePicker` renders selected dates using the system locale format (e.g. `4/15/2026` on en-US).  
 This behavior is inconvenient when an application must present dates in a fixed layout regardless of the machine's regional settings, such as `yyyy/MM/dd` for logs or `dd MMM yyyy` for reports.  
 This article shows how to customise that format so the control always renders dates in the format the application requires, and compares the trade-offs of each approach.  
 
