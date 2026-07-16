@@ -3,7 +3,7 @@ layout: article-en
 title: "Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework"
 date: 2026-07-10
 category: C#
-excerpt: "A guide to safely backporting the four LINQ methods added between .NET Framework 4.8 and .NET 5 — Append, Prepend, TakeLast, and SkipLast — including the lazy-evaluation pitfall, algorithm walkthrough, and a zero-effort migration path using conditional compilation."
+excerpt: "Backporting Append, Prepend, TakeLast, and SkipLast to .NET Framework as polyfills, using conditional compilation for a zero-cost migration path."
 ---
 
 ## Overview

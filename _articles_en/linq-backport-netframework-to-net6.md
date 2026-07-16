@@ -3,7 +3,7 @@ layout: article-en
 title: "Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework"
 date: 2026-07-13
 category: C#
-excerpt: "A guide to safely backporting the four LINQ methods added in .NET 6 — Chunk, MaxBy, MinBy, and DistinctBy — to .NET Framework, using #nullable enable and conditional compilation for a zero-cost migration path."
+excerpt: "Backporting Chunk, MaxBy, MinBy, and DistinctBy to .NET Framework as polyfills, using #nullable enable and conditional compilation for a zero-cost migration."
 ---
 
 ## Overview

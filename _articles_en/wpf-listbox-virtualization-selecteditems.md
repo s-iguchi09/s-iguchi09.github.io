@@ -3,7 +3,7 @@ layout: article-en
 title: "How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox"
 date: 2026-04-24
 category: WPF
-excerpt: "Learn why ListBox selection can appear to disappear when UI virtualization is enabled, and how to keep selection state stable with an IsSelected-based MVVM pattern (including Shift-range selection)."
+excerpt: "Why ListBox selection appears to vanish under UI virtualization, and how an IsSelected-based MVVM pattern keeps it stable, including Shift-range selection."
 ---
 
 ## Overview
@@ -42,6 +42,8 @@ For stable MVVM-friendly multi-selection, add an `IsSelected` property to every 
 
 ### Item ViewModel sample
 
+Implement `IsSelected` with change notification on the ViewModel that represents each row.  
+
 ```csharp
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -77,7 +79,11 @@ public class RowItemViewModel : INotifyPropertyChanged
 }
 ```
 
+Without change notification on `IsSelected`, the two-way binding from `ListBoxItem.IsSelected` fails to synchronize on initial display and when containers are regenerated, so implementing `INotifyPropertyChanged` is mandatory.  
+
 ### Screen ViewModel sample
+
+Hold the entire list and expose the selected items from the data side.  
 
 ```csharp
 using System.Collections.ObjectModel;
@@ -100,7 +106,11 @@ public class MainViewModel
 }
 ```
 
+`GetSelectedItems` walks the data rather than the containers, so it always returns the correct selection regardless of scroll position or virtualization state.  
+
 ### XAML sample
+
+Bind `ListBoxItem.IsSelected` to each item's `IsSelected` with two-way binding through `ItemContainerStyle`.  
 
 ```xml
 <ListBox ItemsSource="{Binding Items}"
@@ -125,6 +135,8 @@ public class MainViewModel
     </ListBox.ItemContainerStyle>
 </ListBox>
 ```
+
+Even when a container is regenerated, the binding re-reads the `IsSelected` value and restores the selection state.  
 
 ## Shift-range selection support
 
@@ -168,3 +180,6 @@ A robust solution is:
 - keep `CanContentScroll="True"` so virtualization remains active
 
 With this pattern, selection remains stable even in a virtualized ListBox, including Shift-range selection.  
+
+This composition suits multi-selection over lists of thousands to tens of thousands of items.  
+For a small list with few selections and no need for virtualization, using the standard `SelectedItems` directly is simpler.  

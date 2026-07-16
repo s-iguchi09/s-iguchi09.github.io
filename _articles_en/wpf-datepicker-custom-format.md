@@ -40,7 +40,7 @@ For full control, the control template's `DatePickerTextBox` must be targeted th
 </DatePicker>
 ```
 
-The separators are escaped as `\/` so they render literally. Left unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, which would break the fixed layout the article aims for.  
+The separators are escaped as `\/` so they render literally. Left unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, which would break the fixed layout the article aims for. The same effect can be achieved by quoting the separators as `'/'` (for example `yyyy'/'MM'/'dd`), the form used later in this article.  
 
 ## Setting the Format in Code-Behind
 
