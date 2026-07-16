@@ -1,7 +1,7 @@
 ---
 layout: article-en
 title: "Backporting LeftJoin, RightJoin and Shuffle to .NET Framework"
-date: 2026-07-17
+date: 2026-07-16
 category: C#
 excerpt: "Backporting the .NET 10 LeftJoin, RightJoin, and Shuffle operators to .NET Framework with #nullable enable and conditional compilation."
 ---

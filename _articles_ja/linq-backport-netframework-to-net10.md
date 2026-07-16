@@ -1,7 +1,7 @@
 ---
 layout: article-ja
 title: "LeftJoin・RightJoin・Shuffle を .NET Framework にバックポートする"
-date: 2026-07-17
+date: 2026-07-16
 category: C#
 excerpt: ".NET 10 で追加された LeftJoin・RightJoin・Shuffle を、#nullable enable と条件付きコンパイルを用いて .NET Framework へ拡張メソッドで実装し、本家と同じ使用感で利用する方法を解説する。"
 ---
