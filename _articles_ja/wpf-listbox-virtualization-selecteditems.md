@@ -19,6 +19,7 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 - フレームワーク / 言語: .NET 6 以降 / C# 10
 - 対象コントロール: WPF `ListBox`(`System.Windows.Controls`)
 - アーキテクチャ: MVVM(各アイテム ViewModel が `IsSelected` を公開する)
+- OS: Windows(WPF は Windows 専用)
 
 以降の例では、UI 仮想化が有効な状態(`ListBox` の既定)で、1 万件規模のコレクションを `ListBox` にバインドすることを前提とする。
 `SelectionMode` は複数選択を扱う `Extended` を用いる。
@@ -79,7 +80,7 @@ public class RowItemViewModel : INotifyPropertyChanged
 }
 ```
 
-`IsSelected` の変更通知がないと、`ListBoxItem.IsSelected` からの TwoWay バインドが初期表示や再生成時に同期しないため、`INotifyPropertyChanged` の実装は必須である。
+`IsSelected` の変更通知は、ViewModel 側で選択状態を変更したときに、実体化済みの `ListBoxItem` へ反映するために必要となる。初期表示やコンテナ再生成の際はバインドが現在値を読み取るため通知は不要だが、双方向に同期させるうえで `INotifyPropertyChanged` を実装しておく。
 
 ### 画面全体の ViewModel の例
 
@@ -106,7 +107,7 @@ public class MainViewModel
 }
 ```
 
-`GetSelectedItems` はコンテナではなくデータを走査するため、スクロール位置や仮想化の状態に関わらず、常に正しい選択集合を返す。
+`GetSelectedItems` はコンテナではなくデータ(`IsSelected`)を走査するため、スクロール位置や仮想化の状態に関わらず、`IsSelected` に反映済みの選択を漏れなく取得できる。
 
 ### XAML の例
 
@@ -166,6 +167,11 @@ public class MainViewModel
 `ListBox.SelectedItems` は、仮想化で実体化されていないアイテムも含めて選択を反映する。
 一方、コンテナを列挙して選択を集計するコードは、画面外のアイテムを取りこぼす。
 選択集合は上記 `GetSelectedItems` のように `IsSelected` から求める。
+
+### 5. 画面外アイテムへの範囲選択には同期の限界がある
+
+仮想化で実体化されていないアイテムにはコンテナが存在しないため、`Shift` による範囲選択が画面外のアイテムに及ぶ場合、その `IsSelected` が即座に更新されないことがある。
+厳密な選択同期が必要な場合は、`SelectionChanged` イベントで `e.AddedItems` / `e.RemovedItems` を処理し、データ側の `IsSelected` へ明示的に反映する。
 
 ## まとめ
 

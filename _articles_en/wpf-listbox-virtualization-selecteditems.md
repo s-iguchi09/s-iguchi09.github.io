@@ -21,6 +21,7 @@ Add an `IsSelected` property to each item ViewModel and bind `ListBoxItem.IsSele
 - Framework / Language: .NET 6 or later / C# 10  
 - Target control: WPF `ListBox` (`System.Windows.Controls`)  
 - Architecture: MVVM (item ViewModels that expose `IsSelected`)  
+- OS: Windows (WPF is Windows-only)  
 
 The examples assume a collection of roughly 10,000 items bound to the `ListBox` with UI virtualization enabled, which is the default for `ListBox`.  
 `SelectionMode` is set to `Extended` so multiple items can be selected.  
@@ -79,7 +80,7 @@ public class RowItemViewModel : INotifyPropertyChanged
 }
 ```
 
-Without change notification on `IsSelected`, the two-way binding from `ListBoxItem.IsSelected` fails to synchronize on initial display and when containers are regenerated, so implementing `INotifyPropertyChanged` is mandatory.  
+Change notification on `IsSelected` is needed to push a selection change made on the ViewModel to a realized `ListBoxItem`. On initial display and when a container is regenerated the binding reads the current value, so notification is not required for that path, but implementing `INotifyPropertyChanged` keeps the two directions in sync.  
 
 ### Screen ViewModel sample
 
@@ -106,7 +107,7 @@ public class MainViewModel
 }
 ```
 
-`GetSelectedItems` walks the data rather than the containers, so it always returns the correct selection regardless of scroll position or virtualization state.  
+`GetSelectedItems` walks the data (`IsSelected`) rather than the containers, so regardless of scroll position or virtualization state it collects every selection that has been reflected into `IsSelected`.  
 
 ### XAML sample
 
@@ -167,6 +168,11 @@ Keep selection state in the data layer.
 `ListBox.SelectedItems` reflects the selection even for items that virtualization has not realized.  
 Code that enumerates containers to collect the selection, by contrast, misses off-screen items.  
 Derive the selection from `IsSelected`, as `GetSelectedItems` above does.  
+
+### 5. Range selection over off-screen items has synchronization limits
+
+Because virtualization does not realize a container for off-screen items, a `Shift` range selection that spans off-screen items may not update their `IsSelected` immediately.  
+When exact selection synchronization is required, handle the `SelectionChanged` event and reflect `e.AddedItems` / `e.RemovedItems` into `IsSelected` on the data side.  
 
 ## Summary
 

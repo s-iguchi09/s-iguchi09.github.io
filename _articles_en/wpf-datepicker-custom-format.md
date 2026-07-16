@@ -56,6 +56,10 @@ private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEvent
         datePicker.Text = datePicker.SelectedDate.Value
             .ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
     }
+    else
+    {
+        datePicker.Text = string.Empty;
+    }
 }
 ```
 

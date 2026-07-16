@@ -59,6 +59,10 @@ private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEvent
         datePicker.Text = datePicker.SelectedDate.Value
             .ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
     }
+    else
+    {
+        datePicker.Text = string.Empty;
+    }
 }
 ```
 
@@ -116,7 +120,7 @@ public class DateFormatConverter : IValueConverter
 
 ## 注意点
 
-- XAML の `StringFormat` 方式が変えるのは表示テキストだけである。基となる `SelectedDate` の値は変わらないため、日付を直接読むバインドには影響しない。
+- XAML の `StringFormat` 方式が変えるのは表示テキストだけである。基となる `SelectedDate` の値は変わらないため、日付を直接参照するバインドには影響しない。
 - `SelectedDateChanged` 方式は `Text` プロパティを手動で上書きする。ユーザーがボックスに入力し直したときも双方向の解析が成立する必要があるため、パーサーが往復変換できない形式は避ける。
 - 日付未選択のとき `string.Empty` を返すコンバーターにしておくと、`NullReferenceException` を防げる。
 

@@ -67,7 +67,8 @@ priceCol.SortDirection = ListSortDirection.Descending;
 
 ## ListCollectionView によるカスタムソート
 
-大文字小文字を区別しない文字列ソート、複数キーの組み合わせ、計算プロパティによる並び替えなど、標準の `SortDescription` で表現できないケースでは `ListCollectionView.CustomSort` を使う。
+大文字小文字を区別しない文字列ソートや計算プロパティによる並び替えなど、標準の `SortDescription` では表現できない比較規則が必要なケースでは `ListCollectionView.CustomSort` を使う。
+なお、複数キーによる多段ソートは `SortDescriptions` に複数の `SortDescription` を追加すれば表現できるため、`CustomSort` は不要である。
 ここで注意が必要なのは戻り値の型である。
 `CollectionViewSource.GetDefaultView` が返すのは `ICollectionView` であり、この型は `CustomSort` を公開していない。
 インメモリのコレクションでは具象型が `ListCollectionView` になるが、`DataView` などをソースとするビューはそうではない。
@@ -82,7 +83,7 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 ```
 
 `CustomSort` は `SortDescriptions` より優先される。
-このため、両方を切り替える場合は先に `SortDescriptions.Clear()` を呼び出す。
+標準の `SortDescriptions` によるソートへ戻す場合、`SortDescriptions.Clear()` だけでは `CustomSort` が残るため、先に `view.CustomSort = null` を設定してから `SortDescriptions` を構成する。
 
 ## 注意点
 
