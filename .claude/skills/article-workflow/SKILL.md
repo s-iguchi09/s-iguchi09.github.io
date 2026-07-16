@@ -192,13 +192,19 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
          この確認から `merge_pull_request` 実行までの間に発生する TOCTOU(time-of-check-to-time-of-use)を
          避けるため、**新しい push・コミット・レビューコメント・check run が 1 件でも見つかった
          場合は、マージを中止してチェックリストを最初からやり直す**。差分が無い場合のみ次へ進む。
-   - [ ] **原子性の限界を理解し、マージ方式に合った成功判定を行う。** 再取得とマージの間には
-         理論上の race window が残る。本来は「確認した HEAD SHA に一致する場合のみマージする」
-         条件付きマージが望ましいが、現行の `mcp__github__merge_pull_request` は SHA 条件付けの
-         引数を持たないため、サーバー側で原子的に保証することはできない。この制約を踏まえ、
-         **再取得から `merge_pull_request` 呼び出しまでは他の操作を挟まず最短で実行する**。
-         成功判定は **マージ方式に合わせる**: `squash` / `rebase` では PR の head SHA が `main` の
-         履歴に残らないため「head SHA が履歴に含まれる」では判定できない。代わりに、
+   - [ ] **TOCTOU の権威はサーバー側の原子ガードに置く。** クライアント側の再取得＋事後検証
+         だけでは、最終確認から `merge_pull_request` 実行までの間に push が入った場合に、未レビューの
+         head がマージされるのを防げない(事後検出は `main` を保護しない)。現行の
+         `mcp__github__merge_pull_request` は SHA 条件付けの引数を持たないため、真の原子性は
+         **GitHub のブランチ保護に委ねる**: `main` に「必須ステータスチェック(CI と CodeRabbit の
+         `Review completed` など)」と「Require branches to be up to date before merging」を設定する。
+         これがあれば、確認後に head が変わったりチェックが未グリーンになった時点で
+         `merge_pull_request` はサーバー側で拒否され、原子的に安全となる。
+   - [ ] **サーバー側ガードが無い場合は自動マージしない。** 上記のブランチ保護が構成されておらず、
+         厳密な保証が必要な場合は、事後検出に依存して自動マージを実行してはならない。
+         **`merge_pull_request` を呼ばずに中止し、状況をユーザーへ報告して判断を仰ぐ。**
+   - [ ] **マージ後の成功判定はマージ方式に合わせる(実行した場合)。** `squash` / `rebase` では
+         PR の head SHA が `main` の履歴に残らないため「head SHA が履歴に含まれる」では判定できない。
          `merge_pull_request` の応答(`merged: true` とマージコミット SHA)を確認し、続けて
          `pull_request_read`(`get`)で PR 状態が `MERGED`、かつ **マージ済みの head が事前
          スナップショットで控えた HEAD SHA と一致**することを確認する。想定と異なる head が
