@@ -417,7 +417,14 @@ h2 {
   tab-size: 4;
 }
 
-/* コメント（緑） */
+/*
+   配色は Visual Studio（ライトテーマ）の C# / XML エディタに準拠。
+   Rouge は静的レキサのため、フレームワーク型の「使用箇所」（List, Console 等）は
+   ローカル変数と同じ .n となり黒のまま。VS は Roslyn の意味解析でこれらをティールに
+   するが、Rouge では宣言箇所と区別できないため既定色（黒）とする。
+*/
+
+/* コメント（緑・イタリック） */
 .highlight .c,
 .highlight .ch,
 .highlight .cd,
@@ -429,22 +436,22 @@ h2 {
 .highlight .cp { color: #808080; }
 .highlight .cpf { color: #a31515; }
 
-/* キーワード（青） */
+/* キーワード・組み込み型（青）
+   VS では int / string / bool / var / void も「キーワード＝青」 */
 .highlight .k,
 .highlight .kc,
 .highlight .kd,
 .highlight .kn,
 .highlight .kp,
-.highlight .kr { color: #0000ff; }
-
-/* 型・組み込み型・クラス名・名前空間（ティール） */
+.highlight .kr,
 .highlight .kt,
-.highlight .nc,
-.highlight .nn,
-.highlight .nb { color: #2b91af; }
+.highlight .bp,
+.highlight .ow { color: #0000ff; }
 
-/* this / base などの擬似変数（青） */
-.highlight .bp { color: #0000ff; }
+/* ユーザー定義型・クラス／例外型の宣言名（ティール） */
+.highlight .nc,
+.highlight .ne,
+.highlight .nd { color: #2b91af; }
 
 /* メソッド・関数名（ブラウン） */
 .highlight .nf,
@@ -466,18 +473,23 @@ h2 {
 .highlight .s1,
 .highlight .ss { color: #a31515; }
 
-/* 数値（VS Code ライク／green） */
-.highlight .m,
-.highlight .mb,
-.highlight .mf,
-.highlight .mh,
-.highlight .mi,
-.highlight .il,
-.highlight .mo { color: #098658; }
+/* 数値: VS は既定色（黒）で数値を色付けしないため、既定のまま */
 
-/* XML / HTML: タグ名・属性名 */
+/* XML / HTML: 要素名・属性名 */
 .highlight .nt { color: #800000; }
 .highlight .na { color: #ff0000; }
+
+/* XML の属性値は VS の XML エディタに合わせて青 */
+.content-section .language-xml .s,
+.content-section .language-html .s,
+.content-section .language-xaml .s { color: #0000ff; }
+
+/* diff（追加＝緑 / 削除＝赤 / ヘッダ＝グレー） */
+.highlight .gi { color: #008000; }
+.highlight .gd { color: #a31515; }
+.highlight .gh,
+.highlight .gu,
+.highlight .gp { color: #808080; }
 
 /* エラートークンは見た目を崩さないよう装飾なし */
 .highlight .err { color: inherit; background: none; }
