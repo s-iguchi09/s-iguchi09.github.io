@@ -52,6 +52,10 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
    - CI 成功・新規 push・マージコンフリクトの遷移は Webhook で届かないことがあるため、
      長時間反応が無い場合は `send_later`(claude-code-remote MCP)で 1 時間程度先のセルフチェックインを
      予約し、発火時に PR の状態・CI・レビューを再取得する。
+   - **`send_later` が使えない環境でのフォールバック。** claude-code-remote MCP が無い等で
+     セルフチェックインを予約できない場合は、`sleep` ポーリングはせず、ユーザーへ状況を報告して
+     再開の指示を仰ぐ。指示を受けた時点で `mcp__github__pull_request_read`
+     (`get_status` / `get_check_runs` / `get_review_comments`)を手動で再取得し、Phase 3 を続行する。
 
 2. **自動レビューボットの完了を必ず待つ。** `coderabbitai` などは push のたびに再レビューを始め、
    完了まで数分かかる。**「review in progress」「Currently processing…」などの処理中表示が出ている間は、
