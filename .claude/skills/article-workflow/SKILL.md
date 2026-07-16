@@ -183,7 +183,12 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    - [ ] Copilot 再レビューが完了し、未解決スレッドがゼロ。
    - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
          actionable な未解決指摘がゼロ。
-   - [ ] 上記の確認後、新たな push・コメントが届いていない。
+   - [ ] **マージ実行の直前**に、`mcp__github__pull_request_read`(`get_status` /
+         `get_check_runs` / `get_review_comments`)で最新状態を再取得する。この確認から
+         `merge_pull_request` 実行までの間に発生する TOCTOU(time-of-check-to-time-of-use)を
+         避けるため、**再取得で新しい push・コミット・レビューコメントが 1 件でも見つかった
+         場合は、マージを中止してチェックリストを最初からやり直す**。変更が無いことを
+         確認できた場合にのみマージする。
 
    > 画面から手動で行う場合は、PR の「Reviewers」欄にある Copilot 横の 🔄(Re-request review)
    > から再レビューを要求できる。
