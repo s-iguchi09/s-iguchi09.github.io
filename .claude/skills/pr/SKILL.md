@@ -62,20 +62,19 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 1. **レビューの Webhook 通知を待つ。** PR 作成後、Copilot や CodeRabbit 等の自動レビューが始まる。
    - **`sleep` でのポーリングはしない。** レビューコメントや CI 結果は
      `<github-webhook-activity>` イベントとしてこのセッションに届く。イベントの到着を待つ。
-   - CI 成功・新規 push・マージコンフリクトの遷移は Webhook で届かないことがあるため、
-     長時間反応が無い場合は `send_later`(claude-code-remote MCP)で 1 時間程度先のセルフチェックインを
-     予約し、発火時に PR の状態・CI・レビューを再取得する。
-   - **`send_later` が使えない環境でのフォールバック。** claude-code-remote MCP が無い等で
-     セルフチェックインを予約できない場合は、`sleep` ポーリングはせず、ユーザーへ状況を報告して
-     再開の指示を仰ぐ。指示を受けた時点で `mcp__github__pull_request_read`
-     (`get_status` / `get_check_runs` / `get_review_comments`)を手動で再取得し、Phase 3 を続行する。
+   - **`send_later` でのセルフチェックイン予約は行わない。** CI 成功・新規 push・マージコンフリクトの
+     遷移は Webhook で届かないことがあるが、`sleep` ポーリングも `send_later` 予約もしない。
+     長時間反応が無い場合はユーザーへ指示を仰がず、`mcp__github__pull_request_read`
+     (`get_status` / `get_check_runs` / `get_review_comments`)で状況を確認し、Phase 3 を続行する。
 
-2. **自動レビューボットの完了を必ず待つ。** `coderabbitai` などは push のたびに再レビューを始め、
-   完了まで数分かかる。**「review in progress」「Currently processing…」などの処理中表示が出ている間は、
-   絶対に次へ進まない(マージしない)。**
+2. **自動レビューボットの完了を必ず待つ。** `coderabbitai` などはレビュー要求後に処理が走り、
+   完了まで数分かかる(CodeRabbit は `auto_incremental_review: false` のため push だけでは再レビューされず、
+   `@coderabbitai review` の要求で処理が始まる)。**「review in progress」「Currently processing…」などの
+   処理中表示が出ている間は、絶対に次へ進まない(マージしない)。**
    - CI がグリーンでも、walkthrough や「Pre-merge checks passed」だけを根拠に指摘ゼロと判断しない。
      これらは中間シグナルで、後から actionable な指摘が追加されることがある。
-   - 判断が付かない場合は数分待って再確認する(セルフチェックインの再予約)。
+   - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
+     状況を確認して進める(ユーザーへ指示を仰がない)。
 
 3. **指摘・CI 失敗を修正する。** レビュー指摘または CI 失敗があるたびに:
    - 原因を診断してコード・記事・設定を修正する。
@@ -93,10 +92,14 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
    - スレッド ID は `mcp__github__pull_request_read`(`method: "get_review_comments"`)の各スレッドの `id` で取得する。
      修正で行が変わると `is_outdated` になるが、`is_resolved` は手動で解決するまで `false` のままである点に注意する。
 
-5. **再レビューを依頼する。** 修正して push したら、レビューを明示的に再実行させる。
+5. **再レビューを依頼する。** 修正して push したら、**再レビュー依頼はレビュアーに対してのみ**行えばよい。
+   ただし **MarkdownLint(`Lint Markdown` CI)も併せて再レビュー(再実行結果の確認)する**。
    - **Copilot** — push では自動再レビューされない(PR 作成時に 1 回走るだけ)。
      `mcp__github__request_copilot_review` で再レビューを要求する。
-   - **CI(`Lint Markdown` 等)** — `pull_request` トリガーで push のたびに自動再実行される。
+   - **CodeRabbit** — `.coderabbit.yaml` で `auto_incremental_review: false` としているため、
+     push だけでは自動再レビューされない。PR に `@coderabbitai review` とコメントして明示的に再レビューを要求する。
+   - **MarkdownLint(`Lint Markdown` CI)** — `pull_request` トリガーで push のたびに自動再実行される。
+     レビュアーの再レビューと併せて、この CI の再実行結果(グリーン)も必ず確認する。
    - 再レビューで新たな指摘が来たら、手順 3〜5 を繰り返す。
    - **新たな指摘が無くなるまで**、「修正 push → 再レビュー依頼 → 対応・解決」を繰り返す
      (直近コミットに対する未解決スレッドがゼロになるまで)。
@@ -173,16 +176,18 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 Phase 1  コミット & プッシュ
 Phase 2  PR 作成 → subscribe_pr_activity で購読
 Phase 3  レビュー待ち(Webhook)→ 指摘修正 → 再レビュー依頼  ── 指摘ゼロまでループ
-           (修正 push 後は Copilot 再レビューを要求、対応済みスレッドは解決済みにする)
+           (修正 push 後はレビュアー(Copilot / CodeRabbit)へ再レビューを要求し、MarkdownLint も併せて再確認、
+            対応済みスレッドは解決済みにする)
 Phase 4  マージ直前チェックリスト → マージ →(head ブランチは GitHub が自動削除)→ 購読解除 → 完了報告
 ```
 
 ## 判断の原則
 
 - **指摘は件数を絞らない。** 見つけたものはすべて解消する。
-- **`sleep` でポーリングしない。** レビュー・CI の結果は Webhook イベントで届くので、届くものは到着を待つ。
-  ただし CI 成功・新規 push・マージコンフリクトの遷移など **Webhook で届かないイベント** もあるため、
-  それらは `send_later` でのセルフチェックインや購読直後の再取得(Phase 2 手順 3)で補う。
+- **`sleep` でポーリングせず、`send_later` での予約もしない。** レビュー・CI の結果は Webhook イベントで
+  届くので、届くものは到着を待つ。CI 成功・新規 push・マージコンフリクトの遷移など **Webhook で届かない
+  イベント** は、購読直後の再取得(Phase 2 手順 3)や、長時間反応が無い場合の `mcp__github__pull_request_read`
+  での状況確認で補う(ユーザーへ指示を仰がず自分で確認して進める)。
 - **対応を終えたレビュー指摘はスレッドを解決済みにする。** マージ前に未解決スレッドを残さない。
 - **処理中の自動レビューボットがある間はマージしない。** 中間シグナルでマージ判断をしない。
 - **リモートブランチの手動削除コマンドは実行しない**(Web 環境では 403 で必ず失敗する)。head ブランチの削除は自動削除に任せる。

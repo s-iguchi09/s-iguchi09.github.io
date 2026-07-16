@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+# CodeRabbit 設定ファイル
+# 参考: https://docs.coderabbit.ai/reference/configuration
+
+# レビュー指摘を日本語で行う
+language: ja
+
+reviews:
+  auto_review:
+    # インクリメンタルレビューを無効化し、指摘を 1 回のレビューにまとめる
+    # (push のたびに自動再レビューはされなくなるため、再レビューは明示的に依頼する)
+    auto_incremental_review: false
