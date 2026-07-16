@@ -95,6 +95,15 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
    - **新たな指摘が無くなるまで**、「修正 push → 再レビュー依頼 → 対応・解決」を繰り返す
      (直近コミットに対する未解決スレッドがゼロになるまで)。
 
+6. **マージコンフリクトを検知したら、マージのブロッカーとして解消する。** `main` が先行して
+   PR が競合状態(`mcp__github__pull_request_read`(`get`)の `mergeable_state` が `dirty` 等)になったら、
+   マージ不可のブロッカーとして扱い、解消するまで Phase 4 へ進まない。
+   - `git fetch origin main` で最新の `main` を取得し、作業ブランチへ取り込む(`git merge origin/main`
+     または `git rebase origin/main`)。
+   - 競合を解消してコミットし、`git push`(rebase した場合は `--force-with-lease`)する。
+   - push により CI は自動再実行される。必要なら Copilot 等へ再レビューを要求する。
+   - 解消後は手順 1〜5 のレビュー・CI ループへ戻り、再び指摘ゼロ・グリーンを確認する。
+
 > 画面から手動で行う場合は、PR の「Reviewers」欄にある Copilot 横の 🔄(Re-request review)から再レビューを要求できる。
 
 ---
