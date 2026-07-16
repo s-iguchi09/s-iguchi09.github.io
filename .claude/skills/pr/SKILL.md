@@ -67,9 +67,10 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
      長時間反応が無い場合はユーザーへ指示を仰がず、`mcp__github__pull_request_read`
      (`get_status` / `get_check_runs` / `get_review_comments`)で状況を確認し、Phase 3 を続行する。
 
-2. **自動レビューボットの完了を必ず待つ。** `coderabbitai` などは push のたびに再レビューを始め、
-   完了まで数分かかる。**「review in progress」「Currently processing…」などの処理中表示が出ている間は、
-   絶対に次へ進まない(マージしない)。**
+2. **自動レビューボットの完了を必ず待つ。** `coderabbitai` などはレビュー要求後に処理が走り、
+   完了まで数分かかる(CodeRabbit は `auto_incremental_review: false` のため push だけでは再レビューされず、
+   `@coderabbitai review` の要求で処理が始まる)。**「review in progress」「Currently processing…」などの
+   処理中表示が出ている間は、絶対に次へ進まない(マージしない)。**
    - CI がグリーンでも、walkthrough や「Pre-merge checks passed」だけを根拠に指摘ゼロと判断しない。
      これらは中間シグナルで、後から actionable な指摘が追加されることがある。
    - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
