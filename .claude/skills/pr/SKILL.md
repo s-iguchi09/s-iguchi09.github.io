@@ -20,7 +20,8 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 1. **変更をコミットする。** 未コミットの変更があればコミットする。
    追加の変更が無い場合はコミットを省略する(`nothing to commit` で止めない)。
 
-2. **プッシュする。** `git push -u origin <branch>` で作業ブランチへ push する。
+2. **プッシュする。** `git push -u origin "<branch>"` で作業ブランチへ push する。
+   - ブランチ名は必ずクォートして渡す(シェルのメタ文字によるコマンドインジェクションを防ぐ)。
    - ネットワークエラー時は 2s/4s/8s/16s の指数バックオフで最大 4 回リトライする。
    - 未 push のコミットが残っていれば push してから Phase 2 へ進む。
 
@@ -129,15 +130,22 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
       各レビュー提出(`get_reviews`)の ID と **state**(`APPROVED` / `CHANGES_REQUESTED` / `DISMISSED` 等)。
 - [ ] **マージ実行の直前に最新状態を再取得し、スナップショットと照合する。**
       `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments` / `get_reviews`)で再取得し、
+      各対象(check run・レビュースレッド・レビュー提出)の **完全な ID セット** を突き合わせる。
       以下のいずれかが 1 件でもあれば **マージを中止してチェックリストを最初からやり直す**:
-      新しい push・コミット・レビューコメント・check run の追加、**既存 check run の status/conclusion の変化**、
-      **既存レビュースレッドの is_resolved の変化**、
-      **既存レビュー提出の state の変化**(`APPROVED` / `CHANGES_REQUESTED` / dismissal。新規コメントや check run を伴わず、
-      同じ ID のまま state だけが変わる場合も含む)。
+      新しい push・コミット・レビューコメント・check run の **追加または削除**、**既存 check run の status/conclusion の変化**、
+      **既存レビュースレッドの追加・削除・is_resolved の変化**、
+      **既存レビュー提出の追加・削除・state の変化**(`APPROVED` / `CHANGES_REQUESTED` / dismissal。新規コメントや check run を
+      伴わず、同じ ID のまま state だけが変わる場合や、スナップショットにあった項目が消えた場合も含む)。
       差分が無い場合のみ次へ進む(TOCTOU 回避)。
 - [ ] **サーバー側ガードが無い場合は自動マージしない。** `main` にブランチ保護(必須ステータスチェック・
       Require branches to be up to date)が構成されておらず、厳密な保証が必要な場合は、
       `merge_pull_request` を呼ばずに中止してユーザーへ報告し、判断を仰ぐ。
+
+> **マージ認可について:** 本スキルは `article-workflow` と同様、上記チェックリストをすべて満たしたら
+> **マージ直前の追加確認なしで自動マージする** 設計である。スキルの起動そのものがマージの認可にあたる
+> (ユーザーがこのワークフローの実行を指示した時点で、チェックリスト充足後のマージまでを許可している)。
+> ただしチェックリストの各項目(特に「サーバー側ガードが無い場合は自動マージしない」)や、
+> 修正方針に重大な曖昧さがある場合の `AskUserQuestion` は引き続き適用され、無条件の autonomy ではない。
 
 チェックリストを満たしたら:
 
@@ -148,7 +156,7 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 3. **リモートブランチ削除は GitHub の自動削除に任せる(手動削除コマンドは実行しない)。**
    本リポジトリは「Automatically delete head branches」が有効なため、マージすると head ブランチは自動削除される。
    > ⚠️ Web 実行環境ではリモートブランチの手動削除はできない(`git push origin --delete` も REST API も 403 で失敗する)。試みない。
-4. **ローカルの作業ブランチ**は不要なら削除してよい(`git branch -d <branch>`)。
+4. **ローカルの作業ブランチ**は不要なら削除してよい(`git branch -d "<branch>"`。ブランチ名はクォートして渡す)。
 5. **購読を解除する。** `unsubscribe_pr_activity` で PR の監視を終了する。
 6. 完了をユーザーへ日本語で報告する(PR 番号・マージ済みである旨)。
 
