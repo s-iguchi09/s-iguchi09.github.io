@@ -251,6 +251,25 @@ h2 {
   overflow-x: auto;
   display: block;
   max-width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.content-section table:not(.prop-table) th,
+.content-section table:not(.prop-table) td {
+  border: 1px solid var(--border);
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.content-section table:not(.prop-table) th {
+  background: #f0f4fb;
+  font-weight: 600;
+}
+
+.content-section table:not(.prop-table) tr:hover {
+  background: #f9fbff;
 }
 
 .content-section pre {
