@@ -3,7 +3,7 @@ layout: article-en
 title: "Implementing INotifyPropertyChanged Concisely with CallerMemberName"
 date: 2026-07-16
 category: C#
-excerpt: "Eliminate the verbosity of passing property-name strings when implementing INotifyPropertyChanged by using the CallerMemberName attribute. This article covers the difference from nameof, a SetProperty helper, and the limits of dependent-property notification."
+excerpt: "Make INotifyPropertyChanged concise with the CallerMemberName attribute, covering nameof differences, SetProperty helper, and dependent-property notification."
 ---
 
 ## Overview
@@ -143,6 +143,11 @@ public class ViewModelBase : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
@@ -151,7 +156,7 @@ public class ViewModelBase : INotifyPropertyChanged
         }
 
         field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        OnPropertyChanged(propertyName);
         return true;
     }
 }
@@ -167,8 +172,9 @@ public class PersonViewModel : ViewModelBase
 }
 ```
 
+This `ViewModelBase` holds both `OnPropertyChanged` and `SetProperty`, so it is the complete base class reused in the following sections.
 `SetProperty` compares the current and new values with `EqualityComparer<T>.Default` and returns `false` without notifying when they are equal.
-When the value changes, it updates the field, raises `PropertyChanged`, and returns `true`.
+When the value changes, it updates the field, calls `OnPropertyChanged`, and returns `true`.
 The `bool` return value can be used to conditionally raise additional notifications for dependent properties, described below.
 This shape matches the `SetProperty` provided by `ObservableObject` in `CommunityToolkit.Mvvm` and is easy to reproduce in a custom base class.
 
@@ -178,6 +184,7 @@ This shape matches the `SetProperty` provided by `ObservableObject` in `Communit
 
 `CallerMemberName` fills in only the caller's own member name.
 Notifying a different property, such as a computed property derived from others, requires passing that name explicitly.
+Here, a dependent property means a read-only property that derives its value from other properties, which is a separate concept from a WPF dependency property (`DependencyProperty`).
 
 ```csharp
 public class PersonViewModel : ViewModelBase
@@ -221,7 +228,7 @@ public class PersonViewModel : ViewModelBase
 ## Notes
 
 - `CallerMemberName` applies only to methods with an optional parameter, and an explicit argument at the call site takes precedence over the substitution.
-- The substitution target is the caller's member name only. Calling from inside a lambda or a local function may not produce the expected property name.
+- The substituted name is the member that encloses the call site. When it is evaluated outside the setter, such as in a field initializer or a delegate passed to another member, the name will not be the intended property.
 - Notification for computed properties and indexers is not automated, so dependency relationships must be managed manually.
 - To invalidate every property at once, pass an empty string or `null` to `PropertyChangedEventArgs`; this is an explicit choice separate from the `CallerMemberName` substitution.
 
