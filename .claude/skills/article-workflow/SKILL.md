@@ -75,8 +75,10 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 ## Phase 2. サブエージェントによる反復レビュー(指摘ゼロまで)
 
 記事の下書きに対し、**指摘が無くなるまで** 以下を繰り返す。
+本リポジトリでは Copilot の自動レビューを使わない方針のため、**Copilot が担っていた構文・正確性の検証はこの Phase 2 と
+Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公開後のボット任せにせず PR 前にここで確実に潰す。
 
-1. **レビュー用サブエージェントを起動する。**`Agent` ツール(`subagent_type: "general-purpose"` など)で、
+1. **文体・構成レビュー用サブエージェントを起動する。**`Agent` ツール(`subagent_type: "general-purpose"` など)で、
    対象記事ファイルと以下のルールを渡してレビューさせる。
    - `docs/rules/article/review-checklist.md` の全項目
    - `docs/rules/article/guidelines.md` の文体・構成・必須要素
@@ -85,12 +87,26 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    > サブエージェントへの指示は「**指摘は件数を絞らず、見つけたものをすべて挙げること**」を明記する
    > (`.github/copilot-instructions.md` のコードレビュー方針に従う)。日英それぞれをレビューさせる。
 
-2. **指摘を修正する。** 返ってきた指摘をすべて記事へ反映する。
+2. **技術検証専任のサブエージェントを別途起動する(文体レビューとは別枠の独立した検証パス)。**
+   文体・構成の観点で正確性の検証が薄まらないよう、技術的な正しさだけを見る検証パスを独立して回す。
+   検証対象は記事本文に限らず、記事が含むすべてのコード例・技術的主張とする。
+   - **すべてのコード例(XAML・C#・シェル等)と記載した規則を、公式ドキュメントで裏取りすること。**
+     .NET / WPF 等は `Microsoft_Learn` MCP(`microsoft_docs_search` / `microsoft_docs_fetch`)を用いて一次情報で確認する。
+   - **出典を挙げずに「問題なし」としない。** 「確認済み」と述べるには、根拠となる公式ドキュメントの該当箇所を示すこと。
+     (過去に、裏取りせず誤った主張を『確認済み』としてしまい、公開後のレビューで指摘された実例がある。これを防ぐための規則。)
+   - 特に次を必須チェックする:
+     - **構文・エスケープ・パーサー規則**(例: XAML の `{Binding ...}` ショートハンドでの先頭 `{` の `{}` エスケープ、
+       カンマ・空白などの区切り文字の引用符保護。要否の条件を取り違えていないか)。
+     - **API の挙動・既定値**、および**機能が導入されたバージョン**の事実主張。
+     - コード例が実際にコンパイル/パース/実行できるか。
+   - 指摘は件数を絞らず、見つけたものをすべて挙げる。
 
-3. **再レビューする。** 修正後の記事を再びサブエージェントへ渡す。
-   **新たな指摘が無くなるまで** 1〜3 を繰り返す。
+3. **指摘を修正する。** 文体レビュー・技術検証の両方から返ってきた指摘をすべて記事へ反映する。
 
-4. レビューが収束したら、次フェーズへ進む前に主要な変更点を簡潔にまとめておく。
+4. **再レビューする。** 修正後の記事を再び両サブエージェントへ渡す。
+   **新たな指摘が無くなるまで** 1〜4 を繰り返す。
+
+5. レビューが収束したら、次フェーズへ進む前に主要な変更点を簡潔にまとめておく。
 
 ---
 
@@ -156,20 +172,24 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    > `npx -y markdownlint-cli2 "**/*.md"` で同じ検査を再現できる。
    > CI がグリーンになるまで修正・再 push を繰り返す。
 
-6. **修正 push のあとは Copilot レビューを再実行する。** `Lint Markdown`(CI)は
-   `pull_request` トリガーで push のたびに自動再実行される。
-   一方、**Copilot の自動レビューは push では自動再実行されない**。
-   `copilot-pull-request-reviewer` は PR 作成時に 1 回走るだけで、その後の push では再レビューされない。
-   そのため、レビュー指摘を修正して push したら、
-   `mcp__github__request_copilot_review` で Copilot に再レビューを明示的に要求する。
+6. **修正 push のあとは CodeRabbit へ再レビューを要求する。** `Lint Markdown`(CI)は
+   `pull_request` トリガーで、Markdown 関連ファイル(`**/*.md` / `.markdownlint.json` / 当該ワークフロー)を
+   変更した push でのみ自動再実行される(対象外の push では check run が作成されないため、未起動を許容する)。
+   一方、**CodeRabbit は `.coderabbit.yaml` で `auto_incremental_review: false` としているため、
+   push だけでは自動再レビューされない**。
+   そのため、レビュー指摘を修正して push したら、PR に `@coderabbitai review` とコメントして
+   明示的に再レビューを要求する。
+   - **本リポジトリでは Copilot の自動レビューを使わない方針である。** Copilot への再レビュー要求
+     (`mcp__github__request_copilot_review`)は行わない。Copilot が担っていた構文・正確性の検証は、
+     PR 前の Phase 2 技術検証パスと、CodeRabbit(`profile: assertive` + `path_instructions`)に集約している。
    - 再レビューで新たな指摘が来た場合は、手順 4〜5 と同様に修正・返信し、対応済みスレッドを
      解決済みにする。
    - **新たな指摘が無くなるまで**、「修正 push → 再レビュー要求 → 対応・解決」を繰り返す
      (直近コミットに対する未解決スレッドがゼロになるまで)。
 
-7. **自動レビューボット(CodeRabbit 等)の完了を必ず待つ。** 本リポジトリには
-   Copilot 以外に `coderabbitai` などの自動レビューボットが動作する。これらは push のたびに
-   再レビューを開始し、完了まで数分かかる。**「review in progress」「Currently processing…」
+7. **自動レビューボット(CodeRabbit 等)の完了を必ず待つ。** 本リポジトリでは
+   `coderabbitai` などの自動レビューボットが動作する。これらは再レビュー要求後に処理が走り、
+   完了まで数分かかる。**「review in progress」「Currently processing…」
    といった処理中表示が出ている間は、絶対にマージしない。**
    - CI がグリーンでも、`coderabbitai` の walkthrough や「Pre-merge checks passed」だけを
      根拠にマージしてはならない。これらは中間シグナルであり、その後に actionable な指摘が
@@ -180,18 +200,30 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 
 8. **マージ直前チェックリスト(全項目を満たすまでマージ禁止)。**
    - [ ] 最新コミットに対する `Lint Markdown`(CI)が success。
-   - [ ] Copilot 再レビューが完了し、未解決スレッドがゼロ。
+         ただし `Lint Markdown`(`.github/workflows/lint-markdown.yml`)は
+         `**/*.md` / `.markdownlint.json` / 当該ワークフローの変更時のみ起動する。
+         **これらを変更しない PR ではチェックが起動しない**ため、その場合は check run 不在(未実行)を
+         許容し、この項目は満たされたものとして扱う(記事 PR では必ず `.md` を変更するため通常は起動する)。
    - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
          actionable な未解決指摘がゼロ。
-   - [ ] **事前スナップショットを記録する。** マージ判定を始める前に、差分比較の基準として
-         現在の HEAD SHA、直近レビューコメントの ID(または投稿時刻)、check run ID を控えておく。
-         この基準が無いと「新しい変更」を判定できない。
+   - [ ] **全レビュースレッドが解決済みである**(作成者に関係なく `is_resolved == true`)。
+   - [ ] **`CHANGES_REQUESTED` のレビューが残っていない。** `get_reviews` で、dismiss されていない
+         レビュー提出に `state == CHANGES_REQUESTED` が 1 件も無いことを確認する。
+         **本文だけで紐づくスレッドが無い `CHANGES_REQUESTED` レビューでもマージをブロックする**
+         (スレッド解決の確認だけでは漏れるため)。この条件はマージ直前の再取得後にも再検証する。
+   - [ ] **事前スナップショットを記録する。** マージ判定を始める前に、差分比較の基準として次を控える:
+         現在の HEAD SHA、直近レビューコメントの ID、各 check run の ID と **status/conclusion**、
+         各レビュースレッド(`get_review_comments`)の ID と **is_resolved**、
+         各レビュー提出(`get_reviews`)の ID と **state**(`APPROVED` / `CHANGES_REQUESTED` / `DISMISSED` 等)。
+         この基準が無いと「新しい変更」や「状態だけの変化」を判定できない。
    - [ ] **マージ実行の直前に最新状態を再取得し、スナップショットと照合する。**
-         `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments`)
-         で再取得し、控えた HEAD SHA・コメント ID・check run ID と差分がないか比較する。
+         `mcp__github__pull_request_read`(`get_status` / `get_check_runs` / `get_review_comments` / `get_reviews`)
+         で再取得し、各対象(check run・レビュースレッド・レビュー提出)の **完全な ID セットと状態** を突き合わせる。
          この確認から `merge_pull_request` 実行までの間に発生する TOCTOU(time-of-check-to-time-of-use)を
-         避けるため、**新しい push・コミット・レビューコメント・check run が 1 件でも見つかった
-         場合は、マージを中止してチェックリストを最初からやり直す**。差分が無い場合のみ次へ進む。
+         避けるため、**新しい push・コミット・レビューコメント・check run の追加または削除、
+         既存 check run の status/conclusion の変化、既存レビュースレッドの追加・削除・is_resolved の変化、
+         既存レビュー提出の追加・削除・state の変化が 1 件でも見つかった場合は、
+         マージを中止してチェックリストを最初からやり直す**。差分が無い場合のみ次へ進む。
    - [ ] **TOCTOU の権威はサーバー側の原子ガードに置く。** クライアント側の再取得＋事後検証
          だけでは、最終確認から `merge_pull_request` 実行までの間に push が入った場合に、未レビューの
          head がマージされるのを防げない(事後検出は `main` を保護しない)。現行の
@@ -210,14 +242,11 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
          スナップショットで控えた HEAD SHA と一致**することを確認する。想定と異なる head が
          マージされていた場合は続行せず、速やかにユーザーへ報告する。
 
-   > 画面から手動で行う場合は、PR の「Reviewers」欄にある Copilot 横の 🔄(Re-request review)
-   > から再レビューを要求できる。
-
 ---
 
 ## Phase 5. マージとブランチ削除
 
-Phase 4 手順 8 のマージ直前チェックリスト(CI グリーン・Copilot 再レビュー完了・
+Phase 4 手順 8 のマージ直前チェックリスト(CI グリーン・
 CodeRabbit 等の自動レビューボットの再レビュー完了・未解決スレッドゼロ)を
 **すべて満たしてから**、以下を実施する:
 
@@ -254,14 +283,14 @@ CodeRabbit 等の自動レビューボットの再レビュー完了・未解決
 ```text
 Phase 0  モード確認(オート/手動/PR 前まで)＋テーマ確認
 Phase 1  記事作成(日英・ルール準拠)
-Phase 2  サブエージェント反復レビュー  ── 指摘ゼロまでループ
+Phase 2  サブエージェント反復レビュー(文体・構成 + 技術検証専任パス)  ── 指摘ゼロまでループ
 Phase 3  モード別分岐:
            manual → 内容確認 → 承認で Phase 4 へ
            auto   → 確認スキップで Phase 4 へ
            pre_pr → コミット＆push まで実施して停止(PR 以降は指示待ち)
 Phase 4  PR 作成 → CI 監視 ── グリーン＆指摘ゼロまで修正・再実行ループ
-         (修正 push 後は Copilot 再レビューを要求、対応済みスレッドは解決済みにする、
-          マージ前に未解決ゼロを確認)
+         (修正 push 後は CodeRabbit へ @coderabbitai review を要求、対応済みスレッドは解決済みにする、
+          マージ前に未解決ゼロを確認。Copilot 再レビューは要求しない)
 Phase 5  マージ → (head ブランチは GitHub が自動削除) → 購読解除 → 完了報告
 ```
 

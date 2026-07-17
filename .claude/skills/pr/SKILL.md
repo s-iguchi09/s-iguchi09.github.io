@@ -1,6 +1,6 @@
 ---
 name: pr
-description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook 通知を待って指摘を修正し、再レビューを依頼する。指摘が無くなるまで「修正 → 再レビュー依頼」を繰り返し、指摘がゼロになったらマージする。「PR を出して」「レビューを回してマージまで」などの依頼で使用する。
+description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を待って指摘を修正し、再レビューを依頼する。指摘が無くなるまで「修正 → 再レビュー依頼」を繰り返し、指摘がゼロになったらマージする。「PR を出して」「レビューを回してマージまで」などの依頼で使用する。
 ---
 
 # PR 作成・レビュー対応・マージ ワークフロー
@@ -59,7 +59,7 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 
 **指摘が無くなるまで**、以下 1〜5 を繰り返す。
 
-1. **レビューの Webhook 通知を待つ。** PR 作成後、Copilot や CodeRabbit 等の自動レビューが始まる。
+1. **レビューの Webhook 通知を待つ。** PR 作成後、CodeRabbit 等の自動レビューが始まる。
    - **`sleep` でのポーリングはしない。** レビューコメントや CI 結果は
      `<github-webhook-activity>` イベントとしてこのセッションに届く。イベントの到着を待つ。
    - **`send_later` でのセルフチェックイン予約は行わない。** CI 成功・新規 push・マージコンフリクトの
@@ -94,10 +94,10 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 
 5. **再レビューを依頼する。** 修正して push したら、**再レビュー依頼はレビュアーに対してのみ**行えばよい。
    ただし **MarkdownLint(`Lint Markdown` CI)も併せて再レビュー(再実行結果の確認)する**。
-   - **Copilot** — push では自動再レビューされない(PR 作成時に 1 回走るだけ)。
-     `mcp__github__request_copilot_review` で再レビューを要求する。
-   - **CodeRabbit** — `.coderabbit.yaml` で `auto_incremental_review: false` としているため、
+   - **CodeRabbit(主レビュアー)** — `.coderabbit.yaml` で `auto_incremental_review: false` としているため、
      push だけでは自動再レビューされない。PR に `@coderabbitai review` とコメントして明示的に再レビューを要求する。
+     本リポジトリでは Copilot の自動レビューを使わない方針のため、構文・正確性の検証は CodeRabbit
+     (`profile: assertive` + `path_instructions`)に集約している。Copilot への再レビュー要求は行わない。
    - **MarkdownLint(`Lint Markdown` CI)** — `pull_request` トリガーで push のたびに自動再実行される。
      レビュアーの再レビューと併せて、この CI の再実行結果(グリーン)も必ず確認する。
    - 再レビューで新たな指摘が来たら、手順 3〜5 を繰り返す。
@@ -110,10 +110,8 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
    - `git fetch origin main` で最新の `main` を取得し、作業ブランチへ取り込む(`git merge origin/main`
      または `git rebase origin/main`)。
    - 競合を解消してコミットし、`git push`(rebase した場合は `--force-with-lease`)する。
-   - push により CI は自動再実行される。必要なら Copilot 等へ再レビューを要求する。
+   - push により CI は自動再実行される。必要なら CodeRabbit へ `@coderabbitai review` で再レビューを要求する。
    - 解消後は手順 1〜5 のレビュー・CI ループへ戻り、再び指摘ゼロ・グリーンを確認する。
-
-> 画面から手動で行う場合は、PR の「Reviewers」欄にある Copilot 横の 🔄(Re-request review)から再レビューを要求できる。
 
 ---
 
@@ -122,10 +120,12 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 以下のマージ直前チェックリストを **すべて満たしてから** マージする。1 つでも満たさなければマージしない。
 
 - [ ] 最新コミットに対する CI(`Lint Markdown` 等)が success。
-- [ ] Copilot 再レビューが完了し、未解決スレッドがゼロ。
+      ただし `Lint Markdown`(`.github/workflows/lint-markdown.yml`)は `**/*.md` / `.markdownlint.json` /
+      当該ワークフローの変更時のみ起動する。**これらを変更しない PR ではチェックが起動しない**ため、
+      その場合は check run 不在(未実行)を許容し、この項目は満たされたものとして扱う。
 - [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし)し、actionable な未解決指摘がゼロ。
 - [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
-      作成者(Copilot・CodeRabbit・人間レビュアー・その他の自動ボットを問わず)に関係なく `is_resolved == true` を要求する。
+      作成者(CodeRabbit・人間レビュアー・その他の自動ボットを問わず)に関係なく `is_resolved == true` を要求する。
       未解決スレッドが 1 件でもあればマージしない。
 - [ ] **`CHANGES_REQUESTED` のレビューが残っていない。** `get_reviews` で、dismiss されていないレビュー提出に
       `state == CHANGES_REQUESTED` が 1 件も無いことを確認する。**本文だけで紐づくスレッドが無い
@@ -176,7 +176,7 @@ description: PR を作成し、レビュー(Copilot・CodeRabbit 等)の Webhook
 Phase 1  コミット & プッシュ
 Phase 2  PR 作成 → subscribe_pr_activity で購読
 Phase 3  レビュー待ち(Webhook)→ 指摘修正 → 再レビュー依頼  ── 指摘ゼロまでループ
-           (修正 push 後はレビュアー(Copilot / CodeRabbit)へ再レビューを要求し、MarkdownLint も併せて再確認、
+           (修正 push 後は CodeRabbit へ `@coderabbitai review` で再レビューを要求し、MarkdownLint も併せて再確認、
             対応済みスレッドは解決済みにする)
 Phase 4  マージ直前チェックリスト → マージ →(head ブランチは GitHub が自動削除)→ 購読解除 → 完了報告
 ```
