@@ -173,7 +173,8 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
    > CI がグリーンになるまで修正・再 push を繰り返す。
 
 6. **修正 push のあとは CodeRabbit へ再レビューを要求する。** `Lint Markdown`(CI)は
-   `pull_request` トリガーで push のたびに自動再実行される。
+   `pull_request` トリガーで、Markdown 関連ファイル(`**/*.md` / `.markdownlint.json` / 当該ワークフロー)を
+   変更した push でのみ自動再実行される(対象外の push では check run が作成されないため、未起動を許容する)。
    一方、**CodeRabbit は `.coderabbit.yaml` で `auto_incremental_review: false` としているため、
    push だけでは自動再レビューされない**。
    そのため、レビュー指摘を修正して push したら、PR に `@coderabbitai review` とコメントして
@@ -206,6 +207,10 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
    - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
          actionable な未解決指摘がゼロ。
    - [ ] **全レビュースレッドが解決済みである**(作成者に関係なく `is_resolved == true`)。
+   - [ ] **`CHANGES_REQUESTED` のレビューが残っていない。** `get_reviews` で、dismiss されていない
+         レビュー提出に `state == CHANGES_REQUESTED` が 1 件も無いことを確認する。
+         **本文だけで紐づくスレッドが無い `CHANGES_REQUESTED` レビューでもマージをブロックする**
+         (スレッド解決の確認だけでは漏れるため)。この条件はマージ直前の再取得後にも再検証する。
    - [ ] **事前スナップショットを記録する。** マージ判定を始める前に、差分比較の基準として次を控える:
          現在の HEAD SHA、直近レビューコメントの ID、各 check run の ID と **status/conclusion**、
          各レビュースレッド(`get_review_comments`)の ID と **is_resolved**、
