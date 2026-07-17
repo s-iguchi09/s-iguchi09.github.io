@@ -303,7 +303,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になる
 ## 移行ガード
 
 本ポリフィルは `#if !NET10_0_OR_GREATER` で囲む。
-`LeftJoin`・`RightJoin`・`Shuffle` は .NET 9 以前に存在しないため、`!NETCOREAPP` や `!NET9_0_OR_GREATER` を条件にすると .NET 9 向けビルドでポリフィルが無効化され、コンパイルエラーになる（`NET9_0_OR_GREATER` は .NET 9 以降でのみ定義されるため、`.NET 8` では未定義となりポリフィルは有効なままとなる）。
+`LeftJoin`・`RightJoin`・`Shuffle` は .NET 9 以前に存在しないため、誤ったガードはコンパイルエラーを招く。`!NETCOREAPP` は `NETCOREAPP` が定義される全ターゲット（.NET Core・.NET 5〜9）でポリフィルを無効化し、`!NET9_0_OR_GREATER` は `net9.0` 以降でのみ無効化する（`.NET 8` では `NET9_0_OR_GREATER` が未定義のため有効なまま、`.NET 9` で無効化されエラーになる）。いずれもオーバーロードを持たない環境でポリフィルを外してしまうため、正しくは `#if !NET10_0_OR_GREATER` を用いる。
 シンボル選択の一般規則（追加されたバージョン以上で無効化する）は[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
 
 ---

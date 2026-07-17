@@ -265,7 +265,7 @@ Later changes to the underlying data do not affect the constructed dictionary.
 ## Migration Guard
 
 The polyfill is wrapped in `#if !NET8_0_OR_GREATER`.
-These overloads do not exist before .NET 8, so guarding with `!NETCOREAPP` or `!NET7_0_OR_GREATER` would disable the polyfill in .NET 7 builds and break compilation (`NET7_0_OR_GREATER` is defined only on .NET 7 and later, so it stays undefined — and the polyfill stays active — on .NET 6).
+These overloads do not exist before .NET 8, so the wrong guard breaks compilation. `!NETCOREAPP` disables the polyfill on every target where `NETCOREAPP` is defined (.NET Core and .NET 5–7), whereas `!NET7_0_OR_GREATER` disables it only on `net7.0` and later (on .NET 6 the `NET7_0_OR_GREATER` symbol is undefined, so the polyfill stays active; on .NET 7 it is disabled and fails to compile). Both switch the polyfill off where the overloads are missing, so the correct guard is `#if !NET8_0_OR_GREATER`, disabling it only from the introducing version.
 The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
