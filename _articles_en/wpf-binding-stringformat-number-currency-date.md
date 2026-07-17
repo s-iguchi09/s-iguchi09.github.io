@@ -60,8 +60,8 @@ Numbers use standard and custom specifiers that control grouping and the number 
 <!-- N2: 1234.5 -> 1,234.50 -->
 <TextBlock Text="{Binding Quantity, StringFormat=N2}" />
 
-<!-- Custom format #,0.##: drop trailing zeros -->
-<TextBlock Text="{Binding Ratio, StringFormat=#,0.##}" />
+<!-- Custom format #,0.##: drop trailing zeros; wrap in single quotes because it contains a comma -->
+<TextBlock Text="{Binding Ratio, StringFormat='#,0.##'}" />
 
 <!-- P1: 0.153 -> 15.3% -->
 <TextBlock Text="{Binding Rate, StringFormat=P1}" />
@@ -70,6 +70,9 @@ Numbers use standard and custom specifiers that control grouping and the number 
 Note that `P` (percent) multiplies the original value by 100 for display.
 To show `0.15` as "15%", the ViewModel keeps the ratio in the 0 to 1 range.
 When the value is already "15", a custom format that appends `%` is used instead of `P`.
+
+Note that a specifier containing a comma, such as `#,0.##`, collides with the argument separator (the comma) of the `{Binding ...}` shorthand syntax.
+For this reason, the whole format is wrapped in single quotes so that the comma is treated as a literal.
 
 ---
 
@@ -112,6 +115,9 @@ To display a specific order, a custom format such as `yyyy/MM/dd` makes each fie
 ```
 
 In custom formats, `MM` (month) differs from `mm` (minute), and `HH` (24-hour) differs from `hh` (12-hour).
+In addition, `/` in a custom format is a placeholder for the date separator and `:` is a placeholder for the time separator; neither is a literal character.
+Because they are replaced by the culture's `DateSeparator` and `TimeSeparator`, the separator may change to `-` or `.` depending on the culture.
+The field order is fixed by the custom specifiers, but to fix the separator as well, it is escaped as `\/` or wrapped in single quotes such as `'/'` to make it a literal.
 The names produced by `ddd` (abbreviated day name) and `dddd` (full day name) also depend on the culture, so a culture setting is required to render weekday names in a specific language.
 Changing the display format of the `DatePicker` control itself is covered in [Customising the DatePicker Display Format in WPF](/articles/wpf-datepicker-custom-format/).
 
