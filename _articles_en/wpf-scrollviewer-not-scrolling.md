@@ -14,7 +14,7 @@ This article explains that the behavior comes from how the layout system measure
 
 ---
 
-## Prerequisites
+## Prerequisites / Environment
 
 - Framework: .NET 6 or later / WPF
 - Language: C# / XAML
@@ -42,7 +42,7 @@ Even though `VerticalScrollBarVisibility="Auto"` is set, the `ScrollViewer` expa
 
 ---
 
-## Cause
+## Cause / Background
 
 The cause lies in the available size that the `StackPanel` passes to its children during measurement.
 In its stacking direction, which is height for a vertical panel, a `StackPanel` measures each child with an **infinite available size**.
@@ -116,12 +116,13 @@ The last child without a `DockPanel.Dock` value fills the remaining area, so the
 - **`VerticalScrollBarVisibility="Disabled"` turns scrolling off:** setting `Disabled` prevents scrolling in that direction through user interaction.
   To hide the scrollbar while keeping scrolling, use `Hidden` instead.
 - **Avoid nesting scrollable controls directly:** placing a control with its own scrolling, such as a `ListBox`, directly inside a `ScrollViewer` can make the mouse wheel act on the wrong element.
+  A `ListBox` already scrolls internally, so it is better given a height-constrained layout, such as a `*` row of a `Grid`, than wrapped in an outer `ScrollViewer`.
 - **Physical versus logical scrolling:** when `ScrollViewer.CanContentScroll` is `false`, which is the default, scrolling is physical, in pixel units; when it is `true`, scrolling is logical, by item.
-  Virtualized controls such as `ListBox` rely on logical scrolling, so this value needs attention when wrapping them in a `ScrollViewer`.
+  A `ListBox` hosts its items in a `VirtualizingStackPanel`, which relies on logical scrolling to virtualize items; wrapping it in a `ScrollViewer`, whose default is `false`, forces physical scrolling and disables that virtualization, so this should be avoided for long lists.
 
 ---
 
-## Alternatives and Comparison
+## Alternatives / Comparison
 
 | Container | Scrolling behavior | Suited for |
 | --- | --- | --- |
