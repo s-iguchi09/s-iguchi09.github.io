@@ -265,7 +265,7 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 ## 移行ガード
 
 本ポリフィルは `#if !NET8_0_OR_GREATER` で囲む。
-これらのオーバーロードは .NET 7 以前に存在しないため、`!NETCOREAPP` や `!NET7_0_OR_GREATER` を条件にすると .NET 6 / .NET 7 向けビルドでポリフィルが無効化され、コンパイルエラーになる。
+これらのオーバーロードは .NET 7 以前に存在しないため、誤ったガードはコンパイルエラーを招く。`!NETCOREAPP` は `NETCOREAPP` が定義される全ターゲット（.NET Core・.NET 5〜7）でポリフィルを無効化し、`!NET7_0_OR_GREATER` は `net7.0` 以降でのみ無効化する（`.NET 6` では `NET7_0_OR_GREATER` が未定義のため有効なまま、`.NET 7` で無効化されエラーになる）。いずれもオーバーロードを持たない環境でポリフィルを外してしまうため、正しくは対象バージョンで無効化する `#if !NET8_0_OR_GREATER` を用いる。
 シンボル選択の一般規則（追加されたバージョン以上で無効化する）は[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
 
 ---

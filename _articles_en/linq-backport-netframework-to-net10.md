@@ -303,7 +303,7 @@ For server-side outer joins in database queries below .NET 10, keep writing the 
 ## Migration Guard
 
 The polyfill is wrapped in `#if !NET10_0_OR_GREATER`.
-`LeftJoin`, `RightJoin` and `Shuffle` do not exist before .NET 10, so guarding with `!NETCOREAPP` or `!NET9_0_OR_GREATER` would disable the polyfill in .NET 8 / .NET 9 builds and break compilation.
+`LeftJoin`, `RightJoin` and `Shuffle` do not exist before .NET 10, so the wrong guard breaks compilation. `!NETCOREAPP` disables the polyfill on every target where `NETCOREAPP` is defined (.NET Core and .NET 5–9), whereas `!NET9_0_OR_GREATER` disables it only on `net9.0` and later (on .NET 8 the `NET9_0_OR_GREATER` symbol is undefined, so the polyfill stays active; on .NET 9 it is disabled and fails to compile). Both switch the polyfill off where the operators are missing, so the correct guard is `#if !NET10_0_OR_GREATER`.
 The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
