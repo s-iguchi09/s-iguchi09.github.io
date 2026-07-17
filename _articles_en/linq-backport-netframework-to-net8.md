@@ -1,83 +1,81 @@
 ---
 layout: article-en
-title: "Backporting the KeyValuePair and Tuple ToDictionary Overloads to .NET Framework"
+title: "Selector-Free ToDictionary — Designing for Overload Resolution and the notnull Constraint"
 date: 2026-07-15
 category: C#
-excerpt: "Backporting the .NET 8 selector-free ToDictionary overloads (KeyValuePair and tuple) to .NET Framework with #nullable enable and conditional compilation."
+excerpt: "Recreating the .NET 8 selector-free ToDictionary overloads on .NET Framework as an exercise in overload resolution and notnull constraint design."
 ---
 
 ## Overview
 
-.NET 8 added almost no new operators to the public `Enumerable`; its practical addition is a set of `ToDictionary` overloads that turn a sequence of `KeyValuePair` or tuples into a dictionary without selectors. Their absence in .NET Framework forces an identity selector such as `p => p.Key` even when each element is already a key/value pair.
+.NET 8 added almost no new operators to LINQ.
+Its practical addition is a set of **overloads** — `ToDictionary` variants that turn a sequence of `KeyValuePair` or tuples into a dictionary without selectors.
+Backporting this batch is therefore not about a new algorithm but about **signature design**: fitting new signatures into an existing method family without friction.
 
-This article covers the **`ToDictionary` overloads added in .NET 8** (the selector-free `KeyValuePair` and value-tuple forms) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
-It also covers a modern implementation using `#nullable enable` and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 8 or later.
+This article implements the selector-free `ToDictionary` polyfill (the `KeyValuePair` and tuple forms) and breaks its design down into three decisions.
+
+1. Avoid colliding with the existing `ToDictionary(keySelector, valueSelector)` during overload resolution
+2. Pin the resolution target of internal delegation with the named argument `comparer:`
+3. Match the `where TKey : notnull` constraint and the return type so nullable analysis agrees before and after migration
 
 ---
 
 ## Prerequisites / Environment
 
-- Frameworks: .NET Framework 4.8 / .NET 8+
-- APIs: the selector-free `ToDictionary` overloads (`KeyValuePair` and value-tuple forms, each with an `IEqualityComparer<TKey>` overload) — four signatures in total
-- Nullable context: `#nullable enable`
-- Migration guard: `#if !NET8_0_OR_GREATER`
-- Project settings (such as the C# language version in `.csproj`) are left unchanged
+- Frameworks: .NET Framework 4.8 (backport target) / .NET 8+ (future migration target)
+- APIs: the selector-free `ToDictionary` overloads — 4 signatures (`KeyValuePair` and tuple forms, each with an `IEqualityComparer<TKey>` overload)
+- Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET8_0_OR_GREATER`
+- Language version: `#nullable enable`, nullable reference annotations, and the `where TKey : notnull` constraint require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (take particular care in older non-SDK projects that do not set `LangVersion` explicitly)
 
 ---
 
 ## Problem
 
-.NET 8 adds almost no new operators to the public `Enumerable` class.
-The only practical addition is a set of `ToDictionary` overloads that require neither a key selector nor a value selector, and these are unavailable in .NET Framework environments.
+The following overloads added in .NET 8 are unavailable on .NET Framework.
 
 | Method | Added in | Description |
 | --- | --- | --- |
 | `ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>>)` | .NET 8.0 | Converts a sequence of `KeyValuePair` directly into a dictionary |
-| `ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)>)` | .NET 8.0 | Converts a sequence of two-element tuples directly into a dictionary |
+| `ToDictionary<TKey, TValue>(this IEnumerable<(TKey, TValue)>)` | .NET 8.0 | Converts a sequence of 2-tuples directly into a dictionary |
 
-Each has an overload that accepts an `IEqualityComparer<TKey>`, for four signatures in total.
+Each also has an `IEqualityComparer<TKey>` overload, for 4 signatures in total.
 
-Without these methods, even when the elements are already in `KeyValuePair` or tuple form, an explicit identity-style selector is required through the existing `ToDictionary`.
+Without them, even when elements are already key/value pairs, the existing `ToDictionary` demands explicit identity selectors.
 
-- Write `pairs.ToDictionary(p => p.Key, p => p.Value)` instead of `pairs.ToDictionary()`.
-- For a sequence of tuples, write `items.ToDictionary(t => t.Item1, t => t.Item2)`.
+- `pairs.ToDictionary(p => p.Key, p => p.Value)` instead of `pairs.ToDictionary()`
+- `items.ToDictionary(t => t.Item1, t => t.Item2)` for tuple sequences
 
-The `p => p.Key` / `p => p.Value` selectors are boilerplate that is not the essence of the conversion.
-They also create room for minor mistakes, such as swapping the key and value selectors.
+`p => p.Key` / `p => p.Value` are boilerplate unrelated to the conversion itself, and swapping the key and value selectors is an easy mistake to make.
 
 ---
 
-## Background
+## Root Cause / Background
 
-.NET 6 added `Chunk`, `MaxBy`, `MinBy`, and `DistinctBy`, and .NET 7 added `Order` and `OrderDescending`, but .NET 8 added essentially no new operators to the public `Enumerable` class.
-The only practical addition is the set of `ToDictionary` overloads that convert a sequence of `KeyValuePair` or tuples into a dictionary without a selector.
+When filtering a `Dictionary` into a new one, or dictionary-izing tuples returned by `Select`, the elements are already key/value shaped.
+.NET 8 standardized the selector-free overloads to remove the identity selectors that such call sites were forced to write.
 
-These were first added in .NET 8.0 and are not available in any earlier runtime.
-When filtering a dictionary and rebuilding it, or turning tuples returned by `Select` into a dictionary, the elements are already key/value pairs.
-The selector-free overloads were standardized to remove the boilerplate of writing an identity-style selector in those cases.
-
-The methods added between .NET Framework 4.8 and .NET 5 (`Append`, `Prepend`, `TakeLast`, `SkipLast`) are covered in a [separate article](/articles/linq-backport-netframework-to-net5/), the four methods added in .NET 6 in [another](/articles/linq-backport-netframework-to-net6/), and `Order` / `OrderDescending` from .NET 7 in [another](/articles/linq-backport-netframework-to-net7/).
+Because this is a *signature addition* to an existing method, the built-in design itself is careful not to disturb resolution of the existing overloads.
+A polyfill must be designed under the same constraint — that is the subject of this article.
 
 ---
 
 ## Solution
 
-By placing extension methods in the same namespace as the original LINQ (`System.Linq`), existing source files pick up the polyfills automatically without any changes — any file that already has `using System.Linq;` gains the missing methods transparently.
+The extension methods are defined in the original `System.Linq` namespace and wrapped in `#if !NET8_0_OR_GREATER` (see the [series foundation article](/articles/linq-backport-netframework-to-net5/) for the rationale behind both).
 
-A `#if !NET8_0_OR_GREATER` guard ensures the implementation is automatically disabled when the project is later upgraded to .NET 8 or later.
-No file deletions or code rewrites are needed at migration time.
+On top of that, three signature-design points are aligned with the built-in API.
 
-There are two key implementation details.
-The first is to return `Dictionary<TKey, TValue>`, and the second is to match the original `where TKey : notnull` constraint.
-The original overloads carry this constraint, so applying the same constraint to the polyfill keeps nullable-reference analysis consistent before and after migration.
+- Restrict the first parameter to `IEnumerable<KeyValuePair<TKey, TValue>>` / `IEnumerable<(TKey, TValue)>` so existing overloads are never contested
+- Pin internal delegation with the named argument `comparer:`
+- Use `Dictionary<TKey, TValue>` as the return type and `where TKey : notnull` as the constraint
 
 ---
 
 ## Implementation
 
-The following is a complete polyfill for all four signatures (`KeyValuePair` and tuple forms, each with an `IEqualityComparer<TKey>` overload).
-For sources that implement `ICollection<T>`, the dictionary capacity is reserved up front from the element count, avoiding unnecessary rehashing just as the originals do.
-Copy it into a file such as `LinqExtensions.Net8.cs` in your project.
+The following is the complete polyfill for all 4 signatures.
+For sources implementing `ICollection<T>`, the dictionary capacity is pre-sized from the element count, avoiding rehashing just as the built-in implementation does.
+Add it to the project as, for example, `LinqExtensions.Net8.cs`.
 
 ```csharp
 #nullable enable
@@ -85,12 +83,12 @@ Copy it into a file such as `LinqExtensions.Net8.cs` in your project.
 using System;
 using System.Collections.Generic;
 
-#if !NET8_0_OR_GREATER // Active only in environments below .NET 8 (e.g. .NET Framework)
+#if !NET8_0_OR_GREATER // Active only below .NET 8.0 (e.g. .NET Framework)
 
 namespace System.Linq
 {
     /// <summary>
-    /// Backports .NET 8.0 LINQ methods to older target frameworks.
+    /// Provides extension methods that backfill LINQ methods introduced in .NET 8.0 for older target frameworks.
     /// </summary>
     public static partial class LinqExtensions
     {
@@ -100,7 +98,7 @@ namespace System.Linq
         public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
             this IEnumerable<KeyValuePair<TKey, TValue>> source)
             where TKey : notnull
-            => source.ToDictionary(comparer: null); // The named argument resolves to this overload.
+            => source.ToDictionary(comparer: null); // Named argument pins resolution to the comparer overload
 
         public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
             this IEnumerable<KeyValuePair<TKey, TValue>> source,
@@ -153,16 +151,53 @@ namespace System.Linq
 #endif
 ```
 
-The class is active only when the `NET8_0_OR_GREATER` symbol is not defined — that is, in any runtime below .NET 8, including .NET Framework.
+The class is active only when the `NET8_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 8, including .NET Framework.
 
 ---
 
-## Method Walkthroughs
+## The Three Signature-Design Decisions
 
-### Converting from a sequence of `KeyValuePair`
+### Decision 1: A First Parameter Type That Cannot Collide
 
-When filtering an existing dictionary to build a new one, the elements are already `KeyValuePair`.
-Calling `ToDictionary()` with no selector reconstructs the dictionary while preserving each key/value mapping.
+The name `ToDictionary` already exists on .NET Framework, so adding overloads carelessly could disturb resolution.
+This polyfill is safe because the first (extended) parameter type partitions the call space.
+
+- Calls that pass selectors (`ToDictionary(x => x.Id)` and friends) resolve to the existing built-in overloads that take `Func<...>` parameters
+- Only selector-free calls on `KeyValuePair` or tuple sequences resolve to the polyfill
+
+For any polyfill that adds signatures to an existing method, the first thing to verify is that the new signatures match none of the existing call shapes.
+If that property does not hold, code may compile while silently binding to an unintended overload.
+
+### Decision 2: Pinning Resolution with the Named Argument `comparer:`
+
+The parameterless overloads delegate to the comparer overloads by passing `null`.
+Writing that plainly as `source.ToDictionary(null)` is ambiguous: the `null` literal converts both to `IEqualityComparer<TKey>` and to `Func<...>`, leaving the compiler multiple candidates.
+
+```csharp
+public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
+    this IEnumerable<KeyValuePair<TKey, TValue>> source)
+    where TKey : notnull
+    => source.ToDictionary(comparer: null); // Named argument pins the comparer overload
+```
+
+With the named argument `comparer:`, only overloads that have a parameter of that name remain candidates, making the resolution target unique.
+This is the standard technique when delegating into a densely overloaded API.
+
+### Decision 3: Matching `where TKey : notnull` and the Return Type
+
+The built-in overloads return `Dictionary<TKey, TValue>` and constrain `where TKey : notnull`.
+Matching both means that in a `#nullable enable` codebase, nullable analysis produces identical results before and after migration.
+
+Omitting the constraint still compiles, but then calls with nullable key types that were accepted under the polyfill start producing warnings after moving to .NET 8.
+For the automatic switch to the built-in implementation (see below) to be genuinely seamless, signature compatibility matters exactly as much as algorithmic compatibility.
+
+---
+
+## Behavior by Use Case
+
+### Converting a Sequence of `KeyValuePair`
+
+When filtering an existing dictionary into a new one, the elements are already `KeyValuePair`.
 
 ```csharp
 var source = new Dictionary<string, int>
@@ -172,34 +207,33 @@ var source = new Dictionary<string, int>
     ["cherry"] = 2,
 };
 
-// Keep only entries whose value is 3 or greater
+// Keep only entries with a value of 3 or more
 var filtered = source.Where(pair => pair.Value >= 3)
                      .ToDictionary();
 // filtered: { "apple": 3, "banana": 5 }
 ```
 
-Because `Dictionary<TKey, TValue>` implements `IEnumerable<KeyValuePair<TKey, TValue>>`, the result of `Where` is a sequence of `KeyValuePair`.
-The selector-free `ToDictionary()` removes the need to spell out `pair => pair.Key` / `pair => pair.Value`.
+`Dictionary<TKey, TValue>` implements `IEnumerable<KeyValuePair<TKey, TValue>>`, so the result of `Where` is a `KeyValuePair` sequence that converts back to a dictionary with no selectors.
 
-### Converting from a sequence of two-element tuples
+### Converting a Sequence of 2-Tuples
 
-When `Select` returns two-element tuples, the result can be turned into a dictionary directly.
+Tuples returned by `Select` convert directly as well.
 
 ```csharp
 var files = new[] { "report.pdf", "photo.jpg", "notes.txt" };
 
-// Key by file name, value is the extension
+// File name as key, extension as value
 var byName = files.Select(name => (name, System.IO.Path.GetExtension(name)))
                   .ToDictionary();
 // byName: { "report.pdf": ".pdf", "photo.jpg": ".jpg", "notes.txt": ".txt" }
 ```
 
-The first tuple element becomes the key and the second becomes the value.
-Tuple element names (such as `(name, ext)`) do not affect the type, so the method works with or without names.
+The first tuple element becomes the key, the second the value.
+Tuple element names (such as `(name, ext)`) do not affect the type, so the conversion works with or without them.
 
-### Specifying a comparison with `IEqualityComparer<TKey>`
+### Specifying an `IEqualityComparer<TKey>`
 
-The overload that swaps the key equality comparison can build, for example, a case-insensitive dictionary.
+The comparer overloads build dictionaries with custom key equality, such as case-insensitive lookups.
 
 ```csharp
 var pairs = new[] { ("Alpha", 1), ("BETA", 2) };
@@ -209,85 +243,73 @@ var dictionary = pairs.ToDictionary(StringComparer.OrdinalIgnoreCase);
 bool found = dictionary.ContainsKey("alpha"); // true
 ```
 
-The overload without a comparer uses `EqualityComparer<TKey>.Default`.
-Swapping the comparer does not change the return type, which remains `Dictionary<TKey, TValue>`.
+The comparer-free overloads use `EqualityComparer<TKey>.Default`.
 
-### Immediate execution
+### Eager Evaluation
 
-Unlike `Where` or `Order`, `ToDictionary` is **not** deferred; it executes immediately.
-At the call site it enumerates the source to completion, builds the dictionary, and returns it.
+Unlike `Where` or `Order`, `ToDictionary` evaluates **eagerly**.
+It enumerates the source to the end at call time and returns a finished dictionary.
 
 ```csharp
 var query = Enumerable.Range(1, 3).Select(n => (n, n * n));
 
-var dictionary = query.ToDictionary(); // The source is enumerated here.
+var dictionary = query.ToDictionary(); // The source is enumerated here
 // dictionary: { 1: 1, 2: 4, 3: 9 }
 ```
 
-As a result, even when the source is a deferred query, `ToDictionary` yields a materialized dictionary at the call site.
-Later changes to the underlying data of the source do not affect the already-built dictionary.
+Even when the source is a lazy query, the call produces a settled dictionary.
+Later changes to the underlying data do not affect the constructed dictionary.
 
 ---
 
-## Choosing the Right Conditional-Compilation Symbol
+## Migration Guard
 
-This implementation uses `#if !NET8_0_OR_GREATER`, which differs from the `#if !NETCOREAPP` guard used in the [.NET 5 backport article](/articles/linq-backport-netframework-to-net5/).
-
-These `ToDictionary` overloads do not exist prior to .NET 8.
-Guarding with `NETCOREAPP` or `NET7_0_OR_GREATER` would therefore disable the polyfill on .NET 6 and .NET 7 builds, causing a compile error there.
-
-| Symbol | .NET Framework | .NET 7 | .NET 8+ |
-| --- | --- | --- | --- |
-| `!NETCOREAPP` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET7_0_OR_GREATER` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET8_0_OR_GREATER` | Polyfill enabled | Polyfill enabled | Polyfill disabled |
-
-`!NET8_0_OR_GREATER` enables the polyfill on all runtimes below .NET 8, including .NET 7, and disables it automatically once the project targets .NET 8 or later.
+The polyfill is wrapped in `#if !NET8_0_OR_GREATER`.
+These overloads do not exist before .NET 8, so guarding with `!NETCOREAPP` or `!NET7_0_OR_GREATER` would disable the polyfill in .NET 6 / .NET 7 builds and break compilation.
+The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
 ## Caveats
 
-- **Distinguishing from the existing `ToDictionary`**: These overloads apply only when the elements are already in `KeyValuePair` or tuple form. To build a dictionary from an arbitrary element type `TSource`, keep using the existing `ToDictionary` with a key selector (and an element selector when needed). There is no need to force elements that are not pairs into these overloads.
-- **No name collision occurs**: The polyfill's signatures differ from the existing `ToDictionary` overloads that take a `Func<...>` as the first argument, so there is no ambiguity in overload resolution. Calls that pass a selector resolve to the original implementation, while calls on a `KeyValuePair` or tuple sequence with no selector resolve to the polyfill. Where the parameterless overload delegates to the comparer overload, the `comparer:` named argument ensures resolution to the intended method.
-- **Immediate execution**: As noted, `ToDictionary` executes immediately and enumerates `source` to completion. Do not use it on infinite sequences or on sources whose enumeration causes side effects. The `ArgumentNullException` for a `null` source is thrown immediately at the call site.
-- **Duplicate keys throw**: The implementation uses `Dictionary<TKey, TValue>.Add`, so a duplicate key raises `ArgumentException`. This matches the behavior of the original `ToDictionary`. To allow duplicates with last-write-wins semantics, use `dictionary[key] = value` manually rather than `ToDictionary`.
-- **Null keys throw**: A `null` key raises `ArgumentNullException`. The `where TKey : notnull` constraint assumes reference-type keys are non-null, but a `null` that slips in at runtime is caught by this exception.
+- **When to use the existing `ToDictionary` instead**: the new overloads apply only when elements are already `KeyValuePair` or tuples. For arbitrary element types, keep passing a key selector (and value selector) to the existing `ToDictionary`.
+- **Duplicate keys throw**: the implementation uses `Dictionary<TKey, TValue>.Add`, so a duplicate key raises `ArgumentException`, matching the built-in behavior. For last-wins semantics, populate manually with `dictionary[key] = value`.
+- **`null` keys throw**: a `null` key raises `ArgumentNullException`. The `where TKey : notnull` constraint makes reference-type keys non-null by contract, and runtime `null` leakage is caught by this exception.
+- **Eager evaluation**: the source is enumerated to the end, so avoid infinite sequences and sources with per-enumeration side effects. The `ArgumentNullException` for a `null` source is thrown immediately at call time.
 
 ---
 
-## Alternatives
+## Alternatives / Comparison
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Custom polyfill (this article) | No external dependencies; return type and constraint match the original | Implementation and maintenance effort | Projects that minimize dependencies |
-| Inline `ToDictionary(p => p.Key, p => p.Value)` | No additional code | Verbose; requires a bulk replacement when migrating | Few call sites and no planned migration |
-| Upgrade to .NET 8 | Resolves the root cause; gains language features | Migration cost | When migration is technically and organizationally feasible |
+| Hand-rolled polyfill (this article) | No dependency; signatures match the built-ins exactly | Requires overload-design care | `#nullable enable` codebases heading toward migration |
+| Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Verbose; mass replacement at migration | Few call sites and no migration planned |
+| Upgrade to .NET 8 | Root fix plus language features | Migration cost | When migration is feasible |
 
-Writing the selectors inline requires no extra code, but it leaves behind the work of finding and replacing every call site later when standardizing on the selector-free `ToDictionary` after a .NET 8 migration.
-Introducing the polyfill from this article allows code to be written without selectors before migration; at migration time, the file can stay in place while conditional compilation switches automatically to the original.
+Inline selectors cost nothing today, but consolidating to the selector-free spelling after a .NET 8 migration means finding and replacing every call site.
 
 ---
 
 ## Summary
 
-This article covered the selector-free `ToDictionary` overloads added in .NET 8 and how to backport them safely to .NET Framework.
+The .NET 8 selector-free `ToDictionary` is a new *signature*, not a new *algorithm*, and the backport's quality is decided by signature design.
 
-Three implementation points are worth remembering.
+| Decision | Content |
+| --- | --- |
+| Restricted first parameter | `KeyValuePair` / tuple sequences only — never contests existing overloads |
+| Named argument `comparer:` | Pins internal delegation to the comparer overload |
+| `notnull` constraint and return type | Match the built-ins so nullable analysis agrees across migration |
 
-- **Match the return type and constraint to the original**: Return `Dictionary<TKey, TValue>` with a `where TKey : notnull` constraint so that nullable analysis stays consistent before and after migration.
-- **Use `#if !NET8_0_OR_GREATER`**: These overloads are absent from .NET 7 and earlier, so `!NETCOREAPP` or `!NET7_0_OR_GREATER` would cause a compile error on .NET 7 builds.
-- **Understand immediate execution and duplicate-key behavior**: `ToDictionary` executes immediately, and duplicate or `null` keys throw. For elements that are not already pairs, use the selector-based `ToDictionary`.
-
-| Method | Evaluation | Return type | Best input |
-| --- | --- | --- | --- |
-| `ToDictionary` (`KeyValuePair` form) | Immediate | `Dictionary<TKey, TValue>` | A sequence of `KeyValuePair` |
-| `ToDictionary` (tuple form) | Immediate | `Dictionary<TKey, TValue>` | A sequence of two-element tuples |
+Use the selector-free overloads only for inputs that are already pairs, and the classic selector-based `ToDictionary` for everything else.
+Under that discipline, the `#if !NET8_0_OR_GREATER` guard swaps in the built-in implementation at migration time with zero code changes.
 
 ---
 
 ## Related Articles
 
-- [Backporting Order and OrderDescending to .NET Framework](/articles/linq-backport-netframework-to-net7/)
-- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing Append, Prepend, TakeLast and SkipLast](/articles/linq-backport-netframework-to-net5/)
+- [Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxBy, MinBy and DistinctBy](/articles/linq-backport-netframework-to-net6/)
+- [Order and OrderDescending by Pure Delegation — A Minimal Polyfill with IOrderedEnumerable Compatibility](/articles/linq-backport-netframework-to-net7/)
+- [Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, AggregateBy and Index](/articles/linq-backport-netframework-to-net9/)
+- [Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin and Shuffle](/articles/linq-backport-netframework-to-net10/)

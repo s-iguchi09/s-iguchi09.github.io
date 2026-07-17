@@ -1,85 +1,101 @@
 ---
 layout: article-en
-title: "Backporting CountBy, AggregateBy and Index to .NET Framework"
+title: "Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, AggregateBy and Index"
 date: 2026-07-16
 category: C#
-excerpt: "Backporting .NET 9 LINQ methods CountBy, AggregateBy, and Index to .NET Framework, preserving deferred execution with conditional compilation."
+excerpt: "Implementing CountBy, AggregateBy and Index with direct dictionary accumulation, avoiding the intermediate-grouping allocations of GroupBy."
 ---
 
 ## Overview
 
-`CountBy`, `AggregateBy` and `Index`, added in .NET 9, streamline the per-key aggregation that previously went through `GroupBy`, along with the indexed enumeration previously written as `Select((x, i) => …)`. .NET Framework lacks them, so the same results require verbose workaround code.
+To count elements per key, `GroupBy` builds a full list of elements for every key in memory.
+The final result is just key/number pairs — the grouped element bodies are thrown away.
+`CountBy` and `AggregateBy`, added in .NET 9, skip that intermediate grouping and aggregate by holding only per-key state in a dictionary.
+The third addition, `Index`, turns the `Select((x, i) => …)` idiom for indexed enumeration into a dedicated method.
 
-This article enumerates the **three LINQ methods added in .NET 9** (`CountBy`, `AggregateBy`, `Index`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
-Because all three use deferred execution, it also covers preserving the boundary between deferred and eager behavior and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 9 or later.
+This article backports the three methods to .NET Framework.
+Its central theme is why the polyfill's internals should use the same dictionary-based accumulation as the built-in implementation instead of delegating to `GroupBy`.
+The two approaches differ not just in memory efficiency but in how they treat `null` keys, and the implementation is built by comparing them.
 
 ---
 
 ## Prerequisites / Environment
 
-- Frameworks: .NET Framework 4.8 / .NET 9+
-- APIs: the LINQ methods `CountBy`, `AggregateBy`, `Index`, and their overloads
-- Nullable context: `#nullable enable`
-- Migration guard: `#if !NET9_0_OR_GREATER`
-- Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0 or later. Since .NET Framework 4.8 defaults to C# 7.3, set `LangVersion` to `8.0` or later in `.csproj`
+- Frameworks: .NET Framework 4.8 (backport target) / .NET 9+ (future migration target)
+- APIs: LINQ `CountBy`, `AggregateBy`, `Index` and their overloads
+- Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET9_0_OR_GREATER`
+- Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0+. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj`
 
 ---
 
-## Problem
+## Problem: The Hidden Allocations of GroupBy Aggregation
 
-The following LINQ methods added in .NET 9 are unavailable in .NET Framework environments.
+The following methods added in .NET 9 are unavailable on .NET Framework.
 
 | Method | Added in | Description |
 | --- | --- | --- |
-| `CountBy` | .NET 9.0 | Counts elements per key and returns a sequence of `KeyValuePair<TKey, int>` |
-| `AggregateBy` | .NET 9.0 | Accumulates state per key and returns a sequence of `KeyValuePair<TKey, TAccumulate>` |
-| `Index` | .NET 9.0 | Pairs each element with its index and returns a sequence of `(int Index, TSource Item)` tuples |
+| `CountBy` | .NET 9.0 | Counts elements per key, returning a sequence of `KeyValuePair<TKey, int>` |
+| `AggregateBy` | .NET 9.0 | Folds elements per key, returning a sequence of `KeyValuePair<TKey, TAccumulate>` |
+| `Index` | .NET 9.0 | Attaches an index to each element, returning `(int Index, TSource Item)` tuples |
 
-Without these methods, obtaining the same aggregates forces a verbose `GroupBy`-based expression.
+Writing the equivalent aggregation without them goes through `GroupBy`.
 
-- Write `GroupBy(keySelector).Select(g => new { g.Key, Count = g.Count() })` instead of `CountBy(keySelector)`.
-- Write `Select((item, index) => (index, item))` instead of `Index()`.
+```csharp
+// Count per key via GroupBy
+var counts = words.GroupBy(w => w)
+                  .Select(g => new { g.Key, Count = g.Count() });
+```
 
-This boilerplate is not the essence of the aggregation and reduces readability as it grows.
+The invisible cost of this code is the intermediate grouping.
+`GroupBy` walks all elements up front and builds, for every key, a list of references to all elements belonging to that key.
+When only a count is needed, those lists are ultimately discarded — but not the moment `Count()` returns: they stay retained until the entire sequence returned by `GroupBy` has been enumerated (every key's group built).
+For a million elements across ten keys, a grouping holding a million references stays in memory for the whole time it takes to produce the ten numbers.
 
----
-
-## Background
-
-Following `Chunk`, `MaxBy`, `MinBy`, and `DistinctBy` in .NET 6, `Order` and `OrderDescending` in .NET 7, and the selector-free `ToDictionary` in .NET 8, .NET 9 added methods that simplify per-key aggregation and indexed enumeration.
-`CountBy`, `AggregateBy`, and `Index` were all first added in .NET 9.0 and are not available in any earlier runtime.
-
-The goal of `CountBy` and `AggregateBy` is to avoid allocating an intermediate grouping (the element lists held per key) merely to aggregate.
-The original implementation uses an internal `Dictionary` to keep only per-key state, so it is more memory-efficient than a grouping that retains the elements themselves.
-Because of this dictionary-based design, the original `CountBy` and `AggregateBy` constrain the key type with `where TKey : notnull` and throw during enumeration if a `null` key is produced.
-
-The methods added between .NET Framework 4.8 and .NET 5 (`Append`, `Prepend`, `TakeLast`, `SkipLast`) are covered in a [separate article](/articles/linq-backport-netframework-to-net5/), the four methods added in .NET 6 in [another](/articles/linq-backport-netframework-to-net6/), `Order` / `OrderDescending` from .NET 7 in [another](/articles/linq-backport-netframework-to-net7/), and the `ToDictionary` overloads from .NET 8 in [another](/articles/linq-backport-netframework-to-net8/).
+The `Index` substitute — `Select((item, index) => (index, item))` — is a different kind of problem: not cost, but intent buried in boilerplate.
 
 ---
 
-## Solution
+## Root Cause / Background
 
-By placing extension methods in the same namespace as the original LINQ (`System.Linq`), existing source files pick up the polyfills automatically without any changes — any file that already has `using System.Linq;` gains the missing methods transparently.
+`GroupBy` builds element lists because its contract is to return `IGrouping<TKey, TSource>` — a sequence of elements per key.
+That is not a defect of `GroupBy`; the defect was paying for that contract in call sites that only aggregate.
 
-A `#if !NET9_0_OR_GREATER` guard ensures the implementation is automatically disabled when the project is later upgraded to .NET 9 or later.
-No file deletions or code rewrites are needed at migration time.
+.NET 9's `CountBy` / `AggregateBy` introduce an aggregation-only contract — per-key state (a count or an accumulator) is all that needs to be kept — and internally accumulate into a `Dictionary`.
+Because of that internal dictionary, both built-ins constrain `where TKey : notnull` and throw at enumeration time if a key is `null`.
 
-The implementation of `CountBy` and `AggregateBy` accumulates per-key state directly in an internal `Dictionary`, just as the originals do.
-Delegating to `GroupBy` is a simpler option, but it allocates the intermediate grouping the originals avoid, and its handling of `null` keys (`GroupBy` accepts a `null` key as one group) diverges from the originals (which throw).
-Accumulating into a dictionary keeps allocations low while matching the `where TKey : notnull` constraint and the `null`-key behavior of the originals.
+---
 
-The key point is to validate arguments eagerly while keeping execution deferred.
-The public method validates its arguments and then delegates to a `private` iterator that contains the `yield return`.
-Turning the entire body into a `yield` method would defer the `ArgumentNullException` for `source` and other arguments until enumeration, diverging from the originals.
-`Index` simply delegates to the indexed overload of `Select`, which already applies the same two-stage pattern.
+## Solution: Direct Dictionary Accumulation, Not GroupBy Delegation
+
+There are two candidate internals for the polyfill.
+
+```csharp
+// Option A: naive delegation to GroupBy
+public static IEnumerable<KeyValuePair<TKey, int>> CountBy<TSource, TKey>(
+    this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+    => source.GroupBy(keySelector)
+             .Select(g => new KeyValuePair<TKey, int>(g.Key, g.Count()));
+```
+
+Option A is shorter but diverges from the built-in behavior on two counts.
+
+| Aspect | GroupBy delegation (A) | Direct dictionary accumulation (B, this article) | Built-in .NET 9 |
+| --- | --- | --- | --- |
+| Memory | Builds per-key element lists | Holds per-key state only | Holds per-key state only |
+| `null` keys | Accepted as one group | `ArgumentNullException` at enumeration | `ArgumentNullException` at enumeration |
+
+`GroupBy` accepts `null` keys as a group of their own, so the delegating implementation silently passes input that the built-in would reject.
+Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on exception fidelity as well as memory.
+
+To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
+`Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
 
 ---
 
 ## Implementation
 
-The following is a complete polyfill for the three methods, including the `seed` and `seedSelector` overloads of `AggregateBy` — four signatures in total.
-Each public method validates its arguments eagerly and then delegates to a deferred iterator body.
-Copy it into a file such as `LinqExtensions.Net9.cs` in your project.
+The following is the complete polyfill — 4 signatures including the `seed` and `seedSelector` forms of `AggregateBy`.
+Add it to the project as, for example, `LinqExtensions.Net9.cs`.
 
 ```csharp
 #nullable enable
@@ -87,12 +103,12 @@ Copy it into a file such as `LinqExtensions.Net9.cs` in your project.
 using System;
 using System.Collections.Generic;
 
-#if !NET9_0_OR_GREATER // Active only in environments below .NET 9 (e.g. .NET Framework)
+#if !NET9_0_OR_GREATER // Active only below .NET 9.0 (e.g. .NET Framework)
 
 namespace System.Linq
 {
     /// <summary>
-    /// Backports .NET 9.0 LINQ methods to older target frameworks.
+    /// Provides extension methods that backfill LINQ methods introduced in .NET 9.0 for older target frameworks.
     /// </summary>
     public static partial class LinqExtensions
     {
@@ -120,9 +136,9 @@ namespace System.Linq
             var counts = new Dictionary<TKey, int>(keyComparer);
             foreach (var item in source)
             {
-                TKey key = keySelector(item); // A null key throws ArgumentNullException on the next line.
+                TKey key = keySelector(item); // A null key throws ArgumentNullException on the next line
                 counts.TryGetValue(key, out int count);
-                counts[key] = checked(count + 1); // Matches .NET 9: throws OverflowException past int.MaxValue
+                counts[key] = checked(count + 1); // Like .NET 9, overflow past int.MaxValue throws OverflowException
             }
 
             foreach (KeyValuePair<TKey, int> entry in counts)
@@ -132,7 +148,7 @@ namespace System.Linq
         }
 
         // ==========================================
-        // 2. AggregateBy (seed / seedSelector)
+        // 2. AggregateBy (seed / seedSelector forms)
         // ==========================================
         public static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateBy<TSource, TKey, TAccumulate>(
             this IEnumerable<TSource> source,
@@ -176,7 +192,7 @@ namespace System.Linq
             var accumulators = new Dictionary<TKey, TAccumulate>(keyComparer);
             foreach (var item in source)
             {
-                TKey key = keySelector(item); // A null key throws ArgumentNullException on the next line.
+                TKey key = keySelector(item); // A null key throws ArgumentNullException on the next line
                 if (!accumulators.TryGetValue(key, out var acc))
                 {
                     acc = seedSelector(key);
@@ -206,16 +222,16 @@ namespace System.Linq
 #endif
 ```
 
-The class is active only when the `NET9_0_OR_GREATER` symbol is not defined — that is, in any runtime below .NET 9, including .NET Framework.
-The `seed` overload delegates to the shared accumulation body by reading the seed as a constant `seedSelector` (`key => seed`).
+The class is active only when the `NET9_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 9, including .NET Framework.
+The `seed` form of `AggregateBy` is expressed as a `seedSelector` that ignores the key (`key => seed`) and delegates to the shared accumulation body.
 
 ---
 
-## Method Walkthroughs
+## Behavior of Each Method
 
-### `CountBy` — Element counts per key
+### `CountBy`: Element Count per Key
 
-`CountBy` counts elements per key produced by the key selector and returns a sequence of `KeyValuePair<TKey, int>`.
+`CountBy` counts elements per key returned by the key selector, yielding a sequence of `KeyValuePair<TKey, int>`.
 
 ```csharp
 var words = new[] { "apple", "banana", "apple", "cherry", "banana", "apple" };
@@ -229,13 +245,15 @@ foreach (var pair in words.CountBy(word => word))
 // cherry: 1
 ```
 
-Results are returned in first-appearance order of the keys (absent removals, the internal dictionary enumerates in insertion order).
-The overload that accepts an `IEqualityComparer<TKey>` swaps the comparison, for example to count case-insensitively.
+The enumeration order of the results is not guaranteed.
+The internal `Dictionary<TKey, TValue>` has no ordering contract, so code must not rely on any particular order (such as first-appearance order).
+When a defined order is required, sort the results explicitly or convert them into an order-preserving collection.
+The `IEqualityComparer<TKey>` overload swaps in a different key equality — case-insensitive counting, for example.
 
-### `AggregateBy` — Folding per key
+### `AggregateBy`: A Per-Key Fold
 
-`AggregateBy` accumulates state per key.
-The following sums sales per region.
+`AggregateBy` is the per-key version of `Aggregate`, folding independently for each key.
+The following computes total sales per region.
 
 ```csharp
 var sales = new[]
@@ -259,12 +277,12 @@ foreach (var pair in totals)
 // Osaka: 140
 ```
 
-To vary the initial value per key, use the overload that accepts a `seedSelector` (`Func<TKey, TAccumulate>`) instead of a `seed`.
-It starts the fold from a different initial state depending on the key.
+To vary the initial value per key, use the overload taking a `seedSelector` (`Func<TKey, TAccumulate>`) instead of `seed`.
+Each key then starts its fold from its own initial state.
 
-### `Index` — Indexed enumeration
+### `Index`: Indexed Enumeration
 
-`Index` pairs each element with a zero-based index and returns a sequence of `(int Index, TSource Item)` tuples.
+`Index` attaches a zero-based index to each element, yielding `(int Index, TSource Item)` tuples.
 
 ```csharp
 var items = new[] { "a", "b", "c" };
@@ -278,14 +296,13 @@ foreach (var (index, item) in items.Index())
 // 2: c
 ```
 
-The first tuple element is the index and the second is the value.
-Note that the order is reversed relative to the `Select((item, index) => ...)` lambda — in `Index`, the index comes first.
+The first tuple element is the index, the second the value.
+Note the order is reversed from the `Select((item, index) => ...)` lambda — `Index` puts the index first.
 
-### Deferred execution
+### Lazy Evaluation and Exception Timing
 
-`CountBy`, `AggregateBy`, and `Index` are all deferred; the computation runs only when the result is enumerated via `foreach` or `.ToList()`.
-The `ArgumentNullException` for a `null` source or a `null` delegate, however, is thrown immediately at the call site.
-This is because the public method validates arguments first and then returns the deferred iterator.
+All three methods are lazy; computation runs at `foreach` / `.ToList()` time.
+The `ArgumentNullException` for a `null` source or delegate, however, is thrown immediately at call time.
 
 ```csharp
 IEnumerable<int> numbers = null!;
@@ -294,73 +311,59 @@ IEnumerable<int> numbers = null!;
 var query = numbers.CountBy(n => n);
 ```
 
-The `ArgumentNullException` for a `null` key returned by the key selector during enumeration, by contrast, is thrown when the key is first used to look up the internal dictionary (the `TryGetValue` call).
-This matches the .NET 9 behavior, where the internal dictionary rejects `null` keys.
+When the key selector returns a `null` key mid-enumeration, the `ArgumentNullException` fires at the point the internal dictionary is accessed with that key (the `TryGetValue` call).
+This matches the built-in .NET 9 behavior of the internal dictionary rejecting `null` keys.
 
 ---
 
-## Choosing the Right Conditional-Compilation Symbol
+## Migration Guard
 
-This implementation uses `#if !NET9_0_OR_GREATER`, which differs from the `#if !NETCOREAPP` guard used in the [.NET 5 backport article](/articles/linq-backport-netframework-to-net5/).
-
-`CountBy`, `AggregateBy`, and `Index` do not exist prior to .NET 9.
-Guarding with `NETCOREAPP` or `NET8_0_OR_GREATER` would therefore disable the polyfill on .NET 8 builds, causing a compile error there.
-
-| Symbol | .NET Framework | .NET 8 | .NET 9+ |
-| --- | --- | --- | --- |
-| `!NETCOREAPP` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET8_0_OR_GREATER` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET9_0_OR_GREATER` | Polyfill enabled | Polyfill enabled | Polyfill disabled |
-
-`!NET9_0_OR_GREATER` enables the polyfill on all runtimes below .NET 9, including .NET 8, and disables it automatically once the project targets .NET 9 or later.
+The polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
+`CountBy`, `AggregateBy` and `Index` do not exist before .NET 9, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would disable the polyfill in a .NET 8 build and break compilation.
+The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
 ## Caveats
 
-- **Deferred execution**: All three methods are deferred; nothing is computed until enumeration. The return value is a deferred sequence, not a `Dictionary`, so enumerating the same result multiple times recomputes it each time. To materialize and reuse the result, call `.ToList()` or `.ToDictionary()`. The `ArgumentNullException` for a `null` source or delegate is thrown at the call site.
-- **The key type is `notnull`**: The original `CountBy` and `AggregateBy` carry a `where TKey : notnull` constraint, so the polyfill applies the same constraint. This keeps nullable-reference analysis consistent before and after migration. If the key selector returns a `null` key at runtime, the internal dictionary throws `ArgumentNullException` during enumeration, which also matches the originals.
-- **Memory profile**: The polyfill accumulates only per-key state in an internal `Dictionary`, so it does not retain the elements themselves the way a naive `GroupBy`-based implementation would. Its allocation profile is close to the .NET 9 originals.
-- **`CountBy` overflow**: The count is incremented with `checked(count + 1)`, so a key whose count exceeds `int.MaxValue` throws `OverflowException`. The .NET 9 original also increments in a checked context, so this behavior matches.
-- **`Index` tuple order and a confusable type name**: The tuple returned by `Index` is `(Index, Item)`, with the index first. The method name `Index` is also easy to confuse with the `System.Index` type introduced in C# 8 (the element type of index/range syntax), but a method and a type do not collide.
-- **No name collision**: The polyfill defines the same signatures as the originals under `System.Linq`, so it resolves transparently in files with `using System.Linq;`. A collision can occur only if a method of the same name and shape is also defined elsewhere.
+- **Results are lazy sequences and re-aggregate on every enumeration**: the return value is not a `Dictionary` but a deferred sequence. Materialize with `.ToList()` or `.ToDictionary()` when the result is used more than once; otherwise each enumeration re-walks and re-aggregates the source.
+- **Key types are `notnull`**: the polyfill carries the built-in `where TKey : notnull` constraint, and a runtime `null` key throws `ArgumentNullException` at enumeration. To aggregate data with `null` keys, map them first (e.g. `?? "(none)"`).
+- **`CountBy` overflow**: counting uses `checked(count + 1)`, so a key whose count exceeds `int.MaxValue` throws `OverflowException`. The built-in .NET 9 also adds with `checked`, so behavior matches.
+- **`Index` tuple order / naming confusion**: the tuple is `(Index, Item)` — index first. The method name `Index` also resembles the C# 8 `System.Index` type, but one is a type and the other a method; they do not collide.
 
 ---
 
-## Alternatives
+## Alternatives / Comparison
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Custom polyfill (this article) | No external dependencies; identical usage and allocation profile to the originals | Implementation and maintenance effort | Projects that minimize dependencies |
-| Inline `GroupBy(...).Select(...)` | No additional code | Verbose; allocates an intermediate grouping; requires a bulk replacement when migrating | Few call sites and no planned migration |
-| Upgrade to .NET 9 | Resolves the root cause; benefits from reduced allocation | Migration cost | When migration is technically and organizationally feasible |
-
-Writing `GroupBy(...).Select(...)` inline requires no extra code, but it allocates an intermediate grouping merely to aggregate and leaves behind the work of finding and replacing every call site later when standardizing on `CountBy` and friends after a .NET 9 migration.
-Introducing the polyfill from this article allows code to be written with the original method names before migration; at migration time, the file can stay in place while conditional compilation switches automatically to the originals.
+| Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
+| GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
+| Write `GroupBy(...).Select(...)` inline | No extra code | Verbose; mass replacement at migration | Few call sites and no migration planned |
+| Upgrade to .NET 9 | Root fix plus the allocation savings | Migration cost | When migration is feasible |
 
 ---
 
 ## Summary
 
-This article covered `CountBy`, `AggregateBy`, and `Index` — the three LINQ methods added in .NET 9 — and how to backport them safely to .NET Framework.
+What a `CountBy` / `AggregateBy` backport is judged on is not "returning the same result" but "returning it the same way."
+Delegating to `GroupBy` produces identical values while diverging from the built-ins on two counts: intermediate-grouping allocations and tolerance of `null` keys.
+Direct dictionary accumulation aligns the memory profile, the exception behavior and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` genuinely safe.
 
-Three implementation points are worth remembering.
+| Method | Implementation | State held |
+| --- | --- | --- |
+| `CountBy` | Direct dictionary accumulation | Count per key only |
+| `AggregateBy` | Direct dictionary accumulation | Accumulator per key only |
+| `Index` | Delegation to `Select` | None (pass-through) |
 
-- **Preserve deferred execution**: Validate arguments eagerly in the public method, then delegate to a `private` iterator that contains the `yield return`. The return value is a deferred sequence rather than a `Dictionary`; materialize it with `.ToList()` when a fixed result is needed.
-- **Use `#if !NET9_0_OR_GREATER`**: These methods are absent from .NET 8 and earlier, so `!NETCOREAPP` or `!NET8_0_OR_GREATER` would cause a compile error on .NET 8 builds.
-- **Match the `where TKey : notnull` constraint and `null`-key behavior**: Accumulating directly in an internal `Dictionary` keeps the constraint, the `null`-key exception, and the allocation profile consistent with the originals, so the switch at migration requires no code changes.
-
-| Method | Evaluation | Return type | Implementation summary |
-| --- | --- | --- | --- |
-| `CountBy` | Lazy | `IEnumerable<KeyValuePair<TKey, int>>` | Counts per key in an internal `Dictionary` |
-| `AggregateBy` | Lazy | `IEnumerable<KeyValuePair<TKey, TAccumulate>>` | Folds per key in an internal `Dictionary` (seed / seedSelector) |
-| `Index` | Lazy | `IEnumerable<(int Index, TSource Item)>` | Delegates to `Select((item, index) => (index, item))` |
+For codebases that routinely aggregate large data sets by key on .NET Framework, adopting this polyfill both cuts allocations today and prepares the migration path.
 
 ---
 
 ## Related Articles
 
-- [Backporting the KeyValuePair and Tuple ToDictionary Overloads to .NET Framework](/articles/linq-backport-netframework-to-net8/)
-- [Backporting Order and OrderDescending to .NET Framework](/articles/linq-backport-netframework-to-net7/)
-- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing Append, Prepend, TakeLast and SkipLast](/articles/linq-backport-netframework-to-net5/)
+- [Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxBy, MinBy and DistinctBy](/articles/linq-backport-netframework-to-net6/)
+- [Order and OrderDescending by Pure Delegation — A Minimal Polyfill with IOrderedEnumerable Compatibility](/articles/linq-backport-netframework-to-net7/)
+- [Selector-Free ToDictionary — Designing for Overload Resolution and the notnull Constraint](/articles/linq-backport-netframework-to-net8/)
+- [Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin and Shuffle](/articles/linq-backport-netframework-to-net10/)

@@ -1,75 +1,54 @@
 ---
 layout: article-ja
-title: "Order・OrderDescending を .NET Framework にバックポートする"
+title: "委譲だけで作る Order・OrderDescending — IOrderedEnumerable 互換の最小ポリフィル"
 date: 2026-07-14
 category: C#
-excerpt: ".NET 7 で追加された LINQ の Order・OrderDescending を、条件付きコンパイルと IOrderedEnumerable の維持を意識しながら .NET Framework 環境へ安全にバックポートする実装方法を解説する。"
+excerpt: "既存の OrderBy への委譲だけで完結する Order・OrderDescending のポリフィルを題材に、戻り値型 IOrderedEnumerable が決める ThenBy 互換性と、環境によって異なるソート時例外という 2 つの互換性論点を解説する。"
 ---
 
 ## 概要
 
-.NET 7 で追加された `Order`・`OrderDescending` は、要素そのものを基準に並び替えるための専用メソッドであり、`OrderBy(x => x)` という定型的な恒等ラムダを不要にする。.NET Framework 環境ではこれらが使えないため、値で並び替えるだけの場面でも `x => x` を書き続けることになる。
+.NET 7 で追加された `Order`・`OrderDescending` のポリフィルは、実装本体が各メソッド 1 行で書ける。
+イテレータも `Queue<T>` も不要で、既存の `OrderBy` / `OrderByDescending` に恒等ラムダを渡して委譲するだけである。
 
-本記事では、**.NET 7 で新たに追加された 2 つの LINQ メソッド**（`Order`・`OrderDescending`）を整理し、**同一の使用感で動作する拡張メソッド（ポリフィル）を安全に実装する方法**を解説する。
-戻り値型 `IOrderedEnumerable<T>` を保った実装と、将来の .NET 7 以降への移行時にコードを無修正で切り替えるための条件付きコンパイル手法も合わせて紹介する。
+実装が単純なだけに、このポリフィルの正否を分けるのはアルゴリズムではなく**互換性の詰め**である。
+本記事では、委譲型ポリフィルの実装を示したうえで、互換性を左右する 2 つの論点を解説する。
+
+- 戻り値型を `IOrderedEnumerable<T>` にしないと `ThenBy` が連結できず、本家と非互換になる
+- 既定比較子で並び替えられない型に対する例外は、.NET Framework と .NET Core 以降で型が異なる
+
+「本家 API への委譲だけで作れるポリフィル」は、イテレータを自作する型（[基礎編](/ja/articles/linq-backport-netframework-to-net5/)参照）と並ぶもう 1 つの実装パターンであり、その代表例として読める構成にしている。
 
 ---
 
 ## 前提・対象環境
 
-- フレームワーク: .NET Framework 4.8 / .NET 7+
-- 対象: LINQ の 2 メソッド（Order / OrderDescending）とそれぞれの `IComparer<T>` オーバーロード
-- 方針: `#nullable enable` を適用し、`#if !NET7_0_OR_GREATER` による条件付きコンパイルで移行時に自動無効化する
-- プロジェクト設定（`.csproj` の言語バージョンなど）は変更しない
+- フレームワーク: .NET Framework 4.8（バックポート先）/ .NET 7+（将来の移行先）
+- 対象: LINQ の `Order` / `OrderDescending`（各 `IComparer<T>` オーバーロードを含む計 4 シグネチャ）
+- 方針: `#nullable enable` を適用し、`#if !NET7_0_OR_GREATER` で移行時に自動無効化する
+- 言語バージョン: `#nullable enable` と nullable 参照型注釈は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`#nullable enable` と `?` 注釈を外せば C# 7.3 でも動作する）
 
 ---
 
-## 問題
+## 恒等ラムダ `x => x` の定型句
 
-.NET 7 で追加された以下の LINQ メソッドは、.NET Framework 環境では使用できない。
+`Order` / `OrderDescending` は、シーケンスの要素そのものを基準に並び替える専用メソッドである。
 
 | メソッド名 | 追加されたバージョン | 概要 |
 | --- | --- | --- |
 | `Order<T>` | .NET 7.0 | シーケンスの要素自体を基準に昇順で並び替える |
 | `OrderDescending<T>` | .NET 7.0 | シーケンスの要素自体を基準に降順で並び替える |
 
-これらが存在しない .NET Framework 環境では、値そのもので並び替えるだけの場面でも、恒等ラムダを明示的に書く代替実装を強いられる。
-
-- `Order()` の代わりに、`OrderBy(x => x)` と自分自身を返すラムダを書く
-- `OrderDescending()` の代わりに、`OrderByDescending(x => x)` と書く
-
-`x => x` はソートの本質ではない定型記述であり、記述量が増えるほど可読性を下げ、キーセレクタの取り違えといった軽微なミスの温床にもなる。
+これらが無い .NET Framework 環境では、値そのもので並び替えるだけの場面でも `OrderBy(x => x)` / `OrderByDescending(x => x)` と恒等ラムダを書き続けることになる。
+`x => x` はソートの意図とは無関係な定型記述であり、キーセレクタの取り違えといった軽微なミスの混入点にもなる。
+逆に言えば、恒等関数を内包した専用メソッドがあれば済む話であり、.NET 7 はそれを標準化した。
 
 ---
 
-## 原因・背景
+## 委譲による実装
 
-.NET 6 で `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` といったコレクション操作メソッドが一挙に追加された後、続く .NET 7 では「要素自身を並び替え対象にする」メソッドが追加された。
-`Order`・`OrderDescending` はいずれも .NET 7.0 で初めて追加されたものであり、.NET 6 以前の環境では存在しない。
-
-`OrderBy(x => x)` という冗長なイディオムは長く定着していたが、キーセレクタが不要なケースが頻繁に存在することから、恒等関数を内包する専用メソッドとして標準化された。
-
-なお、.NET Framework から .NET 5 の間に追加されたメソッド（`Append`・`Prepend`・`TakeLast`・`SkipLast`）については[別記事](/ja/articles/linq-backport-netframework-to-net5/)で、.NET 6 で追加された 4 メソッドについては[別記事](/ja/articles/linq-backport-netframework-to-net6/)で解説している。
-
----
-
-## 解決方法
-
-本家 LINQ と同じ名前空間（`System.Linq`）に拡張メソッドを定義することで、既存のソースファイルに手を加えることなく透過的に利用できる。
-
-条件付きコンパイル `#if !NET7_0_OR_GREATER` を使い、.NET 7 以降の環境ではこのファイルを丸ごとスキップするよう仕込む。
-将来のフレームワークアップグレード時に、ファイルの削除やコードの書き換えを行わずに自動的に本家 LINQ へ切り替わる。
-
-実装の要点は、戻り値型を `IEnumerable<T>` ではなく `IOrderedEnumerable<T>` にすることである。
-本家 `Order` は `IOrderedEnumerable<T>` を返すため、後続の `ThenBy` を連結できる。
-戻り値を `IEnumerable<T>` に落とすと `ThenBy` が呼べなくなり、本家との互換性が失われる。
-
----
-
-## 実装例
-
-以下は 2 メソッド（各 `IComparer<T>` オーバーロードを含む計 4 シグネチャ）のポリフィル実装一式である。
-実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性やカルチャ依存の比較挙動も本家と同一になる。
+以下は 4 シグネチャのポリフィル実装一式である。
+実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性やカルチャ依存の比較挙動は本家と同一になる。
 プロジェクトに `LinqExtensions.Net7.cs` などの名前でそのまま追加して使用できる。
 
 ```csharp
@@ -126,16 +105,11 @@ namespace System.Linq
 #endif
 ```
 
-コンパイル時に `NET7_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 7 未満の環境）でのみ、上記クラスが有効になる。
+委譲型では `yield return` を書かないため、イテレータ自作型で必要だった「引数検証とイテレータの分離」（[基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)）は考えなくてよい。
+`source` の null チェックは呼び出し時点で即座に実行され、並び替え自体は委譲先の `OrderBy` が持つ遅延評価のまま動く。
+検証済みの既存 API に処理を委ねるため、アルゴリズム起因のバグが入り込む余地がない。
 
----
-
-## 各メソッドの詳解
-
-### `Order<T>` / `OrderDescending<T>`（要素自体を基準にした並び替え）
-
-`Order` はシーケンスの要素そのものを基準に昇順で並び替える。
-`OrderBy(x => x)` と等価だが、キーセレクタを書かずに意図を表現できる。
+基本の使い方は次のとおりである。
 
 ```csharp
 var numbers = new[] { 3, 1, 4, 1, 5, 9, 2, 6 };
@@ -147,10 +121,8 @@ var descending = numbers.OrderDescending();
 // descending: 9, 6, 5, 4, 3, 2, 1, 1
 ```
 
-引数なしオーバーロードは要素型の既定の比較子（`Comparer<T>.Default`）を用いるため、`int` や `string` のように順序が定義された型はそのまま並び替えられる。
-
-`IComparer<T>` を受け取るオーバーロードでは、比較ロジックを差し替えられる。
-以下は文字列を大文字・小文字を区別せずに並び替える例である。
+引数なしオーバーロードは要素型の既定比較子（`Comparer<T>.Default`）を使うため、`int` や `string` のように順序が定義された型はそのまま並び替えられる。
+`IComparer<T>` を受け取るオーバーロードでは比較ロジックを差し替えられる。
 
 ```csharp
 var words = new[] { "banana", "Apple", "cherry" };
@@ -159,11 +131,12 @@ var sorted = words.Order(StringComparer.OrdinalIgnoreCase);
 // sorted: Apple, banana, cherry
 ```
 
-比較子を差し替えても戻り値型は変わらないため、後述の `ThenBy` 連結と組み合わせられる。
+---
 
-### `IOrderedEnumerable<T>` を返すことによる `ThenBy` の連結
+## 互換性論点 1: 戻り値型 `IOrderedEnumerable<T>` が `ThenBy` 連結を決める
 
-戻り値を `IOrderedEnumerable<T>` にすることで、第 2 ソートキーを `ThenBy` / `ThenByDescending` で追加できる。
+委譲型ポリフィルで唯一設計判断が要るのが戻り値型である。
+`IEnumerable<T>` を返しても並び替え結果自体は同じだが、本家 `Order` は `IOrderedEnumerable<T>` を返すため、第 2 ソートキーを `ThenBy` / `ThenByDescending` で連結できる。
 
 ```csharp
 var words = new[] { "Banana", "apple", "banana", "Apple" };
@@ -175,34 +148,44 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 ```
 
 第 1 キー（大文字小文字を無視した比較）では `"Apple"` と `"apple"`、`"Banana"` と `"banana"` がそれぞれ同順になるため、第 2 キー（序数比較）が同順要素の並びを決める。
-戻り値を `IEnumerable<T>` に落とした実装では、上記の `ThenBy` はコンパイルエラーになる。
-本家 API との互換性を保つうえで、戻り値型の選択は重要である。
+戻り値を `IEnumerable<T>` に落とした実装では、この `ThenBy` がコンパイルエラーになる。
+
+委譲先の `OrderBy` はもともと `IOrderedEnumerable<T>` を返すので、ポリフィル側ですべきことは「戻り値型を `IEnumerable<T>` に狭めない」ことだけである。
+委譲型ポリフィル全般に言える教訓として、**委譲先が返す型をそのまま公開し、情報を落とさない**ことが本家互換の条件になる。
 
 ---
 
-## 条件付きコンパイルシンボルの選択
+## 互換性論点 2: 環境によって異なるソート時例外
 
-本実装では `#if !NET7_0_OR_GREATER` を採用している。
-[.NET 5 相当のバックポート記事](/ja/articles/linq-backport-netframework-to-net5/)が `#if !NETCOREAPP` を採用しているのとは異なる。
+引数なしオーバーロードは `Comparer<T>.Default` に依存するため、要素型が `IComparable` / `IComparable<T>` を実装していない場合、ソートが実際に要素間の比較を行う時点で例外が発生する。
+空シーケンスや単一要素のシーケンスでは比較が行われないため例外にならず、2 要素以上で実際に比較が必要になったときに初めて失敗する。
+このとき表面化する例外の型が、実行環境によって異なる。
 
-`Order`・`OrderDescending` は .NET 6 以前には存在しないため、`NETCOREAPP` や `NET6_0_OR_GREATER` を条件に使うと、.NET 5 や .NET 6 向けビルドでポリフィルが無効化され、コンパイルエラーが発生する。
+- 既定比較子自体は `ArgumentException`（メッセージ: "At least one object must implement IComparable."）を投げる。
+- **.NET Framework** の `OrderBy` は内部ソートで比較例外をラップしないため、この `ArgumentException` がそのまま伝播する。
+- **.NET Core 3.0 以降**（本家 .NET 7 の `Order` を含む）は、内部ソートが比較例外を `InvalidOperationException`（メッセージ: "Failed to compare two elements in the array."、内側例外が上記 `ArgumentException`）にラップする。
 
-| シンボル | .NET Framework | .NET 6 | .NET 7+ |
-| --- | --- | --- | --- |
-| `!NETCOREAPP` | ポリフィル有効 | **ポリフィル無効（エラー）** | ポリフィル無効 |
-| `!NET6_0_OR_GREATER` | ポリフィル有効 | **ポリフィル無効（エラー）** | ポリフィル無効 |
-| `!NET7_0_OR_GREATER` | ポリフィル有効 | ポリフィル有効 | ポリフィル無効 |
+つまり、本ポリフィルは .NET Framework 上で動く限り本家 .NET 7 と例外型が一致しない。
+これは委譲型ポリフィルの構造的な限界である。
+委譲先（.NET Framework の `OrderBy`）の挙動がそのまま出てくるため、委譲先自体が本家と異なる部分は再現できない。
 
-`!NET7_0_OR_GREATER` を使うことで、.NET 6 を含めた .NET 7 未満の環境すべてでポリフィルが有効になり、.NET 7 以降では自動的に本家 LINQ へ切り替わる。
+例外型でハンドリングしているコードを移行する場合はこの差異に注意し、そもそも任意の型を並び替える場合は `IComparer<T>` オーバーロードで比較を明示しておくのが安全である。
+
+---
+
+## 移行ガード
+
+本ポリフィルは `#if !NET7_0_OR_GREATER` で囲む。
+`Order` / `OrderDescending` は .NET 6 以前に存在しないため、`!NETCOREAPP` や `!NET6_0_OR_GREATER` を条件にすると .NET 5 / .NET 6 向けビルドでポリフィルが無効化され、コンパイルエラーになる。
+「対象メソッドが追加されたバージョン以上で無効化する」というシンボル選択の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
 
 ---
 
 ## 注意点
 
-- **戻り値型は `IOrderedEnumerable<T>` にする**: `IEnumerable<T>` を返す実装は動作こそするが、`ThenBy` / `ThenByDescending` を連結できず本家と非互換になる。恒等ラムダを渡す `OrderBy` / `OrderByDescending` はそのまま `IOrderedEnumerable<T>` を返すため、戻り値型を明示するだけで互換性を維持できる。
-- **要素型に順序が定義されている必要がある**: 引数なしオーバーロードは `Comparer<T>.Default` を使う。要素型が `IComparable` / `IComparable<T>` を実装しておらず、既定の比較子も解決できない場合、列挙時（ソート実行時）に例外が発生する。既定比較子自体は `ArgumentException`（メッセージ: "At least one object must implement IComparable."）を投げるが、それが表面化する例外型は実行環境で異なる。.NET Framework の `OrderBy` は内部ソートで比較例外をラップしないため、`ArgumentException` がそのまま伝播する。一方、.NET Core 3.0 以降（本家 .NET 7 の `Order` を含む）は内部ソートが比較例外を `InvalidOperationException`（メッセージ: "Failed to compare two elements in the array."、内側例外が上記 `ArgumentException`）にラップする。例外型でハンドリングする場合はこの差異に注意し、任意の型を並び替える場合はそもそも `IComparer<T>` オーバーロードで比較を明示するのが安全である。
-- **遅延評価である**: `Order` / `OrderDescending` は `OrderBy` と同じく遅延評価であり、`foreach` や `.ToList()` の時点で初めてソートが実行される。`source` が `null` の場合の `ArgumentNullException` は呼び出し時点で即座に投げられる（本メソッドは `yield return` を含まないため）。
 - **並び替えは安定ソート**: 内部の `OrderBy` が安定ソートであるため、同一キーの要素は入力順を保つ。この挙動は本家 `Order` と一致する。
+- **遅延評価である**: `Order` / `OrderDescending` は `OrderBy` と同じく遅延評価であり、`foreach` や `.ToList()` の時点で初めてソートが実行される。`source` が `null` の場合の `ArgumentNullException` は呼び出し時点で即座に投げられる。
+- **既定比較子に依存しない書き方を優先する**: 前述のとおり、順序が定義されていない型への引数なしオーバーロードは実行時例外になる。任意の型を扱う場面では `IComparer<T>` オーバーロードで比較を明示する。
 
 ---
 
@@ -210,33 +193,34 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
-| 自作ポリフィル（本記事） | 外部依存なし・戻り値型を本家に合わせられる | 実装・保守の手間がある | 依存を最小化したいプロジェクト |
-| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・`Order` への移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
+| 委譲型ポリフィル（本記事） | 実装が数行・アルゴリズム起因のバグが入らない | 委譲先と本家の挙動差（例外型）は再現できない | `Order` の記法を移行前から使いたい場合 |
+| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・.NET 7 移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
 | .NET 7 へのアップグレード | 根本的解決・言語機能も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
 
-`OrderBy(x => x)` の直書きは追加コードこそ不要だが、後日 .NET 7 へ移行して `Order` に統一する際に使用箇所を洗い出して置換する手間が残る。
-本記事のポリフィルを導入しておけば、移行前から `Order` で記述でき、移行時にはファイルを残したまま条件付きコンパイルが自動で本家へ切り替える。
+`OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。
+ポリフィルを導入しておけば移行前から `Order` で記述でき、移行時には条件付きコンパイルが自動で本家へ切り替える。
 
 ---
 
 ## まとめ
 
-.NET 7 で追加された `Order`・`OrderDescending` の 2 メソッドと、.NET Framework 環境へのバックポート手法を解説した。
+`Order`・`OrderDescending` のポリフィルは、既存 API への委譲だけで完結する最小構成の実装である。
+そのぶん品質を決めるのは互換性の詰めであり、押さえるべき点は 2 つに集約される。
 
-実装において重要なポイントは以下の 3 点である。
+| 論点 | 判断 |
+| --- | --- |
+| 戻り値型 | `IOrderedEnumerable<T>` を維持し、`ThenBy` 連結の互換性を確保する |
+| ソート時例外 | .NET Framework 上では本家と例外型が異なる。比較を `IComparer<T>` で明示して回避する |
 
-- **戻り値型を `IOrderedEnumerable<T>` にする**: 本家と同じく `ThenBy` を連結できるようにするため、`IEnumerable<T>` ではなく `IOrderedEnumerable<T>` を返す。
-- **`#if !NET7_0_OR_GREATER` を選択する**: .NET 6 以前にはこれらのメソッドが存在しないため、`!NETCOREAPP` や `!NET6_0_OR_GREATER` では .NET 6 環境でエラーになる。
-- **既定の比較子に依存する場合の例外に注意する**: 引数なしオーバーロードは要素型の順序が定義されていることを前提とする。任意型では `IComparer<T>` オーバーロードを使う。
-
-| メソッド | 評価戦略 | 戻り値型 | 実装の要点 |
-| --- | --- | --- | --- |
-| `Order` | 遅延 | `IOrderedEnumerable<T>` | `OrderBy(x => x)` に委譲 |
-| `OrderDescending` | 遅延 | `IOrderedEnumerable<T>` | `OrderByDescending(x => x)` に委譲 |
+イテレータを自作するポリフィル（[基礎編](/ja/articles/linq-backport-netframework-to-net5/)）と本記事の委譲型のどちらを選ぶかは、バックポート対象と同じ処理が既存 API の組み合わせで表現できるかで決まる。
+表現できるなら委譲型のほうが安全で、表現できないときだけイテレータを書く。
 
 ---
 
 ## 関連記事
 
-- [Chunk・MaxBy・MinBy・DistinctBy を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net6/)
-- [Append・Prepend・TakeLast・SkipLast を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net5/)
+- [遅延評価を壊さない LINQ ポリフィルの設計原則 — Append・Prepend・TakeLast・SkipLast の実装](/ja/articles/linq-backport-netframework-to-net5/)
+- [GroupBy と全件ソートによる回避コードをなくす — Chunk・MaxBy・MinBy・DistinctBy の実装](/ja/articles/linq-backport-netframework-to-net6/)
+- [セレクタなし ToDictionary の実現 — オーバーロード解決と notnull 制約の設計](/ja/articles/linq-backport-netframework-to-net8/)
+- [GroupBy を経由しないキー集計 — CountBy・AggregateBy・Index の辞書ベース実装](/ja/articles/linq-backport-netframework-to-net9/)
+- [SQL の外部結合を LINQ で表現する — LeftJoin・RightJoin・Shuffle の実装](/ja/articles/linq-backport-netframework-to-net10/)

@@ -1,69 +1,80 @@
 ---
 layout: article-en
-title: "Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework"
+title: "Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxBy, MinBy and DistinctBy"
 date: 2026-07-13
 category: C#
-excerpt: "Backporting Chunk, MaxBy, MinBy, and DistinctBy to .NET Framework as polyfills, using #nullable enable and conditional compilation for a zero-cost migration."
+excerpt: "Measuring the runtime cost of GroupBy and full-sort workaround idioms, then replacing them with Chunk, MaxBy, MinBy and DistinctBy polyfills."
 ---
 
 ## Overview
 
-The LINQ methods added in .NET 6 — `Chunk`, `MaxBy`, `MinBy` and `DistinctBy` — each express a "key-based or fixed-size" operation in a single call. Because .NET Framework lacks them, the equivalent must be spelled out with verbose combinations of `GroupBy` or `OrderByDescending().First()`.
+`OrderByDescending(x => x.Price).First()` and `GroupBy(x => x.Key).Select(g => g.First())` appear over and over in real .NET Framework codebases.
+They are workaround idioms for "element with the maximum key" and "distinct by key" — and their runtime cost is out of proportion to what they compute.
+The code sorts the entire sequence to fetch one element, and builds per-key element lists just to discard everything but the first.
 
-This article enumerates the **four LINQ methods added in .NET 6** (`Chunk`, `MaxBy`, `MinBy`, `DistinctBy`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals. It also covers a modern implementation style using `#nullable enable` and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 6 or later.
+.NET 6 added `Chunk`, `MaxBy`, `MinBy` and `DistinctBy` as dedicated operators that eliminate both the verbosity and the cost of these idioms.
+This article measures what each workaround actually pays, then implements polyfills that bring the same improvement to .NET Framework.
+It also covers the version-specific migration guard that first becomes necessary with this batch of methods.
 
 ---
 
 ## Prerequisites / Environment
 
-- Frameworks: .NET Framework 4.8 / .NET 6+
+- Frameworks: .NET Framework 4.8 (backport target) / .NET 6+ (future migration target)
 - APIs: LINQ `Chunk`, `MaxBy`, `MinBy`, `DistinctBy`
-- Migration guard: `#if !NET6_0_OR_GREATER`
+- Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET6_0_OR_GREATER`
+- Language version: the implementation uses `#nullable enable` and `using var`, requiring C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (to stay on C# 7.3, replace `using var` with a plain `using` and drop `#nullable enable`)
 
 ---
 
-## Problem
+## Problem: What the Workaround Idioms Cost
 
-The following LINQ methods added in .NET 6 are unavailable in .NET Framework environments.
+The following methods added in .NET 6 are unavailable on .NET Framework.
 
 | Method | Added in | Description |
 | --- | --- | --- |
-| `Chunk<T>` | .NET 6.0 | Splits a sequence into chunks of a specified maximum size |
-| `MaxBy<T, TKey>` | .NET 6.0 | Returns the element with the maximum key value |
-| `MinBy<T, TKey>` | .NET 6.0 | Returns the element with the minimum key value |
-| `DistinctBy<T, TKey>` | .NET 6.0 | Filters elements based on the uniqueness of a specified key |
+| `Chunk<T>` | .NET 6.0 | Splits a sequence into chunks of at most the given size |
+| `MaxBy<T, TKey>` | .NET 6.0 | Returns the element whose key is the maximum |
+| `MinBy<T, TKey>` | .NET 6.0 | Returns the element whose key is the minimum |
+| `DistinctBy<T, TKey>` | .NET 6.0 | Filters elements by key uniqueness |
 
-Without these methods, developers are forced to write workarounds such as the following.
+Producing the same results without them requires workaround idioms.
 
-- Simulate `Chunk` using index-based `GroupBy`.
-- Replace `MaxBy` with `OrderByDescending(x => x.Key).FirstOrDefault()`, which sorts the entire sequence.
-- Replace `DistinctBy` with `GroupBy(x => x.Key).Select(g => g.First())`.
+| Goal | Workaround idiom | Runtime cost |
+| --- | --- | --- |
+| Split into chunks | Indexed `Select` + `GroupBy(t => t.i / size)` | Groups all elements on first enumeration, plus intermediate tuples |
+| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort |
+| Distinct by key | `GroupBy(x => x.Key).Select(g => g.First())` | Full per-key element lists |
 
-These workarounds reduce code readability and introduce unnecessary overhead — the `MaxBy` replacement, for example, performs a full sort when only a single linear pass is required.
+The problem is not only verbosity.
+It is the entrenched mismatch between goal and cost: paying for a full sort when one element is needed, and keeping every element of a group whose head is the only element used.
 
 ---
 
-## Background
+## Root Cause / Background
 
-.NET Framework 4.8 was the final release of the framework. The period from .NET Core through .NET 5 focused mainly on rewriting LINQ internals for performance rather than adding large numbers of new APIs.
-
-.NET 6 introduced a significant batch of convenience methods. `Chunk`, `MaxBy`, `MinBy`, and `DistinctBy` were all first added in .NET 6.0 and are not available in any earlier runtime.
-
-The four methods added between .NET Framework 4.8 and .NET 5 (`Append`, `Prepend`, `TakeLast`, `SkipLast`) are covered in a [separate article](/articles/linq-backport-netframework-to-net5/).
+After feature development for .NET Framework 4.8 ended, LINQ changes through .NET 5 centered on internal performance work, with few new operators.
+.NET 6 was the first release to ship this batch — `Chunk`, `MaxBy`, `MinBy`, `DistinctBy` — and none of them exist in .NET 5 or earlier.
+`MaxBy`, `MinBy` and `DistinctBy` operate by key, while `Chunk` splits elements by size; the criteria differ, but all four previously required composing several methods.
+The fact that they are missing from .NET 5 as well directly drives the migration-guard symbol choice discussed later.
 
 ---
 
 ## Solution
 
-By placing extension methods in the same namespace as the original LINQ (`System.Linq`), existing source files pick up the polyfills automatically without any changes — any file that already has `using System.Linq;` gains the missing methods transparently.
+The extension methods are defined in the original `System.Linq` namespace so existing code picks them up transparently.
+The namespace strategy and the validation/iterator split are justified in the [series foundation article](/articles/linq-backport-netframework-to-net5/); this article focuses on what is specific to these four methods.
 
-A `#if !NET6_0_OR_GREATER` guard ensures the implementation is automatically disabled when the project is later upgraded to .NET 6 or later. No file deletions or code rewrites are needed at migration time.
+Two points are specific here.
+First, the four methods split into two evaluation strategies — lazy (`Chunk`, `DistinctBy`) and eager (`MaxBy`, `MinBy`) — and the method structure must follow each.
+Second, the migration guard must be `!NET6_0_OR_GREATER`, not `!NETCOREAPP`.
 
 ---
 
 ## Implementation
 
-The following is a complete polyfill for all four methods. Copy it into a file such as `LinqExtensions.Net6.cs` in your project.
+The following is the complete polyfill for all four methods.
+Add it to the project as, for example, `LinqExtensions.Net6.cs`.
 
 ```csharp
 #nullable enable
@@ -71,12 +82,12 @@ The following is a complete polyfill for all four methods. Copy it into a file s
 using System;
 using System.Collections.Generic;
 
-#if !NET6_0_OR_GREATER // Active only in environments below .NET 6 (e.g. .NET Framework)
+#if !NET6_0_OR_GREATER // Active only below .NET 6.0 (e.g. .NET Framework)
 
 namespace System.Linq
 {
     /// <summary>
-    /// Backports .NET 6.0 LINQ methods to older target frameworks.
+    /// Provides extension methods that backfill LINQ methods introduced in .NET 6.0 for older target frameworks.
     /// </summary>
     public static partial class LinqExtensions
     {
@@ -234,84 +245,15 @@ namespace System.Linq
 #endif
 ```
 
-The class is active only when the `NET6_0_OR_GREATER` symbol is not defined — that is, in any runtime below .NET 6, including .NET Framework.
+The class is active only when the `NET6_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 6, including .NET Framework.
 
 ---
 
-## Design: Eager vs. Lazy Evaluation
+## What Each Replacement Buys
 
-The four methods split into two evaluation strategies, each requiring a different method structure.
+### `MaxBy` / `MinBy`: From Full Sort to Single Pass
 
-**Lazy-evaluation methods (`Chunk` / `DistinctBy`)** are implemented as iterator blocks using `yield return`. They do not process any data until the caller iterates the result via `foreach` or `.ToList()`. Because argument validation is also deferred, the public method and the private `~Iterator` method must be kept separate.
-
-**Eager-evaluation methods (`MaxBy` / `MinBy`)** contain no `yield return`. They traverse the entire sequence immediately when called, so argument validation also runs immediately. Method splitting is not required.
-
-The following illustrates what goes wrong when a lazy method is incorrectly merged into one.
-
-```csharp
-// Bad design — validation and iterator merged into one method
-public static IEnumerable<TSource> DistinctBy<TSource, TKey>(
-    this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
-{
-    if (source == null) throw new ArgumentNullException(nameof(source)); // (1)
-
-    var knownKeys = new HashSet<TKey>();
-    foreach (var item in source) // Because yield return exists, (1) only executes here
-    {
-        if (knownKeys.Add(keySelector(item)))
-        {
-            yield return item;
-        }
-    }
-}
-```
-
-A method containing `yield return` does not execute any code when it is called. Passing `null` to the above method returns without throwing — the null check at `(1)` is skipped — and the `ArgumentNullException` only surfaces when the caller later enumerates the result. The error origin and the exception site are separated, making debugging difficult.
-
-Splitting the method into a public wrapper and a private iterator ensures that argument validation runs at the call site. This pattern is used throughout the .NET runtime's own LINQ implementation.
-
----
-
-## Method Walkthroughs
-
-### `Chunk<T>` — Split into fixed-size groups
-
-Splits a sequence into chunks of at most `size` elements each.
-
-```csharp
-var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
-// result: [1, 2], [3, 4], [5]
-```
-
-#### How Chunk works
-
-An array of `size` elements is pre-allocated, then filled sequentially.
-
-```csharp
-var chunk = new TSource[size]; // Pre-allocate for the full chunk size
-chunk[0] = enumerator.Current;
-int count = 1;
-
-while (count < size && enumerator.MoveNext())
-{
-    chunk[count++] = enumerator.Current;
-}
-
-if (count < size)
-{
-    Array.Resize(ref chunk, count); // Resize only for the final partial chunk
-}
-
-yield return chunk;
-```
-
-`Array.Resize` is called only for the last chunk when the total element count is not a multiple of `size`. All other chunks are returned using the pre-allocated array as-is, keeping unnecessary allocations to a minimum.
-
----
-
-### `MaxBy<T, TKey>` / `MinBy<T, TKey>` — Element with the maximum or minimum key
-
-Returns the element whose key is the largest or smallest. Unlike `Max()` and `Min()`, which return the key value itself, `MaxBy` and `MinBy` return **the original element** corresponding to that key.
+The `OrderByDescending(...).First()` idiom sorts everything to fetch one element.
 
 ```csharp
 var products = new[]
@@ -321,13 +263,15 @@ var products = new[]
     new { Name = "C", Price = 200 },
 };
 
-var mostExpensive = products.MaxBy(p => p.Price);
-// mostExpensive: { Name = "A", Price = 300 }
+// Workaround: O(n log n) full sort
+var before = products.OrderByDescending(p => p.Price).First();
+
+// MaxBy: O(n) single pass
+var after = products.MaxBy(p => p.Price);
+// after: { Name = "A", Price = 300 }
 ```
 
-#### How MaxBy works
-
-A single pass through the sequence tracks the current maximum key and the corresponding element, updating them whenever a larger key is found.
+Internally, the polyfill walks the sequence once, tracking the current maximum key and its element.
 
 ```csharp
 var maxElement = enumerator.Current;
@@ -338,7 +282,7 @@ while (enumerator.MoveNext())
     var currentElement = enumerator.Current;
     var currentKey = keySelector(currentElement);
 
-    if (comparer.Compare(currentKey, maxKey) > 0) // Does the current key exceed the maximum?
+    if (comparer.Compare(currentKey, maxKey) > 0) // Does the current key beat the maximum?
     {
         maxElement = currentElement;
         maxKey = currentKey;
@@ -348,13 +292,13 @@ while (enumerator.MoveNext())
 return maxElement;
 ```
 
-This avoids the $O(n \log n)$ full sort required by `OrderByDescending(...).FirstOrDefault()`, performing the work in a single linear pass — $O(n)$. `MinBy` is structurally identical, with only the comparison direction changed from `> 0` to `< 0`.
+Removing the sort drops the complexity from $O(n \log n)$ to $O(n)$ and eliminates the sort workspace.
+`MinBy` merely flips the comparison from `> 0` to `< 0`.
+Note that where `Max()` / `Min()` return the key value itself, `MaxBy` / `MinBy` return the **original element** that carries the key.
 
----
+### `DistinctBy`: From Group Building to `HashSet` Checks
 
-### `DistinctBy<T, TKey>` — Deduplicate by key
-
-Where `Distinct()` filters on element identity, `DistinctBy` filters on the **uniqueness of a specified key**, returning the first element encountered for each distinct key value.
+The `GroupBy(...).Select(g => g.First())` idiom makes every group hold all its elements even though only the head is used.
 
 ```csharp
 var products = new[]
@@ -364,84 +308,139 @@ var products = new[]
     new { Name = "C", Category = "Food" },
 };
 
-var result = products.DistinctBy(p => p.Category);
-// result: { Name = "A", Category = "Food" }, { Name = "B", Category = "Tech" }
+// Workaround: build per-key element lists, then take each head
+var before = products.GroupBy(p => p.Category).Select(g => g.First());
+
+// DistinctBy: stream elements through a seen-key check
+var after = products.DistinctBy(p => p.Category);
+// after: { Name = "A", Category = "Food" }, { Name = "B", Category = "Tech" }
 ```
 
-#### How DistinctBy works
-
-A `HashSet<TKey>` tracks seen keys. An element is yielded only if its key has not been seen before.
+Internally, the polyfill adds each key to a `HashSet<TKey>` and yields only the elements whose key was not seen before.
 
 ```csharp
-var knownKeys = new HashSet<TKey>(comparer); // O(1) membership test and insertion
+var knownKeys = new HashSet<TKey>(comparer); // O(1) registration and lookup
 
 foreach (var item in source)
 {
-    if (knownKeys.Add(keySelector(item))) // Returns true if the key was newly added
+    if (knownKeys.Add(keySelector(item))) // true when the key is new
     {
-        yield return item; // Emit only the first occurrence of each key
+        yield return item;
     }
 }
 ```
 
-`HashSet.Add` returns `true` when the key did not previously exist and `false` when it did. This yields unique elements in their original order in a single pass, with space complexity $O(\text{distinct count})$.
+Only keys are retained — element bodies are never accumulated (space complexity $O(\text{unique keys})$).
+Unlike `GroupBy`, nothing is read ahead: elements stream out lazily, one at a time, in their original order.
+
+### `Chunk`: From Index Arithmetic to Sequential Slicing
+
+Grouping by `index / size` allocates intermediate tuples, and `GroupBy` reads the entire source on first enumeration.
+`Chunk` slices arrays of at most `size` elements as it enumerates.
+
+```csharp
+var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
+// result: [1, 2], [3, 4], [5]
+```
+
+Internally, an array of `size` elements is pre-allocated and filled; only a trailing partial chunk is trimmed with `Array.Resize`.
+
+```csharp
+var chunk = new TSource[size]; // Pre-allocate size elements
+chunk[0] = enumerator.Current;
+int count = 1;
+
+while (count < size && enumerator.MoveNext())
+{
+    chunk[count++] = enumerator.Current;
+}
+
+if (count < size)
+{
+    Array.Resize(ref chunk, count); // Resize only the trailing partial chunk
+}
+
+yield return chunk;
+```
+
+Each chunk is built only after the previous one is yielded, so the up-front whole-sequence grouping disappears.
 
 ---
 
-## Choosing the Right Conditional-Compilation Symbol
+## Two Evaluation Strategies, Two Method Shapes
 
-This implementation uses `#if !NET6_0_OR_GREATER`, which differs from the `#if !NETCOREAPP` guard used in the [.NET 5 backport article](/articles/linq-backport-netframework-to-net5/).
+The four methods split into two evaluation strategies, and their structure follows suit.
 
-The `NETCOREAPP` symbol is defined for .NET Core and all versions of .NET 5 and later. Using it would disable the polyfill on .NET 5 builds — but `Chunk`, `MaxBy`, `MinBy`, and `DistinctBy` do not exist in .NET 5, so that would cause a compile error.
+**Lazy methods (`Chunk` / `DistinctBy`)** are iterators built on `yield return` and process nothing until enumerated.
+Because `yield return` also defers argument checks, the public method and the `~Iterator` method are separated to make exceptions immediate.
+The rationale and the failure mode of skipping this split are covered in [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/).
+
+**Eager methods (`MaxBy` / `MinBy`)** contain no `yield return`; they scan the whole sequence at call time and return a single result.
+Argument checks also run at call time, so no separation is needed.
+
+Whether the return value is a sequence or a single element determines the evaluation strategy, and the strategy determines the method shape.
+That is the order in which to make the structural decision when writing a polyfill.
+
+---
+
+## Migration Guard: The First Case That Needs a Version-Specific Symbol
+
+The `#if !NETCOREAPP` guard used in the [foundation article](/articles/linq-backport-netframework-to-net5/) does not work for this batch.
+The `NETCOREAPP` symbol is also defined on .NET Core and .NET 5, so `!NETCOREAPP` would disable the polyfill in a .NET 5 build.
+`Chunk` and the other three methods do not exist in .NET 5, so the build breaks at that point.
 
 | Symbol | .NET Framework | .NET 5 | .NET 6+ |
 | --- | --- | --- | --- |
-| `!NETCOREAPP` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET6_0_OR_GREATER` | Polyfill enabled | Polyfill enabled | Polyfill disabled |
+| `!NETCOREAPP` | Polyfill active | **Polyfill disabled (build error)** | Polyfill disabled |
+| `!NET6_0_OR_GREATER` | Polyfill active | Polyfill active | Polyfill disabled |
 
-`!NET6_0_OR_GREATER` enables the polyfill on all runtimes below .NET 6, including .NET 5, and disables it automatically once the project targets .NET 6 or later.
+The correct rule is to disable at and above the version that introduced the methods, which here means `#if !NET6_0_OR_GREATER`.
+Generalized: for methods added in .NET X, guard with `#if !NETX_0_OR_GREATER`.
+The backports for later versions (such as `Order` in .NET 7) apply the same rule.
 
 ---
 
 ## Caveats
 
-- **Empty sequences with `MaxBy` / `MinBy`**: Passing an empty sequence throws `InvalidOperationException`. This matches the behavior of the .NET 6 originals. Use `.Any()` to verify the sequence has elements before calling, or wrap the call in a `try-catch`.
-- **The last chunk from `Chunk`**: When the total element count is not a multiple of `size`, the final chunk is smaller than `size`. Code that assumes all chunks are a fixed size is incorrect.
-- **`null` keys in `DistinctBy`**: If the key selector returns `null`, all `null` keys are treated as equal. Only the first element with a `null` key is yielded.
-- **`#nullable enable` scope**: The directive at the top of the file enables nullable analysis for the entire file. If the project already sets `<Nullable>enable</Nullable>` globally, including the directive again is harmless.
+- **`MaxBy` / `MinBy` on an empty sequence**: an empty source throws `InvalidOperationException`, matching the .NET 6 built-in behavior. Check with `.Any()` beforehand or wrap in `try-catch`.
+- **Size of the trailing chunk**: when the element count is not a multiple of `size`, the last chunk is smaller. Caller code that assumes uniform chunk sizes is incorrect.
+- **`DistinctBy` and `null` keys**: `null` keys compare equal to each other, so only the first element with a `null` key is emitted.
+- **Scope of `#nullable enable`**: the directive at the top of the file enables the annotation context file-wide. Repeating it is harmless even when the project sets `<Nullable>enable</Nullable>` globally.
 
 ---
 
-## Alternatives
+## Alternatives / Comparison
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Custom polyfill (this article) | No external dependencies; full control over the code | Requires implementation effort | Projects that minimize dependencies |
-| MoreLINQ (NuGet) | Rich method set; already tested | Adds an external dependency | Projects that need many additional LINQ methods |
-| Upgrade to .NET 6 | Resolves the root cause; gains performance improvements | Migration cost | When migration is technically and organizationally feasible |
+| Hand-rolled polyfill (this article) | No dependency; also fixes the complexity problems | Implementation effort | Projects minimizing dependencies |
+| Keep the workaround idioms | No extra code | Complexity and allocation waste persists | Data that is always tiny |
+| MoreLINQ (NuGet) | Rich, battle-tested method set | Adds an external dependency | Projects needing many extra methods |
+| Upgrade to .NET 6 | Root fix plus performance gains | Migration cost | When migration is feasible |
 
-`MoreLINQ` (NuGet package name: `morelinq`) includes equivalents of `Chunk` and `MaxBy`, among many others. However, package management in .NET Framework projects can be complex. If the requirement is limited to the four methods covered here, a self-contained polyfill is simpler to maintain.
+`MoreLINQ` (NuGet package `morelinq`) covers `Chunk` and `MaxBy` equivalents, but when only these four methods are needed, a dependency-free polyfill is simpler to maintain.
 
 ---
 
 ## Summary
 
-This article covered `Chunk`, `MaxBy`, `MinBy`, and `DistinctBy` — the four LINQ methods added in .NET 6 — and how to backport them safely to .NET Framework.
+Whether to keep the workaround idioms or replace them comes down to how much data the code processes and how often.
+A few dozen items rendered per screen refresh will not expose the problem; as volume and frequency grow, the cost of full sorts and intermediate group building stops being ignorable.
 
-Three implementation points are worth remembering.
+| Method | Workaround cost | Polyfill cost |
+| --- | --- | --- |
+| `MaxBy` / `MinBy` | $O(n \log n)$ full sort | $O(n)$ single pass |
+| `DistinctBy` | Per-key element lists | Key set only ($O(\text{unique keys})$) |
+| `Chunk` | Up-front whole-sequence grouping | Sequential per-chunk build ($O(size)$) |
 
-- **Distinguish evaluation strategies**: `Chunk` and `DistinctBy` are lazy; their public methods and private iterators must be kept separate. `MaxBy` and `MinBy` are eager; method splitting is not required.
-- **Use `#if !NET6_0_OR_GREATER`**: These four methods are also absent from .NET 5, so `!NETCOREAPP` would cause a compile error on .NET 5 builds.
-- **Watch out for empty-sequence exceptions**: `MaxBy` and `MinBy` throw `InvalidOperationException` on an empty sequence. This is identical to the .NET 6 originals.
-
-| Method | Evaluation | Space complexity | Algorithm summary |
-| --- | --- | --- | --- |
-| `Chunk` | Lazy | $O(size)$ | Pre-allocate array per chunk; resize only the final partial chunk |
-| `MaxBy` / `MinBy` | Eager | $O(1)$ | Single linear pass, tracking the running maximum/minimum |
-| `DistinctBy` | Lazy | $O(\text{distinct count})$ | `HashSet` for key tracking; emit in original order |
+The replacement itself is just adding polyfills with the original names and signatures, and the `#if !NET6_0_OR_GREATER` guard switches to the built-in implementations automatically upon migrating to .NET 6.
 
 ---
 
 ## Related Articles
 
-- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing Append, Prepend, TakeLast and SkipLast](/articles/linq-backport-netframework-to-net5/)
+- [Order and OrderDescending by Pure Delegation — A Minimal Polyfill with IOrderedEnumerable Compatibility](/articles/linq-backport-netframework-to-net7/)
+- [Selector-Free ToDictionary — Designing for Overload Resolution and the notnull Constraint](/articles/linq-backport-netframework-to-net8/)
+- [Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, AggregateBy and Index](/articles/linq-backport-netframework-to-net9/)
+- [Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin and Shuffle](/articles/linq-backport-netframework-to-net10/)
