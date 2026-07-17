@@ -118,7 +118,7 @@ The last child without a `DockPanel.Dock` value fills the remaining area, so the
 - **Avoid nesting scrollable controls directly:** placing a control with its own scrolling, such as a `ListBox`, directly inside a `ScrollViewer` can make the mouse wheel act on the wrong element.
   A `ListBox` already scrolls internally, so it is better given a height-constrained layout, such as a `*` row of a `Grid`, than wrapped in an outer `ScrollViewer`.
 - **Physical versus logical scrolling:** when `ScrollViewer.CanContentScroll` is `false`, which is the default, scrolling is physical, in pixel units; when it is `true`, scrolling is logical, by item.
-  A `ListBox` hosts its items in a `VirtualizingStackPanel`, which relies on logical scrolling to virtualize items; wrapping it in a `ScrollViewer`, whose default is `false`, forces physical scrolling and disables that virtualization, so this should be avoided for long lists.
+  A `ListBox` hosts its items in a `VirtualizingStackPanel`, which relies on logical scrolling to virtualize items; if `CanContentScroll` becomes `false`, the panel falls back to physical scrolling and its virtualization is lost, so this should be avoided for long lists.
 
 ---
 
@@ -126,7 +126,7 @@ The last child without a `DockPanel.Dock` value fills the remaining area, so the
 
 | Container | Scrolling behavior | Suited for |
 | --- | --- | --- |
-| `StackPanel` (vertical) | Does not constrain height; the `ScrollViewer` never scrolls | Short content that needs no scrolling |
+| `StackPanel` (vertical) | Does not constrain height, so the `ScrollViewer` does not scroll unless given an explicit `Height` or `MaxHeight` | Short content that needs no scrolling |
 | `Grid` with a `*` row | Passes the remaining height; scrolls when content overflows | Screens that separate headers or footers from a variable area |
 | `DockPanel` (`LastChildFill`) | Fits into the remaining area; scrolls when content overflows | Screens combining edge-docked elements with a main area |
 | Explicit `Height` / `MaxHeight` | Scrolls once the specified height is exceeded | A partial list with a fixed height cap |
