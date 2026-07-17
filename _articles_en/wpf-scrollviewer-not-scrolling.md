@@ -118,7 +118,7 @@ The last child without a `DockPanel.Dock` value fills the remaining area, so the
 - **Avoid nesting scrollable controls directly:** placing a control with its own scrolling, such as a `ListBox`, directly inside a `ScrollViewer` can make the mouse wheel act on the wrong element.
   A `ListBox` already scrolls internally, so it is better given a height-constrained layout, such as a `*` row of a `Grid`, than wrapped in an outer `ScrollViewer`.
 - **Physical versus logical scrolling:** when `ScrollViewer.CanContentScroll` is `false`, which is the default, scrolling is physical, in pixel units; when it is `true`, scrolling is logical, by item.
-  A `ListBox` hosts its items in a `VirtualizingStackPanel`, which relies on logical scrolling to virtualize items; if `CanContentScroll` becomes `false`, the panel falls back to physical scrolling and its virtualization is lost, so this should be avoided for long lists.
+  A data-bound `ListBox` in its default configuration hosts items in a `VirtualizingStackPanel`, which relies on logical scrolling to virtualize items; if `CanContentScroll` becomes `false`, the panel falls back to physical scrolling and its virtualization is lost, so this should be avoided for long lists.
 
 ---
 
