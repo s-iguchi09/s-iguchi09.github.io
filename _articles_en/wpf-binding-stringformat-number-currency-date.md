@@ -3,7 +3,7 @@ layout: article-en
 title: "Formatting Numbers, Currency, and Dates with Binding.StringFormat in WPF"
 date: 2026-07-17
 category: WPF
-excerpt: "A practical guide to formatting numbers, currency, and dates with Binding.StringFormat without a converter, including the culture and ContentControl constraints."
+excerpt: "A practical guide to formatting numbers, currency, and dates with Binding.StringFormat without a converter, including culture and ContentControl constraints."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ This article shows how to format numbers, currency, and dates with implementatio
 
 ## Prerequisites / Environment
 
-- Framework / Language: .NET 8 / C# 12 (`StringFormat` is also available from .NET Framework 4.0)
+- Framework / Language: .NET 8 / C# 12 (`StringFormat` is also available from .NET Framework 3.5 SP1)
 - Target control / feature: bindings on `TextBlock`, `TextBox`, `Label`, `Button`, and similar controls
 - Architecture: MVVM (numeric and date properties on a ViewModel displayed in the View)
 - Assumed knowledge: composite format strings and standard/custom format specifiers of `System.String.Format`
@@ -69,7 +69,7 @@ Numbers use standard and custom specifiers that control grouping and the number 
 
 Note that `P` (percent) multiplies the original value by 100 for display.
 To show `0.15` as "15%", the ViewModel keeps the ratio in the 0 to 1 range.
-When the value is already "15", append `%` with a custom format instead of using `P`.
+When the value is already "15", a custom format that appends `%` is used instead of `P`.
 
 ---
 
@@ -111,7 +111,7 @@ To display a specific order, a custom format such as `yyyy/MM/dd` makes each fie
 <TextBlock Text="{Binding OrderDate, StringFormat='{}{0:yyyy/MM/dd HH:mm}'}" />
 ```
 
-In custom formats, distinguish between `MM` (month) and `mm` (minute), and between `HH` (24-hour) and `hh` (12-hour).
+In custom formats, `MM` (month) differs from `mm` (minute), and `HH` (24-hour) differs from `hh` (12-hour).
 The names produced by `ddd` (abbreviated day name) and `dddd` (full day name) also depend on the culture, so a culture setting is required to render weekday names in a specific language.
 Changing the display format of the `DatePicker` control itself is covered in [Customising the DatePicker Display Format in WPF](/articles/wpf-datepicker-custom-format/).
 
@@ -166,7 +166,7 @@ FrameworkElement.LanguageProperty.OverrideMetadata(
 ```
 
 The second approach suits displaying the entire application with a consistent culture.
-When only some values must use a different culture, combine it with the first approach using `ConverterCulture`.
+When only some values must use a different culture, the first approach using `ConverterCulture` is combined with it.
 
 ---
 
@@ -193,15 +193,15 @@ Because `TextBlock.Text` and `TextBox.Text` are of type `string`, `StringFormat`
 ## Escaping Curly Braces
 
 When a format string begins with `{`, the XAML parser mistakes it for the start of a markup extension.
-To avoid this, prefix the string with an empty pair of curly braces `{}`.
-Alternatively, wrap the whole format in single quotes.
+To avoid this, the string is prefixed with an empty pair of curly braces `{}`.
+Alternatively, the whole format is wrapped in single quotes.
 
 ```xml
 <!-- Begins with {, so escape with {} -->
 <TextBlock Text="{Binding OrderDate, StringFormat={}{0:yyyy/MM/dd}}" />
 
-<!-- Wrapping in single quotes avoids the ambiguity as well -->
-<TextBlock Text="{Binding OrderDate, StringFormat='{}{0:yyyy/MM/dd}'}" />
+<!-- Wrapping in single quotes avoids the ambiguity as well ({} is unnecessary) -->
+<TextBlock Text="{Binding OrderDate, StringFormat='{0:yyyy/MM/dd}'}" />
 ```
 
 In a case with leading literal text, such as `StringFormat='Price: {0:C}'`, no escaping is needed because the string does not begin with `{`.
@@ -211,11 +211,11 @@ The `{}` escape is required only when the string begins with a placeholder.
 
 ## Notes
 
-- `StringFormat` works only when the target property is of type `string`. Use `ContentStringFormat` for the `Content` (object type) of a `ContentControl`.
+- `StringFormat` works only when the target property is of type `string`. `ContentStringFormat` is used for the `Content` (object type) of a `ContentControl`.
 - Even on a two-way binding, `StringFormat` applies only in the source-to-target direction. It does not affect parsing of user input (target to source).
 - When `Converter` and `StringFormat` are combined, the `Converter` is applied first and `StringFormat` is applied to its result.
-- The culture used for formatting defaults to `en-US`, not the OS regional setting. When the currency symbol or date order differs from what is expected, suspect the culture.
-- A composite format on a single `Binding` supports only the `{0}` placeholder. Use `MultiBinding` for multiple values.
+- The culture used for formatting defaults to `en-US`, not the OS regional setting. When the currency symbol or date order differs from what is expected, the culture is the likely cause.
+- A composite format on a single `Binding` supports only the `{0}` placeholder. `MultiBinding` is used for multiple values.
 
 ---
 
@@ -223,7 +223,7 @@ The `{}` escape is required only when the string begins with a placeholder.
 
 `Binding.StringFormat` is the lightest way to format a number, currency, or date for display without writing a converter.
 It is the first choice when the target is of type `string` and only a single value needs formatting.
-For `Label` and `Button`, choose `ContentStringFormat`; for combining multiple values, choose `MultiBinding.StringFormat`; and when a value transformation or complex conditional logic is required, choose `IValueConverter`.
+For `Label` and `Button`, `ContentStringFormat` is the choice; for combining multiple values, `MultiBinding.StringFormat`; and when a value transformation or complex conditional logic is required, `IValueConverter`.
 The following table summarizes the selection criteria by use case.
 
 | Approach | Applies to | Multiple values | Best suited for |
@@ -234,7 +234,7 @@ The following table summarizes the selection criteria by use case.
 | `IValueConverter` | Any type | Depends on the converter | Conditional logic, type conversion, or two-way parsing |
 
 Across all approaches, the shared caveat is that the culture used for formatting defaults to `en-US`.
-To display currency and dates for a region, make the culture explicit with `ConverterCulture` or by overriding the application-wide `Language` metadata.
+To display currency and dates for a region, the culture is made explicit with `ConverterCulture` or by overriding the application-wide `Language` metadata.
 
 ---
 
