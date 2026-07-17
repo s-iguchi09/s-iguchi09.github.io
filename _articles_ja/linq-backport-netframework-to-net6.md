@@ -128,7 +128,7 @@ namespace System.Linq
         // ==========================================
         // 2. MaxBy
         // ==========================================
-        public static TSource MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -136,7 +136,7 @@ namespace System.Linq
             return MaxBy(source, keySelector, comparer: null);
         }
 
-        public static TSource MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
+        public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -146,6 +146,8 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             if (!enumerator.MoveNext())
             {
+                // 参照型・null 許容値型では default(= null) を返し、非 null 値型のみ例外を投げる（本家 .NET 6 と同一）
+                if (default(TSource) is null) return default;
                 throw new InvalidOperationException("Sequence contains no elements.");
             }
 
@@ -170,7 +172,7 @@ namespace System.Linq
         // ==========================================
         // 3. MinBy
         // ==========================================
-        public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -178,7 +180,7 @@ namespace System.Linq
             return MinBy(source, keySelector, comparer: null);
         }
 
-        public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
+        public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -188,6 +190,8 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             if (!enumerator.MoveNext())
             {
+                // 参照型・null 許容値型では default(= null) を返し、非 null 値型のみ例外を投げる（本家 .NET 6 と同一）
+                if (default(TSource) is null) return default;
                 throw new InvalidOperationException("Sequence contains no elements.");
             }
 
@@ -402,7 +406,7 @@ yield return chunk;
 
 ## 注意点
 
-- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、`InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である。事前に `.Any()` で要素の存在を確認するか、`try-catch` で対処すること。
+- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、要素型が参照型または null 許容値型なら `default`（= `null`）を返し、非 null 値型（`int` や `struct` など）でのみ `InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である（戻り値型も `TSource?`）。非 null 値型で空になりうる場合は、事前に `.Any()` で要素の存在を確認するか、`try-catch` で対処すること。
 - **`Chunk` の末尾チャンクのサイズ**: 入力要素数が `size` の倍数でない場合、最後のチャンクは `size` より小さくなる。チャンクが常に一定サイズであることを前提とした呼び出し元の実装は誤りである。
 - **`DistinctBy` のキーと `null`**: キーに `null` が含まれる場合、`null` 同士は同一キーとして扱われ、最初に現れた `null` キー要素のみが出力される。
 - **`#nullable enable` の適用範囲**: ファイル先頭の `#nullable enable` はファイルスコープで有効化する。プロジェクト全体で `<Nullable>enable</Nullable>` を設定している場合でも、重複して記述することに害はない。

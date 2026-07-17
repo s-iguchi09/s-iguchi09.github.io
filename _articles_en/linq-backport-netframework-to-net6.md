@@ -128,7 +128,7 @@ namespace System.Linq
         // ==========================================
         // 2. MaxBy
         // ==========================================
-        public static TSource MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -136,7 +136,7 @@ namespace System.Linq
             return MaxBy(source, keySelector, comparer: null);
         }
 
-        public static TSource MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
+        public static TSource? MaxBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -146,6 +146,8 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             if (!enumerator.MoveNext())
             {
+                // Reference / nullable value types return default (null); only non-nullable value types throw (matches .NET 6)
+                if (default(TSource) is null) return default;
                 throw new InvalidOperationException("Sequence contains no elements.");
             }
 
@@ -170,7 +172,7 @@ namespace System.Linq
         // ==========================================
         // 3. MinBy
         // ==========================================
-        public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
+        public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -178,7 +180,7 @@ namespace System.Linq
             return MinBy(source, keySelector, comparer: null);
         }
 
-        public static TSource MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
+        public static TSource? MinBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey>? comparer)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
             if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
@@ -188,6 +190,8 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             if (!enumerator.MoveNext())
             {
+                // Reference / nullable value types return default (null); only non-nullable value types throw (matches .NET 6)
+                if (default(TSource) is null) return default;
                 throw new InvalidOperationException("Sequence contains no elements.");
             }
 
@@ -402,7 +406,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 
 ## Caveats
 
-- **`MaxBy` / `MinBy` on an empty sequence**: an empty source throws `InvalidOperationException`, matching the .NET 6 built-in behavior. Check with `.Any()` beforehand or wrap in `try-catch`.
+- **`MaxBy` / `MinBy` on an empty sequence**: for a reference or nullable value element type, an empty source returns `default` (`null`); only a non-nullable value type (such as `int` or a `struct`) throws `InvalidOperationException`. This matches the .NET 6 built-in behavior (the return type is `TSource?`). When the element type is a non-nullable value type and the sequence may be empty, check with `.Any()` beforehand or wrap in `try-catch`.
 - **Size of the trailing chunk**: when the element count is not a multiple of `size`, the last chunk is smaller. Caller code that assumes uniform chunk sizes is incorrect.
 - **`DistinctBy` and `null` keys**: `null` keys compare equal to each other, so only the first element with a `null` key is emitted.
 - **Scope of `#nullable enable`**: the directive at the top of the file enables the annotation context file-wide. Repeating it is harmless even when the project sets `<Nullable>enable</Nullable>` globally.
