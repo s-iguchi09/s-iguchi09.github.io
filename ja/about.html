@@ -7,6 +7,7 @@
   <meta charset="UTF-8">
   <title>概要 - Applications</title>
   {% include head.html %}
+  <meta name="description" content="s-iguchi と当サイトについて。WPF・XAML・C#・.NET デスクトップ開発の実装知見を、技術記事とオープンソースの Windows ツールとして公開しています。">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
      crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
@@ -19,22 +20,90 @@
 
   <section class="hero">
     <h1>概要</h1>
-    <p>このサイトおよび開発者に関する情報です。</p>
+    <p>このサイトの運営者・扱う内容・目的について。</p>
   </section>
 
   <section class="content-section">
     <h2>このサイトについて</h2>
     <p>
-      このサイトでは、s-iguchi が開発したアプリケーションを紹介しています。
-      各アプリケーションには、詳細な説明、機能、リポジトリリンクが含まれています。
+      当サイトは、WPF と .NET による Windows デスクトップ開発の実践的な知見を、2 つの形で公開しています。
+      具体的な実装課題を掘り下げる技術記事と、その過程で作成したオープンソースのツールです。
+      WPF で業務アプリケーションやユーティリティを開発する開発者に向けて、概要レベルの解説ではなく実装の参照になる情報を提供することを目的としています。
+    </p>
+    <p>
+      各記事は、実際に書いて動かしたコードに基づいて執筆しています。
+      対象フレームワークとバージョン、問題が起きる原因、動作する実装例、エッジケースと落とし穴、代替案とのトレードオフまでを扱います。
+      公式ドキュメントを言い換えるのではなく、そこでは省かれがちな細部を記録することを方針としています。
     </p>
   </section>
 
   <section class="content-section">
-    <h2>開発者について</h2>
+    <h2>扱うトピック</h2>
     <p>
-      主に .NET と WPF を使用して Windows アプリケーションを開発しています。
+      Windows デスクトップ開発と、それを支える C# の言語機能・ライブラリを中心に扱っています。
+    </p>
+    <ul>
+      <li><strong>WPF / XAML</strong> — 実アプリにおけるコントロール、データバインディング、スタイリング、仮想化、UI 挙動。</li>
+      <li><strong>C#</strong> — バージョンごとの言語機能と、日々のコードで効いてくる差異。</li>
+      <li><strong>LINQ と .NET API</strong> — 新しい .NET の演算子（.NET 10 まで）を .NET Framework にバックポートする手法を含む。</li>
+      <li><strong>.NET Framework からモダン .NET へ</strong> — 移行時の注意点と、ターゲットフレームワーク間の互換性。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>運営者について</h2>
+    <p>
+      当サイトは、.NET と WPF による Windows デスクトップアプリケーションを開発する <strong>s-iguchi</strong> が制作・執筆しています。
       使いやすさ、シンプルで見やすい UI、そして日々の作業効率を高める実用的なツールの開発を重視しています。
+    </p>
+    <p>
+      記事の内容は、その開発の現場から直接生まれています。
+      実際のアプリケーションを作る中で直面した問題、各解決策の背後にある調査、そしてある手法を選んだ理由です。
+      下記の公開アプリケーションとソースコードは、記事が説明する内容の実践的な裏づけにあたります。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>公開アプリケーション</h2>
+      <a href="/ja/apps/" class="more-link">すべてのアプリを見る →</a>
+    </div>
+    <ul class="app-card-list">
+      <li class="app-card">
+        <a href="/ja/apps/wpf-standard-control-demo.html">
+          <h3>WPF 標準コントロール デモアプリ (.NET 10)</h3>
+          <p>最新の .NET 上で動作する WPF の標準コントロールを一覧できるデモアプリ。UI レイアウトやスタイリングの参照に役立ちます。</p>
+        </a>
+      </li>
+      <li class="app-card">
+        <a href="/ja/apps/wpf-messagebox-sample-creator.html">
+          <h3>WPF MessageBox サンプルクリエイター</h3>
+          <p>カスタマイズ可能な MessageBox のサンプルを生成するツール。UI プロトタイピングや挙動確認に役立ちます。</p>
+        </a>
+      </li>
+      <li class="app-card">
+        <a href="/ja/apps/xaml-extension-pack.html">
+          <h3>Xaml.ExtensionPack</h3>
+          <p>WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリ。NuGet パッケージとして配布しています。</p>
+        </a>
+      </li>
+      <li class="app-card">
+        <a href="/ja/apps/treepaste.html">
+          <h3>TreePaste</h3>
+          <p>コピーしたファイルをフォルダー構造を保ったまま貼り付ける Windows ツール。常駐とグローバルショートカットに対応します。</p>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>技術記事</h2>
+      <a href="/ja/articles/" class="more-link">すべての記事を見る →</a>
+    </div>
+    <p>
+      記事では WPF・XAML・C#・.NET のトピックを掘り下げて扱っています。
+      各記事は前提と対象環境を明示し、対処法だけでなく挙動の原因を説明し、複数の手法を選び分ける基準を示し、各解決策の制限事項にも触れます。
     </p>
   </section>
 
@@ -42,13 +111,13 @@
     <h2>GitHub</h2>
     <p>公開中のリポジトリや開発中のプロジェクトはこちらからご覧いただけます：</p>
     <p style="font-size: 1.1em; font-weight: bold;">
-      <a href="https://github.com/s-iguchi09" target="_blank">https://github.com/s-iguchi09</a>
+      <a href="https://github.com/s-iguchi09" target="_blank" rel="noopener">https://github.com/s-iguchi09</a>
     </p>
   </section>
 
   <section class="content-section">
     <h2>お問い合わせ</h2>
-    <p>ご連絡が必要な場合は、以下のメールアドレスからお気軽にお問い合わせください：</p>
+    <p>記事やアプリケーションに関するご質問・ご感想は、以下のメールアドレスからお気軽にお問い合わせください：</p>
     <p style="font-size: 1.1em; font-weight: bold;">
       <a href="mailto:siguchi09@gmail.com">siguchi09@gmail.com</a>
     </p>

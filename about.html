@@ -7,6 +7,7 @@
   <meta charset="UTF-8">
   <title>About - Applications</title>
   {% include head.html %}
+  <meta name="description" content="About s-iguchi and this site: hands-on WPF, XAML, C# and .NET desktop development knowledge, published as technical articles and open-source Windows tools.">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
      crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
@@ -19,36 +20,105 @@
 
   <section class="hero">
     <h1>About</h1>
-    <p>Information about the developer and the purpose of this website.</p>
+    <p>Who runs this site, what it covers, and why it exists.</p>
   </section>
 
   <section class="content-section">
-    <h2>About This Website</h2>
+    <h2>About This Site</h2>
     <p>
-      This website introduces applications developed by s-iguchi.
-      The goal is to provide clear explanations, features, and repository links for each application.
+      This site publishes hands-on knowledge about Windows desktop development with WPF and .NET, in two forms:
+      technical articles that work through concrete implementation problems, and open-source tools built while solving them.
+      It is written for developers who build line-of-business and utility applications on WPF and want practical implementation references rather than surface-level overviews.
+    </p>
+    <p>
+      Every article is grounded in code that has actually been written and run — covering the target framework and version,
+      the reason a problem occurs, a worked implementation, the edge cases and pitfalls, and the trade-offs against alternatives.
+      The aim is to document the details that official documentation leaves out, not to paraphrase it.
     </p>
   </section>
 
   <section class="content-section">
-    <h2>Developer</h2>
+    <h2>Areas of Focus</h2>
     <p>
-      I develop Windows applications using .NET and WPF, focusing on usability, clean UI design,
-      and practical tools that improve workflow efficiency.
+      The material centers on the Windows desktop stack and the C# language features and libraries that support it:
+    </p>
+    <ul>
+      <li><strong>WPF / XAML</strong> — controls, data binding, styling, virtualization, and UI behavior in real applications.</li>
+      <li><strong>C#</strong> — language features across versions and the differences that matter in day-to-day code.</li>
+      <li><strong>LINQ and .NET APIs</strong> — including backporting newer .NET operators (through .NET 10) to .NET Framework.</li>
+      <li><strong>.NET Framework to modern .NET</strong> — migration concerns and compatibility across target frameworks.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>About the Developer</h2>
+    <p>
+      This site is developed and written by <strong>s-iguchi</strong>, a developer working on Windows desktop applications with .NET and WPF.
+      The focus is on usability, clean UI design, and practical tools that improve everyday workflows.
+    </p>
+    <p>
+      The articles here come directly from that development work: problems met while building real applications,
+      the investigation behind each solution, and the reasoning for choosing one approach over another.
+      The applications and source code below are the practical counterpart to what the articles describe.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>Applications</h2>
+      <a href="/apps/" class="more-link">View all apps →</a>
+    </div>
+    <ul class="app-card-list">
+      <li class="app-card">
+        <a href="/apps/wpf-standard-control-demo.html">
+          <h3>WPF Standard Control Demo App (.NET 10)</h3>
+          <p>A demo application showcasing standard WPF controls running on the latest .NET. Useful as a reference for UI layout and styling.</p>
+        </a>
+      </li>
+      <li class="app-card">
+        <a href="/apps/wpf-messagebox-sample-creator.html">
+          <h3>WPF MessageBox Sample Creator</h3>
+          <p>A tool for generating customizable MessageBox samples. Helpful for UI prototyping and behavior testing.</p>
+        </a>
+      </li>
+      <li class="app-card">
+        <a href="/apps/xaml-extension-pack.html">
+          <h3>Xaml.ExtensionPack</h3>
+          <p>A lightweight, dependency-free XAML extension library for WPF, distributed as NuGet packages.</p>
+        </a>
+      </li>
+      <li class="app-card">
+        <a href="/apps/treepaste.html">
+          <h3>TreePaste</h3>
+          <p>A Windows tool that pastes copied files while preserving folder structure, with tray-resident behavior and a global shortcut.</p>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <div class="section-heading">
+      <h2>Technical Articles</h2>
+      <a href="/articles/" class="more-link">View all articles →</a>
+    </div>
+    <p>
+      The articles cover WPF, XAML, C# and .NET topics in depth.
+      Each one states its prerequisites and target environment, explains the cause behind a behavior rather than only the fix,
+      gives selection criteria for choosing between approaches, and notes the limitations of each solution.
     </p>
   </section>
 
   <section class="content-section">
     <h2>GitHub</h2>
-    <p>You can view my repositories and ongoing projects here:</p>
+    <p>Source code and ongoing projects are available on GitHub:</p>
     <p style="font-size: 1.1em; font-weight: bold;">
-      <a href="https://github.com/s-iguchi09" target="_blank">https://github.com/s-iguchi09</a>
+      <a href="https://github.com/s-iguchi09" target="_blank" rel="noopener">https://github.com/s-iguchi09</a>
     </p>
   </section>
 
   <section class="content-section">
     <h2>Contact</h2>
-    <p>If you would like to get in touch, feel free to contact me by email:</p>
+    <p>For questions or feedback about the articles or applications, feel free to get in touch by email:</p>
     <p style="font-size: 1.1em; font-weight: bold;">
       <a href="mailto:siguchi09@gmail.com">siguchi09@gmail.com</a>
     </p>
