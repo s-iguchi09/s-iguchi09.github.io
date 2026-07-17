@@ -47,7 +47,7 @@ The `C` inside `{0:C}` is the specifier within the placeholder, which is equival
 ```
 
 When a composite format string is used on a single `Binding`, the only placeholder available is `{0}`.
-To embed several values into one string, use `MultiBinding`, described later.
+To embed several values into one string, `MultiBinding` (described later) is used.
 
 ---
 
@@ -119,7 +119,7 @@ Changing the display format of the `DatePicker` control itself is covered in [Cu
 
 ## Formatting Multiple Values with MultiBinding
 
-To embed several properties into one string, use the `StringFormat` of a `MultiBinding`.
+To embed several properties into one string, the `StringFormat` of a `MultiBinding` is used.
 `StringFormat` is effective only when set on the `MultiBinding` itself; a `StringFormat` set on a child `Binding` is ignored.
 The number of placeholders must not exceed the number of child `Binding` objects.
 
