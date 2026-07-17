@@ -1,89 +1,69 @@
 ---
 layout: article-en
-title: "Backporting LeftJoin, RightJoin and Shuffle to .NET Framework"
+title: "Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin and Shuffle"
 date: 2026-07-16
 category: C#
-excerpt: "Backporting the .NET 10 LeftJoin, RightJoin, and Shuffle operators to .NET Framework with #nullable enable and conditional compilation."
+excerpt: "Implementing LeftJoin, RightJoin and Shuffle on .NET Framework, mapping them to SQL outer joins and covering the IQueryable translation pitfall."
 ---
 
 ## Overview
 
-.NET 10 adds genuinely useful operators to the public `Enumerable`: the outer joins `LeftJoin` and `RightJoin`, and `Shuffle`, which reorders a sequence at random. Their absence in .NET Framework means writing boilerplate workaround code for every join or random shuffle.
+An outer join that SQL writes with a single `LEFT JOIN` clause required composing three methods in LINQ — `GroupJoin`, `SelectMany` and `DefaultIfEmpty` — for over a decade.
+.NET 10 finally closes that gap by adding `LeftJoin` and `RightJoin` as first-class operators.
+Alongside them, random reordering — long imitated with the `OrderBy(_ => Guid.NewGuid())` pseudo-idiom — was standardized as `Shuffle`.
 
-This article covers the **three LINQ operators added in .NET 10** (the outer-join operators `LeftJoin` and `RightJoin`, and the random-ordering operator `Shuffle`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
-It also covers a modern implementation using `#nullable enable` and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 10 or later.
+Starting from the correspondence between SQL join clauses and LINQ idioms, this article implements polyfills that make the three operators available on .NET Framework.
+It then digs into a concern unique to this backport, born from the fact that outer joins live next door to database queries: applying the polyfill to `IQueryable<T>` silently breaks query translation.
 
 ---
 
 ## Prerequisites / Environment
 
-- Frameworks: .NET Framework 4.8 / .NET 10+
-- APIs: `LeftJoin` (two signatures), `RightJoin` (two signatures), and `Shuffle` (one signature)
-- Nullable context: `#nullable enable`
-- Migration guard: `#if !NET10_0_OR_GREATER`
-- Language version: because the polyfill uses nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`), set `LangVersion` to 9.0 or later (recommended: `latest`). The target framework and other project settings are left unchanged.
+- Frameworks: .NET Framework 4.8 (backport target) / .NET 10+ (future migration target)
+- APIs: LINQ `LeftJoin` (2 signatures), `RightJoin` (2 signatures), `Shuffle` (1 signature)
+- Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET10_0_OR_GREATER`
+- Language version: nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) require `LangVersion` 9.0 or later (recommended: `latest`). No other project configuration changes
 
 ---
 
-## Problem
+## How SQL Join Clauses Map to LINQ Idioms
 
-.NET 10 adds practical operators to the public `Enumerable` class for the first time in several releases.
-The additions are the outer-join operators `LeftJoin` and `RightJoin`, and the random-ordering operator `Shuffle`, and these are unavailable in .NET Framework environments.
+The three operators added in .NET 10 are the following.
 
-| Method | Added in | Description |
+| Method | Added in | Corresponding operation |
 | --- | --- | --- |
-| `LeftJoin<TOuter, TInner, TKey, TResult>` | .NET 10.0 | Performs a left outer equijoin that keeps every element of the outer sequence |
-| `RightJoin<TOuter, TInner, TKey, TResult>` | .NET 10.0 | Performs a right outer equijoin that keeps every element of the inner sequence |
-| `Shuffle<TSource>` | .NET 10.0 | Reorders the elements of a sequence into a random order |
+| `LeftJoin<TOuter, TInner, TKey, TResult>` | .NET 10.0 | SQL `LEFT OUTER JOIN` (keeps every outer element) |
+| `RightJoin<TOuter, TInner, TKey, TResult>` | .NET 10.0 | SQL `RIGHT OUTER JOIN` (keeps every inner element) |
+| `Shuffle<TSource>` | .NET 10.0 | Random reordering |
 
-Both `LeftJoin` and `RightJoin` also have an overload that accepts an `IEqualityComparer<TKey>`.
+LINQ before .NET 10 has no dedicated outer-join operator — only `Join` (inner join).
+An operation that SQL expresses in one clause mapped to this:
 
-Without these methods, .NET Framework environments require boilerplate workarounds to produce the same results.
+```sql
+-- SQL: keep employees with no matching department
+SELECT e.Name, d.DeptName
+FROM Employee e
+LEFT JOIN Department d ON e.DeptId = d.DeptId
+```
 
-- A left outer join is expressed by combining `GroupJoin` with `SelectMany` and `DefaultIfEmpty`.
-- Random ordering is approximated with a pseudo-idiom such as `OrderBy(_ => Guid.NewGuid())`.
+```csharp
+// LINQ (.NET 9 and earlier): composing GroupJoin + SelectMany + DefaultIfEmpty
+var result = employees
+    .GroupJoin(departments, e => e.DeptId, d => d.DeptId, (e, ds) => new { e, ds })
+    .SelectMany(g => g.ds.DefaultIfEmpty(), (g, d) => new { g.e.Name, d?.DeptName });
+```
 
-The former is boilerplate that is not the essence of the join, and a mistake in it produces an unintended join result.
-The latter does not guarantee a stable uniform distribution for the element count, and it is inefficient because it generates a key per element and sorts.
-
----
-
-## Background
-
-Each release of modern .NET has added operators to the public `Enumerable` class incrementally.
-.NET 6 added `Chunk`, `MaxBy`, `MinBy`, and `DistinctBy`; .NET 7 added `Order` and `OrderDescending`; .NET 8 added the selector-free `ToDictionary` overloads; and .NET 9 added `CountBy`, `AggregateBy`, and `Index`.
-
-.NET 10 standardizes the outer-join operators `LeftJoin` and `RightJoin`, long absent from standard LINQ, for the first time.
-The left and right outer joins that were previously expressed by hand with `GroupJoin` and `DefaultIfEmpty` are now provided as dedicated methods corresponding to SQL `LEFT JOIN` / `RIGHT JOIN`.
-`Shuffle`, which reorders a sequence into a random order, was added as well.
-`Shuffle` uses a non-cryptographic random number generator and removes both the inefficiency and the distribution bias of a pseudo-shuffle via `OrderBy`.
-
-These were first added in .NET 10.0 and are not available in any earlier runtime.
-
-The methods added between .NET Framework 4.8 and .NET 5 (`Append`, `Prepend`, `TakeLast`, `SkipLast`) are covered in a [separate article](/articles/linq-backport-netframework-to-net5/), the four methods added in .NET 6 in [another](/articles/linq-backport-netframework-to-net6/), `Order` / `OrderDescending` from .NET 7 in [another](/articles/linq-backport-netframework-to-net7/), the `ToDictionary` overloads from .NET 8 in [another](/articles/linq-backport-netframework-to-net8/), and `CountBy` / `AggregateBy` / `Index` from .NET 9 in [another](/articles/linq-backport-netframework-to-net9/).
-
----
-
-## Solution
-
-By placing extension methods in the same namespace as the original LINQ (`System.Linq`), existing source files pick up the polyfills automatically without any changes.
-Any file that already has `using System.Linq;` gains the missing methods transparently.
-
-A `#if !NET10_0_OR_GREATER` guard ensures the implementation is skipped entirely once the project is upgraded to .NET 10 or later.
-No file deletions or code rewrites are needed at migration time.
-
-There are three key implementation details.
-The first is to express `LeftJoin` and `RightJoin` with the same `GroupJoin` + `SelectMany` + `DefaultIfEmpty` composition as the originals.
-The second is to match the original nullable annotation on the result-selector argument (`TInner?` for the inner element in `LeftJoin`, `TOuter?` for the outer element in `RightJoin`).
-The third is to implement `Shuffle` as a deferred iterator like the original while securing a thread-safe random source even on .NET Framework, which has no `Random.Shared`.
+The composed idiom buries the intent — "outer join" — in structure, and misplacing `SelectMany` or `DefaultIfEmpty` quietly turns it into an inner or cross join.
+Random ordering has the same shape of problem: `OrderBy(_ => Guid.NewGuid())` generates a key per element, pays for a full sort, and offers no uniformity guarantee as a shuffle.
 
 ---
 
 ## Implementation
 
-The following is a complete polyfill for `LeftJoin` (two signatures), `RightJoin` (two signatures), and `Shuffle` (one signature).
-`LeftJoin` and `RightJoin` are built on `GroupJoin` just like the originals, and `Shuffle` buffers the source into an array before reordering it with the Fisher–Yates algorithm.
-Copy it into a file such as `LinqExtensions.Net10.cs` in your project.
+The following is the complete polyfill for `LeftJoin` (2 signatures), `RightJoin` (2 signatures) and `Shuffle` (1 signature).
+`LeftJoin` / `RightJoin` embed the composition idiom above in the same shape as the built-ins, and `Shuffle` buffers the source into an array before applying a Fisher–Yates shuffle.
+The reasons for placing the polyfill in `System.Linq` and for the migration guard are covered in the [series foundation article](/articles/linq-backport-netframework-to-net5/).
+Add it to the project as, for example, `LinqExtensions.Net10.cs`.
 
 ```csharp
 #nullable enable
@@ -91,12 +71,12 @@ Copy it into a file such as `LinqExtensions.Net10.cs` in your project.
 using System;
 using System.Collections.Generic;
 
-#if !NET10_0_OR_GREATER // Active only in environments below .NET 10 (e.g. .NET Framework)
+#if !NET10_0_OR_GREATER // Active only below .NET 10.0 (e.g. .NET Framework)
 
 namespace System.Linq
 {
     /// <summary>
-    /// Backports .NET 10.0 LINQ methods to older target frameworks.
+    /// Provides extension methods that backfill LINQ methods introduced in .NET 10.0 for older target frameworks.
     /// </summary>
     public static partial class LinqExtensions
     {
@@ -125,7 +105,7 @@ namespace System.Linq
             if (innerKeySelector == null) throw new ArgumentNullException(nameof(innerKeySelector));
             if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
 
-            // Group matching inner elements per outer element; supply one default(TInner) when none match.
+            // Group matching inner elements per outer element; supply default(TInner) when none match.
             return outer
                 .GroupJoin(inner, outerKeySelector, innerKeySelector, (o, inners) => new { o, inners }, comparer)
                 .SelectMany(g => g.inners.DefaultIfEmpty(), (g, i) => resultSelector(g.o, i));
@@ -156,7 +136,7 @@ namespace System.Linq
             if (innerKeySelector == null) throw new ArgumentNullException(nameof(innerKeySelector));
             if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
 
-            // Pivot on the inner sequence via GroupJoin; supply one default(TOuter) when none match.
+            // GroupJoin pivoted on the inner sequence; supply default(TOuter) when none match.
             return inner
                 .GroupJoin(outer, innerKeySelector, outerKeySelector, (i, outers) => new { i, outers }, comparer)
                 .SelectMany(g => g.outers.DefaultIfEmpty(), (g, o) => resultSelector(o, g.i));
@@ -175,7 +155,7 @@ namespace System.Linq
         {
             var buffer = source.ToArray();
 
-            // Fisher–Yates: swap each element from the tail with a random unfixed element.
+            // Fisher–Yates: swap each position from the tail with an undecided element.
             for (int i = buffer.Length - 1; i > 0; i--)
             {
                 int j = SharedRandom.Next(i + 1);
@@ -192,7 +172,7 @@ namespace System.Linq
         }
 
 #if NET6_0_OR_GREATER
-        // .NET 6 and later provide a thread-safe shared instance.
+        // .NET 6+ provides a thread-safe shared instance.
         private static Random SharedRandom => Random.Shared;
 #else
         // .NET Framework has no Random.Shared, so keep one instance per thread.
@@ -206,23 +186,24 @@ namespace System.Linq
 #endif
 ```
 
-The class is active only when the `NET10_0_OR_GREATER` symbol is not defined — that is, in any runtime below .NET 10, including .NET Framework.
+The result selectors of `LeftJoin` / `RightJoin` carry the same nullable annotations as the built-ins — `TInner?` for `LeftJoin`, `TOuter?` for `RightJoin`.
+The signature itself thus documents which side can be missing, and nullable analysis agrees before and after migration.
+`Shuffle`'s random source branches further on a nested `#if NET6_0_OR_GREATER`: where `Random.Shared` is unavailable, a `[ThreadStatic]` instance provides thread safety.
 
 ---
 
-## Method Walkthroughs
+## Using `LeftJoin` / `RightJoin`
 
-### Left outer join with `LeftJoin`
+### `LeftJoin`: Keep Every Outer (Left) Element
 
-A left outer join keeps every element of the outer (left) sequence and supplies a default when no matching inner (right) element exists.
-For an unmatched outer element, `default(TInner)` (`null` for reference types) is passed to the second argument of the result selector.
+For outer elements with no matching inner element, the result selector receives `default(TInner)` (`null` for reference types) as its second argument.
 
 ```csharp
 var employees = new[]
 {
-    new { Name = "Sato", DeptId = 10 },
-    new { Name = "Suzuki", DeptId = 20 },
-    new { Name = "Takahashi", DeptId = 99 }, // no matching department
+    new { Name = "Sato",      DeptId = 10 },
+    new { Name = "Suzuki",    DeptId = 20 },
+    new { Name = "Takahashi", DeptId = 99 }, // No matching department
 };
 
 var departments = new[]
@@ -241,18 +222,17 @@ var result = employees.LeftJoin(
 // Takahashi: (unassigned)
 ```
 
-"Takahashi", who has no matching department, is still present in the output, and the department name is `null`, so it can fall back to a default.
-The second argument `d` of the result selector is nullable, so a `null` check is required before dereferencing it.
+Matching SQL's `LEFT JOIN ... ON e.DeptId = d.DeptId`, the unmatched "Takahashi" stays in the output.
+The second selector argument `d` is nullable and must be null-checked before use.
 
-### Right outer join with `RightJoin`
+### `RightJoin`: Keep Every Inner (Right) Element
 
-A right outer join keeps every element of the inner (right) sequence and supplies a default when no matching outer (left) element exists.
-For an unmatched inner element, `default(TOuter)` (`null` for reference types) is passed to the first argument of the result selector.
+For inner elements with no matching outer element, the result selector receives `default(TOuter)` as its first argument.
 
 ```csharp
 var employees = new[]
 {
-    new { Name = "Sato", DeptId = 10 },
+    new { Name = "Sato",   DeptId = 10 },
     new { Name = "Suzuki", DeptId = 20 },
 };
 
@@ -260,121 +240,119 @@ var departments = new[]
 {
     new { DeptId = 10, DeptName = "Sales" },
     new { DeptId = 20, DeptName = "Engineering" },
-    new { DeptId = 30, DeptName = "General Affairs" }, // no employees
+    new { DeptId = 30, DeptName = "General Affairs" }, // No employees assigned
 };
 
 var result = employees.RightJoin(
     departments,
     e => e.DeptId,
     d => d.DeptId,
-    (e, d) => $"{d.DeptName}: {e?.Name ?? "(no members)"}");
+    (e, d) => $"{d.DeptName}: {e?.Name ?? "(vacant)"}");
 // Sales: Sato
 // Engineering: Suzuki
-// General Affairs: (no members)
+// General Affairs: (vacant)
 ```
 
-"General Affairs", which has no members, is still present in the output, and the employee side is `null`.
-`RightJoin(outer, inner, ...)` keeps every element of `inner`, making it symmetric with `LeftJoin`, and joins with the inner sequence as the axis.
+`RightJoin(outer, inner, ...)` preserves every element of `inner`, symmetric to `LeftJoin`; the implementation simply pivots the `GroupJoin` onto the inner sequence.
 
-### Random reordering with `Shuffle`
+---
 
-`Shuffle` enumerates the elements of a sequence in a random order.
-It performs a uniformly distributed shuffle with the Fisher–Yates algorithm, more efficiently and without the bias of a pseudo-idiom such as `OrderBy(_ => Guid.NewGuid())`.
+## `Shuffle` versus Pseudo-Shuffles
+
+Random ordering via `OrderBy(_ => Guid.NewGuid())` is widespread but carries two problems.
+It generates a GUID per element and pays for an $O(n \log n)$ sort, and the distribution of generated GUIDs as sort keys guarantees no uniformity of the resulting permutation.
+
+`Shuffle` uses Fisher–Yates, producing each permutation with equal probability in a single $O(n)$ pass.
 
 ```csharp
 var deck = Enumerable.Range(1, 52);
 
 var shuffled = deck.Shuffle().ToArray();
-// e.g. [17, 3, 50, 28, ...] (different on each call)
+// e.g. [17, 3, 50, 28, ...] (differs per call)
 ```
 
-Because it reorders in a single pass over `n` elements, its cost is lower than a pseudo-shuffle that generates keys and sorts.
-The random source is non-cryptographic, so do not use it for security purposes such as drawings or token generation.
-
-### Deferred execution and buffering
-
-`LeftJoin`, `RightJoin`, and `Shuffle` are all **deferred** operators; the source is not traversed until the result is enumerated.
-However, `Shuffle`, like `OrderBy`, buffers the entire source before returning the first element.
+`Shuffle` is deferred, but like `OrderBy` it buffers the entire source before yielding the first element.
 
 ```csharp
 var query = Enumerable.Range(1, 3).Shuffle();
 
-var first = query.ToArray();  // the source is enumerated and shuffled here
-var second = query.ToArray(); // re-enumeration yields a different order
+var first = query.ToArray();  // Source is enumerated and shuffled here
+var second = query.ToArray(); // Re-enumerating yields a different order
 ```
 
-Because it is deferred, enumerating the same query twice makes `Shuffle` produce a different order each time.
-To fix the order, materialize it once with `ToArray` or `ToList` and reuse the result.
+Because deferred queries re-shuffle on every enumeration, materialize once with `ToArray` / `ToList` when a fixed order is needed.
+The randomness is non-cryptographic; for lotteries or anything requiring unpredictability, use `System.Security.Cryptography` randomness instead.
 
 ---
 
-## Choosing the Right Conditional-Compilation Symbol
+## The `IQueryable<T>` Pitfall
 
-This implementation uses `#if !NET10_0_OR_GREATER`, which differs from the `#if !NETCOREAPP` guard used in the [.NET 5 backport article](/articles/linq-backport-netframework-to-net5/).
+Outer joins live next door to database queries, which gives this polyfill a risk the other backports do not have.
+It extends `Enumerable` (`IEnumerable<T>`), but `IQueryable<T>` inherits `IEnumerable<T>`, so the compiler happily applies it to Entity Framework queries too.
 
-`LeftJoin`, `RightJoin`, and `Shuffle` do not exist prior to .NET 10.
-Guarding with `NETCOREAPP` or `NET9_0_OR_GREATER` would therefore disable the polyfill on .NET 8 and .NET 9 builds, causing a compile error there.
+What happens then is not a runtime error but **silent performance degradation**.
+With no `Queryable` counterpart available, the `Enumerable` polyfill binds, and the join is never translated to SQL — it executes client-side.
+Entire tables are transferred and joined in memory, and nothing looks wrong until data volume grows.
 
-| Symbol | .NET Framework | .NET 9 | .NET 10+ |
-| --- | --- | --- | --- |
-| `!NETCOREAPP` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET9_0_OR_GREATER` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET10_0_OR_GREATER` | Polyfill enabled | Polyfill enabled | Polyfill disabled |
+For server-side outer joins in database queries below .NET 10, keep writing the provider-translatable `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` form.
+`AsEnumerable` only draws the client-evaluation boundary; it does not keep the join on the server.
+.NET 10 does add `LeftJoin` / `RightJoin` to `Queryable` as well, but their translatability depends on the provider, and this article's scope is `Enumerable` only.
 
-`!NET10_0_OR_GREATER` enables the polyfill on all runtimes below .NET 10, including .NET 9, and disables it automatically once the project targets .NET 10 or later.
-The random source for `Shuffle` branches further with a nested `#if NET6_0_OR_GREATER`, using `Random.Shared` on .NET 6–9 and a `[ThreadStatic]` instance on .NET Framework.
+---
+
+## Migration Guard
+
+The polyfill is wrapped in `#if !NET10_0_OR_GREATER`.
+`LeftJoin`, `RightJoin` and `Shuffle` do not exist before .NET 10, so guarding with `!NETCOREAPP` or `!NET9_0_OR_GREATER` would disable the polyfill in .NET 8 / .NET 9 builds and break compilation.
+The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
 ## Caveats
 
-- **Which side is preserved**: `LeftJoin` keeps every element of the first argument (`outer`), and `RightJoin` keeps every element of the second argument (`inner`). The argument that becomes nullable in the result selector is the inner element for `LeftJoin` and the outer element for `RightJoin`. Perform a `null` check before dereferencing it.
-- **Key equality comparison**: The overload without a `comparer` uses `EqualityComparer<TKey>.Default`. For a case-insensitive join, use the overload that accepts an `IEqualityComparer<TKey>`. Where the shorter overload delegates to the comparer overload, the `comparer:` named argument ensures resolution to the intended method.
-- **`Shuffle` is deferred**: `Shuffle` reorders on every enumeration, so enumerating the same query multiple times yields a different order each time. Materialize with `ToArray` / `ToList` to fix the order. Because it buffers the entire source when enumeration begins, it cannot be used on infinite sequences.
-- **`Shuffle`'s randomness is not for security**: It uses a non-cryptographic random number generator, so for uses that require unpredictability, such as drawings, use a random source from `System.Security.Cryptography` instead.
-- **No name collision occurs**: These polyfills have signatures absent from the original library, and they differ in name and arguments from the existing `Join` and `OrderBy`, so there is no ambiguity in overload resolution. After migration, the same-named original methods take precedence and conditional compilation disables the polyfill.
-- **Compile with C# 9 or later**: The polyfill uses nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) and `#nullable enable`, which require C# 9 or later. The default `LangVersion` of .NET Framework 4.8 (7.3) fails to compile with errors such as `CS8627`, so specify `<LangVersion>9.0</LangVersion>` (or `latest`) in the `.csproj`.
-- **Caution with `IQueryable<T>`**: This polyfill consists of `Enumerable` (`IEnumerable<T>`) extension methods. Because `IQueryable<T>` derives from `IEnumerable<T>`, these methods also bind to an `IQueryable<T>`. Using them directly on a database query (for example, with Entity Framework) below .NET 10 selects the `Enumerable` implementation, since no `Queryable` version exists, so the query is enumerated client-side rather than translated to the data source. To keep a join server-side, write the provider-translatable `GroupJoin(...).SelectMany(... DefaultIfEmpty())` pattern. `AsEnumerable` only draws a client-evaluation boundary and does not keep the join server-side. .NET 10 also adds `LeftJoin` / `RightJoin` to `Queryable`, but their translation depends on the provider; this article is limited to `Enumerable`.
+- **Join direction**: `LeftJoin` preserves every element of the first argument (`outer`); `RightJoin` preserves every element of the second (`inner`). The nullable selector argument is the inner element for `LeftJoin` and the outer element for `RightJoin` — null-check before use.
+- **Key equality**: the comparer-free overloads use `EqualityComparer<TKey>.Default`. Pass an `IEqualityComparer<TKey>` for case-insensitive joins and the like. Delegation from the smaller overloads pins resolution with the named argument `comparer:` (the same technique used in the [ToDictionary backport](/articles/linq-backport-netframework-to-net8/)).
+- **`Shuffle` cannot handle infinite sequences**: the entire source is buffered at enumeration start, so an unbounded sequence never completes.
+- **Compile with C# 9 or later**: the nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) fail with errors such as `CS8627` under the .NET Framework 4.8 default `LangVersion` (7.3). Set `<LangVersion>9.0</LangVersion>` (or `latest`) in the `.csproj`.
+- **No name collisions**: these signatures do not exist in .NET Framework, and they differ from `Join` and `OrderBy` in name and parameters, so overload resolution is unaffected.
 
 ---
 
-## Alternatives
+## Alternatives / Comparison
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Custom polyfill (this article) | No external dependencies; same name and feel as the original | Implementation and maintenance effort | Projects that minimize dependencies |
-| Inline `GroupJoin` + `DefaultIfEmpty` | No additional code | Verbose; easy to get wrong | Few join call sites |
-| `OrderBy(_ => Guid.NewGuid())` | No additional code | Inefficient; distribution not guaranteed | Reordering a few elements without strict correctness |
-| A library such as MoreLINQ | Implemented and tested | Adds a dependency; API differs from the original | When a dependency is already acceptable |
-| Upgrade to .NET 10 | Resolves the root cause; gains language features | Migration cost | When migration is technically and organizationally feasible |
+| Hand-rolled polyfill (this article) | No dependency; the name states the SQL-equivalent intent | The `IQueryable` misapplication risk must be managed | Mostly in-memory joins and shuffles |
+| Write `GroupJoin` + `DefaultIfEmpty` inline | No extra code; translates under `IQueryable` too | Verbose; easy to get subtly wrong | Outer joins in database queries |
+| Substitute `OrderBy(_ => Guid.NewGuid())` | No extra code | Inefficient; no uniformity guarantee | Small collections where rigor is irrelevant |
+| Adopt MoreLINQ or similar | Implemented and tested | External dependency; API differs from the built-ins | Projects already accepting the dependency |
+| Upgrade to .NET 10 | Root fix; `Queryable` versions available | Migration cost | When migration is feasible |
 
-Writing the boilerplate inline requires no extra code, but it leaves behind the work of finding and replacing every call site later when standardizing on the original `LeftJoin` / `Shuffle` after a .NET 10 migration.
-Introducing the polyfill from this article allows code to be written with the same names as the originals before migration; at migration time, the file can stay in place while conditional compilation switches automatically to the originals.
+Until a .NET 10 migration, the pragmatic split is: polyfill for in-memory collections, classic `GroupJoin` idiom for database queries.
 
 ---
 
 ## Summary
 
-This article covered `LeftJoin`, `RightJoin`, and `Shuffle` added in .NET 10 and how to backport them safely to .NET Framework.
+.NET 10's `LeftJoin`, `RightJoin` and `Shuffle` promote operations that were standard in SQL — or imitated through pseudo-idioms — to first-class LINQ operators.
+The backport rests on three points.
 
-Three implementation points are worth remembering.
+- `LeftJoin` / `RightJoin` embed the classic `GroupJoin` + `SelectMany` + `DefaultIfEmpty` idiom and use nullable annotations to state which side can be missing
+- `Shuffle` performs a uniform Fisher–Yates shuffle, fixing both the inefficiency and the bias of `Guid.NewGuid()` sorting
+- The polyfill is `Enumerable`-only; applied to an `IQueryable<T>` database query it falls back to client evaluation — keep the classic idiom for database queries
 
-- **Match the original composition and annotation**: Express `LeftJoin` and `RightJoin` with `GroupJoin` + `SelectMany` + `DefaultIfEmpty`, and match the original nullable annotation on the result selector so that nullable analysis stays consistent before and after migration.
-- **Use `#if !NET10_0_OR_GREATER`**: These operators are absent from .NET 9 and earlier, so `!NETCOREAPP` or `!NET9_0_OR_GREATER` would cause a compile error on .NET 9 builds.
-- **Understand `Shuffle`'s deferred execution and random source**: `Shuffle` is deferred but buffers the whole source when enumeration begins, and its random source switches between `Random.Shared` and a `[ThreadStatic]` instance depending on the framework.
-
-| Method | Evaluation | Side preserved | Nullable argument |
+| Method | Side preserved | Nullable selector argument | Evaluation |
 | --- | --- | --- | --- |
-| `LeftJoin` | Deferred | Outer (left) | Inner element `TInner?` |
-| `RightJoin` | Deferred | Inner (right) | Outer element `TOuter?` |
-| `Shuffle` | Deferred (buffers on enumeration) | — | — |
+| `LeftJoin` | Outer (left) | Inner element `TInner?` | Deferred |
+| `RightJoin` | Inner (right) | Outer element `TOuter?` | Deferred |
+| `Shuffle` | — | — | Deferred (full buffering at enumeration) |
 
 ---
 
 ## Related Articles
 
-- [Backporting CountBy, AggregateBy and Index to .NET Framework](/articles/linq-backport-netframework-to-net9/)
-- [Backporting the KeyValuePair and Tuple ToDictionary Overloads to .NET Framework](/articles/linq-backport-netframework-to-net8/)
-- [Backporting Order and OrderDescending to .NET Framework](/articles/linq-backport-netframework-to-net7/)
-- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing Append, Prepend, TakeLast and SkipLast](/articles/linq-backport-netframework-to-net5/)
+- [Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxBy, MinBy and DistinctBy](/articles/linq-backport-netframework-to-net6/)
+- [Order and OrderDescending by Pure Delegation — A Minimal Polyfill with IOrderedEnumerable Compatibility](/articles/linq-backport-netframework-to-net7/)
+- [Selector-Free ToDictionary — Designing for Overload Resolution and the notnull Constraint](/articles/linq-backport-netframework-to-net8/)
+- [Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, AggregateBy and Index](/articles/linq-backport-netframework-to-net9/)

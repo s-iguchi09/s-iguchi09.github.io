@@ -1,31 +1,34 @@
 ---
 layout: article-ja
-title: "Chunk・MaxBy・MinBy・DistinctBy を .NET Framework にバックポートする"
+title: "GroupBy と全件ソートによる回避コードをなくす — Chunk・MaxBy・MinBy・DistinctBy の実装"
 date: 2026-07-13
 category: C#
-excerpt: ".NET 6 で追加された LINQ の 4 メソッド（Chunk・MaxBy・MinBy・DistinctBy）を、#nullable enable と条件付きコンパイルを活用しながら .NET Framework 環境へ安全にバックポートする実装方法を解説する。"
+excerpt: ".NET Framework で Chunk・MaxBy・MinBy・DistinctBy を代用する GroupBy・全件ソートの回避イディオムを実行コストの面から検証し、計算量を改善するポリフィルの実装と、バージョン別シンボルによる移行ガードの選び方を解説する。"
 ---
 
 ## 概要
 
-.NET 6 で LINQ に加わった `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` は、いずれも「キーや一定サイズを基準にした操作」を 1 つのメソッドで表現できるようにするものである。.NET Framework 環境ではこれらが存在せず、`GroupBy` や `OrderByDescending().First()` を組み合わせた冗長な回避コードを書かざるを得ない。
+`OrderByDescending(x => x.Price).First()` や `GroupBy(x => x.Key).Select(g => g.First())` は、.NET Framework の現場コードで繰り返し見かける定型句である。
+これらは「キー基準の最大要素」「キー基準の重複除去」を表現するための回避イディオムだが、目的に対して実行コストが釣り合っていない。
+最大値が 1 つ欲しいだけなのに全件をソートし、重複を除きたいだけなのにキーごとの要素リストを構築している。
 
-本記事では、**.NET 6 で新たに追加された 4 つの LINQ メソッド**（`Chunk`・`MaxBy`・`MinBy`・`DistinctBy`）を整理し、**同一の使用感で動作する拡張メソッド（ポリフィル）を安全に実装する方法**を解説する。
-`#nullable enable` を使った現代的な実装と、将来の .NET 6 以降への移行時にコードを無修正で切り替えるための条件付きコンパイル手法も合わせて紹介する。
+.NET 6 で追加された `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` は、これらの操作を専用メソッドとして提供し、回避イディオムの冗長さと実行コストの両方を解消する。
+本記事では、各回避イディオムのコストを確認したうえで、.NET Framework 環境で同じ改善を得るためのポリフィル実装を解説する。
+あわせて、このバージョンから必要になる「バージョン別シンボルによる移行ガード」の選び方を整理する。
 
 ---
 
 ## 前提・対象環境
 
-- フレームワーク: .NET Framework 4.8 / .NET 6+
+- フレームワーク: .NET Framework 4.8（バックポート先）/ .NET 6+（将来の移行先）
 - 対象: LINQ の 4 メソッド（Chunk / MaxBy / MinBy / DistinctBy）
-- 方針: `#nullable enable` を適用し、`#if !NET6_0_OR_GREATER` による条件付きコンパイルで移行時に自動無効化する
+- 方針: `#nullable enable` を適用し、`#if !NET6_0_OR_GREATER` で移行時に自動無効化する
 
 ---
 
-## 問題
+## 問題: 回避イディオムの実行コスト
 
-.NET 6 で追加された以下の LINQ メソッドは、.NET Framework 環境では使用できない。
+.NET 6 で追加された以下のメソッドは、.NET Framework 環境では使用できない。
 
 | メソッド名 | 追加されたバージョン | 概要 |
 | --- | --- | --- |
@@ -34,33 +37,35 @@ excerpt: ".NET 6 で追加された LINQ の 4 メソッド（Chunk・MaxBy・Mi
 | `MinBy<T, TKey>` | .NET 6.0 | 指定したキー基準で値が最小の要素を丸ごと取得する |
 | `DistinctBy<T, TKey>` | .NET 6.0 | 指定したキーの一意性に基づいて要素を抽出する |
 
-これらが存在しない .NET Framework 環境では、下記のような代替実装を強いられる。
+そのため、同じ結果を得るには次のような回避イディオムを書くことになる。
 
-- `Chunk` の代わりに、インデックスを使った `GroupBy` で手動グループ化する
-- `MaxBy` の代わりに、`OrderByDescending(x => x.Key).FirstOrDefault()` で全件ソートする
-- `DistinctBy` の代わりに、`GroupBy(x => x.Key).Select(g => g.First())` と書く
+| 目的 | 回避イディオム | 実行コスト |
+| --- | --- | --- |
+| 最大サイズで分割 | インデックス付き `Select` + `GroupBy(t => t.i / size)` | 全要素の即時グルーピングと中間タプルの割り当て |
+| キー基準の最大・最小 | `OrderByDescending(x => x.Key).First()` | $O(n \log n)$ の全件ソート |
+| キー基準の重複除去 | `GroupBy(x => x.Key).Select(g => g.First())` | キーごとの要素リストを丸ごと構築 |
 
-いずれもコードの可読性を下げ、`MaxBy` の代替に見られる全件ソートのようなパフォーマンス上の無駄も生じる。
+問題は記述の冗長さだけではない。
+「1 要素が欲しいだけの操作に全件ソートを払う」「先頭要素しか使わないグループに全要素を保持させる」という、目的とコストの不一致が恒常化する点にある。
 
 ---
 
 ## 原因・背景
 
-.NET Framework 4.8 が最終バージョンとなった後、.NET Core から .NET 5 までの移行期は、LINQ の内部ロジックを書き直すパフォーマンス向上が中心であり、目立ったメソッドの大量追加は行われなかった。
-
-.NET 6 のリリースで、待望の便利メソッド群が一挙に公開された。
-`Chunk`・`MaxBy`・`MinBy`・`DistinctBy` はいずれも .NET 6.0 で初めて追加されたものであり、.NET 5 以前の環境では存在しない。
-
-なお、.NET Framework から .NET 5 の間に追加されたメソッド（`Append`・`Prepend`・`TakeLast`・`SkipLast`）については[別記事](/ja/articles/linq-backport-netframework-to-net5/)で解説している。
+.NET Framework 4.8 の機能追加終了後、.NET Core から .NET 5 までの LINQ は内部性能の改善が中心で、演算子の追加はわずかだった。
+キー基準の操作を 1 メソッドで表現する `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` が揃ったのは .NET 6 が最初であり、.NET 5 以前のどの環境にも存在しない。
+「.NET 5 にも存在しない」という事実は、後述する移行ガードのシンボル選択に直接影響する。
 
 ---
 
 ## 解決方法
 
-本家 LINQ と同じ名前空間（`System.Linq`）に拡張メソッドを定義することで、既存のソースファイルに手を加えることなく透過的に利用できる。
+本家と同じ `System.Linq` 名前空間に拡張メソッドを定義し、既存コードに手を加えず透過的に利用できるようにする。
+名前空間戦略と「引数検証とイテレータの分離」の根拠は[シリーズ基礎編](/ja/articles/linq-backport-netframework-to-net5/)で解説しているため、本記事では実装固有の論点に絞る。
 
-条件付きコンパイル `#if !NET6_0_OR_GREATER` を使い、.NET 6 以降の環境ではこのファイルを丸ごとスキップするよう仕込む。
-将来のフレームワークアップグレード時に、ファイルの削除やコードの書き換えを行わずに自動的に本家 LINQ へ切り替わる。
+実装固有の論点は 2 つある。
+1 つは、4 メソッドの評価戦略が遅延（`Chunk`・`DistinctBy`）と先行（`MaxBy`・`MinBy`）に分かれるため、メソッド構成をそれぞれに合わせること。
+もう 1 つは、移行ガードに `!NETCOREAPP` ではなく `!NET6_0_OR_GREATER` を使うことである。
 
 ---
 
@@ -242,87 +247,11 @@ namespace System.Linq
 
 ---
 
-## 技術解説：遅延評価と先行評価のメソッド設計
+## 回避イディオムとの置き換え効果
 
-4 つのメソッドは評価戦略が 2 種類に分かれており、それぞれでメソッドの設計が異なる。
+### `MaxBy` / `MinBy`: 全件ソートから 1 パス走査へ
 
-**遅延評価メソッド（`Chunk` / `DistinctBy`）** は `yield return` を使うイテレータで実装されており、`foreach` や `.ToList()` が呼ばれるまでデータを 1 件も処理しない。
-引数チェックも同様に遅延されるため、`public` メソッドと `~Iterator` メソッドを分離する必要がある。
-
-**先行評価メソッド（`MaxBy` / `MinBy`）** は `yield return` を一切使わず、呼び出しと同時に全件を走査して結果を返す。
-引数チェックも呼び出し時点で即時実行されるため、メソッドの分離は不要である。
-
-遅延評価のメソッドを誤って 1 つのメソッドにまとめた場合に何が起きるかを以下に示す。
-
-```csharp
-// 悪い設計の例（DistinctBy のパブリックメソッドとイテレータをまとめた場合）
-public static IEnumerable<TSource> DistinctBy<TSource, TKey>(
-    this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
-{
-    if (source == null) throw new ArgumentNullException(nameof(source)); // ①
-
-    var knownKeys = new HashSet<TKey>();
-    foreach (var item in source) // ② yield return が存在するため、① はここで初めて実行される
-    {
-        if (knownKeys.Add(keySelector(item)))
-        {
-            yield return item;
-        }
-    }
-}
-```
-
-`yield return` を含むメソッドは呼び出された瞬間にコードが一切実行されない。
-上記の悪い設計に `null` を渡して呼び出すと、`①` の null チェックをスルーして正常終了したかのように見え、実際に列挙した時点で初めて `ArgumentNullException` が発生する。
-バグの発生箇所と例外の発生箇所が離れるため、デバッグが困難になる。
-
-メソッドを 2 つに分けることで、引数チェックが呼び出しの瞬間に即時実行されるようになる。
-この構成は標準の LINQ 内部でも採用されているパターンである。
-
----
-
-## 各メソッドの詳解
-
-### `Chunk<T>`（指定サイズで分割）
-
-シーケンスを「最大 `size` 個」のチャンク（配列）に分割する。
-
-```csharp
-var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
-// result: [1, 2], [3, 4], [5]
-```
-
-#### Chunk の内部ロジック
-
-最初に `size` 個分の配列を確保し、データを順番に詰めていく。
-
-```csharp
-var chunk = new TSource[size]; // size 個分の配列を事前に確保する
-chunk[0] = enumerator.Current;
-int count = 1;
-
-while (count < size && enumerator.MoveNext())
-{
-    chunk[count++] = enumerator.Current;
-}
-
-if (count < size)
-{
-    Array.Resize(ref chunk, count); // 末尾チャンクが端数の場合のみリサイズする
-}
-
-yield return chunk;
-```
-
-末尾チャンクが端数（例: 5 個を 2 ずつ分割した最後の 1 個）になる場合のみ `Array.Resize` が走る。
-それ以外のチャンクは事前確保の配列をそのまま返すため、不要なアロケーションが最小限に抑えられる。
-
----
-
-### `MaxBy<T, TKey>` / `MinBy<T, TKey>`（キー基準での最大・最小要素取得）
-
-キーを指定して、そのキーが最大・最小の要素をオブジェクトごと取得する。
-`Max()` や `Min()` がキーの値そのものを返すのに対し、`MaxBy` / `MinBy` は**キーに対応する元の要素**を返す点が異なる。
+回避イディオムの `OrderByDescending(...).First()` は、1 要素を得るために全件を並び替える。
 
 ```csharp
 var products = new[]
@@ -332,13 +261,15 @@ var products = new[]
     new { Name = "C", Price = 200 },
 };
 
-var mostExpensive = products.MaxBy(p => p.Price);
-// mostExpensive: { Name = "A", Price = 300 }
+// 回避イディオム: O(n log n) の全件ソート
+var before = products.OrderByDescending(p => p.Price).First();
+
+// MaxBy: O(n) の 1 パス走査
+var after = products.MaxBy(p => p.Price);
+// after: { Name = "A", Price = 300 }
 ```
 
-#### MaxBy の内部ロジック
-
-全件を 1 パスで走査し、最大のキーとその要素を随時更新する。
+ポリフィルの内部は、最大のキーとその要素を更新しながら全件を 1 回だけ走査する。
 
 ```csharp
 var maxElement = enumerator.Current;
@@ -359,14 +290,13 @@ while (enumerator.MoveNext())
 return maxElement;
 ```
 
-`OrderByDescending(...).FirstOrDefault()` のような全件ソート（$O(n \log n)$）が不要で、1 パスの線形探索（$O(n)$）で済む。
-`MinBy` は比較条件が `> 0` から `< 0` に変わるだけで、構造は同一である。
+ソートが不要になるため計算量は $O(n \log n)$ から $O(n)$ に下がり、ソート用の作業領域も不要になる。
+`MinBy` は比較条件が `> 0` から `< 0` に変わるだけで構造は同一である。
+なお `Max()` / `Min()` がキーの値そのものを返すのに対し、`MaxBy` / `MinBy` はキーに対応する**元の要素**を返す。
 
----
+### `DistinctBy`: グループ構築から `HashSet` 判定へ
 
-### `DistinctBy<T, TKey>`（キー基準の重複除去）
-
-元の `Distinct()` が要素そのものの一意性を基準にするのに対し、`DistinctBy` は**指定したキーの一意性**を基準に絞り込む。
+回避イディオムの `GroupBy(...).Select(g => g.First())` は、先頭しか使わないグループに全要素を保持させる。
 
 ```csharp
 var products = new[]
@@ -376,13 +306,15 @@ var products = new[]
     new { Name = "C", Category = "Food" },
 };
 
-var result = products.DistinctBy(p => p.Category);
-// result: { Name = "A", Category = "Food" }, { Name = "B", Category = "Tech" }
+// 回避イディオム: キーごとの要素リストを構築してから先頭を取る
+var before = products.GroupBy(p => p.Category).Select(g => g.First());
+
+// DistinctBy: キーの既出判定だけで流す
+var after = products.DistinctBy(p => p.Category);
+// after: { Name = "A", Category = "Food" }, { Name = "B", Category = "Tech" }
 ```
 
-#### DistinctBy の内部ロジック
-
-`HashSet<TKey>` に対してキーを追加し、追加が成功した（まだ見ていないキーだった）要素のみを流す。
+ポリフィルの内部は `HashSet<TKey>` にキーを追加し、追加が成功した（未出現の）要素だけを流す。
 
 ```csharp
 var knownKeys = new HashSet<TKey>(comparer); // O(1) でキーの登録・存在確認を行う
@@ -391,30 +323,78 @@ foreach (var item in source)
 {
     if (knownKeys.Add(keySelector(item))) // 未登録キーなら true が返る
     {
-        yield return item; // 最初に現れたものだけを流す
+        yield return item;
     }
 }
 ```
 
-`HashSet.Add()` は追加に成功した場合 `true`、すでに存在する場合 `false` を返す。
-この性質を使い、1 パスの走査で元の順序を保ちながら重複を除去する（空間計算量 $O(\text{ユニーク件数})$）。
+保持するのはキーだけであり、要素本体をため込まない（空間計算量 $O(\text{ユニーク件数})$）。
+`GroupBy` と違って全件を先読みせず、元の順序を保ったまま 1 件ずつ流れる遅延評価になる点も実用上の差である。
+
+### `Chunk`: インデックス演算のグルーピングから逐次分割へ
+
+インデックスを `size` で割ってグルーピングする回避イディオムは、中間タプルの割り当てと即時評価を伴う。
+`Chunk` は列挙しながら「最大 `size` 個」の配列を順に切り出す。
+
+```csharp
+var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
+// result: [1, 2], [3, 4], [5]
+```
+
+ポリフィルの内部は、`size` 個分の配列を確保してデータを詰め、端数チャンクのみ `Array.Resize` で切り詰める。
+
+```csharp
+var chunk = new TSource[size]; // size 個分の配列を事前に確保する
+chunk[0] = enumerator.Current;
+int count = 1;
+
+while (count < size && enumerator.MoveNext())
+{
+    chunk[count++] = enumerator.Current;
+}
+
+if (count < size)
+{
+    Array.Resize(ref chunk, count); // 末尾チャンクが端数の場合のみリサイズする
+}
+
+yield return chunk;
+```
+
+チャンクを 1 つ返すたびに次のチャンクを構築するため、全件の即時グルーピングが不要になる。
 
 ---
 
-## 条件付きコンパイルシンボルの選択
+## 評価戦略の違いによる実装差
 
-本実装では `#if !NET6_0_OR_GREATER` を採用している。
-[.NET 5 相当のバックポート記事](/ja/articles/linq-backport-netframework-to-net5/)が `#if !NETCOREAPP` を採用しているのとは異なる。
+4 メソッドは評価戦略が 2 種類に分かれ、メソッド構成もそれに従う。
 
-`NETCOREAPP` シンボルは .NET Core および .NET 5 以降でも定義されるため、.NET 5 向けビルドでポリフィルが無効化されてしまう。
-`Chunk`・`MaxBy`・`MinBy`・`DistinctBy` の 4 メソッドは .NET 5 にも存在しないため、`.NET 5` でポリフィルが無効になるとコンパイルエラーが発生する。
+**遅延評価（`Chunk` / `DistinctBy`）** は `yield return` を使うイテレータであり、列挙されるまでデータを 1 件も処理しない。
+`yield return` を含むメソッドは引数チェックまで遅延してしまうため、public メソッドと `~Iterator` メソッドを分離して例外を即時化する。
+この分離の根拠と失敗例は[シリーズ基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)で詳しく説明している。
+
+**先行評価（`MaxBy` / `MinBy`）** は `yield return` を使わず、呼び出しと同時に全件を走査して単一の結果を返す。
+引数チェックも呼び出し時点で実行されるため、メソッドの分離は不要である。
+
+戻り値がシーケンスか単一要素かで評価戦略が決まり、評価戦略がメソッド構成を決める。
+ポリフィルを自作する際は、この順で構成を判断する。
+
+---
+
+## 移行ガード: バージョン別シンボルが必要になる最初のケース
+
+[シリーズ基礎編](/ja/articles/linq-backport-netframework-to-net5/)で使った `#if !NETCOREAPP` は、このバージョンのバックポートには使えない。
+`NETCOREAPP` シンボルは .NET Core と .NET 5 でも定義されるため、`!NETCOREAPP` でガードすると .NET 5 向けビルドでポリフィルが無効化される。
+`Chunk` 以下の 4 メソッドは .NET 5 に存在しないので、その時点でコンパイルエラーになる。
 
 | シンボル | .NET Framework | .NET 5 | .NET 6+ |
 | --- | --- | --- | --- |
 | `!NETCOREAPP` | ポリフィル有効 | **ポリフィル無効（エラー）** | ポリフィル無効 |
 | `!NET6_0_OR_GREATER` | ポリフィル有効 | ポリフィル有効 | ポリフィル無効 |
 
-`!NET6_0_OR_GREATER` を使うことで、.NET 5 を含めた .NET 6 未満の環境すべてでポリフィルが有効になり、.NET 6 以降では自動的に本家 LINQ へ切り替わる。
+正しい条件は「対象メソッドが追加されたバージョン以上で無効化する」であり、本実装では `#if !NET6_0_OR_GREATER` を使う。
+一般化すると、バックポート対象が .NET X で追加されたメソッドなら `#if !NETX_0_OR_GREATER` を選ぶ。
+以降のバージョンのバックポート（.NET 7 の `Order` など）でも、この規則をそのまま適用する。
 
 ---
 
@@ -431,33 +411,34 @@ foreach (var item in source)
 
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
-| 自作ポリフィル（本記事） | 外部依存なし・コード全体を把握できる | 実装コストがある | 依存を最小化したいプロジェクト |
+| 自作ポリフィル（本記事） | 外部依存なし・回避イディオムの計算量問題も解消 | 実装コストがある | 依存を最小化したいプロジェクト |
+| 回避イディオムの継続 | 追加コード不要 | 計算量・割り当ての無駄が残り続ける | 対象データが常に少件数の場合 |
 | MoreLINQ（NuGet） | 豊富なメソッド・テスト済み | 外部ライブラリへの依存が増える | 多数の追加メソッドが必要なプロジェクト |
-| .NET 6 へのアップグレード | 根本的解決・パフォーマンス向上も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| .NET 6 へのアップグレード | 根本的解決・性能改善も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
 
-`MoreLINQ`（NuGet パッケージ名: `morelinq`）は `Chunk` や `MaxBy` に相当するメソッドを含む充実したライブラリだが、.NET Framework 環境ではパッケージ管理が複雑になるケースがある。
-必要なメソッドが上記 4 件に限定されるなら、外部依存のない自作ポリフィルが保守面でシンプルである。
+`MoreLINQ`（NuGet パッケージ名: `morelinq`）は `Chunk` や `MaxBy` に相当するメソッドを含む充実したライブラリだが、必要なメソッドが本記事の 4 件に限られるなら、外部依存のない自作ポリフィルのほうが保守はシンプルである。
 
 ---
 
 ## まとめ
 
-.NET 6 で追加された `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` の 4 メソッドと、.NET Framework 環境へのバックポート手法を解説した。
+回避イディオムを使い続けるか、ポリフィルへ置き換えるかの判断基準は「そのコードがどれだけの件数を、どれだけの頻度で処理するか」である。
+数十件のデータを画面表示のたびに処理する程度なら回避イディオムでも問題は表面化しないが、件数と頻度が増えるほど、全件ソートや中間グループ構築のコストは無視できなくなる。
 
-実装において重要なポイントは以下の 3 点である。
+| メソッド | 回避イディオムのコスト | ポリフィル後のコスト |
+| --- | --- | --- |
+| `MaxBy` / `MinBy` | $O(n \log n)$（全件ソート） | $O(n)$（1 パス走査） |
+| `DistinctBy` | キーごとの要素リスト構築 | キー集合のみ保持（$O(\text{ユニーク件数})$） |
+| `Chunk` | 全件の即時グルーピング | チャンク単位の逐次構築（$O(size)$） |
 
-- **メソッドの評価戦略を区別する**: `Chunk`・`DistinctBy`（遅延評価）はパブリックメソッドとイテレータを分離する。`MaxBy`・`MinBy`（先行評価）は分離不要である。
-- **`#if !NET6_0_OR_GREATER` を選択する**: .NET 5 にもこれらのメソッドは存在しないため、`!NETCOREAPP` では .NET 5 環境でエラーになる。
-- **空シーケンスの例外に注意する**: `MaxBy`・`MinBy` は空のシーケンスに対して `InvalidOperationException` を投げる。これは .NET 6 本家と同一の挙動である。
-
-| メソッド | 評価戦略 | 空間計算量 | アルゴリズムの要点 |
-| --- | --- | --- | --- |
-| `Chunk` | 遅延 | $O(size)$ | チャンクサイズの配列を逐次構築し、端数は `Array.Resize` |
-| `MaxBy` / `MinBy` | 先行 | $O(1)$ | 1 パスの線形探索で最大・最小要素を更新 |
-| `DistinctBy` | 遅延 | $O(\text{ユニーク件数})$ | `HashSet` でキーを管理し、順序を保って重複除去 |
+置き換え自体は本家と同名・同シグネチャのポリフィルを追加するだけで済み、`#if !NET6_0_OR_GREATER` のガードにより .NET 6 移行時には自動で本家実装に切り替わる。
 
 ---
 
 ## 関連記事
 
-- [Append・Prepend・TakeLast・SkipLast を .NET Framework にバックポートする](/ja/articles/linq-backport-netframework-to-net5/)
+- [遅延評価を壊さない LINQ ポリフィルの設計原則 — Append・Prepend・TakeLast・SkipLast の実装](/ja/articles/linq-backport-netframework-to-net5/)
+- [委譲だけで作る Order・OrderDescending — IOrderedEnumerable 互換の最小ポリフィル](/ja/articles/linq-backport-netframework-to-net7/)
+- [セレクタなし ToDictionary の実現 — オーバーロード解決と notnull 制約の設計](/ja/articles/linq-backport-netframework-to-net8/)
+- [GroupBy を経由しないキー集計 — CountBy・AggregateBy・Index の辞書ベース実装](/ja/articles/linq-backport-netframework-to-net9/)
+- [SQL の外部結合を LINQ で表現する — LeftJoin・RightJoin・Shuffle の実装](/ja/articles/linq-backport-netframework-to-net10/)

@@ -1,78 +1,55 @@
 ---
 layout: article-en
-title: "Backporting Order and OrderDescending to .NET Framework"
+title: "Order and OrderDescending by Pure Delegation — A Minimal Polyfill with IOrderedEnumerable Compatibility"
 date: 2026-07-14
 category: C#
-excerpt: "A guide to safely backporting the .NET 7 LINQ methods Order and OrderDescending to .NET Framework, preserving IOrderedEnumerable via conditional compilation."
+excerpt: "A delegation-only polyfill for Order and OrderDescending, focused on ThenBy compatibility via IOrderedEnumerable and runtime-specific sort exceptions."
 ---
 
 ## Overview
 
-`Order` and `OrderDescending`, added in .NET 7, sort a sequence by the elements themselves and remove the need for the boilerplate identity lambda `OrderBy(x => x)`. Without them, a .NET Framework codebase keeps writing `x => x` even when sorting by the value itself.
+The polyfill for `Order` and `OrderDescending`, added in .NET 7, needs only one line of body per method.
+No iterator, no `Queue<T>` — each method simply delegates to the existing `OrderBy` / `OrderByDescending` with an identity lambda.
 
-This article enumerates the **two LINQ methods added in .NET 7** (`Order`, `OrderDescending`) and explains how to implement them as extension methods (polyfills) that behave identically to the originals.
-It also covers preserving the `IOrderedEnumerable<T>` return type and a conditional-compilation technique that eliminates migration cost when eventually upgrading to .NET 7 or later.
+Precisely because the implementation is trivial, what decides the quality of this polyfill is not the algorithm but **compatibility details**.
+This article presents the delegation-based implementation and then examines the two questions that determine compatibility.
+
+- Returning anything other than `IOrderedEnumerable<T>` breaks `ThenBy` chaining and diverges from the original API
+- The exception thrown for types with no default ordering differs between .NET Framework and .NET Core-based runtimes
+
+A polyfill built purely on delegation to existing APIs is the counterpart to the hand-written iterator style (see the [foundation article](/articles/linq-backport-netframework-to-net5/)), and this article doubles as the reference example for that pattern.
 
 ---
 
 ## Prerequisites / Environment
 
-- Frameworks: .NET Framework 4.8 / .NET 7+
-- APIs: LINQ `Order`, `OrderDescending`, and their `IComparer<T>` overloads
-- Nullable context: `#nullable enable`
-- Migration guard: `#if !NET7_0_OR_GREATER`
-- Project settings (such as the C# language version in `.csproj`) are left unchanged
+- Frameworks: .NET Framework 4.8 (backport target) / .NET 7+ (future migration target)
+- APIs: LINQ `Order` / `OrderDescending` (4 signatures, including the `IComparer<T>` overloads)
+- Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET7_0_OR_GREATER`
+- No project configuration changes (such as `.csproj` language version)
 
 ---
 
-## Problem
+## The Identity-Lambda Boilerplate
 
-The following LINQ methods added in .NET 7 are unavailable in .NET Framework environments.
+`Order` / `OrderDescending` sort a sequence by the elements themselves.
 
 | Method | Added in | Description |
 | --- | --- | --- |
-| `Order<T>` | .NET 7.0 | Sorts a sequence in ascending order by the elements themselves |
-| `OrderDescending<T>` | .NET 7.0 | Sorts a sequence in descending order by the elements themselves |
+| `Order<T>` | .NET 7.0 | Sorts a sequence ascending by the elements themselves |
+| `OrderDescending<T>` | .NET 7.0 | Sorts a sequence descending by the elements themselves |
 
-Without these methods, even sorting by the element value itself forces an explicit identity lambda.
-
-- Write `OrderBy(x => x)` instead of `Order()`.
-- Write `OrderByDescending(x => x)` instead of `OrderDescending()`.
-
-The `x => x` lambda is boilerplate that is not the essence of the sort.
-It reduces readability and creates room for minor mistakes, such as accidentally supplying the wrong key selector.
+Without them, .NET Framework code keeps writing `OrderBy(x => x)` / `OrderByDescending(x => x)` even when sorting by the value itself.
+The `x => x` is boilerplate unrelated to the sorting intent and a common site for minor mistakes such as grabbing the wrong key selector.
+A dedicated method with the identity function baked in removes that noise, and .NET 7 standardized exactly that.
 
 ---
 
-## Background
+## Implementation by Delegation
 
-After .NET 6 added a batch of collection-manipulation methods (`Chunk`, `MaxBy`, `MinBy`, `DistinctBy`), .NET 7 followed with methods that sort by the elements themselves.
-`Order` and `OrderDescending` were both first added in .NET 7.0 and are not available in any earlier runtime.
-
-The `OrderBy(x => x)` idiom had long been established, but because the key selector is unnecessary in many cases, the identity-key form was standardized into a dedicated method.
-
-The methods added between .NET Framework 4.8 and .NET 5 (`Append`, `Prepend`, `TakeLast`, `SkipLast`) are covered in a [separate article](/articles/linq-backport-netframework-to-net5/), and the four methods added in .NET 6 in [another](/articles/linq-backport-netframework-to-net6/).
-
----
-
-## Solution
-
-By placing extension methods in the same namespace as the original LINQ (`System.Linq`), existing source files pick up the polyfills automatically without any changes — any file that already has `using System.Linq;` gains the missing methods transparently.
-
-A `#if !NET7_0_OR_GREATER` guard ensures the implementation is automatically disabled when the project is later upgraded to .NET 7 or later.
-No file deletions or code rewrites are needed at migration time.
-
-The key implementation detail is to return `IOrderedEnumerable<T>` rather than `IEnumerable<T>`.
-The original `Order` returns `IOrderedEnumerable<T>`, so a subsequent `ThenBy` can be chained.
-Downgrading the return type to `IEnumerable<T>` breaks `ThenBy` and loses compatibility with the original API.
-
----
-
-## Implementation
-
-The following is a complete polyfill for both methods, including each `IComparer<T>` overload — four signatures in total.
-Internally, each method delegates to `OrderBy` / `OrderByDescending` with an identity lambda, so sort stability and culture-dependent comparison behavior are identical to the originals.
-Copy it into a file such as `LinqExtensions.Net7.cs` in your project.
+The following is the complete polyfill for all four signatures.
+Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability and culture-sensitive comparison behavior are identical to the originals.
+Add it to the project as, for example, `LinqExtensions.Net7.cs`.
 
 ```csharp
 #nullable enable
@@ -80,12 +57,12 @@ Copy it into a file such as `LinqExtensions.Net7.cs` in your project.
 using System;
 using System.Collections.Generic;
 
-#if !NET7_0_OR_GREATER // Active only in environments below .NET 7 (e.g. .NET Framework)
+#if !NET7_0_OR_GREATER // Active only below .NET 7.0 (e.g. .NET Framework)
 
 namespace System.Linq
 {
     /// <summary>
-    /// Backports .NET 7.0 LINQ methods to older target frameworks.
+    /// Provides extension methods that backfill LINQ methods introduced in .NET 7.0 for older target frameworks.
     /// </summary>
     public static partial class LinqExtensions
     {
@@ -128,16 +105,11 @@ namespace System.Linq
 #endif
 ```
 
-The class is active only when the `NET7_0_OR_GREATER` symbol is not defined — that is, in any runtime below .NET 7, including .NET Framework.
+Because the delegation style contains no `yield return`, the validation/iterator split required for hand-written iterators ([principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)) does not apply.
+The `source` null check runs immediately at call time, while the sort itself stays lazy through the delegated `OrderBy`.
+Since the work is handed to a proven existing API, there is no room for algorithmic bugs to creep in.
 
----
-
-## Method Walkthroughs
-
-### `Order<T>` / `OrderDescending<T>` — Sort by the elements themselves
-
-`Order` sorts a sequence in ascending order by the elements themselves.
-It is equivalent to `OrderBy(x => x)` but expresses the intent without writing a key selector.
+Basic usage looks like this.
 
 ```csharp
 var numbers = new[] { 3, 1, 4, 1, 5, 9, 2, 6 };
@@ -149,10 +121,8 @@ var descending = numbers.OrderDescending();
 // descending: 9, 6, 5, 4, 3, 2, 1, 1
 ```
 
-The parameterless overload uses the element type's default comparer (`Comparer<T>.Default`), so types with a defined ordering such as `int` and `string` sort directly.
-
-The `IComparer<T>` overload allows the comparison logic to be swapped.
-The following sorts strings case-insensitively.
+The parameterless overloads use the element type's default comparer (`Comparer<T>.Default`), so ordered types such as `int` and `string` sort as-is.
+The `IComparer<T>` overloads swap in custom comparison logic.
 
 ```csharp
 var words = new[] { "banana", "Apple", "cherry" };
@@ -161,84 +131,94 @@ var sorted = words.Order(StringComparer.OrdinalIgnoreCase);
 // sorted: Apple, banana, cherry
 ```
 
-Swapping the comparer does not change the return type, so it composes with the `ThenBy` chaining shown next.
+---
 
-### Chaining `ThenBy` via `IOrderedEnumerable<T>`
+## Compatibility Question 1: The Return Type `IOrderedEnumerable<T>` Decides ThenBy Chaining
 
-Returning `IOrderedEnumerable<T>` allows a secondary sort key to be added with `ThenBy` / `ThenByDescending`.
+The one real design decision in this delegation polyfill is the return type.
+Returning `IEnumerable<T>` produces the same sorted output, but the original `Order` returns `IOrderedEnumerable<T>`, which allows a secondary sort key via `ThenBy` / `ThenByDescending`.
 
 ```csharp
 var words = new[] { "Banana", "apple", "banana", "Apple" };
 
-// Primary: case-insensitive ascending; ties broken by ordinal comparison
+// Sort case-insensitively first; break ties with an ordinal comparison
 var result = words.Order(StringComparer.OrdinalIgnoreCase)
                   .ThenBy(s => s, StringComparer.Ordinal);
 // result: Apple, apple, Banana, banana
 ```
 
-Under the primary key (case-insensitive comparison), `"Apple"` ties with `"apple"` and `"Banana"` ties with `"banana"`, so the secondary key (ordinal comparison) determines the order among tied elements.
-An implementation that downgrades the return type to `IEnumerable<T>` would fail to compile the `ThenBy` above.
-The choice of return type is essential to preserving compatibility with the original API.
+Under the first key (case-insensitive), `"Apple"`/`"apple"` and `"Banana"`/`"banana"` tie, so the second key (ordinal) decides their order.
+With an implementation that narrows the return type to `IEnumerable<T>`, this `ThenBy` fails to compile.
+
+The delegated `OrderBy` already returns `IOrderedEnumerable<T>`, so all the polyfill has to do is not narrow it.
+The general lesson for delegation-based polyfills: **expose exactly the type the delegate returns and never drop information** — that is the condition for API compatibility.
 
 ---
 
-## Choosing the Right Conditional-Compilation Symbol
+## Compatibility Question 2: Sort-Time Exceptions Differ per Runtime
 
-This implementation uses `#if !NET7_0_OR_GREATER`, which differs from the `#if !NETCOREAPP` guard used in the [.NET 5 backport article](/articles/linq-backport-netframework-to-net5/).
+The parameterless overloads depend on `Comparer<T>.Default`, so element types that implement neither `IComparable` nor `IComparable<T>` throw at enumeration (sort) time.
+Which exception type surfaces depends on the runtime.
 
-`Order` and `OrderDescending` do not exist prior to .NET 7.
-Guarding with `NETCOREAPP` or `NET6_0_OR_GREATER` would therefore disable the polyfill on .NET 6 builds, causing a compile error there.
+- The default comparer itself throws `ArgumentException` (message: "At least one object must implement IComparable.").
+- On **.NET Framework**, `OrderBy` does not wrap comparison exceptions in its internal sort, so this `ArgumentException` propagates as-is.
+- On **.NET Core 3.0 and later** (including the built-in .NET 7 `Order`), the internal sort wraps comparison exceptions in `InvalidOperationException` (message: "Failed to compare two elements in the array.", with the `ArgumentException` as the inner exception).
 
-| Symbol | .NET Framework | .NET 6 | .NET 7+ |
-| --- | --- | --- | --- |
-| `!NETCOREAPP` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET6_0_OR_GREATER` | Polyfill enabled | **Polyfill disabled (compile error)** | Polyfill disabled |
-| `!NET7_0_OR_GREATER` | Polyfill enabled | Polyfill enabled | Polyfill disabled |
+In other words, while this polyfill runs on .NET Framework, its exception type does not match the built-in .NET 7 behavior.
+This is a structural limit of delegation-based polyfills: the delegate's behavior surfaces unchanged, so wherever the delegate itself differs from modern .NET, the polyfill cannot paper over it.
 
-`!NET7_0_OR_GREATER` enables the polyfill on all runtimes below .NET 7, including .NET 6, and disables it automatically once the project targets .NET 7 or later.
+Code that handles exceptions by type should account for this difference during migration; better yet, pass an explicit `IComparer<T>` whenever sorting arbitrary types.
+
+---
+
+## Migration Guard
+
+The polyfill is wrapped in `#if !NET7_0_OR_GREATER`.
+`Order` / `OrderDescending` do not exist before .NET 7, so guarding with `!NETCOREAPP` or `!NET6_0_OR_GREATER` would disable the polyfill in .NET 5 / .NET 6 builds and break compilation.
+The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
 ## Caveats
 
-- **Return `IOrderedEnumerable<T>`**: An implementation that returns `IEnumerable<T>` works but cannot chain `ThenBy` / `ThenByDescending`, making it incompatible with the original. `OrderBy` / `OrderByDescending` with an identity lambda already return `IOrderedEnumerable<T>`, so compatibility is preserved simply by declaring that return type.
-- **The element type must have a defined ordering**: The parameterless overload uses `Comparer<T>.Default`. If the element type implements neither `IComparable` nor `IComparable<T>` and the default comparer cannot be resolved, an exception is thrown during enumeration (when the sort runs). The default comparer itself throws `ArgumentException` ("At least one object must implement IComparable."), but the surfaced exception type differs by runtime. .NET Framework's `OrderBy` does not wrap comparer exceptions in its internal sort, so the `ArgumentException` propagates directly. In contrast, .NET Core 3.0 and later (including the .NET 7 `Order`) wrap it in an `InvalidOperationException` ("Failed to compare two elements in the array.", with the `ArgumentException` as its inner exception). Account for this difference when handling by exception type; for arbitrary types, supplying the comparison explicitly through the `IComparer<T>` overload is the safer choice.
-- **Deferred execution**: Like `OrderBy`, `Order` / `OrderDescending` are deferred; the sort runs only when the result is enumerated via `foreach` or `.ToList()`. The `ArgumentNullException` for a `null` source is thrown immediately at the call site, because these methods contain no `yield return`.
-- **Stable sort**: Because the underlying `OrderBy` is a stable sort, elements with equal keys retain their input order. This matches the behavior of the original `Order`.
+- **Sorting is stable**: the underlying `OrderBy` is a stable sort, so elements with equal keys keep their input order. This matches the built-in `Order`.
+- **Evaluation is lazy**: like `OrderBy`, the sort runs at `foreach` / `.ToList()` time. The `ArgumentNullException` for a `null` source is thrown immediately at call time.
+- **Prefer explicit comparers over the default**: as described above, the parameterless overloads throw at runtime for types with no defined ordering. Pass an `IComparer<T>` when the element type is arbitrary.
 
 ---
 
-## Alternatives
+## Alternatives / Comparison
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Custom polyfill (this article) | No external dependencies; return type matches the original | Implementation and maintenance effort | Projects that minimize dependencies |
-| Inline `OrderBy(x => x)` | No additional code | Verbose; requires a bulk replacement when migrating to `Order` | Few call sites and no planned migration |
-| Upgrade to .NET 7 | Resolves the root cause; gains language features | Migration cost | When migration is technically and organizationally feasible |
+| Delegation polyfill (this article) | A few lines; no algorithmic bugs possible | Cannot reproduce behavior the delegate itself lacks (exception type) | Using the `Order` spelling before migrating |
+| Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to `Order` | Few call sites and no migration planned |
+| Upgrade to .NET 7 | Root fix plus language features | Migration cost | When migration is feasible |
 
-Writing `OrderBy(x => x)` inline requires no extra code, but it leaves behind the work of finding and replacing every call site later when standardizing on `Order` after a .NET 7 migration.
-Introducing the polyfill from this article allows code to be written with `Order` before migration; at migration time, the file can stay in place while conditional compilation switches automatically to the original.
+Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after a .NET 7 migration means hunting down and replacing every call site.
+With the polyfill in place, code uses `Order` from day one, and conditional compilation switches to the built-in implementation automatically at migration time.
 
 ---
 
 ## Summary
 
-This article covered `Order` and `OrderDescending` — the two LINQ methods added in .NET 7 — and how to backport them safely to .NET Framework.
+The `Order` / `OrderDescending` polyfill is the minimal possible implementation — pure delegation to an existing API.
+Its quality therefore hinges on compatibility, which reduces to two points.
 
-Three implementation points are worth remembering.
+| Question | Decision |
+| --- | --- |
+| Return type | Keep `IOrderedEnumerable<T>` to preserve `ThenBy` chaining |
+| Sort-time exceptions | Types differ from .NET 7 while running on .NET Framework; avoid by passing an explicit `IComparer<T>` |
 
-- **Return `IOrderedEnumerable<T>`**: Return `IOrderedEnumerable<T>` rather than `IEnumerable<T>` so that `ThenBy` can be chained, just as with the original.
-- **Use `#if !NET7_0_OR_GREATER`**: These methods are absent from .NET 6 and earlier, so `!NETCOREAPP` or `!NET6_0_OR_GREATER` would cause a compile error on .NET 6 builds.
-- **Mind the default-comparer exception**: The parameterless overload assumes the element type has a defined ordering. For arbitrary types, use the `IComparer<T>` overload.
-
-| Method | Evaluation | Return type | Implementation summary |
-| --- | --- | --- | --- |
-| `Order` | Lazy | `IOrderedEnumerable<T>` | Delegates to `OrderBy(x => x)` |
-| `OrderDescending` | Lazy | `IOrderedEnumerable<T>` | Delegates to `OrderByDescending(x => x)` |
+Choosing between a hand-written iterator polyfill ([foundation article](/articles/linq-backport-netframework-to-net5/)) and this delegation style comes down to whether the target behavior is expressible by composing existing APIs.
+When it is, delegation is the safer choice; write an iterator only when it is not.
 
 ---
 
 ## Related Articles
 
-- [Backporting Chunk, MaxBy, MinBy and DistinctBy to .NET Framework](/articles/linq-backport-netframework-to-net6/)
-- [Backporting Append, Prepend, TakeLast and SkipLast to .NET Framework](/articles/linq-backport-netframework-to-net5/)
+- [Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing Append, Prepend, TakeLast and SkipLast](/articles/linq-backport-netframework-to-net5/)
+- [Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxBy, MinBy and DistinctBy](/articles/linq-backport-netframework-to-net6/)
+- [Selector-Free ToDictionary — Designing for Overload Resolution and the notnull Constraint](/articles/linq-backport-netframework-to-net8/)
+- [Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, AggregateBy and Index](/articles/linq-backport-netframework-to-net9/)
+- [Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin and Shuffle](/articles/linq-backport-netframework-to-net10/)
