@@ -200,18 +200,20 @@ Because `TextBlock.Text` and `TextBox.Text` are of type `string`, `StringFormat`
 
 When a format string begins with `{`, the XAML parser mistakes it for the start of a markup extension.
 To avoid this, the string is prefixed with an empty pair of curly braces `{}`.
-Alternatively, the whole format is wrapped in single quotes.
+This `{}` cannot be omitted even when the format is wrapped in single quotes.
+Whether the escape is required depends solely on whether the format begins with `{`, not on the quoting.
 
 ```xml
 <!-- Begins with {, so escape with {} -->
 <TextBlock Text="{Binding OrderDate, StringFormat={}{0:yyyy/MM/dd}}" />
 
-<!-- Wrapping in single quotes avoids the ambiguity as well ({} is unnecessary) -->
-<TextBlock Text="{Binding OrderDate, StringFormat='{0:yyyy/MM/dd}'}" />
+<!-- Even when wrapped in single quotes, the leading {} is still required -->
+<TextBlock Text="{Binding OrderDate, StringFormat='{}{0:yyyy/MM/dd}'}" />
 ```
 
-In a case with leading literal text, such as `StringFormat='Price: {0:C}'`, no escaping is needed because the string does not begin with `{`.
-The `{}` escape is required only when the string begins with a placeholder.
+In a case with leading literal text, such as `StringFormat='Price: {0:C}'`, no `{}` is needed because the string does not begin with `{`.
+Single quotes are a separate mechanism for including markup-extension delimiters such as commas and spaces in the format, distinct from escaping a leading `{`.
+When the format both begins with `{` and contains a comma or space, both the `{}` escape and single quotes are used together.
 
 ---
 
