@@ -25,7 +25,7 @@ This article implements the selector-free `ToDictionary` polyfill (the `KeyValue
 - Frameworks: .NET Framework 4.8 (backport target) / .NET 8+ (future migration target)
 - APIs: the selector-free `ToDictionary` overloads — 4 signatures (`KeyValuePair` and tuple forms, each with an `IEqualityComparer<TKey>` overload)
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET8_0_OR_GREATER`
-- No project configuration changes (such as `.csproj` language version)
+- Language version: `#nullable enable`, nullable reference annotations, and the `where TKey : notnull` constraint require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (take particular care in older non-SDK projects that do not set `LangVersion` explicitly)
 
 ---
 

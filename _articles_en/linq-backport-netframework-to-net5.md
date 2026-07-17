@@ -43,7 +43,7 @@ Had the methods lived in a custom namespace, migration would require hunting dow
 ## The Four Operators Added During the .NET Core Era
 
 Between .NET Framework 4.8 and .NET 5 (.NET Core 2.0–3.1), LINQ development focused on rewriting internals for performance rather than adding operators.
-The practical additions from that window are the following four methods.
+The additions from that window include `ToHashSet` (.NET Core 2.0) among others, but the four this article uses as its subject are the following.
 
 | Method | Added in | Description |
 | --- | --- | --- |

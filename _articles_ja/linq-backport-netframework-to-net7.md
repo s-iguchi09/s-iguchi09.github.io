@@ -26,7 +26,7 @@ excerpt: "既存の OrderBy への委譲だけで完結する Order・OrderDesce
 - フレームワーク: .NET Framework 4.8（バックポート先）/ .NET 7+（将来の移行先）
 - 対象: LINQ の `Order` / `OrderDescending`（各 `IComparer<T>` オーバーロードを含む計 4 シグネチャ）
 - 方針: `#nullable enable` を適用し、`#if !NET7_0_OR_GREATER` で移行時に自動無効化する
-- プロジェクト設定（`.csproj` の言語バージョンなど）は変更しない
+- 言語バージョン: `#nullable enable` と nullable 参照型注釈は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`#nullable enable` と `?` 注釈を外せば C# 7.3 でも動作する）
 
 ---
 
@@ -157,7 +157,8 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 
 ## 互換性論点 2: 環境によって異なるソート時例外
 
-引数なしオーバーロードは `Comparer<T>.Default` に依存するため、要素型が `IComparable` / `IComparable<T>` を実装していない場合、列挙（ソート実行）時に例外が発生する。
+引数なしオーバーロードは `Comparer<T>.Default` に依存するため、要素型が `IComparable` / `IComparable<T>` を実装していない場合、ソートが実際に要素間の比較を行う時点で例外が発生する。
+空シーケンスや単一要素のシーケンスでは比較が行われないため例外にならず、2 要素以上で実際に比較が必要になったときに初めて失敗する。
 このとき表面化する例外の型が、実行環境によって異なる。
 
 - 既定比較子自体は `ArgumentException`（メッセージ: "At least one object must implement IComparable."）を投げる。

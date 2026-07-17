@@ -23,6 +23,7 @@ It also covers the version-specific migration guard that first becomes necessary
 - Frameworks: .NET Framework 4.8 (backport target) / .NET 6+ (future migration target)
 - APIs: LINQ `Chunk`, `MaxBy`, `MinBy`, `DistinctBy`
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET6_0_OR_GREATER`
+- Language version: the implementation uses `#nullable enable` and `using var`, requiring C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (to stay on C# 7.3, replace `using var` with a plain `using` and drop `#nullable enable`)
 
 ---
 
@@ -41,7 +42,7 @@ Producing the same results without them requires workaround idioms.
 
 | Goal | Workaround idiom | Runtime cost |
 | --- | --- | --- |
-| Split into chunks | Indexed `Select` + `GroupBy(t => t.i / size)` | Eager grouping of all elements plus intermediate tuples |
+| Split into chunks | Indexed `Select` + `GroupBy(t => t.i / size)` | Groups all elements on first enumeration, plus intermediate tuples |
 | Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort |
 | Distinct by key | `GroupBy(x => x.Key).Select(g => g.First())` | Full per-key element lists |
 
@@ -53,7 +54,8 @@ It is the entrenched mismatch between goal and cost: paying for a full sort when
 ## Root Cause / Background
 
 After feature development for .NET Framework 4.8 ended, LINQ changes through .NET 5 centered on internal performance work, with few new operators.
-.NET 6 was the first release to ship the key-based batch — `Chunk`, `MaxBy`, `MinBy`, `DistinctBy` — and none of them exist in .NET 5 or earlier.
+.NET 6 was the first release to ship this batch — `Chunk`, `MaxBy`, `MinBy`, `DistinctBy` — and none of them exist in .NET 5 or earlier.
+`MaxBy`, `MinBy` and `DistinctBy` operate by key, while `Chunk` splits elements by size; the criteria differ, but all four previously required composing several methods.
 The fact that they are missing from .NET 5 as well directly drives the migration-guard symbol choice discussed later.
 
 ---
@@ -333,7 +335,7 @@ Unlike `GroupBy`, nothing is read ahead: elements stream out lazily, one at a ti
 
 ### `Chunk`: From Index Arithmetic to Sequential Slicing
 
-Grouping by `index / size` allocates intermediate tuples and evaluates eagerly.
+Grouping by `index / size` allocates intermediate tuples, and `GroupBy` reads the entire source on first enumeration.
 `Chunk` slices arrays of at most `size` elements as it enumerates.
 
 ```csharp
@@ -361,7 +363,7 @@ if (count < size)
 yield return chunk;
 ```
 
-Each chunk is built only after the previous one is yielded, so the eager whole-sequence grouping disappears.
+Each chunk is built only after the previous one is yielded, so the up-front whole-sequence grouping disappears.
 
 ---
 
@@ -429,7 +431,7 @@ A few dozen items rendered per screen refresh will not expose the problem; as vo
 | --- | --- | --- |
 | `MaxBy` / `MinBy` | $O(n \log n)$ full sort | $O(n)$ single pass |
 | `DistinctBy` | Per-key element lists | Key set only ($O(\text{unique keys})$) |
-| `Chunk` | Eager whole-sequence grouping | Sequential per-chunk build ($O(size)$) |
+| `Chunk` | Up-front whole-sequence grouping | Sequential per-chunk build ($O(size)$) |
 
 The replacement itself is just adding polyfills with the original names and signatures, and the `#if !NET6_0_OR_GREATER` guard switches to the built-in implementations automatically upon migrating to .NET 6.
 

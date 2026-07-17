@@ -48,8 +48,8 @@ var counts = words.GroupBy(w => w)
 
 The invisible cost of this code is the intermediate grouping.
 `GroupBy` walks all elements up front and builds, for every key, a list of references to all elements belonging to that key.
-When only a count is needed, that list becomes garbage the moment `Count()` returns.
-For a million elements across ten keys, a grouping holding a million references is materialized to produce ten numbers.
+When only a count is needed, those lists are ultimately discarded — but not the moment `Count()` returns: they stay retained until the entire sequence returned by `GroupBy` has been enumerated (every key's group built).
+For a million elements across ten keys, a grouping holding a million references stays in memory for the whole time it takes to produce the ten numbers.
 
 The `Index` substitute — `Select((item, index) => (index, item))` — is a different kind of problem: not cost, but intent buried in boilerplate.
 
@@ -245,7 +245,9 @@ foreach (var pair in words.CountBy(word => word))
 // cherry: 1
 ```
 
-Results come back in first-appearance order of the keys (absent deletions, the internal dictionary enumerates in insertion order).
+The enumeration order of the results is not guaranteed.
+The internal `Dictionary<TKey, TValue>` has no ordering contract, so code must not rely on any particular order (such as first-appearance order).
+When a defined order is required, sort the results explicitly or convert them into an order-preserving collection.
 The `IEqualityComparer<TKey>` overload swaps in a different key equality — case-insensitive counting, for example.
 
 ### `AggregateBy`: A Per-Key Fold

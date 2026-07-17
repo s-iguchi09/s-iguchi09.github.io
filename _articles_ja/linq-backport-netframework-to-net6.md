@@ -23,6 +23,7 @@ excerpt: ".NET Framework で Chunk・MaxBy・MinBy・DistinctBy を代用する 
 - フレームワーク: .NET Framework 4.8（バックポート先）/ .NET 6+（将来の移行先）
 - 対象: LINQ の 4 メソッド（Chunk / MaxBy / MinBy / DistinctBy）
 - 方針: `#nullable enable` を適用し、`#if !NET6_0_OR_GREATER` で移行時に自動無効化する
+- 言語バージョン: 実装例は `#nullable enable` と `using var` を用いるため C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（C# 7.3 のまま使う場合は `using var` を通常の `using` へ置き換え、`#nullable enable` を外す）
 
 ---
 
@@ -41,7 +42,7 @@ excerpt: ".NET Framework で Chunk・MaxBy・MinBy・DistinctBy を代用する 
 
 | 目的 | 回避イディオム | 実行コスト |
 | --- | --- | --- |
-| 最大サイズで分割 | インデックス付き `Select` + `GroupBy(t => t.i / size)` | 全要素の即時グルーピングと中間タプルの割り当て |
+| 最大サイズで分割 | インデックス付き `Select` + `GroupBy(t => t.i / size)` | 初回列挙時に全要素をグルーピングし、中間タプルを割り当てる |
 | キー基準の最大・最小 | `OrderByDescending(x => x.Key).First()` | $O(n \log n)$ の全件ソート |
 | キー基準の重複除去 | `GroupBy(x => x.Key).Select(g => g.First())` | キーごとの要素リストを丸ごと構築 |
 
@@ -53,7 +54,8 @@ excerpt: ".NET Framework で Chunk・MaxBy・MinBy・DistinctBy を代用する 
 ## 原因・背景
 
 .NET Framework 4.8 の機能追加終了後、.NET Core から .NET 5 までの LINQ は内部性能の改善が中心で、演算子の追加はわずかだった。
-キー基準の操作を 1 メソッドで表現する `Chunk`・`MaxBy`・`MinBy`・`DistinctBy` が揃ったのは .NET 6 が最初であり、.NET 5 以前のどの環境にも存在しない。
+これらの操作を 1 メソッドで表現する演算子が揃ったのは .NET 6 が最初であり、.NET 5 以前のどの環境にも存在しない。
+`MaxBy`・`MinBy`・`DistinctBy` はキーを基準にした操作、`Chunk` は要素をサイズで分割する操作であり、基準は異なるが、いずれも従来は複数メソッドの組み合わせを要した。
 「.NET 5 にも存在しない」という事実は、後述する移行ガードのシンボル選択に直接影響する。
 
 ---
@@ -333,7 +335,7 @@ foreach (var item in source)
 
 ### `Chunk`: インデックス演算のグルーピングから逐次分割へ
 
-インデックスを `size` で割ってグルーピングする回避イディオムは、中間タプルの割り当てと即時評価を伴う。
+インデックスを `size` で割ってグルーピングする回避イディオムは、中間タプルの割り当てを伴い、`GroupBy` が初回列挙時にソース全体を読み込む。
 `Chunk` は列挙しながら「最大 `size` 個」の配列を順に切り出す。
 
 ```csharp
@@ -361,7 +363,7 @@ if (count < size)
 yield return chunk;
 ```
 
-チャンクを 1 つ返すたびに次のチャンクを構築するため、全件の即時グルーピングが不要になる。
+チャンクを 1 つ返すたびに次のチャンクを構築するため、全件を先読みするグルーピングが不要になる。
 
 ---
 
@@ -429,7 +431,7 @@ yield return chunk;
 | --- | --- | --- |
 | `MaxBy` / `MinBy` | $O(n \log n)$（全件ソート） | $O(n)$（1 パス走査） |
 | `DistinctBy` | キーごとの要素リスト構築 | キー集合のみ保持（$O(\text{ユニーク件数})$） |
-| `Chunk` | 全件の即時グルーピング | チャンク単位の逐次構築（$O(size)$） |
+| `Chunk` | 全件を先読みするグルーピング | チャンク単位の逐次構築（$O(size)$） |
 
 置き換え自体は本家と同名・同シグネチャのポリフィルを追加するだけで済み、`#if !NET6_0_OR_GREATER` のガードにより .NET 6 移行時には自動で本家実装に切り替わる。
 

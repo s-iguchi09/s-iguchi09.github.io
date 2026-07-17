@@ -25,7 +25,7 @@ excerpt: ".NET 8 の ToDictionary 新オーバーロード（KeyValuePair 版・
 - フレームワーク: .NET Framework 4.8（バックポート先）/ .NET 8+（将来の移行先）
 - 対象: LINQ `ToDictionary` のセレクタ不要オーバーロード 4 シグネチャ（`KeyValuePair` 版・タプル版、それぞれ `IEqualityComparer<TKey>` オーバーロードを含む）
 - 方針: `#nullable enable` を適用し、`#if !NET8_0_OR_GREATER` で移行時に自動無効化する
-- プロジェクト設定（`.csproj` の言語バージョンなど）は変更しない
+- 言語バージョン: `#nullable enable`・nullable 参照型注釈・`where TKey : notnull` 制約は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`LangVersion` を明示しない古い非 SDK 形式プロジェクトでは特に注意する）
 
 ---
 

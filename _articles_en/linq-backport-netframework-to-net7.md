@@ -26,7 +26,7 @@ A polyfill built purely on delegation to existing APIs is the counterpart to the
 - Frameworks: .NET Framework 4.8 (backport target) / .NET 7+ (future migration target)
 - APIs: LINQ `Order` / `OrderDescending` (4 signatures, including the `IComparer<T>` overloads)
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET7_0_OR_GREATER`
-- No project configuration changes (such as `.csproj` language version)
+- Language version: `#nullable enable` and nullable reference annotations require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (dropping `#nullable enable` and the `?` annotations allows C# 7.3)
 
 ---
 
@@ -157,7 +157,8 @@ The general lesson for delegation-based polyfills: **expose exactly the type the
 
 ## Compatibility Question 2: Sort-Time Exceptions Differ per Runtime
 
-The parameterless overloads depend on `Comparer<T>.Default`, so element types that implement neither `IComparable` nor `IComparable<T>` throw at enumeration (sort) time.
+The parameterless overloads depend on `Comparer<T>.Default`, so for element types that implement neither `IComparable` nor `IComparable<T>`, the sort throws at the point it actually compares two elements.
+Empty and single-element sequences perform no comparison and therefore do not throw; the failure surfaces only once two or more elements require an actual comparison.
 Which exception type surfaces depends on the runtime.
 
 - The default comparer itself throws `ArgumentException` (message: "At least one object must implement IComparable.").

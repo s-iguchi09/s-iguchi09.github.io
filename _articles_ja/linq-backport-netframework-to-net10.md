@@ -9,7 +9,7 @@ excerpt: "SQL の LEFT JOIN / RIGHT JOIN に対応する .NET 10 の LeftJoin・
 ## 概要
 
 SQL では `LEFT JOIN` の 1 句で書ける外部結合が、LINQ では長らく `GroupJoin`・`SelectMany`・`DefaultIfEmpty` という 3 メソッドの合成を要した。
-.NET 10 はこのギャップを 15 年越しに埋め、`LeftJoin`・`RightJoin` を標準の演算子として追加した。
+.NET 10 はこの長年のギャップをようやく埋め、`LeftJoin`・`RightJoin` を標準の演算子として追加した。
 あわせて、`OrderBy(_ => Guid.NewGuid())` という擬似イディオムで代用されてきたランダム並べ替えも、`Shuffle` として標準化された。
 
 本記事では、SQL の結合句と LINQ イディオムの対応関係を起点に、これら 3 演算子を .NET Framework で使えるようにするポリフィルを実装する。
