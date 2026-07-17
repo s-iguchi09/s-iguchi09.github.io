@@ -120,6 +120,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
 以下のマージ直前チェックリストを **すべて満たしてから** マージする。1 つでも満たさなければマージしない。
 
 - [ ] 最新コミットに対する CI(`Lint Markdown` 等)が success。
+      ただし `Lint Markdown`(`.github/workflows/lint-markdown.yml`)は `**/*.md` / `.markdownlint.json` /
+      当該ワークフローの変更時のみ起動する。**これらを変更しない PR ではチェックが起動しない**ため、
+      その場合は check run 不在(未実行)を許容し、この項目は満たされたものとして扱う。
 - [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし)し、actionable な未解決指摘がゼロ。
 - [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
       作成者(CodeRabbit・人間レビュアー・その他の自動ボットを問わず)に関係なく `is_resolved == true` を要求する。
