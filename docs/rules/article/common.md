@@ -80,9 +80,10 @@
   以下で列挙できる:
 
   ```bash
-  ls _articles_en/*.md _articles_ja/*.md
-  # slug（ファイル名のみ）を一覧する場合:
-  ls _articles_en _articles_ja | grep '\.md$' | sed 's/\.md$//' | sort -u
+  # 既存記事の Markdown を列挙する（どちらのディレクトリが空でもエラーにならない）:
+  find _articles_en _articles_ja -maxdepth 1 -type f -name '*.md'
+  # slug（拡張子 .md を除いたファイル名）を一覧する場合:
+  find _articles_en _articles_ja -maxdepth 1 -type f -name '*.md' -exec basename {} .md \; | sort -u
   ```
 
 - 各記事のテーマは、必要に応じてファイル先頭のフロントマター(`title` / `category` / `excerpt`)を読んで把握する。
