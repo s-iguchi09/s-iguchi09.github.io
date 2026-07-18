@@ -15,6 +15,7 @@
 ```text
 docs/rules/
 └── article/
+    ├── common.md           # 技術記事作成 共通ガイドライン（記事関連スキル共通の土台）
     ├── guidelines.md        # 執筆方針・文体ルール
     ├── template-ja.md       # 日本語記事テンプレート
     ├── template-en.md       # 英語記事テンプレート

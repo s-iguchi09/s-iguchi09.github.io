@@ -13,6 +13,7 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 
 作業前に以下を読み、記事はこれらに完全準拠させること。
 
+- `docs/rules/article/common.md` — 技術記事作成 共通ガイドライン(リポジトリ前提・格納先・テーマの焦点・量産型回避・既存記事の把握方法など、記事関連スキル共通の土台)
 - `docs/rules/article/guidelines.md` — 執筆方針・文体・必須要素
 - `docs/rules/article/template-ja.md` / `template-en.md` — 記事テンプレート
 - `docs/rules/article/review-checklist.md` — 公開前チェックリスト
