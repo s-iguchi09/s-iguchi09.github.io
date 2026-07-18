@@ -117,8 +117,9 @@ The last child without a `DockPanel.Dock` value fills the remaining area, so the
   To hide the scrollbar while keeping scrolling, use `Hidden` instead.
 - **Avoid nesting scrollable controls directly:** placing a control with its own scrolling, such as a `ListBox`, directly inside a `ScrollViewer` can make the mouse wheel act on the wrong element.
   A `ListBox` already scrolls internally, so it is better given a height-constrained layout, such as a `*` row of a `Grid`, than wrapped in an outer `ScrollViewer`.
-- **Physical versus logical scrolling:** when `ScrollViewer.CanContentScroll` is `false`, which is the default, scrolling is physical, in pixel units; when it is `true`, scrolling is logical, by item.
-  A data-bound `ListBox` in its default configuration hosts items in a `VirtualizingStackPanel`, which relies on logical scrolling to virtualize items; if `CanContentScroll` becomes `false`, the panel falls back to physical scrolling and its virtualization is lost, so this should be avoided for long lists.
+- **Physical versus logical scrolling:** `ScrollViewer.CanContentScroll` defaults to `false`, giving physical, pixel-based scrolling; when it is `true`, scrolling is logical, by item.
+  The standard `ListBox` template sets it to `true`, so a data-bound `ListBox` scrolls logically and its `VirtualizingStackPanel` virtualizes items.
+  That virtualization is lost only if `CanContentScroll` is forced to `false`, so avoid that for long lists.
 
 ---
 
