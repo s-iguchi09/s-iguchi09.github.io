@@ -15,8 +15,9 @@
   - 英語記事: `_articles_en/<slug>.md`(`layout: article-en`、公開 URL `/articles/<slug>/`)
   - 日本語記事: `_articles_ja/<slug>.md`(`layout: article-ja`、公開 URL `/ja/articles/<slug>/`)
 - **日英は同一の `<slug>.md` ファイル名でペアにする。** 原則、日本語版・英語版の両方を作成する。
-- 記事一覧ページと `sitemap.xml` は、記事ファイルを置けば**自動で生成・反映される**(作成者が手で触る必要はない)。
-- 各ページには `canonical`(正規 URL を示す link relation)と `hreflang`(言語別の alternate を示す属性)がレイアウト側の共通処理で自動付与される。`sitemap.xml` の生成は英語記事(`_articles_en/<slug>.md`)を起点に日本語版(`_articles_ja/<slug>.md`)の有無を判定するため、**日英ペアを揃えて配置する**ことで両言語が alternate として正しく相互参照される。
+- 記事一覧ページ(各言語)は、その言語の記事ファイルを置けば自動で反映される。
+- `sitemap.xml` は英語記事(`_articles_en/<slug>.md`)を起点に生成され、日本語版(`_articles_ja/<slug>.md`)の有無を判定する。そのため、**日英ペアを揃えて配置すれば**両言語が sitemap に反映される(日本語記事だけを置いても sitemap には載らない)。作成者はいずれの生成物も手で編集する必要はない。
+- 各ページには `canonical`(正規 URL を示す link relation)と `hreflang`(言語別の alternate を示す属性)がレイアウト側の共通処理で自動付与される。
 
 ---
 
