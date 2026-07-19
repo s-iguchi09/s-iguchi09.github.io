@@ -193,12 +193,12 @@ public static partial class TextBoxHelper
         {
             // AcceptsReturn を SetCurrentValue で設定し、.NET 10 の非表示トリガーを成立させる。
             textBox.SetCurrentValue(TextBox.AcceptsReturnProperty, true);
-            textBox.PreviewKeyDown += OnPreviewKeyDown;
+            WeakEventManager<TextBox, KeyEventArgs>.AddHandler(textBox, nameof(UIElement.PreviewKeyDown), OnPreviewKeyDown);
             DataObject.AddPastingHandler(textBox, OnPasting);
         }
         else
         {
-            textBox.PreviewKeyDown -= OnPreviewKeyDown;
+            WeakEventManager<TextBox, KeyEventArgs>.RemoveHandler(textBox, nameof(UIElement.PreviewKeyDown), OnPreviewKeyDown);
             DataObject.RemovePastingHandler(textBox, OnPasting);
         }
     }
@@ -235,6 +235,9 @@ public static partial class TextBoxHelper
 `AcceptsReturn=True` の非表示トリガーはフォーカスの表示トリガーより後に宣言されており、両方が同時に成立した場合は後に宣言されたトリガーが優先されるため、フォーカス中でもクリアボタンは表示されない。
 Enter の抑止と貼り付け改行の除去により、見た目と入力は単一行のまま保たれる。
 `AcceptsReturn` は `SetCurrentValue` で設定しているため、`AcceptsReturn` にバインディングやスタイルが指定されていても、それらをローカル値で上書きしない。
+`PreviewKeyDown` は方法 1 と同じく `WeakEventManager` で購読し、ハンドラーが `TextBox` の生存を延ばさないようにしている。
+`DataObject` の `Pasting` は添付イベントで名前付きの CLR イベントを持たないため、汎用の `WeakEventManager` では購読できないが、`OnPasting` は静的メソッドで `TextBox` を保持しない。
+無効化時は `PreviewKeyDown`・`Pasting` の両ハンドラーを確実に解除する。
 このトリガーは `.NET 10` で追加されたものであり、`.NET 9` では非表示にならない点に注意する。
 
 XAML 側では、対象の `TextBox` に `SingleLineHideClear` を付与する。

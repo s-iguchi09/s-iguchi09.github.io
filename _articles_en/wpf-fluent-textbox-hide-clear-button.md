@@ -193,12 +193,12 @@ public static partial class TextBoxHelper
         {
             // Set AcceptsReturn via SetCurrentValue to satisfy the .NET 10 hide trigger.
             textBox.SetCurrentValue(TextBox.AcceptsReturnProperty, true);
-            textBox.PreviewKeyDown += OnPreviewKeyDown;
+            WeakEventManager<TextBox, KeyEventArgs>.AddHandler(textBox, nameof(UIElement.PreviewKeyDown), OnPreviewKeyDown);
             DataObject.AddPastingHandler(textBox, OnPasting);
         }
         else
         {
-            textBox.PreviewKeyDown -= OnPreviewKeyDown;
+            WeakEventManager<TextBox, KeyEventArgs>.RemoveHandler(textBox, nameof(UIElement.PreviewKeyDown), OnPreviewKeyDown);
             DataObject.RemovePastingHandler(textBox, OnPasting);
         }
     }
@@ -235,6 +235,9 @@ public static partial class TextBoxHelper
 The `AcceptsReturn=True` hide trigger is declared after the focus-driven show trigger, and when both apply the later-declared trigger wins, so the clear button stays hidden even while focused.
 Suppressing Enter and stripping newlines on paste keeps both the appearance and the input single-line.
 `AcceptsReturn` is set with `SetCurrentValue`, so it does not overwrite any binding or style on `AcceptsReturn` with a local value.
+`PreviewKeyDown` is subscribed through `WeakEventManager` as in Approach 1, so the handler does not extend the lifetime of the `TextBox`.
+`DataObject.Pasting` is an attached event with no named CLR event, so the generic `WeakEventManager` cannot subscribe to it; however, `OnPasting` is a static method and does not hold the `TextBox`.
+When disabled, both the `PreviewKeyDown` and `Pasting` handlers are removed reliably.
 This trigger was added in `.NET 10`, so note that it does not hide the button on `.NET 9`.
 
 On the XAML side, `SingleLineHideClear` is added to the target `TextBox`.
