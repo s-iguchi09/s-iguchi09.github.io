@@ -8,7 +8,7 @@ excerpt: "How to hide the clear button a Fluent-themed WPF TextBox shows on focu
 
 ## Overview
 
-A WPF `TextBox` with the Fluent theme applied shows a clear button (×) at the right edge of the text when it receives focus.
+A WPF `TextBox` with the Fluent theme applied shows a clear button (×) at the right edge of the text when an editable, single-line box that contains text receives focus.
 This default behavior helps with input, but it is unnecessary for search or filter fields that already provide their own clear action, where two buttons with the same role appear side by side.
 This article explains how to hide only that clear button without effectively changing the template's input behavior, targeting `.NET 10` as the primary version.
 There are two approaches.
@@ -77,6 +77,9 @@ Because the template may not be applied at the moment the property changes, the 
 The `Loaded` subscription uses a weak reference through `WeakEventManager` so that the handler does not extend the lifetime of the `TextBox`.
 
 ```csharp
+using System.Windows;
+using System.Windows.Controls;
+
 public static partial class TextBoxHelper
 {
     // "DeleteButton" on .NET 10, "ClearButton" on .NET 9. Fall back depending on the runtime.
@@ -145,11 +148,13 @@ Since `AcceptsReturn` is not modified, the behavior of the Enter key and pasting
 On the XAML side, the attached property is added to the target `TextBox`.
 
 ```xml
-<TextBox helper:TextBoxHelper.HideClearButton="True"
+<TextBox xmlns:helper="clr-namespace:MyApp.Helpers"
+         helper:TextBoxHelper.HideClearButton="True"
          Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}" />
 ```
 
-`helper` is the XML namespace prefix mapped to the namespace of the class that defines the attached property.
+The `xmlns:helper` declaration maps the prefix to the namespace (`clr-namespace`) of the `TextBoxHelper` class.
+Replace it with the actual namespace where the class is defined.
 
 ### Approach 2: Use the `AcceptsReturn` Hide Trigger (`.NET 10` or later)
 
@@ -158,6 +163,10 @@ Since that alone turns a single-line `TextBox` into multi-line input, line break
 The following is an implementation of an attached property `SingleLineHideClear` that enables all of this together.
 
 ```csharp
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+
 public static partial class TextBoxHelper
 {
     public static bool GetSingleLineHideClear(DependencyObject obj) =>
@@ -182,8 +191,8 @@ public static partial class TextBoxHelper
 
         if ((bool)e.NewValue)
         {
-            // AcceptsReturn=True satisfies the .NET 10 hide trigger.
-            textBox.AcceptsReturn = true;
+            // Set AcceptsReturn via SetCurrentValue to satisfy the .NET 10 hide trigger.
+            textBox.SetCurrentValue(TextBox.AcceptsReturnProperty, true);
             textBox.PreviewKeyDown += OnPreviewKeyDown;
             DataObject.AddPastingHandler(textBox, OnPasting);
         }
@@ -225,16 +234,18 @@ public static partial class TextBoxHelper
 
 The `AcceptsReturn=True` hide trigger is declared after the focus-driven show trigger, and when both apply the later-declared trigger wins, so the clear button stays hidden even while focused.
 Suppressing Enter and stripping newlines on paste keeps both the appearance and the input single-line.
+`AcceptsReturn` is set with `SetCurrentValue`, so it does not overwrite any binding or style on `AcceptsReturn` with a local value.
 This trigger was added in `.NET 10`, so note that it does not hide the button on `.NET 9`.
 
 On the XAML side, `SingleLineHideClear` is added to the target `TextBox`.
 
 ```xml
-<TextBox helper:TextBoxHelper.SingleLineHideClear="True"
+<TextBox xmlns:helper="clr-namespace:MyApp.Helpers"
+         helper:TextBoxHelper.SingleLineHideClear="True"
          Text="{Binding Keyword, UpdateSourceTrigger=PropertyChanged}" />
 ```
 
-As in Approach 1, the `helper` prefix maps to the namespace of the class that defines the attached property.
+As in Approach 1, the `xmlns:helper` declaration maps the prefix to the namespace of the `TextBoxHelper` class.
 
 ---
 
