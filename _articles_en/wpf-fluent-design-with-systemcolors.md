@@ -216,6 +216,6 @@ This approach is generally the most maintainable option for long-lived WPF appli
 
 ---
 
-<!-- Related articles -->
-<!-- - [WPF で Fluent デザインを追加ライブラリなしで適用する方法](/ja/articles/wpf-fluent-design-with-systemcolors) -->
-<!-- - [How to Implement DataGrid Sorting in WPF](/en/articles/wpf-datagrid-sorting) -->
+## Related Articles
+
+- [Hiding the Clear Button on a Fluent-Themed WPF TextBox](/articles/wpf-fluent-textbox-hide-clear-button/)
