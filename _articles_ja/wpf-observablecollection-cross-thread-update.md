@@ -17,7 +17,7 @@ WPF で `ItemsControl` にバインドした `ObservableCollection<T>` を、UI 
 ## 前提・対象環境
 
 - フレームワーク: .NET 6 以降 / WPF（.NET Framework 4.5 以降でも同様）
-- 言語: C# / XAML（本文のコード例は target-typed new（`= new();`、C# 9 以降）を用いる。C# 8 以前では `= new ObservableCollection<string>();` のように明示型で記述する）
+- 言語: C# / XAML（本文のコード例は target-typed new（`= new();`、C# 9 以降）を用いており、C# 8 以前では `= new ObservableCollection<string>();` のように明示型で記述する）
 - 対象コントロール・機能: `ObservableCollection<T>`、`ItemsControl`（`ListBox`・`DataGrid`・`ListView` 等を含む）、`CollectionView`
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 前提: バックグラウンドスレッド（`Task.Run` やワーカースレッド）でコレクションを更新する構成
