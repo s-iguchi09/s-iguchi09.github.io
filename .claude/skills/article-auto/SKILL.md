@@ -77,14 +77,21 @@ description: 記事案を1件自動で選び、その記事を作成〜レビュ
 ### Step 3. 記事を作成・公開する(`article-workflow` オートモード)
 
 1. `article-workflow` スキルを **オートモード(`RUN_MODE = auto`)** で起動する。
-   - Step 2 で選んだ案を **テーマとして渡す**(`article-workflow` Phase 0 の「テーマ確認」はこれで満たされる)。
-   - **`RUN_MODE = auto` を確定値として引き渡す(引き渡し契約)。** `article-workflow` Phase 0 手順 1 は
-     実行モードの確認を必須とするが、これは「モードが未確定なら確認する」という要求であって、
-     モードが確定していれば確認そのものを省略できる。本スキルは起動時点でフルオートが確定しているため、
-     `RUN_MODE = auto` を **既に確定した選択肢として明示的に注入**する。すなわち `AskUserQuestion` は
-     行わないが、`RUN_MODE` を未設定のままにはしない — `auto` を確定値として与えたうえで Phase 1 から進める。
-     この注入により Phase 0 の必須確認の趣旨(モードの確定)は満たされ、下流で `RUN_MODE` が
-     未定義になることはない。
+   - **具体的な起動構文(引き渡し契約)。** `Skill` ツールで `article-workflow` を呼び出し、
+     `args` に **モードとテーマを明示的に渡す**。書式:
+
+     ```text
+     Skill(skill: "article-workflow",
+           args: "RUN_MODE=auto テーマ: <Step 2 で選んだ案(テーマ・slug・category)>")
+     ```
+
+     - `RUN_MODE=auto` … `article-workflow` Phase 0 手順 1 が受け取るモード引数。この形式で
+       渡された値をそのまま `RUN_MODE` に採用させる(Phase 0 側は「モードが引数で与えられていれば
+       `AskUserQuestion` を省略して採用する」契約になっている)。
+     - `テーマ: …` … `article-workflow` Phase 0 手順 2 が読む「スキル引数のテーマ」。Step 2 の選定案を渡す。
+   - **これにより、`AskUserQuestion` を出さずに `RUN_MODE=auto` が下流へ確実に伝わる。**
+     単なる宣言ではなく `args` 経由の実引数として渡すため、Phase 0 の必須確認の趣旨(モードの確定)は
+     満たされ、確認の再表示も `RUN_MODE` 未設定も起こらない。
    - 以降は `article-workflow` の定義どおり:
      - Phase 1: 日英ペアの記事を作成(ルール準拠)。
      - Phase 2: サブエージェントによる文体・構成レビュー + 技術検証専任パスを **指摘ゼロまで** 反復。
