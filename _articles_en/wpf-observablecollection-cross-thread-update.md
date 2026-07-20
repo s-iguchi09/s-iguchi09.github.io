@@ -28,15 +28,16 @@ This article explains that the exception comes from the thread affinity of the `
 
 Modifying a bound collection directly from a background thread raises an exception.
 The following example adds items to an `ObservableCollection<T>` from work started with `Task.Run`.
+`File.ReadLines` (from `System.IO`) is used as a stand-in data source; it enumerates a file's lines lazily.
 
 ```csharp
 public ObservableCollection<string> Items { get; } = new();
 
-private async Task LoadAsync()
+private async Task LoadAsync(string path)
 {
     await Task.Run(() =>
     {
-        foreach (var line in ReadHugeFile())
+        foreach (var line in File.ReadLines(path))
         {
             // Add from a non-UI thread throws NotSupportedException
             Items.Add(line);
@@ -52,7 +53,7 @@ Because that notification arrives from a non-UI thread, the `CollectionView` thr
 
 ## Cause / Background
 
-The cause is not `ObservableCollection<T>` itself but the `CollectionView` that WPF routes collection access through when displaying it.
+`ObservableCollection<T>` itself is not thread-safe, but that is a separate matter: the direct cause of this `NotSupportedException` is the `CollectionView` that WPF routes collection access through when displaying it.
 The official documentation states that both the `ItemsControl` and the `CollectionView` have affinity to the thread on which the `ItemsControl` was created, that using them on a different thread is forbidden, and that doing so throws an exception.
 In effect, this restriction extends to the bound collection as well.
 
@@ -80,14 +81,15 @@ The former moves changes onto the UI thread; the latter lets WPF safely take in 
 
 Move the collection mutation to the UI thread with `Dispatcher.Invoke` (or `InvokeAsync`).
 Using `Application.Current.Dispatcher` obtains the UI thread `Dispatcher` even from a view model.
+This assumes a single UI thread; in an application with multiple UI threads, `Application.Current.Dispatcher` refers to the main thread and may not own the bound `CollectionView`, so capture the `Dispatcher` of the specific element that owns the collection instead.
 
 ```csharp
-private async Task LoadAsync()
+private async Task LoadAsync(string path)
 {
     var dispatcher = Application.Current.Dispatcher;
     await Task.Run(() =>
     {
-        foreach (var line in ReadHugeFile())
+        foreach (var line in File.ReadLines(path))
         {
             // Add runs on the UI thread, so no exception occurs
             dispatcher.Invoke(() => Items.Add(line));
@@ -114,11 +116,11 @@ public ViewModel()
     BindingOperations.EnableCollectionSynchronization(Items, _lock);
 }
 
-private async Task LoadAsync()
+private async Task LoadAsync(string path)
 {
     await Task.Run(() =>
     {
-        foreach (var line in ReadHugeFile())
+        foreach (var line in File.ReadLines(path))
         {
             lock (_lock)
             {
