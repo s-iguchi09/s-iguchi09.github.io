@@ -1,5 +1,14 @@
 url: "https://s-iguchi09.github.io"
 
+# Markdown（kramdown）設定
+# Jekyll（kramdown）の既定は hard_wrap: false のため、段落内の単一改行が
+# 空白として扱われ、「1 文 1 行」で書いた記事の改行が HTML で消えてしまう。
+# hard_wrap: true で単一改行を <br /> として描画し、意図した改行を保持する。
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: true
+
 include:
   - sitemap.xml
 
