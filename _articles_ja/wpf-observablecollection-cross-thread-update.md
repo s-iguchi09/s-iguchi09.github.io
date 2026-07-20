@@ -17,7 +17,7 @@ WPF で `ItemsControl` にバインドした `ObservableCollection<T>` を、UI 
 ## 前提・対象環境
 
 - フレームワーク: .NET 6 以降 / WPF（.NET Framework 4.5 以降でも同様）
-- 言語: C# / XAML
+- 言語: C# / XAML（本文のコード例は target-typed new（`= new();`、C# 9 以降）を用いる。C# 8 以前では `= new ObservableCollection<string>();` のように明示型で記述する）
 - 対象コントロール・機能: `ObservableCollection<T>`、`ItemsControl`（`ListBox`・`DataGrid`・`ListView` 等を含む）、`CollectionView`
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 前提: バックグラウンドスレッド（`Task.Run` やワーカースレッド）でコレクションを更新する構成
@@ -56,9 +56,10 @@ private async Task LoadAsync()
 公式ドキュメントは、`ItemsControl` と `CollectionView` の両方が「`ItemsControl` を生成したスレッドへのアフィニティ（親和性）を持ち、異なるスレッドからの使用は禁止され、例外が送出される」と明記している。
 この制約は事実上、バインド対象のコレクションにも及ぶ。
 
-WPF のオブジェクトの多くは `DispatcherObject` から派生し、生成元スレッド（通常は UI スレッド）への単一スレッドアフィニティ（STA）を持つ。
-`CollectionView` は `CollectionChanged` 通知を受けて内部状態を更新するため、通知が別スレッドから届くと、アフィニティ違反として `NotSupportedException` を送出する。
-つまり問題の本質は「コレクションを別スレッドで触ったこと」ではなく、「別スレッドからの変更通知を UI スレッド専有の `CollectionView` が受け取れないこと」にある。
+WPF のオブジェクトの多くは `DispatcherObject` から派生し、生成元スレッド（通常は UI スレッド）へのスレッドアフィニティを持つ。
+`CollectionView` も `DispatcherObject` から派生し、既定ではバインド対象コレクションが別スレッドから変更されることを許可しない。
+そのため、`CollectionChanged` 通知が UI スレッド以外から届くと、`CollectionView` はクロススレッドの変更を許可しないものとして `NotSupportedException` を送出する。
+問題の本質は「コレクションを別スレッドで触ったこと」ではなく、「別スレッドからの変更通知を UI スレッド専有の `CollectionView` が受け取れないこと」にある。
 
 ---
 
@@ -96,7 +97,7 @@ private async Task LoadAsync()
 ```
 
 変更操作が UI スレッドで実行されるため、`CollectionView` のアフィニティ違反は発生しない。
-ただし要素ごとに `Invoke` すると UI スレッドへの往復が多発するため、まとめて追加できる場合は 1 回の `Invoke` 内で複数要素を処理するほうがよい。
+ただし要素ごとに `Invoke` すると UI スレッドへの往復が多発するため、まとめて追加できる場合は 1 回の `Invoke` 内で複数要素を処理するのが適切である。
 
 ### EnableCollectionSynchronization でロックを共有する
 

@@ -3,7 +3,7 @@ layout: article-en
 title: "Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF"
 date: 2026-07-20
 category: WPF
-excerpt: "Modifying a bound ObservableCollection from another thread throws a NotSupportedException. This covers the CollectionView thread affinity behind it and the EnableCollectionSynchronization and Dispatcher fixes."
+excerpt: "Modifying a bound ObservableCollection off the UI thread throws a NotSupportedException from CollectionView affinity. This covers the cause and two fixes."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ This article explains that the exception comes from the thread affinity of the `
 ## Prerequisites / Environment
 
 - Framework: .NET 6 or later / WPF (the same applies to .NET Framework 4.5 and later)
-- Language: C# / XAML
+- Language: C# / XAML (the code samples use a target-typed `new` (`= new();`, C# 9 or later); on C# 8 or earlier, use an explicit type such as `= new ObservableCollection<string>();`)
 - Target controls: `ObservableCollection<T>`, `ItemsControl` (including `ListBox`, `DataGrid`, `ListView`), `CollectionView`
 - Architecture: applicable to both MVVM and code-behind
 - Assumption: the collection is updated on a background thread (`Task.Run` or a worker thread)
@@ -56,8 +56,9 @@ The cause is not `ObservableCollection<T>` itself but the `CollectionView` that 
 The official documentation states that both the `ItemsControl` and the `CollectionView` have affinity to the thread on which the `ItemsControl` was created, that using them on a different thread is forbidden, and that doing so throws an exception.
 In effect, this restriction extends to the bound collection as well.
 
-Most WPF objects derive from `DispatcherObject` and carry single-thread affinity (STA) to their creating thread, which is normally the UI thread.
-The `CollectionView` updates its internal state in response to `CollectionChanged` notifications, so a notification from another thread is treated as an affinity violation and throws `NotSupportedException`.
+Most WPF objects derive from `DispatcherObject` and carry thread affinity to their creating thread, which is normally the UI thread.
+The `CollectionView` also derives from `DispatcherObject` and, by default, does not allow its bound collection to be changed from another thread.
+As a result, when a `CollectionChanged` notification arrives from a non-UI thread, the `CollectionView` throws `NotSupportedException` because it does not permit cross-thread changes.
 The root of the problem is therefore not that the collection was touched on another thread, but that the UI-thread-owned `CollectionView` cannot receive a change notification originating from a different thread.
 
 ---
