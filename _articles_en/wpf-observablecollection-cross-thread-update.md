@@ -29,6 +29,7 @@ This article explains that the exception comes from the thread affinity of the `
 Modifying a bound collection directly from a background thread raises an exception.
 The following example adds items to an `ObservableCollection<T>` from work started with `Task.Run`.
 `File.ReadLines` (from `System.IO`) is used as a stand-in data source; it enumerates a file's lines lazily.
+The snippets in this article are members of a `ViewModel` class and assume the namespaces `System.Collections.ObjectModel`, `System.IO`, `System.Threading.Tasks`, `System.Windows`, and `System.Windows.Data`.
 
 ```csharp
 public ObservableCollection<string> Items { get; } = new();
@@ -81,7 +82,7 @@ The former moves changes onto the UI thread; the latter lets WPF safely take in 
 
 Move the collection mutation to the UI thread with `Dispatcher.Invoke` (or `InvokeAsync`).
 Using `Application.Current.Dispatcher` obtains the UI thread `Dispatcher` even from a view model.
-This assumes a single UI thread; in an application with multiple UI threads, `Application.Current.Dispatcher` refers to the main thread and may not own the bound `CollectionView`, so capture the `Dispatcher` of the specific element that owns the collection instead.
+This assumes a single UI thread; in an application with multiple UI threads, `Application.Current.Dispatcher` refers to the main thread and may not own the bound `CollectionView`, so capture the `Dispatcher` associated with the bound `ItemsControl` (or its `CollectionView`) instead.
 
 ```csharp
 private async Task LoadAsync(string path)
