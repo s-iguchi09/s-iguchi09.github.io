@@ -8,7 +8,7 @@ excerpt: "Modifying a bound ObservableCollection off the UI thread throws a NotS
 
 ## Overview
 
-Modifying an `ObservableCollection<T>` bound to an `ItemsControl` from a thread other than the UI thread throws a `NotSupportedException`.
+By default, modifying an `ObservableCollection<T>` bound to an `ItemsControl` from a thread other than the UI thread throws a `NotSupportedException` (registering `BindingOperations.EnableCollectionSynchronization`, described below, lifts this restriction).
 The message reads along the lines of "This type of `CollectionView` does not support changes to its `SourceCollection` from a thread different from the `Dispatcher` thread" (the exact wording varies by .NET version and locale).
 This article explains that the exception comes from the thread affinity of the `CollectionView` rather than the collection itself, and it organizes the fixes based on `BindingOperations.EnableCollectionSynchronization` and the `Dispatcher`, along with the criteria for choosing between them.
 

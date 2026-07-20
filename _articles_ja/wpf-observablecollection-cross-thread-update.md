@@ -8,7 +8,7 @@ excerpt: "バインド中の ObservableCollection を別スレッドから変更
 
 ## 概要
 
-WPF で `ItemsControl` にバインドした `ObservableCollection<T>` を、UI スレッド以外のスレッドから変更すると、`NotSupportedException` が発生する。
+WPF で `ItemsControl` にバインドした `ObservableCollection<T>` を、UI スレッド以外のスレッドから変更すると、既定では `NotSupportedException` が発生する（後述の `BindingOperations.EnableCollectionSynchronization` を登録するとこの制約は解除される）。
 メッセージは「この種類の `CollectionView` では、`Dispatcher` スレッドと異なるスレッドからの `SourceCollection` への変更はサポートされていません」といった内容になる（文言は .NET のバージョンやロケールで多少異なる）。
 本記事では、この例外がコレクション自体ではなく `CollectionView` のスレッドアフィニティに起因することを説明し、`BindingOperations.EnableCollectionSynchronization` と `Dispatcher` を使った解決方法、および両者の使い分けの基準を整理する。
 
