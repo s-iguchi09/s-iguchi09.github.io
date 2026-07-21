@@ -30,7 +30,7 @@ WPF の双方向バインディングでは、`TextBox` に入力した文字が
 ## 問題
 
 ViewModel のプロパティに `TextBox` をバインドし、その値を使う「保存」ボタンや別の `TextBlock` を用意する。
-ユーザーが `TextBox` に文字を入力し、まだ入力欄にカーソルがある状態でボタンをクリック、あるいはキーボードショートカットを実行すると、ViewModel 側のプロパティには**入力前の古い値**が入っている。
+ユーザーが `TextBox` に文字を入力し、まだ入力欄にカーソルがある状態で、フォーカスを移動させない操作(後述の `Focusable="False"` のボタンなど)で確定すると、ViewModel 側のプロパティには**入力前の古い値**が入っている。
 
 ```xml
 <!-- 既定のバインディング。UpdateSourceTrigger を指定していない -->
@@ -117,10 +117,10 @@ be.UpdateSource();
 
 ## 注意点
 
-- **IME 変換中の即時更新**: `PropertyChanged` は日本語入力の変換中(未確定文字列)でもソースを更新するため、確定前の中間文字列が ViewModel へ流れ込む。変換確定を待ってから処理したい場合は、`LostFocus` にするか、後述の `Delay` で更新を遅らせる。
-- **検証(Validation)のタイミング**: `ValidationRules` や `INotifyDataErrorInfo` による検証は、ソース更新と同じ契機で走る。`LostFocus` では入力欄を離れるまでエラーが表示されず、`PropertyChanged` では 1 文字ごとに検証が走る。エラー表示の即時性は `UpdateSourceTrigger` の選択に直結する。
+- **IME 変換中の即時更新**: `PropertyChanged` は日本語入力の変換中(未確定文字列)でもソースを更新するため、確定前の中間文字列が ViewModel へ流れ込む。変換確定を待ってから処理したい場合は `LostFocus` にする。後述の `Delay` は更新頻度を抑えるだけで、未確定文字列の流入自体は防げない点に注意する。
+- **検証(Validation)のタイミング**: `ValidationRules` は `Binding` に付き、`ValidationStep`(既定 `RawProposedValue`)に応じてソース更新の前後で走るため、`UpdateSourceTrigger` の契機に連動する。一方 `INotifyDataErrorInfo` は ViewModel 側でソース更新後に検証し、結果は `ErrorsChanged` の通知で反映されるため、非同期検証では更新契機と表示タイミングが一致しないことがある。`LostFocus` では入力欄を離れるまで、`PropertyChanged` では 1 文字ごとにソース更新(と `ValidationRules`)が走る。
 - **`Delay` による抑制**: `PropertyChanged` の過剰な更新は、`Binding.Delay`(.NET Framework 4.5 以降)で最後の入力から指定ミリ秒後に 1 回だけ更新するよう抑制できる。例: `{Binding UserName, UpdateSourceTrigger=PropertyChanged, Delay=500}`。
-- **フォーカスを奪わない要素**: `Focusable="False"` のボタンやキーボードアクセラレータは `TextBox` からフォーカスを奪わないため、既定の `LostFocus` ではソース更新が起きない。この経路で確定する UI では `PropertyChanged` か `Explicit` を使う。
+- **フォーカスを移動させない確定操作**: `TextBox` がフォーカスを失わず、かつ `UpdateSource()` も呼ばれない経路では、既定の `LostFocus` でソース更新が起きない。クリックで起動する `Focusable="False"` のボタン、Enter で起動する既定ボタン(`IsDefault="True"`)、アクセスキーがこれに該当する。`Focusable="False"` はボタンへのフォーカス移動を防ぐだけで、`IsDefault` やアクセスキーによる起動自体は妨げない点にも注意する。この経路で確定する UI では `PropertyChanged` か `Explicit` を使う。
 - **`x:Bind` との違い**: WPF の `{Binding}` は `Explicit` を含む 3 値をサポートする。UWP/WinUI の `{x:Bind}` は `Explicit` を持たない点が異なるため、他プラットフォームの記事を参照する際は混同しない。
 
 ---
@@ -142,10 +142,10 @@ be.UpdateSource();
 ## まとめ
 
 `TextBox` の入力が ViewModel へ届かない問題の大半は、`TextBox.Text` の既定 `UpdateSourceTrigger` が `LostFocus` であることに起因する。
-フォーカスが移動しなければソースは更新されないため、`Focusable="False"` のボタンやショートカットで確定する UI では値が古いまま処理が走る。
+フォーカスが移動せず `UpdateSource()` も呼ばれなければソースは更新されないため、`Focusable="False"` のボタン・`IsDefault="True"` の既定ボタン・アクセスキーで確定する UI では値が古いまま処理が走る。
 入力を即座に反映したい検索・プレビュー系では `PropertyChanged`、送信ボタンで一括確定する編集フォームでは `Explicit`、フォーカス移動で自然に確定する通常フォームでは既定の `LostFocus` を選ぶ。
-`PropertyChanged` の更新頻度が問題になる場合は `Delay` で抑制し、IME 変換中の中間文字列を避けたい場合は `LostFocus` か `Delay` を検討する。
-更新タイミングは検証の表示タイミングにも直結するため、`UpdateSourceTrigger` は入力体験と検証設計の両面から選択する。
+`PropertyChanged` の更新頻度が問題になる場合は `Delay` で抑制するが、`Delay` は IME 未確定文字列の流入を防ぐものではなく、変換確定後にだけ処理したい場合は `LostFocus` を選ぶ。
+更新タイミングは `ValidationRules` の実行時点を左右する(`INotifyDataErrorInfo` の結果は `ErrorsChanged` で別途反映される)ため、`UpdateSourceTrigger` は入力体験と検証設計の両面から選択する。
 
 ---
 

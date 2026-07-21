@@ -30,7 +30,7 @@ It determines the *timing* at which a value is written back from the target (`Te
 ## Problem
 
 Bind a `TextBox` to a ViewModel property, and add a "Save" button or another `TextBlock` that consumes that value.
-When the user types into the `TextBox` and, while the caret is still in the field, clicks the button or invokes a keyboard shortcut, the ViewModel property still holds the **old value from before the edit**.
+When the user types into the `TextBox` and, while the caret is still in the field, commits through an interaction that does not move focus away from the field (such as the `Focusable="False"` button below), the ViewModel property still holds the **old value from before the edit**.
 
 ```xml
 <!-- Default binding; UpdateSourceTrigger is not specified -->
@@ -117,10 +117,10 @@ Because a missed call means the value is never reflected, call it reliably at th
 
 ## Notes
 
-- **Immediate updates during IME composition**: `PropertyChanged` updates the source even during IME composition (unconfirmed text), so intermediate strings flow into the ViewModel before confirmation. To process only after the conversion is committed, use `LostFocus` or delay the update with `Delay` (below).
-- **Validation timing**: validation via `ValidationRules` or `INotifyDataErrorInfo` runs on the same trigger as the source update. With `LostFocus`, errors appear only after leaving the field; with `PropertyChanged`, validation runs per keystroke. The immediacy of error display is tied directly to the `UpdateSourceTrigger` choice.
+- **Immediate updates during IME composition**: `PropertyChanged` updates the source even during IME composition (unconfirmed text), so intermediate strings flow into the ViewModel before confirmation. To process only after the conversion is committed, use `LostFocus`. Note that `Delay` (below) only reduces update frequency and does not prevent unconfirmed strings from reaching the source.
+- **Validation timing**: `ValidationRules` are attached to the `Binding` and run around the source update according to their `ValidationStep` (default `RawProposedValue`), so they track the `UpdateSourceTrigger`. In contrast, `INotifyDataErrorInfo` validates on the ViewModel after the source is updated and reflects results through the `ErrorsChanged` notification, so with asynchronous validation the display timing may not coincide with the update trigger. With `LostFocus`, the source update (and `ValidationRules`) runs after leaving the field; with `PropertyChanged`, it runs per keystroke.
 - **Throttling with `Delay`**: excessive updates from `PropertyChanged` can be throttled with `Binding.Delay` (since .NET Framework 4.5), which updates once after a specified number of milliseconds from the last input, e.g. `{Binding UserName, UpdateSourceTrigger=PropertyChanged, Delay=500}`.
-- **Elements that do not take focus**: buttons with `Focusable="False"`, and keyboard accelerators, do not move focus away from the `TextBox`, so no source update occurs under the default `LostFocus`. Use `PropertyChanged` or `Explicit` for UIs that commit through such paths.
+- **Interactions that do not move focus**: when the `TextBox` neither loses focus nor has `UpdateSource()` called, no source update occurs under the default `LostFocus`. This covers a `Focusable="False"` button activated by click, a default button (`IsDefault="True"`) activated by Enter, and access keys. Note that `Focusable="False"` only prevents the button from taking focus; it does not prevent activation via `IsDefault` or an access key. Use `PropertyChanged` or `Explicit` for UIs that commit through such paths.
 - **Difference from `x:Bind`**: WPF `{Binding}` supports all three values including `Explicit`. UWP/WinUI `{x:Bind}` does not support `Explicit`, so do not conflate the two when reading articles targeting other platforms.
 
 ---
@@ -142,10 +142,10 @@ To keep the immediacy of `PropertyChanged` while reducing update frequency, comb
 ## Summary
 
 Most cases where `TextBox` input fails to reach the ViewModel stem from `TextBox.Text` defaulting to `LostFocus` for `UpdateSourceTrigger`.
-Because the source is not updated unless focus moves, UIs that commit via a `Focusable="False"` button or a shortcut run their logic with a stale value.
+Because the source is not updated unless focus moves or `UpdateSource()` is called, UIs that commit via a `Focusable="False"` button, a default button (`IsDefault="True"`), or an access key run their logic with a stale value.
 Choose `PropertyChanged` for search and preview scenarios that need immediate reflection, `Explicit` for edit forms that commit in bulk via a submit button, and the default `LostFocus` for ordinary forms that commit naturally on focus change.
-When the update frequency of `PropertyChanged` becomes a problem, throttle it with `Delay`; to avoid IME intermediate strings, consider `LostFocus` or `Delay`.
-Because the update timing also governs when validation is shown, select `UpdateSourceTrigger` from both the input experience and the validation design.
+When the update frequency of `PropertyChanged` becomes a problem, throttle it with `Delay`; note that `Delay` does not exclude IME intermediate strings, so use `LostFocus` when processing must wait for the committed text.
+Because the update timing governs when `ValidationRules` run (while `INotifyDataErrorInfo` results surface separately via `ErrorsChanged`), select `UpdateSourceTrigger` from both the input experience and the validation design.
 
 ---
 
