@@ -69,6 +69,10 @@ View の分離を保ちたい場合は、コードビハインドに直接書か
 
 ## 実装例
 
+以下のコード例は要点を示す断片である。
+C# 例は `System.Windows`・`System.Windows.Controls`・`System.Windows.Controls.Primitives`・`System.Windows.Data`・`System.Windows.Media`・`System.Windows.Input` の各名前空間を `using` で参照している前提とする。
+XAML 例は既定の WPF 名前空間（`xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"` と `xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"`）を省略しており、`local:` は添付ビヘイビアを定義した CLR 名前空間（例: `xmlns:local="clr-namespace:YourApp.Behaviors"`）を指す。
+
 単一の `TextBox` を書き戻す基本形は次のとおりである。
 `GetBindingExpression` の戻り値を `?.` で受け、`null`（未バインド等）のときは何もしないようにする。
 
@@ -116,7 +120,9 @@ static void UpdateAllTextSources(DependencyObject root)
 </StackPanel>
 ```
 
-各バインディングがグループに参加するには、`StackPanel` の `DataContext` がそれらのソースオブジェクトに設定されている必要がある。
+各バインディングがグループに参加する条件は 2 通りある。
+`BindingGroupName` を指定しない暗黙参加では、`StackPanel` の `DataContext` がそれらのバインディングのソースと同一オブジェクトである必要がある。
+一方、`BindingGroupName` を明示的に指定したバインディングは、`DataContext` が異なっていても同名の `BindingGroup` へ参加できる。
 コードビハインドからは `UpdateSources()` を 1 回呼ぶだけでよい。
 このメソッドは各バインディングの `ValidationRule`（検証ステップが `RawProposedValue`・`ConvertedProposedValue`・`UpdatedValue` のもの）を実行し、すべて成功した場合にソースへ書き戻して `true` を返す。
 
@@ -174,6 +180,7 @@ public static class TextBoxBehavior
         if (e.Key == Key.Enter && sender is TextBox textBox)
         {
             textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+            e.Handled = true; // 既定ボタン等、別の Enter 処理の重複起動を抑止する
         }
     }
 }
@@ -230,9 +237,9 @@ public static class SubmitBehavior
 
         // 1. 継承した BindingGroup 配下の全入力をまとめて書き戻す
         BindingGroup group = button.BindingGroup;
-        if (group is not null && !group.UpdateSources())
+        if (group is null || !group.UpdateSources())
         {
-            return; // 検証失敗。コマンドは実行しない
+            return; // グループ未設定または検証失敗。コマンドは実行しない
         }
 
         // 2. 確定済みの値で ViewModel のコマンドを実行する
@@ -262,9 +269,9 @@ XAML では親に `BindingGroup` を置き、各 `TextBox` を通常どおりバ
 
 このビヘイビアはコミットとコマンド実行の順序を自ら制御するため、`Click` と `Command` の発火順に依存しない。
 ボタンには標準の `Command` を別途バインドせず、`SubmitCommand` に寄せて二重実行を避ける。
-`UpdateSources()` が検証失敗で `false` を返した場合はコマンドを実行しないため、不正な入力のまま保存処理へ進むことがない。
+`BindingGroup` が未設定（継承されていない）、または `UpdateSources()` が検証失敗で `false` を返した場合はコマンドを実行しないため、未確定・不正な入力のまま保存処理へ進むことがない。
 保存処理そのものは `SaveCommand`（ViewModel）に残り、View 側にはコミットの配線だけが乗る。
-なお、前掲のとおり `BindingGroup` への参加には親の `DataContext` が各バインディングのソースに設定されている必要がある。
+なお、`BindingGroupName` を指定しない暗黙参加では、前掲のとおり親の `DataContext` が各バインディングのソースに設定されている必要がある。
 
 ---
 

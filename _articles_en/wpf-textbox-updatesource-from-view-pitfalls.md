@@ -69,6 +69,10 @@ To keep the View decoupled, the call lives in an attached property (behavior) ra
 
 ## Implementation
 
+The code examples below are fragments that show the essential points.
+The C# examples assume `using` directives for `System.Windows`, `System.Windows.Controls`, `System.Windows.Controls.Primitives`, `System.Windows.Data`, `System.Windows.Media`, and `System.Windows.Input`.
+The XAML examples omit the default WPF namespaces (`xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"` and `xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"`), and `local:` refers to the CLR namespace that defines the attached behavior (for example, `xmlns:local="clr-namespace:YourApp.Behaviors"`).
+
 The basic form for writing back a single `TextBox` is as follows.
 The result of `GetBindingExpression` is received with `?.` so that nothing happens when it is `null` (not bound, and so on).
 
@@ -116,7 +120,9 @@ Setting a `BindingGroup` on a parent makes the descendant bindings join the grou
 </StackPanel>
 ```
 
-For the bindings to join the group, the `StackPanel`'s `DataContext` must be set to their source objects.
+A binding joins the group in one of two ways.
+With implicit participation (no `BindingGroupName`), the `StackPanel`'s `DataContext` must be the same object as the bindings' source.
+With an explicit `BindingGroupName`, a binding can join a group of the same name even when its `DataContext` differs.
 From code-behind, a single call to `UpdateSources()` is enough.
 This method runs each binding's `ValidationRule` (those whose validation step is `RawProposedValue`, `ConvertedProposedValue`, or `UpdatedValue`) and, if all succeed, writes back to the sources and returns `true`.
 
@@ -174,6 +180,7 @@ public static class TextBoxBehavior
         if (e.Key == Key.Enter && sender is TextBox textBox)
         {
             textBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+            e.Handled = true; // stop other Enter handlers (e.g. a default button) from also firing
         }
     }
 }
@@ -230,9 +237,9 @@ public static class SubmitBehavior
 
         // 1. Write back all input under the inherited BindingGroup at once
         BindingGroup group = button.BindingGroup;
-        if (group is not null && !group.UpdateSources())
+        if (group is null || !group.UpdateSources())
         {
-            return; // validation failed; do not run the command
+            return; // no group, or validation failed; do not run the command
         }
 
         // 2. Run the ViewModel command with the committed values
@@ -262,9 +269,9 @@ Bindings that join a `BindingGroup` are not written back until `UpdateSources()`
 
 Because the behavior controls the order of commit and command execution itself, it does not depend on the firing order of `Click` and `Command`.
 The button does not also bind the standard `Command`; consolidating on `SubmitCommand` avoids double execution.
-Since `UpdateSources()` returns `false` on validation failure and the command is then skipped, invalid input never proceeds to the save logic.
+Because the command is skipped when the `BindingGroup` is absent (not inherited) or `UpdateSources()` returns `false` on validation failure, uncommitted or invalid input never proceeds to the save logic.
 The save logic itself stays in `SaveCommand` (the ViewModel), and only the commit wiring lives on the View.
-As noted earlier, joining a `BindingGroup` requires the parent's `DataContext` to be set to the bindings' source.
+As noted earlier, implicit participation in a `BindingGroup` (without `BindingGroupName`) requires the parent's `DataContext` to be set to the bindings' source.
 
 ---
 
