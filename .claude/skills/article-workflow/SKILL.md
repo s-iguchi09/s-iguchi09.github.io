@@ -64,14 +64,15 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    `git fetch origin main` で最新のリモート追跡ブランチを取得する。
    そのうえで、**現在どのブランチにいるかではなく、作業ブランチの存在有無で分岐する**:
    - **存在しない場合(新規作成)**: `git switch -c <branch> origin/main` で最新 `main` から作成する。
-   - **既に存在する場合**: `git switch <branch>` で切り替えてから `git rebase origin/main` で最新 `main` に追随させる。
-     `git checkout -B <branch> origin/main` は使わない(既存ブランチの未 push コミットが参照から外れるため)。
+   - **既に存在する場合**: `git switch <branch>` で切り替えてから、**共有状況に応じて更新方法を選ぶ**:
+     - **未共有(未 push)の個人ブランチ**: `git rebase origin/main` で最新 `main` に追随する。
+     - **push 済み・共有中のブランチ**: 履歴を書き換えない `git merge origin/main` を用いる(rebase は避ける)。
+
+     いずれの場合も `git checkout -B <branch> origin/main` は使わない(既存ブランチの未 push コミットが参照から外れるため)。
    これにより直近でマージされた記事・設定・スキルを取り込んだ状態から作業でき、重複提案や古い前提での作業を避けられる。
    ブランチ名はテーマが分かる `slug` を用いる(例: `claude/article-<slug>`)。
-   > `rebase` は履歴を書き換えるため、**未共有(未 push)の個人ブランチ**でのみ行う。
-   > 既に push 済みのブランチを rebase した場合、以降の反映には `git push --force-with-lease` が必要になる
-   > (通常の push は拒否される)。複数人で共有中のブランチでは rebase を避け、必要なら `git merge origin/main` を用いる。
-   > いずれの場合も、取得せず古い状態のまま進めない。競合が発生した場合は解消してから進める。
+   > rebase を選んだ場合、既に push 済みのブランチへ反映するには `git push --force-with-lease` が必要になる
+   > (通常の push は拒否される)。いずれの場合も、取得せず古い状態のまま進めない。競合が発生した場合は解消してから進める。
 
 2. **記事タイプを選ぶ。**「問題解決型(§2.1)」か「手順・解説型(§2.2)」かを決める。
 
