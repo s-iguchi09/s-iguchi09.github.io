@@ -46,7 +46,8 @@ be.UpdateSource();
 
 第一の原因は、`GetBindingExpression` が「その依存プロパティに**単一の `Binding` のアクティブなバインディングがある場合のみ**」`BindingExpression` を返し、無ければ `null` を返す点にある。
 公式リファレンスは、戻り値の `null` チェックがバインディングの有無を判定する手段であると明記している。
-`Text="固定文字列"` のようにリテラルを代入している場合、`Text` が `MultiBinding` の場合（この場合は `GetMultiBindingExpression` を使う）、あるいは対象 `TextBox` が別コントロールのテンプレート内にあってその名前を直接参照できない場合に `null` になる。
+`Text="固定文字列"` のようにリテラルを代入している場合、`Text` が `MultiBinding` の場合（この場合は `GetMultiBindingExpression` を使う）、あるいは `Text` に `TemplateBinding`（`{TemplateBinding ...}`）を使っている場合（これは `BindingExpression` ではない）に `null` になる。
+また、対象 `TextBox` が別コントロールのテンプレート内にあってその要素自体を外部から参照できない場合は、そもそも `GetBindingExpression` を呼び出す起点が得られない。
 
 第二に、`UpdateSource()` はバインディングの `Mode` が `TwoWay` または `OneWayToSource` でないと何もしない。
 `OneWay` や `OneTime` のバインディングに対して呼んでも、例外は出ないまま黙って無視される。
@@ -115,8 +116,9 @@ static void UpdateAllTextSources(DependencyObject root)
 </StackPanel>
 ```
 
+各バインディングがグループに参加するには、`StackPanel` の `DataContext` がそれらのソースオブジェクトに設定されている必要がある。
 コードビハインドからは `UpdateSources()` を 1 回呼ぶだけでよい。
-このメソッドは各バインディングの `ValidationRule` を実行し、すべて成功した場合にソースへ書き戻して `true` を返す。
+このメソッドは各バインディングの `ValidationRule`（検証ステップが `RawProposedValue`・`ConvertedProposedValue`・`UpdatedValue` のもの）を実行し、すべて成功した場合にソースへ書き戻して `true` を返す。
 
 ```csharp
 // すべての参加バインディングを検証し、成功時のみまとめて書き戻す

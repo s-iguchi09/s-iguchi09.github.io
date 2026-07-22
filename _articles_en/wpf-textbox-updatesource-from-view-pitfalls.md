@@ -3,7 +3,7 @@ layout: article-en
 title: "Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls"
 date: 2026-07-22
 category: WPF
-excerpt: "Calling GetBindingExpression().UpdateSource() from the View has pitfalls: null returns, bulk updates, wrong direction, and MVVM design. This covers each, grounded in official docs."
+excerpt: "Calling GetBindingExpression().UpdateSource() from the View has pitfalls: null returns, bulk updates, wrong direction, and MVVM, grounded in official docs."
 ---
 
 ## Overview
@@ -46,7 +46,8 @@ Three failures are typical.
 
 The first cause is that `GetBindingExpression` returns a `BindingExpression` **only when the dependency property has an active single `Binding`**, and returns `null` otherwise.
 The official reference states that checking the return value for `null` is the technique for determining whether a property has an active binding.
-It returns `null` when a literal is assigned such as `Text="fixed string"`, when `Text` holds a `MultiBinding` (use `GetMultiBindingExpression` in that case), or when the target `TextBox` sits inside another control's template and its name cannot be referenced directly.
+It returns `null` when a literal is assigned such as `Text="fixed string"`, when `Text` holds a `MultiBinding` (use `GetMultiBindingExpression` in that case), or when `Text` uses a `TemplateBinding` (`{TemplateBinding ...}`), which is not a `BindingExpression`.
+In addition, when the target `TextBox` sits inside another control's template and the element itself cannot be referenced from outside, there is no starting point from which to call `GetBindingExpression` at all.
 
 Second, `UpdateSource()` does nothing unless the binding's `Mode` is `TwoWay` or `OneWayToSource`.
 Calling it on a `OneWay` or `OneTime` binding is silently ignored without an exception.
@@ -59,17 +60,17 @@ Committing an entire form requires calling it on each target `TextBox` individua
 
 ## Solution
 
-First, always null-check the retrieved `BindingExpression` and, when it is `null`, isolate the cause: not bound, a `MultiBinding`, or inside a template.
-Write back a single element safely with the null-conditional operator `?.`.
-For a form that commits multiple elements together, either walk the visual tree and call each `TextBox`, or update in bulk with a `BindingGroup`.
-To keep the View decoupled, avoid writing directly in code-behind and make the call reusable as an attached property (behavior).
+The retrieved `BindingExpression` is always null-checked first, and a `null` isolates the cause: not bound, a `MultiBinding`, or inside a template.
+A single element is written back safely with the null-conditional operator `?.`.
+A form that commits multiple elements together either walks the visual tree and calls each `TextBox`, or updates in bulk with a `BindingGroup`.
+To keep the View decoupled, the call lives in an attached property (behavior) rather than directly in code-behind, which also makes it reusable.
 
 ---
 
 ## Implementation
 
 The basic form for writing back a single `TextBox` is as follows.
-Receive the result of `GetBindingExpression` with `?.` so that nothing happens when it is `null` (not bound, and so on).
+The result of `GetBindingExpression` is received with `?.` so that nothing happens when it is `null` (not bound, and so on).
 
 ```csharp
 // amountBox is a TextBox bound with UpdateSourceTrigger=Explicit
@@ -78,7 +79,7 @@ be?.UpdateSource();
 ```
 
 The `?.` avoids a `NullReferenceException` even when no binding exists.
-To treat `null` as an error, branch explicitly to log it or return early.
+To treat `null` as an error, the code branches explicitly to log it or return early.
 
 To write back several `TextBox` controls in a form together, walk the visual tree recursively and call `UpdateSource()` on each `TextBox.Text` binding.
 
@@ -99,8 +100,8 @@ static void UpdateAllTextSources(DependencyObject root)
 }
 ```
 
-Run this walk after the visual tree is built (from `Loaded` onward).
-Note that not-yet-realized elements inside a virtualized list are excluded from the walk.
+This walk runs after the visual tree is built (from `Loaded` onward).
+Not-yet-realized elements inside a virtualized list are excluded from the walk.
 
 To write back multiple bindings at once with validation, use a `BindingGroup`.
 Setting a `BindingGroup` on a parent makes the descendant bindings join the group, and by default they do not update the source until `UpdateSources()` is called.
@@ -115,8 +116,9 @@ Setting a `BindingGroup` on a parent makes the descendant bindings join the grou
 </StackPanel>
 ```
 
+For the bindings to join the group, the `StackPanel`'s `DataContext` must be set to their source objects.
 From code-behind, a single call to `UpdateSources()` is enough.
-This method runs each binding's `ValidationRule` and, if all succeed, writes back to the sources and returns `true`.
+This method runs each binding's `ValidationRule` (those whose validation step is `RawProposedValue`, `ConvertedProposedValue`, or `UpdatedValue`) and, if all succeed, writes back to the sources and returns `true`.
 
 ```csharp
 // Validate all participating bindings and write back only on success
@@ -184,17 +186,17 @@ In XAML, only the attached property is set, keeping View-specific logic out of c
          local:TextBoxBehavior.UpdateSourceOnEnter="True" />
 ```
 
-When wiring events, use a named handler and `-=` before `+=` as above to avoid double subscription.
-Subscribing with a lambda cannot be unsubscribed, so the subscriptions accumulate.
+When wiring events, a named handler with `-=` before `+=` as above avoids double subscription.
+A lambda subscription cannot be unsubscribed, so the subscriptions accumulate.
 
 ---
 
 ## Notes
 
-- **Do not swallow `null`**: `?.` prevents the exception, but a `null` on an element that should be bound indicates a configuration mistake (wrong retrieval method for a `MultiBinding`, an element inside a template, or a name-resolution failure). Log the `null` branch while debugging.
-- **`Mode` constraint**: `UpdateSource()` is silently ignored outside `TwoWay` / `OneWayToSource`. When nothing reflects, check `Mode` first.
+- **`null` is not swallowed silently**: `?.` prevents the exception, but a `null` on an element that should be bound indicates a configuration mistake (wrong retrieval method for a `MultiBinding`, an element inside a template, or a name-resolution failure). The `null` branch is worth logging during debugging.
+- **`Mode` constraint**: `UpdateSource()` is silently ignored outside `TwoWay` / `OneWayToSource`. When nothing reflects, `Mode` should be checked first.
 - **Detached bindings**: calling it after the binding is detached (for example, the element left the tree) throws an `InvalidOperationException`.
-- **Scope of bulk update**: the `VisualTreeHelper` walk targets only realized elements, so items not yet generated by virtualization are not written back. Watch for unrealized regions such as inactive `TabControl` tabs.
+- **Scope of bulk update**: the `VisualTreeHelper` walk targets only realized elements, so items not yet generated by virtualization are not written back. Unrealized regions such as inactive `TabControl` tabs are excluded as well.
 - **`BindingGroup` is tied to validation**: `UpdateSources()` runs the `ValidationRule` objects and returns `false` without writing back on failure. Used as a plain bulk write, a validation failure can look like no response.
 - **Direction of `UpdateSource` vs `UpdateTarget`**: the former is target-to-source, the latter source-to-target. Choose by intent (commit or discard).
 
@@ -202,7 +204,7 @@ Subscribing with a lambda cannot be unsubscribed, so the subscriptions accumulat
 
 ## Alternatives / Comparison
 
-Choose the way to write back from the View according to scope and design policy.
+The way to write back from the View is chosen according to scope and design policy.
 
 | Approach | Scope | Pros | Cons | Best suited for |
 |---|---|---|---|---|
@@ -219,10 +221,10 @@ A `BindingGroup` suits committing a whole form with validation, and an attached 
 ## Summary
 
 The basic form for writing a `TextBox` binding back from the View is `GetBindingExpression(TextBox.TextProperty)?.UpdateSource()`.
-Because `GetBindingExpression` returns `null` when there is no binding, guard it with `?.`, and suspect a `MultiBinding`, a template, or name resolution when `null` appears on an element that should be bound.
-Keep in mind that `UpdateSource()` works only on `TwoWay` / `OneWayToSource` and throws once detached.
-Call it directly for a single commit, use `BindingGroup.UpdateSources()` to commit multiple fields with validation, and move to an attached behavior when View separation is the priority.
-To push the direction back, use `UpdateTarget()` rather than `UpdateSource()` to avoid bugs from confusing the two.
+Because `GetBindingExpression` returns `null` when there is no binding, a `?.` guard is required, and a `null` on an element that should be bound points to a `MultiBinding`, a template, or name resolution.
+`UpdateSource()` works only on `TwoWay` / `OneWayToSource` and throws once detached.
+A direct call suits a single commit, `BindingGroup.UpdateSources()` suits committing multiple fields with validation, and an attached behavior suits keeping View separation as the priority.
+To push the direction back, `UpdateTarget()` rather than `UpdateSource()` avoids bugs from confusing the two.
 
 The separate question of *when* the update fires (choosing among `LostFocus` / `PropertyChanged` / `Explicit`) is covered in [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/).
 
