@@ -6,7 +6,16 @@
       "mcp__github__actions_list",
       "mcp__github__list_branches",
       "mcp__Microsoft_Learn__microsoft_docs_search",
-      "mcp__Microsoft_Learn__microsoft_docs_fetch"
+      "mcp__Microsoft_Learn__microsoft_docs_fetch",
+      "mcp__Microsoft_Learn__microsoft_code_sample_search",
+      "mcp__Claude_Code_Remote__subscribe_pr_activity",
+      "mcp__Claude_Code_Remote__unsubscribe_pr_activity",
+      "mcp__Claude_Code_Remote__send_later",
+      "mcp__Claude_Code_Remote__create_trigger",
+      "mcp__Claude_Code_Remote__delete_trigger",
+      "mcp__Claude_Code_Remote__update_trigger",
+      "mcp__Claude_Code_Remote__list_triggers",
+      "mcp__Claude_Code_Remote__fire_trigger"
     ]
   }
 }
