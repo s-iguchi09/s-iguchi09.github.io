@@ -147,7 +147,9 @@ be.UpdateSource();
 `PropertyChanged` の更新頻度が問題になる場合は `Delay` で抑制するが、`Delay` は IME 未確定文字列の流入を防ぐものではなく、変換確定後にだけ処理したい場合は `LostFocus` を選ぶ。
 更新タイミングは `ValidationRules` の実行時点を左右する(`INotifyDataErrorInfo` の結果は `ErrorsChanged` で別途反映される)ため、`UpdateSourceTrigger` は入力体験と検証設計の両面から選択する。
 
+なお、`Explicit` にしたバインディングを View から書き戻す `UpdateSource()` の呼び出し自体の落とし穴(`GetBindingExpression` が `null` を返す条件・複数バインディングの一括更新・`UpdateTarget()` との違い)は、[WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/)で扱う。
+
 ---
 
 <!-- 関連記事 -->
-<!-- - [WPF Binding.StringFormat で数値・通貨・日付を書式化する方法と制約](/ja/articles/wpf-binding-stringformat-number-currency-date/) -->
+<!-- - [WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/) -->

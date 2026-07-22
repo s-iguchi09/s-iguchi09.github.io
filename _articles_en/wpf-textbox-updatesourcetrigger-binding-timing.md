@@ -147,7 +147,9 @@ Choose `PropertyChanged` for search and preview scenarios that need immediate re
 When the update frequency of `PropertyChanged` becomes a problem, throttle it with `Delay`; note that `Delay` does not exclude IME intermediate strings, so use `LostFocus` when processing must wait for the committed text.
 Because the update timing governs when `ValidationRules` run (while `INotifyDataErrorInfo` results surface separately via `ErrorsChanged`), select `UpdateSourceTrigger` from both the input experience and the validation design.
 
+For the pitfalls of the `UpdateSource()` call itself when writing an `Explicit` binding back from the View (the conditions under which `GetBindingExpression` returns `null`, updating multiple bindings at once, and the difference from `UpdateTarget()`), see [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/).
+
 ---
 
 <!-- Related articles -->
-<!-- - [Formatting Numbers, Currency, and Dates with Binding.StringFormat in WPF](/articles/wpf-binding-stringformat-number-currency-date/) -->
+<!-- - [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/) -->
