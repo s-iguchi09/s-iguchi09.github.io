@@ -189,6 +189,83 @@ XAML 側では添付プロパティを付けるだけで、コードビハイン
 イベント購読を付け外しする際は、上記のように名前付きハンドラで `-=` してから `+=` し、二重購読を避ける。
 ラムダ式で購読すると解除できず、購読が積み重なる。
 
+MVVM を保ったまま、1 つの送信ボタンで複数の `TextBox` をまとめて確定するには、`BindingGroup` と添付ビヘイビアを組み合わせる。
+`BindingGroup` は継承される依存プロパティであり、親要素に設定するとボタンを含む配下の要素が同一グループを共有する。
+そこで、ボタンのクリック時に「継承したグループの `UpdateSources()` で全入力を書き戻し、成功したら ViewModel のコマンドを実行する」添付ビヘイビアを用意する。
+
+```csharp
+public static class SubmitBehavior
+{
+    // 書き戻しに成功したら実行する ViewModel のコマンド
+    public static readonly DependencyProperty SubmitCommandProperty =
+        DependencyProperty.RegisterAttached(
+            "SubmitCommand",
+            typeof(ICommand),
+            typeof(SubmitBehavior),
+            new PropertyMetadata(null, OnChanged));
+
+    public static ICommand GetSubmitCommand(DependencyObject obj) =>
+        (ICommand)obj.GetValue(SubmitCommandProperty);
+
+    public static void SetSubmitCommand(DependencyObject obj, ICommand value) =>
+        obj.SetValue(SubmitCommandProperty, value);
+
+    static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not ButtonBase button)
+        {
+            return;
+        }
+
+        button.Click -= OnClick;
+        if (e.NewValue is not null)
+        {
+            button.Click += OnClick;
+        }
+    }
+
+    static void OnClick(object sender, RoutedEventArgs e)
+    {
+        var button = (ButtonBase)sender;
+
+        // 1. 継承した BindingGroup 配下の全入力をまとめて書き戻す
+        BindingGroup group = button.BindingGroup;
+        if (group is not null && !group.UpdateSources())
+        {
+            return; // 検証失敗。コマンドは実行しない
+        }
+
+        // 2. 確定済みの値で ViewModel のコマンドを実行する
+        ICommand command = GetSubmitCommand(button);
+        if (command?.CanExecute(null) == true)
+        {
+            command.Execute(null);
+        }
+    }
+}
+```
+
+XAML では親に `BindingGroup` を置き、各 `TextBox` を通常どおりバインドし、ボタンに `SubmitCommand` を付ける。
+`BindingGroup` に参加したバインディングは既定で `UpdateSources()` まで書き戻されないため、各 `TextBox` に `UpdateSourceTrigger=Explicit` を個別指定する必要はない。
+
+```xml
+<StackPanel x:Name="formPanel">
+    <StackPanel.BindingGroup>
+        <BindingGroup />
+    </StackPanel.BindingGroup>
+    <TextBox Text="{Binding Street}" />
+    <TextBox Text="{Binding City}" />
+    <Button Content="保存"
+            local:SubmitBehavior.SubmitCommand="{Binding SaveCommand}" />
+</StackPanel>
+```
+
+このビヘイビアはコミットとコマンド実行の順序を自ら制御するため、`Click` と `Command` の発火順に依存しない。
+ボタンには標準の `Command` を別途バインドせず、`SubmitCommand` に寄せて二重実行を避ける。
+`UpdateSources()` が検証失敗で `false` を返した場合はコマンドを実行しないため、不正な入力のまま保存処理へ進むことがない。
+保存処理そのものは `SaveCommand`（ViewModel）に残り、View 側にはコミットの配線だけが乗る。
+なお、前掲のとおり `BindingGroup` への参加には親の `DataContext` が各バインディングのソースに設定されている必要がある。
+
 ---
 
 ## 注意点
@@ -211,7 +288,8 @@ View から書き戻す手段は、対象範囲と設計方針に応じて選ぶ
 | `GetBindingExpression().UpdateSource()` | 単一要素 | 明快で制御しやすい | 要素ごとに呼ぶ必要がある | 特定の 1 入力欄だけを確定する |
 | `VisualTreeHelper` 走査で一括 | 配下の全 `TextBox` | 一度で多数を書き戻せる | 未生成要素は対象外・走査コスト | 生成済みの入力群をまとめて確定 |
 | `BindingGroup.UpdateSources()` | グループ参加バインディング | 検証と一体で一括確定できる | 検証設計が前提・戻り値の考慮が必要 | 複数項目をまとめて検証・保存するフォーム |
-| 添付ビヘイビア経由 | 付与した要素 | View の分離を保てる・再利用可能 | 実装量が増える | MVVM でコードビハインドを避けたい |
+| 添付ビヘイビア（Enter で単一確定） | 付与した要素 | View の分離を保てる・再利用可能 | 実装量が増える | MVVM でコードビハインドを避けたい |
+| `BindingGroup` ＋ 送信ビヘイビア | グループ参加の全 `TextBox` | MVVM を保ちボタン 1 つで一括確定＋検証＋コマンド実行 | 実装量・`BindingGroup` 前提 | MVVM で送信ボタンにより複数入力を確定 |
 
 単一の確定には `UpdateSource()` を直接呼ぶのが最も明快である。
 フォーム全体を検証付きで確定するなら `BindingGroup` が適し、MVVM の分離を保つなら添付ビヘイビアに寄せる。
@@ -224,6 +302,7 @@ View から `TextBox` のバインディングを書き戻す実装は、`GetBin
 `GetBindingExpression` はバインディングが無ければ `null` を返すため、`?.` で保護しつつ、本来バインド済みの要素で `null` が返る場合は `MultiBinding`・テンプレート内・名前解決を疑う。
 `UpdateSource()` は `TwoWay` / `OneWayToSource` でのみ機能し、デタッチ後は例外になる点も踏まえる。
 確定範囲が単一なら直接呼び出し、複数を検証付きで確定するなら `BindingGroup.UpdateSources()`、View の分離を優先するなら添付ビヘイビアを選ぶ。
+MVVM を保ったまま送信ボタンで複数入力を一括確定するには、`BindingGroup` を継承したボタンにコミット用の添付ビヘイビアを組み合わせ、コミット成功後に ViewModel のコマンドを実行する。
 方向を戻したい場合は `UpdateSource()` ではなく `UpdateTarget()` を使い、取り違えによる誤動作を避ける。
 
 なお、更新をいつ発火させるか（`LostFocus` / `PropertyChanged` / `Explicit` の使い分け）は別の観点であり、[WPF TextBox の UpdateSourceTrigger で入力がソースへ反映されるタイミングを制御する](/ja/articles/wpf-textbox-updatesourcetrigger-binding-timing/)で扱う。

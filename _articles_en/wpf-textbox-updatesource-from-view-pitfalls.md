@@ -189,6 +189,83 @@ In XAML, only the attached property is set, keeping View-specific logic out of c
 When wiring events, a named handler with `-=` before `+=` as above avoids double subscription.
 A lambda subscription cannot be unsubscribed, so the subscriptions accumulate.
 
+To commit several `TextBox` controls at once from a single submit button while preserving MVVM, combine a `BindingGroup` with an attached behavior.
+`BindingGroup` is an inheritable dependency property, so setting it on a parent makes the descendant elements, including the button, share the same group.
+The attached behavior then, on the button's click, writes back all input with the inherited group's `UpdateSources()` and, on success, executes the ViewModel command.
+
+```csharp
+public static class SubmitBehavior
+{
+    // The ViewModel command to run once the write-back succeeds
+    public static readonly DependencyProperty SubmitCommandProperty =
+        DependencyProperty.RegisterAttached(
+            "SubmitCommand",
+            typeof(ICommand),
+            typeof(SubmitBehavior),
+            new PropertyMetadata(null, OnChanged));
+
+    public static ICommand GetSubmitCommand(DependencyObject obj) =>
+        (ICommand)obj.GetValue(SubmitCommandProperty);
+
+    public static void SetSubmitCommand(DependencyObject obj, ICommand value) =>
+        obj.SetValue(SubmitCommandProperty, value);
+
+    static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not ButtonBase button)
+        {
+            return;
+        }
+
+        button.Click -= OnClick;
+        if (e.NewValue is not null)
+        {
+            button.Click += OnClick;
+        }
+    }
+
+    static void OnClick(object sender, RoutedEventArgs e)
+    {
+        var button = (ButtonBase)sender;
+
+        // 1. Write back all input under the inherited BindingGroup at once
+        BindingGroup group = button.BindingGroup;
+        if (group is not null && !group.UpdateSources())
+        {
+            return; // validation failed; do not run the command
+        }
+
+        // 2. Run the ViewModel command with the committed values
+        ICommand command = GetSubmitCommand(button);
+        if (command?.CanExecute(null) == true)
+        {
+            command.Execute(null);
+        }
+    }
+}
+```
+
+In XAML, the `BindingGroup` sits on the parent, each `TextBox` binds normally, and the button carries `SubmitCommand`.
+Bindings that join a `BindingGroup` are not written back until `UpdateSources()` by default, so `UpdateSourceTrigger=Explicit` need not be set on each `TextBox`.
+
+```xml
+<StackPanel x:Name="formPanel">
+    <StackPanel.BindingGroup>
+        <BindingGroup />
+    </StackPanel.BindingGroup>
+    <TextBox Text="{Binding Street}" />
+    <TextBox Text="{Binding City}" />
+    <Button Content="Save"
+            local:SubmitBehavior.SubmitCommand="{Binding SaveCommand}" />
+</StackPanel>
+```
+
+Because the behavior controls the order of commit and command execution itself, it does not depend on the firing order of `Click` and `Command`.
+The button does not also bind the standard `Command`; consolidating on `SubmitCommand` avoids double execution.
+Since `UpdateSources()` returns `false` on validation failure and the command is then skipped, invalid input never proceeds to the save logic.
+The save logic itself stays in `SaveCommand` (the ViewModel), and only the commit wiring lives on the View.
+As noted earlier, joining a `BindingGroup` requires the parent's `DataContext` to be set to the bindings' source.
+
 ---
 
 ## Notes
@@ -211,7 +288,8 @@ The way to write back from the View is chosen according to scope and design poli
 | `GetBindingExpression().UpdateSource()` | Single element | Clear and easy to control | Must be called per element | Committing one specific field |
 | `VisualTreeHelper` walk (bulk) | All descendant `TextBox` | Writes back many at once | Excludes unrealized elements; walk cost | Committing a realized group of inputs |
 | `BindingGroup.UpdateSources()` | Bindings in the group | Bulk commit tied to validation | Requires validation design; return value handling | Forms validating and saving multiple fields |
-| Via an attached behavior | The element it is set on | Keeps the View decoupled; reusable | More implementation code | MVVM where code-behind is avoided |
+| Attached behavior (commit one on Enter) | The element it is set on | Keeps the View decoupled; reusable | More implementation code | MVVM where code-behind is avoided |
+| `BindingGroup` + submit behavior | All `TextBox` in the group | Bulk commit, validation, and command in one click while preserving MVVM | More code; requires a `BindingGroup` | MVVM committing multiple inputs via a submit button |
 
 Calling `UpdateSource()` directly is the clearest choice for committing a single field.
 A `BindingGroup` suits committing a whole form with validation, and an attached behavior keeps MVVM separation intact.
@@ -224,6 +302,7 @@ The basic form for writing a `TextBox` binding back from the View is `GetBinding
 Because `GetBindingExpression` returns `null` when there is no binding, a `?.` guard is required, and a `null` on an element that should be bound points to a `MultiBinding`, a template, or name resolution.
 `UpdateSource()` works only on `TwoWay` / `OneWayToSource` and throws once detached.
 A direct call suits a single commit, `BindingGroup.UpdateSources()` suits committing multiple fields with validation, and an attached behavior suits keeping View separation as the priority.
+To commit multiple inputs from a submit button while preserving MVVM, a commit behavior on a button that inherits the `BindingGroup` runs the ViewModel command after a successful commit.
 To push the direction back, `UpdateTarget()` rather than `UpdateSource()` avoids bugs from confusing the two.
 
 The separate question of *when* the update fires (choosing among `LostFocus` / `PropertyChanged` / `Explicit`) is covered in [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/).
