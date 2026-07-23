@@ -50,8 +50,8 @@ public class RelayCommand : ICommand
 }
 ```
 
-`CanExecute` is evaluated once at startup, but entering a value into `Name` afterward leaves the save button disabled.
-Because `CanExecuteChanged` is never raised, the button has no trigger to re-evaluate `CanExecute`.
+`CanExecute` is evaluated when the command is first bound. It would normally be re-evaluated afterward in response to `CanExecuteChanged`, but because this implementation never raises it, entering a value into `Name` leaves the save button disabled.
+The button has no trigger to re-evaluate `CanExecute`.
 
 ---
 
@@ -95,42 +95,70 @@ public event EventHandler? CanExecuteChanged
 ```
 
 For condition changes without a UI interaction, such as a timer or the completion of an asynchronous operation, force a re-evaluation explicitly.
-`InvalidateRequerySuggested` re-evaluates every command subscribed to `RequerySuggested` (the built-in `RoutedCommand` and delegating `RelayCommand`) at once.
+`InvalidateRequerySuggested` raises `RequerySuggested`, prompting the connected command sources (buttons subscribing through the built-in `RoutedCommand` or a delegating `RelayCommand`) to re-query `CanExecute`.
 
 ```csharp
 // Called when a condition changes without a UI interaction
 CommandManager.InvalidateRequerySuggested();
 ```
 
-This call does not evaluate immediately; it raises `RequerySuggested` to prompt each command source to re-query.
-It therefore carries the cost of re-evaluating every subscribed command, as noted below.
+This call does not evaluate immediately; it raises `RequerySuggested` to prompt the connected command sources to re-query `CanExecute`.
+It therefore carries the cost of re-evaluating the command sources connected to `RequerySuggested`, as noted below.
 
 ### Raise CanExecuteChanged manually
 
-`CanExecuteChanged` is kept as a dedicated event, with a method that raises it when re-evaluation is needed.
+The `CanExecuteChanged` of the opening `RelayCommand` is changed to a dedicated event, and a method that raises it when re-evaluation is needed is added.
 
 ```csharp
-public event EventHandler? CanExecuteChanged;
+public class RelayCommand : ICommand
+{
+    private readonly Action _execute;
+    private readonly Func<bool> _canExecute;
 
-public void RaiseCanExecuteChanged()
-    => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    public RelayCommand(Action execute, Func<bool> canExecute)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public bool CanExecute(object? parameter) => _canExecute();
+    public void Execute(object? parameter) => _execute();
+
+    public event EventHandler? CanExecuteChanged;
+
+    public void RaiseCanExecuteChanged()
+        => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+}
 ```
 
-In the view model, `RaiseCanExecuteChanged` is called right after updating a property that `CanExecute` depends on.
-The following raises a re-evaluation whenever the save button's condition, whether `Name` is entered, changes.
+The view model initializes `SaveCommand` and calls `RaiseCanExecuteChanged` right after updating a property (`Name`) that `CanExecute` depends on.
+The following is a compilable, minimal setup that re-evaluates whenever the save button's condition, whether `Name` is entered, changes.
 
 ```csharp
-private string _name = string.Empty;
-public string Name
+public class SaveViewModel
 {
-    get => _name;
-    set
+    public RelayCommand SaveCommand { get; }
+
+    public SaveViewModel()
     {
-        if (_name == value) return;
-        _name = value;
-        // The input state changed, so re-evaluate the save command
-        SaveCommand.RaiseCanExecuteChanged();
+        // Executable when Name is not empty
+        SaveCommand = new RelayCommand(Save, () => !string.IsNullOrEmpty(Name));
     }
+
+    private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            if (_name == value) return;
+            _name = value;
+            // The input state changed, so re-evaluate the save command
+            SaveCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private void Save() { /* Implement the save logic */ }
 }
 ```
 
@@ -142,9 +170,9 @@ The `RelayCommand` in `CommunityToolkit.Mvvm` uses this approach, exposing an eq
 ## Notes
 
 - **`RequerySuggested` holds handlers by weak reference:** `CommandManager.RequerySuggested` keeps registered handlers as weak references. In the delegating approach the handler registered with `RequerySuggested` is created and held by the command source (such as a `Button`) itself, so it is not collected while that source stays alive in the visual tree, and this is usually fine; but a custom implementation that registers a handler directly with `RequerySuggested` must keep a separate strong reference, or the handler is collected and re-evaluation stops.
-- **Call `InvalidateRequerySuggested` on the UI thread:** this API prompts the `CommandManager` to re-evaluate and assumes it is called on the UI thread. When state changes on a background thread, marshal to the UI thread with the `Dispatcher` before calling it.
+- **Call `InvalidateRequerySuggested` on the UI thread:** the re-evaluation this API prompts is processed on the UI thread by the `CommandManager`, and the target command sources (UI elements) live on the UI thread as well. The call therefore assumes the UI thread; when state changes on a background thread, marshal to the UI thread with the `Dispatcher` before calling it.
 - **Raise manual events on the UI thread as well:** `RaiseCanExecuteChanged` synchronously invokes the button-side handler, which updates a UI element. Raising it from another thread touches UI elements off the UI thread, so marshal to the UI thread with the `Dispatcher`.
-- **Delegation re-evaluates every subscribed command:** `InvalidateRequerySuggested` re-queries `CanExecute` on every command subscribed to `RequerySuggested`. Heavy work inside `CanExecute` makes frequent re-evaluation harm responsiveness, so keep `CanExecute` lightweight.
+- **Delegation re-evaluates the sources connected to `RequerySuggested`:** `InvalidateRequerySuggested` makes the command sources connected to `RequerySuggested` re-query `CanExecute`. Heavy work inside `CanExecute` makes frequent re-evaluation harm responsiveness, so keep `CanExecute` lightweight.
 - **Do not leave `CanExecuteChanged` declared but unraised:** the opening example, which declares `CanExecuteChanged` without ever raising it, compiles cleanly yet is a classic reason the state stays frozen.
 
 ---
@@ -153,9 +181,9 @@ The `RelayCommand` in `CommunityToolkit.Mvvm` uses this approach, exposing an eq
 
 | Approach | Pros | Cons | Best suited for |
 |---|---|---|---|
-| Delegate to `RequerySuggested` | Minimal code; follows UI interactions automatically | Re-evaluates all subscribed commands; opaque trigger; weak-reference caveat | Executability tied mainly to UI interaction (focus, selection) |
+| Delegate to `RequerySuggested` | Minimal code; follows UI interactions automatically | Re-queries the sources connected to `RequerySuggested`; opaque trigger; weak-reference caveat | Executability tied mainly to UI interaction (focus, selection) |
 | Raise `CanExecuteChanged` manually | Re-evaluates only the target command; explicit trigger | Requires an explicit raise per condition change | Executability determined by view model properties |
-| Call `InvalidateRequerySuggested` on demand | Re-evaluates at any moment while delegating | Cost of re-evaluating all subscribed commands; easy to forget | Reflecting UI-independent changes under the delegating approach |
+| Call `InvalidateRequerySuggested` on demand | Re-evaluates at any moment while delegating | Cost of re-querying the sources connected to `RequerySuggested`; easy to forget | Reflecting UI-independent changes under the delegating approach |
 
 ---
 

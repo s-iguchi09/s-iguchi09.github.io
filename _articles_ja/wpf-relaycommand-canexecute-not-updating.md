@@ -50,8 +50,8 @@ public class RelayCommand : ICommand
 }
 ```
 
-`CanExecute` は起動直後に一度は評価されるが、その後に `Name` を入力しても保存ボタンは無効のまま変わらない。
-`CanExecuteChanged` を一度も発火していないため、ボタンが `CanExecute` を再評価する契機が無いことが原因である。
+`CanExecute` は初回バインド時に評価される。本来はその後 `CanExecuteChanged` の発火に応じて再評価されるが、この実装では一度も発火していないため、`Name` を入力しても保存ボタンは無効のまま変わらない。
+ボタンが `CanExecute` を再評価する契機が無いことが原因である。
 
 ---
 
@@ -95,42 +95,70 @@ public event EventHandler? CanExecuteChanged
 ```
 
 UI 操作を伴わない条件変化（タイマー・非同期処理の完了など）では、次のように明示的に再評価を促す。
-`InvalidateRequerySuggested` は `RequerySuggested` を購読している全コマンド（標準の `RoutedCommand` や委譲方式の `RelayCommand`）を一括で再評価させる。
+`InvalidateRequerySuggested` は `RequerySuggested` を発火し、これに接続されたコマンドソース（標準の `RoutedCommand` や委譲方式の `RelayCommand` を購読するボタン等）に `CanExecute` の再問い合わせを促す。
 
 ```csharp
 // 条件が変わったが UI 操作が伴わない場合に呼ぶ
 CommandManager.InvalidateRequerySuggested();
 ```
 
-この呼び出しは即座に評価するのではなく、`RequerySuggested` を発火して各コマンドソースに再評価を促す。
-そのため、後述のとおり購読中の全コマンドを再評価するコストを伴う。
+この呼び出しは即座に評価するのではなく、`RequerySuggested` を発火して接続中のコマンドソースに `CanExecute` の再問い合わせを促す。
+そのため、後述のとおり `RequerySuggested` に接続された各コマンドソースを再評価させるコストを伴う。
 
 ### 自前で CanExecuteChanged を発火する
 
-独自イベントとして `CanExecuteChanged` を保持し、再評価が必要な時点で発火するメソッドを用意する。
+冒頭の `RelayCommand` の `CanExecuteChanged` を独自イベントに変え、再評価が必要な時点で発火するメソッドを追加する。
 
 ```csharp
-public event EventHandler? CanExecuteChanged;
+public class RelayCommand : ICommand
+{
+    private readonly Action _execute;
+    private readonly Func<bool> _canExecute;
 
-public void RaiseCanExecuteChanged()
-    => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    public RelayCommand(Action execute, Func<bool> canExecute)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public bool CanExecute(object? parameter) => _canExecute();
+    public void Execute(object? parameter) => _execute();
+
+    public event EventHandler? CanExecuteChanged;
+
+    public void RaiseCanExecuteChanged()
+        => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+}
 ```
 
-ViewModel 側では、`CanExecute` が参照するプロパティを更新した時点で `RaiseCanExecuteChanged` を呼ぶ。
-以下は保存ボタンの有効条件（`Name` の入力有無）が変わるたびに再評価させる例である。
+ViewModel 側では `SaveCommand` を初期化し、`CanExecute` が参照するプロパティ（`Name`）を更新した時点で `RaiseCanExecuteChanged` を呼ぶ。
+以下は保存ボタンの有効条件（`Name` の入力有無）が変わるたびに再評価させる、コンパイル可能な最小構成である。
 
 ```csharp
-private string _name = string.Empty;
-public string Name
+public class SaveViewModel
 {
-    get => _name;
-    set
+    public RelayCommand SaveCommand { get; }
+
+    public SaveViewModel()
     {
-        if (_name == value) return;
-        _name = value;
-        // 入力状態が変わったので保存コマンドを再評価させる
-        SaveCommand.RaiseCanExecuteChanged();
+        // Name が空でなければ実行可能
+        SaveCommand = new RelayCommand(Save, () => !string.IsNullOrEmpty(Name));
     }
+
+    private string _name = string.Empty;
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            if (_name == value) return;
+            _name = value;
+            // 入力状態が変わったので保存コマンドを再評価させる
+            SaveCommand.RaiseCanExecuteChanged();
+        }
+    }
+
+    private void Save() { /* 保存処理を実装する */ }
 }
 ```
 
@@ -142,9 +170,9 @@ public string Name
 ## 注意点
 
 - **`RequerySuggested` は弱参照でハンドラを保持する:** `CommandManager.RequerySuggested` は登録されたハンドラを弱参照で保持する。委譲方式で登録されるハンドラはコマンドソース（`Button` など）自身が生成・保持するため、そのコマンドソースがビジュアルツリー上で生存している限りハンドラは回収されず、通常は問題にならない。一方、ハンドラを直接 `RequerySuggested` に登録する独自実装では、強参照を別途保持しないとハンドラが回収されて再評価が止まる。
-- **`InvalidateRequerySuggested` は UI スレッドで呼ぶ:** この API は `CommandManager` に再評価を促すもので、UI スレッド上での呼び出しを前提とする。バックグラウンドスレッドから状態を変えた場合は、`Dispatcher` で UI スレッドへ移してから呼ぶ。
+- **`InvalidateRequerySuggested` は UI スレッドで呼ぶ:** この API が促す `CommandManager` の再評価は UI スレッド側で処理され、対象のコマンドソース（UI 要素）も UI スレッドに属する。そのため呼び出しも UI スレッドを前提とし、バックグラウンドスレッドで状態を変えた場合は、`Dispatcher` で UI スレッドへ移してから呼ぶ。
 - **自前発火も UI スレッドで行う:** `RaiseCanExecuteChanged` の発火はボタン側のハンドラ（UI 要素の更新）を同期的に呼び出す。別スレッドから発火すると UI 要素へ別スレッドで触れることになるため、`Dispatcher` 経由で UI スレッドに寄せる。
-- **委譲方式は購読中の全コマンドを再評価する:** `InvalidateRequerySuggested` は `RequerySuggested` を購読している全コマンドの `CanExecute` を呼び直す。`CanExecute` に重い処理を書くと、頻繁な再評価が UI の応答性を損なう。`CanExecute` は軽量に保つ。
+- **委譲方式は `RequerySuggested` 接続分を広く再評価する:** `InvalidateRequerySuggested` は `RequerySuggested` に接続されたコマンドソースに `CanExecute` を問い直させる。`CanExecute` に重い処理を書くと、頻繁な再評価が UI の応答性を損なう。`CanExecute` は軽量に保つ。
 - **`CanExecute` を空実装のまま放置しない:** 冒頭のように `CanExecuteChanged` を宣言だけして発火しない実装は、コンパイルは通るが状態が固定される典型的な原因である。
 
 ---
@@ -153,9 +181,9 @@ public string Name
 
 | 方式 | メリット | デメリット | 適するケース |
 |---|---|---|---|
-| `RequerySuggested` へ委譲 | 実装が少なく UI 操作に自動追従 | 購読中の全コマンドを一括再評価・発火契機が不透明・弱参照の考慮が要る | 実行可否が主に UI 操作（フォーカス・選択）に連動する |
+| `RequerySuggested` へ委譲 | 実装が少なく UI 操作に自動追従 | `RequerySuggested` 接続分を広く再評価・発火契機が不透明・弱参照の考慮が要る | 実行可否が主に UI 操作（フォーカス・選択）に連動する |
 | 自前で `CanExecuteChanged` を発火 | 対象コマンドのみ再評価・契機が明確 | 条件変化ごとに発火の記述が必要 | ViewModel のプロパティ変化で可否が決まる |
-| `InvalidateRequerySuggested` を都度呼ぶ | 委譲方式のまま任意契機で再評価できる | 購読中の全コマンド再評価のコスト・呼び忘れ | 委譲方式で UI 非依存の条件変化を反映したい |
+| `InvalidateRequerySuggested` を都度呼ぶ | 委譲方式のまま任意契機で再評価できる | `RequerySuggested` 接続分の再評価コスト・呼び忘れ | 委譲方式で UI 非依存の条件変化を反映したい |
 
 ---
 
