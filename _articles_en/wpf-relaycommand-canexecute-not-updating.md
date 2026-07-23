@@ -17,7 +17,7 @@ This article explains that the cause is a missing `ICommand.CanExecuteChanged` n
 ## Prerequisites / Environment
 
 - Framework: .NET 6 or later / WPF (the same applies to .NET Framework 4.5 and later)
-- Language: C# / XAML (samples assume nullable reference types are enabled; on C# 8 or earlier, drop the nullable annotations)
+- Language: C# / XAML (samples assume nullable reference types are enabled; on C# 7 or earlier, drop the nullable annotations)
 - Target feature: a custom `RelayCommand` implementing `System.Windows.Input.ICommand`, bound through `Button.Command`
 - Architecture: MVVM (command logic lives in the view model)
 - Namespaces: `System`, `System.Windows.Input`
