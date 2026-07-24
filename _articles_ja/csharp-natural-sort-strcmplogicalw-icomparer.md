@@ -1,16 +1,16 @@
 ---
 layout: article-ja
-title: "C# で Windows エクスプローラーと同じ並び順を実装する（StrCmpLogicalW と IComparer）"
+title: "C# で Windows エクスプローラー風の並び順を実装する（StrCmpLogicalW と IComparer）"
 date: 2026-07-24
 category: C#
-excerpt: "既定の文字列ソートでは \"item10\" が \"item2\" より前に並んでしまう。本記事では Win32 API の StrCmpLogicalW を P/Invoke で呼び出し、IComparer を実装したクラスとしてエクスプローラーと同じ自然順ソートを実現する方法を、メリット・デメリットとともに解説する。"
+excerpt: "既定の文字列ソートでは \"item10\" が \"item2\" より前に並んでしまう。本記事では Win32 API の StrCmpLogicalW を P/Invoke で呼び出し、IComparer を実装したクラスとしてエクスプローラーに近い自然順ソートを実現する方法を、メリット・デメリットとともに解説する。"
 ---
 
 ## 概要
 
 Windows エクスプローラーでファイル名を並べると、`item1` `item2` `item10` のように数字部分が数値として扱われた「自然順（logical order）」で表示される。
 一方、.NET の既定の文字列ソートでは `item1` `item10` `item2` の順になり、エクスプローラーと並びが一致しない。
-本記事では、Win32 API の `StrCmpLogicalW` を P/Invoke で呼び出し、`IComparer<string>`（および非ジェネリックの `IComparer`）を実装したクラスとして、エクスプローラーと同じ並び順を実現する方法を扱う。
+本記事では、Win32 API の `StrCmpLogicalW` を P/Invoke で呼び出し、`IComparer<string>`（および非ジェネリックの `IComparer`）を実装したクラスとして、エクスプローラーに近い並び順を実現する方法を扱う。
 実装手順に加え、この方式のメリット・デメリットと代替案との比較も整理する。
 
 ---
@@ -148,7 +148,7 @@ var ordered = files.OrderBy(f => f, NaturalStringComparer.Instance).ToList();
 ## まとめ
 
 Windows デスクトップアプリで、ファイル一覧などをエクスプローラーに近い並び順にしたい場合は、`StrCmpLogicalW` を `IComparer<string>` 実装で包む方式が最も手軽である。
-数行のコードでシェルと同等の並びが得られ、`List<T>.Sort` にも `OrderBy` にもそのまま渡せる。
+数行のコードでシェルに近い並びが得られ、`List<T>.Sort` にも `OrderBy` にもそのまま渡せる。
 ただし公式には canonical sorting 用途は非推奨とされ、挙動がリリース間で変わり得る点は前提として押さえておく。
 一方、クロスプラットフォームでの動作や、大文字小文字の区別、永続化するキーの安定した順序が必要な場合は、この API の制約（Windows 専用・ロケールに基づく言語的照合ではない・リリース間で挙動が変わり得る）が問題になる。
 その場合は数字トークンを自前で分割して数値比較する実装を選ぶ。
