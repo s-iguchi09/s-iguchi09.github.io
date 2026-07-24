@@ -126,7 +126,7 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 ## Notes
 
 - **Windows only.** `shlwapi.dll` is a Windows library; on Linux or macOS the call throws `DllNotFoundException`. The approach cannot be used where cross-platform execution is required.
-- **A culture-independent, proprietary rule.** `StrCmpLogicalW` is not a locale-based linguistic sort. The official documentation states it "should not be used for canonical sorting applications" and that its return values "can change from release to release." It is unsuitable for persisted key ordering or collations that require strict reproducibility.
+- **Not based on linguistic collation.** `StrCmpLogicalW` is not a locale-aware linguistic sort. The official documentation states it "should not be used for canonical sorting applications" and that its return values "can change from release to release." It is unsuitable for persisted key ordering or collations that require strict reproducibility.
 - **Not case-sensitive.** `Item2` and `item2` are treated as equal. A separate tiebreaker is needed to distinguish case.
 - **Handle `null` carefully.** `StrCmpLogicalW` expects null-terminated strings, so passing `null` directly leads to undefined behavior. Handle `null` before the call, as shown above.
 - **Strings with embedded NUL characters are not compared correctly.** Marshaling passes the string as null-terminated, so a string containing `"\0"` is only compared up to the first `\0`. This comparer targets ordinary strings such as file names and does not account for embedded NUL characters.
@@ -138,9 +138,10 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 
 | Approach | Pros | Cons | Best suited for |
 |---|---|---|---|
-| `StrCmpLogicalW` (this article) | Closely follows Explorer's order; a few lines of code | Windows only; culture-independent; case-insensitive; behavior can change between releases | Windows desktop apps that must match the shell's order |
+| `StrCmpLogicalW` (this article) | Closely follows Explorer's order; a few lines of code | Windows only; not locale-aware linguistic collation; case-insensitive; behavior can change between releases | Windows desktop apps that must match the shell's order |
 | Custom natural comparer (split digit tokens and compare numerically) | Cross-platform; full control over behavior | More code; must handle overflow, leading zeros, etc. | Cross-platform apps on .NET 5+ |
-| `StringComparer.Ordinal` / `CurrentCulture` | Standard, fast, stable order | Does not treat digits as numbers, so not natural order | Simple collation where natural order is unnecessary |
+| `StringComparer.Ordinal` | Standard, fast, culture-agnostic stable order | Does not treat digits as numbers, so not natural order | Internal collation that needs a stable order |
+| `StringComparer.CurrentCulture` | Linguistically natural collation | Culture-dependent; order varies by environment; does not treat digits as numbers | User-facing display text |
 
 ---
 
@@ -149,6 +150,6 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 For a Windows desktop app that must display file lists and similar data in an order close to Explorer's, wrapping `StrCmpLogicalW` in an `IComparer<string>` implementation is the simplest approach.
 A few lines of code yield an order close to the shell's, and the comparer passes directly to both `List<T>.Sort` and `OrderBy`.
 Note, however, that the official documentation discourages this function for canonical sorting, and its behavior can change between releases.
-When cross-platform execution, case sensitivity, or a stable order for persisted keys is required, the constraints of this API (Windows only, culture-independent, behavior that can change between releases) become problematic.
+When cross-platform execution, case sensitivity, or a stable order for persisted keys is required, the constraints of this API (Windows only, not locale-aware linguistic collation, behavior that can change between releases) become problematic.
 In that case, choose an implementation that splits digit tokens and compares them numerically.
 Prefer `StrCmpLogicalW` when matching Explorer's appearance is the top priority, and a custom implementation when portability and control matter more.
