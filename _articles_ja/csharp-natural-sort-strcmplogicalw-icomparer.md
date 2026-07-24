@@ -76,7 +76,7 @@ using System.Runtime.InteropServices;
 public sealed class NaturalStringComparer : IComparer<string>, IComparer
 {
     // shlwapi.dll の StrCmpLogicalW を P/Invoke で束縛する。
-    // 数字の並びを数値として扱い、エクスプローラーと同じ論理順で比較する。
+    // 数字の並びを数値として扱い、エクスプローラーに近い論理順で比較する。
     [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     private static extern int StrCmpLogicalW(string psz1, string psz2);
 
@@ -138,7 +138,7 @@ var ordered = files.OrderBy(f => f, NaturalStringComparer.Instance).ToList();
 
 | 方法 | メリット | デメリット | 適するケース |
 |---|---|---|---|
-| `StrCmpLogicalW`（本記事） | エクスプローラーと同じ並びに近づく・実装が数行で済む | Windows 専用・ロケールに基づく言語的照合ではない・大文字小文字非区別・挙動がリリース間で変わり得る | Windows デスクトップアプリでシェルと並びを揃えたい |
+| `StrCmpLogicalW`（本記事） | エクスプローラーに近い並びが得られる・実装が数行で済む | Windows 専用・ロケールに基づく言語的照合ではない・大文字小文字非区別・挙動がリリース間で変わり得る | Windows デスクトップアプリでシェルと並びを揃えたい |
 | 自前の自然順比較（数字トークンを分割して数値比較） | クロスプラットフォーム・挙動を完全に制御できる | 実装量が多く、桁あふれや先頭ゼロなどの考慮が必要 | .NET 5+ のクロスプラットフォーム環境 |
 | `StringComparer.Ordinal` | 標準・高速でカルチャに依存しない安定した順序 | 数字を数値として扱わず自然順にならない | 安定した順序が必要な内部データの照合 |
 | `StringComparer.CurrentCulture` | 言語的に自然な照合が得られる | カルチャに依存し順序が環境で変わる・数字を数値として扱わない | ユーザー向け表示テキストの照合 |

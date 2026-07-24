@@ -76,7 +76,7 @@ using System.Runtime.InteropServices;
 public sealed class NaturalStringComparer : IComparer<string>, IComparer
 {
     // Bind StrCmpLogicalW from shlwapi.dll via P/Invoke.
-    // It treats digit runs as numeric values, matching Explorer's logical order.
+    // It treats digit runs as numeric values, close to Explorer's logical order.
     [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     private static extern int StrCmpLogicalW(string psz1, string psz2);
 
