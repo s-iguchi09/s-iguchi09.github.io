@@ -5,6 +5,7 @@
       "mcp__github__pull_request_read",
       "mcp__github__actions_list",
       "mcp__github__list_branches",
+      "mcp__Microsoft_Learn",
       "mcp__Microsoft_Learn__microsoft_docs_search",
       "mcp__Microsoft_Learn__microsoft_docs_fetch",
       "mcp__Microsoft_Learn__microsoft_code_sample_search",

@@ -117,6 +117,11 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
      - コード例が実際にコンパイル/パース/実行できるか。
    - これらの検索・裏取り(`Microsoft_Learn` 等)は**確認・報告を挟まず実行する**。
      途中経過(検索している旨・処理中である旨)をユーザーへ逐一報告しない。
+     - `Microsoft_Learn` の MCP ツール(`microsoft_docs_search` / `microsoft_docs_fetch` /
+       `microsoft_code_sample_search`)は `.claude/settings.json` の `permissions.allow` に
+       登録済みで、**サーバー全体(`mcp__Microsoft_Learn`)を含めて事前承認されている**。
+       このパスはメイン・サブエージェントいずれから呼んでも**承認プロンプトを出さずに実行する**
+       前提であり、ユーザーへ実行可否を確認しない(許可が外れている場合は settings 側で付与し直す)。
    - 指摘は件数を絞らず、見つけたものをすべて挙げる。
 
 3. **指摘を修正する。** 文体レビュー・技術検証の両方から返ってきた指摘をすべて記事へ反映する。
