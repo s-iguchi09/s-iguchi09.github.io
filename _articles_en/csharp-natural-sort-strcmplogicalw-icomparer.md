@@ -17,7 +17,7 @@ It also summarizes the pros and cons of this approach and compares it with the a
 
 ## Prerequisites / Environment
 
-- Language: C# 8.0 or later (P/Invoke itself works on any version)
+- Language: C# 9.0 or later (the runnable examples in this article use top-level statements; the comparer class itself works on earlier versions, and P/Invoke works on any version)
 - Framework: .NET Framework 4.x / .NET 5 or later
 - Runtime: Windows only (depends on `shlwapi.dll`)
 - Use case: APIs that accept an `IComparer<string>`, such as `List<T>.Sort` and LINQ `OrderBy`
@@ -93,7 +93,13 @@ public sealed class NaturalStringComparer : IComparer<string>, IComparer
     }
 
     // Non-generic version for older APIs such as ListCollectionView.
-    int IComparer.Compare(object x, object y) => Compare(x as string, y as string);
+    // Do not collapse type mismatches to null with 'as'; throw ArgumentException per the contract.
+    int IComparer.Compare(object x, object y)
+    {
+        if (x != null && !(x is string)) throw new ArgumentException("A string is required.", nameof(x));
+        if (y != null && !(y is string)) throw new ArgumentException("A string is required.", nameof(y));
+        return Compare((string)x, (string)y);
+    }
 }
 ```
 
@@ -123,6 +129,7 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 - **A culture-independent, proprietary rule.** `StrCmpLogicalW` is not a locale-based linguistic sort. The official documentation states it "should not be used for canonical sorting applications" and that its return values "can change from release to release." It is unsuitable for persisted key ordering or collations that require strict reproducibility.
 - **Not case-sensitive.** `Item2` and `item2` are treated as equal. A separate tiebreaker is needed to distinguish case.
 - **Handle `null` carefully.** `StrCmpLogicalW` expects null-terminated strings, so passing `null` directly leads to undefined behavior. Handle `null` before the call, as shown above.
+- **Strings with embedded NUL characters are not compared correctly.** Marshaling passes the string as null-terminated, so a string containing `"\0"` is only compared up to the first `\0`. This comparer targets ordinary strings such as file names and does not account for embedded NUL characters.
 - **P/Invoke has a cost.** Every comparison incurs a native call. Sorting n elements invokes the comparison O(n log n) times, so the overhead can become noticeable compared with a pure managed implementation for extremely large collections.
 
 ---
@@ -131,7 +138,7 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 
 | Approach | Pros | Cons | Best suited for |
 |---|---|---|---|
-| `StrCmpLogicalW` (this article) | Matches Explorer exactly; a few lines of code | Windows only; culture-independent; case-insensitive | Windows desktop apps that must match the shell's order |
+| `StrCmpLogicalW` (this article) | Closely follows Explorer's order; a few lines of code | Windows only; culture-independent; case-insensitive; behavior can change between releases | Windows desktop apps that must match the shell's order |
 | Custom natural comparer (split digit tokens and compare numerically) | Cross-platform; full control over behavior | More code; must handle overflow, leading zeros, etc. | Cross-platform apps on .NET 5+ |
 | `StringComparer.Ordinal` / `CurrentCulture` | Standard, fast, stable order | Does not treat digits as numbers, so not natural order | Simple collation where natural order is unnecessary |
 
@@ -139,8 +146,9 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 
 ## Summary
 
-For a Windows desktop app that must display file lists and similar data in the same order as Explorer, wrapping `StrCmpLogicalW` in an `IComparer<string>` implementation is the simplest and most reliable approach.
-A few lines of code yield an order that matches the shell exactly, and the comparer passes directly to both `List<T>.Sort` and `OrderBy`.
+For a Windows desktop app that must display file lists and similar data in an order close to Explorer's, wrapping `StrCmpLogicalW` in an `IComparer<string>` implementation is the simplest approach.
+A few lines of code yield an order equivalent to the shell's, and the comparer passes directly to both `List<T>.Sort` and `OrderBy`.
+Note, however, that the official documentation discourages this function for canonical sorting, and its behavior can change between releases.
 When cross-platform execution, case sensitivity, or a stable order for persisted keys is required, the constraints of this API (Windows only, culture-independent, behavior that can change between releases) become problematic.
 In that case, choose an implementation that splits digit tokens and compares them numerically.
 Prefer `StrCmpLogicalW` when matching Explorer's appearance is the top priority, and a custom implementation when portability and control matter more.

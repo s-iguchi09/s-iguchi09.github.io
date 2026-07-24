@@ -17,7 +17,7 @@ Windows エクスプローラーでファイル名を並べると、`item1` `ite
 
 ## 前提・対象環境
 
-- 言語: C# 8.0 以降（P/Invoke 自体はどのバージョンでも可）
+- 言語: C# 9.0 以降（本記事の実行例はトップレベルステートメントを使用する。比較クラス自体は C# 8.0 以前でも動作し、P/Invoke はどのバージョンでも可）
 - フレームワーク: .NET Framework 4.x / .NET 5 以降
 - 実行環境: Windows 専用（`shlwapi.dll` に依存するため）
 - 用途: `List<T>.Sort` / LINQ の `OrderBy` など、`IComparer<string>` を受け取る API
@@ -93,7 +93,13 @@ public sealed class NaturalStringComparer : IComparer<string>, IComparer
     }
 
     // 非ジェネリック版。ListCollectionView など古い API 向け。
-    int IComparer.Compare(object x, object y) => Compare(x as string, y as string);
+    // 型不一致は as で null に潰さず、契約どおり ArgumentException とする。
+    int IComparer.Compare(object x, object y)
+    {
+        if (x != null && !(x is string)) throw new ArgumentException("string 型が必要である。", nameof(x));
+        if (y != null && !(y is string)) throw new ArgumentException("string 型が必要である。", nameof(y));
+        return Compare((string)x, (string)y);
+    }
 }
 ```
 
@@ -123,6 +129,7 @@ var ordered = files.OrderBy(f => f, NaturalStringComparer.Instance).ToList();
 - **カルチャ非依存の独自ルールである。** `StrCmpLogicalW` はロケールに基づく言語的な並び替えではない。公式ドキュメントも「正規のソート（canonical sorting）用途には使用すべきでない」「戻り値はリリース間で変わり得る」と明記している。永続化するキーの順序付けや、厳密な再現性が必要な照合には向かない。
 - **大文字小文字を区別しない。** `Item2` と `item2` は同一として扱われる。ケースを区別したい場合は別途タイブレークが必要になる。
 - **`null` の扱いに注意する。** `StrCmpLogicalW` は NULL 終端文字列を前提とするため、`null` をそのまま渡すと未定義動作となる。上記実装のように呼び出し前に `null` を処理する。
+- **埋め込み NUL 文字を含む文字列は正しく比較できない。** マーシャリングは文字列を NULL 終端として渡すため、`"\0"` を含む文字列は最初の `\0` までしか比較されない。本比較器はファイル名など通常の文字列を対象とし、埋め込み NUL を含む文字列は想定しない。
 - **P/Invoke のコストがある。** 比較 1 回ごとにネイティブ呼び出しが発生する。要素数 n のソートでは比較が O(n log n) 回呼ばれるため、極端に大量の要素では純粋なマネージド実装よりオーバーヘッドが目立つ場合がある。
 
 ---
@@ -131,7 +138,7 @@ var ordered = files.OrderBy(f => f, NaturalStringComparer.Instance).ToList();
 
 | 方法 | メリット | デメリット | 適するケース |
 |---|---|---|---|
-| `StrCmpLogicalW`（本記事） | エクスプローラーと完全に一致・実装が数行で済む | Windows 専用・カルチャ非依存・大文字小文字非区別 | Windows デスクトップアプリでシェルと並びを揃えたい |
+| `StrCmpLogicalW`（本記事） | エクスプローラーと同じ並びに近づく・実装が数行で済む | Windows 専用・カルチャ非依存・大文字小文字非区別・挙動がリリース間で変わり得る | Windows デスクトップアプリでシェルと並びを揃えたい |
 | 自前の自然順比較（数字トークンを分割して数値比較） | クロスプラットフォーム・挙動を完全に制御できる | 実装量が多く、桁あふれや先頭ゼロなどの考慮が必要 | .NET 5+ のクロスプラットフォーム環境 |
 | `StringComparer.Ordinal` / `CurrentCulture` | 標準・高速・安定した順序 | 数字を数値として扱わず自然順にならない | 自然順が不要な単純な照合 |
 
@@ -139,8 +146,9 @@ var ordered = files.OrderBy(f => f, NaturalStringComparer.Instance).ToList();
 
 ## まとめ
 
-Windows デスクトップアプリで、ファイル一覧などをエクスプローラーと同じ並び順にしたい場合は、`StrCmpLogicalW` を `IComparer<string>` 実装で包む方式が最も手軽で確実である。
-数行のコードでシェルと完全に一致する並びが得られ、`List<T>.Sort` にも `OrderBy` にもそのまま渡せる。
+Windows デスクトップアプリで、ファイル一覧などをエクスプローラーに近い並び順にしたい場合は、`StrCmpLogicalW` を `IComparer<string>` 実装で包む方式が最も手軽である。
+数行のコードでシェルと同等の並びが得られ、`List<T>.Sort` にも `OrderBy` にもそのまま渡せる。
+ただし公式には canonical sorting 用途は非推奨とされ、挙動がリリース間で変わり得る点は前提として押さえておく。
 一方、クロスプラットフォームでの動作や、大文字小文字の区別、永続化するキーの安定した順序が必要な場合は、この API の制約（Windows 専用・カルチャ非依存・リリース間で挙動が変わり得る）が問題になる。
 その場合は数字トークンを自前で分割して数値比較する実装を選ぶ。
 エクスプローラーとの見た目の一致を最優先するなら `StrCmpLogicalW`、移植性と制御性を優先するなら自前実装、という基準で選択する。
