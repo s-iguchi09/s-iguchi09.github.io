@@ -147,7 +147,7 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 ## Summary
 
 For a Windows desktop app that must display file lists and similar data in an order close to Explorer's, wrapping `StrCmpLogicalW` in an `IComparer<string>` implementation is the simplest approach.
-A few lines of code yield an order equivalent to the shell's, and the comparer passes directly to both `List<T>.Sort` and `OrderBy`.
+A few lines of code yield an order close to the shell's, and the comparer passes directly to both `List<T>.Sort` and `OrderBy`.
 Note, however, that the official documentation discourages this function for canonical sorting, and its behavior can change between releases.
 When cross-platform execution, case sensitivity, or a stable order for persisted keys is required, the constraints of this API (Windows only, culture-independent, behavior that can change between releases) become problematic.
 In that case, choose an implementation that splits digit tokens and compares them numerically.
