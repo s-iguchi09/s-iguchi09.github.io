@@ -31,6 +31,7 @@ internal static class Program
         new FluentSystemColorsScene(),
         new RelayCommandCanExecuteScene(),
         new StaticVsDynamicResourceScene(),
+        new NaturalSortScene(),
     ];
 
     [STAThread]

@@ -45,6 +45,12 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 そのため .NET Framework をターゲットとしていても、ビルド環境が C# 8.0 に対応していれば `??=` や `!` のような言語機能は使用できる。
 
 以下に、本記事で取り上げる演算子・構文と導入された C# バージョンの対応表を示す。
+導入時期を時系列で見ると次のようになる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg" alt="C# 1.0 から 12.0 までの時系列に、各バージョンで追加された演算子と構文を配置した図。^ と .. および required だけが BCL 側の型や属性を必要とすることが色分けされている。" width="900" height="300" loading="lazy">
+  <figcaption>各構文が追加された C# のバージョン。枠が色付きのものは <code>LangVersion</code> を上げるだけでは足りず、BCL 側の型（<code>System.Index</code> / <code>System.Range</code>）や属性を必要とするものである。<code>??=</code> は C# 8.0 の位置にある。</figcaption>
+</figure>
 
 | 演算子 / 構文 | C# バージョン | .NET バージョン | .NET Framework 対応 |
 | --- | --- | --- | --- |

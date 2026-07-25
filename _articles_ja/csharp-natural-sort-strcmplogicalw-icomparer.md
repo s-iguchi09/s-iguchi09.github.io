@@ -4,6 +4,7 @@ title: "C# で Windows エクスプローラー風の並び順を実装する（
 date: 2026-07-24
 category: C#
 excerpt: "既定の文字列ソートでは \"item10\" が \"item2\" より前に並んでしまう。本記事では Win32 API の StrCmpLogicalW を P/Invoke で呼び出し、IComparer を実装したクラスとしてエクスプローラーに近い自然順ソートを実現する方法を、メリット・デメリットとともに解説する。"
+image: /images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-comparison.png
 ---
 
 ## 概要
@@ -37,6 +38,11 @@ files.Sort();
 
 `List<T>.Sort()` は `Comparer<string>.Default` を用いるが、これは数字を「文字の並び」として比較する。
 そのため `item10` と `item2` を比べると、5 文字目の `1` と `2` の大小で `item10` が先に来てしまう。
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-comparison.png" alt="同じ 5 件の文字列を 2 通りの方法で並べ替えた結果。既定のソートでは item1, item10, item2, item20, item3 の順、StrCmpLogicalW では item1, item2, item3, item10, item20 の順になっている。" width="356" height="221" loading="lazy">
+  <figcaption>上のコードと同じ入力を、既定の比較（左）と <code>StrCmpLogicalW</code>（右）で並べ替えた実行結果。右がエクスプローラーと同じ並びである。</figcaption>
+</figure>
 
 ---
 
