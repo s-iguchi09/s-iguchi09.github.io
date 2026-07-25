@@ -45,7 +45,7 @@ The `x => x` is boilerplate unrelated to the sorting intent and a common site fo
 A dedicated method with the identity function baked in removes that noise, and .NET 7 standardized exactly that.
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png" alt="A figure showing that OrderBy(x => x) and Order() produce the same order for the same input, while OrderDescending() reverses it." width="392" height="186" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png" alt="A figure showing that OrderBy(x =&gt; x) and Order() produce the same order for the same input, while OrderDescending() reverses it." width="392" height="186" loading="lazy">
   <figcaption><code>Order()</code> produces the same ordering as <code>OrderBy(x =&gt; x)</code>. That equivalence is what makes a delegating implementation that simply passes the identity lambda match the built-in behavior.</figcaption>
 </figure>
 

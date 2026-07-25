@@ -80,6 +80,7 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
   <img src="/images/articles/wpf-selectable-readonly-text-display/selectable-readonly-text.png" alt="同じ例外メッセージを TextBlock と読み取り専用 TextBox で表示した画面。TextBox 側だけ例外の型名の部分が選択範囲としてハイライトされている。" width="368" height="159" loading="lazy">
   <figcaption>同じ文字列を <code>TextBlock</code>（上）と本節の設定を適用した読み取り専用 <code>TextBox</code>（下）で表示したもの。下では例外の型名の部分だけを範囲選択している。背景と枠線を除いているため、選択していない状態の見た目は <code>TextBlock</code> とほぼ変わらない。</figcaption>
 </figure>
+
 また、見た目も `TextBlock` に近いため、既存の表示用テキストを `TextBox` に置き換える形で適用しやすい。  
 長文や複数行の表示を前提とする場合は、改行入力の扱いやスクロール表示も加えると実用性が高まる。  
 以下はその例である。  

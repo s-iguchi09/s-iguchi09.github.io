@@ -45,7 +45,7 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 逆に言えば、恒等関数を内包した専用メソッドがあれば済む話であり、.NET 7 はそれを標準化した。
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png" alt="同じ入力に対する OrderBy(x => x) と Order() の結果が一致し、OrderDescending() が逆順になっている図。" width="392" height="186" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png" alt="同じ入力に対する OrderBy(x =&gt; x) と Order() の結果が一致し、OrderDescending() が逆順になっている図。" width="392" height="186" loading="lazy">
   <figcaption><code>Order()</code> は <code>OrderBy(x =&gt; x)</code> と同じ並びを返す。この一致が、恒等ラムダを渡すだけの委譲実装で本家と同じ結果になることの根拠である。</figcaption>
 </figure>
 
