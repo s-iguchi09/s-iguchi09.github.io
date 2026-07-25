@@ -4,8 +4,8 @@ title: "(Title)"
 date: YYYY-MM-DD
 category: (Category)
 excerpt: "(Article summary. Keep under 160 characters.)"
-# 代表となるスクリーンショットがある場合のみ設定する（SVG は指定しない）。
-image: /images/articles/(slug)/(file).png
+# 代表となるスクリーンショットがある場合のみ、次の行のコメントを外して設定する（SVG は指定しない）。
+# image: /images/articles/(slug)/(file).png
 ---
 
 ## Overview

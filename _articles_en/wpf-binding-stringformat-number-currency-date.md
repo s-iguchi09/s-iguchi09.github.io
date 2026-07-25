@@ -154,7 +154,7 @@ Because `Language` defaults to `en-US` in XAML, currency appears with `$` and da
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png" alt="Rendering results of four bindings over the same values. Without ConverterCulture the output is $1,234.50 and 7/17/2026, while with ja-JP it is a yen amount of 1,235 and 2026/07/17." width="697" height="202" loading="lazy">
-  <figcaption>Captured on Windows 11 configured for Japanese. A binding without <code>ConverterCulture</code> is formatted as <code>en-US</code> regardless of the OS regional setting, so the currency symbol is <code>$</code> and the date follows <code>M/d/yyyy</code>.</figcaption>
+  <figcaption>Captured on Windows 11 configured for Japanese. Without <code>ConverterCulture</code>, the binding uses the target element's <code>Language</code> property (<code>xml:lang</code> in XAML); since it is left unset here, the default <code>en-US</code> applies, so the currency symbol is <code>$</code> and the date follows <code>M/d/yyyy</code> regardless of the OS regional setting.</figcaption>
 </figure>
 
 There are two main remedies.

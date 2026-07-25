@@ -46,8 +46,8 @@ WPF の `DatePicker` は、選択された日付をシステムのロケール�
 なお、シングルクォートで囲む `'/'`(例: `yyyy'/'MM'/'dd`)でも同じ効果が得られ、記事の後半ではこの記法を用いている。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="同じ日付を選択した 2 つの DatePicker。既定のものは 2026/04/15 と表示され、StringFormat を指定したものは 15 Apr 2026 と表示されている。" width="479" height="146" loading="lazy">
-  <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。上は既定の表示で、実行環境のロケール（日本語）に従って <code>2026/04/15</code> になる。下は本節のスタイルで <code>dd MMM yyyy</code> を指定したもので、ロケールにかかわらずこの並びで表示される。</figcaption>
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="同じ日付を選択した 2 つの DatePicker。既定のものは 4/15/2026 と表示され、StringFormat を指定したものは 2026/04/15 と表示されている。" width="486" height="146" loading="lazy">
+  <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。書式の差が出るよう、どちらにも <code>xml:lang="en-US"</code> を指定している。上は既定の表示で、この設定に従って <code>4/15/2026</code> になる。下は本節のスタイルを適用したもので、カルチャにかかわらず <code>2026/04/15</code> で固定される。</figcaption>
 </figure>
 
 ## コードビハインドによる方法

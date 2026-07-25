@@ -55,14 +55,7 @@ internal sealed class UpdateSourceTriggerScene : IScene
     {
         var textBox = SceneContext.LoadXaml<TextBox>(textBoxXaml);
 
-        var arrow = new TextBlock
-        {
-            Text = "→",
-            FontSize = 15,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x8A, 0x93, 0xA3)),
-            Margin = new Thickness(14, 0, 14, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-        };
+        TextBlock arrow = DemoLayout.Arrow(new Thickness(14, 0, 14, 0));
 
         var mirror = SceneContext.LoadXaml<Border>(
             """

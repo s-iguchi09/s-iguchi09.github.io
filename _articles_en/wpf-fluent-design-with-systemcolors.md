@@ -29,8 +29,8 @@ The default WPF theme is stable and predictable, but its visual density and spac
 In multi-window business applications, default control styles can make interaction priority less clear, especially when all elements have similar weight and low hierarchy contrast.  
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="A WPF window using the default theme. A square-cornered text box, a check box and a button are laid out with little spacing." width="326" height="293" loading="lazy">
-  <figcaption>The same controls under the default theme (Aero2). Corners are square and spacing is tight, which makes it hard to tell which element is the primary action.</figcaption>
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="A WPF window using the default theme. A heading, body text and a square-cornered button sit on the same surface as the window background." width="426" height="273" loading="lazy">
+  <figcaption>The same controls under the default theme (Aero2). The card surface is not separated from the background and the button corners are square, which makes it hard to tell which element is the primary action.</figcaption>
 </figure>
 
 ---
@@ -194,8 +194,8 @@ Because key brushes are resolved through `DynamicResource`, changes in Windows c
 `SystemColors.AccentColorBrushKey` can be used where accent emphasis is needed.  
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="A WPF window with the Fluent theme and SystemColors applied. A rounded card holds a text box, a check box and a button with generous spacing." width="326" height="293" loading="lazy">
-  <figcaption>The same layout shown in the Problem section, now with the Fluent theme and <code>SystemColors</code> applied and no external libraries involved. The check box color follows the Windows accent setting, so it varies between machines.</figcaption>
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="A WPF window with the Fluent theme and SystemColors applied. A rounded card holds a heading, body text and a rounded button with generous spacing." width="426" height="273" loading="lazy">
+  <figcaption>The same composition as the XAML above (heading, body text, button) with <code>ThemeMode</code> and <code>SystemColors</code> applied and no external libraries involved. Compared with the figure in the Problem section, the card surface separates from the background and the rounded corners and spacing establish a hierarchy.</figcaption>
 </figure>
 
 ---

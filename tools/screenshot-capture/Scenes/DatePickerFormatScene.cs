@@ -8,24 +8,23 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class DatePickerFormatScene : IScene
 {
-    /// <summary>既定の表示。記事の例に合わせて 2026-04-15 を選択済みにする。</summary>
+    // 既定表示はターゲット要素の Language（xml:lang）に従う。撮影マシンのロケール
+    // （日本語）のままだと既定表示も 2026/04/15 になり、記事が示す yyyy/MM/dd との
+    // 差が出ない。そこで両方に xml:lang="en-US" を与え、ロケールが異なる環境でも
+    // 表示が固定されることを示す。
     private const string DefaultXaml =
-        """<DatePicker SelectedDate="2026-04-15" Width="190" />""";
+        """<DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190" />""";
 
-    /// <summary>
-    /// 記事の「XAML スタイルによる方法」と同じ指定。
-    /// 既定表示は OS のロケールに従うため、撮影環境（日本語）でも差が分かるよう
-    /// 記事がレポート向けとして挙げている dd MMM yyyy を指定する。
-    /// </summary>
+    /// <summary>記事の「XAML スタイルによる方法」と同じ指定。</summary>
     private const string FormattedXaml =
         """
-        <DatePicker SelectedDate="2026-04-15" Width="190">
+        <DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190">
           <DatePicker.Resources>
             <Style TargetType="DatePickerTextBox">
               <Setter Property="Text"
                       Value="{Binding SelectedDate,
                                       RelativeSource={RelativeSource AncestorType=DatePicker},
-                                      StringFormat='dd MMM yyyy'}" />
+                                      StringFormat='yyyy\/MM\/dd'}" />
             </Style>
           </DatePicker.Resources>
         </DatePicker>
@@ -41,7 +40,7 @@ internal sealed class DatePickerFormatScene : IScene
                 "<DatePicker />",
                 SceneContext.LoadXaml<DatePicker>(DefaultXaml)),
             new DemoLayout.Row(
-                "StringFormat='dd MMM yyyy'",
+                "StringFormat='yyyy\\/MM\\/dd'",
                 SceneContext.LoadXaml<DatePicker>(FormattedXaml)),
         };
 

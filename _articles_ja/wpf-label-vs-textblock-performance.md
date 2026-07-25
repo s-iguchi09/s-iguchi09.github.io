@@ -48,11 +48,13 @@ WPF で `Label` を大量に配置した画面において、初期描画とス�
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png" alt="計測結果の表。Label を 1000 個並べた場合は visual 要素が 4,002 個でレイアウトに 385.3 ミリ秒、TextBlock では 1,002 個で 153.9 ミリ秒。" width="415" height="160" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測値。<code>Label</code> は 1 個あたり 4 個の visual を生成するのに対し、<code>TextBlock</code> は 1 個で済む。レイアウト時間も約 2.5 倍の差がついた。所要時間は実行環境に依存するため、絶対値ではなく比率を目安として読む。</figcaption>
+  <figcaption>.NET 10 / Windows 11、既定テーマ（Aero2）の <code>ControlTemplate</code> で、<code>Content</code> に文字列を与えた場合の実測値。この条件では <code>Label</code> 1 個あたり 4 個の visual が構築されるのに対し、<code>TextBlock</code> は 1 個で済む。visual 数はテーマや <code>ControlTemplate</code> の差し替えで変わり、所要時間は実行環境に依存するため、絶対値ではなく比率を目安として読む。</figcaption>
 </figure>
 
 要素数がおよそ 4 倍になる点が本質である。  
-`Label` 1 個につき、`Border`・`ContentPresenter`・実際に文字を描く `TextBlock` が追加で構築されるため、測定・配置・描画の各段階で処理対象が増える。  
+既定テンプレートでは `Label` 1 個につき `Border`・`ContentPresenter`・実際に文字を描く `TextBlock` が追加で構築されるため、測定・配置・描画の各段階で処理対象が増える。  
+なお `Content` にアクセスキー（`_`）を含む文字列を与えた場合は、`ContentPresenter` が `AccessText` を挟むため visual は 5 個になる。  
+上の計測はアクセスキーを含まない文字列で行っている。  
 
 ---
 

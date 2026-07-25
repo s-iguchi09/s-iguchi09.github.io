@@ -24,8 +24,8 @@ internal sealed class FluentSystemColorsScene : IScene
         var window = new Window
         {
             Title = fluent ? "Fluent + SystemColors" : "Default theme",
-            Width = 340,
-            Height = 300,
+            Width = 440,
+            Height = 280,
             ResizeMode = ResizeMode.CanMinimize,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
         };
@@ -45,7 +45,7 @@ internal sealed class FluentSystemColorsScene : IScene
     }
 
     /// <summary>
-    /// 記事の「カード領域」に相当するレイアウト。
+    /// 記事の「実装例」に載せている XAML と同じカード構成（見出し・説明文・ボタン）。
     /// Fluent 側だけ SystemColors 由来の配色と角丸を与える。
     /// </summary>
     private static UIElement BuildCard(bool fluent)
@@ -53,30 +53,30 @@ internal sealed class FluentSystemColorsScene : IScene
         var content = new StackPanel();
         content.Children.Add(new TextBlock
         {
-            Text = "Order 1042",
-            FontSize = 16,
+            Text = "WPF Fluent Style",
+            FontSize = 20,
             FontWeight = FontWeights.SemiBold,
-            Margin = new Thickness(0, 0, 0, 12),
+            Foreground = SystemColors.ControlTextBrush,
         });
-        content.Children.Add(new TextBox { Text = "invoice" });
-        content.Children.Add(new CheckBox
+        content.Children.Add(new TextBlock
         {
-            Content = "Notify",
-            IsChecked = true,
-            Margin = new Thickness(0, 12, 0, 0),
+            Text = "SystemColors を参照することで、Windows の色設定に依存した色を利用できる。",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = SystemColors.GrayTextBrush,
+            Margin = new Thickness(0, 10, 0, 0),
         });
         content.Children.Add(new Button
         {
-            Content = "Save",
-            Padding = new Thickness(14, 6, 14, 6),
-            Margin = new Thickness(0, 14, 0, 0),
+            Content = "操作を実行",
+            Padding = new Thickness(14, 8, 14, 8),
+            Margin = new Thickness(0, 12, 0, 0),
             HorizontalAlignment = HorizontalAlignment.Left,
         });
 
         var card = new Border
         {
-            Padding = new Thickness(18),
-            Margin = new Thickness(16),
+            Padding = new Thickness(24),
+            Margin = new Thickness(32),
             Child = content,
         };
 

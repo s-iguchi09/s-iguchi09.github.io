@@ -59,7 +59,7 @@ var result = employees
 
 <figure class="article-figure">
   <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="2 つの並びに対する LeftJoin と RightJoin の結果。LeftJoin では左に無い相手が null、RightJoin では右に無い相手が null になっている。Shuffle は順序が入れ替わっている。" width="448" height="218" loading="lazy">
-  <figcaption>左右の並びに一致しないキーがある場合の評価結果。<code>LeftJoin</code> は左を残して相手を <code>null</code> に、<code>RightJoin</code> は右を残して相手を <code>null</code> にする。<code>Shuffle</code> は実行ごとに結果が変わるため、この行は 1 回分の例である。</figcaption>
+  <figcaption>左右の並びに一致しないキーがある場合の評価結果。<code>LeftJoin</code> は左を残して相手を <code>null</code> に、<code>RightJoin</code> は右を残して相手を <code>null</code> にする。<code>Shuffle</code> は順序をランダム化するため、この行は 1 回分の実行結果である。</figcaption>
 </figure>
 
 ---

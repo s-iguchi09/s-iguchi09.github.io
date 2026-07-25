@@ -82,9 +82,17 @@ internal static class Capture
 
     private static int ToColorRef(byte r, byte g, byte b) => r | (g << 8) | (b << 16);
 
+    /// <summary>Loaded を待つ上限。これを超えたら中断する。</summary>
+    private static readonly TimeSpan LoadedTimeout = TimeSpan.FromSeconds(30);
+
     /// <summary>
     /// ウィンドウを表示し、レンダリングが落ち着くまで待ってから返す。
     /// </summary>
+    /// <exception cref="TimeoutException">
+    /// <see cref="FrameworkElement.Loaded"/> が <see cref="LoadedTimeout"/> 以内に発火しない場合。
+    /// デスクトップセッションが切断されているなど描画が行われない環境では発火しないため、
+    /// 待ち続けてバッチ全体が止まらないように打ち切る。
+    /// </exception>
     public static async Task ShowAndSettleAsync(Window window, int extraDelayMs = 400)
     {
         var loaded = new TaskCompletionSource();
@@ -94,7 +102,13 @@ internal static class Capture
         ApplyNeutralChrome(window);
         window.Activate();
 
-        await loaded.Task;
+        Task completed = await Task.WhenAny(loaded.Task, Task.Delay(LoadedTimeout));
+        if (completed != loaded.Task)
+        {
+            throw new TimeoutException(
+                $"ウィンドウ '{window.Title}' の Loaded が {LoadedTimeout.TotalSeconds} 秒以内に発火しなかった。");
+        }
+
         await SettleAsync(window, extraDelayMs);
     }
 

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 372" width="900" height="372" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 556" width="900" height="556" role="img">
   <defs>
     <style>
       .lane { fill: #f5f7fb; stroke: #e1e7f0; stroke-width: 1; }
@@ -20,7 +20,7 @@
     </marker>
   </defs>
 
-  <!-- ===== 直接 Add した場合 ===== -->
+  <!-- ===== 1. 直接 Add した場合 ===== -->
   <rect class="lane" x="14" y="14" width="872" height="160" rx="10" />
   <text class="lane-title" x="34" y="40">Items.Add(...)   from Task.Run</text>
 
@@ -41,25 +41,52 @@
   <text class="ng" x="746" y="106" font-family="Segoe UI, sans-serif" font-size="17">✕</text>
   <text class="code ng" x="746" y="132">NotSupported</text>
 
-  <!-- ===== 解決方法 ===== -->
-  <rect class="lane" x="14" y="188" width="872" height="170" rx="10" />
-  <text class="lane-title" x="34" y="214">EnableCollectionSynchronization  /  Dispatcher.Invoke</text>
+  <!-- ===== 2. EnableCollectionSynchronization ===== -->
+  <rect class="lane" x="14" y="188" width="872" height="174" rx="10" />
+  <text class="lane-title" x="34" y="214">BindingOperations.EnableCollectionSynchronization</text>
 
-  <rect class="thread" x="34" y="230" width="240" height="110" rx="6" stroke-dasharray="5 4" />
+  <rect class="thread" x="34" y="230" width="240" height="114" rx="6" stroke-dasharray="5 4" />
   <text class="code-sm" x="154" y="250" text-anchor="middle">background thread</text>
   <rect class="box" x="54" y="262" width="200" height="46" rx="5" />
-  <text class="code" x="154" y="290" text-anchor="middle">ObservableCollection</text>
-  <text class="code-sm ok" x="154" y="328" text-anchor="middle">lock (syncRoot)</text>
+  <text class="code" x="154" y="282" text-anchor="middle">lock (syncRoot)</text>
+  <text class="code-sm" x="154" y="299" text-anchor="middle">Items.Add(...)</text>
+  <text class="code-sm ok" x="154" y="330" text-anchor="middle">stays on this thread</text>
 
   <line x1="286" y1="285" x2="428" y2="285" stroke="#2f9e6e" stroke-width="2.5" marker-end="url(#ar-ok)" />
-  <text class="code-sm ok" x="357" y="274" text-anchor="middle">marshalled</text>
-  <text class="code-sm ok" x="357" y="303" text-anchor="middle">to UI thread</text>
+  <text class="code-sm ok" x="357" y="274" text-anchor="middle">CollectionChanged</text>
+  <text class="code-sm ok" x="357" y="303" text-anchor="middle">queued</text>
 
-  <rect class="thread" x="440" y="230" width="290" height="110" rx="6" />
+  <rect class="thread" x="440" y="230" width="290" height="114" rx="6" />
   <text class="code-sm" x="585" y="250" text-anchor="middle">UI thread (Dispatcher)</text>
-  <rect class="box-ok" x="460" y="262" width="250" height="46" rx="5" />
-  <text class="code" x="585" y="290" text-anchor="middle">CollectionView</text>
+  <rect class="box-ok" x="460" y="262" width="250" height="60" rx="5" />
+  <text class="code" x="585" y="284" text-anchor="middle">CollectionView</text>
+  <text class="code-sm" x="585" y="302" text-anchor="middle">shadow copy</text>
+  <text class="code-sm ok" x="585" y="316" text-anchor="middle">applied asynchronously</text>
 
   <text class="ok" x="746" y="284" font-family="Segoe UI, sans-serif" font-size="17">✓</text>
   <text class="code ok" x="746" y="310">updated</text>
+
+  <!-- ===== 3. Dispatcher ===== -->
+  <rect class="lane" x="14" y="376" width="872" height="166" rx="10" />
+  <text class="lane-title" x="34" y="402">Dispatcher.Invoke  /  InvokeAsync</text>
+
+  <rect class="thread" x="34" y="418" width="240" height="106" rx="6" stroke-dasharray="5 4" />
+  <text class="code-sm" x="154" y="438" text-anchor="middle">background thread</text>
+  <rect class="box" x="54" y="450" width="200" height="46" rx="5" />
+  <text class="code" x="154" y="478" text-anchor="middle">fetch data</text>
+  <text class="code-sm ok" x="154" y="512" text-anchor="middle">no collection access</text>
+
+  <line x1="286" y1="473" x2="428" y2="473" stroke="#2f9e6e" stroke-width="2.5" marker-end="url(#ar-ok)" />
+  <text class="code-sm ok" x="357" y="462" text-anchor="middle">Items.Add(...)</text>
+  <text class="code-sm ok" x="357" y="491" text-anchor="middle">marshalled</text>
+
+  <rect class="thread" x="440" y="418" width="290" height="106" rx="6" />
+  <text class="code-sm" x="585" y="438" text-anchor="middle">UI thread (Dispatcher)</text>
+  <rect class="box-ok" x="460" y="450" width="250" height="60" rx="5" />
+  <text class="code" x="585" y="472" text-anchor="middle">ObservableCollection</text>
+  <text class="code-sm" x="585" y="490" text-anchor="middle">CollectionView</text>
+  <text class="code-sm ok" x="585" y="504" text-anchor="middle">both on this thread</text>
+
+  <text class="ok" x="746" y="472" font-family="Segoe UI, sans-serif" font-size="17">✓</text>
+  <text class="code ok" x="746" y="498">updated</text>
 </svg>

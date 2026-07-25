@@ -90,7 +90,7 @@ The three states appear as follows.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="Three DataGrid controls side by side. The left one shows an ascending arrow on the Name column with rows in name order, the middle one a descending arrow with the reverse order, and the right one has no arrow and shows the original data order." width="650" height="171" loading="lazy">
-  <figcaption>The three states rendered over the same data. In the unsorted state on the right, the header arrow disappears along with the sort descriptor and the rows return to the order of the underlying collection. Note that the row order differs between the left and right grids.</figcaption>
+  <figcaption>The three states rendered over the same data. In the unsorted state on the right, both the column's <code>SortDescription</code> and the header arrow are removed. Because this example sorts on a single column, clearing it returns the rows to the order of the underlying collection; when several columns are sorted, the remaining descriptors still apply and the original order is not necessarily restored.</figcaption>
 </figure>
 
 ### XAML

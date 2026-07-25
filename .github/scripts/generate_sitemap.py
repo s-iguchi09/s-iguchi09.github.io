@@ -114,7 +114,9 @@ def extract_images_from_file(abs_path: str) -> list:
     ![...](src) syntax in Markdown files. Articles wrap figures in
     <figure class="article-figure"><img ...></figure> so that a caption can be
     attached, so Markdown files must be scanned for both notations.
-    Only site-relative paths (starting with /) are included.
+    Only site-relative paths (starting with a single /) are included; a
+    protocol-relative "//host/..." reference points at another host, so
+    prefixing it with BASE_URL would produce a bogus URL.
     """
     if not os.path.isfile(abs_path):
         return []
@@ -124,16 +126,19 @@ def extract_images_from_file(abs_path: str) -> list:
     except OSError:
         return []
 
+    def is_site_relative(src: str) -> bool:
+        return src.startswith("/") and not src.startswith("//")
+
     images = []
     if abs_path.endswith(".md"):
         # Markdown image syntax: ![alt](path)
         for src in re.findall(r'!\[[^\]]*\]\(([^)]+)\)', content):
             src = src.strip().split()[0]  # strip optional title (e.g. "url title")
-            if src.startswith("/"):
+            if is_site_relative(src):
                 images.append(BASE_URL + src)
     # HTML <img src="..."> (also handles single quotes)
     for src in re.findall(r'<img\s[^>]*\bsrc=["\']([^"\']+)["\']', content, re.IGNORECASE):
-        if src.startswith("/"):
+        if is_site_relative(src):
             images.append(BASE_URL + src)
     # Deduplicate while preserving order
     seen = set()

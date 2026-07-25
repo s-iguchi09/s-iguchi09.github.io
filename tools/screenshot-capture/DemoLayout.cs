@@ -27,6 +27,31 @@ internal static class DemoLayout
     private static readonly Brush CellFill = new SolidColorBrush(Color.FromRgb(0xF5, 0xF7, 0xFB));
 
     /// <summary>
+    /// 図のウィンドウを作る。撮影条件（サイズ・背景・リサイズ可否）を 1 箇所に集約する。
+    /// </summary>
+    private static Window CreateWindow(string title, UIElement content) => new()
+    {
+        Title = title,
+        Content = content,
+        SizeToContent = SizeToContent.WidthAndHeight,
+        ResizeMode = ResizeMode.CanMinimize,
+        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+        Background = Brushes.White,
+    };
+
+    /// <summary>
+    /// 「入力 → 結果」を示す矢印。図をまたいで同じ見た目にするため、ここで一元管理する。
+    /// </summary>
+    public static TextBlock Arrow(Thickness margin) => new()
+    {
+        Text = "→",
+        FontSize = 15,
+        Foreground = ArrowBrush,
+        VerticalAlignment = VerticalAlignment.Center,
+        Margin = margin,
+    };
+
+    /// <summary>
     /// 「式 → 評価結果の並び」を縦に並べたウィンドウを作る。
     /// 結果は実際にメソッドを実行して得た値をそのまま描画する。
     /// </summary>
@@ -89,15 +114,7 @@ internal static class DemoLayout
             index++;
         }
 
-        return new Window
-        {
-            Title = title,
-            Content = grid,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            ResizeMode = ResizeMode.CanMinimize,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            Background = Brushes.White,
-        };
+        return CreateWindow(title, grid);
     }
 
     /// <summary>
@@ -139,15 +156,7 @@ internal static class DemoLayout
             first = false;
         }
 
-        return new Window
-        {
-            Title = title,
-            Content = stack,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            ResizeMode = ResizeMode.CanMinimize,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            Background = Brushes.White,
-        };
+        return CreateWindow(title, stack);
     }
 
     /// <summary>
@@ -178,14 +187,7 @@ internal static class DemoLayout
             Grid.SetColumn(markup, 0);
             grid.Children.Add(markup);
 
-            var arrow = new TextBlock
-            {
-                Text = "→",
-                FontSize = 15,
-                Foreground = ArrowBrush,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(16, index == 0 ? 0 : 10, 16, 0),
-            };
+            TextBlock arrow = Arrow(new Thickness(16, index == 0 ? 0 : 10, 16, 0));
             Grid.SetRow(arrow, index);
             Grid.SetColumn(arrow, 1);
             grid.Children.Add(arrow);
@@ -209,14 +211,6 @@ internal static class DemoLayout
             index++;
         }
 
-        return new Window
-        {
-            Title = title,
-            Content = grid,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            ResizeMode = ResizeMode.CanMinimize,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            Background = Brushes.White,
-        };
+        return CreateWindow(title, grid);
     }
 }

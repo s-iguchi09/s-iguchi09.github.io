@@ -93,7 +93,7 @@ public static class DataGridSortHelper
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="3 つの DataGrid を並べた画面。左は Name 列に昇順の矢印が付き名前順、中央は降順の矢印が付き逆順、右は矢印が無くデータ本来の並びになっている。" width="650" height="171" loading="lazy">
-  <figcaption>同じデータに対する 3 状態の表示。未ソート（右）はソート条件を消すだけでなくヘッダーの矢印も消え、コレクション本来の並びに戻る。左右で行の並びが異なることに注目する。</figcaption>
+  <figcaption>同じデータに対する 3 状態の表示。未ソート（右）では対象列の <code>SortDescription</code> とヘッダーの矢印がどちらも消える。この例は 1 列だけでソートしているため、解除するとコレクション本来の並びに戻る。複数列でソートしている場合は他の列の条件が残るため、必ずしも元の並びには戻らない。</figcaption>
 </figure>
 
 ### XAML

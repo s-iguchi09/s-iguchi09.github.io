@@ -72,7 +72,7 @@ The meaning of each part is as follows.
 |---|---|---|---|
 | 1 | `Error: 40` | Error number | The kind of error (40 is a path resolution failure) |
 | 2 | `path error: 'UserNam' property not found` | The failure | Which property name could not be resolved |
-| 3 | `on 'object' ''MainViewModel'` | The searched type | Which `DataContext` was searched |
+| 3 | `on 'object' ''MainViewModel'` | The searched type | Which object (`DataItem`) was searched. Usually the `DataContext`, but it is the object named by `Source`, `RelativeSource`, or `ElementName` when one of those is specified |
 | 4 | `BindingExpression:Path=UserNam` | The binding path | The path string written in XAML |
 | 5 | `target element is 'TextBox' (Name='userNameBox')` | The target element | Which control is affected |
 | 6 | `target property is 'Text'` | The target property | Which dependency property is affected |

@@ -9,7 +9,8 @@ image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-
 
 ## 概要
 
-本記事では、WPF アプリに Fluent デザインの要素を取り入れる方法を扱う対象は「追加ライブラリを導入しない」構成であり、WPF 標準のテンプレート、余白設計、角丸、階層表現、`SystemColors` の活用で一貫した外観を構築する。  
+本記事では、WPF アプリに Fluent デザインの要素を取り入れる方法を扱う。  
+対象は「追加ライブラリを導入しない」構成であり、WPF 標準のテンプレート、余白設計、角丸、階層表現、`SystemColors` の活用で一貫した外観を構築する。  
 ---
 
 ## 前提・対象環境
@@ -27,8 +28,8 @@ image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-
 特に複数画面を持つ業務アプリでは、コントロールを既定スタイルのまま配置すると視覚的な密度が高くなり、操作対象の優先度が判別しにくくなる。  
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="既定テーマの WPF 画面。四角い枠のテキストボックス、チェックボックス、ボタンが余白の少ない状態で並んでいる。" width="326" height="293" loading="lazy">
-  <figcaption>既定テーマ（Aero2）のまま配置した画面。角は直角で、コントロール間の余白も詰まっており、どこが主要な操作かが読み取りにくい。</figcaption>
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="既定テーマの WPF 画面。見出し、説明文、四角い枠のボタンが背景と同じ面の上に並んでいる。" width="426" height="273" loading="lazy">
+  <figcaption>既定テーマ（Aero2）のまま配置した画面。カード面と背景が分離しておらず、ボタンの角も直角で、どこが主要な操作かが読み取りにくい。</figcaption>
 </figure>
 
 ---
@@ -190,8 +191,8 @@ Fluent リソースディクショナリを使う場合は次のように記述�
 `SystemColors.AccentColorBrushKey` 系を利用すれば、Windows のアクセントカラーにも追従できる。  
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="Fluent テーマと SystemColors を適用した WPF 画面。角丸のカードの中に、余白を取ったテキストボックス・チェックボックス・ボタンが配置されている。" width="326" height="293" loading="lazy">
-  <figcaption>「問題」で示したものと同じ構成に、Fluent テーマと <code>SystemColors</code> を適用した結果。追加ライブラリは使っていない。チェックボックスの色は Windows のアクセントカラー設定に追従しているため、環境によって変わる。</figcaption>
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="Fluent テーマと SystemColors を適用した WPF 画面。角丸のカードの中に、見出し・説明文・角丸のボタンが余白を取って配置されている。" width="426" height="273" loading="lazy">
+  <figcaption>上の XAML と同じ構成（見出し・説明文・ボタン）に、<code>ThemeMode</code> と <code>SystemColors</code> を適用した結果。追加ライブラリは使っていない。「問題」の図と比べると、カード面が背景から分離し、角丸と余白で階層が付いている。</figcaption>
 </figure>
 
 ---

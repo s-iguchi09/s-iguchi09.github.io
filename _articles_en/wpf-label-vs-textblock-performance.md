@@ -49,11 +49,13 @@ Placing 1,000 elements carrying the same string into a `StackPanel` and measurin
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png" alt="A table of measurements. 1000 Label controls produce 4,002 visual elements and take 385.3 milliseconds to lay out, while TextBlock produces 1,002 and takes 153.9 milliseconds." width="415" height="160" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. Each <code>Label</code> produces four visuals where a <code>TextBlock</code> produces one, and the layout pass took roughly 2.5 times as long. Absolute timings depend on the machine, so read the ratio rather than the numbers.</figcaption>
+  <figcaption>Measured on .NET 10 / Windows 11 with the default theme (Aero2) <code>ControlTemplate</code> and a string assigned to <code>Content</code>. Under those conditions each <code>Label</code> builds four visuals where a <code>TextBlock</code> builds one, and the layout pass took roughly 2.5 times as long. The visual count changes with the theme or a replaced <code>ControlTemplate</code>, and absolute timings depend on the machine, so read the ratio rather than the numbers.</figcaption>
 </figure>
 
 The roughly fourfold element count is the essential point.  
-Each `Label` additionally builds a `Border`, a `ContentPresenter` and the `TextBlock` that actually draws the text, so every measure, arrange and render pass has more objects to process.  
+With the default template, each `Label` additionally builds a `Border`, a `ContentPresenter` and the `TextBlock` that actually draws the text, so every measure, arrange and render pass has more objects to process.  
+When `Content` holds a string containing an access key (`_`), the `ContentPresenter` inserts an `AccessText` as well, bringing the count to five.  
+The measurement above uses a string without an access key.  
 
 ---
 

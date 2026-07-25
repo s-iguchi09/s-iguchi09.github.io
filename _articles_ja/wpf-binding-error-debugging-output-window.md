@@ -71,7 +71,7 @@ target property is 'Text' (type 'String')
 |---|---|---|---|
 | 1 | `Error: 40` | エラー番号 | エラーの種類（40 はパス解決失敗） |
 | 2 | `path error: 'UserNam' property not found` | 失敗の内容 | どのプロパティ名が解決できなかったか |
-| 3 | `on 'object' ''MainViewModel'` | 探索対象の型 | どの `DataContext` を探しにいったか |
+| 3 | `on 'object' ''MainViewModel'` | 探索対象の型 | どのオブジェクト（`DataItem`）を探しにいったか。多くの場合は `DataContext` だが、`Source` / `RelativeSource` / `ElementName` を指定していればそちらになる |
 | 4 | `BindingExpression:Path=UserNam` | バインド式のパス | XAML に書いたパス文字列 |
 | 5 | `target element is 'TextBox' (Name='userNameBox')` | バインド先の要素 | どのコントロールか |
 | 6 | `target property is 'Text'` | バインド先のプロパティ | どの依存関係プロパティか |

@@ -154,7 +154,7 @@ XAML では `Language` の既定値が `en-US` であるため、日本語環境
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png" alt="同じ値に対する 4 つのバインディングの描画結果。ConverterCulture を指定しない場合は 1,234.50 ドルと 7/17/2026、ja-JP を指定した場合は 1,235 円と 2026/07/17 になっている。" width="697" height="202" loading="lazy">
-  <figcaption>日本語環境の Windows 11 で実行した結果。<code>ConverterCulture</code> を指定しないバインディングは、OS の地域設定にかかわらず <code>en-US</code> として書式化され、通貨記号が <code>$</code>、日付が <code>M/d/yyyy</code> になる。</figcaption>
+  <figcaption>日本語環境の Windows 11 で実行した結果。<code>ConverterCulture</code> を指定しない場合はターゲット要素の <code>Language</code>（XAML の <code>xml:lang</code>）が使われ、これを設定していないこの例では既定値の <code>en-US</code> になるため、OS の地域設定と関係なく通貨記号が <code>$</code>、日付が <code>M/d/yyyy</code> になる。</figcaption>
 </figure>
 
 対処は主に次の 2 つである。

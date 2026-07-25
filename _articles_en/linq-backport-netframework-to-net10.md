@@ -59,7 +59,7 @@ Random ordering has the same shape of problem: `OrderBy(_ => Guid.NewGuid())` ge
 
 <figure class="article-figure">
   <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="Results of LeftJoin and RightJoin over two sequences. LeftJoin yields null for the missing right side, RightJoin yields null for the missing left side, and Shuffle reorders the elements." width="448" height="218" loading="lazy">
-  <figcaption>Evaluation results when the two sequences contain non-matching keys. <code>LeftJoin</code> keeps the left side and fills the counterpart with <code>null</code>; <code>RightJoin</code> does the reverse. <code>Shuffle</code> produces a different order on every run, so that row shows a single sample.</figcaption>
+  <figcaption>Evaluation results when the two sequences contain non-matching keys. <code>LeftJoin</code> keeps the left side and fills the counterpart with <code>null</code>; <code>RightJoin</code> does the reverse. <code>Shuffle</code> randomizes the order, so that row shows the result of a single run.</figcaption>
 </figure>
 
 ---
