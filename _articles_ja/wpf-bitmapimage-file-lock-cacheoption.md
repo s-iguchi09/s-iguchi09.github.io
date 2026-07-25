@@ -1,6 +1,6 @@
 ---
 layout: article-ja
-title: "WPF で BitmapImage に表示した画像ファイルが削除・上書きできなくなる問題の解決方法"
+title: "WPF で BitmapImage を使って表示した画像ファイルが削除・上書きできなくなる問題の解決方法"
 date: 2026-07-25
 category: WPF
 excerpt: "BitmapImage で表示した画像ファイルがロックされ、削除・上書きできなくなる。原因である既定のキャッシュ動作と、BitmapCacheOption.OnLoad・StreamSource による解決方法を整理する。"
@@ -9,20 +9,20 @@ excerpt: "BitmapImage で表示した画像ファイルがロックされ、削�
 ## 概要
 
 WPF の `Image` コントロールに `BitmapImage` を与えてローカルの画像ファイルを表示すると、アプリケーションの実行中はそのファイルを削除・上書きできなくなる。
-`File.Delete` や書き込み用の `FileStream` が「別のプロセスで使用されているため、プロセスはファイルにアクセスできません」という趣旨の `IOException` で失敗する。
-本記事では、この現象が `BitmapImage` による明示的なロックではなく、既定のキャッシュ動作が画像ソースへのアクセスを保持し続けることに起因する点を説明する。
+本記事では、この現象が `BitmapImage` による明示的なロックではない点を説明する。
+実際の原因は、既定のキャッシュ方針が画像ソースへのアクセスを保持し続けることにある。
 そのうえで `BitmapCacheOption.OnLoad` による解決方法、`UriSource` と `StreamSource` の書き分け、`BitmapCacheOption` 各値の比較、`Freeze` とメモリ消費の注意点を整理する。
 
 ---
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（.NET Framework 3.0 以降でも同じ挙動）
+- フレームワーク: .NET 6 以降 / WPF（`BitmapImage`・`BitmapCacheOption` は .NET Framework 3.0 から提供されている）
 - 言語: C# / XAML
 - 対象クラス・機能: `System.Windows.Controls.Image`、`BitmapImage`、`BitmapCacheOption`、`BitmapCreateOptions`
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 前提: 表示対象がビルド時に埋め込むアプリケーションリソースではなく、実行時に差し替えられるローカルファイル（ユーザーが選択した画像、ダウンロードした一時ファイルなど）
-- コード例は名前空間 `System` / `System.IO` / `System.Windows.Media.Imaging` を前提とする
+- 名前空間: コード例は `System` / `System.IO` / `System.Windows.Media.Imaging` を前提とする
 
 ---
 
@@ -39,40 +39,51 @@ PreviewImage.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
 File.Delete(path);
 ```
 
-`Image` の表示自体は成功するが、`File.Delete` はファイルが使用中である旨の `IOException` を送出する。
+`Image` の表示自体は成功するが、`File.Delete` は対象ファイルが使用中である旨の `IOException` を送出する。
 上書き保存やリネームも同様に失敗する。
-厄介なのは、この失敗が確実に再現するとは限らない点である。
-表示を止めて `BitmapImage` への参照を捨てた後にガベージコレクションが走ると、ロックが解けて削除に成功することがある。
+この失敗は確実に再現するとは限らない。
+表示を止めて `BitmapImage` への参照を捨てた後にガベージコレクションが走ると、ファイルが解放されて削除に成功することがある。
 このため「たまに削除できる」不安定な不具合として現れやすい。
 
-XAML で直接パスを与えた場合も同じ結果になる。
-次の記述は `BitmapImage` の既定値をそのまま使うため、同様にファイルを保持し続ける。
+XAML でパスを与えた場合も同じ結果になる。
 
 ```xml
 <Image Source="{Binding ImagePath}" Stretch="Uniform" />
 ```
+
+`Source` に文字列を与える短縮記法には `CacheOption` を指定する手段が無く、`BitmapImage` は既定のまま生成される。
+そのため、コードから生成した場合と同じくファイルが保持される。
 
 ---
 
 ## 原因・背景
 
 原因は `BitmapImage` の**キャッシュ方針**にある。
-`BitmapImage.CacheOption` の既定値は `BitmapCacheOption.Default` であり、公式ドキュメントはこの既定の動作を次のように説明している。
+`BitmapImage.CacheOption` の既定値は `BitmapCacheOption.Default` である。
+`CacheOption` プロパティの公式ドキュメントは、既定の動作を次のように説明している。
 
-> 既定の `OnDemand` キャッシュ オプションは、ビットマップが必要になるまでストリームへのアクセスを保持し、クリーンアップはガベージ コレクターによって処理される。
+> 既定の `OnDemand` キャッシュ オプションは、イメージが必要になるまでストリームへのアクセスを保持し、クリーンアップはガベージ コレクターによって処理されます。
+> — [BitmapImage.CacheOption プロパティ](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.media.imaging.bitmapimage.cacheoption)
 
-ここで `Default` と `OnDemand` が併記されているのは記述の揺れではない。
-`BitmapCacheOption` 列挙型では `Default` と `OnDemand` の値がいずれも `0` と定義されており、両者は同一の値である。
-したがって「既定値は `Default`」と「既定は `OnDemand` の動作」は矛盾しない。
+`Default` と `OnDemand` が併記されるのは、`BitmapCacheOption` 列挙型で両者の値がいずれも `0` と定義されており、同一の値だからである。
+ただし列挙型側の説明文は一致していない。
+`Default` は「イメージ全体をメモリにキャッシュする」、`OnDemand` は「要求されたデータのみのメモリストアを作成する」と記述されており、公式ドキュメント内で食い違っている。
+値が同一である以上、実際に選択される動作は一つであり、`CacheOption` の注釈が既定として説明しているのは後者、すなわち**ソースへのアクセスを保持する**ほうである。
 
-`OnDemand` は、画像データの要求があった時点で必要な分だけを読み出す遅延方式である。
-デコードを後回しにできるためメモリと起動コストを抑えられるが、その代償として、後から読み出せるように**画像ソースへのアクセスを保持し続ける**必要がある。
-`UriSource` にローカルファイルを指定した場合、WPF が内部で開いたファイルストリームがこれに当たる。
-ストリームを解放するのはガベージコレクターであり、アプリケーションが明示的に閉じる手段は無い。
-これが「削除できたりできなかったりする」挙動の正体である。
+`OnDemand` は、要求されたデータの分だけメモリストアを作る方式である。
+最初の要求では画像が直接読み込まれ、以降の要求はキャッシュから満たされる。
+後続の読み出しに備えるため、**画像ソースへのアクセスを保持し続ける**必要がある。
+なお、オブジェクトの初期化そのものを必要になるまで遅らせるのは `CacheOption` ではなく `BitmapCreateOptions.DelayCreation` の役割であり、両者は独立した設定である。
 
-問題の本質は、`BitmapImage` がファイルを排他的に掴むことではなく、**遅延デコードのためにソースを開いたまま保持する設計**にある。
-したがって解決策は「ロックを外す」ことではなく、「読み込み時点でデコードを完了させ、ソースを保持する必要をなくす」ことになる。
+`UriSource` にローカルファイルを指定した場合、保持されるのは WPF が内部で開いたファイルストリームである。
+これがファイルを開いたままにする実体であり、アプリケーション側から明示的に閉じる手段は無い。
+解放を担うのはガベージコレクターであり、これが「削除できたりできなかったりする」挙動の背景である。
+
+公式ドキュメントが `OnLoad` の効果として明示しているのは、「`BitmapImage` の作成に使ったストリームを閉じられる」という点である。
+`UriSource` に渡したローカルファイルについて同じ文言があるわけではないが、保持されるのは同じく内部のストリームであるため、同じ仕組みが働く。
+
+問題の本質は、`BitmapImage` がファイルを排他的に掴むことではなく、**後続の読み出しに備えてソースを開いたまま保持する設計**にある。
+したがって解決策は「ロックを外す」ことではなく、「読み込み時点で画像全体をメモリへ取り込み、ソースを保持する必要をなくす」ことになる。
 
 ---
 
@@ -82,14 +93,14 @@ XAML で直接パスを与えた場合も同じ結果になる。
 `OnLoad` は読み込み時に画像全体をメモリへキャッシュし、以降の画像データ要求はすべてメモリストアから満たされる。
 ソースを読み続ける必要が無くなるため、初期化完了後にファイルやストリームを解放できる。
 
-`CacheOption` はプロパティであり、`BitmapImage` の初期化中にしか設定できない。
+`CacheOption` は `BitmapImage` の初期化中にしか設定できない。
 `BitmapImage` は `ISupportInitialize` を実装しており、プロパティの設定は `BeginInit` と `EndInit` の間で行う必要がある。
 初期化完了後のプロパティ変更は無視される。
 
 アプローチは 2 つある。
 
-- **`UriSource` + `OnLoad`** — パスを直接与える。記述が短く、通常はこれで足りる。
-- **`StreamSource` + `OnLoad`** — 自前で開いたストリームを与え、初期化後に確実に閉じる。ファイルの開き方（共有モードなど）を制御したい場合に適する。
+- **`UriSource` + `OnLoad`** — パスを直接与える。XAML・コードとも記述が短く、通常はこれで足りる。
+- **`StreamSource` + `OnLoad`** — 自前で開いたストリームを与え、初期化後に確実に閉じる。ファイルの開き方やデータの取得元を制御したい場合に適する。
 
 ---
 
@@ -98,7 +109,7 @@ XAML で直接パスを与えた場合も同じ結果になる。
 ### UriSource に OnLoad を組み合わせる
 
 `BeginInit` / `EndInit` ブロック内で `CacheOption` と `UriSource` を設定する。
-`EndInit` の時点でデコードが完了するため、戻り値を受け取った後はファイルを自由に削除・上書きできる。
+`EndInit` の時点でデコードが完了するため、戻り値を受け取った後はファイルを削除・上書きできる。
 
 ```csharp
 private static BitmapImage LoadWithoutLocking(string path)
@@ -115,10 +126,11 @@ private static BitmapImage LoadWithoutLocking(string path)
 
 `Freeze` の呼び出しは必須ではないが、`BitmapImage` は `Freezable` の派生クラスであり、凍結すると変更通知のコストが無くなるうえ、スレッド間で共有できるようになる。
 非同期に画像を読み込んで UI スレッドへ渡す構成では、凍結が事実上の前提となる。
+ローカルファイルを `OnLoad` で読み込んだ直後は凍結可能だが、条件が読めない場面では後述のとおり `CanFreeze` で判定してから呼ぶ。
 
 ここで注意が必要なのは、`BitmapImage(Uri)` コンストラクタとの違いである。
 このコンストラクタで生成した `BitmapImage` は**自動的に初期化済み**となり、以降のプロパティ変更は無視される。
-そのため、次のコードは `OnLoad` が反映されずロックが残る。
+そのため、次のコードは `OnLoad` が反映されずファイルが保持されたままになる。
 
 ```csharp
 // 生成時点で初期化が完了しているため、CacheOption の変更は無視される
@@ -150,36 +162,40 @@ private static BitmapImage LoadFromStream(string path)
 }
 ```
 
-`FileShare.ReadWrite` を指定しているため、読み込み中に他のプロセスが同じファイルを書き換えていても開ける。
+`FileShare` は、自分がファイルを開いている間に他のプロセスへ許可するアクセス種別を指定する。
+`FileShare.ReadWrite` を指定しているため、この `FileStream` を開いている間も他のプロセスが同じファイルを読み書き用に開ける。
 なお `StreamSource` と `UriSource` の両方を設定した場合、`StreamSource` は無視される。
-この方式を選ぶときは `UriSource` を設定しないこと。
+この方式では `UriSource` を設定しない。
 
 ### XAML で指定する
 
-XAML では、`Source` に文字列を書く短縮記法ではなく `BitmapImage` を要素として明示し、`CacheOption` を指定する。
-XAML パーサーがオブジェクト要素の解析時に `BeginInit` / `EndInit` を呼ぶため、この記述でも `OnLoad` は有効になる。
+XAML では、`Source` に文字列を書く短縮記法ではなく `BitmapImage` をオブジェクト要素として記述し、`CacheOption` を指定する。
+オブジェクト要素に書いたプロパティ設定は初期化の一部として反映されるため、この記述で `OnLoad` が有効になる。
 
 ```xml
 <Image Stretch="Uniform">
     <Image.Source>
-        <BitmapImage UriSource="{Binding ImagePath}" CacheOption="OnLoad" />
+        <BitmapImage UriSource="C:\work\preview.png" CacheOption="OnLoad" />
     </Image.Source>
 </Image>
 ```
 
-バインドしたパスが切り替わるたびに新しい `BitmapImage` が生成され、その都度メモリへキャッシュされる。
-一覧のサムネイル表示など画像数が多い場面では、後述のデコードサイズ指定を併用する。
+この `BitmapImage` は XAML の解析時に一度だけ生成される点に注意する。
+初期化後のプロパティ変更は無視されるため、`UriSource` にバインドを設定してもパスの切り替えは反映されない。
+表示する画像を実行時に差し替える場合は、パス文字列から `BitmapImage` を生成する `IValueConverter` を挟むか、ViewModel 側で `ImageSource` 型のプロパティを公開して `Image.Source` にバインドする。
+後者では値が変わるたびに新しい `ImageSource` が渡されるため、前掲の `LoadWithoutLocking` で生成した `BitmapImage` をそのまま代入すればよい。
 
 ---
 
 ## 注意点
 
 - **メモリ消費と引き換えである:** `OnLoad` は画像全体をメモリへ展開する。大きな画像や多数のサムネイルでは消費量が問題になるため、`DecodePixelWidth` または `DecodePixelHeight` を設定して表示サイズ相当でデコードする。縦横比を保つには、両方ではなくいずれか一方のみを設定する。
-- **上書き後に古い画像が表示される:** WPF は URI 単位で画像をキャッシュするため、同じパスのファイルを差し替えて再読み込みしても以前の画像が表示されることがある。`CreateOptions` に `BitmapCreateOptions.IgnoreImageCache` を指定すると、同じ `Uri` を共有する既存のキャッシュエントリが置き換えられる。
-- **`Freeze` できない条件がある:** データバインドまたはアニメーション対象のプロパティを持つ場合、`DynamicResource` で設定されたプロパティを持つ場合、凍結できない子オブジェクトを含む場合は凍結できない。事前に `CanFreeze` で判定する。
+- **デコードサイズ指定の効果は形式によって異なる:** JPEG と PNG のコーデックは指定したサイズへ直接デコードするが、それ以外の形式では原寸でデコードしてから目的のサイズへスケールされる。BMP や TIFF ではピーク時のメモリ削減効果が期待どおりにならない。
+- **上書き後に古い画像が表示される:** WPF は画像キャッシュを URI 単位で管理するため、同じパスのファイルを差し替えて再読み込みしても以前の画像が表示されることがある。`CreateOptions` に `BitmapCreateOptions.IgnoreImageCache` を指定すると、同じ `Uri` を共有する既存のキャッシュエントリが置き換えられる。
+- **`Freeze` できない条件がある:** データバインドまたはアニメーション対象のプロパティを持つ場合、`DynamicResource` で設定されたプロパティを持つ場合、凍結できない子オブジェクトを含む場合は凍結できない。条件が読めない場面では `CanFreeze` で判定してから `Freeze` を呼ぶ。
 - **凍結後の変更は例外になる:** 凍結した `Freezable` を変更しようとすると `InvalidOperationException` が発生する。読み込み後に加工が必要なら、凍結せずに扱うか `Clone` で変更可能な複製を作る。
 - **未凍結のオブジェクトはスレッドをまたげない:** `IsFrozen` が `false` の `Freezable` は生成したスレッドからのみアクセスでき、別スレッドから触ると `InvalidOperationException` になる。バックグラウンドで読み込んだ画像を UI スレッドへ渡す場合は、渡す前に凍結する。
-- **`BitmapCacheOption.None` は解決策にならない:** `None` はメモリストアを作らず、すべての要求を画像ファイルから直接満たす。ソースへのアクセスは保持され続けるため、ロックの回避には使えない。
+- **`BitmapCacheOption.None` は解決策にならない:** `None` はメモリストアを作らず、すべての要求を画像ファイルから直接満たす。この動作上ソースへのアクセスを保持し続ける必要があるため、ロックの回避には使えない。
 
 ---
 
@@ -187,10 +203,10 @@ XAML パーサーがオブジェクト要素の解析時に `BeginInit` / `EndIn
 
 | 方法 | ファイルの解放 | メモリ | 適するケース |
 | --- | --- | --- | --- |
-| `UriSource` + 既定（`Default` / `OnDemand`） | 解放されない（GC 任せ） | 遅延デコードで小さい | ビルドに埋め込んだリソース画像など、ファイルを差し替えない場合 |
-| `UriSource` + `OnLoad` | 初期化完了時に解放 | 画像全体を保持 | 実行時に削除・上書きし得るローカルファイル。既定の選択 |
+| `UriSource` + 既定（`Default` / `OnDemand`） | 解放されない（GC 任せ） | 要求されたデータ分のメモリストアを作る | 実行中に差し替えの発生しない固定的な画像 |
+| `UriSource` + `OnLoad` | 初期化完了時に解放 | 画像全体を保持 | 実行時に削除・上書きし得るローカルファイル |
 | `StreamSource` + `OnLoad` | `using` で明示的に解放 | 画像全体を保持 | 共有モードの指定やメモリ上のデータからの生成が必要な場合 |
-| `BitmapCacheOption.None` | 解放されない | 最小 | 画像ファイルを保持したままでよく、メモリを最優先する場合 |
+| `BitmapCacheOption.None` | 解放されない | メモリストアを作らない | 要求のたびにファイルから読み直してよい場合 |
 
 `UriSource` と `StreamSource` の選択基準は明確である。
 パスから読むだけなら `UriSource` で足りる。
@@ -200,7 +216,7 @@ XAML パーサーがオブジェクト要素の解析時に `BeginInit` / `EndIn
 
 ## まとめ
 
-`BitmapImage` による画像ファイルのロックは、既定のキャッシュ方針が遅延デコードのためにソースを開いたまま保持することに起因する。
+`BitmapImage` による画像ファイルのロックは、既定のキャッシュ方針が後続の読み出しに備えてソースを開いたまま保持することに起因する。
 解決策の選択基準は次のとおりである。
 
 - **ローカルファイルを表示し、後から削除・上書きする可能性がある場合:** `BeginInit` / `EndInit` ブロック内で `CacheOption` に `OnLoad` を指定する。これが既定の選択となる。
@@ -208,7 +224,8 @@ XAML パーサーがオブジェクト要素の解析時に `BeginInit` / `EndIn
 - **画像を差し替えて再読み込みする場合:** `BitmapCreateOptions.IgnoreImageCache` を併用し、URI 単位のキャッシュによる古い画像の表示を防ぐ。
 - **バックグラウンドで読み込む場合:** `EndInit` の後に `Freeze` してから UI スレッドへ渡す。
 
-いずれの場合も、`BitmapImage(Uri)` コンストラクタでは初期化が自動完了してプロパティ変更が無視される点を踏まえ、`OnLoad` を使うときは必ず引数なしコンストラクタと `BeginInit` / `EndInit` を用いる、という前提で実装するのが要点である。
+`BitmapImage(Uri)` コンストラクタは初期化を自動的に完了させ、以降のプロパティ変更を無視する。
+`OnLoad` を使う実装では、必ず引数なしコンストラクタと `BeginInit` / `EndInit` の組み合わせを用いる。
 
 ---
 
