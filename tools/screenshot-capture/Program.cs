@@ -32,6 +32,12 @@ internal static class Program
         new RelayCommandCanExecuteScene(),
         new StaticVsDynamicResourceScene(),
         new NaturalSortScene(),
+        new LinqBackportNet5Scene(),
+        new LinqBackportNet6Scene(),
+        new LinqBackportNet7Scene(),
+        new LinqBackportNet8Scene(),
+        new LinqBackportNet9Scene(),
+        new LinqBackportNet10Scene(),
     ];
 
     [STAThread]

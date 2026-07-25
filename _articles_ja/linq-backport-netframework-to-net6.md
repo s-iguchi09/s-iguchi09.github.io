@@ -4,6 +4,7 @@ title: "GroupBy と全件ソートによる回避コードをなくす — Chunk
 date: 2026-07-13
 category: C#
 excerpt: ".NET Framework で Chunk・MaxBy・MinBy・DistinctBy を代用する GroupBy・全件ソートの回避イディオムを実行コストの面から検証し、計算量を改善するポリフィルの実装と、バージョン別シンボルによる移行ガードの選び方を解説する。"
+image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png
 ---
 
 ## 概要
@@ -68,6 +69,11 @@ excerpt: ".NET Framework で Chunk・MaxBy・MinBy・DistinctBy を代用する 
 実装固有の論点は 2 つある。
 1 つは、4 メソッドの評価戦略が遅延（`Chunk`・`DistinctBy`）と先行（`MaxBy`・`MinBy`）に分かれるため、メソッド構成をそれぞれに合わせること。
 もう 1 つは、移行ガードに `!NETCOREAPP` ではなく `!NET6_0_OR_GREATER` を使うことである。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png" alt="4 つのメソッドを同じ入力に適用した結果。Chunk(2) は 2 要素ずつのまとまり、MaxBy と MinBy は 1 件、DistinctBy はカテゴリごとの先頭 1 件になっている。" width="519" height="218" loading="lazy">
+  <figcaption>同じ 3 件の入力に対する評価結果。<code>Chunk</code> だけが並びを分割して返し、<code>MaxBy</code> / <code>MinBy</code> は要素を 1 つ返す。<code>DistinctBy</code> はキーごとに最初の要素だけを残す。この戻り値の形の違いが、後述する評価戦略の違いに対応する。</figcaption>
+</figure>
 
 ---
 

@@ -4,6 +4,7 @@ title: "Order and OrderDescending by Pure Delegation — A Minimal Polyfill with
 date: 2026-07-14
 category: C#
 excerpt: "A delegation-only polyfill for Order and OrderDescending, focused on ThenBy compatibility via IOrderedEnumerable and runtime-specific sort exceptions."
+image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png
 ---
 
 ## Overview
@@ -42,6 +43,11 @@ A polyfill built purely on delegation to existing APIs is the counterpart to the
 Without them, .NET Framework code keeps writing `OrderBy(x => x)` / `OrderByDescending(x => x)` even when sorting by the value itself.
 The `x => x` is boilerplate unrelated to the sorting intent and a common site for minor mistakes such as grabbing the wrong key selector.
 A dedicated method with the identity function baked in removes that noise, and .NET 7 standardized exactly that.
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png" alt="A figure showing that OrderBy(x => x) and Order() produce the same order for the same input, while OrderDescending() reverses it." width="392" height="186" loading="lazy">
+  <figcaption><code>Order()</code> produces the same ordering as <code>OrderBy(x =&gt; x)</code>. That equivalence is what makes a delegating implementation that simply passes the identity lambda match the built-in behavior.</figcaption>
+</figure>
 
 ---
 

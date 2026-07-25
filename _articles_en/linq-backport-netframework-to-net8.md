@@ -4,6 +4,7 @@ title: "Selector-Free ToDictionary — Designing for Overload Resolution and the
 date: 2026-07-15
 category: C#
 excerpt: "Recreating the .NET 8 selector-free ToDictionary overloads on .NET Framework as an exercise in overload resolution and notnull constraint design."
+image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-without-selectors.png
 ---
 
 ## Overview
@@ -68,6 +69,11 @@ On top of that, three signature-design points are aligned with the built-in API.
 - Restrict the first parameter to `IEnumerable<KeyValuePair<TKey, TValue>>` / `IEnumerable<(TKey, TValue)>` so existing overloads are never contested
 - Pin internal delegation with the named argument `comparer:`
 - Use `Dictionary<TKey, TValue>` as the return type and `where TKey : notnull` as the constraint
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net8/linq-todictionary-without-selectors.png" alt="A figure applying ToDictionary() without selectors to an array of KeyValuePair and an array of tuples, both producing the same key-value pairs." width="381" height="186" loading="lazy">
+  <figcaption>Results of <code>ToDictionary()</code> called without selectors. Both a sequence of <code>KeyValuePair</code> and a sequence of tuples yield the same key-to-value mapping.</figcaption>
+</figure>
 
 ---
 

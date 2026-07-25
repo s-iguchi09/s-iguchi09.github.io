@@ -4,6 +4,7 @@ title: "委譲だけで作る Order・OrderDescending — IOrderedEnumerable 互
 date: 2026-07-14
 category: C#
 excerpt: "既存の OrderBy への委譲だけで完結する Order・OrderDescending のポリフィルを題材に、戻り値型 IOrderedEnumerable が決める ThenBy 互換性と、環境によって異なるソート時例外という 2 つの互換性論点を解説する。"
+image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png
 ---
 
 ## 概要
@@ -42,6 +43,11 @@ excerpt: "既存の OrderBy への委譲だけで完結する Order・OrderDesce
 これらが無い .NET Framework 環境では、値そのもので並び替えるだけの場面でも `OrderBy(x => x)` / `OrderByDescending(x => x)` と恒等ラムダを書き続けることになる。
 `x => x` はソートの意図とは無関係な定型記述であり、キーセレクタの取り違えといった軽微なミスの混入点にもなる。
 逆に言えば、恒等関数を内包した専用メソッドがあれば済む話であり、.NET 7 はそれを標準化した。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png" alt="同じ入力に対する OrderBy(x => x) と Order() の結果が一致し、OrderDescending() が逆順になっている図。" width="392" height="186" loading="lazy">
+  <figcaption><code>Order()</code> は <code>OrderBy(x =&gt; x)</code> と同じ並びを返す。この一致が、恒等ラムダを渡すだけの委譲実装で本家と同じ結果になることの根拠である。</figcaption>
+</figure>
 
 ---
 

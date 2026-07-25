@@ -21,6 +21,85 @@ internal static class DemoLayout
     /// <summary>見出し（コード表記）と、その状態を示す UI の組。</summary>
     internal sealed record Panel(string Caption, UIElement Content);
 
+    /// <summary>式と、それを実際に評価した結果の並び。</summary>
+    internal sealed record Sequence(string Expression, IReadOnlyList<string> Cells);
+
+    private static readonly Brush CellFill = new SolidColorBrush(Color.FromRgb(0xF5, 0xF7, 0xFB));
+
+    /// <summary>
+    /// 「式 → 評価結果の並び」を縦に並べたウィンドウを作る。
+    /// 結果は実際にメソッドを実行して得た値をそのまま描画する。
+    /// </summary>
+    public static Window BuildSequenceWindow(string title, IEnumerable<Sequence> rows)
+    {
+        var grid = new Grid { Margin = new Thickness(18) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        int index = 0;
+        foreach (Sequence row in rows)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var topMargin = new Thickness(0, index == 0 ? 0 : 9, 0, 0);
+
+            var expression = new TextBlock
+            {
+                Text = row.Expression,
+                FontFamily = CodeFont,
+                FontSize = 13,
+                Foreground = CodeBrush,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, topMargin.Top, 22, 0),
+            };
+            Grid.SetRow(expression, index);
+            Grid.SetColumn(expression, 0);
+            grid.Children.Add(expression);
+
+            var cells = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = topMargin,
+            };
+
+            foreach (string cell in row.Cells)
+            {
+                cells.Children.Add(new Border
+                {
+                    Background = CellFill,
+                    BorderBrush = FrameBrush,
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(9, 3, 9, 3),
+                    Margin = new Thickness(0, 0, 6, 0),
+                    Child = new TextBlock
+                    {
+                        Text = cell,
+                        FontFamily = CodeFont,
+                        FontSize = 12.5,
+                        Foreground = CodeBrush,
+                    },
+                });
+            }
+
+            Grid.SetRow(cells, index);
+            Grid.SetColumn(cells, 1);
+            grid.Children.Add(cells);
+
+            index++;
+        }
+
+        return new Window
+        {
+            Title = title,
+            Content = grid,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ResizeMode = ResizeMode.CanMinimize,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = Brushes.White,
+        };
+    }
+
     /// <summary>
     /// 「状態ごとの見た目」を並べたウィンドウを作る。
     /// 見出しは日英で共有するため、コード表記だけで書く。

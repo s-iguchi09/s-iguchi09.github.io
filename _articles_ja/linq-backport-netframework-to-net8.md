@@ -4,6 +4,7 @@ title: "セレクタなし ToDictionary の実現 — オーバーロード解�
 date: 2026-07-15
 category: C#
 excerpt: ".NET 8 の ToDictionary 新オーバーロード（KeyValuePair 版・タプル版）を .NET Framework で再現する際に問われる、既存オーバーロードとの共存・名前付き引数による解決先の固定・notnull 制約の一致というシグネチャ設計を解説する。"
+image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-without-selectors.png
 ---
 
 ## 概要
@@ -68,6 +69,11 @@ excerpt: ".NET 8 の ToDictionary 新オーバーロード（KeyValuePair 版・
 - 第 1 引数の型を `IEnumerable<KeyValuePair<TKey, TValue>>` / `IEnumerable<(TKey, TValue)>` に限定し、既存オーバーロードと衝突させない
 - 内部委譲は `comparer:` の名前付き引数で解決先を固定する
 - 戻り値型を `Dictionary<TKey, TValue>`、制約を `where TKey : notnull` にする
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net8/linq-todictionary-without-selectors.png" alt="KeyValuePair の配列とタプルの配列に ToDictionary() をセレクタなしで適用し、いずれも同じキーと値の辞書になっている図。" width="381" height="186" loading="lazy">
+  <figcaption>セレクタを渡さない <code>ToDictionary()</code> の評価結果。<code>KeyValuePair</code> の並びとタプルの並びのどちらからも、同じキーと値の対応が得られる。</figcaption>
+</figure>
 
 ---
 
