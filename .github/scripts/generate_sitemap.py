@@ -142,14 +142,19 @@ def extract_images_from_file(abs_path: str) -> list:
 
     images = []
     if abs_path.endswith(".md"):
-        # Markdown image syntax: ![alt](path), including the ![alt](<path> "title") form
+        # Markdown image syntax: ![alt](path), including the ![alt](<path> "title") form.
+        # Destinations can carry HTML entities too, so decode before matching and
+        # let image_element() re-escape for XML on output.
         for src in re.findall(r'!\[[^\]]*\]\(([^)]+)\)', content):
             src = src.strip()
+            if not src:  # e.g. "![alt]( )"
+                continue
             if src.startswith("<"):
                 # Angle-bracketed destination: everything up to the closing '>'
                 src = src[1:].split(">", 1)[0]
             else:
                 src = src.split()[0]  # strip optional title (e.g. "url title")
+            src = html.unescape(src)
             if is_site_relative(src):
                 images.append(BASE_URL + src)
     # HTML <img src="..."> (also handles single quotes).
