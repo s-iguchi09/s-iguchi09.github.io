@@ -169,6 +169,9 @@ private static BitmapImage LoadFromStream(string path)
 
 `FileShare` specifies the access granted to subsequent opens, by this process or another, while this handle is open.
 `FileShare.ReadWrite` therefore allows other processes to open the same file for reading or writing while this `FileStream` is open.
+That grant covers reading and writing only; deletion and renaming are not included.
+Permitting deletion during the load requires `Delete` as well, written as `FileShare.ReadWrite | FileShare.Delete`.
+
 When both `StreamSource` and `UriSource` are set, the `StreamSource` value is ignored.
 `UriSource` is left unset in this approach.
 

@@ -169,6 +169,9 @@ private static BitmapImage LoadFromStream(string path)
 
 `FileShare` は、ファイルを開いている間に、同一プロセス・他プロセスを問わず後続のオープンへ許可するアクセス種別を指定する。
 `FileShare.ReadWrite` を指定しているため、この `FileStream` を開いている間も他のプロセスが同じファイルを読み書き用に開ける。
+ただし `ReadWrite` が許可するのは読み取りと書き込みだけであり、削除・リネームは含まれない。
+読み込み中の削除まで許可する必要がある場合は、`FileShare.ReadWrite | FileShare.Delete` のように `Delete` を併せて指定する。
+
 `StreamSource` と `UriSource` の両方を設定した場合、`StreamSource` は無視される。
 この方式では `UriSource` を設定しない。
 
