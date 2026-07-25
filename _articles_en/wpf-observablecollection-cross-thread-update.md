@@ -176,3 +176,4 @@ In every case, design with the understanding that UI elements themselves remain 
 <!-- Related articles -->
 - [WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/articles/wpf-combobox-itemssource-patterns/)
 - [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/)
+- [Releasing the Image File Locked by BitmapImage in WPF with BitmapCacheOption.OnLoad](/articles/wpf-bitmapimage-file-lock-cacheoption/)
