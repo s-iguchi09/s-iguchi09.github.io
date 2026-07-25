@@ -4,6 +4,7 @@ title: "WPF で StaticResource を変更しても画面が更新されない原�
 date: 2026-06-11
 category: WPF
 excerpt: "StaticResource はXAMLロード時に値を確定するため、実行時の変更は反映されない。動的な変更が必要な場合は DynamicResource を使用する。両者の仕組みと使い分けの判断基準を解説する。"
+image: /images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png
 ---
 
 ## 概要
@@ -42,6 +43,11 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 ```
 
 上記のコードを実行しても、ボタンの背景色は `SkyBlue` のまま変わらない。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png" alt="同じキーのブラシを参照する 2 つのボタン。StaticResource で参照したボタンは水色のまま、DynamicResource で参照したボタンは差し替え後のオレンジ色になっている。" width="340" height="136" loading="lazy">
+  <figcaption>同じ <code>ThemeColor</code> を参照する 2 つのボタンに対し、実行中にリソースを <code>OrangeRed</code> へ差し替えた直後の状態。<code>StaticResource</code> 側は読み込み時に確定した <code>SkyBlue</code> のまま変わらない。</figcaption>
+</figure>
 
 ---
 

@@ -29,6 +29,8 @@ internal static class Program
         new LabelVsTextBlockScene(),
         new ComboBoxItemsSourceScene(),
         new FluentSystemColorsScene(),
+        new RelayCommandCanExecuteScene(),
+        new StaticVsDynamicResourceScene(),
     ];
 
     [STAThread]

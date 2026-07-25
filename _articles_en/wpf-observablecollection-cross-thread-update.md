@@ -50,6 +50,11 @@ private async Task LoadAsync(string path)
 When `Items` is bound to `ItemsControl.ItemsSource`, the `Add` call reaches the `CollectionView` through a `CollectionChanged` notification.
 Because that notification arrives from a non-UI thread, the `CollectionView` throws the exception.
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg" alt="A diagram of the data flow between threads. A CollectionChanged notification arriving directly from a background thread at the UI thread's CollectionView raises an exception, while registering synchronization or going through the Dispatcher makes the update succeed." width="900" height="372" loading="lazy">
+  <figcaption>The exception is raised not when the collection is touched, but when the change notification reaches the <code>CollectionView</code>. The top lane shows the notification arriving while still on the background thread; the bottom lane shows it being moved onto the UI thread first, either by registering synchronization or through the <code>Dispatcher</code>.</figcaption>
+</figure>
+
 ---
 
 ## Cause / Background

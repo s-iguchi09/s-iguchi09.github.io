@@ -4,6 +4,7 @@ title: "Why StaticResource Changes Are Not Reflected in WPF and How to Fix It"
 date: 2026-06-11
 category: WPF
 excerpt: "StaticResource resolves its value at XAML load time, so runtime changes have no effect. Use DynamicResource when the value must update at runtime."
+image: /images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png
 ---
 
 ## Overview
@@ -41,6 +42,11 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 ```
 
 Despite the assignment, the button background remains `SkyBlue`.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png" alt="Two buttons referencing the same brush key. The one using StaticResource stays sky blue while the one using DynamicResource turns orange after the resource is replaced." width="340" height="136" loading="lazy">
+  <figcaption>Two buttons referencing the same <code>ThemeColor</code>, captured right after the resource was replaced with <code>OrangeRed</code> at runtime. The <code>StaticResource</code> side keeps the <code>SkyBlue</code> value it resolved at load time.</figcaption>
+</figure>
 
 ---
 
