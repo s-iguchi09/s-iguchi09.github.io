@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 322" width="880" height="322" role="img">
+  <defs>
+    <style>
+      .head { fill: #f5f7fb; stroke: #e1e7f0; stroke-width: 1; }
+      .box { fill: #ffffff; stroke: #c3ccdb; stroke-width: 1.5; }
+      .box-ok { fill: #f1f9f5; stroke: #9dd3b8; stroke-width: 1.5; }
+      .box-ng { fill: #fdf5f5; stroke: #e0c4c4; stroke-width: 1.5; }
+      .code { font-family: Consolas, "Courier New", monospace; font-size: 12.5px; fill: #1f2933; }
+      .code-sm { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+      .head-title { font-family: Consolas, "Courier New", monospace; font-size: 12px; fill: #2563eb; }
+      .ng { fill: #d64545; }
+      .ok { fill: #2f9e6e; }
+      .mark { font-family: "Segoe UI", sans-serif; font-size: 16px; }
+    </style>
+  </defs>
+
+  <!-- ===== header ===== -->
+  <rect class="head" x="20" y="16" width="250" height="30" rx="6" />
+  <text class="head-title" x="145" y="36" text-anchor="middle">extension block receiver</text>
+
+  <rect class="head" x="290" y="16" width="270" height="30" rx="6" />
+  <text class="head-title" x="425" y="36" text-anchor="middle">member declaration</text>
+
+  <rect class="head" x="580" y="16" width="280" height="30" rx="6" />
+  <text class="head-title" x="720" y="36" text-anchor="middle">result</text>
+
+  <!-- ===== row 1: type-only receiver + static member ===== -->
+  <rect class="box" x="20" y="58" width="250" height="72" rx="6" />
+  <text class="code" x="145" y="88" text-anchor="middle">extension(Directory)</text>
+  <text class="code-sm" x="145" y="109" text-anchor="middle">receiver type only</text>
+
+  <rect class="box" x="290" y="58" width="270" height="72" rx="6" />
+  <text class="code" x="425" y="86" text-anchor="middle">public static void</text>
+  <text class="code" x="425" y="107" text-anchor="middle">DeleteIfExists(string path)</text>
+
+  <rect class="box-ok" x="580" y="58" width="280" height="72" rx="6" />
+  <text class="mark ok" x="600" y="88" text-anchor="middle">✓</text>
+  <text class="code ok" x="616" y="88">compiles</text>
+  <text class="code-sm" x="616" y="108">Directory.DeleteIfExists(path)</text>
+
+  <!-- ===== row 2: type-only receiver + instance member ===== -->
+  <rect class="box" x="20" y="140" width="250" height="72" rx="6" />
+  <text class="code" x="145" y="170" text-anchor="middle">extension(Directory)</text>
+  <text class="code-sm" x="145" y="191" text-anchor="middle">receiver type only</text>
+
+  <rect class="box" x="290" y="140" width="270" height="72" rx="6" />
+  <text class="code" x="425" y="170" text-anchor="middle">public void</text>
+  <text class="code" x="425" y="191" text-anchor="middle">DeleteIfExists()</text>
+
+  <rect class="box-ng" x="580" y="140" width="280" height="72" rx="6" />
+  <text class="mark ng" x="600" y="164" text-anchor="middle">✕</text>
+  <text class="code ng" x="616" y="164">CS9303</text>
+  <text class="code-sm" x="616" y="183">instance member needs a</text>
+  <text class="code-sm" x="616" y="199">named receiver parameter</text>
+
+  <!-- ===== row 3: named receiver parameter ===== -->
+  <rect class="box" x="20" y="222" width="250" height="72" rx="6" />
+  <text class="code" x="145" y="252" text-anchor="middle">extension(Directory dir)</text>
+  <text class="code-sm" x="145" y="273" text-anchor="middle">named receiver parameter</text>
+
+  <rect class="box" x="290" y="222" width="270" height="72" rx="6" />
+  <text class="code-sm" x="425" y="258" text-anchor="middle">rejected at the block itself,</text>
+  <text class="code-sm" x="425" y="276" text-anchor="middle">whatever members follow</text>
+
+  <rect class="box-ng" x="580" y="222" width="280" height="72" rx="6" />
+  <text class="mark ng" x="600" y="246" text-anchor="middle">✕</text>
+  <text class="code ng" x="616" y="246">CS0721</text>
+  <text class="code-sm" x="616" y="265">static types cannot be</text>
+  <text class="code-sm" x="616" y="281">used as parameters</text>
+</svg>
