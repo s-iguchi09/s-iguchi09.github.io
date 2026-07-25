@@ -24,8 +24,16 @@
     "headline": {{ page.title | jsonify }},
     "description": {{ page.excerpt | strip_html | strip_newlines | jsonify }},
     "inLanguage": "en",
-    "datePublished": "{{ page.date | date: '%Y-%m-%d' }}",
-    "dateModified": "{{ page.date | date: '%Y-%m-%d' }}",
+    {%- comment -%}
+      Google は日付にタイムゾーンを含む ISO 8601 を推奨しているため date_to_xmlschema を使う。
+      dateModified は実際の更新日時がある場合のみ出力する。
+      公開日を流用すると、更新していない記事を更新済みとして伝えてしまうため。
+      記事側の front matter に last_modified_at を追加すると反映される。
+    {%- endcomment -%}
+    "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+    {%- if page.last_modified_at %}
+    "dateModified": {{ page.last_modified_at | date_to_xmlschema | jsonify }},
+    {%- endif %}
     "articleSection": {{ page.category | jsonify }},
     "mainEntityOfPage": { "@type": "WebPage", "@id": {{ site.url | append: page.url | jsonify }} },
     "author": {
