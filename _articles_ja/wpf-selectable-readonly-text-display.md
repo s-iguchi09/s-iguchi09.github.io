@@ -97,6 +97,7 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
 ```
 
 `AcceptsReturn="True"` を設定することで複数行テキストを自然に扱いやすくなり、`VerticalScrollBarVisibility="Auto"` により表示領域を超えた内容も確認しやすくなる。
+
 ---
 
 ## 注意点

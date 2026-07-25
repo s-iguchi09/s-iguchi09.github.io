@@ -81,7 +81,8 @@ public string? SelectedRegion
 }
 ```
 
-`SelectedItem` に `string` 以外の型（例: `int`）をバインドすると型の不一致でバインドエラーとなる
+`SelectedItem` に `string` 以外の型（例: `int`）をバインドすると型の不一致でバインドエラーとなる。
+
 ---
 
 ### パターン B：オブジェクトリスト ＋ DisplayMemberPath ＋ SelectedItem
@@ -179,7 +180,8 @@ public class Employee
 }
 ```
 
-`ItemTemplate` を使う場合、ドロップダウンを閉じた状態（選択済み表示）と展開した一覧で異なるレイアウトを出したいときは `ItemTemplate` の代わりに `ItemContainerStyle` と `ContentTemplate` を組み合わせる
+`ItemTemplate` を使う場合、ドロップダウンを閉じた状態（選択済み表示）と展開した一覧で異なるレイアウトを出したいときは、`ItemTemplate` の代わりに `ItemContainerStyle` と `ContentTemplate` を組み合わせる。
+
 ---
 
 ### パターン E：Enum リスト
