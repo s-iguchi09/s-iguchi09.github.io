@@ -50,6 +50,12 @@ dotnet run --project tools/screenshot-capture -c Release -- wpf-label-underscore
   `RenderTargetBitmap` と異なり、タイトルバーとウィンドウ枠を含んだ実際の見た目が得られる。
 - ドロップシャドウ分の余白を除くため、`DwmGetWindowAttribute` の `DWMWA_EXTENDED_FRAME_BOUNDS` で
   切り出し範囲を求めている。
+- タイトルバー・枠の色と Mica 背景は `DwmSetWindowAttribute` でウィンドウ単位に固定している。
+  既定では OS のアクセントカラー設定が反映され、撮影環境ごとに図の色が変わってしまうため。
+  Windows の設定自体は変更しない。
+- ただし **コントロール内部のアクセント色（Fluent テーマのフォーカス下線など）は OS の設定がそのまま出る。**
+  テンプレートが実体化した後にリソースを差し替えても反映されないため、色を揃えたい場合は
+  撮影前に Windows の[設定] > [個人用設定] > [色]でアクセントカラーを既定に戻す。
 - 取得される画像は表示スケール 100%（96 DPI）のとき等倍になる。
   スケールを変更している環境では出力サイズが変わるため、記事の `width` / `height` 属性と合わなくなる。
 - `UseWPF` を有効にすると暗黙 using から `System.IO` が外れるため、`.csproj` で明示的に足している。

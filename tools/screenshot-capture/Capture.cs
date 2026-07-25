@@ -37,8 +37,50 @@ internal static class Capture
         public int Bottom;
     }
 
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
     /// <summary>DWMWA_EXTENDED_FRAME_BOUNDS。影を除いた実際の枠を得る。</summary>
     private const int DwmwaExtendedFrameBounds = 9;
+
+    // Windows 11 (build 22000 以降) のウィンドウ枠を明示的に指定する属性。
+    private const int DwmwaBorderColor = 34;
+    private const int DwmwaCaptionColor = 35;
+    private const int DwmwaTextColor = 36;
+    private const int DwmwaSystemBackdropType = 38;
+
+    /// <summary>DWMSBT_NONE。Mica を無効化する。</summary>
+    private const int DwmsbtNone = 1;
+
+    /// <summary>
+    /// タイトルバーと枠の色を固定する。
+    /// 既定では Windows のアクセントカラーと Mica の背景が反映され、
+    /// 撮影した環境によってスクリーンショットの色が変わってしまうため、
+    /// 記事に載せる図では既定のニュートラルな配色へ揃える。
+    /// COLORREF は 0x00BBGGRR の順であることに注意する。
+    /// </summary>
+    public static void ApplyNeutralChrome(Window window)
+    {
+        IntPtr hwnd = new WindowInteropHelper(window).Handle;
+        if (hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        int backdrop = DwmsbtNone;
+        DwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, ref backdrop, sizeof(int));
+
+        int caption = ToColorRef(0xFF, 0xFF, 0xFF);
+        DwmSetWindowAttribute(hwnd, DwmwaCaptionColor, ref caption, sizeof(int));
+
+        int text = ToColorRef(0x1A, 0x1A, 0x1A);
+        DwmSetWindowAttribute(hwnd, DwmwaTextColor, ref text, sizeof(int));
+
+        int border = ToColorRef(0xD0, 0xD0, 0xD0);
+        DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref border, sizeof(int));
+    }
+
+    private static int ToColorRef(byte r, byte g, byte b) => r | (g << 8) | (b << 16);
 
     /// <summary>
     /// ウィンドウを表示し、レンダリングが落ち着くまで待ってから返す。
@@ -49,6 +91,7 @@ internal static class Capture
         window.Loaded += (_, _) => loaded.TrySetResult();
 
         window.Show();
+        ApplyNeutralChrome(window);
         window.Activate();
 
         await loaded.Task;

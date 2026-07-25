@@ -54,6 +54,8 @@ internal sealed class FluentClearButtonScene : IScene
             Height = 150,
             ResizeMode = ResizeMode.CanMinimize,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            // Mica を無効化するため、Fluent の明るいテーマ相当の背景を明示する。
+            Background = new SolidColorBrush(Color.FromRgb(0xF3, 0xF3, 0xF3)),
             Content = new Border
             {
                 Padding = new Thickness(24),
