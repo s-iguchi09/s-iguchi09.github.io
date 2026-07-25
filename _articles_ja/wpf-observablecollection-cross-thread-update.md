@@ -176,4 +176,4 @@ private async Task LoadAsync(string path)
 <!-- 関連記事 -->
 - [WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法](/ja/articles/wpf-combobox-itemssource-patterns/)
 - [WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法](/ja/articles/wpf-listbox-virtualization-selecteditems/)
-- [WPF で BitmapImage を使って表示した画像ファイルが削除・上書きできなくなる問題の解決方法](/ja/articles/wpf-bitmapimage-file-lock-cacheoption/)
+- [WPF の BitmapImage で表示した画像ファイルが削除・上書きできなくなる問題の解決方法](/ja/articles/wpf-bitmapimage-file-lock-cacheoption/)

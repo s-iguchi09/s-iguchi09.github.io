@@ -1,6 +1,6 @@
 ---
 layout: article-ja
-title: "WPF で BitmapImage を使って表示した画像ファイルが削除・上書きできなくなる問題の解決方法"
+title: "WPF の BitmapImage で表示した画像ファイルが削除・上書きできなくなる問題の解決方法"
 date: 2026-07-25
 category: WPF
 excerpt: "BitmapImage で表示した画像ファイルがロックされ、削除・上書きできなくなる。原因である既定のキャッシュ動作と、BitmapCacheOption.OnLoad・StreamSource による解決方法を整理する。"
@@ -51,7 +51,7 @@ XAML でパスを与えた場合も同じ結果になる。
 <Image Source="{Binding ImagePath}" Stretch="Uniform" />
 ```
 
-`Source` に文字列を与える短縮記法には `CacheOption` を指定する手段が無く、`BitmapImage` は既定のまま生成される。
+`Source` に文字列を直接与える書き方（型コンバーターによる変換）には `CacheOption` を指定する手段が無く、`BitmapImage` は既定のまま生成される。
 そのため、コードから生成した場合と同じくファイルが保持される。
 
 ---
@@ -63,7 +63,8 @@ XAML でパスを与えた場合も同じ結果になる。
 `CacheOption` プロパティの公式ドキュメントは、既定の動作を次のように説明している。
 
 > 既定の `OnDemand` キャッシュ オプションは、イメージが必要になるまでストリームへのアクセスを保持し、クリーンアップはガベージ コレクターによって処理されます。
-> — [BitmapImage.CacheOption プロパティ](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.media.imaging.bitmapimage.cacheoption)
+
+出典: [BitmapImage.CacheOption プロパティ](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.media.imaging.bitmapimage.cacheoption)
 
 `Default` と `OnDemand` が併記されるのは、`BitmapCacheOption` 列挙型で両者の値がいずれも `0` と定義されており、同一の値だからである。
 ただし列挙型側の説明文は一致していない。
@@ -72,7 +73,7 @@ XAML でパスを与えた場合も同じ結果になる。
 
 `OnDemand` は、要求されたデータの分だけメモリストアを作る方式である。
 最初の要求では画像が直接読み込まれ、以降の要求はキャッシュから満たされる。
-後続の読み出しに備えるため、**画像ソースへのアクセスを保持し続ける**必要がある。
+後続の読み出しに備え、画像ソースへのアクセスが保持される。
 なお、オブジェクトの初期化そのものを必要になるまで遅らせるのは `CacheOption` ではなく `BitmapCreateOptions.DelayCreation` の役割であり、両者は独立した設定である。
 
 `UriSource` にローカルファイルを指定した場合、保持されるのは WPF が内部で開いたファイルストリームである。
@@ -169,7 +170,7 @@ private static BitmapImage LoadFromStream(string path)
 
 ### XAML で指定する
 
-XAML では、`Source` に文字列を書く短縮記法ではなく `BitmapImage` をオブジェクト要素として記述し、`CacheOption` を指定する。
+XAML では、`Source` に文字列を書いて型コンバーターに任せるのではなく、`BitmapImage` をオブジェクト要素として記述し、`CacheOption` を指定する。
 オブジェクト要素に書いたプロパティ設定は初期化の一部として反映されるため、この記述で `OnLoad` が有効になる。
 
 ```xml
@@ -180,7 +181,7 @@ XAML では、`Source` に文字列を書く短縮記法ではなく `BitmapImag
 </Image>
 ```
 
-この `BitmapImage` は XAML の解析時に一度だけ生成される点に注意する。
+この `BitmapImage` は XAML の解析時に一度だけ生成される。
 初期化後のプロパティ変更は無視されるため、`UriSource` にバインドを設定してもパスの切り替えは反映されない。
 表示する画像を実行時に差し替える場合は、パス文字列から `BitmapImage` を生成する `IValueConverter` を挟むか、ViewModel 側で `ImageSource` 型のプロパティを公開して `Image.Source` にバインドする。
 後者では値が変わるたびに新しい `ImageSource` が渡されるため、前掲の `LoadWithoutLocking` で生成した `BitmapImage` をそのまま代入すればよい。
@@ -201,12 +202,12 @@ XAML では、`Source` に文字列を書く短縮記法ではなく `BitmapImag
 
 ## 代替案・比較
 
-| 方法 | ファイルの解放 | メモリ | 適するケース |
+| 方法 | ファイルの解放 | メモリストア | 適するケース |
 | --- | --- | --- | --- |
-| `UriSource` + 既定（`Default` / `OnDemand`） | 解放されない（GC 任せ） | 要求されたデータ分のメモリストアを作る | 実行中に差し替えの発生しない固定的な画像 |
-| `UriSource` + `OnLoad` | 初期化完了時に解放 | 画像全体を保持 | 実行時に削除・上書きし得るローカルファイル |
-| `StreamSource` + `OnLoad` | `using` で明示的に解放 | 画像全体を保持 | 共有モードの指定やメモリ上のデータからの生成が必要な場合 |
-| `BitmapCacheOption.None` | 解放されない | メモリストアを作らない | 要求のたびにファイルから読み直してよい場合 |
+| `UriSource` + 既定（`Default` / `OnDemand`） | 解放されない（GC 任せ） | 要求されたデータ分のみ作成 | 実行中に差し替えの発生しない固定的な画像 |
+| `UriSource` + `OnLoad` | 初期化完了時に解放 | 読み込み時に画像全体を作成 | 実行時に削除・上書きし得るローカルファイル |
+| `StreamSource` + `OnLoad` | `using` で明示的に解放 | 読み込み時に画像全体を作成 | 共有モードの指定やメモリ上のデータからの生成が必要な場合 |
+| `BitmapCacheOption.None` | 解放されない | 作成しない | 要求のたびにファイルから読み直してよい場合 |
 
 `UriSource` と `StreamSource` の選択基準は明確である。
 パスから読むだけなら `UriSource` で足りる。
@@ -224,7 +225,7 @@ XAML では、`Source` に文字列を書く短縮記法ではなく `BitmapImag
 - **画像を差し替えて再読み込みする場合:** `BitmapCreateOptions.IgnoreImageCache` を併用し、URI 単位のキャッシュによる古い画像の表示を防ぐ。
 - **バックグラウンドで読み込む場合:** `EndInit` の後に `Freeze` してから UI スレッドへ渡す。
 
-`BitmapImage(Uri)` コンストラクタは初期化を自動的に完了させ、以降のプロパティ変更を無視する。
+いずれの方法にも共通する前提として、`BitmapImage(Uri)` コンストラクタは初期化を自動的に完了させ、以降のプロパティ変更を無視する。
 `OnLoad` を使う実装では、必ず引数なしコンストラクタと `BeginInit` / `EndInit` の組み合わせを用いる。
 
 ---
