@@ -19,6 +19,21 @@ internal static class SampleData
     ];
 
     public static string[] Categories() => ["Input", "Display", "Audio"];
+
+    public static ObservableCollection<Employee> Employees() =>
+    [
+        new Employee { Id = 101, Name = "Aoki" },
+        new Employee { Id = 102, Name = "Baker" },
+        new Employee { Id = 103, Name = "Chen" },
+    ];
+}
+
+/// <summary>ComboBox の図で使う、記事の例と同じ形のモデル。</summary>
+public sealed class Employee
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
 }
 
 /// <summary>

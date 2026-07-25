@@ -4,6 +4,7 @@ title: "WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval"
 date: 2026-04-26
 category: WPF
 excerpt: "The correct combination of DisplayMemberPath, SelectedItem, SelectedValue, and SelectedValuePath depends on the element type bound to ItemsSource. This article covers the five main patterns."
+image: /images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png
 ---
 
 ## Overview
@@ -57,6 +58,13 @@ Before looking at implementations, choose the selection properties based on the 
 - Reserve `SelectedIndex` for cases where the position in the list itself carries meaning; otherwise prefer working with values or objects directly.
 
 This approach keeps the ViewModel property type aligned with the `ComboBox` configuration and reduces missed initial selections or update failures.  
+
+The configuration difference shows up in how the selected item is rendered.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png" alt="Three ComboBox controls. The string list and the DisplayMemberPath one show only Baker, while the one using ItemTemplate shows 102 and Baker in two columns." width="469" height="184" loading="lazy">
+  <figcaption>All three have the second entry selected. The string list and <code>DisplayMemberPath</code> render a single string, whereas <code>ItemTemplate</code> is applied to the selected item as well, allowing several fields to be shown side by side.</figcaption>
+</figure>
 
 ---
 

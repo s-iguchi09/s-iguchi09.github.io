@@ -4,6 +4,7 @@ title: "WPF で Fluent デザインを追加ライブラリなしで適用する
 date: 2026-05-30
 category: WPF
 excerpt: "WPF 標準機能だけで Fluent デザインの見た目を整え、SystemColors を使って Windows の色設定に追従する実装方法を整理します。"
+image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png
 ---
 
 ## 概要
@@ -24,6 +25,12 @@ excerpt: "WPF 標準機能だけで Fluent デザインの見た目を整え、S
 
 既定の WPF テーマは長期運用で安定している一方、余白、配色、角丸、情報階層の表現が現行の Windows UI と乖離しやすい。  
 特に複数画面を持つ業務アプリでは、コントロールを既定スタイルのまま配置すると視覚的な密度が高くなり、操作対象の優先度が判別しにくくなる。  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="既定テーマの WPF 画面。四角い枠のテキストボックス、チェックボックス、ボタンが余白の少ない状態で並んでいる。" width="326" height="293" loading="lazy">
+  <figcaption>既定テーマ（Aero2）のまま配置した画面。角は直角で、コントロール間の余白も詰まっており、どこが主要な操作かが読み取りにくい。</figcaption>
+</figure>
+
 ---
 
 ## 原因・背景
@@ -181,6 +188,12 @@ Fluent リソースディクショナリを使う場合は次のように記述�
 上記の実装は、WPF 標準機能のみで視覚階層と操作フィードバックを整える構成である。  
 `DynamicResource` を利用しているため、OS の色設定が変わった際にブラシ参照の再評価が行われ、固定色中心の実装より追従性が高くなる。  
 `SystemColors.AccentColorBrushKey` 系を利用すれば、Windows のアクセントカラーにも追従できる。  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="Fluent テーマと SystemColors を適用した WPF 画面。角丸のカードの中に、余白を取ったテキストボックス・チェックボックス・ボタンが配置されている。" width="326" height="293" loading="lazy">
+  <figcaption>「問題」で示したものと同じ構成に、Fluent テーマと <code>SystemColors</code> を適用した結果。追加ライブラリは使っていない。チェックボックスの色は Windows のアクセントカラー設定に追従しているため、環境によって変わる。</figcaption>
+</figure>
+
 ---
 
 ## 注意点
