@@ -16,6 +16,7 @@ URL structure:
 import os
 import re
 import glob
+import html
 import datetime
 import subprocess
 from typing import Optional
@@ -151,8 +152,11 @@ def extract_images_from_file(abs_path: str) -> list:
                 src = src.split()[0]  # strip optional title (e.g. "url title")
             if is_site_relative(src):
                 images.append(BASE_URL + src)
-    # HTML <img src="..."> (also handles single quotes)
+    # HTML <img src="..."> (also handles single quotes).
+    # The attribute value is HTML-escaped in the source, so "&amp;" must be decoded
+    # back to "&" here; image_element() re-escapes it for XML on output.
     for src in re.findall(r'<img\s[^>]*\bsrc=["\']([^"\']+)["\']', content, re.IGNORECASE):
+        src = html.unescape(src)
         if is_site_relative(src):
             images.append(BASE_URL + src)
     # Deduplicate while preserving order

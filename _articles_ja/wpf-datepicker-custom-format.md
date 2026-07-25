@@ -67,8 +67,20 @@ WPF の `DatePicker` は、選択された日付をシステムのロケール�
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="同じ日付を選択した 2 つの DatePicker。既定のものは 4/15/2026 と表示され、StringFormat を指定したものは 2026/04/15 と表示されている。" width="486" height="146" loading="lazy">
-  <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。書式の差が出るよう、どちらにも <code>xml:lang="en-US"</code> を指定している。上は既定の表示で、この設定に従って <code>4/15/2026</code> になる。下は本節のスタイルを適用したもので、カルチャにかかわらず <code>2026/04/15</code> で固定される。</figcaption>
+  <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。書式の差が出るよう、どちらにも <code>xml:lang="en-US"</code> を指定している。上は既定の表示で、この設定に従って <code>4/15/2026</code> になる。下は本節のスタイルを適用したもので、区切り文字と年月日の並びが指定どおりに固定される。</figcaption>
 </figure>
+
+ただし、`\/` のエスケープで固定できるのは区切り文字と並び順であって、暦そのものではない。  
+同じ `yyyy\/MM\/dd` をカルチャだけ変えて評価すると次のようになる（.NET 10 での実測値）。  
+
+| `xml:lang` | 表示 |
+|---|---|
+| `en-US` / `ja-JP` / `de-DE` | `2026/04/15` |
+| `th-TH`(仏暦) | `2569/04/15` |
+| `ar-SA`(ヒジュラ暦) | `1447/10/27` |
+| `fa-IR`(ペルシャ暦) | `1405/01/26` |
+
+暦まで含めて固定したい場合は、バインドに `ConverterCulture` を指定してカルチャ自体を固定する。  
 
 ## コードビハインドによる方法
 

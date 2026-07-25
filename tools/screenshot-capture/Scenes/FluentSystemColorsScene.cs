@@ -68,8 +68,9 @@ internal sealed class FluentSystemColorsScene : IScene
         if (fluent)
         {
             // 記事の XAML と同じく、SystemColors 由来のブラシを参照するのは解決策側だけ。
-            heading.Foreground = SystemColors.ControlTextBrush;
-            body.Foreground = SystemColors.GrayTextBrush;
+            // 記事は DynamicResource で参照しているため、こちらも動的参照に揃える。
+            heading.SetResourceReference(TextBlock.ForegroundProperty, SystemColors.ControlTextBrushKey);
+            body.SetResourceReference(TextBlock.ForegroundProperty, SystemColors.GrayTextBrushKey);
         }
 
         content.Children.Add(heading);
@@ -94,7 +95,7 @@ internal sealed class FluentSystemColorsScene : IScene
             card.CornerRadius = new CornerRadius(12);
             card.BorderThickness = new Thickness(1);
             card.Background = new SolidColorBrush(SystemColors.ControlLightColor);
-            card.BorderBrush = SystemColors.ActiveBorderBrush;
+            card.SetResourceReference(Border.BorderBrushProperty, SystemColors.ActiveBorderBrushKey);
         }
 
         return card;
