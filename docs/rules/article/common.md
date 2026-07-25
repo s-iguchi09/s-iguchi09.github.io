@@ -34,7 +34,7 @@
 
 記事の文体・構成・必須要素・チェックは、以下のルールファイルに従う。作業前に必ず読むこと。
 
-- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性
+- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)
 - `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(見出し構成)
 - `docs/rules/article/review-checklist.md` — 公開前レビューチェックリスト
 - `.markdownlint.json` — 有効な lint ルール(`MD060` は無効)
@@ -50,6 +50,7 @@
 - `date` — UTC 日付(`YYYY-MM-DD`)
 - `category` — 自由文字列。既存は主に `WPF` / `C#` の 2 値
 - `excerpt` — 記事の要約。160 字以内
+- `image` — 任意。記事を代表するスクリーンショットのサイト絶対パス(`/images/articles/<slug>/<file>.png`)。構造化データの `image` として出力される(`guidelines.md` §11)
 
 ---
 

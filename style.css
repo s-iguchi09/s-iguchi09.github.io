@@ -247,6 +247,41 @@ h2 {
   height: auto;
 }
 
+/* ================================
+   記事本文の図・スクリーンショット
+   （<figure class="article-figure"> で囲んで使う）
+================================ */
+.article-figure {
+  margin: 1.5rem 0;
+}
+
+.article-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.article-figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #5b6673;
+}
+
+/* 本文幅より横に広い図は、画面幅に合わせて縮めると文字が判読できなくなる。
+   本文と同じく、狭い画面では図の内側だけを横スクロールさせる
+   （min-width は max-width より優先されるため、縮小を打ち切れる）。 */
+.article-figure--wide {
+  overflow-x: auto;
+}
+
+.article-figure--wide img {
+  min-width: 700px;
+}
+
 .content-section table:not(.prop-table) {
   overflow-x: auto;
   display: block;

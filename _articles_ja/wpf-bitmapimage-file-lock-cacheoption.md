@@ -96,6 +96,13 @@ XAML でパスを与えた場合も同じ結果になる。
 `OnLoad` は読み込み時に画像全体をメモリへキャッシュし、以降の画像データ要求はすべてメモリストアから満たされる。
 ソースを読み続ける必要が無くなるため、初期化完了後にファイルやストリームを解放できる。
 
+既定の動作と `OnLoad` の違いを図にすると次のようになる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapcacheoption-stream-lifetime.svg" alt="既定のキャッシュ動作と OnLoad の比較図。既定では BitmapImage が画像ファイルのストリームを開いたまま保持し、File.Delete が IOException となる。解放のタイミングは GC 任せである。OnLoad では EndInit の完了時点で画像全体がメモリへ取り込まれてストリームが閉じられ、File.Delete が成功する。" width="880" height="394" loading="lazy">
+  <figcaption>上段が既定（<code>Default</code> / <code>OnDemand</code>）、下段が <code>OnLoad</code> のときのファイルストリームの扱い。既定では後続の読み出しに備えてストリームが開いたまま残り、解放のタイミングはガベージコレクターに委ねられる。<code>OnLoad</code> では <code>EndInit</code> の完了時点で画像全体がメモリへ取り込まれるため、ストリームが閉じられて削除・上書きが可能になる。</figcaption>
+</figure>
+
 `CacheOption` は `BitmapImage` の初期化中にしか設定できない。
 `BitmapImage` は `ISupportInitialize` を実装しており、プロパティの設定は `BeginInit` と `EndInit` の間で行う必要がある。
 初期化完了後のプロパティ変更は無視される。

@@ -4,6 +4,7 @@ title: "Hiding the Clear Button on a Fluent-Themed WPF TextBox"
 date: 2026-07-19
 category: WPF
 excerpt: "How to hide the clear button a Fluent-themed WPF TextBox shows on focus, without changing input behavior, on .NET 10 and .NET 9."
+image: /images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png
 ---
 
 ## Overview
@@ -31,6 +32,11 @@ Because the part name differs on `.NET 9`, that difference and the corresponding
 A Fluent-themed `TextBox` automatically shows the clear button defined in its template when keyboard focus enters it.
 This element does not exist in the standard theme (Aero2), so it appears unexpectedly after switching themes.
 On a screen that already provides a "×" button or a command to clear the input value, a button with the same function is duplicated and layout consistency is lost.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png" alt="A Fluent-themed WPF window. The TextBox holds text and has keyboard focus, and a × clear button is shown at its right edge." width="346" height="143" loading="lazy">
+  <figcaption>A <code>TextBox</code> with keyboard focus under the .NET 10 Fluent theme. The clear button (×) appears at the right edge of the text by default.</figcaption>
+</figure>
 
 ---
 
@@ -155,6 +161,13 @@ On the XAML side, the attached property is added to the target `TextBox`.
 
 The `xmlns:helper` declaration maps the prefix to the namespace (`clr-namespace`) of the `TextBoxHelper` class.
 Replace it with the actual namespace where the class is defined.
+
+Once applied, the clear button no longer appears even while the control has focus and contains text.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png" alt="The same window after applying Approach 1. The TextBox still holds text and has keyboard focus, but no clear button is shown." width="346" height="143" loading="lazy">
+  <figcaption>The same screen after applying Approach 1. The input value and the focus state are identical to the previous image, and only the clear button is gone. Text input behavior such as wrapping and caret position is unchanged.</figcaption>
+</figure>
 
 ### Approach 2: Use the `AcceptsReturn` Hide Trigger (`.NET 10` or later)
 

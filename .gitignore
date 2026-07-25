@@ -1,0 +1,8 @@
+# Jekyll のローカルビルド生成物
+_site/
+.jekyll-cache/
+.jekyll-metadata
+
+# .NET のビルド生成物（tools/ 配下のキャプチャツール）
+bin/
+obj/

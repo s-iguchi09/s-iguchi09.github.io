@@ -4,6 +4,8 @@ title: "（タイトル）"
 date: YYYY-MM-DD
 category: （カテゴリ）
 excerpt: "（記事の要約。160字以内。）"
+# 代表となるスクリーンショットがある場合のみ設定する（SVG は指定しない）。
+image: /images/articles/（slug）/（ファイル名）.png
 ---
 
 ## 概要
@@ -24,6 +26,13 @@ excerpt: "（記事の要約。160字以内。）"
 ## 問題
 
 [どのような状況で、何が問題になるかを記述する。]
+
+[問題が画面に現れる場合は、実際に動かしたスクリーンショットを添える。前後に空行を置くこと。詳細は `guidelines.md` §11。]
+
+<figure class="article-figure">
+  <img src="/images/articles/（slug）/（ファイル名）.png" alt="（画像の内容を説明する代替テキスト）" width="（実寸）" height="（実寸）" loading="lazy">
+  <figcaption>（図が何を示しているかの説明。生成した環境を含める。）</figcaption>
+</figure>
 
 ---
 

@@ -4,6 +4,7 @@ title: "WPF の Label でアンダーバーが消える理由と回避方法"
 date: 2026-06-09
 category: WPF
 excerpt: "WPF の Label にアンダーバー（_）を含む文字列を表示しようとすると、画面上で消えてしまうことがあります。この原因と 3 つの回避方法を解説します。"
+image: /images/articles/wpf-label-underscore-issue/label-underscore-rendering.png
 ---
 
 ## 概要
@@ -37,13 +38,21 @@ WPF の `Label` コントロールに `_` （アンダーバー）を含む文�
 
 具体的な挙動は以下のとおりである。  
 
-| 入力文字列 | 画面上の表示   | 解釈                           |
-| ---------- | -------------- | ------------------------------ |
-| `_File`    | **F**ile       | `F` がアクセスキーとして登録される |
-| `my_var`   | my**v**ar      | `v` がアクセスキーとして登録される |
-| `name_`    | name           | アンダーバーが末尾で消える     |
+| 入力文字列 | 画面上の表示   | 解釈                                             |
+| ---------- | -------------- | ------------------------------------------------ |
+| `_File`    | **F**ile       | `F` がアクセスキーとして登録される               |
+| `my_var`   | my**v**ar      | `v` がアクセスキーとして登録される               |
+| `name_`    | name_          | 直後に文字が無いため、アンダーバーがそのまま残る |
+
+上表の 3 例を実際に描画した結果が次の画像である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png" alt="WPF の Label に _File、my_var、name_ を設定して実行した画面。_File は File、my_var は myvar と表示され、アンダーバーが消えている。name_ だけはアンダーバーが残っている。" width="461" height="166" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で <code>Label</code> に各文字列を設定した実行結果。左が XAML の記述、右が実際の描画である。<code>_File</code> と <code>my_var</code> ではアンダーバーが失われる一方、<code>name_</code> は直後に対象の文字が無いためアクセスキーとして解釈されず、そのまま表示される。</figcaption>
+</figure>
 
 このため、データにアンダーバーが含まれているだけで、意図しない表示崩れが起きる。  
+なお、アンダーバーが消えるのは直後に文字が続く場合に限られるため、文字列中のどの位置にアンダーバーがあるかで結果が変わる。  
 
 ---
 
@@ -124,6 +133,13 @@ XAML 側で静的に文字列を設定しているケースに向いている。
 
 - **メリット:** 動的バインドのデータにアンダーバーが含まれても、そのまま表示できる。スタイルとして共通化すれば複数箇所への適用も容易である。
 - **デメリット:** XAML のコード量が増える。
+
+3 つの方法をそれぞれ実行すると、いずれも同じ表示結果になる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="3 つの回避方法を適用した WPF アプリの画面。エスケープした Label、TextBlock、ContentTemplate を差し替えた Label のいずれもが my_variable と表示している。" width="554" height="166" loading="lazy">
+  <figcaption>3 つの回避方法を同一アプリ上で実行した結果。<code>__</code> でのエスケープ、<code>TextBlock</code> への変更、<code>ContentTemplate</code> の差し替えのいずれでも <code>my_variable</code> が欠落せずに表示される。</figcaption>
+</figure>
 
 ---
 

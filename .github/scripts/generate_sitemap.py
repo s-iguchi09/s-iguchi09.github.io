@@ -110,8 +110,10 @@ def get_git_lastmod(rel_path: str) -> str:
 def extract_images_from_file(abs_path: str) -> list:
     """Return a list of absolute image URLs found in an HTML or Markdown file.
 
-    For HTML files, looks for <img src="..."> tags.
-    For Markdown files, looks for ![...](src) syntax.
+    Looks for HTML <img src="..."> tags in every file type, and additionally for
+    ![...](src) syntax in Markdown files. Articles wrap figures in
+    <figure class="article-figure"><img ...></figure> so that a caption can be
+    attached, so Markdown files must be scanned for both notations.
     Only site-relative paths (starting with /) are included.
     """
     if not os.path.isfile(abs_path):
@@ -129,11 +131,10 @@ def extract_images_from_file(abs_path: str) -> list:
             src = src.strip().split()[0]  # strip optional title (e.g. "url title")
             if src.startswith("/"):
                 images.append(BASE_URL + src)
-    else:
-        # HTML <img src="..."> (also handles single quotes)
-        for src in re.findall(r'<img\s[^>]*\bsrc=["\']([^"\']+)["\']', content, re.IGNORECASE):
-            if src.startswith("/"):
-                images.append(BASE_URL + src)
+    # HTML <img src="..."> (also handles single quotes)
+    for src in re.findall(r'<img\s[^>]*\bsrc=["\']([^"\']+)["\']', content, re.IGNORECASE):
+        if src.startswith("/"):
+            images.append(BASE_URL + src)
     # Deduplicate while preserving order
     seen = set()
     unique = []
