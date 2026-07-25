@@ -46,13 +46,14 @@ Once the display is cleared and the reference to the `BitmapImage` is dropped, a
 The result is an intermittent defect where the deletion only succeeds some of the time.
 
 Supplying the path from XAML produces the same outcome.
+The following markup is the shortest form, assigning the path string directly to `Source`.
 
 ```xml
 <Image Source="{Binding ImagePath}" Stretch="Uniform" />
 ```
 
-Assigning a string directly to `Source` relies on a type converter, which offers no place to specify `CacheOption`, so the `BitmapImage` is created with the defaults.
-The file is therefore retained exactly as it is in the code-based version.
+Assigning a string directly to `Source` delegates the work to `ImageSourceConverter`, which leaves no place to specify `CacheOption`.
+The image is therefore loaded with the default caching behavior, and the file is retained exactly as it is in the code-based version.
 
 ---
 
@@ -68,17 +69,18 @@ Source: [BitmapImage.CacheOption Property](https://learn.microsoft.com/dotnet/ap
 
 Both `Default` and `OnDemand` appear because the `BitmapCacheOption` enumeration defines them with the same value, `0`.
 The descriptions attached to those fields, however, do not agree.
-`Default` is documented as "caches the entire image into memory" while `OnDemand` is documented as "creates a memory store for requested data only", which is a contradiction inside the official reference.
-Since the two share one value, only one behavior can apply, and the behavior the `CacheOption` remarks describe as the default is the latter: **access to the source is retained**.
+`Default` is documented as "Caches the entire image into memory" while `OnDemand` is documented as "Creates a memory store for requested data only", which is a contradiction inside the official reference.
+Since the two share one value, only one behavior can apply.
+The `CacheOption` remarks name `OnDemand` as the default and state that it "retains access to the stream until the image is needed".
 
 `OnDemand` creates a memory store only for the data that has been requested.
 The first request loads the image directly, and subsequent requests are filled from that cache.
 To serve those later reads, access to the image source is retained.
 Deferring the initialization of the object itself is a separate concern, controlled by `BitmapCreateOptions.DelayCreation` rather than by `CacheOption`.
 
-When `UriSource` points at a local file, what is retained is the file stream WPF opened internally.
+When `UriSource` points at a local file, what is retained is understood to be the file stream WPF opened internally.
 That stream is what holds the file open, and the application has no supported way to close it.
-Release is left to the garbage collector, which is why the deletion succeeds only some of the time.
+Release is left to the garbage collector, which is why the behavior cannot be reproduced on demand.
 
 What the documentation states explicitly about `OnLoad` is that the stream used to create the `BitmapImage` can be closed afterwards.
 No equivalent sentence covers a local file passed through `UriSource`, but since the retained resource is likewise an internal stream, the same mechanism applies.
@@ -100,8 +102,10 @@ Property changes made after initialization are ignored.
 
 Two approaches are available.
 
-- **`UriSource` with `OnLoad`** — pass the path directly. The markup and code stay short, and this is sufficient in most cases.
-- **`StreamSource` with `OnLoad`** — pass a stream opened by the application and dispose it deterministically after initialization. This suits cases where the sharing mode or the origin of the data must be controlled.
+- **`UriSource` with `OnLoad`** — pass the path directly.
+  The markup and code stay short, and this is sufficient in most cases.
+- **`StreamSource` with `OnLoad`** — pass a stream opened by the application and dispose it deterministically after initialization.
+  This suits cases where the sharing mode or the origin of the data must be controlled.
 
 ---
 
@@ -110,7 +114,7 @@ Two approaches are available.
 ### Combining UriSource with OnLoad
 
 Set `CacheOption` and `UriSource` inside a `BeginInit` / `EndInit` block.
-The decode completes at `EndInit`, so the file can be deleted or overwritten once the method returns.
+The whole image is pulled into memory at `EndInit`, so the file can be deleted or overwritten once the method returns.
 
 ```csharp
 private static BitmapImage LoadWithoutLocking(string path)
@@ -144,7 +148,7 @@ Applying `OnLoad` requires the parameterless constructor combined with `BeginIni
 ### Supplying an explicit stream through StreamSource
 
 When the way the file is opened matters, open a `FileStream` explicitly and assign it to `StreamSource`.
-With `OnLoad` specified, decoding is complete by the time `EndInit` returns, so the image remains displayable after the `using` block disposes the stream.
+With `OnLoad` specified, the whole image is already in memory by the time `EndInit` returns, so the image remains displayable after the `using` block disposes the stream.
 
 ```csharp
 private static BitmapImage LoadFromStream(string path)
@@ -163,14 +167,15 @@ private static BitmapImage LoadFromStream(string path)
 }
 ```
 
-`FileShare` specifies the access other processes are granted while this handle is open.
+`FileShare` specifies the access granted to subsequent opens, by this process or another, while this handle is open.
 `FileShare.ReadWrite` therefore allows other processes to open the same file for reading or writing while this `FileStream` is open.
 When both `StreamSource` and `UriSource` are set, the `StreamSource` value is ignored.
 `UriSource` is left unset in this approach.
 
-### Specifying the option in XAML
+### Specifying the option in XAML and its limits
 
-In XAML, replace the type-converted string assigned to `Source` with an explicit `BitmapImage` object element carrying `CacheOption`.
+When the image path is fixed, the whole solution fits in XAML.
+Replace the type-converted string assigned to `Source` with an explicit `BitmapImage` object element carrying `CacheOption`.
 Property assignments written on the object element are applied as part of its initialization, so `OnLoad` takes effect with this markup.
 
 ```xml
@@ -190,13 +195,21 @@ The latter hands a new `ImageSource` to the control on every change, so the `Bit
 
 ## Notes
 
-- **Memory is the trade-off:** `OnLoad` expands the entire image into memory. For large images or numerous thumbnails, set `DecodePixelWidth` or `DecodePixelHeight` so the image decodes at roughly its rendered size. Set only one of them, not both, to preserve the aspect ratio.
-- **Decode-size savings depend on the codec:** The JPEG and PNG codecs decode natively to the requested size, whereas other codecs decode at full size and then scale to the target. Peak memory savings are therefore smaller for formats such as BMP and TIFF.
-- **A stale image can appear after an overwrite:** WPF keys its image cache by URI, so reloading a replaced file at the same path can still display the previous image. Setting `BitmapCreateOptions.IgnoreImageCache` on `CreateOptions` replaces existing cache entries even when they share the same `Uri`.
-- **Conditions that prevent freezing:** An object cannot be frozen when it has animated or data-bound properties, has properties set by a dynamic resource, or contains sub-objects that cannot be frozen. Where the conditions are not predictable, test with `CanFreeze` before calling `Freeze`.
-- **Modifying a frozen object throws:** Attempting to modify a frozen `Freezable` raises an `InvalidOperationException`. When post-processing is required, keep the object unfrozen or create a modifiable copy with `Clone`.
-- **Unfrozen objects cannot cross threads:** A `Freezable` whose `IsFrozen` is `false` can be accessed only from the thread that created it, and access from another thread throws an `InvalidOperationException`. Freeze the image before handing it from a background thread to the UI thread.
-- **`BitmapCacheOption.None` is not a fix:** `None` creates no memory store and fills every request directly from the image file. That behavior requires access to the source to be retained, so it cannot be used to avoid the lock.
+- **Trade-off against memory:** `OnLoad` expands the entire image into memory.
+  For large images or numerous thumbnails, set `DecodePixelWidth` or `DecodePixelHeight` so the image decodes at roughly its rendered size.
+  Set only one of them, not both, to preserve the aspect ratio.
+- **Decode-size savings depend on the codec:** The JPEG and PNG codecs decode natively to the requested size, whereas other codecs decode at full size and then scale to the target.
+  Peak memory savings are therefore smaller for other formats, such as BMP and TIFF.
+- **A stale image can appear after an overwrite:** WPF keys its image cache by URI, so reloading a replaced file at the same path can still display the previous image.
+  Setting `BitmapCreateOptions.IgnoreImageCache` on `CreateOptions` replaces existing cache entries even when they share the same `Uri`.
+- **Conditions that prevent freezing:** An object cannot be frozen when it has animated or data-bound properties, has properties set by a dynamic resource, or contains sub-objects that cannot be frozen.
+  Where the conditions are not predictable, test with `CanFreeze` before calling `Freeze`.
+- **Modifying a frozen object throws:** Attempting to modify a frozen `Freezable` raises an `InvalidOperationException`.
+  When post-processing is required, keep the object unfrozen or create a modifiable copy with `Clone`.
+- **Unfrozen objects cannot cross threads:** A `Freezable` whose `IsFrozen` is `false` can be accessed only from the thread that created it, and access from another thread throws an `InvalidOperationException`.
+  Freeze the image before handing it from a background thread to the UI thread.
+- **`BitmapCacheOption.None` is not a fix:** `None` creates no memory store and fills every request directly from the image file.
+  That behavior requires access to the source to be retained, so it cannot be used to avoid the lock.
 
 ---
 
@@ -220,10 +233,11 @@ The criterion for choosing between `UriSource` and `StreamSource` is straightfor
 The file lock caused by `BitmapImage` originates in the default caching policy, which keeps the source open to serve later reads.
 The selection criteria are as follows.
 
-- **Displaying a local file that may later be deleted or overwritten:** set `CacheOption` to `OnLoad` inside a `BeginInit` / `EndInit` block. This is the default choice.
-- **Controlling the sharing mode or decoding from in-memory data:** combine `StreamSource` with `OnLoad` and dispose the stream explicitly after initialization.
-- **Reloading a replaced image:** add `BitmapCreateOptions.IgnoreImageCache` to prevent the per-URI cache from returning the previous image.
-- **Loading on a background thread:** call `Freeze` after `EndInit` before passing the image to the UI thread.
+- **Displaying a local file that may later be deleted or overwritten:** Set `CacheOption` to `OnLoad` inside a `BeginInit` / `EndInit` block.
+  This is the primary choice.
+- **Controlling the sharing mode or decoding from in-memory data:** Combine `StreamSource` with `OnLoad` and dispose the stream explicitly after initialization.
+- **Reloading a replaced image:** Add `BitmapCreateOptions.IgnoreImageCache` to prevent the per-URI cache from returning the previous image.
+- **Loading on a background thread:** Call `Freeze` after `EndInit` before passing the image to the UI thread.
 
 One prerequisite applies to every approach above: the `BitmapImage(Uri)` constructor completes initialization automatically and ignores later property changes.
 Any implementation that relies on `OnLoad` must therefore use the parameterless constructor together with `BeginInit` and `EndInit`.
