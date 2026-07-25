@@ -42,6 +42,26 @@ For full control, the control template's `DatePickerTextBox` must be targeted th
 
 The separators are escaped as `\/` so they render literally. Left unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, which would break the fixed layout the article aims for. The same effect can be achieved by quoting the separators as `'/'` (for example `yyyy'/'MM'/'dd`), the form used later in this article.  
 
+Placing the two side by side gives the following.  
+The default display follows the target element's `Language` property (`xml:lang` in XAML), so both carry `en-US` to keep the comparison independent of the machine locale.  
+
+```xml
+<!-- Default display -->
+<DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190" />
+
+<!-- With the style above applied -->
+<DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190">
+  <DatePicker.Resources>
+    <Style TargetType="DatePickerTextBox">
+      <Setter Property="Text"
+              Value="{Binding SelectedDate,
+                              RelativeSource={RelativeSource AncestorType=DatePicker},
+                              StringFormat='yyyy\/MM\/dd'}" />
+    </Style>
+  </DatePicker.Resources>
+</DatePicker>
+```
+
 <figure class="article-figure">
   <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="Two DatePicker controls holding the same date. The default one displays 4/15/2026 while the one with StringFormat displays 2026/04/15." width="486" height="146" loading="lazy">
   <figcaption>Two <code>DatePicker</code> controls given the same <code>SelectedDate</code>. Both carry <code>xml:lang="en-US"</code> so that the difference in format is visible. The upper one uses the default display, which follows that setting and renders <code>4/15/2026</code>. The lower one applies the style from this section and stays fixed at <code>2026/04/15</code> regardless of culture.</figcaption>

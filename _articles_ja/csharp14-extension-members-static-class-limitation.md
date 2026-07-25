@@ -46,9 +46,13 @@ public static class DirectoryExtensions
     {
         public void DeleteIfExists(string path)
         {
-            if (Directory.Exists(path))
+            try
             {
                 Directory.Delete(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // 既に存在しない場合は何もしない。
             }
         }
     }
@@ -70,9 +74,13 @@ public static class DirectoryExtensions
     {
         public static void DeleteIfExists(string path)
         {
-            if (Directory.Exists(path))
+            try
             {
                 Directory.Delete(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // 既に存在しない場合は何もしない。
             }
         }
     }
@@ -173,9 +181,13 @@ public static class DirectoryExtensions
         /// </summary>
         public static void DeleteIfExists(string path)
         {
-            if (Directory.Exists(path))
+            try
             {
                 Directory.Delete(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // 既に存在しない場合は何もしない。
             }
         }
 
@@ -188,6 +200,8 @@ public static class DirectoryExtensions
 呼び出し側では以下のように使用する。
 
 ```csharp
+using System;
+using System.IO;
 using MyLib; // ← これを忘れると CS0117 になる
 
 Directory.DeleteIfExists(@"C:\Temp\TargetDir");
@@ -215,9 +229,13 @@ public static class DirectoryInfoExtensions
         /// </summary>
         public void DeleteIfExists()
         {
-            if (directoryInfo.Exists)
+            try
             {
                 directoryInfo.Delete(true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // 既に存在しない場合は何もしない。
             }
         }
     }
@@ -247,9 +265,13 @@ public static class DirectoryHelper
     /// </summary>
     public static void DeleteIfExists(string path)
     {
-        if (Directory.Exists(path))
+        try
         {
             Directory.Delete(path, true);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // 既に存在しない場合は何もしない。
         }
     }
 }

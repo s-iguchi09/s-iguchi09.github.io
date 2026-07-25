@@ -46,9 +46,13 @@ public static class DirectoryExtensions
     {
         public void DeleteIfExists(string path)
         {
-            if (Directory.Exists(path))
+            try
             {
                 Directory.Delete(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Nothing to do when it is already gone.
             }
         }
     }
@@ -70,9 +74,13 @@ public static class DirectoryExtensions
     {
         public static void DeleteIfExists(string path)
         {
-            if (Directory.Exists(path))
+            try
             {
                 Directory.Delete(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Nothing to do when it is already gone.
             }
         }
     }
@@ -172,9 +180,13 @@ public static class DirectoryExtensions
         /// </summary>
         public static void DeleteIfExists(string path)
         {
-            if (Directory.Exists(path))
+            try
             {
                 Directory.Delete(path, true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Nothing to do when it is already gone.
             }
         }
 
@@ -187,6 +199,8 @@ public static class DirectoryExtensions
 The call site looks as follows.
 
 ```csharp
+using System;
+using System.IO;
 using MyLib; // omit this and you get CS0117
 
 Directory.DeleteIfExists(@"C:\Temp\TargetDir");
@@ -214,9 +228,13 @@ public static class DirectoryInfoExtensions
         /// </summary>
         public void DeleteIfExists()
         {
-            if (directoryInfo.Exists)
+            try
             {
                 directoryInfo.Delete(true);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Nothing to do when it is already gone.
             }
         }
     }
@@ -246,9 +264,13 @@ public static class DirectoryHelper
     /// </summary>
     public static void DeleteIfExists(string path)
     {
-        if (Directory.Exists(path))
+        try
         {
             Directory.Delete(path, true);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Nothing to do when it is already gone.
         }
     }
 }

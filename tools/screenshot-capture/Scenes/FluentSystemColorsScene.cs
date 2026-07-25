@@ -51,20 +51,29 @@ internal sealed class FluentSystemColorsScene : IScene
     private static UIElement BuildCard(bool fluent)
     {
         var content = new StackPanel();
-        content.Children.Add(new TextBlock
+
+        var heading = new TextBlock
         {
             Text = "WPF Fluent Style",
             FontSize = 20,
             FontWeight = FontWeights.SemiBold,
-            Foreground = SystemColors.ControlTextBrush,
-        });
-        content.Children.Add(new TextBlock
+        };
+        var body = new TextBlock
         {
             Text = "SystemColors を参照することで、Windows の色設定に依存した色を利用できる。",
             TextWrapping = TextWrapping.Wrap,
-            Foreground = SystemColors.GrayTextBrush,
             Margin = new Thickness(0, 10, 0, 0),
-        });
+        };
+
+        if (fluent)
+        {
+            // 記事の XAML と同じく、SystemColors 由来のブラシを参照するのは解決策側だけ。
+            heading.Foreground = SystemColors.ControlTextBrush;
+            body.Foreground = SystemColors.GrayTextBrush;
+        }
+
+        content.Children.Add(heading);
+        content.Children.Add(body);
         content.Children.Add(new Button
         {
             Content = "操作を実行",

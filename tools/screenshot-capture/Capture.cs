@@ -90,8 +90,7 @@ internal static class Capture
     /// </summary>
     /// <exception cref="TimeoutException">
     /// <see cref="FrameworkElement.Loaded"/> が <see cref="LoadedTimeout"/> 以内に発火しない場合。
-    /// デスクトップセッションが切断されているなど描画が行われない環境では発火しないため、
-    /// 待ち続けてバッチ全体が止まらないように打ち切る。
+    /// 待ち続けてバッチ全体が止まらないように上限を設けている。
     /// </exception>
     public static async Task ShowAndSettleAsync(Window window, int extraDelayMs = 400)
     {
