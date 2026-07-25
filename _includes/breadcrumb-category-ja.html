@@ -1,0 +1,28 @@
+{%- comment -%}
+  カテゴリページ用のパンくずリストと BreadcrumbList 構造化データ。
+  呼び出し例: {% include breadcrumb-category-ja.html category=page.article_category %}
+{%- endcomment -%}
+
+<nav class="breadcrumb" aria-label="パンくずリスト">
+  <a href="/ja/">ホーム</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <a href="/ja/articles/">技術記事</a>
+  <span class="breadcrumb-sep" aria-hidden="true">›</span>
+  <span aria-current="page">{{ include.category }}</span>
+</nav>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "ホーム", "item": {{ site.url | append: '/ja/' | jsonify }} },
+    { "@type": "ListItem", "position": 2, "name": "技術記事", "item": {{ site.url | append: '/ja/articles/' | jsonify }} },
+    {%- comment -%}
+      カテゴリ名からスラッグを組み立て直すとページの実 URL とずれる可能性があるため、
+      構造化データにはページ自身の URL をそのまま使う。
+    {%- endcomment -%}
+    { "@type": "ListItem", "position": 3, "name": {{ include.category | jsonify }}, "item": {{ site.url | append: page.url | jsonify }} }
+  ]
+}
+</script>

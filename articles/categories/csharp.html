@@ -1,0 +1,37 @@
+---
+article_category: C#
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>C# Articles - s-iguchi</title>
+  {% include head.html %}
+  <meta name="description" content="Articles on C# and the .NET libraries behind it: language features across versions, LINQ operator backports to .NET Framework, and API-level compatibility concerns.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+  {% include breadcrumb-category-en.html category=page.article_category %}
+
+  <section class="hero">
+    <h1>C#</h1>
+    <p>
+      Articles on the C# language and the .NET libraries behind it — language features across versions,
+      backporting newer LINQ operators to .NET Framework, and the compatibility details that matter
+      when a codebase spans multiple target frameworks.
+    </p>
+  </section>
+
+  {% include category-list-en.html category=page.article_category %}
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

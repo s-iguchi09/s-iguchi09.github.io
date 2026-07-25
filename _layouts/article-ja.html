@@ -10,14 +10,76 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
     crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
+
+  {%- comment -%}
+    カテゴリ名からカテゴリページのスラッグを組み立てる（例: "C#" → "csharp"、"WPF" → "wpf"）。
+  {%- endcomment -%}
+  {%- assign category_slug = page.category | downcase | strip | replace: '#', 'sharp' | replace: '+', 'plus' | replace: ' ', '-' -%}
+  {%- assign category_url = '/ja/articles/categories/' | append: category_slug | append: '.html' -%}
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": {{ page.title | jsonify }},
+    "description": {{ page.excerpt | strip_html | strip_newlines | jsonify }},
+    "inLanguage": "ja",
+    {%- comment -%}
+      Google は日付にタイムゾーンを含む ISO 8601 を推奨しているため date_to_xmlschema を使う。
+      dateModified は実際の更新日時がある場合のみ出力する。
+      公開日を流用すると、更新していない記事を更新済みとして伝えてしまうため。
+      記事側の front matter に last_modified_at を追加すると反映される。
+    {%- endcomment -%}
+    "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+    {%- if page.last_modified_at %}
+    "dateModified": {{ page.last_modified_at | date_to_xmlschema | jsonify }},
+    {%- endif %}
+    "articleSection": {{ page.category | jsonify }},
+    "mainEntityOfPage": { "@type": "WebPage", "@id": {{ site.url | append: page.url | jsonify }} },
+    "author": {
+      "@type": "Person",
+      "name": "s-iguchi",
+      "url": {{ site.url | append: '/ja/about.html' | jsonify }},
+      "sameAs": ["https://github.com/s-iguchi09"]
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "s-iguchi",
+      "url": {{ site.url | append: '/ja/' | jsonify }}
+    }
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "ホーム", "item": {{ site.url | append: '/ja/' | jsonify }} },
+      { "@type": "ListItem", "position": 2, "name": "技術記事", "item": {{ site.url | append: '/ja/articles/' | jsonify }} },
+      { "@type": "ListItem", "position": 3, "name": {{ page.category | jsonify }}, "item": {{ site.url | append: category_url | jsonify }} },
+      { "@type": "ListItem", "position": 4, "name": {{ page.title | jsonify }} }
+    ]
+  }
+  </script>
 </head>
 <body>
 
 {% include header-ja.html %}
 
 <main>
+  <nav class="breadcrumb" aria-label="パンくずリスト">
+    <a href="/ja/">ホーム</a>
+    <span class="breadcrumb-sep" aria-hidden="true">›</span>
+    <a href="/ja/articles/">技術記事</a>
+    <span class="breadcrumb-sep" aria-hidden="true">›</span>
+    <a href="{{ category_url }}">{{ page.category }}</a>
+    <span class="breadcrumb-sep" aria-hidden="true">›</span>
+    <span aria-current="page">{{ page.title }}</span>
+  </nav>
+
   <section class="hero">
-    <p class="article-meta">{{ page.date | date: "%Y-%m-%d" }} · {{ page.category }}</p>
+    <p class="article-meta">{{ page.date | date: "%Y-%m-%d" }} · <a href="{{ category_url }}">{{ page.category }}</a></p>
     <h1>{{ page.title }}</h1>
     <p>{{ page.excerpt }}</p>
   </section>
@@ -25,6 +87,39 @@
   <article class="content-section">
     {{ content }}
   </article>
+
+  {%- comment -%}
+    同じカテゴリの記事を自動で提示する。
+    本文に手書きの関連記事リンクがある場合は、その URL を除外して重複を避ける。
+  {%- endcomment -%}
+  {%- assign same_category = site.articles_ja | where: 'category', page.category | sort: 'date' | reverse -%}
+  {%- assign shown_count = 0 -%}
+  {%- capture related_items -%}
+    {%- for related in same_category -%}
+      {%- if shown_count >= 4 -%}{%- break -%}{%- endif -%}
+      {%- unless related.url == page.url or page.content contains related.url -%}
+        <li><a href="{{ related.url }}">{{ related.title }}</a></li>
+        {%- assign shown_count = shown_count | plus: 1 -%}
+      {%- endunless -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- assign related_items = related_items | strip -%}
+
+  {% if related_items != '' %}
+  <section class="content-section related-articles">
+    <div class="section-heading">
+      <h2>{{ page.category }} の他の記事</h2>
+      <a href="{{ category_url }}" class="more-link">{{ page.category }} の記事一覧 →</a>
+    </div>
+    <ul class="related-list">
+      {{ related_items }}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="content-section">
+    {% include author-ja.html %}
+  </div>
 </main>
 
 {% include footer-ja.html %}
