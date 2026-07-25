@@ -4,6 +4,7 @@ title: "WPF で ScrollViewer がスクロールしない原因と解決方法"
 date: 2026-07-17
 category: WPF
 excerpt: "StackPanel の中に置いた ScrollViewer がスクロールしないのは、StackPanel が高さを制約しないためである。原因と、Grid や DockPanel を使った解決方法・選択基準を解説する。"
+image: /images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png
 ---
 
 ## 概要
@@ -39,6 +40,11 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 ```
 
 `VerticalScrollBarVisibility="Auto"` を指定しているにもかかわらず、`ScrollViewer` は内容全体の高さまで広がり、スクロールバーは現れない。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png" alt="同じ高さの領域に同じ 12 項目を表示した 2 つの画面。StackPanel の中に置いた側はスクロールバーが無く 7 項目目で切れている。Grid の Star 行に置いた側はスクロールバーが表示されている。" width="496" height="279" loading="lazy">
+  <figcaption>同じ高さの領域に、同じヘッダーと 12 項目を表示したもの。左は <code>ScrollViewer</code> を <code>StackPanel</code> の中に置いた場合で、スクロールバーが出ず領域の下端で内容が切れている。右は <code>Grid</code> の <code>*</code> 行に置いた場合で、スクロールバーが現れて残りの項目まで到達できる。</figcaption>
+</figure>
 
 ---
 

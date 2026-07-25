@@ -24,6 +24,8 @@ internal static class Program
         new BindingStringFormatScene(),
         new UpdateSourceTriggerScene(),
         new SelectableReadOnlyTextScene(),
+        new ScrollViewerNotScrollingScene(),
+        new DatePickerFormatScene(),
     ];
 
     [STAThread]
