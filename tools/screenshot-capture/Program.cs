@@ -26,6 +26,7 @@ internal static class Program
         new SelectableReadOnlyTextScene(),
         new ScrollViewerNotScrollingScene(),
         new DatePickerFormatScene(),
+        new LabelVsTextBlockScene(),
     ];
 
     [STAThread]

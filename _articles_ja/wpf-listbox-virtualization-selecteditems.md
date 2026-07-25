@@ -36,6 +36,11 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 失われているのはデータそのものではなく、コンテナ依存の選択同期である。
 `VirtualizationMode="Recycling"` ではコンテナが使い回されるため、再利用されたコンテナに前の選択状態が残る、あるいは復元されないといった不整合がさらに起きやすくなる。
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg" alt="選択状態の保持先を比較した図。ListBoxItem 側に持たせるとコンテナの再利用で状態が失われ、アイテムの ViewModel に持たせて TwoWay バインドすると状態が保たれる。" width="840" height="330" loading="lazy">
+  <figcaption>選択状態をどこに置くかで、コンテナ再利用時の結果が変わる。上段はコンテナの <code>IsSelected</code> だけに状態がある場合で、スクロールでコンテナが作り直されると復元する手がかりが残らない。下段はデータ側に <code>IsSelected</code> を持たせ <code>ItemContainerStyle</code> で双方向にバインドした場合で、再生成されたコンテナはデータから状態を読み直す。</figcaption>
+</figure>
+
 ## 解決策: 各アイテムに IsSelected を持たせる
 
 複数選択を MVVM で安定して扱うには、各アイテム ViewModel に `IsSelected` を持たせる方法が定番である。

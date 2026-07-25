@@ -4,6 +4,7 @@ title: "WPF で Label を大量配置すると遅い原因と TextBlock への�
 date: 2026-06-10
 category: WPF
 excerpt: "WPF で Label を大量配置した際に描画が遅くなる原因を整理し、TextBlock との違い、使い分け、置き換え時の注意点を実装例付きでまとめる。"
+image: /images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png
 ---
 
 ## 概要
@@ -41,6 +42,17 @@ WPF で `Label` を大量に配置した画面において、初期描画とス�
 
 `Label` は内部で `ContentPresenter` を介して描画を行い、必要に応じてアクセスキー処理や `Target` 連携などの機能を提供する。  
 このため、単純な文字表示だけを大量に行う用途では、`TextBlock` よりもオーバーヘッドが大きくなる。  
+
+この差は実際に計測できる。  
+同じ文字列を 1,000 個並べた `StackPanel` について、レイアウト完了後の visual ツリーの要素数と、`Measure` から `UpdateLayout` までに要した時間を測ると次のようになる。  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png" alt="計測結果の表。Label を 1000 個並べた場合は visual 要素が 4,002 個でレイアウトに 385.3 ミリ秒、TextBlock では 1,002 個で 153.9 ミリ秒。" width="415" height="160" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 での実測値。<code>Label</code> は 1 個あたり 4 個の visual を生成するのに対し、<code>TextBlock</code> は 1 個で済む。レイアウト時間も約 2.5 倍の差がついた。所要時間は実行環境に依存するため、絶対値ではなく比率を目安として読む。</figcaption>
+</figure>
+
+要素数がおよそ 4 倍になる点が本質である。  
+`Label` 1 個につき、`Border`・`ContentPresenter`・実際に文字を描く `TextBlock` が追加で構築されるため、測定・配置・描画の各段階で処理対象が増える。  
 
 ---
 
