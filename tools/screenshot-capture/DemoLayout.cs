@@ -18,6 +18,59 @@ internal static class DemoLayout
     /// <summary>マークアップ 1 行と、その描画結果 1 つの組。</summary>
     internal sealed record Row(string Markup, UIElement Rendered);
 
+    /// <summary>見出し（コード表記）と、その状態を示す UI の組。</summary>
+    internal sealed record Panel(string Caption, UIElement Content);
+
+    /// <summary>
+    /// 「状態ごとの見た目」を並べたウィンドウを作る。
+    /// 見出しは日英で共有するため、コード表記だけで書く。
+    /// </summary>
+    public static Window BuildPanelWindow(
+        string title,
+        IEnumerable<Panel> panels,
+        Orientation orientation = Orientation.Horizontal)
+    {
+        var stack = new StackPanel
+        {
+            Orientation = orientation,
+            Margin = new Thickness(18),
+        };
+
+        bool first = true;
+        foreach (Panel panel in panels)
+        {
+            var caption = new TextBlock
+            {
+                Text = panel.Caption,
+                FontFamily = CodeFont,
+                FontSize = 12,
+                Foreground = CodeBrush,
+                Margin = new Thickness(0, 0, 0, 6),
+            };
+
+            var group = new StackPanel
+            {
+                Margin = orientation == Orientation.Horizontal
+                    ? new Thickness(first ? 0 : 18, 0, 0, 0)
+                    : new Thickness(0, first ? 0 : 18, 0, 0),
+                Children = { caption, panel.Content },
+            };
+
+            stack.Children.Add(group);
+            first = false;
+        }
+
+        return new Window
+        {
+            Title = title,
+            Content = stack,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ResizeMode = ResizeMode.CanMinimize,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = Brushes.White,
+        };
+    }
+
     /// <summary>
     /// 「マークアップ → 描画結果」の行を縦に並べたウィンドウを作る。
     /// </summary>

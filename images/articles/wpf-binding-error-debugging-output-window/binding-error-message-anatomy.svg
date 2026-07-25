@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 250" width="820" height="250" role="img">
+  <defs>
+    <style>
+      .card { fill: #ffffff; stroke: #c3ccdb; stroke-width: 1.5; }
+      .gutter { fill: #f5f7fb; }
+      .line { font-family: Consolas, "Courier New", monospace; font-size: 13.5px; fill: #1f2933; }
+      .num { font-family: Consolas, "Courier New", monospace; font-size: 12px; fill: #ffffff; font-weight: bold; }
+      .badge { fill: #2563eb; }
+      .hit { fill: #d64545; }
+      .ctx { fill: #2563eb; }
+      .tgt { fill: #2f9e6e; }
+    </style>
+  </defs>
+
+  <rect class="card" x="8" y="8" width="804" height="234" rx="8" />
+  <rect class="gutter" x="9" y="9" width="46" height="232" rx="7" />
+  <line x1="55" y1="9" x2="55" y2="241" stroke="#e1e7f0" stroke-width="1" />
+
+  <!-- 1 : エラー番号 -->
+  <circle class="badge" cx="32" cy="41" r="11" />
+  <text class="num" x="32" y="45" text-anchor="middle">1</text>
+  <text class="line" x="70" y="46">System.Windows.Data Error: <tspan class="hit">40</tspan> :</text>
+
+  <!-- 2 : 失敗の内容 -->
+  <circle class="badge" cx="32" cy="72" r="11" />
+  <text class="num" x="32" y="76" text-anchor="middle">2</text>
+  <text class="line" x="70" y="77">BindingExpression path error: <tspan class="hit">'UserNam' property not found</tspan></text>
+
+  <!-- 3 : 探索対象の型 -->
+  <circle class="badge" cx="32" cy="103" r="11" />
+  <text class="num" x="32" y="107" text-anchor="middle">3</text>
+  <text class="line" x="70" y="108">on 'object' <tspan class="ctx">''MainViewModel' (HashCode=12345678)'</tspan>.</text>
+
+  <!-- 4 : バインド式のパス -->
+  <circle class="badge" cx="32" cy="134" r="11" />
+  <text class="num" x="32" y="138" text-anchor="middle">4</text>
+  <text class="line" x="70" y="139">BindingExpression:<tspan class="hit">Path=UserNam</tspan>;</text>
+
+  <!-- 3 : 同じ情報が DataItem にも出る -->
+  <circle class="badge" cx="32" cy="165" r="11" />
+  <text class="num" x="32" y="169" text-anchor="middle">3</text>
+  <text class="line" x="70" y="170">DataItem=<tspan class="ctx">'MainViewModel' (HashCode=12345678)</tspan>;</text>
+
+  <!-- 5 : バインド先の要素 -->
+  <circle class="badge" cx="32" cy="196" r="11" />
+  <text class="num" x="32" y="200" text-anchor="middle">5</text>
+  <text class="line" x="70" y="201">target element is <tspan class="tgt">'TextBox' (Name='userNameBox')</tspan>;</text>
+
+  <!-- 6 : バインド先のプロパティ -->
+  <circle class="badge" cx="32" cy="227" r="11" />
+  <text class="num" x="32" y="231" text-anchor="middle">6</text>
+  <text class="line" x="70" y="232">target property is <tspan class="tgt">'Text' (type 'String')</tspan></text>
+</svg>

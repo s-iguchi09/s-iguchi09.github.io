@@ -18,6 +18,12 @@ internal static class Program
     [
         new LabelUnderscoreScene(),
         new FluentClearButtonScene(),
+        new DataGridSortingScene(),
+        new DataGridSortResetScene(),
+        new DataGridEditingTemplateScene(),
+        new BindingStringFormatScene(),
+        new UpdateSourceTriggerScene(),
+        new SelectableReadOnlyTextScene(),
     ];
 
     [STAThread]

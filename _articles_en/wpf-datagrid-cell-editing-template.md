@@ -4,6 +4,7 @@ title: "Switching Controls Between Display and Edit Modes in WPF DataGrid Cells"
 date: 2026-06-09
 category: WPF
 excerpt: "Use DataGridTemplateColumn with CellTemplate and CellEditingTemplate to separate display UI from editing UI in WPF DataGrid."
+image: /images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png
 ---
 
 ## Overview
@@ -63,6 +64,11 @@ This is the clearest way to separate read and edit responsibilities.
 When editing starts, the grid uses `CellEditingTemplate`.
 When editing ends, it returns to `CellTemplate`.
 No manual event-based UI switching is required.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png" alt="Two DataGrid controls with identical column definitions. The left one renders every cell as text, while in the right one only the Category cell of the second row is a ComboBox." width="540" height="177" loading="lazy">
+  <figcaption>The display state and the editing state of the same <code>DataGridTemplateColumn</code>. On the right, only the <code>Category</code> cell of the second row was put into edit mode, and only that cell switched to the <code>ComboBox</code> from <code>CellEditingTemplate</code>. Every other cell still uses <code>CellTemplate</code>.</figcaption>
+</figure>
 
 The next pattern applies input constraints with `ComboBox` only during editing.
 This pattern reduces invalid input while keeping normal display lightweight.

@@ -59,16 +59,22 @@ target property is 'Text' (type 'String')
 ```
 
 このメッセージは複数の要素から成り、それぞれが原因特定の手がかりになる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg" alt="バインディングエラーのメッセージを行ごとに分解し、左端に 1 から 6 の番号を振った図。エラー番号、解決できなかったプロパティ名、探索対象の型、バインド式のパス、バインド先の要素、バインド先のプロパティの順に並んでいる。" width="820" height="250" loading="lazy">
+  <figcaption>バインディングエラーのメッセージを構成要素ごとに分解したもの。左端の番号は、次の表の <code>#</code> 列に対応する。同じ情報が <code>DataItem</code> にも現れるため、3 は 2 か所に付いている。</figcaption>
+</figure>
+
 各要素の意味は次のとおりである。
 
-| 要素 | 内容 | 読み取れること |
-|---|---|---|
-| `Error: 40` | エラー番号 | エラーの種類（40 はパス解決失敗） |
-| `path error: 'UserNam' property not found` | 失敗の内容 | どのプロパティ名が解決できなかったか |
-| `on 'object' ''MainViewModel'` | 探索対象の型 | どの `DataContext` を探しにいったか |
-| `BindingExpression:Path=UserNam` | バインド式のパス | XAML に書いたパス文字列 |
-| `target element is 'TextBox' (Name='userNameBox')` | バインド先の要素 | どのコントロールか |
-| `target property is 'Text'` | バインド先のプロパティ | どの依存関係プロパティか |
+| # | 要素 | 内容 | 読み取れること |
+|---|---|---|---|
+| 1 | `Error: 40` | エラー番号 | エラーの種類（40 はパス解決失敗） |
+| 2 | `path error: 'UserNam' property not found` | 失敗の内容 | どのプロパティ名が解決できなかったか |
+| 3 | `on 'object' ''MainViewModel'` | 探索対象の型 | どの `DataContext` を探しにいったか |
+| 4 | `BindingExpression:Path=UserNam` | バインド式のパス | XAML に書いたパス文字列 |
+| 5 | `target element is 'TextBox' (Name='userNameBox')` | バインド先の要素 | どのコントロールか |
+| 6 | `target property is 'Text'` | バインド先のプロパティ | どの依存関係プロパティか |
 
 このエラーの読み方は次のようになる。
 `TextBox`（`userNameBox`）の `Text` プロパティが、`MainViewModel` 型のデータコンテキスト上で `UserNam` というプロパティを探したが見つからなかった。

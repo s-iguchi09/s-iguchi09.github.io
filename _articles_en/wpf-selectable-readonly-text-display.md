@@ -4,6 +4,7 @@ title: "How to Display Selectable, Copyable Read-Only Text in WPF"
 date: 2026-05-14
 category: WPF
 excerpt: "Learn how to use a read-only TextBox as a TextBlock replacement in WPF so text remains selectable and copyable without allowing edits."
+image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly-text.png
 ---
 
 ## Overview
@@ -78,6 +79,11 @@ The control is styled so it can be used as a replacement for `TextBlock` in situ
 ```
 
 With this configuration, the displayed text cannot be modified, but users can still select any required part and copy it.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-selectable-readonly-text-display/selectable-readonly-text.png" alt="The same exception message rendered by a TextBlock and by a read-only TextBox. Only in the TextBox is the exception type name highlighted as a selection." width="368" height="159" loading="lazy">
+  <figcaption>The same string rendered by a <code>TextBlock</code> (top) and by a read-only <code>TextBox</code> configured as described above (bottom). In the lower one, only the exception type name is selected. Because the background and border are removed, the unselected appearance is nearly identical to <code>TextBlock</code>.</figcaption>
+</figure>
 Because the appearance is also close to `TextBlock`, existing display-only text can often be replaced with `TextBox` without changing the surrounding layout significantly.  
 
 For long or multi-line content, return handling and scrolling can be added to improve usability.  

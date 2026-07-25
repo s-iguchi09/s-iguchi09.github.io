@@ -4,6 +4,7 @@ title: "Controlling When TextBox Input Reaches the Source with UpdateSourceTrigg
 date: 2026-07-21
 category: WPF
 excerpt: "TextBox.Text defaults to LostFocus, so typed input may never reach the ViewModel. This covers the three UpdateSourceTrigger values, their timing, and pitfalls."
+image: /images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png
 ---
 
 ## Overview
@@ -40,6 +41,11 @@ When the user types into the `TextBox` and, while the caret is still in the fiel
 
 Clicking a button with `Focusable="False"` above does not move focus away from the `TextBox`, so `SaveCommand` runs without the typed text reaching `UserName`.
 The symptom appears as "the value does not arrive even though `INotifyPropertyChanged` is implemented correctly".
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png" alt="Two pairs of an input box and the ViewModel value. With the default binding the box shows sato while UserName is still suzuki. With UpdateSourceTrigger=PropertyChanged, UserName is sato as well." width="401" height="175" loading="lazy">
+  <figcaption>In both rows <code>UserName</code> starts as <code>suzuki</code> and is then changed to <code>sato</code> while the input keeps focus. The right side displays the same <code>UserName</code> through a <code>OneWay</code> binding. With the default (top) the source is not updated because focus never leaves the box, while <code>PropertyChanged</code> (bottom) updates it immediately.</figcaption>
+</figure>
 
 ---
 

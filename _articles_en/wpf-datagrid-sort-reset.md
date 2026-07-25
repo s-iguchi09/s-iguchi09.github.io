@@ -4,6 +4,7 @@ title: "How to Reset DataGrid Sorting in WPF"
 date: 2026-06-29
 category: WPF
 excerpt: "Practical ways to reset WPF DataGrid sorting, including explicit clearing, Sorting-event control, CollectionView handling, and a reusable Behavior."
+image: /images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png
 ---
 
 WPF `DataGrid` provides built-in sorting, but some business workflows require an explicit operation to restore the initial unsorted state.  
@@ -84,7 +85,13 @@ This approach is effective for full reset commands and keeps UI indicators synch
 
 ### Auto-reset on third click with custom sorting behavior
 
-To implement `Ascending -> Descending -> Unsorted`, intercept the `Sorting` event at the transition after descending.
+To implement `Ascending -> Descending -> Unsorted`, intercept the `Sorting` event at the transition after descending.  
+The three states appear as follows.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="Three DataGrid controls side by side. The left one shows an ascending arrow on the Name column with rows in name order, the middle one a descending arrow with the reverse order, and the right one has no arrow and shows the original data order." width="650" height="171" loading="lazy">
+  <figcaption>The three states rendered over the same data. In the unsorted state on the right, the header arrow disappears along with the sort descriptor and the rows return to the order of the underlying collection. Note that the row order differs between the left and right grids.</figcaption>
+</figure>
 
 ### XAML
 

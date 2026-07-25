@@ -4,6 +4,7 @@ title: "WPF TextBox の UpdateSourceTrigger で入力がソースへ反映され
 date: 2026-07-21
 category: WPF
 excerpt: "TextBox.Text の既定が LostFocus であるために起きる「入力が ViewModel に届かない」問題を、UpdateSourceTrigger の三値の使い分けと落とし穴から整理する。"
+image: /images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png
 ---
 
 ## 概要
@@ -40,6 +41,11 @@ ViewModel のプロパティに `TextBox` をバインドし、その値を使�
 
 上記で `Focusable="False"` のボタンをクリックすると、`TextBox` はフォーカスを失わないため、入力した文字が `UserName` に反映されないまま `SaveCommand` が実行される。
 `INotifyPropertyChanged` は正しく実装しているのに値が届かない、という形で表面化する。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png" alt="2 組の入力欄と ViewModel の値を並べた画面。既定のバインディングでは入力欄が sato でも UserName は suzuki のまま。UpdateSourceTrigger=PropertyChanged では UserName も sato になっている。" width="401" height="175" loading="lazy">
+  <figcaption>どちらも <code>UserName</code> の初期値は <code>suzuki</code> で、入力欄にフォーカスを残したまま <code>sato</code> へ書き換えた状態。右側は同じ <code>UserName</code> を <code>OneWay</code> で表示している。既定（上）ではフォーカスが外れていないためソースが更新されず、<code>PropertyChanged</code>（下）では即座に反映される。</figcaption>
+</figure>
 
 ---
 

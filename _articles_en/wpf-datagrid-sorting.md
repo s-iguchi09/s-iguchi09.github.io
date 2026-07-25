@@ -4,6 +4,7 @@ title: "How to Implement DataGrid Sorting in WPF"
 date: 2026-04-20
 category: WPF
 excerpt: "Learn the basics of DataGrid sorting and practical implementation patterns for real-world WPF applications."
+image: /images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png
 ---
 
 ## Overview
@@ -63,6 +64,11 @@ priceCol.SortDirection = ListSortDirection.Descending;
 ```
 
 Without this glyph update the header arrow still points at the previous column, even though the rows are ordered correctly, which makes the sorted state look inconsistent to the user.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png" alt="Two DataGrid controls side by side. In the left one the rows are ordered by Price descending while an ascending arrow remains on the Name column. In the right one the descending arrow is on the Price column and matches the row order." width="460" height="171" loading="lazy">
+  <figcaption>Both grids started from a state sorted by <code>Name</code> ascending, and then had their <code>SortDescriptions</code> replaced with <code>Price</code> descending. The left grid updated only <code>SortDescriptions</code>, so the rows follow <code>Price</code> descending while the arrow stays on the <code>Name</code> column. The right grid also updated <code>SortDirection</code>, so the arrow points at <code>Price</code> descending.</figcaption>
+</figure>
 
 ## Custom Sort Logic with ListCollectionView
 

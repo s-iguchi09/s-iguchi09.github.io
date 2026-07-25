@@ -56,6 +56,11 @@ be.UpdateSource();
 第三に、`UpdateSource()` は呼び出したその 1 つの `BindingExpression` だけを書き戻す。
 フォーム全体を確定したい場合は、対象の各 `TextBox` について個別に呼ぶか、後述する一括更新の仕組みを使う必要がある。
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-direction-and-null.svg" alt="UpdateSource がターゲットからソースへ、UpdateTarget がソースからターゲットへ値を移すことを示す図。下段には GetBindingExpression が null を返す 3 つの条件が並んでいる。" width="820" height="412" loading="lazy">
+  <figcaption>更新の向きと、対象になるバインディングモードの対応。<code>UpdateSource()</code> はターゲットからソースへ書き戻すため <code>OneWay</code> や <code>OneTime</code> では何も起きない。下段は <code>GetBindingExpression</code> が <code>null</code> を返す代表的な 3 条件で、いずれも例外ではなく <code>null</code> として現れる。</figcaption>
+</figure>
+
 ---
 
 ## 解決方法

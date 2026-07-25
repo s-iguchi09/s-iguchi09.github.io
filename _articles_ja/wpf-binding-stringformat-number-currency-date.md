@@ -4,6 +4,7 @@ title: "WPF Binding.StringFormat で数値・通貨・日付を書式化する�
 date: 2026-07-17
 category: WPF
 excerpt: "コンバーターを書かずに Binding.StringFormat で数値・通貨・日付を書式化する手法を整理し、カルチャ依存や ContentControl での制約までまとめる。"
+image: /images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png
 ---
 
 ## 概要
@@ -150,6 +151,12 @@ WPF の既定ではこのカルチャが `en-US` になるため、日本語環�
 `Binding.StringFormat` の最大の落とし穴は、書式化に使うカルチャが OS の地域設定ではないことである。
 バインディングは `Binding.ConverterCulture` を使い、これが未設定(既定 `null`)の場合はバインディング先要素の `Language` プロパティを参照する。
 XAML では `Language` の既定値が `en-US` であるため、日本語環境でも通貨が `$`、日付が `M/d/yyyy` 形式になる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png" alt="同じ値に対する 4 つのバインディングの描画結果。ConverterCulture を指定しない場合は 1,234.50 ドルと 7/17/2026、ja-JP を指定した場合は 1,235 円と 2026/07/17 になっている。" width="697" height="202" loading="lazy">
+  <figcaption>日本語環境の Windows 11 で実行した結果。<code>ConverterCulture</code> を指定しないバインディングは、OS の地域設定にかかわらず <code>en-US</code> として書式化され、通貨記号が <code>$</code>、日付が <code>M/d/yyyy</code> になる。</figcaption>
+</figure>
+
 対処は主に次の 2 つである。
 
 1 つ目は、個別のバインディングに `ConverterCulture` を指定する方法である。
@@ -189,6 +196,11 @@ FrameworkElement.LanguageProperty.OverrideMetadata(
 <!-- TextBlock.Text は string 型なので StringFormat がそのまま効く -->
 <TextBlock Text="{Binding Price, StringFormat=C}" />
 ```
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-contentcontrol.png" alt="3 つのバインディングの描画結果。Label の Content に StringFormat を指定した場合だけ書式が適用されず 1234.5 と表示され、ContentStringFormat を使った Label と TextBlock は通貨書式で表示されている。" width="697" height="166" loading="lazy">
+  <figcaption><code>Label</code> の <code>Content</code> に <code>StringFormat</code> を指定しても書式は適用されず、値がそのまま表示される。<code>ContentStringFormat</code> を使った場合と、<code>string</code> 型の <code>TextBlock.Text</code> にバインドした場合は、いずれも通貨として書式化される。</figcaption>
+</figure>
 
 `ContentStringFormat` は書式指定子・複合書式指定文字列のいずれも受け付ける。
 ただし `ContentTemplate` または `ContentTemplateSelector` を設定している場合、`ContentStringFormat` は無視される。

@@ -4,6 +4,7 @@ title: "WPF DataGrid の並び替えを実装する方法"
 date: 2026-04-20
 category: WPF
 excerpt: "DataGrid のソート処理の基本と、実務で使いやすい実装パターンを解説する。"
+image: /images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png
 ---
 
 ## 概要
@@ -64,6 +65,11 @@ priceCol.SortDirection = ListSortDirection.Descending;
 ```
 
 グリフを更新しないと、行は正しく並んでいるのにヘッダーの矢印が以前の列を指したままになり、ソート状態がユーザーには不整合に見える。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png" alt="2 つの DataGrid を並べた画面。左は行が Price の降順に並んでいるのに Name 列に昇順の矢印が残っている。右は Price 列に降順の矢印が付いており、行の並びと一致している。" width="460" height="171" loading="lazy">
+  <figcaption>いずれも <code>Name</code> の昇順で表示していた状態から、<code>SortDescriptions</code> を <code>Price</code> の降順へ差し替えた直後。左は <code>SortDescriptions</code> だけを更新したため、行は <code>Price</code> の降順になっているのに矢印が <code>Name</code> 列に残る。右は <code>SortDirection</code> も更新しており、矢印が <code>Price</code> 列の降順を指している。</figcaption>
+</figure>
 
 ## ListCollectionView によるカスタムソート
 
