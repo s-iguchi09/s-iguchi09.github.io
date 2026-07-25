@@ -16,12 +16,29 @@
 {% include header-en.html %}
 
 <main>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep" aria-hidden="true">›</span>
+    <span aria-current="page">Articles</span>
+  </nav>
+
   <section class="hero">
     <h1>Articles</h1>
     <p>Technical articles on WPF, XAML, C# and Windows application development.</p>
   </section>
 
   <section class="content-section">
+    <h2>Browse by category</h2>
+    <ul class="category-nav">
+      {%- assign wpf_count = site.articles_en | where: 'category', 'WPF' | size -%}
+      {%- assign csharp_count = site.articles_en | where: 'category', 'C#' | size -%}
+      <li><a href="/articles/categories/wpf.html">WPF <span class="category-count">{{ wpf_count }}</span></a></li>
+      <li><a href="/articles/categories/csharp.html">C# <span class="category-count">{{ csharp_count }}</span></a></li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>All articles</h2>
     <div class="article-grid">
       {% assign sorted_articles = site.articles_en | sort: 'date' | reverse %}
       {% for article in sorted_articles %}

@@ -46,6 +46,17 @@ BASE_URL = load_base_url()
 # Directories to exclude from scanning
 EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"}
 
+# Path fragments whose pages are excluded from the sitemap.
+# These pages carry <meta name="robots" content="noindex"> (see _includes/head.html),
+# so listing them in the sitemap would send search engines a contradictory signal.
+EXCLUDE_PATH_FRAGMENTS = ("wpf-standard-control-demo/",)
+
+
+def is_excluded_from_sitemap(rel_path: str) -> bool:
+    """Return True if the page is noindex and must not appear in the sitemap."""
+    normalized = rel_path.replace("\\", "/")
+    return any(fragment in normalized for fragment in EXCLUDE_PATH_FRAGMENTS)
+
 # Priority rules (matched in order, first match wins)
 PRIORITY_RULES = [
     # index pages
@@ -156,6 +167,9 @@ def collect_english_paths() -> list:
             continue
         # Skip Japanese pages (handled separately via pairing)
         if rel.startswith("ja/"):
+            continue
+        # Skip noindex pages
+        if is_excluded_from_sitemap(rel):
             continue
         paths.append(rel)
     return sorted(paths)

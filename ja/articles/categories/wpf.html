@@ -1,0 +1,38 @@
+---
+article_category: WPF
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>WPF の記事一覧 - s-iguchi</title>
+  {% include head.html %}
+  <meta name="description" content="WPF・XAML に関する技術記事の一覧。データバインディング、コントロール、スタイル、仮想化、UI の挙動を実装レベルで解説する。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+  {% include breadcrumb-category-ja.html category=page.article_category %}
+
+  <section class="hero">
+    <h1>WPF</h1>
+    <p>
+      WPF・XAML に関する記事の一覧です。
+      データバインディング、コントロール、スタイル、仮想化、UI の挙動を扱います。
+      いずれも Windows デスクトップアプリケーションの開発中に遭遇した具体的な問題を出発点に、
+      その挙動が起きる理由を説明したうえで、実装とトレードオフまで整理しています。
+    </p>
+  </section>
+
+  {% include category-list-ja.html category=page.article_category %}
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

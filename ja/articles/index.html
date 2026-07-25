@@ -16,12 +16,29 @@
 {% include header-ja.html %}
 
 <main>
+  <nav class="breadcrumb" aria-label="パンくずリスト">
+    <a href="/ja/">ホーム</a>
+    <span class="breadcrumb-sep" aria-hidden="true">›</span>
+    <span aria-current="page">技術記事</span>
+  </nav>
+
   <section class="hero">
     <h1>技術記事</h1>
     <p>WPF・XAML・C# および Windows アプリ開発に関する技術記事を掲載しています。</p>
   </section>
 
   <section class="content-section">
+    <h2>カテゴリから探す</h2>
+    <ul class="category-nav">
+      {%- assign wpf_count = site.articles_ja | where: 'category', 'WPF' | size -%}
+      {%- assign csharp_count = site.articles_ja | where: 'category', 'C#' | size -%}
+      <li><a href="/ja/articles/categories/wpf.html">WPF <span class="category-count">{{ wpf_count }}</span></a></li>
+      <li><a href="/ja/articles/categories/csharp.html">C# <span class="category-count">{{ csharp_count }}</span></a></li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>すべての記事</h2>
     <div class="article-grid">
       {% assign sorted_articles = site.articles_ja | sort: 'date' | reverse %}
       {% for article in sorted_articles %}

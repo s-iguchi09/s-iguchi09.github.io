@@ -382,6 +382,163 @@ h2 {
 }
 
 /* ================================
+   パンくずリスト
+================================ */
+.breadcrumb {
+  max-width: var(--max-width);
+  margin: 1.5rem auto -1rem;
+  padding: 0 0.5rem;
+  font-size: 0.82rem;
+  color: #667085;
+}
+
+.breadcrumb a {
+  color: #667085;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.breadcrumb-sep {
+  margin: 0 0.4rem;
+  color: #98a2b3;
+}
+
+.breadcrumb [aria-current="page"] {
+  color: var(--fg);
+}
+
+/* ================================
+   カテゴリナビゲーション
+================================ */
+.category-nav {
+  max-width: var(--max-width);
+  margin: 0 auto 1rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.category-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--fg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.category-nav a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.category-count {
+  background: #eef2fb;
+  color: #475467;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+/* ================================
+   関連記事
+================================ */
+.related-list {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.related-list li {
+  border-bottom: 1px solid var(--border);
+}
+
+.related-list li:last-child {
+  border-bottom: none;
+}
+
+.related-list a {
+  display: block;
+  padding: 0.85rem 0.25rem;
+  text-decoration: none;
+  color: var(--fg);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.related-list a:hover {
+  color: var(--accent);
+}
+
+/* ================================
+   著者情報ボックス
+================================ */
+.author-box {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.author-box-label {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #667085;
+}
+
+.author-box-name {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.author-box-bio {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: #475467;
+}
+
+.author-box-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.author-box-links a {
+  font-size: 0.88rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.author-box-links a:hover {
+  text-decoration: underline;
+}
+
+/* ================================
    コードブロック（Rouge シンタックスハイライト）
    Visual Studio ライトテーマ風の配色
 ================================ */
@@ -504,5 +661,9 @@ h2 {
 
   .article-grid {
     grid-template-columns: 1fr;
+  }
+
+  .author-box {
+    padding: 1.25rem;
   }
 }

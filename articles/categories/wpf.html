@@ -1,0 +1,37 @@
+---
+article_category: WPF
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WPF Articles - s-iguchi</title>
+  {% include head.html %}
+  <meta name="description" content="Articles on WPF and XAML: data binding, controls, styling, virtualization, and UI behavior in real Windows desktop applications.">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-en.html %}
+
+<main>
+  {% include breadcrumb-category-en.html category=page.article_category %}
+
+  <section class="hero">
+    <h1>WPF</h1>
+    <p>
+      Articles on WPF and XAML — data binding, controls, styling, virtualization, and UI behavior.
+      Each one starts from a concrete problem met while building a Windows desktop application,
+      explains why the behavior occurs, and works through the implementation and its trade-offs.
+    </p>
+  </section>
+
+  {% include category-list-en.html category=page.article_category %}
+</main>
+
+{% include footer-en.html %}
+
+</body>
+</html>

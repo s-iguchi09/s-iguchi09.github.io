@@ -1,0 +1,37 @@
+---
+article_category: C#
+---
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>C# の記事一覧 - s-iguchi</title>
+  {% include head.html %}
+  <meta name="description" content="C# 言語と .NET ライブラリに関する技術記事の一覧。バージョンごとの言語機能、LINQ 演算子の .NET Framework へのバックポート、ターゲットフレームワーク間の互換性を扱う。">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% include header-ja.html %}
+
+<main>
+  {% include breadcrumb-category-ja.html category=page.article_category %}
+
+  <section class="hero">
+    <h1>C#</h1>
+    <p>
+      C# 言語と、その背後にある .NET ライブラリに関する記事の一覧です。
+      バージョンごとに追加された言語機能、新しい LINQ 演算子の .NET Framework へのバックポート、
+      複数のターゲットフレームワークをまたぐコードベースで問題になる互換性の詳細を扱います。
+    </p>
+  </section>
+
+  {% include category-list-ja.html category=page.article_category %}
+</main>
+
+{% include footer-ja.html %}
+
+</body>
+</html>

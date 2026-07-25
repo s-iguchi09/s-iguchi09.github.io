@@ -1,0 +1,25 @@
+{%- comment -%}
+  指定したカテゴリの英語記事を新しい順に一覧表示する。
+  呼び出し例: {% include category-list-en.html category=page.article_category %}
+{%- endcomment -%}
+{%- assign category_articles = site.articles_en | where: 'category', include.category | sort: 'date' | reverse -%}
+
+<section class="content-section">
+  <div class="section-heading">
+    <h2>{{ include.category }} articles ({{ category_articles | size }})</h2>
+    <a href="/articles/" class="more-link">All articles →</a>
+  </div>
+  <div class="article-grid">
+    {% for article in category_articles %}
+    <article class="article-card">
+      <a href="{{ article.url }}">
+        <div class="article-card-body">
+          <p class="article-meta">{{ article.date | date: "%Y-%m-%d" }} · {{ article.category }}</p>
+          <h3>{{ article.title }}</h3>
+          <p class="article-excerpt">{{ article.excerpt | strip_html | strip_newlines | strip | truncate: 160 }}</p>
+        </div>
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+</section>

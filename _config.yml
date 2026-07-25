@@ -12,6 +12,16 @@ kramdown:
 include:
   - sitemap.xml
 
+# 公開サイトに出力しないファイル。
+# docs/rules 配下は AI エージェント向けの内部ルール文書であり、サイトのコンテンツではない。
+# とくに template-ja.md / template-en.md は front matter に記事レイアウトを指定しているため、
+# 除外しないと「（タイトル）」のままのプレースホルダ記事がそのまま公開されてしまう。
+# CLAUDE.md / AGENTS.md も同様にエージェント向けの指示であり、公開する意味がない。
+exclude:
+  - docs
+  - CLAUDE.md
+  - AGENTS.md
+
 collections:
   articles_en:
     output: true

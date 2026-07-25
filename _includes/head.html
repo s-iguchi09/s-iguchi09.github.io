@@ -1,6 +1,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
 
+{% comment %}
+  検索エンジンのインデックス対象から外すページ。
+  コントロール別デモページ（日英 72 ページ）は同一テンプレートで構成され、
+  内容も公式リファレンスの整理が中心のため、サイト全体の評価を下げないよう noindex とする。
+  ページ側の front matter に `noindex: true` を書いても同じ扱いになる。
+  なお follow は残すため、デモページからのリンクは引き続きたどられる。
+{% endcomment %}
+{% if page.noindex or page.url contains '/wpf-standard-control-demo/' %}
+  <meta name="robots" content="noindex, follow">
+{% endif %}
+
 {% if page.url contains '/ja/' %}
   <link rel="alternate" hreflang="ja" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
   <link rel="alternate" hreflang="en" href="{{ site.url }}{{ page.url | replace: '/ja/', '/' | replace: 'index.html', '' }}">
