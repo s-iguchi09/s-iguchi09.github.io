@@ -19,6 +19,12 @@ on:
 permissions:
   contents: write
 
+# push と workflow_dispatch が重なると sitemap.xml の更新が競合するため直列化する。
+# 後から来た実行が正しい内容を書くので、実行中のものはキャンセルしない。
+concurrency:
+  group: update-sitemap
+  cancel-in-progress: false
+
 jobs:
   update-sitemap:
     runs-on: ubuntu-latest
@@ -48,5 +54,7 @@ jobs:
             git commit -m "chore: update sitemap.xml [skip ci]"
             # このジョブの実行中に main が進むと push が弾かれるため、
             # 一度だけ rebase して再試行する。
-            git push || (git pull --rebase origin main && git push)
+            # refspec は明示する。checkout の状態に依存せず push 先が定まる。
+            git push origin HEAD:main \
+              || (git pull --rebase origin main && git push origin HEAD:main)
           fi
