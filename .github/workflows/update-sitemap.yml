@@ -56,7 +56,12 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/sitemap_deploy
           chmod 600 ~/.ssh/sitemap_deploy
-          ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          # ssh-keyscan は取得したホスト鍵を検証しないため使わない。
+          # GitHub が公開している SSH ホスト鍵を HTTPS（＝証明書で認証された経路）で
+          # 取得して登録する。鍵がローテーションされても追従できる。
+          curl -fsSL https://api.github.com/meta \
+            | jq -r '.ssh_keys[] | "github.com " + .' > ~/.ssh/known_hosts
+          test -s ~/.ssh/known_hosts
           export GIT_SSH_COMMAND="ssh -i ~/.ssh/sitemap_deploy -o IdentitiesOnly=yes"
           git remote set-url origin "git@github.com:${{ github.repository }}.git"
 
