@@ -34,6 +34,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # 既定の GITHUB_TOKEN は main を保護するルールセットに弾かれる。
+          # GitHub Actions 自体をバイパスに登録するには organization 所有である
+          # 必要があり、個人リポジトリでは指定できない（API が 422 を返す）。
+          # そのため書き込み権限付きの deploy key で push する。
+          # ルールセット側の Bypass list には Deploy keys を登録してある。
+          ssh-key: ${{ secrets.SITEMAP_DEPLOY_KEY }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
