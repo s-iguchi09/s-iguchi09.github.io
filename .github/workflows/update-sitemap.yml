@@ -8,9 +8,13 @@ on:
       - "**/*.html"
       - "_articles_en/**"
       - "_articles_ja/**"
+      - "images/**"
       - "_config.yml"
       - ".github/scripts/generate_sitemap.py"
       - ".github/workflows/update-sitemap.yml"
+  # 上記のパスに触れない変更のあとで sitemap を取り直したい場合や、
+  # 過去に生成が失敗して sitemap が古いままの場合に手動で実行する。
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -42,5 +46,7 @@ jobs:
             echo "sitemap.xml is already up to date."
           else
             git commit -m "chore: update sitemap.xml [skip ci]"
-            git push
+            # このジョブの実行中に main が進むと push が弾かれるため、
+            # 一度だけ rebase して再試行する。
+            git push || (git pull --rebase origin main && git push)
           fi
