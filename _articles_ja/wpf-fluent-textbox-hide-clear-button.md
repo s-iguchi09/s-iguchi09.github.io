@@ -4,6 +4,7 @@ title: "WPF Fluent テーマの TextBox でクリアボタンを非表示にす�
 date: 2026-07-19
 category: WPF
 excerpt: "Fluent テーマの TextBox がフォーカス時に表示するクリアボタンを、入力挙動を変えずに非表示化する。名前付きパーツを操作する方法と AcceptsReturn を使う方法を .NET 10・9 対応で整理する。"
+image: /images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png
 ---
 
 ## 概要
@@ -31,6 +32,11 @@ Fluent テーマを適用した WPF の `TextBox` は、編集可能で単一行
 Fluent テーマの `TextBox` は、キーボードフォーカスが入るとテンプレート内のクリアボタンを自動表示する。
 標準テーマ(Aero2)には存在しない要素のため、テーマを切り替えた後に意図せず現れる。
 既に「×」ボタンやコマンドで入力値をクリアする UI を用意している画面では、同一機能のボタンが重複し、レイアウトの一貫性が損なわれる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png" alt="Fluent テーマを適用した WPF アプリの画面。テキストを入力した TextBox にフォーカスが当たり、右端にクリアボタンの × が表示されている。" width="346" height="143" loading="lazy">
+  <figcaption>.NET 10 の Fluent テーマで <code>TextBox</code> にフォーカスを入れた状態。テキスト右端に既定でクリアボタン(×)が現れる。</figcaption>
+</figure>
 
 ---
 
@@ -155,6 +161,13 @@ XAML 側では、対象の `TextBox` に添付プロパティを付与するだ�
 
 `xmlns:helper` は添付プロパティ `TextBoxHelper` を定義したクラスの名前空間(`clr-namespace`)を指す。
 実際に定義した名前空間に合わせて置き換える。
+
+適用後は、フォーカスが入りテキストが存在する状態でもクリアボタンが現れない。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png" alt="方法 1 を適用した後の同じ画面。テキストを入力した TextBox にフォーカスが当たっているが、右端のクリアボタンは表示されていない。" width="346" height="143" loading="lazy">
+  <figcaption>方法 1 を適用した後の同じ画面。入力値もフォーカス状態も前掲の画像と同じだが、クリアボタンだけが消えている。テキストの折り返しやキャレット位置など、入力に関わる挙動は変わらない。</figcaption>
+</figure>
 
 ### 方法 2: `AcceptsReturn` の非表示トリガーを利用する(`.NET 10` 以降)
 

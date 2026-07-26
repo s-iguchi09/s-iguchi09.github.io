@@ -52,6 +52,12 @@ Feature availability depends mainly on two factors:
 As a result, even when targeting .NET Framework, language features such as `??=` and `!` can be used if the build environment supports C# 8.0.
 
 The following table summarizes the operators and syntax covered in this article and the C# version in which they were introduced.
+Plotted over time, they line up as follows.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg" alt="A timeline from C# 1.0 to 12.0 with the operators and syntax added in each version. Only ^, .. and required are shaded to mark that they need a BCL type or attribute." width="900" height="300" loading="lazy">
+  <figcaption>The C# version that introduced each construct. The shaded chips need more than a higher <code>LangVersion</code>: they depend on a BCL type (<code>System.Index</code> / <code>System.Range</code>) or attribute. <code>??=</code> sits at C# 8.0.</figcaption>
+</figure>
 
 | Operator / Syntax | C# Version | .NET Version | .NET Framework Support |
 | --- | --- | --- | --- |

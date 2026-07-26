@@ -96,6 +96,13 @@ Set `CacheOption` to `BitmapCacheOption.OnLoad`.
 `OnLoad` caches the entire image into memory at load time, and every subsequent request for image data is filled from that memory store.
 Because the source no longer needs to be read, the file or stream can be released once initialization completes.
 
+The difference between the default behavior and `OnLoad` is shown in the diagram below.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapcacheoption-stream-lifetime.svg" alt="A diagram comparing the default cache behavior with OnLoad. With the default, BitmapImage keeps the image file stream open and File.Delete throws IOException, with release left to the garbage collector. With OnLoad, the whole image is cached in memory when EndInit completes, the stream is closed, and File.Delete succeeds." width="880" height="394" loading="lazy">
+  <figcaption>The top lane shows the default (<code>Default</code> / <code>OnDemand</code>) handling of the file stream and the bottom lane shows <code>OnLoad</code>. By default the stream stays open to serve later reads, and the timing of its release is left to the garbage collector. With <code>OnLoad</code> the entire image is cached in memory when <code>EndInit</code> completes, so the stream is closed and the file can be deleted or overwritten.</figcaption>
+</figure>
+
 `CacheOption` can only be set while the `BitmapImage` is being initialized.
 `BitmapImage` implements `ISupportInitialize`, so property initialization must be performed between `BeginInit` and `EndInit` calls.
 Property changes made after initialization are ignored.

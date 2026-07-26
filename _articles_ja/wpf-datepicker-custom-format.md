@@ -4,6 +4,7 @@ title: "DatePicker の表示形式をカスタマイズする方法"
 date: 2026-04-15
 category: WPF
 excerpt: "XAML とコードビハインドの両面から、WPF DatePicker の日付表示形式を変更する方法をまとめる。"
+image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 
 ## 概要
@@ -43,6 +44,43 @@ WPF の `DatePicker` は、選択された日付をシステムのロケール�
 区切り文字は `\/` とエスケープしてリテラルとして描画させている。
 エスケープしない `/` は日付区切りのプレースホルダーであり、バインドのカルチャによって別の文字に置き換えられ、固定レイアウトが崩れる。
 なお、シングルクォートで囲む `'/'`(例: `yyyy'/'MM'/'dd`)でも同じ効果が得られ、記事の後半ではこの記法を用いている。
+
+適用前後を並べると次のようになる。
+既定表示はターゲット要素の `Language`(XAML では `xml:lang`)に従うため、実行マシンのロケールに左右されないよう両方に `en-US` を指定している。
+
+```xml
+<!-- 既定の表示 -->
+<DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190" />
+
+<!-- 上のスタイルを適用したもの -->
+<DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190">
+  <DatePicker.Resources>
+    <Style TargetType="DatePickerTextBox">
+      <Setter Property="Text"
+              Value="{Binding SelectedDate,
+                              RelativeSource={RelativeSource AncestorType=DatePicker},
+                              StringFormat='yyyy\/MM\/dd'}" />
+    </Style>
+  </DatePicker.Resources>
+</DatePicker>
+```
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="同じ日付を選択した 2 つの DatePicker。既定のものは 4/15/2026 と表示され、StringFormat を指定したものは 2026/04/15 と表示されている。" width="486" height="146" loading="lazy">
+  <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。書式の差が出るよう、どちらにも <code>xml:lang="en-US"</code> を指定している。上は既定の表示で、この設定に従って <code>4/15/2026</code> になる。下は本節のスタイルを適用したもので、区切り文字と年月日の並びが指定どおりに固定される。</figcaption>
+</figure>
+
+ただし、`\/` のエスケープで固定できるのは区切り文字と並び順であって、暦そのものではない。  
+同じ `yyyy\/MM\/dd` をカルチャだけ変えて評価すると次のようになる（.NET 10 での実測値）。  
+
+| `xml:lang` | 表示 |
+|---|---|
+| `en-US` / `ja-JP` / `de-DE` | `2026/04/15` |
+| `th-TH`(仏暦) | `2569/04/15` |
+| `ar-SA`(ヒジュラ暦) | `1447/10/27` |
+| `fa-IR`(ペルシャ暦) | `1405/01/26` |
+
+暦まで含めて固定したい場合は、バインドに `ConverterCulture` を指定してカルチャ自体を固定する。  
 
 ## コードビハインドによる方法
 

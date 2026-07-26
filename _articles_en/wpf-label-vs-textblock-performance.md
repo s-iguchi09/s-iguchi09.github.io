@@ -4,6 +4,7 @@ title: "Why WPF Slows Down with Many Labels and When to Switch to TextBlock"
 date: 2026-06-10
 category: WPF
 excerpt: "This article explains why rendering slows down when many WPF Labels are used and provides practical criteria for replacing them with TextBlock."
+image: /images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png
 ---
 
 ## Overview
@@ -42,6 +43,19 @@ By contrast, `Label` derives from `ContentControl`, which is designed as a more 
 
 `Label` renders through `ContentPresenter` and provides additional capabilities such as access-key handling and `Target`-based focus linkage.  
 This functional overhead is useful in forms but becomes a cost factor when large numbers of simple text elements are rendered.  
+
+The difference is measurable.  
+Placing 1,000 elements carrying the same string into a `StackPanel` and measuring both the number of visuals in the resulting tree and the time from `Measure` to `UpdateLayout` gives the following.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png" alt="A table of measurements. 1000 Label controls produce 4,002 visual elements and take 385.3 milliseconds to lay out, while TextBlock produces 1,002 and takes 153.9 milliseconds." width="415" height="160" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with the default theme (Aero2) <code>ControlTemplate</code> and a string assigned to <code>Content</code>. Under those conditions each <code>Label</code> builds four visuals where a <code>TextBlock</code> builds one, and the layout pass took roughly 2.5 times as long. The visual count changes with the theme or a replaced <code>ControlTemplate</code>, and absolute timings depend on the machine, so read the ratio rather than the numbers.</figcaption>
+</figure>
+
+The roughly fourfold element count is the essential point.  
+With the default template, each `Label` additionally builds a `Border`, a `ContentPresenter` and the `TextBlock` that actually draws the text, so every measure, arrange and render pass has more objects to process.  
+When `Content` holds a string containing an access key (`_`), the `ContentPresenter` inserts an `AccessText` as well, bringing the count to five.  
+The measurement above uses a string without an access key.  
 
 ---
 

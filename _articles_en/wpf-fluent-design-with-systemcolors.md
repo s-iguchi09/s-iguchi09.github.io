@@ -4,6 +4,7 @@ title: "Applying Fluent Design in WPF Without Extra Libraries"
 date: 2026-05-30
 category: WPF
 excerpt: "This article explains how to apply Fluent styling in WPF using only built-in features, with App.xaml theme setup and SystemColors-based color tracking."
+image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png
 ---
 
 ## Overview
@@ -26,6 +27,11 @@ The approach uses built-in WPF styling, spacing, corner radius, visual hierarchy
 
 The default WPF theme is stable and predictable, but its visual density and spacing often diverge from current Windows design language.  
 In multi-window business applications, default control styles can make interaction priority less clear, especially when all elements have similar weight and low hierarchy contrast.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="A WPF window using the default theme. A heading, body text and a square-cornered button sit on the same surface as the window background." width="426" height="273" loading="lazy">
+  <figcaption>The same controls under the default theme (Aero2). The card surface is not separated from the background and the button corners are square, which makes it hard to tell which element is the primary action.</figcaption>
+</figure>
 
 ---
 
@@ -186,6 +192,11 @@ The following sample uses `SystemColors` through `DynamicResource`.
 This keeps the implementation dependency-free while improving hierarchy and interaction feedback.  
 Because key brushes are resolved through `DynamicResource`, changes in Windows color settings can propagate during runtime.  
 `SystemColors.AccentColorBrushKey` can be used where accent emphasis is needed.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="A WPF window with the Fluent theme and SystemColors applied. A rounded card holds a heading, body text and a rounded button with generous spacing." width="426" height="273" loading="lazy">
+  <figcaption>The same composition as the XAML above (heading, body text, button) with <code>ThemeMode</code> and <code>SystemColors</code> applied and no external libraries involved. Compared with the figure in the Problem section, the card surface separates from the background and the rounded corners and spacing establish a hierarchy.</figcaption>
+</figure>
 
 ---
 

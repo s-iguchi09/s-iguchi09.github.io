@@ -4,6 +4,7 @@ title: "Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing 
 date: 2026-07-10
 category: C#
 excerpt: "Three design principles for hand-rolled LINQ polyfills, demonstrated through the Append, Prepend, TakeLast and SkipLast implementations."
+image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-takelast-skiplast.png
 ---
 
 ## Overview
@@ -57,6 +58,11 @@ Both obscure intent and invite unnecessary allocations or double enumeration.
 
 Note that methods such as `Chunk` and `MaxBy` arrived in .NET 6, not in this window.
 Their implementation is covered in a [separate article](/articles/linq-backport-netframework-to-net6/).
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-append-prepend-takelast-skiplast.png" alt="The four methods applied to the same input. Append adds 6 at the end, Prepend adds 0 at the front, TakeLast(2) yields 4 and 5, and SkipLast(2) yields 1 through 3." width="386" height="218" loading="lazy">
+  <figcaption>The four methods evaluated against the same input <code>1..5</code>. Unlike <code>Append</code> and <code>Prepend</code>, which only add one element, the tail-oriented <code>TakeLast</code> and <code>SkipLast</code> have to reason about how far enumeration has progressed in order to know the end.</figcaption>
+</figure>
 
 ---
 

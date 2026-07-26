@@ -4,11 +4,13 @@ title: "WPF で Fluent デザインを追加ライブラリなしで適用する
 date: 2026-05-30
 category: WPF
 excerpt: "WPF 標準機能だけで Fluent デザインの見た目を整え、SystemColors を使って Windows の色設定に追従する実装方法を整理します。"
+image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png
 ---
 
 ## 概要
 
-本記事では、WPF アプリに Fluent デザインの要素を取り入れる方法を扱う対象は「追加ライブラリを導入しない」構成であり、WPF 標準のテンプレート、余白設計、角丸、階層表現、`SystemColors` の活用で一貫した外観を構築する。  
+本記事では、WPF アプリに Fluent デザインの要素を取り入れる方法を扱う。  
+対象は「追加ライブラリを導入しない」構成であり、WPF 標準のテンプレート、余白設計、角丸、階層表現、`SystemColors` の活用で一貫した外観を構築する。  
 ---
 
 ## 前提・対象環境
@@ -24,6 +26,12 @@ excerpt: "WPF 標準機能だけで Fluent デザインの見た目を整え、S
 
 既定の WPF テーマは長期運用で安定している一方、余白、配色、角丸、情報階層の表現が現行の Windows UI と乖離しやすい。  
 特に複数画面を持つ業務アプリでは、コントロールを既定スタイルのまま配置すると視覚的な密度が高くなり、操作対象の優先度が判別しにくくなる。  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png" alt="既定テーマの WPF 画面。見出し、説明文、四角い枠のボタンが背景と同じ面の上に並んでいる。" width="426" height="273" loading="lazy">
+  <figcaption>既定テーマ（Aero2）のまま配置した画面。カード面と背景が分離しておらず、ボタンの角も直角で、どこが主要な操作かが読み取りにくい。</figcaption>
+</figure>
+
 ---
 
 ## 原因・背景
@@ -181,6 +189,12 @@ Fluent リソースディクショナリを使う場合は次のように記述�
 上記の実装は、WPF 標準機能のみで視覚階層と操作フィードバックを整える構成である。  
 `DynamicResource` を利用しているため、OS の色設定が変わった際にブラシ参照の再評価が行われ、固定色中心の実装より追従性が高くなる。  
 `SystemColors.AccentColorBrushKey` 系を利用すれば、Windows のアクセントカラーにも追従できる。  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png" alt="Fluent テーマと SystemColors を適用した WPF 画面。角丸のカードの中に、見出し・説明文・角丸のボタンが余白を取って配置されている。" width="426" height="273" loading="lazy">
+  <figcaption>上の XAML と同じ構成（見出し・説明文・ボタン）に、<code>ThemeMode</code> と <code>SystemColors</code> を適用した結果。追加ライブラリは使っていない。「問題」の図と比べると、カード面が背景から分離し、角丸と余白で階層が付いている。</figcaption>
+</figure>
+
 ---
 
 ## 注意点

@@ -4,6 +4,7 @@ title: "WPF ComboBox の ItemsSource バインドパターンと選択値の取�
 date: 2026-04-26
 category: WPF
 excerpt: "ItemsSource に渡すデータ構造によって、DisplayMemberPath・SelectedItem・SelectedValue の設定方法が変わります。文字列リスト、オブジェクトリスト、Enum の各パターンを整理します。"
+image: /images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png
 ---
 
 ## 概要
@@ -52,6 +53,14 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 - `SelectedIndex` は表示順そのものに意味がある場合に限って使い、通常は値やオブジェクトを直接扱う設定を優先する。
 
 この方針で選べば、ViewModel 側のプロパティ型と `ComboBox` の設定を対応させやすくなり、初期選択や選択変更の反映漏れを防ぎやすい。  
+
+設定の違いは、同じ選択肢を選んだときの表示に現れる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png" alt="3 つの ComboBox を並べた画面。文字列リストと DisplayMemberPath は Baker とだけ表示され、ItemTemplate を使ったものは 102 と Baker の 2 列で表示されている。" width="469" height="184" loading="lazy">
+  <figcaption>いずれも 2 件目を選択した状態。文字列リストと <code>DisplayMemberPath</code> は 1 つの文字列を表示するのに対し、<code>ItemTemplate</code> を使うと選択済みの表示にもテンプレートが適用され、複数フィールドを並べられる。</figcaption>
+</figure>
+
 ---
 
 ## 実装例
@@ -81,7 +90,8 @@ public string? SelectedRegion
 }
 ```
 
-`SelectedItem` に `string` 以外の型（例: `int`）をバインドすると型の不一致でバインドエラーとなる
+`SelectedItem` に `string` 以外の型（例: `int`）をバインドすると型の不一致でバインドエラーとなる。
+
 ---
 
 ### パターン B：オブジェクトリスト ＋ DisplayMemberPath ＋ SelectedItem
@@ -179,7 +189,8 @@ public class Employee
 }
 ```
 
-`ItemTemplate` を使う場合、ドロップダウンを閉じた状態（選択済み表示）と展開した一覧で異なるレイアウトを出したいときは `ItemTemplate` の代わりに `ItemContainerStyle` と `ContentTemplate` を組み合わせる
+`ItemTemplate` を使う場合、ドロップダウンを閉じた状態（選択済み表示）と展開した一覧で異なるレイアウトを出したいときは、`ItemTemplate` の代わりに `ItemContainerStyle` と `ContentTemplate` を組み合わせる。
+
 ---
 
 ### パターン E：Enum リスト

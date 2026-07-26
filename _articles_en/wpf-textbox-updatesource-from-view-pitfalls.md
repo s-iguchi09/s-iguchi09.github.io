@@ -56,6 +56,11 @@ Calling it while the binding is detached from its target throws an `InvalidOpera
 Third, `UpdateSource()` writes back only the single `BindingExpression` it was called on.
 Committing an entire form requires calling it on each target `TextBox` individually, or using a bulk-update mechanism described below.
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-direction-and-null.svg" alt="A diagram showing that UpdateSource moves the value from target to source and UpdateTarget from source to target, with the three conditions that make GetBindingExpression return null listed below." width="820" height="412" loading="lazy">
+  <figcaption>The direction of each update and the binding modes it applies to. <code>UpdateSource()</code> writes from target to source, so it does nothing on <code>OneWay</code> or <code>OneTime</code>. The bottom row lists the three common conditions under which <code>GetBindingExpression</code> returns <code>null</code> — none of them raise an exception.</figcaption>
+</figure>
+
 ---
 
 ## Solution

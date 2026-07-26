@@ -37,6 +37,11 @@ If selection state is managed in a way that depends on containers, it becomes vu
 
 In other words, the data is not necessarily lost — the **container-based synchronization** is.  
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg" alt="A diagram comparing where selection state is stored. Keeping it on the ListBoxItem loses the state when containers are recycled, while keeping it on the item ViewModel with a two-way binding preserves it." width="840" height="330" loading="lazy">
+  <figcaption>The outcome of container recycling depends on where the selection state lives. In the top lane the state exists only on the container's <code>IsSelected</code>, so nothing remains to restore it once scrolling rebuilds the container. In the bottom lane the item exposes <code>IsSelected</code> and <code>ItemContainerStyle</code> binds it two-way, so a regenerated container reads the state back from the data.</figcaption>
+</figure>
+
 ## Recommended fix: add IsSelected to each item
 
 For stable MVVM-friendly multi-selection, add an `IsSelected` property to every item ViewModel.  

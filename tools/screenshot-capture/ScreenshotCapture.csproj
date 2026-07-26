@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- PrintWindow でウィンドウを PNG 化するために System.Drawing を使う。 -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>ScreenshotCapture</AssemblyName>
+    <RootNamespace>ScreenshotCapture</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UseWindowsForms が入れる暗黙 using は、WPF の型（TextBox・Brush など）と
+         名前が衝突する。System.Drawing は Capture.cs だけで明示的に using する。 -->
+    <Using Remove="System.Drawing" />
+    <Using Remove="System.Windows.Forms" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+</Project>

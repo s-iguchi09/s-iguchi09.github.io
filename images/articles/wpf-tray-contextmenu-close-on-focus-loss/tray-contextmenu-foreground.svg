@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 356" width="880" height="356" role="img">
+  <defs>
+    <style>
+      .lane { fill: #f5f7fb; stroke: #e1e7f0; stroke-width: 1; }
+      .box { fill: #ffffff; stroke: #c3ccdb; stroke-width: 1.5; }
+      .box-ng { fill: #fdf4f4; stroke: #e0aeae; stroke-width: 1.5; }
+      .box-ok { fill: #f1f9f5; stroke: #9dd3b8; stroke-width: 1.5; }
+      .code { font-family: Consolas, "Courier New", monospace; font-size: 12.5px; fill: #1f2933; }
+      .code-sm { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+      .lane-title { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #2563eb; }
+      .ng { fill: #d64545; }
+      .ok { fill: #2f9e6e; }
+    </style>
+    <marker id="t-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8a93a3" />
+    </marker>
+  </defs>
+
+  <!-- ===== SetForegroundWindow を呼ばない場合 ===== -->
+  <rect class="lane" x="14" y="14" width="852" height="152" rx="10" />
+  <text class="lane-title" x="34" y="40">StaysOpen = false   only</text>
+
+  <rect class="box" x="34" y="60" width="180" height="70" rx="6" />
+  <text class="code" x="124" y="88" text-anchor="middle">NotifyIcon</text>
+  <text class="code-sm" x="124" y="107" text-anchor="middle">right click</text>
+
+  <line x1="226" y1="95" x2="292" y2="95" stroke="#8a93a3" stroke-width="2" marker-end="url(#t-muted)" />
+
+  <rect class="box-ng" x="304" y="60" width="230" height="70" rx="6" />
+  <text class="code" x="419" y="88" text-anchor="middle">foreground window</text>
+  <text class="code-sm ng" x="419" y="107" text-anchor="middle">another app</text>
+
+  <line x1="546" y1="95" x2="612" y2="95" stroke="#8a93a3" stroke-width="2" marker-end="url(#t-muted)" />
+
+  <rect class="box" x="624" y="60" width="180" height="70" rx="6" />
+  <text class="code" x="714" y="88" text-anchor="middle">ContextMenu</text>
+  <text class="code-sm ng" x="714" y="107" text-anchor="middle">stays open</text>
+
+  <text class="ng" x="820" y="101" font-family="Segoe UI, sans-serif" font-size="17">✕</text>
+
+  <!-- ===== SetForegroundWindow を呼ぶ場合 ===== -->
+  <rect class="lane" x="14" y="180" width="852" height="162" rx="10" />
+  <text class="lane-title" x="34" y="206">SetForegroundWindow()  +  StaysOpen = false</text>
+
+  <rect class="box" x="34" y="226" width="180" height="80" rx="6" />
+  <text class="code" x="124" y="254" text-anchor="middle">NotifyIcon</text>
+  <text class="code-sm" x="124" y="273" text-anchor="middle">right click</text>
+
+  <line x1="226" y1="266" x2="292" y2="266" stroke="#8a93a3" stroke-width="2" marker-end="url(#t-muted)" />
+  <text class="code-sm ok" x="259" y="255" text-anchor="middle">1</text>
+
+  <rect class="box-ok" x="304" y="226" width="230" height="80" rx="6" />
+  <text class="code" x="419" y="254" text-anchor="middle">foreground window</text>
+  <text class="code-sm ok" x="419" y="273" text-anchor="middle">SetForegroundWindow(hwnd)</text>
+
+  <line x1="546" y1="266" x2="612" y2="266" stroke="#8a93a3" stroke-width="2" marker-end="url(#t-muted)" />
+  <text class="code-sm ok" x="579" y="255" text-anchor="middle">2</text>
+
+  <rect class="box" x="624" y="226" width="180" height="80" rx="6" />
+  <text class="code" x="714" y="254" text-anchor="middle">ContextMenu</text>
+  <text class="code-sm ok" x="714" y="273" text-anchor="middle">closes on focus loss</text>
+
+  <text class="ok" x="820" y="272" font-family="Segoe UI, sans-serif" font-size="17">✓</text>
+</svg>

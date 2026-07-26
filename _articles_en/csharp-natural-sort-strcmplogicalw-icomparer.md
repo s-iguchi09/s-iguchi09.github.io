@@ -4,6 +4,7 @@ title: "Replicating Windows Explorer Sort Order in C# with StrCmpLogicalW and IC
 date: 2026-07-24
 category: C#
 excerpt: "The default string sort orders \"item10\" before \"item2\". This shows how to reproduce Explorer's natural sort order via StrCmpLogicalW P/Invoke in an IComparer."
+image: /images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-comparison.png
 ---
 
 ## Overview
@@ -37,6 +38,11 @@ files.Sort();
 
 `List<T>.Sort()` uses `Comparer<string>.Default`, which compares digits as a sequence of characters.
 As a result, comparing `item10` and `item2` decides the order by the fifth characters `1` and `2`, placing `item10` first.
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-comparison.png" alt="The same five strings sorted two ways. The default sort produces item1, item10, item2, item20, item3, while StrCmpLogicalW produces item1, item2, item3, item10, item20." width="356" height="221" loading="lazy">
+  <figcaption>The input from the code above, sorted with the default comparison (left) and with <code>StrCmpLogicalW</code> (right). The right-hand order matches Windows Explorer.</figcaption>
+</figure>
 
 ---
 

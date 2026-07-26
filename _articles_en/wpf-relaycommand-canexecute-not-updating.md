@@ -4,6 +4,7 @@ title: "Fixing a RelayCommand Whose CanExecute Does Not Update the Button State 
 date: 2026-07-23
 category: WPF
 excerpt: "A custom RelayCommand's button stays stuck when CanExecuteChanged is never raised. This compares delegating to RequerySuggested with raising it manually."
+image: /images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png
 ---
 
 ## Overview
@@ -52,6 +53,11 @@ public class RelayCommand : ICommand
 
 `CanExecute` is evaluated when the command is first bound. It would normally be re-evaluated afterward in response to `CanExecuteChanged`, but because this implementation never raises it, entering a value into `Name` leaves the save button disabled.
 The button has no trigger to re-evaluate `CanExecute`.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png" alt="Two pairs of an input box and a button holding the same text. With an implementation that never raises CanExecuteChanged the button stays disabled, while delegating to CommandManager.RequerySuggested enables it." width="382" height="179" loading="lazy">
+  <figcaption>Both rows use the same condition (executable when <code>Name</code> is not empty) and contain the same text. The upper implementation never raises <code>CanExecuteChanged</code>, so the button stays disabled after typing. The lower one delegates to <code>CommandManager.RequerySuggested</code>, so the requery runs and the button becomes enabled.</figcaption>
+</figure>
 
 ---
 

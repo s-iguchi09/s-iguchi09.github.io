@@ -4,6 +4,7 @@ title: "WPF DataGrid でセル編集中と表示時でコントロールを切�
 date: 2026-06-09
 category: WPF
 excerpt: "DataGridTemplateColumn の CellTemplate と CellEditingTemplate を使い分け、表示時と編集中で最適な UI を構成する方法を解説します。"
+image: /images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png
 ---
 
 ## 概要
@@ -61,6 +62,11 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 
 編集開始時は `CellEditingTemplate` が適用され、編集終了後は `CellTemplate` に戻る。
 切り替え処理をイベントで手動実装する必要はない。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png" alt="同じ列定義の DataGrid を 2 つ並べた画面。左はすべてのセルがテキスト表示、右は 2 行目の Category セルだけが ComboBox になっている。" width="540" height="177" loading="lazy">
+  <figcaption>同じ <code>DataGridTemplateColumn</code> の表示状態と編集状態。右は 2 行目の <code>Category</code> セルだけを編集状態にしたもので、そのセルだけが <code>CellEditingTemplate</code> の <code>ComboBox</code> に切り替わっている。他のセルは <code>CellTemplate</code> のままである。</figcaption>
+</figure>
 
 次に、値制約が必要な列では表示 `TextBlock` と編集 `ComboBox` の構成を使う。
 この構成は入力候補を限定し、誤入力を抑制できる。

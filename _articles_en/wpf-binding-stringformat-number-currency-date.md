@@ -4,6 +4,7 @@ title: "Formatting Numbers, Currency, and Dates with Binding.StringFormat in WPF
 date: 2026-07-17
 category: WPF
 excerpt: "A practical guide to formatting numbers, currency, and dates with Binding.StringFormat without a converter, including culture and ContentControl constraints."
+image: /images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png
 ---
 
 ## Overview
@@ -150,6 +151,12 @@ The value of each child `Binding` is assigned in order to the placeholder with t
 The biggest pitfall of `Binding.StringFormat` is that the culture used for formatting is not the OS regional setting.
 The binding uses `Binding.ConverterCulture`, and when this is unset (the default `null`), it refers to the `Language` property of the binding target element.
 Because `Language` defaults to `en-US` in XAML, currency appears with `$` and dates appear in `M/d/yyyy` form even in a Japanese environment.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png" alt="Rendering results of four bindings over the same values. Without ConverterCulture the output is $1,234.50 and 7/17/2026, while with ja-JP it is a yen amount of 1,235 and 2026/07/17." width="697" height="202" loading="lazy">
+  <figcaption>Captured on Windows 11 configured for Japanese. Without <code>ConverterCulture</code>, the binding uses the target element's <code>Language</code> property (<code>xml:lang</code> in XAML); since it is left unset here, the default <code>en-US</code> applies, so the currency symbol is <code>$</code> and the date follows <code>M/d/yyyy</code> regardless of the OS regional setting.</figcaption>
+</figure>
+
 There are two main remedies.
 
 The first is to specify `ConverterCulture` on an individual binding.
@@ -189,6 +196,11 @@ For these controls, the `ContentStringFormat` property is used instead.
 <!-- TextBlock.Text is string typed, so StringFormat applies directly -->
 <TextBlock Text="{Binding Price, StringFormat=C}" />
 ```
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-contentcontrol.png" alt="Rendering results of three bindings. Only the Label that sets StringFormat on Content leaves the value unformatted as 1234.5, while the Label using ContentStringFormat and the TextBlock both render the currency format." width="697" height="166" loading="lazy">
+  <figcaption>Setting <code>StringFormat</code> on a <code>Label</code>'s <code>Content</code> applies no formatting and the raw value is displayed. Using <code>ContentStringFormat</code>, or binding to the <code>string</code>-typed <code>TextBlock.Text</code>, produces the currency format.</figcaption>
+</figure>
 
 `ContentStringFormat` accepts both a bare specifier and a composite format string.
 However, when `ContentTemplate` or `ContentTemplateSelector` is set, `ContentStringFormat` is ignored.

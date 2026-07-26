@@ -47,6 +47,11 @@ The adopted solution uses two coordinated steps.
 
 This combination aligns activation state at menu-open time and restores expected close behavior when focus moves elsewhere.  
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-foreground.svg" alt="A diagram comparing the path from a tray right-click to the menu being shown. Without SetForegroundWindow another application stays in the foreground and the menu never closes; with it, the owning window is brought forward before the menu opens." width="880" height="356" loading="lazy">
+  <figcaption>The difference in the path from the right-click to the menu. The top lane sets only <code>StaysOpen</code>: the menu opens while another application is still in the foreground, so the focus-loss check never fires. The bottom lane calls <code>SetForegroundWindow</code> before showing the menu. Windows restricts which processes may set the foreground window, so the call is not guaranteed to succeed (it returns <code>0</code> on failure); a click on the tray icon means the caller has just received input, which is why the switch takes effect in this configuration.</figcaption>
+</figure>
+
 ---
 
 ## Implementation

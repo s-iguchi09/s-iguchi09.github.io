@@ -4,6 +4,7 @@ title: "遅延評価を壊さない LINQ ポリフィルの設計原則 — Appe
 date: 2026-07-10
 category: C#
 excerpt: "LINQ ポリフィル自作時の 3 つの設計原則（引数検証とイテレータの分離・バッファリングの最小化・条件付きコンパイルによる移行ガード）を、.NET Core 期に追加された Append・Prepend・TakeLast・SkipLast の実装を題材に解説する。"
+image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-takelast-skiplast.png
 ---
 
 ## 概要
@@ -57,6 +58,11 @@ excerpt: "LINQ ポリフィル自作時の 3 つの設計原則（引数検証�
 
 なお、`Chunk` や `MaxBy` などのメソッド群が追加されたのは .NET 6 からであり、この時点では存在しない。
 それらの実装は[別記事](/ja/articles/linq-backport-netframework-to-net6/)で扱う。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-append-prepend-takelast-skiplast.png" alt="4 つのメソッドを同じ入力に適用した結果。Append は末尾に 6 が加わり、Prepend は先頭に 0 が加わり、TakeLast(2) は 4 と 5、SkipLast(2) は 1 から 3 になっている。" width="386" height="218" loading="lazy">
+  <figcaption>同じ入力 <code>1..5</code> に対して 4 つのメソッドを実際に評価した結果。末尾側を扱う <code>TakeLast</code> / <code>SkipLast</code> は、要素を 1 つ足すだけの <code>Append</code> / <code>Prepend</code> と違い、末尾を知るために列挙の進み方まで考える必要がある。</figcaption>
+</figure>
 
 ---
 

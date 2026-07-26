@@ -4,6 +4,7 @@ title: "Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, Agg
 date: 2026-07-16
 category: C#
 excerpt: "Implementing CountBy, AggregateBy and Index with direct dictionary accumulation, avoiding the intermediate-grouping allocations of GroupBy."
+image: /images/articles/linq-backport-netframework-to-net9/linq-countby-aggregateby-index.png
 ---
 
 ## Overview
@@ -89,6 +90,11 @@ Since the whole point of a polyfill is to keep behavior unchanged across migrati
 
 To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
 `Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net9/linq-countby-aggregateby-index.png" alt="Results of CountBy, AggregateBy and Index over six strings. CountBy gives a count per key, AggregateBy the total length per key, and Index pairs each element with its position." width="774" height="186" loading="lazy">
+  <figcaption>The three methods evaluated over the same input. <code>CountBy</code> and <code>AggregateBy</code> fold the sequence down to one entry per key, whereas <code>Index</code> keeps the element count and attaches a position. The <code>Index()</code> row shows only the first three results.</figcaption>
+</figure>
 
 ---
 

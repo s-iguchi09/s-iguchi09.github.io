@@ -4,6 +4,8 @@ title: "(Title)"
 date: YYYY-MM-DD
 category: (Category)
 excerpt: "(Article summary. Keep under 160 characters.)"
+# 代表となるスクリーンショットがある場合のみ、次の行のコメントを外して設定する（SVG は指定しない）。
+# image: /images/articles/(slug)/(file).png
 ---
 
 ## Overview
@@ -24,6 +26,13 @@ This article covers [technical topic] and explains [what the article provides] f
 ## Problem
 
 [Describe the situation and what issue occurs.]
+
+[画面に現れる問題であれば、実際に動かしたスクリーンショットを添える。日本語版と同じ画像を使い、alt と figcaption のみ英語で書く。前後に空行を置くこと。詳細は `guidelines.md` §11。]
+
+<figure class="article-figure">
+  <img src="/images/articles/(slug)/(file).png" alt="(Alternative text describing the image content.)" width="(actual)" height="(actual)" loading="lazy">
+  <figcaption>(What the figure shows, including the environment it was produced on.)</figcaption>
+</figure>
 
 ---
 

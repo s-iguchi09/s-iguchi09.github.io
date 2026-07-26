@@ -4,6 +4,7 @@ title: "WPFのDataGridのソートを初期化する方法"
 date: 2026-06-29
 category: WPF
 excerpt: "WPF DataGrid のソート状態を初期化する代表的な方法を整理し、単一列ソートと複数列ソートの両方で使える実装例を示す。"
+image: /images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png
 ---
 
 WPF の `DataGrid` は便利なソート機能を持っていますが、要件によっては「初期状態に戻す（ソートを解除する）」動作を明示的に実装したいことがあります。  
@@ -87,7 +88,13 @@ public static class DataGridSortHelper
 
 ### 3回目のクリックで自動的に初期化する（カスタム挙動）
 
-「昇順 → 降順 → 未ソート」の3状態にしたい場合は、`Sorting` イベントを使って制御します。
+「昇順 → 降順 → 未ソート」の3状態にしたい場合は、`Sorting` イベントを使って制御します。  
+3つの状態を実際に表示すると次のようになります。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="3 つの DataGrid を並べた画面。左は Name 列に昇順の矢印が付き名前順、中央は降順の矢印が付き逆順、右は矢印が無くデータ本来の並びになっている。" width="650" height="171" loading="lazy">
+  <figcaption>同じデータに対する 3 状態の表示。未ソート（右）では対象列の <code>SortDescription</code> とヘッダーの矢印がどちらも消える。この例は 1 列だけでソートしているため、解除するとコレクション本来の並びに戻る。複数列でソートしている場合は他の列の条件が残るため、必ずしも元の並びには戻らない。</figcaption>
+</figure>
 
 ### XAML
 

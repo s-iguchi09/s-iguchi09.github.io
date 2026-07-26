@@ -4,6 +4,7 @@ title: "WPF で RelayCommand の CanExecute がボタンの有効・無効に反
 date: 2026-07-23
 category: WPF
 excerpt: "自作 RelayCommand の CanExecute を変えてもボタンが更新されないのは CanExecuteChanged が発火されないため。CommandManager.RequerySuggested への委譲と手動発火の使い分けを整理する。"
+image: /images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png
 ---
 
 ## 概要
@@ -52,6 +53,11 @@ public class RelayCommand : ICommand
 
 `CanExecute` は初回バインド時に評価される。本来はその後 `CanExecuteChanged` の発火に応じて再評価されるが、この実装では一度も発火していないため、`Name` を入力しても保存ボタンは無効のまま変わらない。
 ボタンが `CanExecute` を再評価する契機が無いことが原因である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png" alt="同じ文字列を入力した 2 組の入力欄とボタン。CanExecuteChanged を発火しない実装ではボタンが無効のまま、CommandManager.RequerySuggested へ委譲した実装ではボタンが有効になっている。" width="382" height="179" loading="lazy">
+  <figcaption>どちらも同じ条件（<code>Name</code> が空でなければ実行可能）で、同じ文字列を入力した状態。上は <code>CanExecuteChanged</code> を一度も発火しない実装で、入力してもボタンは無効のままである。下は <code>CommandManager.RequerySuggested</code> へ委譲した実装で、再問い合わせが走りボタンが有効になる。</figcaption>
+</figure>
 
 ---
 

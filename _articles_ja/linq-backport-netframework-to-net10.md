@@ -4,6 +4,7 @@ title: "SQL の外部結合を LINQ で表現する — LeftJoin・RightJoin・S
 date: 2026-07-16
 category: C#
 excerpt: "SQL の LEFT JOIN / RIGHT JOIN に対応する .NET 10 の LeftJoin・RightJoin と Shuffle を .NET Framework へ実装し、GroupJoin イディオムとの対応関係、擬似シャッフルとの違い、IQueryable に適用した場合の落とし穴を解説する。"
+image: /images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png
 ---
 
 ## 概要
@@ -55,6 +56,11 @@ var result = employees
 
 この合成イディオムは「外部結合」という意図が構造に埋もれており、`SelectMany` と `DefaultIfEmpty` の位置を誤ると内部結合や交差結合に化ける。
 ランダム並べ替えも同様で、`OrderBy(_ => Guid.NewGuid())` は全要素へのキー生成とソートを伴い、シャッフルとしての一様性も保証されない。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="2 つの並びに対する LeftJoin と RightJoin の結果。LeftJoin では左に無い相手が null、RightJoin では右に無い相手が null になっている。Shuffle は順序が入れ替わっている。" width="448" height="218" loading="lazy">
+  <figcaption>左右の並びに一致しないキーがある場合の評価結果。<code>LeftJoin</code> は左を残して相手を <code>null</code> に、<code>RightJoin</code> は右を残して相手を <code>null</code> にする。<code>Shuffle</code> は順序をランダム化するため、この行は 1 回分の実行結果である。</figcaption>
+</figure>
 
 ---
 

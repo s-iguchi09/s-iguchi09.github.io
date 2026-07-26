@@ -4,6 +4,7 @@ title: "Why a WPF ScrollViewer Does Not Scroll and How to Fix It"
 date: 2026-07-17
 category: WPF
 excerpt: "A ScrollViewer inside a StackPanel does not scroll because the StackPanel never constrains its height. This covers the cause and the Grid and DockPanel fixes."
+image: /images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png
 ---
 
 ## Overview
@@ -39,6 +40,11 @@ Placing a `ScrollViewer` inside a vertical `StackPanel` and filling it with many
 ```
 
 Even though `VerticalScrollBarVisibility="Auto"` is set, the `ScrollViewer` expands to the full height of its content and no scrollbar is shown.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png" alt="Two regions of identical height showing the same 12 items. The one placed inside a StackPanel has no scrollbar and is cut off at the seventh item, while the one in a Grid star row shows a scrollbar." width="496" height="279" loading="lazy">
+  <figcaption>The same header and 12 items rendered inside regions of identical height. On the left the <code>ScrollViewer</code> sits inside a <code>StackPanel</code>: no scrollbar appears and the content is clipped at the bottom of the region. On the right it sits in a <code>*</code> row of a <code>Grid</code>, so a scrollbar appears and the remaining items are reachable.</figcaption>
+</figure>
 
 ---
 

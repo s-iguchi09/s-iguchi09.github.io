@@ -46,6 +46,11 @@ WPF 側の `ContextMenu` は、`StaysOpen` の設定と表示時のフォアグ�
 
 この 2 点を併用すると、右クリックで開いたメニューがフォーカス移動時に閉じる挙動へ安定する。  
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-foreground.svg" alt="タスクトレイの右クリックからメニュー表示までの流れを比較した図。SetForegroundWindow を呼ばない場合はフォアグラウンドが別アプリのままでメニューが閉じず、呼ぶ場合はメニューを開く前に自ウィンドウをフォアグラウンドへ移す。" width="880" height="356" loading="lazy">
+  <figcaption>右クリックからメニュー表示までの経路の違い。上段は <code>StaysOpen</code> だけを設定した場合で、フォアグラウンドが別アプリのままメニューが開くため、フォーカス喪失の判定が働かない。下段は表示前に <code>SetForegroundWindow</code> を呼ぶ経路である。Windows にはフォアグラウンド化の制限があり、この API は常に成功するとは限らない（失敗時は <code>0</code> が返る）が、トレイアイコンのクリック直後は呼び出し元が入力を受けた直後にあたるため、この構成では切り替わる。</figcaption>
+</figure>
+
 ---
 
 ## 実装例

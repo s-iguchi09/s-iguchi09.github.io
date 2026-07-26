@@ -4,6 +4,7 @@ title: "GroupBy を経由しないキー集計 — CountBy・AggregateBy・Index
 date: 2026-07-16
 category: C#
 excerpt: "キーごとの集計で GroupBy が抱える中間グルーピングの割り当てコストを整理し、.NET 9 の CountBy・AggregateBy・Index を辞書への直接集計で .NET Framework に実装する方法と、GroupBy 委譲実装との挙動差を解説する。"
+image: /images/articles/linq-backport-netframework-to-net9/linq-countby-aggregateby-index.png
 ---
 
 ## 概要
@@ -90,6 +91,11 @@ public static IEnumerable<KeyValuePair<TKey, int>> CountBy<TSource, TKey>(
 
 あわせて、遅延評価を保ったまま引数検証を即時化するため、public メソッドと `yield return` を含むイテレータ本体を分離する（根拠は[シリーズ基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)を参照）。
 `Index` だけは集計を伴わないため、`Select` のインデックス付きオーバーロードへの委譲で足りる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net9/linq-countby-aggregateby-index.png" alt="6 件の文字列に対する CountBy・AggregateBy・Index の結果。CountBy はキーごとの件数、AggregateBy はキーごとの文字数合計、Index は添字と要素の組になっている。" width="774" height="186" loading="lazy">
+  <figcaption>同じ入力に対する 3 メソッドの評価結果。<code>CountBy</code> と <code>AggregateBy</code> はキーごとに 1 件へ畳み込むのに対し、<code>Index</code> は要素数を変えずに添字を添える。<code>Index()</code> の行は先頭 3 件のみ表示している。</figcaption>
+</figure>
 
 ---
 

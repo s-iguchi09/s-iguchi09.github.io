@@ -16,9 +16,11 @@ URL structure:
 import os
 import re
 import glob
+import html
 import datetime
 import subprocess
 from typing import Optional
+from xml.sax.saxutils import escape as xml_escape
 
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
 TODAY = datetime.date.today().isoformat()
@@ -107,12 +109,25 @@ def get_git_lastmod(rel_path: str) -> str:
     return TODAY
 
 
+def image_element(url: str) -> str:
+    """Build one <image:image> entry, XML-escaping the URL.
+
+    An image URL can legitimately contain '&' (query strings, for example),
+    which must not be written into the sitemap verbatim.
+    """
+    return f"    <image:image><image:loc>{xml_escape(url)}</image:loc></image:image>"
+
+
 def extract_images_from_file(abs_path: str) -> list:
     """Return a list of absolute image URLs found in an HTML or Markdown file.
 
-    For HTML files, looks for <img src="..."> tags.
-    For Markdown files, looks for ![...](src) syntax.
-    Only site-relative paths (starting with /) are included.
+    Looks for HTML <img src="..."> tags in every file type, and additionally for
+    ![...](src) syntax in Markdown files. Articles wrap figures in
+    <figure class="article-figure"><img ...></figure> so that a caption can be
+    attached, so Markdown files must be scanned for both notations.
+    Only site-relative paths (starting with a single /) are included; a
+    protocol-relative "//host/..." reference points at another host, so
+    prefixing it with BASE_URL would produce a bogus URL.
     """
     if not os.path.isfile(abs_path):
         return []
@@ -122,18 +137,33 @@ def extract_images_from_file(abs_path: str) -> list:
     except OSError:
         return []
 
+    def is_site_relative(src: str) -> bool:
+        return src.startswith("/") and not src.startswith("//")
+
     images = []
     if abs_path.endswith(".md"):
-        # Markdown image syntax: ![alt](path)
+        # Markdown image syntax: ![alt](path), including the ![alt](<path> "title") form.
+        # Destinations can carry HTML entities too, so decode before matching and
+        # let image_element() re-escape for XML on output.
         for src in re.findall(r'!\[[^\]]*\]\(([^)]+)\)', content):
-            src = src.strip().split()[0]  # strip optional title (e.g. "url title")
-            if src.startswith("/"):
+            src = src.strip()
+            if not src:  # e.g. "![alt]( )"
+                continue
+            if src.startswith("<"):
+                # Angle-bracketed destination: everything up to the closing '>'
+                src = src[1:].split(">", 1)[0]
+            else:
+                src = src.split()[0]  # strip optional title (e.g. "url title")
+            src = html.unescape(src)
+            if is_site_relative(src):
                 images.append(BASE_URL + src)
-    else:
-        # HTML <img src="..."> (also handles single quotes)
-        for src in re.findall(r'<img\s[^>]*\bsrc=["\']([^"\']+)["\']', content, re.IGNORECASE):
-            if src.startswith("/"):
-                images.append(BASE_URL + src)
+    # HTML <img src="..."> (also handles single quotes).
+    # The attribute value is HTML-escaped in the source, so "&amp;" must be decoded
+    # back to "&" here; image_element() re-escapes it for XML on output.
+    for src in re.findall(r'<img\s[^>]*\bsrc=["\']([^"\']+)["\']', content, re.IGNORECASE):
+        src = html.unescape(src)
+        if is_site_relative(src):
+            images.append(BASE_URL + src)
     # Deduplicate while preserving order
     seen = set()
     unique = []
@@ -221,7 +251,7 @@ def build_article_url_entry(slug: str, has_ja: bool) -> str:
         lines.append(f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />')
     lines.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />')
     for img_url in en_images:
-        lines.append(f"    <image:image><image:loc>{img_url}</image:loc></image:image>")
+        lines.append(image_element(img_url))
     lines.append(f"    <lastmod>{en_lastmod}</lastmod>")
     lines.append(f"    <changefreq>{changefreq}</changefreq>")
     lines.append(f"    <priority>{priority}</priority>")
@@ -239,7 +269,7 @@ def build_article_url_entry(slug: str, has_ja: bool) -> str:
         lines.append(f'    <xhtml:link rel="alternate" hreflang="ja" href="{ja_url}" />')
         lines.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />')
         for img_url in ja_images:
-            lines.append(f"    <image:image><image:loc>{img_url}</image:loc></image:image>")
+            lines.append(image_element(img_url))
         lines.append(f"    <lastmod>{ja_lastmod}</lastmod>")
         lines.append(f"    <changefreq>{ja_changefreq}</changefreq>")
         lines.append(f"    <priority>{ja_priority}</priority>")
@@ -274,7 +304,7 @@ def build_url_entry(en_path: str, ja_path: Optional[str]) -> str:
         f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />'
     )
     for img_url in en_images:
-        lines.append(f"    <image:image><image:loc>{img_url}</image:loc></image:image>")
+        lines.append(image_element(img_url))
     lines.append(f"    <lastmod>{en_lastmod}</lastmod>")
     lines.append(f"    <changefreq>{changefreq}</changefreq>")
     lines.append(f"    <priority>{priority}</priority>")
@@ -299,7 +329,7 @@ def build_url_entry(en_path: str, ja_path: Optional[str]) -> str:
             f'    <xhtml:link rel="alternate" hreflang="x-default" href="{en_url}" />'
         )
         for img_url in ja_images:
-            lines.append(f"    <image:image><image:loc>{img_url}</image:loc></image:image>")
+            lines.append(image_element(img_url))
         lines.append(f"    <lastmod>{ja_lastmod}</lastmod>")
         lines.append(f"    <changefreq>{ja_changefreq}</changefreq>")
         lines.append(f"    <priority>{ja_priority}</priority>")

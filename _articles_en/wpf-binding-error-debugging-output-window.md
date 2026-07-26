@@ -60,16 +60,22 @@ target property is 'Text' (type 'String')
 ```
 
 The message is made of several parts, each of which is a clue for locating the cause.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg" alt="The binding error message broken down line by line, with numbers 1 to 6 in the left gutter. The lines cover the error number, the property name that could not be resolved, the searched type, the binding path, the target element and the target property." width="820" height="250" loading="lazy">
+  <figcaption>The binding error message broken down into its parts. The numbers in the left gutter correspond to the <code>#</code> column of the table below. Number 3 appears twice because the same information is repeated in <code>DataItem</code>.</figcaption>
+</figure>
+
 The meaning of each part is as follows.
 
-| Part | Content | What it reveals |
-|---|---|---|
-| `Error: 40` | Error number | The kind of error (40 is a path resolution failure) |
-| `path error: 'UserNam' property not found` | The failure | Which property name could not be resolved |
-| `on 'object' ''MainViewModel'` | The searched type | Which `DataContext` was searched |
-| `BindingExpression:Path=UserNam` | The binding path | The path string written in XAML |
-| `target element is 'TextBox' (Name='userNameBox')` | The target element | Which control is affected |
-| `target property is 'Text'` | The target property | Which dependency property is affected |
+| # | Part | Content | What it reveals |
+|---|---|---|---|
+| 1 | `Error: 40` | Error number | The kind of error (40 is a path resolution failure) |
+| 2 | `path error: 'UserNam' property not found` | The failure | Which property name could not be resolved |
+| 3 | `on 'object' ''MainViewModel'` | The searched type | Which object (`DataItem`) was searched. Usually the `DataContext`, but it is the object named by `Source`, `RelativeSource`, or `ElementName` when one of those is specified |
+| 4 | `BindingExpression:Path=UserNam` | The binding path | The path string written in XAML |
+| 5 | `target element is 'TextBox' (Name='userNameBox')` | The target element | Which control is affected |
+| 6 | `target property is 'Text'` | The target property | Which dependency property is affected |
 
 This error reads as follows.
 The `Text` property of the `TextBox` named `userNameBox` looked for a `UserNam` property on a data context of type `MainViewModel` and did not find it.

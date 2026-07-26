@@ -17,8 +17,11 @@ include:
 # とくに template-ja.md / template-en.md は front matter に記事レイアウトを指定しているため、
 # 除外しないと「（タイトル）」のままのプレースホルダ記事がそのまま公開されてしまう。
 # CLAUDE.md / AGENTS.md も同様にエージェント向けの指示であり、公開する意味がない。
+# tools 配下は記事用スクリーンショットを生成する .NET プロジェクトであり、
+# サイトの公開物ではない。
 exclude:
   - docs
+  - tools
   - CLAUDE.md
   - AGENTS.md
 

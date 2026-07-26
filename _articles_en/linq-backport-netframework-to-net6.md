@@ -4,6 +4,7 @@ title: "Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxB
 date: 2026-07-13
 category: C#
 excerpt: "Measuring the runtime cost of GroupBy and full-sort workaround idioms, then replacing them with Chunk, MaxBy, MinBy and DistinctBy polyfills."
+image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png
 ---
 
 ## Overview
@@ -68,6 +69,11 @@ The namespace strategy and the validation/iterator split are justified in the [s
 Two points are specific here.
 First, the four methods split into two evaluation strategies — lazy (`Chunk`, `DistinctBy`) and eager (`MaxBy`, `MinBy`) — and the method structure must follow each.
 Second, the migration guard must be `!NET6_0_OR_GREATER`, not `!NETCOREAPP`.
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png" alt="The four methods applied to the same input. Chunk(2) groups two elements at a time, MaxBy and MinBy return one element each, and DistinctBy keeps the first element per category." width="519" height="218" loading="lazy">
+  <figcaption>Evaluation results over the same three inputs. Only <code>Chunk</code> returns the sequence split into groups; <code>MaxBy</code> and <code>MinBy</code> return a single element, and <code>DistinctBy</code> keeps only the first element per key. These differences in return shape mirror the evaluation strategies discussed later.</figcaption>
+</figure>
 
 ---
 

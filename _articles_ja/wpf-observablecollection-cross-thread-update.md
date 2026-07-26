@@ -50,6 +50,11 @@ private async Task LoadAsync(string path)
 `Items` が `ItemsControl.ItemsSource` にバインドされている場合、`Add` の呼び出しは `CollectionChanged` 通知を通じて `CollectionView` に伝わる。
 この通知が UI スレッド以外から届くため、`CollectionView` が例外を送出する。
 
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg" alt="スレッド間のデータの流れを 3 段で比較した図。1 段目はバックグラウンドスレッドからの CollectionChanged 通知が CollectionView に直接届いて例外になる。2 段目は EnableCollectionSynchronization を登録した場合で、変更はバックグラウンドスレッドのまま行われ、通知はキューされて UI スレッドの shadow copy に非同期で反映される。3 段目は Dispatcher でコレクション操作自体を UI スレッドへ移す。" width="900" height="556" loading="lazy">
+  <figcaption>例外が起きるのはコレクションを触った瞬間ではなく、変更通知が <code>CollectionView</code> に届いた時点である。2 つの解決策は仕組みが異なる。<code>EnableCollectionSynchronization</code> はコレクションへのアクセスを同じ同期機構に参加させたうえで、<code>CollectionView</code> が持つ shadow copy へ通知を非同期に反映する（変更操作はバックグラウンドスレッドのままでよい）。<code>Dispatcher</code> はコレクション操作そのものを UI スレッドへマーシャリングする。</figcaption>
+</figure>
+
 ---
 
 ## 原因・背景

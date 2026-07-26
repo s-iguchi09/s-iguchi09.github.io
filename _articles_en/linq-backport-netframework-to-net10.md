@@ -4,6 +4,7 @@ title: "Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin 
 date: 2026-07-16
 category: C#
 excerpt: "Implementing LeftJoin, RightJoin and Shuffle on .NET Framework, mapping them to SQL outer joins and covering the IQueryable translation pitfall."
+image: /images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png
 ---
 
 ## Overview
@@ -55,6 +56,11 @@ var result = employees
 
 The composed idiom buries the intent — "outer join" — in structure, and misplacing `SelectMany` or `DefaultIfEmpty` quietly turns it into an inner or cross join.
 Random ordering has the same shape of problem: `OrderBy(_ => Guid.NewGuid())` generates a key per element, pays for a full sort, and offers no uniformity guarantee as a shuffle.
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="Results of LeftJoin and RightJoin over two sequences. LeftJoin yields null for the missing right side, RightJoin yields null for the missing left side, and Shuffle reorders the elements." width="448" height="218" loading="lazy">
+  <figcaption>Evaluation results when the two sequences contain non-matching keys. <code>LeftJoin</code> keeps the left side and fills the counterpart with <code>null</code>; <code>RightJoin</code> does the reverse. <code>Shuffle</code> randomizes the order, so that row shows the result of a single run.</figcaption>
+</figure>
 
 ---
 

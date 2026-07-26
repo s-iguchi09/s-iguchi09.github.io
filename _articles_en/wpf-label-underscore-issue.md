@@ -4,6 +4,7 @@ title: "Why WPF Label Hides Underscores and How to Fix It"
 date: 2026-06-09
 category: WPF
 excerpt: "When a string containing an underscore (_) is set on a WPF Label, the character disappears from the screen. This article explains the cause and three ways to work around it."
+image: /images/articles/wpf-label-underscore-issue/label-underscore-rendering.png
 ---
 
 ## Overview
@@ -37,13 +38,21 @@ The same issue occurs with dynamically bound data: if the bound string contains 
 
 The specific rendering behavior is as follows:
 
-| Input string | Rendered output | Interpretation                         |
-| ------------ | --------------- | -------------------------------------- |
-| `_File`      | **F**ile        | `F` is registered as an access key     |
-| `my_var`     | my**v**ar       | `v` is registered as an access key     |
-| `name_`      | name            | Trailing underscore is silently dropped |
+| Input string | Rendered output | Interpretation                                            |
+| ------------ | --------------- | --------------------------------------------------------- |
+| `_File`      | **F**ile        | `F` is registered as an access key                          |
+| `my_var`     | my**v**ar       | `v` is registered as an access key                          |
+| `name_`      | name_           | No character follows, so the underscore is rendered as-is   |
+
+The image below shows the three cases from the table rendered by an actual application.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png" alt="A WPF window showing Label controls set to _File, my_var and name_. The first two render as File and myvar with the underscore missing, while name_ keeps its underscore." width="461" height="166" loading="lazy">
+  <figcaption>Rendering results on .NET 10 / Windows 11. The XAML markup is on the left and the actual output on the right. <code>_File</code> and <code>my_var</code> lose their underscore, whereas <code>name_</code> keeps it because no character follows the underscore for the access key to consume.</figcaption>
+</figure>
 
 As a result, any underscore in the bound data causes unintended display corruption.  
+Because only an underscore that is followed by a character is consumed, the outcome depends on where the underscore appears in the string.  
 
 ---
 
@@ -124,6 +133,13 @@ For application-wide consistency, the template can be extracted into a shared st
 
 - **Advantage:** Dynamically bound data containing underscores is displayed correctly. Defining this as a shared style makes it easy to apply across multiple locations.
 - **Disadvantage:** The XAML becomes more verbose.
+
+Running the three workarounds side by side produces the same rendered output for all of them.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="A WPF window showing the three workarounds. An escaped Label, a TextBlock and a Label with a replaced ContentTemplate all render my_variable." width="554" height="166" loading="lazy">
+  <figcaption>The three workarounds running in the same application. Escaping with <code>__</code>, switching to <code>TextBlock</code>, and replacing the <code>ContentTemplate</code> all render <code>my_variable</code> without dropping the underscore.</figcaption>
+</figure>
 
 ---
 
