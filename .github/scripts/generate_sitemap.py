@@ -15,10 +15,12 @@ URL structure:
 
 import os
 import re
+import sys
 import glob
 import html
 import datetime
 import subprocess
+import xml.etree.ElementTree as ET
 from typing import Optional
 from xml.sax.saxutils import escape as xml_escape
 
@@ -43,10 +45,47 @@ def load_base_url() -> str:
     return match.group(1).strip().rstrip("/") or DEFAULT_BASE_URL
 
 
+def load_config_excludes() -> set:
+    """Return the top-level names listed under `exclude:` in _config.yml.
+
+    Jekyll never publishes those paths, so any HTML found under them would be
+    written into the sitemap as a URL that answers 404. Search engines report a
+    sitemap full of 404 URLs as an error, so the scan has to honour the same
+    exclusion list the site build uses.
+    """
+    config_path = os.path.join(REPO_ROOT, "_config.yml")
+    try:
+        with open(config_path, encoding="utf-8", errors="replace") as fh:
+            lines = fh.read().splitlines()
+    except OSError:
+        return set()
+
+    names = set()
+    in_exclude = False
+    for line in lines:
+        if re.match(r"^exclude:\s*(#.*)?$", line):
+            in_exclude = True
+            continue
+        if not in_exclude:
+            continue
+        item = re.match(r"^\s+-\s*[\"']?([^\"'#\s]+)", line)
+        if item:
+            # Only the leading path segment matters (e.g. "docs/rules" -> "docs")
+            names.add(item.group(1).strip("/").split("/")[0])
+            continue
+        if line.strip() == "" or line.startswith("#"):
+            continue
+        # A non-indented line ends the exclude block
+        in_exclude = False
+    return names
+
+
 BASE_URL = load_base_url()
 
-# Directories to exclude from scanning
-EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"}
+# Directories to exclude from scanning.
+# The list from _config.yml (docs, tools, ...) is merged in so that HTML under
+# directories the site build drops never reaches the sitemap.
+EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_config_excludes()
 
 # Path fragments whose pages are excluded from the sitemap.
 # These pages carry <meta name="robots" content="noindex"> (see _includes/head.html),
@@ -361,13 +400,141 @@ def generate_sitemap() -> str:
     return sitemap
 
 
+SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+# Limits defined by the sitemap protocol (sitemaps.org).
+MAX_URLS = 50000
+MAX_BYTES = 50 * 1024 * 1024
+
+SITEMAP_FILENAME = "sitemap.xml"
+SITEMAP_INDEX_FILENAME = "sitemap_index.xml"
+
+
+def latest_lastmod(sitemap: str) -> str:
+    """Return the newest <lastmod> in the sitemap, or TODAY if there is none.
+
+    Deriving the index <lastmod> from the sitemap contents keeps the index
+    stable: it only moves when a page actually changed, so a rerun that
+    produces the same sitemap produces the same index and creates no diff.
+    """
+    root = ET.fromstring(sitemap)
+    dates = [
+        (node.text or "").strip()
+        for node in root.iter(f"{{{SITEMAP_NS}}}lastmod")
+        if (node.text or "").strip()
+    ]
+    return max(dates) if dates else TODAY
+
+
+def generate_sitemap_index(sitemap: str) -> str:
+    """Build the sitemap index that points at sitemap.xml.
+
+    Search Console keeps the fetch state of a submitted sitemap per URL, so a
+    sitemap stuck on "couldn't fetch" stays stuck even after being removed and
+    resubmitted under the same path. The index gives Google a second, distinct
+    entry point to the same URL set, which can be submitted independently.
+    """
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        "  <sitemap>\n"
+        f"    <loc>{BASE_URL}/{SITEMAP_FILENAME}</loc>\n"
+        f"    <lastmod>{latest_lastmod(sitemap)}</lastmod>\n"
+        "  </sitemap>\n"
+        "</sitemapindex>\n"
+    )
+
+
+def validate_sitemap_index(index: str) -> int:
+    """Raise ValueError if the sitemap index would be rejected by a crawler.
+
+    Returns the number of referenced sitemaps on success.
+    """
+    try:
+        root = ET.fromstring(index)
+    except ET.ParseError as exc:
+        raise ValueError(f"{SITEMAP_INDEX_FILENAME} is not well-formed XML: {exc}") from exc
+
+    if root.tag != f"{{{SITEMAP_NS}}}sitemapindex":
+        raise ValueError(f"unexpected root element: {root.tag}")
+
+    entries = root.findall(f"{{{SITEMAP_NS}}}sitemap")
+    if not entries:
+        raise ValueError(f"{SITEMAP_INDEX_FILENAME} contains no <sitemap> entry")
+
+    for entry in entries:
+        loc = entry.find(f"{{{SITEMAP_NS}}}loc")
+        if loc is None or not (loc.text or "").strip():
+            raise ValueError("a <sitemap> entry has no <loc>")
+        # A sitemap may only be referenced from the same site it belongs to.
+        if not loc.text.strip().startswith(BASE_URL + "/"):
+            raise ValueError(f"<loc> points outside the site: {loc.text.strip()}")
+
+    return len(entries)
+
+
+def validate_sitemap(sitemap: str) -> int:
+    """Raise ValueError if the generated sitemap would be rejected by a crawler.
+
+    Search Console reports a malformed or oversized sitemap as an error and
+    keeps the previously submitted one in that state, so a broken sitemap must
+    never be written out and pushed. Checks performed here:
+
+      - the document is well-formed XML and the root is the sitemap <urlset>
+      - every entry carries a non-empty <loc> under BASE_URL
+      - the protocol limits on URL count and uncompressed size are respected
+
+    Returns the number of URLs on success.
+    """
+    try:
+        root = ET.fromstring(sitemap)
+    except ET.ParseError as exc:
+        raise ValueError(f"sitemap.xml is not well-formed XML: {exc}") from exc
+
+    if root.tag != f"{{{SITEMAP_NS}}}urlset":
+        raise ValueError(f"unexpected root element: {root.tag}")
+
+    urls = root.findall(f"{{{SITEMAP_NS}}}url")
+    if not urls:
+        raise ValueError("sitemap.xml contains no <url> entry")
+    if len(urls) > MAX_URLS:
+        raise ValueError(f"sitemap.xml has {len(urls)} URLs (limit is {MAX_URLS})")
+
+    size = len(sitemap.encode("utf-8"))
+    if size > MAX_BYTES:
+        raise ValueError(f"sitemap.xml is {size} bytes (limit is {MAX_BYTES})")
+
+    for url in urls:
+        loc = url.find(f"{{{SITEMAP_NS}}}loc")
+        if loc is None or not (loc.text or "").strip():
+            raise ValueError("a <url> entry has no <loc>")
+        if not loc.text.strip().startswith(BASE_URL + "/"):
+            raise ValueError(f"<loc> points outside the site: {loc.text.strip()}")
+
+    return len(urls)
+
+
+def write_output(filename: str, content: str) -> str:
+    output_path = os.path.join(REPO_ROOT, filename)
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    return output_path
+
+
 def main():
     sitemap = generate_sitemap()
-    output_path = os.path.join(REPO_ROOT, "sitemap.xml")
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(sitemap)
-    print(f"sitemap.xml written to {output_path}")
+    try:
+        url_count = validate_sitemap(sitemap)
+        index = generate_sitemap_index(sitemap)
+        validate_sitemap_index(index)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"{SITEMAP_FILENAME} written to {write_output(SITEMAP_FILENAME, sitemap)} ({url_count} URLs)")
+    print(f"{SITEMAP_INDEX_FILENAME} written to {write_output(SITEMAP_INDEX_FILENAME, index)}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

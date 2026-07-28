@@ -11,6 +11,7 @@ kramdown:
 
 include:
   - sitemap.xml
+  - sitemap_index.xml
 
 # 公開サイトに出力しないファイル。
 # docs/rules 配下は AI エージェント向けの内部ルール文書であり、サイトのコンテンツではない。
