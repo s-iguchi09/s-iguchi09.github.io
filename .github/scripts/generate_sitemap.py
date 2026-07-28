@@ -69,10 +69,14 @@ def load_config_excludes() -> set:
             continue
         if not in_exclude:
             continue
-        item = re.match(r"^\s+-\s*[\"']?([^\"'#\s]+)", line)
+        # A quoted entry may contain spaces ('- "draft pages"'), so the quoted
+        # forms are matched whole; only an unquoted value ends at whitespace.
+        item = re.match(r"""^\s+-\s*(?:"([^"]*)"|'([^']*)'|([^"'#\s]+))""", line)
         if item:
-            # Only the leading path segment matters (e.g. "docs/rules" -> "docs")
-            names.add(item.group(1).strip("/").split("/")[0])
+            value = next(group for group in item.groups() if group is not None)
+            if value:
+                # Only the leading path segment matters (e.g. "docs/rules" -> "docs")
+                names.add(value.strip("/").split("/")[0])
             continue
         # Blank lines and comments are skipped wherever they sit; an indented
         # comment belongs to the block and must not be read as its end.
