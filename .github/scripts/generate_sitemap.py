@@ -20,6 +20,7 @@ import glob
 import html
 import datetime
 import subprocess
+import tempfile
 import xml.etree.ElementTree as ET
 from typing import Optional
 from xml.sax.saxutils import escape as xml_escape
@@ -73,7 +74,9 @@ def load_config_excludes() -> set:
             # Only the leading path segment matters (e.g. "docs/rules" -> "docs")
             names.add(item.group(1).strip("/").split("/")[0])
             continue
-        if line.strip() == "" or line.startswith("#"):
+        # Blank lines and comments are skipped wherever they sit; an indented
+        # comment belongs to the block and must not be read as its end.
+        if line.strip() == "" or line.strip().startswith("#"):
             continue
         # A non-indented line ends the exclude block
         in_exclude = False
@@ -515,9 +518,30 @@ def validate_sitemap(sitemap: str) -> int:
 
 
 def write_output(filename: str, content: str) -> str:
+    """Write content to filename, replacing the destination atomically.
+
+    open(path, "w") truncates the destination the moment it is opened, so a
+    write that fails part way through (a full disk, a killed process) would
+    leave a truncated sitemap on disk — exactly the broken file the validation
+    above exists to prevent, and the workflow would commit and push it. The
+    content is staged in a temporary file next to the destination and moved
+    into place with os.replace(), which is atomic within one filesystem. On
+    failure the staged file is removed and the previous, already validated
+    sitemap stays untouched.
+    """
     output_path = os.path.join(REPO_ROOT, filename)
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(content)
+    directory = os.path.dirname(output_path) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=directory, prefix=f"{filename}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(content)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp_path, output_path)
+    except BaseException:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
     return output_path
 
 
