@@ -74,8 +74,10 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
+            # 生成物が不正なら非ゼロ終了する。set -e により、壊れた
+            # サイトマップが main へ push されることはない。
             python3 .github/scripts/generate_sitemap.py
-            git add sitemap.xml
+            git add sitemap.xml sitemap_index.xml
             if git diff --cached --quiet; then
               echo "sitemap.xml is already up to date."
               exit 0

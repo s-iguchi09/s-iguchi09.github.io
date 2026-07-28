@@ -6,3 +6,7 @@ _site/
 # .NET のビルド生成物（tools/ 配下のキャプチャツール）
 bin/
 obj/
+
+# Python のバイトコードキャッシュ（.github/scripts 配下のスクリプト実行時に生成される）
+__pycache__/
+*.py[cod]
