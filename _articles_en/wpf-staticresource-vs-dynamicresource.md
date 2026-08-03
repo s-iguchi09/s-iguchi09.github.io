@@ -158,9 +158,17 @@ Controls using `StaticResource` for the same keys will not update.
 
 ## Notes
 
-- **Frozen objects cannot be mutated (even when referenced via `DynamicResource`):** If `Freeze()` has been called on a `Freezable` resource (e.g., a `SolidColorBrush`), modifying its properties throws an `InvalidOperationException`. Check `IsFrozen` before mutating an existing instance; if you replace the dictionary entry with a new instance, freezing is typically not an issue.
-- **Overusing `DynamicResource` degrades performance:** WPF maintains internal listeners for each `DynamicResource` binding. Applying `DynamicResource` to every resource in a large application can increase memory usage and slow initial rendering. Retain `StaticResource` for values that never change at runtime.
-- **`DynamicResource` is not supported in all contexts:** Certain markup locations—such as triggers inside a `ControlTemplate`—restrict the use of `DynamicResource`. Errors in these cases surface at runtime rather than compile time, so runtime testing is required.
+- **In the theme switching covered here, `Freeze` matters when an existing `Freezable` instance is mutated:** If `Freeze()` has been called on a `Freezable` resource (e.g., a `SolidColorBrush`), modifying its properties throws an `InvalidOperationException`.
+Check `IsFrozen` before mutating an existing instance; if you replace the dictionary entry with a new instance, freezing is typically not an issue.
+Freezing has other effects as well, such as allowing cross-thread access and causing the object to be cloned when it becomes the target of an animation.
+- **Overusing `DynamicResource` degrades performance:** `DynamicResource` acts as a deferred expression that looks the value up at runtime and re-evaluates it whenever the resource changes.
+Applying `DynamicResource` to every resource in a large application can increase memory usage and slow initial rendering.
+Retain `StaticResource` for values that never change at runtime.
+- **A resolved resource does not always change the appearance:** When the target property carries a local value, the value supplied by a style trigger never becomes the effective value.
+The cause there is dependency property value precedence rather than evaluation timing (see [Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence](/articles/wpf-style-trigger-not-working-local-value/)).
+- **Where `DynamicResource` can be written depends on the kind of value:** Even inside `Style` or `ControlTemplate` triggers, the `Value` of a `Setter` — the value handed to a dependency property — accepts `DynamicResource`.
+What it cannot be used for is a value that is not a dependency property, the `Value` (the comparison value) of a `Trigger` or `DataTrigger`, and property values of a `Storyboard` or animation.
+Errors in these cases surface at runtime rather than compile time, so runtime testing is required.
 
 ---
 
@@ -182,7 +190,8 @@ When the value must change at runtime, `DynamicResource` is required.
 Selection criteria:
 
 - **Resources that never change at runtime** (brand colors, fixed font sizes, standard margins): use `StaticResource`.
-The performance impact is minimal, and the only constraint is that the resource must be defined before its reference in XAML.
+The performance impact is minimal.
+Definition order alone is not sufficient, though: resolution also fails when the key does not match or when the resource is defined outside a scope reachable from the reference, so verify order, key name, and scope.
 - **Resources that must change at runtime** (theme colors, OS system colors via `SystemColors` or `SystemParameters`): use `DynamicResource`.
 
 The recommended approach is to default to `StaticResource` and apply `DynamicResource` only where runtime changes are explicitly required.

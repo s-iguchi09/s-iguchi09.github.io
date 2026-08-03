@@ -188,6 +188,8 @@ It can appear as a transient state right after initialization, and is not a prob
 Leaving `TraceLevel=High` in place makes the Output window verbose, so remove the setting once triage is complete.
 - **Error numbers are only an indication of kind.**
 Numbers such as 40 or 7 help classify the cause, but the definitive information is in the message body such as `property not found` or `Cannot convert`.
+- **When the trace is silent but the change is not reflected, suspect value precedence.**
+Even with a correctly resolved binding, a local value on the target property keeps the value supplied by a style trigger from becoming the effective value (see [Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence](/articles/wpf-style-trigger-not-working-local-value/)).
 
 ---
 
