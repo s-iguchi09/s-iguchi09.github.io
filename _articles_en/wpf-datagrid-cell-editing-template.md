@@ -138,4 +138,3 @@ For plain text editing with no special interaction, standard `DataGrid` columns 
 - [How to Implement Sorting in WPF DataGrid](/articles/wpf-datagrid-sorting/)
 - [Customising the DatePicker Display Format in WPF](/articles/wpf-datepicker-custom-format/)
 - [WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/articles/wpf-combobox-itemssource-patterns/)
-- [WPF DataGrid でセル編集中と表示時でコントロールを切り替える方法](/ja/articles/wpf-datagrid-cell-editing-template/)
