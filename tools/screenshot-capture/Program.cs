@@ -31,6 +31,7 @@ internal static class Program
         new FluentSystemColorsScene(),
         new RelayCommandCanExecuteScene(),
         new StaticVsDynamicResourceScene(),
+        new StyleTriggerLocalValueScene(),
         new NaturalSortScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),

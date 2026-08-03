@@ -187,6 +187,8 @@ WPF の GUI アプリは既定でコンソールを持たないため、恒久�
 `TraceLevel=High` を付けたまま放置すると出力が冗長になるため、切り分け後は設定を外す。
 - **エラー番号は種類の目安にすぎない。**
 番号（40, 7 など）は分類に役立つが、確定情報は `property not found` や `Cannot convert` などのメッセージ本文にある。
+- **トレースに何も出ないのに反映されない場合は値優先順位を疑う。**
+Binding が正しく解決されていても、対象プロパティにローカル値があるとスタイルのトリガーが指定した値は実効値にならない（[WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/)）。
 
 ---
 
