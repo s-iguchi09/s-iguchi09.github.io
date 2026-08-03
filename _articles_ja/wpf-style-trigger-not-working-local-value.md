@@ -10,7 +10,7 @@ image: /images/articles/wpf-style-trigger-not-working-local-value/style-trigger-
 ## 概要
 
 WPF で `Style.Triggers` に定義した `Trigger` や `DataTrigger` が、条件を満たしているにもかかわらず外観へ反映されないことがある。
-バインディングの誤りやトリガー条件の型不一致を疑いがちだが、実際にはトリガーは正しく作動しており、より優先順位の高い値に上書きされているだけというケースが多い。
+バインディングの誤りやトリガー条件の型不一致を疑いがちだが、トリガーは正しく作動しており、より優先順位の高い値に上書きされているだけ、というのがよくある原因である。
 本記事では、依存関係プロパティの値優先順位を軸にこの現象の原因を説明し、ローカル値を持つコードの直し方と、状況別の選択基準を整理する。
 
 ---
@@ -97,7 +97,7 @@ WPF の依存関係プロパティは、ローカル値・スタイル・テン�
 ## 実装例
 
 次の XAML は、ローカル値を残した `Border` と、既定値を `Setter` へ移した `Border` を同じスタイルで並べたものである。
-どちらも同一の `StatusBox` スタイルを参照し、違いは `Background` をローカル値として持つかどうかだけである。
+どちらも同一の `StatusBox` スタイルを参照しており、動作に関係する違いは `Background` をローカル値として持つかどうかだけである（下段の `Margin` は 2 つを縦に離して配置するためのもので、トリガーの挙動には関係しない）。
 
 ```xml
 <Window.Resources>
@@ -127,6 +127,36 @@ WPF の依存関係プロパティは、ローカル値・スタイル・テン�
 </StackPanel>
 ```
 
+トリガーの条件に使う `HasError` は、`DataContext` に設定した ViewModel のプロパティである。
+実行中の変更をトリガーへ伝えるため、`INotifyPropertyChanged` を実装する。
+
+```csharp
+public sealed class ValidationViewModel : INotifyPropertyChanged
+{
+    private bool _hasError;
+
+    public bool HasError
+    {
+        get => _hasError;
+        set
+        {
+            if (_hasError == value)
+            {
+                return;
+            }
+
+            _hasError = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasError)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
+```
+
+この ViewModel を `Window` の `DataContext` に設定すると、`HasError` の変更が `DataTrigger` へ伝わる。
+変更通知を実装しない単純なプロパティにすると、値を変えてもトリガーは再評価されない。
+
 `HasError` を `true` にした状態で表示すると、両者の差がそのまま描画に現れる。
 
 <figure class="article-figure">
@@ -150,6 +180,8 @@ border.ClearValue(Border.BackgroundProperty);
 
 `SetCurrentValue` は優先順位の一覧に現れない特別な代入で、値の出どころを上書きせずに現在の値だけを変更する。
 既存のバインディングやトリガーを壊さずに一時的な値を入れたい場合に適する。
+ただしローカル値を作らないだけであり、既に設定されているローカル値を取り除く効果は無い。
+対象プロパティにローカル値が残っている状態では実効値は変わらないため、先に `ClearValue` で取り除く必要がある。
 `ClearValue` はローカル値のみを取り除くため、テーマスタイルなど他の入力元が残っていればその値が実効値となる。
 
 ---
@@ -159,7 +191,8 @@ border.ClearValue(Border.BackgroundProperty);
 - **`ClearValue` はバインディングや `DynamicResource` も解除する。**
 リテラルのローカル値が無く、バインディングだけが設定されているプロパティに対して `ClearValue` を呼ぶと、そのバインディング自体が失われる。
 既定値をバインディングで与えたい場合は、要素側ではなく `Setter` の `Value` に `Binding` を書く。
-ただし `Binding` を書けるのは値側の `Setter.Value` だけであり、`Trigger` や `DataTrigger` の `Value`（条件側）には書けない。
+トリガーの条件をバインディングで指定する場合は、`DataTrigger` の `Binding`（`BindingBase` 型）を使う。
+`Binding` を書けるのはこの条件のバインディングと値側の `Setter.Value` であり、比較値である `Trigger` / `DataTrigger` の `Value` には書けない。
 - **ローカル値を代入するとバインディングが置き換わる。**
 バインディングを設定したプロパティへ通常の代入を行うと、遅延評価されていた値ではなく代入したローカル値に完全に差し替わる。
 その後に `ClearValue` を呼んでもバインディングは復元されない。
@@ -188,13 +221,13 @@ border.ClearValue(Border.BackgroundProperty);
 | `SetCurrentValue` で値を変更する | ローカル値を作らないためトリガーが生き続ける | コードビハインドが必要 | 実行時に一時的な値を入れる場合 |
 | `ClearValue` でローカル値を除去する | 既存の XAML を書き換えずに済む | バインディングも解除される。呼び出し時機の管理が要る | 実行時に付いたローカル値を取り除く場合 |
 | `ControlTemplate` を差し替える | テンプレートが固定している外観まで制御できる | 記述量が多く、テーマの更新に追随しない | 既定テンプレートが外観を固定している場合 |
-| トリガーの `EnterActions` でアニメーションを開始する | 優先順位 2 のためローカル値があっても上書きできる | 停止・巻き戻しの管理が必要になる。`{StaticResource}` などで共有したブラシの `Color` をアニメーションすると、同じブラシを参照する他の要素にも影響する | 状態変化に遷移演出を伴わせる場合 |
+| トリガーの `EnterActions` でアニメーションを開始する | 優先順位 2 のためローカル値があっても上書きできる | 停止・巻き戻しの管理が必要になる。`{StaticResource}` などで共有した Freeze されていないブラシの `Color` をアニメーションすると、同じブラシを参照する他の要素にも影響する | 状態変化に遷移演出を伴わせる場合 |
 
 ---
 
 ## まとめ
 
-`Style` のトリガーが効かない原因の大半は、トリガーの記述ミスではなく、対象プロパティにローカル値が設定されていることにある。
+`Style` のトリガーが効かない原因としてよくあるのは、トリガーの記述ミスではなく、対象プロパティにローカル値が設定されていることである。
 ローカル値は優先順位 3、スタイルのトリガーは 6、スタイルの `Setter` は 8 であり、この順序を把握していれば現象は説明できる。
 
 選択の基準は次のとおりである。
@@ -205,6 +238,7 @@ border.ClearValue(Border.BackgroundProperty);
 - **コードビハインドで実行時に値を変える場合:**
 通常の代入ではなく `SetCurrentValue` を使う。
 値の出どころを上書きしないため、後からトリガーが作動しても正しく反映される。
+既にローカル値があるプロパティには効かないため、その場合は先に `ClearValue` で取り除く。
 - **既にローカル値が設定されてしまっている場合:**
 `ClearValue` で取り除く。
 ただしバインディングごと解除される点を踏まえ、既定値が必要なら `Setter` 側で与える。

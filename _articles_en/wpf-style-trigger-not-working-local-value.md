@@ -10,7 +10,7 @@ image: /images/articles/wpf-style-trigger-not-working-local-value/style-trigger-
 ## Overview
 
 A `Trigger` or `DataTrigger` declared in `Style.Triggers` sometimes has no visible effect even though its condition is met.
-The common assumption is a broken binding or a type mismatch in the trigger condition, but in most cases the trigger fires correctly and its value is simply outranked by a higher-precedence input.
+The common assumption is a broken binding or a type mismatch in the trigger condition, but a frequent cause is that the trigger fires correctly and its value is simply outranked by a higher-precedence input.
 This article explains the cause in terms of dependency property value precedence, shows how to repair markup that carries a local value, and gives criteria for choosing among the available fixes.
 
 ---
@@ -97,7 +97,7 @@ Setting unrelated properties such as `Margin` or `Width` as local values on the 
 ## Implementation
 
 The following markup places two `Border` elements one above the other under the same style: one keeps its local value, the other takes its default from the setter.
-Both reference the same `StatusBox` style, and the only difference is whether `Background` is present as a local value.
+Both reference the same `StatusBox` style, and the relevant difference is whether `Background` is present as a local value (the `Margin` on the lower one only separates the two vertically and has no bearing on the trigger).
 
 ```xml
 <Window.Resources>
@@ -127,6 +127,36 @@ Both reference the same `StatusBox` style, and the only difference is whether `B
 </StackPanel>
 ```
 
+The `HasError` used in the trigger condition is a property on the view model assigned to `DataContext`.
+It implements `INotifyPropertyChanged` so that runtime changes reach the trigger.
+
+```csharp
+public sealed class ValidationViewModel : INotifyPropertyChanged
+{
+    private bool _hasError;
+
+    public bool HasError
+    {
+        get => _hasError;
+        set
+        {
+            if (_hasError == value)
+            {
+                return;
+            }
+
+            _hasError = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasError)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
+```
+
+Assigning this view model to the `DataContext` of the `Window` propagates changes of `HasError` to the `DataTrigger`.
+With a plain property that raises no change notification, the trigger is never re-evaluated when the value changes.
+
 Rendering this markup with `HasError` set to `true` shows the difference directly.
 
 <figure class="article-figure">
@@ -150,6 +180,8 @@ border.ClearValue(Border.BackgroundProperty);
 
 `SetCurrentValue` is a special assignment that does not appear in the precedence list: it changes the current value without overwriting the source of the value.
 It suits cases where a temporary value is needed without discarding an existing binding or trigger.
+It only avoids creating a local value, however, and does not remove one that is already set.
+While a local value remains on the target property the effective value does not change, so it has to be removed with `ClearValue` first.
 `ClearValue` removes only the local value, so whichever remaining input ranks highest — a theme style, for instance — becomes the effective value.
 
 ---
@@ -159,7 +191,8 @@ It suits cases where a temporary value is needed without discarding an existing 
 - **`ClearValue` also removes a binding or a `DynamicResource`.**
 Calling it on a property that carries only a binding, with no literal local value, discards the binding itself.
 To supply a default through a binding, write the `Binding` in the `Value` of a `Setter` instead of on the element.
-A `Binding` is accepted only on the value side, in `Setter.Value`; the `Value` of a `Trigger` or `DataTrigger`, which is the condition side, does not accept one.
+To express the trigger condition itself through a binding, use the `Binding` property of a `DataTrigger`, which is of type `BindingBase`.
+A `Binding` is accepted in that condition binding and in `Setter.Value`, but not in the `Value` of a `Trigger` or `DataTrigger`, which holds the value being compared against.
 - **Assigning a local value replaces a binding.**
 A plain assignment to a property that holds a binding replaces the deferred value outright.
 A later `ClearValue` call does not restore the binding.
@@ -188,13 +221,13 @@ The two problems should not be conflated.
 | Assign with `SetCurrentValue` | Creates no local value, so triggers keep working | Requires code-behind | Applying a temporary value at runtime |
 | Remove the local value with `ClearValue` | Leaves the existing XAML untouched | Also removes bindings, and the call timing must be managed | Clearing a local value applied at runtime |
 | Replace the `ControlTemplate` | Controls even the appearance that a template hard-codes | Verbose, and does not follow theme updates | A default template that fixes the appearance |
-| Start an animation from `EnterActions` | Rank 2, so it overrides a local value | Stopping and rewinding must be managed, and animating the `Color` of a shared brush also changes every other element that references it | State changes that need a transition effect |
+| Start an animation from `EnterActions` | Rank 2, so it overrides a local value | Stopping and rewinding must be managed, and animating the `Color` of an unfrozen shared brush also changes every other element that references it | State changes that need a transition effect |
 
 ---
 
 ## Summary
 
-A style trigger that appears broken is rarely a mistake in the trigger itself; the target property almost always carries a local value.
+A style trigger that appears broken is often not a mistake in the trigger itself; a local value on the target property is a frequent cause.
 Local values sit at rank 3, style triggers at rank 6, and style setters at rank 8, and that ordering alone explains the behavior.
 
 Selection criteria are as follows.
@@ -205,6 +238,7 @@ This has the fewest side effects and should be considered first.
 - **The value changes at runtime from code-behind:**
 use `SetCurrentValue` instead of a plain assignment.
 Because it does not overwrite the value source, a trigger that fires later still applies.
+It has no effect on a property that already carries a local value, so clear that with `ClearValue` first.
 - **A local value is already in place:**
 clear it with `ClearValue`, keeping in mind that any binding goes with it.
 Supply the default from a `Setter` if one is needed.

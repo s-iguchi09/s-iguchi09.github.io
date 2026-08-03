@@ -155,13 +155,15 @@ private void SwitchTheme(string themeName)
 
 ## 注意点
 
-- **`Freeze` の影響は既存 `Freezable` インスタンスを変更するときに限られる:** たとえば `((SolidColorBrush)Resources["ThemeColor"]).Color = ...` のように既存の `SolidColorBrush` を直接変更する場合、`Freeze()` 済みなら変更できない。
+- **本記事のテーマ切り替えで `Freeze` が問題になるのは、既存 `Freezable` インスタンスを変更する場合である:** たとえば `((SolidColorBrush)Resources["ThemeColor"]).Color = ...` のように既存の `SolidColorBrush` を直接変更する場合、`Freeze()` 済みなら変更できない。
 一方、今回のように `Resources["ThemeColor"]` に新しい `SolidColorBrush` を代入して差し替えるだけなら、通常は `IsFrozen` の確認は不要である。
-- **`DynamicResource` の乱用はパフォーマンスに影響する:** WPF は変更を監視するための内部リスナーを保持するため、すべてのリソース参照を `DynamicResource` にすると描画速度やメモリ使用量に影響が出る場合がある。
+なお `Freeze` にはこのほかにも、スレッドをまたいだアクセスが可能になる、アニメーションの対象にすると複製されるといった影響がある。
+- **`DynamicResource` の乱用はパフォーマンスに影響する:** `DynamicResource` は値を実行時に検索し、リソースが変わるたびに再評価する遅延式として動作するため、すべてのリソース参照を `DynamicResource` にすると描画速度やメモリ使用量に影響が出る場合がある。
 変更が不要なリソースには `StaticResource` を維持する。
 - **リソースが解決されていても外観が変わらないことがある:** 対象プロパティにローカル値が設定されていると、スタイルのトリガーが指定した値は実効値にならない。
 この場合の原因は評価タイミングではなく依存関係プロパティの値優先順位にある（[WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/)）。
-- **`DynamicResource` は一部のプロパティでは使用できない:** `Setter.Value` 以外の一部の構文（`ControlTemplate` 内のトリガーなど）では `DynamicResource` が制限される場合がある。
+- **`DynamicResource` を書ける場所は値の種類によって決まる:** `Style` や `ControlTemplate` のトリガーであっても、`Setter` の `Value`（依存関係プロパティへ与える値）には `DynamicResource` を使用できる。
+使用できないのは、依存関係プロパティでない値、`Trigger` / `DataTrigger` の `Value`（比較値）、および `Storyboard` やアニメーションのプロパティ値である。
 コンパイル時ではなく実行時にエラーが発生することがあるため、事前に動作確認が必要である。
 
 ---
@@ -184,7 +186,8 @@ private void SwitchTheme(string themeName)
 選択の基準は次のとおりである。
 
 - **変更が不要なリソース（固定カラー、固定フォントサイズなど）:** `StaticResource` を使用する。
-パフォーマンスへの影響が少なく、定義順のルールさえ守れば問題は発生しない。
+パフォーマンスへの影響が少ない。
+ただし定義順を満たしていても、キー名が一致しない場合や参照元から到達できないスコープに定義した場合は解決に失敗するため、定義順・キー名・スコープの 3 点を確認する。
 - **実行中に変更が必要なリソース（テーマカラー、OS 設定連動など）:** `DynamicResource` を使用する。
 `SystemColors` や `SystemParameters` などの OS 設定と連動させる場合も `DynamicResource` が必要となる。
 
