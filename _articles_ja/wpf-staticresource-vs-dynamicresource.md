@@ -155,9 +155,14 @@ private void SwitchTheme(string themeName)
 
 ## 注意点
 
-- **`Freeze` の影響は既存 `Freezable` インスタンスを変更するときに限られる:** たとえば `((SolidColorBrush)Resources["ThemeColor"]).Color = ...` のように既存の `SolidColorBrush` を直接変更する場合、`Freeze()` 済みなら変更できない。一方、今回のように `Resources["ThemeColor"]` に新しい `SolidColorBrush` を代入して差し替えるだけなら、通常は `IsFrozen` の確認は不要である。
-- **`DynamicResource` の乱用はパフォーマンスに影響する:** WPF は変更を監視するための内部リスナーを保持するため、すべてのリソース参照を `DynamicResource` にすると描画速度やメモリ使用量に影響が出る場合がある。変更が不要なリソースには `StaticResource` を維持する。
-- **`DynamicResource` は一部のプロパティでは使用できない:** `Setter.Value` 以外の一部の構文（`ControlTemplate` 内のトリガーなど）では `DynamicResource` が制限される場合がある。コンパイル時ではなく実行時にエラーが発生することがあるため、事前に動作確認が必要である。
+- **`Freeze` の影響は既存 `Freezable` インスタンスを変更するときに限られる:** たとえば `((SolidColorBrush)Resources["ThemeColor"]).Color = ...` のように既存の `SolidColorBrush` を直接変更する場合、`Freeze()` 済みなら変更できない。
+一方、今回のように `Resources["ThemeColor"]` に新しい `SolidColorBrush` を代入して差し替えるだけなら、通常は `IsFrozen` の確認は不要である。
+- **`DynamicResource` の乱用はパフォーマンスに影響する:** WPF は変更を監視するための内部リスナーを保持するため、すべてのリソース参照を `DynamicResource` にすると描画速度やメモリ使用量に影響が出る場合がある。
+変更が不要なリソースには `StaticResource` を維持する。
+- **リソースが解決されていても外観が変わらないことがある:** 対象プロパティにローカル値が設定されていると、スタイルのトリガーが指定した値は実効値にならない。
+この場合の原因は評価タイミングではなく依存関係プロパティの値優先順位にある（[WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/)）。
+- **`DynamicResource` は一部のプロパティでは使用できない:** `Setter.Value` 以外の一部の構文（`ControlTemplate` 内のトリガーなど）では `DynamicResource` が制限される場合がある。
+コンパイル時ではなく実行時にエラーが発生することがあるため、事前に動作確認が必要である。
 
 ---
 
@@ -178,7 +183,9 @@ private void SwitchTheme(string themeName)
 
 選択の基準は次のとおりである。
 
-- **変更が不要なリソース（固定カラー、固定フォントサイズなど）:** `StaticResource` を使用する。パフォーマンスへの影響が少なく、定義順のルールさえ守れば問題は発生しない。
-- **実行中に変更が必要なリソース（テーマカラー、OS 設定連動など）:** `DynamicResource` を使用する。`SystemColors` や `SystemParameters` などの OS 設定と連動させる場合も `DynamicResource` が必要となる。
+- **変更が不要なリソース（固定カラー、固定フォントサイズなど）:** `StaticResource` を使用する。
+パフォーマンスへの影響が少なく、定義順のルールさえ守れば問題は発生しない。
+- **実行中に変更が必要なリソース（テーマカラー、OS 設定連動など）:** `DynamicResource` を使用する。
+`SystemColors` や `SystemParameters` などの OS 設定と連動させる場合も `DynamicResource` が必要となる。
 
 原則として `StaticResource` を基本とし、動的な変更が求められる箇所にのみ `DynamicResource` を適用する設計が、保守性とパフォーマンスのバランスとして適切である。
