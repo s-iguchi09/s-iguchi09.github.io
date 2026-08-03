@@ -450,7 +450,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -461,7 +461,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -832,7 +832,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -843,7 +843,29 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png</image:loc></image:image>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png</image:loc></image:image>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
