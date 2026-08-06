@@ -32,6 +32,7 @@ internal static class Program
         new RelayCommandCanExecuteScene(),
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),
+        new DataTemplateParentBindingScene(),
         new NaturalSortScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
