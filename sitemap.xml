@@ -450,7 +450,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -461,7 +461,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -596,6 +596,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datagrid-sorting/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png</image:loc></image:image>
     <lastmod>2026-07-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-datatemplate-parent-datacontext-binding/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datacontext-scope-and-popup-boundary.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-parent-binding.png</image:loc></image:image>
+    <lastmod>2026-08-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-datatemplate-parent-datacontext-binding/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-datatemplate-parent-datacontext-binding/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datacontext-scope-and-popup-boundary.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-parent-binding.png</image:loc></image:image>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -766,7 +790,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-relaycommand-canexecute-not-updating/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-relaycommand-canexecute-not-updating/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -777,7 +801,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-relaycommand-canexecute-not-updating/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-relaycommand-canexecute-not-updating/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
