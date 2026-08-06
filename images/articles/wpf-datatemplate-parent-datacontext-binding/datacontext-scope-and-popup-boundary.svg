@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 360" width="820" height="360" role="img">
+  <defs>
+    <style>
+      .card { fill: #ffffff; stroke: #c3ccdb; stroke-width: 1.5; }
+      .popup { fill: #f5f7fb; stroke: #9aa4b2; stroke-width: 1.5; stroke-dasharray: 6 4; }
+      .el { font-family: Consolas, "Courier New", monospace; font-size: 13.5px; fill: #1f2933; }
+      .ctx { font-family: Consolas, "Courier New", monospace; font-size: 11.5px; fill: #2563eb; }
+      .ctx-alt { font-family: Consolas, "Courier New", monospace; font-size: 11.5px; fill: #d64545; }
+      .lbl { font-family: Consolas, "Courier New", monospace; font-size: 11.5px; fill: #1f2933; }
+      .ok { stroke: #2f9e6e; stroke-width: 2; fill: none; }
+      .ng { stroke: #d64545; stroke-width: 2; fill: none; stroke-dasharray: 5 4; }
+      .mark-ok { font-family: Consolas, "Courier New", monospace; font-size: 15px; fill: #2f9e6e; font-weight: bold; }
+      .mark-ng { font-family: Consolas, "Courier New", monospace; font-size: 15px; fill: #d64545; font-weight: bold; }
+      .connect { stroke: #c3ccdb; stroke-width: 1.5; }
+    </style>
+    <marker id="ok-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f9e6e" />
+    </marker>
+  </defs>
+
+  <!-- 左: ウィンドウの要素ツリー -->
+  <rect class="card" x="60" y="24" width="280" height="48" rx="6" />
+  <text class="el" x="76" y="44">Window</text>
+  <text class="ctx" x="76" y="62">DataContext = ListViewModel</text>
+
+  <line class="connect" x1="200" y1="72" x2="200" y2="88" />
+
+  <rect class="card" x="60" y="88" width="280" height="48" rx="6" />
+  <text class="el" x="76" y="108">ItemsControl</text>
+  <text class="ctx" x="76" y="126">DataContext = ListViewModel</text>
+
+  <line class="connect" x1="200" y1="136" x2="200" y2="152" />
+
+  <rect class="card" x="60" y="152" width="280" height="48" rx="6" />
+  <text class="el" x="76" y="172">ContentPresenter</text>
+  <text class="ctx-alt" x="76" y="190">DataContext = Measurement</text>
+
+  <line class="connect" x1="200" y1="200" x2="200" y2="216" />
+
+  <rect class="card" x="60" y="216" width="280" height="48" rx="6" />
+  <text class="el" x="76" y="236">Border</text>
+  <text class="ctx-alt" x="76" y="254">DataContext = Measurement</text>
+
+  <line class="connect" x1="200" y1="264" x2="200" y2="280" />
+
+  <rect class="card" x="60" y="280" width="280" height="48" rx="6" />
+  <text class="el" x="76" y="300">Button</text>
+  <text class="ctx-alt" x="76" y="318">{Binding DeleteCommand}</text>
+  <text class="mark-ng" x="300" y="319">&#215;</text>
+
+  <!-- 左側の到達経路: DataTemplate 内から ItemsControl までさかのぼれる -->
+  <path class="ok" d="M 60 304 L 44 304 L 44 112 L 60 112" marker-end="url(#ok-head)" />
+  <text class="mark-ok" x="50" y="102">&#10003;</text>
+  <text class="lbl" x="34" y="208" text-anchor="middle" transform="rotate(-90 34 208)">RelativeSource / ElementName</text>
+
+  <!-- 右: Popup 側の独立したツリー -->
+  <rect class="popup" x="470" y="170" width="320" height="180" rx="8" />
+  <text class="el" x="486" y="194">Popup</text>
+
+  <rect class="card" x="490" y="206" width="280" height="48" rx="6" />
+  <text class="el" x="506" y="226">ContextMenu</text>
+  <text class="ctx-alt" x="506" y="244">DataContext = Measurement</text>
+
+  <rect class="card" x="490" y="274" width="280" height="44" rx="6" />
+  <text class="el" x="506" y="292">MenuItem</text>
+  <text class="ctx-alt" x="506" y="309">{Binding DeleteCommand}</text>
+  <text class="mark-ng" x="740" y="310">&#215;</text>
+
+  <!-- PlacementTarget は境界を越えて所有要素を指す -->
+  <path class="ok" d="M 490 230 L 340 230" marker-end="url(#ok-head)" />
+  <text class="lbl" x="415" y="222" text-anchor="middle">PlacementTarget</text>
+  <text class="mark-ok" x="348" y="248">&#10003;</text>
+
+  <!-- 祖先の探索と名前の解決は Popup の境界で止まる -->
+  <path class="ng" d="M 490 296 L 440 296" />
+  <text class="mark-ng" x="414" y="302">&#215;</text>
+  <text class="lbl" x="424" y="322" text-anchor="middle">RelativeSource</text>
+  <text class="lbl" x="424" y="338" text-anchor="middle">ElementName</text>
+</svg>

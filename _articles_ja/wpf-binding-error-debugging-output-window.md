@@ -115,6 +115,7 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 `property not found` を含むメッセージは、パスに指定した名前がデータコンテキスト上に存在しないことを示す。
 プロパティ名のタイプミス、`public` になっていないアクセサ、あるいは `DataContext` の型の取り違えが原因になる。
 メッセージ中の `DataItem` の型名を確認し、その型に該当プロパティが `public` で存在するかを照合する。
+`DataItem` が期待した ViewModel ではなくコレクションの要素型になっている場合、よくある原因は `DataTemplate` の内側で `DataContext` が各アイテムへ切り替わっていることである（[WPF の DataTemplate 内から親の DataContext にバインドできない原因と RelativeSource の使い分け](/ja/articles/wpf-datatemplate-parent-datacontext-binding/)）。
 
 ### DataContext が未設定（DataItem=null）
 

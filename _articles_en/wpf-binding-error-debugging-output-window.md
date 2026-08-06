@@ -116,6 +116,7 @@ The representative patterns and their handling are shown below.
 A message containing `property not found` indicates that the name given in the path does not exist on the data context.
 A typo in the property name, an accessor that is not `public`, or the wrong `DataContext` type causes this.
 Check the `DataItem` type name in the message and confirm that a `public` property with that name exists on the type.
+When `DataItem` names the element type of a collection instead of the expected view model, a common cause is that the `DataContext` switches to each item inside a `DataTemplate` (see [Binding to the Parent DataContext from Inside a WPF DataTemplate](/articles/wpf-datatemplate-parent-datacontext-binding/)).
 
 ### DataContext Not Set (DataItem=null)
 

@@ -66,6 +66,8 @@ The button has no trigger to re-evaluate `CanExecute`.
 A command source, such as a `Button`, subscribes to `ICommand.CanExecuteChanged` and re-queries `CanExecute` only when that event is raised, updating its own enabled state accordingly.
 The official documentation states that a command source typically subscribes to `CanExecuteChanged`, calls `CanExecute` when it is raised, and disables itself if the command cannot execute.
 Therefore, no matter how the return value of `CanExecute` changes, the button never reflects it unless `CanExecuteChanged` is raised.
+This evaluation only applies when an `ICommand` is actually assigned to `Command`.
+If the binding fails to resolve and `Command` stays `null`, there is nothing to evaluate, and the button remains enabled while doing nothing (see [Binding to the Parent DataContext from Inside a WPF DataTemplate](/articles/wpf-datatemplate-parent-datacontext-binding/)).
 
 The reason the built-in `RoutedCommand` rarely exposes this problem is that its `CanExecuteChanged` is delegated to `CommandManager.RequerySuggested`.
 When the `CommandManager` detects conditions that might change a command's ability to execute, such as a change in keyboard focus, it raises `RequerySuggested` and prompts every bound command to re-evaluate.

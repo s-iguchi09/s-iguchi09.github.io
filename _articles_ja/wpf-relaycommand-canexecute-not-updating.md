@@ -66,6 +66,8 @@ public class RelayCommand : ICommand
 コマンドソース（`Button` など）は、`ICommand.CanExecuteChanged` イベントを購読し、これが発火したときにだけ `CanExecute` を呼び直して自身の有効・無効を更新する。
 公式ドキュメントも「コマンドソースは通常 `CanExecuteChanged` を購読し、発火時に `CanExecute` を呼んで、実行不可なら自身を無効化する」と記述している。
 したがって `CanExecuteChanged` を発火しない限り、`CanExecute` の戻り値がいくら変化してもボタンには反映されない。
+なお、この判定が働くのは `Command` に `ICommand` が設定されている場合に限られる。
+バインドが解決できず `Command` が `null` のままなら判定対象が無く、ボタンは有効表示のまま無反応になる（[WPF の DataTemplate 内から親の DataContext にバインドできない原因と RelativeSource の使い分け](/ja/articles/wpf-datatemplate-parent-datacontext-binding/)）。
 
 WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは、その `CanExecuteChanged` が `CommandManager.RequerySuggested` に委譲されているためである。
 `CommandManager` は、キーボードフォーカスの移動などコマンドの実行可否に影響し得る操作を検知すると `RequerySuggested` を発火し、バインドされた各コマンドに再評価を促す。
