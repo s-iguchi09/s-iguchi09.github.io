@@ -67,6 +67,7 @@ When a `Binding` specifies none of `Source`, `RelativeSource`, or `ElementName`,
 
 `ItemsControl` interrupts that inheritance.
 It generates a container for each element of `ItemsSource`, such as a `ContentPresenter` or a `ListBoxItem`, and assigns the corresponding data item to that container's `DataContext`.
+Because the container's own `DataContext` is the item, a binding written in an `ItemContainerStyle` setter resolves against the item as well (see [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/)).
 Because `DataContext` is an inherited property, elements expanded from the `DataTemplate` receive the container's value unchanged.
 As a result, `{Binding DeleteCommand}` inside the template looks for `DeleteCommand` on the item, does not find it, and leaves the binding unresolved.
 

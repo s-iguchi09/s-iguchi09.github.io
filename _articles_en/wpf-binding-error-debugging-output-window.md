@@ -117,6 +117,7 @@ A message containing `property not found` indicates that the name given in the p
 A typo in the property name, an accessor that is not `public`, or the wrong `DataContext` type causes this.
 Check the `DataItem` type name in the message and confirm that a `public` property with that name exists on the type.
 When `DataItem` names the element type of a collection instead of the expected view model, a common cause is that the `DataContext` switches to each item inside a `DataTemplate` (see [Binding to the Parent DataContext from Inside a WPF DataTemplate](/articles/wpf-datatemplate-parent-datacontext-binding/)).
+Bindings written in an `ItemContainerStyle` setter resolve against the item as well, so the same error appears when the item type lacks the property (see [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/)).
 
 ### DataContext Not Set (DataItem=null)
 

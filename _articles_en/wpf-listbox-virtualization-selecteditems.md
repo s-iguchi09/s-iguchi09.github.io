@@ -167,6 +167,7 @@ For large lists, keep it `True` unless pixel-based scrolling is explicitly requi
 
 Using `ItemContainerGenerator.ContainerFromIndex` or walking the visual tree makes selection logic fragile under virtualization and container recycling.  
 Keep selection state in the data layer.  
+The same constraint applies to the hierarchical `TreeView` (see [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/)).  
 
 ### 4. Do not read the selection from containers
 

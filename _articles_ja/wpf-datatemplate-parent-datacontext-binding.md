@@ -67,6 +67,7 @@ target property is 'Command' (type 'ICommand')
 
 `ItemsControl` はこの継承の流れを途中で差し替える。
 `ItemsSource` の各要素に対してコンテナ（`ContentPresenter` や `ListBoxItem` など）を生成し、その `DataContext` に対応するデータ項目そのものを設定するためである。
+コンテナ自身の `DataContext` がアイテムであるため、`ItemContainerStyle` の `Setter` に書いたバインドもアイテムを起点に解決される（[WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由](/ja/articles/wpf-treeview-select-item-programmatically/)）。
 `DataContext` は継承されるプロパティであるため、`DataTemplate` から展開された要素はコンテナの値をそのまま受け継ぐ。
 結果として、テンプレート内の `{Binding DeleteCommand}` は「アイテムの `DeleteCommand`」を探し、存在しないため解決されない。
 

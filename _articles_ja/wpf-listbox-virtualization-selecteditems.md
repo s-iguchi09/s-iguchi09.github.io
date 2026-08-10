@@ -166,6 +166,7 @@ public class MainViewModel
 
 `ItemContainerGenerator.ContainerFromIndex` や Visual Tree の走査に依存すると、仮想化とコンテナの再利用の影響を受けやすくなる。
 選択状態はデータ側で管理する。
+同じ制約は階層構造を扱う `TreeView` にも当てはまる（[WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由](/ja/articles/wpf-treeview-select-item-programmatically/)）。
 
 ### 4. 選択集合はコンテナから読み取らない
 

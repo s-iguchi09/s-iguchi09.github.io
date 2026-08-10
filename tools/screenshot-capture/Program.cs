@@ -33,6 +33,7 @@ internal static class Program
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),
         new DataTemplateParentBindingScene(),
+        new TreeViewSelectItemScene(),
         new NaturalSortScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
