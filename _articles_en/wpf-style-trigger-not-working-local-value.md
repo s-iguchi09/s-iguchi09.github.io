@@ -203,6 +203,10 @@ Verify that the standard state feedback of a control is not being broken.
 - **If a trigger still has no visible effect after the local value is gone, examine the `ControlTemplate`.**
 The default template of a standard control may hard-code appearance such as the mouseover background.
 In that case the trigger wins as a property value but never reaches the rendering, and replacing the template is required.
+- **A one-way binding or a literal value in an `ItemContainerStyle` setter also loses to a local value on the container.**
+When container state is supplied through a style on an `ItemsControl`, assigning the same property from code produces a local value, and style values no longer reach that container afterwards.
+A `Mode=TwoWay` binding in the setter is the exception: the binding survives and the assigned value is written back to the source.
+The concrete impact on `IsSelected` and `IsExpanded` of `TreeViewItem` is covered in [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/).
 - **The same precedence does not apply to the `Style` property itself.**
 A `Style` written on the element is an explicit style with local-value precedence (rank 3), while a style applied from a resource whose key matches the element type is an implicit style at rank 5.
 When neither is present, the default (theme) style applies at rank 9.
