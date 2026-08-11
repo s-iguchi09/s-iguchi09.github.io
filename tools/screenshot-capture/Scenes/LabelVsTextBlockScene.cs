@@ -130,7 +130,7 @@ internal sealed class LabelVsTextBlockScene : IScene
             Child = new TextBlock
             {
                 Text = text,
-                FontFamily = new FontFamily("Consolas, Courier New, monospace"),
+                FontFamily = new FontFamily("Consolas, Courier New"),
                 FontSize = 13,
                 Foreground = new SolidColorBrush(Color.FromRgb(0x1F, 0x29, 0x33)),
                 HorizontalAlignment = column == 0 ? HorizontalAlignment.Left : HorizontalAlignment.Right,

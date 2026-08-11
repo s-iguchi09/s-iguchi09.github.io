@@ -10,7 +10,7 @@ namespace ScreenshotCapture;
 /// </summary>
 internal static class DemoLayout
 {
-    private static readonly FontFamily CodeFont = new("Consolas, Courier New, monospace");
+    private static readonly FontFamily CodeFont = new("Consolas, Courier New");
     private static readonly Brush CodeBrush = new SolidColorBrush(Color.FromRgb(0x33, 0x3D, 0x4D));
     private static readonly Brush ArrowBrush = new SolidColorBrush(Color.FromRgb(0x8A, 0x93, 0xA3));
     private static readonly Brush FrameBrush = new SolidColorBrush(Color.FromRgb(0xC3, 0xCC, 0xDB));
