@@ -29,7 +29,7 @@ internal sealed class StyleTriggerLocalValueScene : IScene
               </Style.Triggers>
             </Style>
             <Style TargetType="TextBlock">
-              <Setter Property="FontFamily" Value="Consolas, Courier New, monospace" />
+              <Setter Property="FontFamily" Value="Consolas, Courier New" />
               <Setter Property="FontSize" Value="13" />
               <Setter Property="Foreground" Value="#333D4D" />
               <Setter Property="VerticalAlignment" Value="Center" />
