@@ -132,6 +132,14 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 入力文字列を数値へ戻す `IValueConverter` の `ConvertBack` を実装するか、`ValidationRule` で入力値を検証してから変換する。
 `StringFormat` は表示（`Convert` 側）の整形にのみ影響し、`ConvertBack` の変換失敗は解決しないため、この用途には使わない。
 
+### コレクションのインデクサーアクセス失敗（Error: 17）
+
+`Cannot get 'Item[]' value` を含むメッセージは、コレクションのインデクサーへのアクセスに失敗したことを示す。
+典型例は、検証エラーの表示に `(Validation.Errors)[0].ErrorContent` をバインドしている場合である。
+エラーが解消してコレクションが空になった瞬間にこのパスが評価され、内部で `ArgumentOutOfRangeException` が発生する。
+表示自体は正しく消えるため見落としやすい。
+現在の項目を指す `(Validation.Errors)/ErrorContent` に書き換えると、同じ表示のままトレースが出なくなる（[WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け](/ja/articles/wpf-validation-error-not-displayed/)）。
+
 ### コレクション変更が通知されない
 
 エラーは出ないが一覧が更新されない場合、コレクション自体の変更通知が欠けている。
