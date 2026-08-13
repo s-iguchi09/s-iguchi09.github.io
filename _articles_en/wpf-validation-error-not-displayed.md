@@ -119,6 +119,12 @@ That is why a view model implementing `INotifyDataErrorInfo` produces a red bord
 The error itself is whatever the view model returns from `GetErrors`, which the binding engine reads and then keeps in step with through `ErrorsChanged` notifications to update `Validation.Errors`.
 The rule serves as the marker that appears in `RuleInError` on the resulting `ValidationError`.
 
+That read follows a fixed order.
+The binding engine consults `HasErrors` first and calls `GetErrors` only when it returns `true`.
+In the measured run, an implementation whose `GetErrors` returned a message displayed nothing and never had `GetErrors` called at all while `HasErrors` returned `false`.
+A `false` result clears any notify errors already recorded, and the check repeats on every `ErrorsChanged`.
+Implementing `HasErrors` independently of the per-property validation results is therefore enough on its own to produce a view model that holds errors the UI never shows.
+
 Behavior on initial display differs by approach.
 `DataErrorValidationRule` and `NotifyDataErrorValidationRule` both reported an error before a single character was typed.
 A custom `ValidationRule`, by contrast, was not called when the binding was attached; `Validate` ran only at the first source update.

@@ -118,6 +118,12 @@ WPF の入力検証は、次の 3 段階が独立して成立している。
 エラーの実体は ViewModel の `GetErrors` が返す内容であり、バインディングエンジンがそれを読み取り、`ErrorsChanged` の通知に追随して `Validation.Errors` を更新する。
 このルールは、そうして記録された `ValidationError` の `RuleInError` に現れる標識として働く。
 
+この読み取りには順序がある。
+バインディングエンジンはまず `HasErrors` を参照し、`true` のときにだけ `GetErrors` を呼ぶ。
+実測では、`GetErrors` がメッセージを返す実装であっても、`HasErrors` が `false` を返す場合は `GetErrors` が一度も呼ばれず、エラーは表示されなかった。
+`HasErrors` が `false` のときは既存の通知エラーが解除され、`ErrorsChanged` が発生するたびにこの判定が繰り返される。
+`HasErrors` をプロパティごとの検証結果と切り離して実装すると、この不一致だけで「検証結果は保持しているのに表示されない」状態になる。
+
 初期表示時点の挙動には方式差がある。
 `DataErrorValidationRule` と `NotifyDataErrorValidationRule` は、ユーザーが 1 文字も入力していない段階でエラーを報告した。
 一方、自作の `ValidationRule` は、バインディングを張った直後には呼ばれず、`Validate` が実行されるのは最初のソース更新のときであった。
