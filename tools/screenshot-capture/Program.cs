@@ -34,6 +34,7 @@ internal static class Program
         new StyleTriggerLocalValueScene(),
         new DataTemplateParentBindingScene(),
         new TreeViewSelectItemScene(),
+        new ValidationErrorNotDisplayedScene(),
         new NaturalSortScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),

@@ -133,6 +133,14 @@ This occurs, for example, when a string is two-way bound to a numeric property a
 Implement the `ConvertBack` method of an `IValueConverter` that turns the input string back into the number, or validate the input with a `ValidationRule` before conversion.
 Note that `StringFormat` only affects display formatting on the `Convert` side and does not resolve a `ConvertBack` conversion failure, so it is not used for this purpose.
 
+### Collection Indexer Access Failure (Error: 17)
+
+A message containing `Cannot get 'Item[]' value` indicates that access to a collection indexer failed.
+The typical case is a validation message displayed through a binding to `(Validation.Errors)[0].ErrorContent`.
+The path is evaluated the moment the error clears and the collection becomes empty, raising an `ArgumentOutOfRangeException` internally.
+The display itself clears correctly, so the trace is easy to miss.
+Rewriting the path as `(Validation.Errors)/ErrorContent`, which refers to the current item, keeps the same display and produces no trace (see [Why WPF Validation Errors Are Not Displayed, and Choosing Between IDataErrorInfo and INotifyDataErrorInfo](/articles/wpf-validation-error-not-displayed/)).
+
 ### Collection Changes Are Not Reported
 
 When no error appears but a list does not update, change notification for the collection itself is missing.
