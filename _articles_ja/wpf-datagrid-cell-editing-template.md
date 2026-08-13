@@ -119,7 +119,7 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 - 単純なテキスト編集のみで十分な列は `DataGridTextColumn` を優先し、過剰なテンプレート化を避ける。
 - 編集用コントロールに重い UI を常時配置すると仮想化時の描画負荷が増えるため、編集時のみ表示する構成を維持する。
 - 単一テンプレート切り替えは柔軟だが、キーボード移動や初期フォーカスの調整コストが高くなる。
-- `CellEditingTemplate` に編集用コントロールを自分で書く構成では、そのコントロールに `Validation.ErrorTemplate` を通常どおり指定でき、入力検証のエラーを編集中のセル内に表示できる。
+- `CellEditingTemplate` に編集用コントロールを自分で書く構成では、そのコントロールに `Validation.ErrorTemplate` を通常どおり指定できる。表示はアドーナーレイヤー上で行われるため、レイヤーを得られる視覚ツリーであることが前提になる。
 編集要素をフレームワークが生成する `DataGridTextColumn` などではこの方法が使えず、`EditingElementStyle` で表現する（[WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け](/ja/articles/wpf-validation-error-not-displayed/)）。
 
 ## 代替案・比較

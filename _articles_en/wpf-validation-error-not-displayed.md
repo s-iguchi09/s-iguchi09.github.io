@@ -103,7 +103,7 @@ The indexer `this[string columnName]` is called only once a `DataErrorValidation
 
 The activation requirements and the measured default behavior of each approach are as follows.
 
-| Validation approach | Rule that produces the error | Required setting | Default | Validated on initial display |
+| Validation approach | Rule recorded on the error | Required setting | Default | Error present on initial display |
 | --- | --- | --- | --- | --- |
 | Custom `ValidationRule` | The custom class | Add to `Binding.ValidationRules` | Inactive unless added | No by default; yes with `ValidatesOnTargetUpdated="True"` |
 | `IDataErrorInfo` | `DataErrorValidationRule` | `ValidatesOnDataErrors="True"` | `False` | Yes |
@@ -113,6 +113,11 @@ The activation requirements and the measured default behavior of each approach a
 
 `ValidatesOnNotifyDataErrors` is the only one that defaults to `true`.
 That is why a view model implementing `INotifyDataErrorInfo` produces a red border even when the binding itself declares nothing.
+
+`INotifyDataErrorInfo` also differs in how the error comes into being.
+`NotifyDataErrorValidationRule.Validate` reports success regardless of the value passed to it; in the measured run `IsValid` was `true` even for `null` and an empty string.
+The error itself is whatever the view model returns from `GetErrors`, which the binding engine reads and then keeps in step with through `ErrorsChanged` notifications to update `Validation.Errors`.
+The rule serves as the marker that appears in `RuleInError` on the resulting `ValidationError`.
 
 Behavior on initial display differs by approach.
 `DataErrorValidationRule` and `NotifyDataErrorValidationRule` both reported an error before a single character was typed.
@@ -178,9 +183,10 @@ Input typed by the user, however, is validated only when the value is transferre
 The default `UpdateSourceTrigger` for `TextBox.Text` is `LostFocus`, so typing alone updates neither the source nor the validation state of that input.
 In the measured run, clearing a `TextBox` that started with a valid value left `Validation.HasError` at `false` until focus moved away.
 
-This applies to `IDataErrorInfo` and `INotifyDataErrorInfo` alike.
-The latter follows `ErrorsChanged` on the view model, but that event is raised by the property setter, and the setter is invoked by the source update.
-With `UpdateSourceTrigger=Explicit` the effect is stronger: the validation state did not change until `UpdateSource` was called.
+This applies to `IDataErrorInfo` and, as in the implementation below, to an `INotifyDataErrorInfo` that validates inside its setters.
+The latter follows `ErrorsChanged` on the view model, but in that arrangement the event is raised by the property setter, and the setter is invoked by the source update.
+With `UpdateSourceTrigger=Explicit` the effect is stronger: in the same arrangement the validation state did not change until `UpdateSource` was called.
+An implementation that raises `ErrorsChanged` independently of the source update, such as one that reports when an asynchronous lookup completes, is not bound by this.
 
 ---
 
@@ -364,6 +370,9 @@ User input and `SetCurrentValue` both keep the binding intact, so only assignmen
 - **An `ErrorsChanged` property name that differs from the binding path suppresses the display.**
 Raising `ErrorsChanged` with `Namee` while the binding path was `Name` left `Validation.HasError` at `false` even though `HasErrors` was `true`.
 Using `nameof` instead of string literals prevents this.
+- **Validation results settled asynchronously must be applied on the UI thread.**
+The binding engine subscribes to `ErrorsChanged` to update `Validation.Errors`, so that notification has to be raised on the UI thread.
+When results are settled by background work, move the whole `SetErrors` call — the dictionary update and both notifications — onto the UI thread through the `Dispatcher`.
 - **The `Validation.Error` attached event is not raised by default.**
 Handling errors outside the visual layer, for logging or for blocking navigation, requires `Binding.NotifyOnValidationError` to be `True`.
 The default is `False`, and without it the handler is never invoked.

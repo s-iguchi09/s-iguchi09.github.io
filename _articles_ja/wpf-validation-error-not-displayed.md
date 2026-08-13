@@ -101,7 +101,7 @@ WPF の入力検証は、次の 3 段階が独立して成立している。
 
 方式ごとの有効化条件と、実測した既定の挙動は次のとおりである。
 
-| 検証方式 | エラーを生成するルール | 有効化に必要な指定 | 既定 | 初期表示時点で検証されるか |
+| 検証方式 | エラーに記録されるルール | 有効化に必要な指定 | 既定 | 初期表示時点でエラーが現れるか |
 | --- | --- | --- | --- | --- |
 | 自作 `ValidationRule` | 自作クラス | `Binding.ValidationRules` へ追加 | 追加しなければ動かない | されない（既定。`ValidatesOnTargetUpdated="True"` で可） |
 | `IDataErrorInfo` | `DataErrorValidationRule` | `ValidatesOnDataErrors="True"` | `False` | される |
@@ -111,6 +111,12 @@ WPF の入力検証は、次の 3 段階が独立して成立している。
 
 `ValidatesOnNotifyDataErrors` だけが既定で `true` である。
 `INotifyDataErrorInfo` を実装した ViewModel が、バインディングに何も書かなくても赤枠を出すのはこのためである。
+
+`INotifyDataErrorInfo` は、エラーの作られ方も他の方式と異なる。
+`NotifyDataErrorValidationRule.Validate` は入力値によらず常に有効を返す。
+実測でも、`null` や空文字を渡した場合を含めて `IsValid` は `true` であった。
+エラーの実体は ViewModel の `GetErrors` が返す内容であり、バインディングエンジンがそれを読み取り、`ErrorsChanged` の通知に追随して `Validation.Errors` を更新する。
+このルールは、そうして記録された `ValidationError` の `RuleInError` に現れる標識として働く。
 
 初期表示時点の挙動には方式差がある。
 `DataErrorValidationRule` と `NotifyDataErrorValidationRule` は、ユーザーが 1 文字も入力していない段階でエラーを報告した。
@@ -178,9 +184,10 @@ WPF の入力検証は、次の 3 段階が独立して成立している。
 `TextBox.Text` の `UpdateSourceTrigger` の既定は `LostFocus` であるため、入力しただけではソースが更新されず、入力内容の検証も走らない。
 実測では、有効な初期値を持つ `TextBox` の内容を空にしても、フォーカスを移すまでは `Validation.HasError` が `false` のままであった。
 
-これは `IDataErrorInfo` でも `INotifyDataErrorInfo` でも同じである。
-後者は ViewModel の `ErrorsChanged` に追随するが、そのイベントを起こすのはプロパティの setter であり、setter を呼ぶのがソース更新だからである。
-`UpdateSourceTrigger=Explicit` の場合はさらに顕著で、`UpdateSource` を呼ぶまで検証結果は変化しなかった。
+これは `IDataErrorInfo` でも、本記事の実装例のように setter で検証する `INotifyDataErrorInfo` でも同じである。
+後者は ViewModel の `ErrorsChanged` に追随するが、この構成でそのイベントを起こすのはプロパティの setter であり、setter を呼ぶのがソース更新だからである。
+`UpdateSourceTrigger=Explicit` の場合はさらに顕著で、同じ構成では `UpdateSource` を呼ぶまで検証結果が変化しなかった。
+逆に、`ErrorsChanged` をソース更新とは独立に発生させる構成、たとえば非同期の照会が完了した時点で通知する実装は、この制約を受けない。
 
 ---
 
@@ -368,6 +375,9 @@ XAML 側では、メッセージを描く `ErrorTemplate` を定義して `Style
 - **`ErrorsChanged` のプロパティ名がバインディングのパスと一致しないと表示されない。**
 `Name` にバインドしている状態で、誤って `Namee` を指定して `ErrorsChanged` を発生させたところ、`HasErrors` が `true` であるにもかかわらず `Validation.HasError` は `false` のままであった。
 `nameof` を使い、文字列リテラルを避けることで防げる。
+- **非同期に確定した検証結果は UI スレッドで反映する。**
+バインディングエンジンは `ErrorsChanged` を購読して `Validation.Errors` を更新するため、この通知は UI スレッドで発生させる必要がある。
+バックグラウンドの処理で結果が確定する構成では、`errors` の書き換えと 2 つの通知を含む `SetErrors` の呼び出し全体を `Dispatcher` 経由で UI スレッドへ移す。
 - **`Validation.Error` 添付イベントは既定では発生しない。**
 エラーを画面表示以外の経路（ログ・集計・画面遷移の抑止など）で拾う場合、`Binding.NotifyOnValidationError` を `True` にする必要がある。
 既定は `False` であり、指定しなければハンドラーは一度も呼ばれない。
