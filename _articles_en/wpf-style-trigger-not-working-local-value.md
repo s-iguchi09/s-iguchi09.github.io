@@ -196,7 +196,7 @@ A `Binding` is accepted in that condition binding and in `Setter.Value`, but not
 - **Assigning a local value replaces a binding.**
 A plain assignment to a property that holds a binding replaces the deferred value outright.
 A later `ClearValue` call does not restore the binding.
-Updating a dependency property of a `UserControl` from inside the control triggers the same replacement and detaches the binding set by the caller (see [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)).
+Updating a dependency property of a `UserControl` from inside the control with a plain assignment triggers the same replacement and detaches the binding set by the caller, whereas `SetCurrentValue` preserves it (see [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)).
 - **Triggers in a theme style, and in its `ControlTemplate`, lose to local values as well.**
 Setting `Foreground` as a local value on a `Button` suppresses the trigger that greys out the text when the button is disabled.
 Depending on how the default theme is implemented, that trigger sits at rank 7 (template triggers) or rank 9 (theme styles), but either way it ranks below a local value at rank 3.

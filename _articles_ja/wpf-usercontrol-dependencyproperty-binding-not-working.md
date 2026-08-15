@@ -31,6 +31,9 @@ image: /images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/u
 - アーキテクチャ: MVVM（利用側のウィンドウに ViewModel を `DataContext` として設定する構成）
 - その他制約: `UserControl` を XAML ファイルとコードビハインドの組で定義する構成を基準とする
 
+掲載する XAML の `...` は、標準の `xmlns` 宣言など本題に関係しない属性の省略を示す。
+そのまま貼り付けても解析できないため、実際のファイルでは通常の宣言に置き換える。
+
 ---
 
 ## 問題
@@ -263,7 +266,8 @@ public static readonly DependencyProperty TitleProperty =
 - **`ContextMenu` の中からは、外側の `UserControl` を `RelativeSource` でも `ElementName` でも指せない。**
 `ContextMenu` は要素ツリーの子ではなく `FrameworkElement.ContextMenu` プロパティとして付くため、祖先探索と名前解決がたどる親チェーンが外側へつながらない。
 実測では、`UserControl` 内の `Button` に付けた `ContextMenu` の中で `AncestorType=UserControl` と `ElementName=Root` の双方が `System.Windows.Data Error: 4` となり、`MenuItem.Header` は `null` のままであった。
-一方、`DataContext` はこの親チェーンとは別の経路で配置元から継承されるため、前述の 3 の構成では素の `{Binding Title}` が解決した。
+一方、`DataContext` はこの親チェーンとは別の経路で配置元から継承されるため、前述の 3 の構成ではメニューを開いた状態で素の `{Binding Title}` が解決した。
+この継承が成立するのはメニューが開いて配置元と結び付いた後であり、開く前や `ContextMenuOpening` の時点では成立しない。
 `{Binding PlacementTarget.DataContext.Title, RelativeSource={RelativeSource AncestorType=ContextMenu}}` という書き方が回避策として挙げられることがあるが、これが指すのは配置元要素の `DataContext` である。
 3 の構成では素の `{Binding Title}` で足りるため書く理由が無く、1 や 2 の構成では利用側の ViewModel を指してしまう。
 この書き方が有効なのは、メニューから自身の依存関係プロパティではなく利用側の ViewModel へ到達したい場合に限られる。

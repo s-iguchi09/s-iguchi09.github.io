@@ -31,6 +31,9 @@ Every value reported here as measured was obtained by running the code in the en
 - Architecture: MVVM, with a view model assigned to the consuming window's `DataContext`
 - Other constraints: the `UserControl` is defined as a XAML file paired with code-behind
 
+The `...` in the XAML samples marks omitted attributes that are irrelevant here, such as the standard `xmlns` declarations.
+The samples therefore do not parse as pasted; replace the marker with the usual declarations in a real file.
+
 ---
 
 ## Problem
@@ -260,7 +263,8 @@ Local values and dependency property value precedence are covered in [Why WPF St
 - **From inside a `ContextMenu`, neither `RelativeSource` nor `ElementName` reaches the surrounding `UserControl`.**
 A `ContextMenu` is attached through the `FrameworkElement.ContextMenu` property rather than as a child in the element tree, so the parent chain that ancestor search and name resolution follow does not continue outward.
 In the measured run, a `ContextMenu` attached to a `Button` inside the `UserControl` produced `System.Windows.Data Error: 4` for both `AncestorType=UserControl` and `ElementName=Root`, leaving `MenuItem.Header` as `null`.
-`DataContext`, on the other hand, is inherited from the placement site through a path separate from that parent chain, so the plain `{Binding Title}` resolved under option 3.
+`DataContext`, on the other hand, is inherited from the placement site through a path separate from that parent chain, so the plain `{Binding Title}` resolved under option 3 once the menu was open.
+That inheritance holds only after the menu opens and is associated with its placement site, not before it opens or during `ContextMenuOpening`.
 `{Binding PlacementTarget.DataContext.Title, RelativeSource={RelativeSource AncestorType=ContextMenu}}` is sometimes offered as a workaround, but it reaches the `DataContext` of the placement element.
 Under option 3 the plain `{Binding Title}` already suffices, and under options 1 and 2 it lands on the consuming view model instead.
 The form is useful only for reaching that consuming view model from the menu, not the control's own dependency property.
