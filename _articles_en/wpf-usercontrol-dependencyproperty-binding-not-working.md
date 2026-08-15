@@ -209,7 +209,8 @@ The target of the `DataContext` assignment is the child, not the `UserControl` e
 In the measured run, everything under the `Grid` saw `InfoCard` as its `DataContext` while the `DataContext` of the `InfoCard` element itself remained the consuming view model.
 Outer and inner bindings both resolve without interfering with each other.
 
-Writing values back from inside requires changing the default transfer direction of the dependency property.
+Writing values back from inside requires the outer binding to be two-way.
+That condition is met either by changing the default transfer direction in the dependency property metadata or by specifying `Mode=TwoWay` at the call site.
 Registering with `PropertyMetadata` leaves outer bindings one-way by default.
 
 ```csharp
