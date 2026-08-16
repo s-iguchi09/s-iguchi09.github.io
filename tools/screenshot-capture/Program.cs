@@ -35,6 +35,7 @@ internal static class Program
         new DataTemplateParentBindingScene(),
         new TreeViewSelectItemScene(),
         new ValidationErrorNotDisplayedScene(),
+        new UserControlDependencyPropertyScene(),
         new NaturalSortScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),

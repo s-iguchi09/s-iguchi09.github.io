@@ -99,6 +99,8 @@ Prefer `ItemsControl` as the ancestor type.
 
 Prefix the path with `DataContext.`.
 `RelativeSource` returns the ancestor **element**, and its `DataContext` is not traversed automatically.
+Conversely, omit `DataContext.` when the target is a dependency property of the ancestor element itself.
+Referencing a dependency property defined on a `UserControl` from inside that control is one such case (see [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)).
 
 ---
 

@@ -196,6 +196,7 @@ border.ClearValue(Border.BackgroundProperty);
 - **ローカル値を代入するとバインディングが置き換わる。**
 バインディングを設定したプロパティへ通常の代入を行うと、遅延評価されていた値ではなく代入したローカル値に完全に差し替わる。
 その後に `ClearValue` を呼んでもバインディングは復元されない。
+`UserControl` の依存関係プロパティを内部から通常の代入で更新する場合も同じ差し替えが起き、利用側が設定したバインディングが外れる（`SetCurrentValue` を使えば維持される）（[WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計](/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)）。
 - **テーマスタイル（およびその `ControlTemplate`）のトリガーもローカル値に負ける。**
 例として `Button` の `Foreground` をローカル値で指定すると、無効化時に文字をグレー表示にするトリガーが効かなくなる。
 このトリガーは既定テーマの実装によって 7（テンプレートのトリガー）と 9（テーマスタイル）のどちらに置かれることもあるが、いずれもローカル値（3）より下位である点は変わらない。

@@ -99,6 +99,8 @@ target property is 'Command' (type 'ICommand')
 
 `Path` の先頭には `DataContext.` を明示する。
 `RelativeSource` が返すのは祖先の**要素**であり、その `DataContext` は自動的には経由されない。
+逆に、祖先の要素そのものが持つ依存関係プロパティを参照する場合は `DataContext.` を付けない。
+`UserControl` に定義した依存関係プロパティを内部から参照する場合がこれにあたる（[WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計](/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)）。
 
 ---
 
