@@ -265,7 +265,9 @@ public static readonly DependencyProperty TitleProperty =
 表示上の値だけを一時的に変えるなら `SetCurrentValue`、利用側へ値を返すなら `BindsTwoWayByDefault` と、目的で使い分ける。
 ローカル値と依存関係プロパティの値優先順位は [WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/) で扱っている。
 - **`ContextMenu` の中からは、外側の `UserControl` を `RelativeSource` でも `ElementName` でも指せない。**
-`ContextMenu` は要素ツリーの子ではなく `FrameworkElement.ContextMenu` プロパティとして付くため、祖先探索と名前解決がたどる親チェーンが外側へつながらない。
+両者は失敗するが、理由は別である。
+`RelativeSource` の祖先探索は親チェーンをたどるが、`ContextMenu` は要素ツリーの子ではなく `FrameworkElement.ContextMenu` プロパティとして付くため、チェーンが外側へつながらない。
+`ElementName` は名前スコープから名前付き要素を探すが、`ContextMenu` は独自の名前スコープを持つため、`UserControl` 側に登録された `Root` が見えない。
 実測では、`UserControl` 内の `Button` に付けた `ContextMenu` の中で `AncestorType=UserControl` と `ElementName=Root` の双方が `System.Windows.Data Error: 4` となり、`MenuItem.Header` は `null` のままであった。
 一方、`DataContext` はこの親チェーンとは別の経路で配置元から継承されるため、前述の 3 の構成ではメニューを開いた状態で素の `{Binding Title}` が解決した。
 この継承が成立するのはメニューが開いて配置元と結び付いた後であり、開く前や `ContextMenuOpening` の時点では成立しない。
@@ -273,9 +275,10 @@ public static readonly DependencyProperty TitleProperty =
 3 の構成では素の `{Binding Title}` で足りるため書く理由が無く、1 や 2 の構成では利用側の ViewModel を指してしまう。
 この書き方が有効なのは、メニューから自身の依存関係プロパティではなく利用側の ViewModel へ到達したい場合に限られる。
 - **インラインで宣言した `Popup` の中では、どちらも解決する。**
-`Popup` の中身は `PopupRoot` という別の視覚ツリーに描かれるが、`Popup` 自体は要素ツリーの子として置かれるため親チェーンが途切れない。
+`Popup` の中身は `PopupRoot` という別の視覚ツリーに描かれる。
+それでも `Popup` 自体は `UserControl` の XAML に子要素として書かれているため、`RelativeSource` がたどる親チェーンは途切れず、`ElementName` から見て `Root` も同じ名前スコープに属したままである。
 実測でも、`UserControl` の中にインラインで書いた `Popup` の内側から `AncestorType=UserControl` と `ElementName=Root` の双方が解決した。
-`ContextMenu` との差は、別の視覚ツリーに描かれるかどうかではなく、親チェーンに載るかどうかである。
+`ContextMenu` との差は、別の視覚ツリーに描かれるかどうかではなく、親チェーンと名前スコープが外側へつながっているかどうかである。
 - **`DataTemplate` の中でも解決する。**
 テンプレートは別の名前スコープを持つが、実測では、`UserControl` 内にインラインで書いた `DataTemplate` でも、`UserControl.Resources` にキー付きで置いた `DataTemplate` でも、`ElementName=Root` と `AncestorType=UserControl` の双方が解決した。
 `ElementName` の解決先はテンプレートを定義したファイルではなく、テンプレートを使う側の名前スコープで決まる。

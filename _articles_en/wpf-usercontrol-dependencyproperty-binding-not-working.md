@@ -262,7 +262,9 @@ It does not, however, write back to the source while the binding is one-way.
 Use `SetCurrentValue` to change the displayed value temporarily, and `BindsTwoWayByDefault` to return a value to the caller.
 Local values and dependency property value precedence are covered in [Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence](/articles/wpf-style-trigger-not-working-local-value/).
 - **From inside a `ContextMenu`, neither `RelativeSource` nor `ElementName` reaches the surrounding `UserControl`.**
-A `ContextMenu` is attached through the `FrameworkElement.ContextMenu` property rather than as a child in the element tree, so the parent chain that ancestor search and name resolution follow does not continue outward.
+Both fail, but for different reasons.
+Ancestor search with `RelativeSource` follows the parent chain, and a `ContextMenu` is attached through the `FrameworkElement.ContextMenu` property rather than as a child in the element tree, so that chain does not continue outward.
+`ElementName` looks a name up in a XAML name scope, and a `ContextMenu` carries its own name scope, so the `Root` registered on the `UserControl` side is not visible from it.
 In the measured run, a `ContextMenu` attached to a `Button` inside the `UserControl` produced `System.Windows.Data Error: 4` for both `AncestorType=UserControl` and `ElementName=Root`, leaving `MenuItem.Header` as `null`.
 `DataContext`, on the other hand, is inherited from the placement site through a path separate from that parent chain, so the plain `{Binding Title}` resolved under option 3 once the menu was open.
 That inheritance holds only after the menu opens and is associated with its placement site, not before it opens or during `ContextMenuOpening`.
@@ -270,9 +272,10 @@ That inheritance holds only after the menu opens and is associated with its plac
 Under option 3 the plain `{Binding Title}` already suffices, and under options 1 and 2 it lands on the consuming view model instead.
 The form is useful only for reaching that consuming view model from the menu, not the control's own dependency property.
 - **Inside an inline `Popup`, both do resolve.**
-The content of a `Popup` renders in a separate visual tree rooted at `PopupRoot`, but the `Popup` itself is placed as a child in the element tree, so the parent chain stays intact.
+The content of a `Popup` renders in a separate visual tree rooted at `PopupRoot`.
+The `Popup` itself is nonetheless written as a child element in the `UserControl` XAML, so the parent chain that `RelativeSource` follows stays intact and `Root` remains in the same name scope as far as `ElementName` is concerned.
 In the measured run, both `AncestorType=UserControl` and `ElementName=Root` resolved from inside a `Popup` declared inline in the `UserControl`.
-What separates this from `ContextMenu` is presence on the parent chain, not whether a separate visual tree is involved.
+What separates this from `ContextMenu` is whether the parent chain and the name scope extend outward, not whether a separate visual tree is involved.
 - **Bindings inside a `DataTemplate` resolve as well.**
 A template has its own name scope, yet in the measured run both `ElementName=Root` and `AncestorType=UserControl` resolved in a `DataTemplate` written inline and in one placed under `UserControl.Resources` with a key.
 For `ElementName`, resolution depends on the name scope where the template is used, not on the file where it is defined.
