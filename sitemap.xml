@@ -450,7 +450,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -461,7 +461,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -607,7 +607,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datacontext-scope-and-popup-boundary.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-parent-binding.png</image:loc></image:image>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -619,7 +619,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datatemplate-parent-datacontext-binding/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datacontext-scope-and-popup-boundary.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-parent-binding.png</image:loc></image:image>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -878,7 +878,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png</image:loc></image:image>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -889,7 +889,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png</image:loc></image:image>
-    <lastmod>2026-08-11</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -978,6 +978,30 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-treeview-select-item-programmatically/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png</image:loc></image:image>
     <lastmod>2026-08-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-binding.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-datacontext-this.png</image:loc></image:image>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-binding.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-datacontext-this.png</image:loc></image:image>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
