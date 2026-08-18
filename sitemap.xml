@@ -445,12 +445,34 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg</image:loc></image:image>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg</image:loc></image:image>
+    <lastmod>2026-08-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -461,7 +483,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -768,7 +790,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -779,7 +801,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -944,7 +966,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-tray-contextmenu-close-on-focus-loss/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-tray-contextmenu-close-on-focus-loss/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-foreground.svg</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -955,7 +977,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-tray-contextmenu-close-on-focus-loss/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-tray-contextmenu-close-on-focus-loss/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-foreground.svg</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
