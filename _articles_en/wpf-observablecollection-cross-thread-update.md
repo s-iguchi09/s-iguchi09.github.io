@@ -151,6 +151,7 @@ As required by the documentation, the call must occur on the UI thread and befor
 - **Timing of registration and disabling:** call both `EnableCollectionSynchronization` and `DisableCollectionSynchronization` on the UI thread. To use the same collection on multiple UI threads, register it separately on each.
 - **Overusing `Dispatcher.Invoke` strains the UI:** running a large number of per-item synchronous `Invoke` calls saturates the UI thread and reduces responsiveness. For high item counts, consider `EnableCollectionSynchronization` or a batched add on the UI thread.
 - **UI elements remain UI-thread-only:** this fix relaxes only access to the bound collection. Manipulating a `DependencyObject`, such as a control, directly from another thread remains disallowed.
+- **A worker started with `new Thread` keeps the process alive:** unlike `Task.Run`, it is a foreground thread by default, so a worker left updating the collection prevents the process from exiting even after the window closes. Diagnosis and remedies are covered in [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/).
 
 ---
 

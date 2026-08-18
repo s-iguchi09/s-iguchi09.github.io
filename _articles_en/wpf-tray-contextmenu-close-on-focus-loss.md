@@ -108,6 +108,7 @@ This P/Invoke bridge allows the WPF app to coordinate tray menu activation with 
 - `SetForegroundWindow` is still subject to Windows foreground restrictions and should not be treated as an unconditional override.  
 - For mixed `NotifyIcon` + WPF `ContextMenu` implementations, menu operations should remain on the UI thread via `Dispatcher.Invoke`.  
 - `StaysOpen = false` alone may not fully resolve close behavior if the opening window context is not foreground-aligned.  
+- Tray residency decouples window presence from application lifetime, so set `ShutdownMode` to `OnExplicitShutdown` and call `Shutdown()` from the exit menu, since forgetting that call leaves the process running with no window (diagnosis is covered in [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/)).  
 
 ---
 
