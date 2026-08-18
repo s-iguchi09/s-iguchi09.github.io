@@ -56,7 +56,7 @@ Changing `ShutdownMode` without distinguishing the two leaves the second state u
 Two gates stand in series between closing a window and the process disappearing.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg" alt="Diagram showing that WPF shutdown proceeds through two gates. At gate one, the last window closing satisfies the ShutdownMode condition, Application.Shutdown is called, Application.Exit is raised and Run returns; otherwise the application keeps running with no window, with no Window created and an unclosed Window instance listed as the causes. At gate two, after Run returns and Main ends, the process exits once all foreground threads have finished; otherwise the process stays in Task Manager, with new Thread and Dispatcher.Run on a second UI thread listed as the causes." width="880" height="394" loading="lazy">
+  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg" alt="Diagram showing that WPF shutdown proceeds through two gates. At gate one, the last window closing satisfies the ShutdownMode condition, Application.Shutdown is called, Application.Exit is raised and Run returns; otherwise the application keeps running with no window, with no Window created and an unclosed Window instance listed as the causes. At gate two, after Run returns, the process exits once all foreground threads including the main thread have finished; otherwise the process stays in Task Manager, with new Thread and Dispatcher.Run on a second UI thread listed as the causes." width="880" height="394" loading="lazy">
   <figcaption>The two gates that make up WPF shutdown and the symptom produced when each one is not passed. The stall conditions were confirmed with a test application on .NET 10 / Windows 11.</figcaption>
 </figure>
 
@@ -81,8 +81,10 @@ Independently of `ShutdownMode`, `Shutdown` is also called when the user ends th
 
 ### Gate 2: process exit
 
-Passing gate 1 raises `Application.Exit`, returns from `Application.Run`, and ends `Main`.
-Even so, the process does not necessarily terminate at that point.
+Passing gate 1 raises `Application.Exit` and returns from `Application.Run`.
+`Run` returning is not the same as `Main` ending.
+Any cleanup written after `Run` continues on the main foreground thread, and the process does not terminate while it runs.
+Even once `Main` ends, the process does not necessarily terminate at that point.
 
 Forced termination and unhandled exceptions aside, a managed process terminates when **all foreground threads have stopped**.
 A background thread does not keep the managed execution environment running, and the runtime stops any remaining background threads once the foreground threads are gone ([Foreground and background threads](https://learn.microsoft.com/dotnet/standard/threading/foreground-and-background-threads)).
@@ -143,9 +145,10 @@ The case of a blocked UI thread is covered under Notes.
 For gate 1, locate the surviving window through `Application.Windows` and either close it or restructure the code so it is never created.
 For designs that intentionally have no window, such as a tray-resident application, set `ShutdownMode` to `OnExplicitShutdown` and call `Shutdown()` explicitly from the exit command.
 
-For gate 2, identify the surviving thread and set `IsBackground` to `true` if it performs monitoring or polling.
-If the work must complete, signal cancellation and wait with `Join`.
-`Join` itself does not stop a thread, however, so create the target thread with `IsBackground = true` as insurance against a thread that ignores the cancellation signal (the reason is given under Alternatives / Comparison).
+For gate 2, identify the surviving thread and set `IsBackground` to `true` if it performs discardable monitoring or polling.
+If the work must complete, leave it on a foreground thread, signal cancellation and wait with `Join`.
+That shape guarantees completion only as long as the thread reliably honours the cancellation signal; if it does not, the process never exits.
+`IsBackground = true` gives up that premise in exchange for a guaranteed exit, and does not coexist with a completion guarantee (the details are under Alternatives / Comparison).
 If a second UI thread is involved, stop its `Dispatcher` with `InvokeShutdown()`.
 
 ---
@@ -232,17 +235,24 @@ private void StartSubUiThread()
 {
     Dispatcher subDispatcher = null;
 
-    // The waiting side has no way to observe when the worker leaves Set(),
-    // so this ManualResetEventSlim is not disposed (Dispose is not thread-safe).
-    // It is a one-time startup handshake, so at most one handle is retained.
     var ready = new ManualResetEventSlim();
 
     var thread = new Thread(() =>
     {
         subDispatcher = Dispatcher.CurrentDispatcher;
         ready.Set();
-        // In practice the windows of this UI thread are created here.
-        Dispatcher.Run();
+        try
+        {
+            // In practice the windows of this UI thread are created here.
+            Dispatcher.Run();
+        }
+        finally
+        {
+            // By the time Dispatcher.Run() returns, the waiting side has left
+            // Wait() and this thread has left Set(). Dispose is not thread-safe,
+            // so this is the point where it cannot race.
+            ready.Dispose();
+        }
     });
     thread.SetApartmentState(ApartmentState.STA);
     thread.Start();
@@ -310,12 +320,15 @@ That route works automatically even under `OnExplicitShutdown`.
 | Approach | Effect | Best suited for | Constraint |
 |---|---|---|---|
 | `IsBackground = true` | The runtime stops the thread at process exit | Monitoring or polling that may be cut short | No completion guarantee; cleanup work may not run |
-| Cancellation signal plus `Join` | Waits for the thread to finish before proceeding | Work that must complete, such as saving or flushing | Needs `IsBackground = true` alongside it as insurance against a thread that ignores cancellation. A `Join` timeout only makes the waiting side give up while the thread keeps running |
+| Cancellation signal plus `Join`, kept in the foreground | Waits for the thread to finish before proceeding | Work that must complete, such as saving or flushing | A thread that ignores cancellation keeps the process alive. A `Join` timeout only makes the waiting side give up while the thread keeps running |
 | `Dispatcher.InvokeShutdown()` | Ends the message loop and returns from `Dispatcher.Run()` | Second and subsequent UI threads | Operations already queued on that dispatcher are aborted |
 | `Environment.Exit` | Terminates the process immediately | A stopgap until the cause is identified | `Application.Exit` is not raised and persistence logic placed there does not run |
 
-Choosing cancellation plus `Join` does not pass gate 2 by adding a timeout alone.
-To guarantee termination when the `Join` times out, create the target thread with `IsBackground = true` and treat `Join` as a best-effort wait for a clean finish.
+The first two entries trade off against each other: a completion guarantee against a guaranteed exit.
+Cancellation plus `Join` guarantees completion on the premise that the thread honours cancellation, and leaves the process alive when it does not.
+`IsBackground = true` guarantees the exit and gives up the completion guarantee.
+Adding a timeout to `Join` does not recover it, because whatever remains after the timeout is cut short anyway.
+For work that must complete, the real fix is an implementation that reliably honours cancellation; `IsBackground = true` is not a substitute for it.
 
 ---
 

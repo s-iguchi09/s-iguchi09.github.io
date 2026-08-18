@@ -56,7 +56,7 @@ WPF の終了処理には**「アプリケーションが終了する」段階**
 プロセスが消えるまでには、直列につながった 2 つの関門がある。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg" alt="WPF アプリケーションの終了が 2 段階であることを示す図。第 1 関門では、最後のウィンドウが閉じられて ShutdownMode の条件を満たすと Application.Shutdown が呼ばれ、Application.Exit が発生して Run が戻る。呼ばれない場合はウィンドウが無いままアプリケーションが動き続け、その原因としてウィンドウを 1 つも生成していないことと、閉じていないウィンドウのインスタンスが残っていることが挙げられている。第 2 関門では、Run から戻って Main が終わったあと、フォアグラウンドスレッドがすべて終了するとプロセスが終了する。残っている場合はプロセスがタスクマネージャーに残り、その原因として new Thread と 2 つ目の UI スレッド上の Dispatcher.Run が挙げられている。" width="880" height="394" loading="lazy">
+  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg" alt="WPF アプリケーションの終了が 2 段階であることを示す図。第 1 関門では、最後のウィンドウが閉じられて ShutdownMode の条件を満たすと Application.Shutdown が呼ばれ、Application.Exit が発生して Run が戻る。呼ばれない場合はウィンドウが無いままアプリケーションが動き続け、その原因としてウィンドウを 1 つも生成していないことと、閉じていないウィンドウのインスタンスが残っていることが挙げられている。第 2 関門では、Run から戻ったあと、メインスレッドを含むフォアグラウンドスレッドがすべて終了するとプロセスが終了する。残っている場合はプロセスがタスクマネージャーに残り、その原因として new Thread と 2 つ目の UI スレッド上の Dispatcher.Run が挙げられている。" width="880" height="394" loading="lazy">
   <figcaption>WPF アプリケーションの終了を構成する 2 つの関門と、それぞれを通過しなかったときの症状。各関門で止まる条件は .NET 10 / Windows 11 上の検証アプリで確認した。</figcaption>
 </figure>
 
@@ -81,8 +81,10 @@ WPF は `Application.Shutdown` が呼ばれたときにアプリケーション�
 
 ### 第 2 関門: プロセスの終了
 
-第 1 関門を通過すると `Application.Exit` が発生し、`Application.Run` が戻り、`Main` が終わる。
-しかしこの時点でプロセスが終わるとは限らない。
+第 1 関門を通過すると `Application.Exit` が発生し、`Application.Run` が戻る。
+`Run` が戻ることと `Main` が終わることは同じではない。
+`Run` の後に後片付けなどを書いていれば、その処理はメインのフォアグラウンドスレッド上で続き、その間プロセスは終了しない。
+`Main` が終わったとしても、なおプロセスが終わるとは限らない。
 
 強制終了や未処理例外による終了を別にすれば、マネージドプロセスが終了するのは**フォアグラウンドスレッドがすべて停止したとき**である。
 バックグラウンドスレッドはマネージド実行環境を生かし続けず、フォアグラウンドスレッドが尽きた時点でランタイムに停止させられる（[フォアグラウンド スレッドとバックグラウンド スレッド](https://learn.microsoft.com/dotnet/standard/threading/foreground-and-background-threads)）。
@@ -143,9 +145,10 @@ UI スレッド自体がブロックされている場合の扱いは注意点�
 第 1 関門であれば、残っているウィンドウを `Application.Windows` から特定して閉じるか、そのウィンドウを生成しない構成に変える。
 タスクトレイ常駐アプリケーションのように意図的にウィンドウを持たない構成では、`ShutdownMode` を `OnExplicitShutdown` にしたうえで、終了メニューから `Shutdown()` を明示的に呼ぶ。
 
-第 2 関門であれば、残っているスレッドを特定して、監視・ポーリング用途なら `IsBackground` を `true` にする。
-完了させる必要がある処理なら、キャンセルを通知して `Join` で待ち合わせる。
-ただし `Join` 自体はスレッドを止める手段ではないため、キャンセルに応答しない場合に備えて対象スレッドを `IsBackground = true` で作っておく（理由は代替案・比較で述べる）。
+第 2 関門であれば、残っているスレッドを特定して、打ち切ってよい監視・ポーリング用途なら `IsBackground` を `true` にする。
+完了させる必要がある処理なら、フォアグラウンドスレッドのまま残し、キャンセルを通知して `Join` で待ち合わせる。
+この形が完了を保証できるのは、スレッドがキャンセルに確実に応答することが前提であり、応答しなければプロセスは終了しない。
+`IsBackground = true` はその前提を諦めて確実な終了を取る選択であり、完了保証とは両立しない（詳細は代替案・比較で述べる）。
 2 つ目の UI スレッドを立てている場合は、そのスレッドの `Dispatcher` を `InvokeShutdown()` で止める。
 
 ---
@@ -232,17 +235,24 @@ private void StartSubUiThread()
 {
     Dispatcher subDispatcher = null;
 
-    // ワーカーが Set() を抜けた時点を待ち側から知る手段が無いため、この
-    // ManualResetEventSlim は破棄しない（Dispose はスレッドセーフではない）。
-    // 起動時 1 回だけのハンドシェイクであり、保持されるハンドルも 1 個に留まる。
     var ready = new ManualResetEventSlim();
 
     var thread = new Thread(() =>
     {
         subDispatcher = Dispatcher.CurrentDispatcher;
         ready.Set();
-        // 実際にはこのスレッド上でウィンドウを生成・表示する。
-        Dispatcher.Run();
+        try
+        {
+            // 実際にはこのスレッド上でウィンドウを生成・表示する。
+            Dispatcher.Run();
+        }
+        finally
+        {
+            // Dispatcher.Run() が戻る時点では待ち側の Wait() は完了しており、
+            // Set() も抜けている。Dispose はスレッドセーフではないため、
+            // 競合しないこの位置で破棄する。
+            ready.Dispose();
+        }
     });
     thread.SetApartmentState(ApartmentState.STA);
     thread.Start();
@@ -310,12 +320,15 @@ nullable 参照型を有効にしているプロジェクトでは、`Dispatcher
 | 方法 | 効果 | 適するケース | 制約 |
 |---|---|---|---|
 | `IsBackground = true` | プロセス終了時にランタイムが停止させる | 監視・ポーリングなど打ち切ってよい処理 | 完了保証が無く、後始末は実行されない可能性がある |
-| キャンセル通知 ＋ `Join` | スレッドの終了を待ってから進む | 保存・フラッシュなど完了が必要な処理 | キャンセルに応答しないスレッドに備えて `IsBackground = true` との併用が要る。タイムアウト付きの `Join` は待ち側が諦めるだけでスレッドは動き続ける |
+| キャンセル通知 ＋ `Join`（フォアグラウンドのまま） | スレッドの終了を待ってから進む | 保存・フラッシュなど完了が必要な処理 | キャンセルに応答しないスレッドがあるとプロセスは終了しない。タイムアウト付きの `Join` は待ち側が諦めるだけで、スレッドは動き続ける |
 | `Dispatcher.InvokeShutdown()` | メッセージループを終了させ `Dispatcher.Run()` を戻す | 2 つ目以降の UI スレッド | そのディスパッチャーにキュー済みの処理は破棄される |
 | `Environment.Exit` | 即座にプロセスを終了する | 原因特定までの暫定処置 | `Application.Exit` が発生せず、そこへ置いた保存処理も走らない |
 
-キャンセルと `Join` を選ぶ場合、タイムアウトを付けるだけでは第 2 関門は通過しない。
-`Join` が時間切れになったときにプロセスを確実に終わらせるには、対象スレッドを `IsBackground = true` で作っておき、`Join` は「終われば待つ」ための最善努力として使う。
+上 2 つは、完了保証と確実な終了のどちらを取るかというトレードオフの関係にある。
+キャンセルと `Join` は、スレッドがキャンセルに応答することを前提に完了を保証する代わりに、応答しなければプロセスが残る。
+`IsBackground = true` は確実に終了する代わりに完了を保証しない。
+`Join` にタイムアウトを付けても、時間切れ後の処理は打ち切られるため、この構成で完了保証は得られない。
+完了が必要な処理では、まずキャンセルに確実に応答する実装にすることが本筋であり、`IsBackground = true` はその代用にならない。
 
 ---
 
