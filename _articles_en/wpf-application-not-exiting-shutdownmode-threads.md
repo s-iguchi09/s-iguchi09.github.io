@@ -147,7 +147,8 @@ For designs that intentionally have no window, such as a tray-resident applicati
 
 For gate 2, identify the surviving thread and set `IsBackground` to `true` if it performs discardable monitoring or polling.
 If the work must complete, leave it on a foreground thread, signal cancellation and wait with `Join`.
-That shape waits for the work only as long as the thread reliably honours the cancellation signal; if it does not, the process never exits.
+That shape waits for the work only as long as the thread reliably honours the cancellation signal.
+When it does not, the process stays alive for as long as that foreground thread does.
 `IsBackground = true` gives up that premise: the thread stops holding process exit open, at the cost of any completion guarantee (the details are under Alternatives / Comparison).
 If a second UI thread is involved, stop its `Dispatcher` with `InvokeShutdown()`.
 
@@ -320,12 +321,12 @@ That route works automatically even under `OnExplicitShutdown`.
 | Approach | Effect | Best suited for | Constraint |
 |---|---|---|---|
 | `IsBackground = true` | The thread stops holding process exit open, and the runtime stops it at exit | Monitoring or polling that may be cut short | No completion guarantee; cleanup work may not run. The effect is limited to the thread it is set on |
-| Cancellation signal plus `Join`, kept in the foreground | Waits for the thread to finish before proceeding | Work that must complete, such as saving or flushing | A thread that ignores cancellation keeps the process alive. A `Join` timeout only makes the waiting side give up while the thread keeps running |
+| Cancellation signal plus `Join`, kept in the foreground | Waits for the thread to finish before proceeding | Work that must complete, such as saving or flushing | A thread that ignores cancellation keeps the process alive for as long as it runs. A `Join` timeout only makes the waiting side give up while the thread keeps running |
 | `Dispatcher.InvokeShutdown()` | Ends the message loop and returns from `Dispatcher.Run()` | Second and subsequent UI threads | Operations already queued on that dispatcher are aborted |
 | `Environment.Exit` | Terminates the process immediately | A stopgap until the cause is identified | `Application.Exit` is not raised and persistence logic placed there does not run |
 
 The first two entries trade off against each other: waiting for the work to finish against the thread no longer holding process exit open.
-Cancellation plus `Join` waits for the work on the premise that the thread honours cancellation, and leaves the process alive when it does not.
+Cancellation plus `Join` waits for the work on the premise that the thread honours cancellation, and leaves the process alive for as long as an unresponsive thread keeps running.
 What `Join` guarantees, however, is only that the target thread terminated — not that the save or flush succeeded, and not that the worker ran without throwing.
 Record the outcome on the worker side and inspect it after `Join` returns.
 `IsBackground = true` stops that thread from holding exit open and gives up any wait for the work.
