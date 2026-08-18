@@ -200,6 +200,8 @@ WPF の GUI アプリは既定でコンソールを持たないため、恒久�
 番号（40, 7 など）は分類に役立つが、確定情報は `property not found` や `Cannot convert` などのメッセージ本文にある。
 - **トレースに何も出ないのに反映されない場合は値優先順位を疑う。**
 Binding が正しく解決されていても、対象プロパティにローカル値があるとスタイルのトリガーが指定した値は実効値にならない（[WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/)）。
+- **出力ウィンドウはアプリケーションの終了処理の切り分けにも使える。**
+`App` の `OnExit`（`Application.OnExit` のオーバーライド）に `Trace.WriteLine` を仕込み、その行が出るかどうかで「WPF が終了していない」のか「プロセスだけが残っている」のかを切り分けられる（[WPF でウィンドウを閉じてもプロセスが終了しない原因の切り分けと ShutdownMode・フォアグラウンドスレッドの扱い](/ja/articles/wpf-application-not-exiting-shutdownmode-threads/)）。
 
 ---
 

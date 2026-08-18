@@ -107,6 +107,7 @@ Win32 API の P/Invoke 定義を追加しておくことで、WPF アプリ側�
 - `SetForegroundWindow` は OS のフォアグラウンド制御制約を受けるため、常に完全な制御を保証するものではない。
 - `NotifyIcon` と WPF `ContextMenu` を混在させる実装では、UI スレッド上でメニュー操作を行うため `Dispatcher.Invoke` を維持する。
 - `StaysOpen = false` を設定しても、表示元の状態が不整合なままでは期待どおりに閉じないケースがある。
+- タスクトレイ常駐はウィンドウの有無と寿命が一致しないため、`ShutdownMode` を `OnExplicitShutdown` にしたうえで終了メニューから `Shutdown()` を呼ぶ（呼び忘れるとウィンドウが無いままプロセスが残る。切り分けは[WPF でウィンドウを閉じてもプロセスが終了しない原因の切り分けと ShutdownMode・フォアグラウンドスレッドの扱い](/ja/articles/wpf-application-not-exiting-shutdownmode-threads/)で扱っている）。
 
 ---
 

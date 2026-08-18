@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 394" width="880" height="394" role="img">
+  <defs>
+    <style>
+      .lane { fill: #f5f7fb; stroke: #e1e7f0; stroke-width: 1; }
+      .box { fill: #ffffff; stroke: #c3ccdb; stroke-width: 1.5; }
+      .box-ng { fill: #fdf4f4; stroke: #e0aeae; stroke-width: 1.5; }
+      .box-ok { fill: #f1f9f5; stroke: #9dd3b8; stroke-width: 1.5; }
+      .gate { fill: #eef3fd; stroke: #a9bde6; stroke-width: 1.5; }
+      .code { font-family: Consolas, "Courier New", monospace; font-size: 12.5px; fill: #1f2933; }
+      .code-sm { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+      .lane-title { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #2563eb; }
+      .ng { fill: #d64545; }
+      .ok { fill: #2f9e6e; }
+    </style>
+    <marker id="s-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8a93a3" />
+    </marker>
+    <marker id="s-ng" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d64545" />
+    </marker>
+  </defs>
+
+  <!-- ===== gate 1 : WPF shutdown ===== -->
+  <rect class="lane" x="14" y="14" width="852" height="176" rx="10" />
+  <text class="lane-title" x="34" y="38">gate 1   WPF shutdown</text>
+
+  <rect class="box" x="34" y="52" width="170" height="58" rx="6" />
+  <text class="code" x="119" y="78" text-anchor="middle">Window.Close()</text>
+  <text class="code-sm" x="119" y="96" text-anchor="middle">or never opened</text>
+
+  <line x1="206" y1="81" x2="248" y2="81" stroke="#8a93a3" stroke-width="2" marker-end="url(#s-muted)" />
+
+  <rect class="gate" x="252" y="52" width="232" height="58" rx="6" />
+  <text class="code" x="368" y="78" text-anchor="middle">Application.Shutdown()</text>
+  <text class="code-sm" x="368" y="96" text-anchor="middle">called?   ShutdownMode</text>
+
+  <line x1="486" y1="81" x2="528" y2="81" stroke="#8a93a3" stroke-width="2" marker-end="url(#s-muted)" />
+  <text class="code-sm ok" x="507" y="72" text-anchor="middle">yes</text>
+
+  <rect class="box-ok" x="532" y="52" width="210" height="58" rx="6" />
+  <text class="code" x="637" y="78" text-anchor="middle">Application.Exit</text>
+  <text class="code-sm ok" x="637" y="96" text-anchor="middle">Run() returns</text>
+
+  <text class="ok" x="762" y="88" font-family="Segoe UI, sans-serif" font-size="17">✓</text>
+
+  <line x1="368" y1="112" x2="368" y2="120" stroke="#d64545" stroke-width="2" marker-end="url(#s-ng)" />
+  <text class="code-sm ng" x="388" y="121">no</text>
+
+  <rect class="box-ng" x="252" y="124" width="430" height="50" rx="6" />
+  <text class="code ng" x="467" y="146" text-anchor="middle">no window, app still running</text>
+  <text class="code-sm" x="467" y="164" text-anchor="middle">no Window created / unclosed Window instance</text>
+
+  <!-- ===== gate 2 : CLR process exit ===== -->
+  <rect class="lane" x="14" y="204" width="852" height="176" rx="10" />
+  <text class="lane-title" x="34" y="228">gate 2   CLR process exit</text>
+
+  <rect class="box" x="34" y="242" width="170" height="58" rx="6" />
+  <text class="code" x="119" y="268" text-anchor="middle">Run() returned</text>
+  <text class="code-sm" x="119" y="286" text-anchor="middle">Main() ends</text>
+
+  <line x1="206" y1="271" x2="248" y2="271" stroke="#8a93a3" stroke-width="2" marker-end="url(#s-muted)" />
+
+  <rect class="gate" x="252" y="242" width="232" height="58" rx="6" />
+  <text class="code" x="368" y="268" text-anchor="middle">foreground threads</text>
+  <text class="code-sm" x="368" y="286" text-anchor="middle">all finished?</text>
+
+  <line x1="486" y1="271" x2="528" y2="271" stroke="#8a93a3" stroke-width="2" marker-end="url(#s-muted)" />
+  <text class="code-sm ok" x="507" y="262" text-anchor="middle">yes</text>
+
+  <rect class="box-ok" x="532" y="242" width="210" height="58" rx="6" />
+  <text class="code" x="637" y="268" text-anchor="middle">process exits</text>
+  <text class="code-sm ok" x="637" y="286" text-anchor="middle">background threads stopped</text>
+
+  <text class="ok" x="762" y="278" font-family="Segoe UI, sans-serif" font-size="17">✓</text>
+
+  <line x1="368" y1="302" x2="368" y2="310" stroke="#d64545" stroke-width="2" marker-end="url(#s-ng)" />
+  <text class="code-sm ng" x="388" y="311">no</text>
+
+  <rect class="box-ng" x="252" y="314" width="430" height="50" rx="6" />
+  <text class="code ng" x="467" y="336" text-anchor="middle">process stays in Task Manager</text>
+  <text class="code-sm" x="467" y="354" text-anchor="middle">new Thread(...) / Dispatcher.Run() on 2nd UI thread</text>
+</svg>

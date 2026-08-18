@@ -201,6 +201,8 @@ Leaving `TraceLevel=High` in place makes the Output window verbose, so remove th
 Numbers such as 40 or 7 help classify the cause, but the definitive information is in the message body such as `property not found` or `Cannot convert`.
 - **When the trace is silent but the change is not reflected, suspect value precedence.**
 Even with a correctly resolved binding, a local value on the target property keeps the value supplied by a style trigger from becoming the effective value (see [Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence](/articles/wpf-style-trigger-not-working-local-value/)).
+- **The Output window also separates the two stages of application shutdown.**
+Placing a `Trace.WriteLine` in the `App` override of `Application.OnExit` and checking whether that line appears distinguishes "WPF never shut down" from "only the process survives" (see [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/)).
 
 ---
 

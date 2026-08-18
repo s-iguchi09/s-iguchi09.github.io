@@ -151,6 +151,7 @@ private async Task LoadAsync(string path)
 - **登録のタイミングと解除:** `EnableCollectionSynchronization` と `DisableCollectionSynchronization` はいずれも UI スレッドで呼ぶ。複数の UI スレッドで同じコレクションを使う場合は、各 UI スレッドで個別に登録する。
 - **`Dispatcher.Invoke` の多用は UI を圧迫する:** 要素単位の同期 `Invoke` を大量に回すと UI スレッドが飽和し、応答性が落ちる。件数が多い場合は `EnableCollectionSynchronization` か、UI スレッド側でのバッチ追加を検討する。
 - **UI 要素自体は依然 UI スレッド専有:** この解決策が緩めるのはバインド対象コレクションへのアクセスのみである。`DependencyObject`（コントロール等）を別スレッドから直接操作することは引き続き不可である。
+- **`new Thread` で起こしたワーカーはプロセスを残す:** `Task.Run` と異なり既定でフォアグラウンドスレッドになるため、コレクションを更新し続けるワーカーを止め忘れると、ウィンドウを閉じてもプロセスが終了しない。切り分けと対処は[WPF でウィンドウを閉じてもプロセスが終了しない原因の切り分けと ShutdownMode・フォアグラウンドスレッドの扱い](/ja/articles/wpf-application-not-exiting-shutdownmode-threads/)で扱っている。
 
 ---
 
