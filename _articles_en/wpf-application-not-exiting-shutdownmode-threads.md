@@ -148,7 +148,7 @@ For designs that intentionally have no window, such as a tray-resident applicati
 For gate 2, identify the surviving thread and set `IsBackground` to `true` if it performs discardable monitoring or polling.
 If the work must complete, leave it on a foreground thread, signal cancellation and wait with `Join`.
 That shape guarantees completion only as long as the thread reliably honours the cancellation signal; if it does not, the process never exits.
-`IsBackground = true` gives up that premise in exchange for a guaranteed exit, and does not coexist with a completion guarantee (the details are under Alternatives / Comparison).
+`IsBackground = true` gives up that premise: the thread stops holding process exit open, at the cost of any completion guarantee (the details are under Alternatives / Comparison).
 If a second UI thread is involved, stop its `Dispatcher` with `InvokeShutdown()`.
 
 ---
@@ -319,15 +319,17 @@ That route works automatically even under `OnExplicitShutdown`.
 
 | Approach | Effect | Best suited for | Constraint |
 |---|---|---|---|
-| `IsBackground = true` | The runtime stops the thread at process exit | Monitoring or polling that may be cut short | No completion guarantee; cleanup work may not run |
+| `IsBackground = true` | The thread stops holding process exit open, and the runtime stops it at exit | Monitoring or polling that may be cut short | No completion guarantee; cleanup work may not run. The effect is limited to the thread it is set on |
 | Cancellation signal plus `Join`, kept in the foreground | Waits for the thread to finish before proceeding | Work that must complete, such as saving or flushing | A thread that ignores cancellation keeps the process alive. A `Join` timeout only makes the waiting side give up while the thread keeps running |
 | `Dispatcher.InvokeShutdown()` | Ends the message loop and returns from `Dispatcher.Run()` | Second and subsequent UI threads | Operations already queued on that dispatcher are aborted |
 | `Environment.Exit` | Terminates the process immediately | A stopgap until the cause is identified | `Application.Exit` is not raised and persistence logic placed there does not run |
 
-The first two entries trade off against each other: a completion guarantee against a guaranteed exit.
+The first two entries trade off against each other: a completion guarantee against the thread no longer holding process exit open.
 Cancellation plus `Join` guarantees completion on the premise that the thread honours cancellation, and leaves the process alive when it does not.
-`IsBackground = true` guarantees the exit and gives up the completion guarantee.
-Adding a timeout to `Join` does not recover it, because whatever remains after the timeout is cut short anyway.
+`IsBackground = true` stops that thread from holding exit open and gives up the completion guarantee.
+Its effect is limited to the thread it is set on, so the process still survives if another foreground thread remains.
+Adding a timeout to `Join` does not change the relationship either.
+The timeout returns the waiting side only; the target thread is not stopped and keeps running, so a foreground thread keeps the process alive.
 For work that must complete, the real fix is an implementation that reliably honours cancellation; `IsBackground = true` is not a substitute for it.
 
 ---
