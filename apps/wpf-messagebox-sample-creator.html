@@ -8,7 +8,7 @@
   <title>WPF MessageBox Sample Creator | Efficiency in Prototyping &amp; UX Design</title>
   {% include head.html %}
 
-  <meta name="description" content="A development tool to configure and preview WPF MessageBox in real-time. Pre-built .exe available on GitHub Releases—no build required. Compare every MessageBoxButton and MessageBoxImage combination side by side.">
+  <meta name="description" content="A development tool to configure and preview WPF MessageBox in real-time. Pre-built .exe available on GitHub Releases—no build required. Compare the supported MessageBoxButton and MessageBoxImage combinations side by side.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -45,7 +45,7 @@
       In WPF development, repeatedly writing code just to check the behavior of dialogs is inefficient. Furthermore, designers and architects often find it difficult to use tools that are only shared as source code, as setting up a build environment is a significant hurdle.
     </p>
     <p>
-      To solve this, this tool is distributed in a ready-to-run format. By adhering strictly to standard WPF Style definitions without third-party libraries, I achieved a lightweight tool with minimal dependencies that runs smoothly on any Windows machine.
+      To solve this, this tool is distributed in a ready-to-run format. By adhering strictly to standard WPF Style definitions without third-party libraries, I achieved a lightweight tool with minimal dependencies.
     </p>
   </section>
 
@@ -90,7 +90,12 @@
         <tr>
           <td>Default result</td>
           <td><code>MessageBoxResult</code></td>
-          <td>Which button receives focus when the dialog opens — that is, what Enter activates.</td>
+          <td>
+            Which button receives focus when the dialog opens — that is, what Enter activates.
+            Every member of the enum is selectable here, but the value only takes effect when the chosen
+            button set actually contains that button. Ask for a result the dialog is not displaying and the
+            first button becomes the default instead, which is worth trying once to see.
+          </td>
         </tr>
         <tr>
           <td>Options</td>
@@ -200,8 +205,13 @@
   <section class="content-section">
     <h2>System Requirements</h2>
     <ul>
-      <li><strong>OS:</strong> Windows</li>
-      <li><strong>.NET:</strong> .NET 10 / .NET 8 (Windows desktop)</li>
+      <li><strong>OS:</strong> Windows, x64</li>
+      <li>
+        <strong>Runtime:</strong> The release ZIP contains two win-x64 builds, one for .NET 8 and one for
+        .NET 10. Both are framework-dependent — the runtime is not bundled — so the matching x64
+        <strong>.NET Desktop Runtime</strong> has to be installed. Pick the executable for whichever version
+        you already have.
+      </li>
       <li><strong>UI framework:</strong> WPF, no third-party dependencies</li>
     </ul>
   </section>

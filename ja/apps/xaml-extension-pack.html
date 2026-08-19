@@ -8,7 +8,7 @@
   <title>Xaml.ExtensionPack | WPF 向け MVVM 拡張ライブラリ</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリです。BindableBase、RelayCommand、AsyncRelayCommand といった MVVM の土台を NuGet パッケージとして提供し、各機能の使用例も掲載しています。">
+  <meta name="description" content="WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリです。BindableBase、RelayCommand、AsyncRelayCommand といった MVVM の土台を提供する小さなライブラリです。各機能の使用例も掲載しています。">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -22,14 +22,14 @@
     <h1>Xaml.ExtensionPack</h1>
     <p>
       WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリです。
-      MVVM の土台となる機能を NuGet パッケージとして提供します。
+      MVVM の土台となる機能を、単一の小さなライブラリとして提供します。
     </p>
   </section>
 
   <section class="content-section">
     <h2>概要</h2>
     <p>
-      Xaml.ExtensionPack は、WPF / XAML アプリケーション開発で繰り返し書くことになる定型コードを削減するための NuGet ライブラリです。
+      Xaml.ExtensionPack は、WPF / XAML アプリケーション開発で繰り返し書くことになる定型コードを削減するための小さなライブラリです。
       MVVM アプリケーションでほぼ必ず自前実装することになる 4 つ ——
       変更通知の基底クラス、同期コマンド、非同期コマンド、安全な fire-and-forget ヘルパー —— のみを提供します。
     </p>
@@ -43,10 +43,17 @@
 
   <section class="content-section">
     <h2>インストール</h2>
-    <p>.NET CLI から NuGet 経由でインストールします。</p>
-<pre><code>dotnet add package Xaml.ExtensionPack</code></pre>
-    <p>Visual Studio のパッケージマネージャーコンソールからも導入できます。</p>
-<pre><code>Install-Package Xaml.ExtensionPack</code></pre>
+    <p>
+      本プロジェクトは NuGet パッケージを生成する構成になっていますが、
+      <strong>NuGet.org へはまだ公開していません</strong>。そのため <code>dotnet add package</code> では解決できません。
+      公開までは、リポジトリをクローンしてプロジェクトを直接参照してください。
+    </p>
+<pre><code>git clone https://github.com/s-iguchi09/Xaml.ExtensionPack.git</code></pre>
+<pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
+    <p>
+      ローカルでパックし、ローカルフィードから参照する方法もあります。
+    </p>
+<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release</code></pre>
     <p>
       公開されている型はすべて <code>Xaml.ExtensionPack</code> 名前空間に配置しているため、using ディレクティブは 1 行で済みます。
     </p>
@@ -246,10 +253,34 @@ private async Task LoadAsync()
     Items = await _repository.GetItemsAsync();
 }</code></pre>
     <p>
-      <code>IsExecuting</code> は公開プロパティのため、XAML から直接バインドして進捗表示を切り替えることもできます。
+      進捗表示を切り替える場合、<code>LoadCommand.IsExecuting</code> へ直接バインドしては<strong>いけません</strong>。
+      このプロパティは値が変わったときに <code>CanExecuteChanged</code> を発行するだけで、
+      <code>PropertyChanged</code> は発行しません（コマンドのクラスは <code>INotifyPropertyChanged</code> を実装していません）。
+      そのためバインドは初回に評価されたきり更新されず、進捗表示は現れも消えもしません。
+      実行状態は、変更通知を発行する ViewModel のプロパティとして公開してください。
     </p>
+<pre><code>private bool _isLoading;
+
+public bool IsLoading
+{
+    get =&gt; _isLoading;
+    private set =&gt; SetProperty(ref _isLoading, value);
+}
+
+private async Task LoadAsync()
+{
+    IsLoading = true;
+    try
+    {
+        Items = await _repository.GetItemsAsync();
+    }
+    finally
+    {
+        IsLoading = false;
+    }
+}</code></pre>
 <pre><code>&lt;ProgressBar IsIndeterminate="True"
-             Visibility="{Binding LoadCommand.IsExecuting,
+             Visibility="{Binding IsLoading,
                           Converter={StaticResource BooleanToVisibilityConverter}}" /&gt;</code></pre>
     <p>
       <code>StaticResource</code> は XAML の読み込み時にキーを解決するため、
@@ -261,11 +292,19 @@ private async Task LoadAsync()
 <pre><code>&lt;Window.Resources&gt;
     &lt;BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /&gt;
 &lt;/Window.Resources&gt;</code></pre>
+    <p>
+      なお、ボタン自体の制御には <code>IsExecuting</code> がそのまま効きます。
+      <code>CanExecute</code> がこの値を参照しており、コマンドの仕組みが監視しているのは
+      <code>CanExecuteChanged</code> のほうであるため、バインド先のコントロールは自動で無効化・再有効化されます。
+    </p>
 
     <h3>FireAndForget —— await せずにタスクを開始する</h3>
     <p>
-      非同期メソッドを await せずに呼び出すと、タスク内で発生した例外が観測されないまま握り潰されます。
-      <code>FireAndForget</code> は、その呼び出しが意図的であることをコード上で明示しつつ、例外の受け取り先を用意します。
+      非同期メソッドを await せずに呼び出すと、タスク内で発生した例外は戻り値の <code>Task</code> に保持され、
+      その <code>Task</code> は faulted 状態のまま残ります。
+      例外が表に出るのは、そのタスクを await するか、<code>Wait()</code> を呼ぶか、<code>Exception</code> を読んだときだけです。
+      戻り値を捨てる呼び出し方ではそのいずれも起きないため、失敗が呼び出し側で気付かれないまま終わります。
+      <code>FireAndForget</code> は内部でタスクを await し、捕捉した例外を渡されたハンドラーに引き渡します。
     </p>
 <pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
   </section>

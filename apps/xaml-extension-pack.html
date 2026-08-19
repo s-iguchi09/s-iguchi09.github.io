@@ -8,7 +8,7 @@
   <title>Xaml.ExtensionPack | WPF MVVM Extension Library</title>
   {% include head.html %}
 
-  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) via a NuGet package, with usage examples for each type.">
+  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) with usage examples for each type.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -22,14 +22,14 @@
     <h1>Xaml.ExtensionPack</h1>
     <p>
       A lightweight, dependency-free XAML extension library for WPF.
-      Provides essential MVVM foundations as a NuGet package.
+      Provides essential MVVM foundations as a single small library.
     </p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      Xaml.ExtensionPack is a NuGet library designed to eliminate boilerplate in WPF/XAML application development.
+      Xaml.ExtensionPack is a small library designed to eliminate boilerplate in WPF/XAML application development.
       It ships the four things almost every MVVM application ends up writing by hand — a change-notification base class,
       a synchronous command, an async command, and a safe fire-and-forget helper — and nothing else.
     </p>
@@ -42,10 +42,17 @@
 
   <section class="content-section">
     <h2>Installation</h2>
-    <p>Install from NuGet using the .NET CLI:</p>
-<pre><code>dotnet add package Xaml.ExtensionPack</code></pre>
-    <p>Or from the Package Manager Console in Visual Studio:</p>
-<pre><code>Install-Package Xaml.ExtensionPack</code></pre>
+    <p>
+      The project is set up to build a NuGet package, but it is <strong>not published to NuGet.org yet</strong>,
+      so <code>dotnet add package</code> will not resolve it. Until it is published, clone the repository and
+      reference the project directly:
+    </p>
+<pre><code>git clone https://github.com/s-iguchi09/Xaml.ExtensionPack.git</code></pre>
+<pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
+    <p>
+      Alternatively, pack it locally and consume it from a local feed:
+    </p>
+<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release</code></pre>
     <p>
       All public types live in the <code>Xaml.ExtensionPack</code> namespace, so a single using directive is enough:
     </p>
@@ -242,10 +249,34 @@ private async Task LoadAsync()
     Items = await _repository.GetItemsAsync();
 }</code></pre>
     <p>
-      <code>IsExecuting</code> is public, so it can also drive a progress indicator directly from XAML:
+      For a progress indicator, do <strong>not</strong> bind to <code>LoadCommand.IsExecuting</code> directly.
+      When it changes it raises <code>CanExecuteChanged</code>, not <code>PropertyChanged</code> — the command
+      classes do not implement <code>INotifyPropertyChanged</code>. A binding to that property is evaluated once
+      and never updated, so the indicator would never appear or disappear. Expose the state as a notifying
+      property on the view model instead:
     </p>
+<pre><code>private bool _isLoading;
+
+public bool IsLoading
+{
+    get =&gt; _isLoading;
+    private set =&gt; SetProperty(ref _isLoading, value);
+}
+
+private async Task LoadAsync()
+{
+    IsLoading = true;
+    try
+    {
+        Items = await _repository.GetItemsAsync();
+    }
+    finally
+    {
+        IsLoading = false;
+    }
+}</code></pre>
 <pre><code>&lt;ProgressBar IsIndeterminate="True"
-             Visibility="{Binding LoadCommand.IsExecuting,
+             Visibility="{Binding IsLoading,
                           Converter={StaticResource BooleanToVisibilityConverter}}" /&gt;</code></pre>
     <p>
       <code>StaticResource</code> resolves its key while the XAML is being loaded, so the converter has to be
@@ -256,11 +287,19 @@ private async Task LoadAsync()
 <pre><code>&lt;Window.Resources&gt;
     &lt;BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /&gt;
 &lt;/Window.Resources&gt;</code></pre>
+    <p>
+      <code>IsExecuting</code> still does its job for the button itself: <code>CanExecute</code> consults it, and
+      <code>CanExecuteChanged</code> is exactly what the command system listens to, so the bound control disables
+      and re-enables on its own.
+    </p>
 
     <h3>FireAndForget — starting a task without awaiting it</h3>
     <p>
-      Calling an async method without awaiting it means an exception inside the task is never observed and is
-      silently swallowed. <code>FireAndForget</code> makes that case explicit and gives the exception somewhere to go:
+      Calling an async method without awaiting it leaves any exception captured inside the returned
+      <code>Task</code>, which is left in a faulted state. It stays there unobserved until something awaits the
+      task, calls <code>Wait()</code>, or reads <code>Exception</code> — none of which happens at a call site that
+      simply discards the result, so the failure goes unnoticed. <code>FireAndForget</code> awaits the task
+      internally and passes the caught exception to the handler you supply:
     </p>
 <pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
   </section>

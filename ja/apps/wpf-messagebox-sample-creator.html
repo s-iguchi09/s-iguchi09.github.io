@@ -8,7 +8,7 @@
   <title>WPF MessageBoxサンプル作成ツール | プロトタイピングと仕様確認の効率化</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF の MessageBox をリアルタイムに設定・プレビューできる開発支援ツールです。ビルド済み exe を GitHub Releases で配布しており、MessageBoxButton と MessageBoxImage のすべての組み合わせをその場で比較できます。">
+  <meta name="description" content="WPF の MessageBox をリアルタイムに設定・プレビューできる開発支援ツールです。ビルド済み exe を GitHub Releases で配布しており、MessageBoxButton と MessageBoxImage の、WPF がサポートする組み合わせをその場で比較できます。">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -91,7 +91,11 @@
         <tr>
           <td>既定の結果</td>
           <td><code>MessageBoxResult</code></td>
-          <td>ダイアログを開いた時点でフォーカスが当たるボタン、すなわち Enter キーで確定されるボタンです。</td>
+          <td>
+            ダイアログを開いた時点でフォーカスが当たるボタン、すなわち Enter キーで確定されるボタンです。
+            本ツールでは列挙型のすべての値を選べますが、指定が効くのは、選んだボタン構成にそのボタンが含まれている場合だけです。
+            表示されていないボタンを指定すると、代わりに先頭のボタンが既定になります。一度試してみると挙動がつかめます。
+          </td>
         </tr>
         <tr>
           <td>オプション</td>
@@ -208,8 +212,13 @@
   <section class="content-section">
     <h2>動作環境</h2>
     <ul>
-      <li><strong>OS：</strong> Windows</li>
-      <li><strong>.NET：</strong> .NET 10 / .NET 8（Windows デスクトップ）</li>
+      <li><strong>OS：</strong> Windows（x64）</li>
+      <li>
+        <strong>ランタイム：</strong> 配布している ZIP には、.NET 8 用と .NET 10 用の win-x64 ビルドが両方入っています。
+        いずれもフレームワーク依存の配置でランタイムを同梱していないため、
+        対応する x64 版の <strong>.NET デスクトップ ランタイム</strong>が別途必要です。
+        導入済みのバージョンに合わせて、どちらかの実行ファイルを選んでください。
+      </li>
       <li><strong>UI フレームワーク：</strong> WPF、サードパーティ製の依存関係なし</li>
     </ul>
   </section>
