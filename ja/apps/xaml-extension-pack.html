@@ -34,10 +34,16 @@
       変更通知の基底クラス、同期コマンド、非同期コマンド、安全な fire-and-forget ヘルパー —— のみを提供します。
     </p>
     <p>
-      このパッケージには<strong>サードパーティ製の依存関係が一切ありません</strong>。
-      参照するのは基底クラスライブラリのみのため、導入してもプロジェクトに依存関係のツリーが持ち込まれることはなく、
-      特定のアプリケーション構成を強制することもありません。
+      このライブラリは<strong>利用側のプロジェクトにサードパーティ製の依存関係を持ち込みません</strong>。
+      導入しても依存関係のツリーが付いてくることはなく、特定のアプリケーション構成を強制することもありません。
       必要な型だけを採用し、それ以外は使わないという導入の仕方ができます。
+    </p>
+    <p>
+      なお、ライブラリ自体はビルド時の参照を 1 つ持っています。
+      <code>net472</code> 向けのビルドに必要な参照アセンブリを供給する
+      <code>Microsoft.NETFramework.ReferenceAssemblies</code> です。
+      これは <code>PrivateAssets="all"</code> を指定して宣言しているため、このプロジェクトの内部にとどまり、
+      利用側へは伝播しません。
     </p>
   </section>
 
@@ -57,10 +63,29 @@
     </p>
 <pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
 <pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
-<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code></pre>
     <p>
-      フィードを恒久的に登録したくない場合は、追加時にディレクトリを直接指定することもできます。
-      <code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code>
+      設定済みのすべてのフィードを検索させるのではなく、ソースを明示してください。
+      このパッケージ ID は NuGet.org で取得されていないため、ソースを指定しないと、
+      将来だれかが同じ名前で公開したパッケージを引いてしまう可能性があります。
+      継続的に使う場合は、<code>nuget.config</code> の
+      <a href="https://learn.microsoft.com/nuget/consume-packages/package-source-mapping" target="_blank" rel="noopener noreferrer">Package Source Mapping</a>
+      で ID をローカルフィードに固定します。
+      このセクションを定義すると、推移的な依存を含むプロジェクト内のすべてのパッケージがいずれかのパターンに
+      一致している必要があります。下の例の <code>*</code> がその受け皿です。
+    </p>
+<pre><code>&lt;packageSourceMapping&gt;
+  &lt;packageSource key="xaml-extensionpack-local"&gt;
+    &lt;package pattern="Xaml.ExtensionPack" /&gt;
+  &lt;/packageSource&gt;
+  &lt;packageSource key="nuget.org"&gt;
+    &lt;package pattern="*" /&gt;
+  &lt;/packageSource&gt;
+&lt;/packageSourceMapping&gt;</code></pre>
+    <p>
+      Package Source Mapping が効くのは restore がパッケージをダウンロードするときです。
+      <code>dotnet add package</code> が他のソースへメタデータを問い合わせること自体は止まらないため、
+      その点でも <code>--source</code> の指定が必要になります。
     </p>
     <p>
       公開されている型はすべて <code>Xaml.ExtensionPack</code> 名前空間に配置しているため、using ディレクティブは 1 行で済みます。
@@ -348,7 +373,7 @@ private async Task LoadAsync()
     <ul>
       <li><strong>言語：</strong> C#（latest）</li>
       <li><strong>ターゲットフレームワーク：</strong> .NET 10 / .NET 8 / .NET Framework 4.7.2</li>
-      <li><strong>依存関係：</strong> 実行時の依存関係なし</li>
+      <li><strong>依存関係：</strong> 実行時の依存関係なし。net472 のビルドに使う参照が 1 つあるが、利用側へは伝播しない</li>
       <li><strong>ライセンス：</strong> MIT</li>
     </ul>
   </section>

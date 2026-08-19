@@ -34,9 +34,15 @@
       a synchronous command, an async command, and a safe fire-and-forget helper — and nothing else.
     </p>
     <p>
-      The package has <strong>no third-party dependencies</strong>. It references only the base class library,
-      so adding it does not pull a dependency tree into your project and does not force an application architecture on you.
-      You can adopt a single type from it and ignore the rest.
+      The package brings <strong>no third-party dependencies into your project</strong>. Adding it does not pull
+      a dependency tree along and does not force an application architecture on you — you can adopt a single type
+      from it and ignore the rest.
+    </p>
+    <p>
+      The library itself takes one build-time reference,
+      <code>Microsoft.NETFramework.ReferenceAssemblies</code>, which supplies the reference assemblies needed to
+      compile the <code>net472</code> target. It is declared with <code>PrivateAssets="all"</code>, so it stays
+      inside this project and is never propagated to consumers.
     </p>
   </section>
 
@@ -55,10 +61,26 @@
     </p>
 <pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
 <pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
-<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code></pre>
     <p>
-      If you would rather not register the feed permanently, pass the directory to the add command instead:
-      <code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code>.
+      Name the source explicitly rather than letting the command search every configured feed. This package ID is
+      unclaimed on NuGet.org, so an unqualified lookup could resolve to whatever someone else publishes under that
+      name later. For an ongoing setup, pin the ID to the local feed with
+      <a href="https://learn.microsoft.com/nuget/consume-packages/package-source-mapping" target="_blank" rel="noopener noreferrer">Package Source Mapping</a>
+      in <code>nuget.config</code>. Once that section exists, every package in the project — transitive ones
+      included — has to match a pattern, which is what the <code>*</code> entry below covers:
+    </p>
+<pre><code>&lt;packageSourceMapping&gt;
+  &lt;packageSource key="xaml-extensionpack-local"&gt;
+    &lt;package pattern="Xaml.ExtensionPack" /&gt;
+  &lt;/packageSource&gt;
+  &lt;packageSource key="nuget.org"&gt;
+    &lt;package pattern="*" /&gt;
+  &lt;/packageSource&gt;
+&lt;/packageSourceMapping&gt;</code></pre>
+    <p>
+      Source mapping governs where restore downloads from. It does not stop <code>dotnet add package</code> from
+      querying other sources for metadata, which is the other reason to pass <code>--source</code>.
     </p>
     <p>
       All public types live in the <code>Xaml.ExtensionPack</code> namespace, so a single using directive is enough:
@@ -343,7 +365,7 @@ private async Task LoadAsync()
     <ul>
       <li><strong>Language:</strong> C# (latest)</li>
       <li><strong>Target Frameworks:</strong> .NET 10, .NET 8, .NET Framework 4.7.2</li>
-      <li><strong>Dependencies:</strong> none at runtime</li>
+      <li><strong>Dependencies:</strong> none at runtime; one build-time reference for the net472 target, not propagated to consumers</li>
       <li><strong>License:</strong> MIT</li>
     </ul>
   </section>
