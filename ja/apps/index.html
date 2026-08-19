@@ -6,9 +6,7 @@
   <meta charset="UTF-8">
   <title>アプリ一覧 - s-iguchi</title>
   {% include head.html %}
-  <meta name="description" content="s-iguchi が開発した Windows アプリケーションの一覧。WPF デモ、ツール、ライブラリなど。">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="s-iguchi が開発した WPF 開発向けの Windows アプリ・ライブラリ・リファレンスツールの一覧です。標準コントロールのデモアプリ、MessageBox のプロトタイピングツール、MVVM ライブラリ、フォルダー構成を維持する貼り付けユーティリティを公開しています。">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -19,40 +17,99 @@
   <section class="hero">
     <h1>アプリ一覧</h1>
     <p>
-      s-iguchi が開発した Windows アプリケーションを紹介しています。
-      各ページでは機能紹介・開発背景・UI/UX の工夫・GitHub リポジトリへのリンクを掲載しています。
+      s-iguchi が開発した Windows アプリケーションの一覧です。
+      各ページでは、機能の説明、開発の背景、UI/UX 上の検討内容、GitHub リポジトリへのリンクを掲載しています。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>公開しているもの</h2>
+    <p>
+      ここで公開しているものは、いずれも業務系の WPF アプリケーションを開発する中で生まれました。
+      繰り返し遭遇して一度きちんと解決する価値が出た課題か、
+      何度も書き直したためパッケージにまとめるべきだと判断した基盤コードのどちらかです。
+      内容は次の 3 つに分かれます。
+    </p>
+    <ul>
+      <li>
+        <strong>リファレンス</strong> —— コントロールや API の仕様を読むのではなく、実際の挙動を確認するためのアプリケーションです。
+        設計時や仕様レビューの場面で使えます。
+      </li>
+      <li>
+        <strong>ライブラリ</strong> —— アプリケーション側のコードから定型処理を取り除く NuGet パッケージです。
+      </li>
+      <li>
+        <strong>ユーティリティ</strong> —— 開発に限らない、日常の作業向けのデスクトップツールです。
+      </li>
+    </ul>
+    <p>
+      すべて MIT ライセンスのオープンソースとして公開しています。
+      ライブラリを除くアプリケーションはビルド済みの実行ファイルも配布しているため、ビルド環境がなくても試せます。
     </p>
   </section>
 
   <section class="app-list">
-    <h2>アプリ一覧</h2>
+    <h2>リファレンス</h2>
     <ul class="app-card-list">
 
       <li class="app-card">
         <a href="/ja/apps/wpf-standard-control-demo.html">
           <h3>WPF 標準コントロールデモアプリ (.NET 10)</h3>
-          <p>WPF の標準コントロールを .NET 10 で動作させたデモアプリ。UI レイアウトやスタイルの参考にできます。</p>
+          <p>
+            .NET 10 上で WPF の標準コントロールを一通り確認できるデモアプリケーションです。
+            各コントロールをその場で設定しながら、プロパティがレイアウト・スタイル・挙動にどう影響するかを、
+            実行中のアプリケーションで確認できます。実行時にしか現れない落とし穴も含めて確認できるため、
+            画面にどのコントロールを使うか判断するときの参照先として、また最新の .NET での挙動確認用として使えます。
+          </p>
         </a>
       </li>
 
       <li class="app-card">
         <a href="/ja/apps/wpf-messagebox-sample-creator.html">
-          <h3>WPF MessageBox サンプル作成ツール</h3>
-          <p>MessageBox のカスタムサンプルを生成できるツール。UI プロトタイピングや動作確認に便利です。</p>
+          <h3>WPF MessageBoxサンプル作成ツール</h3>
+          <p>
+            標準の <code>MessageBox</code> 向けのプロトタイピングツールです。
+            本文・タイトル・ボタン構成・アイコン・既定の結果・表示オプションを設定し、その設定のまま実物のダイアログを表示できます。
+            仕様レビューでの利用を想定しており、口頭で説明する代わりに実物を見せて、
+            文言・ボタンの並び・Enter キーで押されるボタンを、コードを書く前に確定できます。
+            ビルド済みの .exe を GitHub Releases で公開しています。
+          </p>
         </a>
       </li>
+
+    </ul>
+
+    <h2>ライブラリ</h2>
+    <ul class="app-card-list">
 
       <li class="app-card">
         <a href="/ja/apps/xaml-extension-pack.html">
           <h3>Xaml.ExtensionPack</h3>
-          <p>WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。MVVM の基盤と WPF 専用アタッチドビヘイビアを NuGet パッケージとして提供します。</p>
+          <p>
+            WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリで、NuGet パッケージとして配布しています。
+            多くのアプリケーションで自前実装することになる MVVM の土台 ——
+            <code>BindableBase</code>、<code>RelayCommand</code>、二重実行の防止を内蔵した <code>AsyncRelayCommand</code>、
+            安全な fire-and-forget ヘルパー —— を提供します。
+            .NET 10 / .NET 8 / .NET Framework 4.7.2 をマルチターゲットしているため、
+            モダン .NET への移行をまたいでも同じ ViewModel のコードを使い続けられます。
+          </p>
         </a>
       </li>
+
+    </ul>
+
+    <h2>ユーティリティ</h2>
+    <ul class="app-card-list">
 
       <li class="app-card">
         <a href="/ja/apps/treepaste.html">
           <h3>TreePaste</h3>
-          <p>コピーしたファイルをフォルダー構成を維持したままペーストできる Windows ツール。タスクトレイ常駐とショートカット起動で、日常のファイル操作を効率化します。</p>
+          <p>
+            コピーしたファイルをフォルダー構成を保ったまま貼り付けられる Windows ツールです。
+            どの階層から残すかを選べる点が特徴で、コピーした項目がツリーとして表示され、
+            クリックした階層が貼り付けの起点になります。不要な親フォルダーは、後から削除するのではなく最初から作られません。
+            タスクトレイに常駐し、Ctrl+Alt+V で呼び出せます。貼り付け先は目の前のエクスプローラーから読み取ります。
+          </p>
         </a>
       </li>
 

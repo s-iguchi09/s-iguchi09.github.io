@@ -6,9 +6,7 @@
   <meta charset="UTF-8">
   <title>Apps - s-iguchi</title>
   {% include head.html %}
-  <meta name="description" content="Windows applications developed by s-iguchi. Includes WPF demos, tools, and libraries.">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
+  <meta name="description" content="Windows applications, libraries, and reference tools for WPF development by s-iguchi. Includes a standard control demo app, a MessageBox prototyping tool, an MVVM library, and a file-structure paste utility.">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -24,35 +22,92 @@
     </p>
   </section>
 
+  <section class="content-section">
+    <h2>What Is Here</h2>
+    <p>
+      Everything on this page came out of building line-of-business WPF applications — either a problem that kept
+      recurring until it was worth solving once, or infrastructure code that had been rewritten enough times to
+      belong in a package. They fall into three groups:
+    </p>
+    <ul>
+      <li>
+        <strong>Reference</strong> — applications for checking how a control or an API actually behaves, rather
+        than reading what it is supposed to do. Useful during design and spec review.
+      </li>
+      <li>
+        <strong>Libraries</strong> — NuGet packages that remove boilerplate from application code.
+      </li>
+      <li>
+        <strong>Utilities</strong> — desktop tools for everyday work that is not specific to development.
+      </li>
+    </ul>
+    <p>
+      All of them are open source under the MIT license, and the two that are applications rather than libraries
+      ship pre-built executables, so no build environment is required to try them.
+    </p>
+  </section>
+
   <section class="app-list">
-    <h2>Applications</h2>
+    <h2>Reference</h2>
     <ul class="app-card-list">
 
       <li class="app-card">
         <a href="/apps/wpf-standard-control-demo.html">
           <h3>WPF Standard Control Demo App (.NET 10)</h3>
-          <p>A demo application showcasing standard WPF controls running on .NET 10. Useful as a reference for UI layout and styling.</p>
+          <p>
+            A demo application covering the standard WPF controls on .NET 10. Each control can be configured
+            interactively so you can see how its properties affect layout, styling, and behavior in a running
+            application — including the pitfalls that only show up at runtime. Useful as a reference while
+            deciding which control fits a screen, and as a way to check behavior on the current .NET release.
+          </p>
         </a>
       </li>
 
       <li class="app-card">
         <a href="/apps/wpf-messagebox-sample-creator.html">
           <h3>WPF MessageBox Sample Creator</h3>
-          <p>A tool for generating customizable MessageBox samples. Helpful for UI prototyping and behavior testing.</p>
+          <p>
+            A prototyping tool for the standard <code>MessageBox</code>. Set the text, caption, button set, icon,
+            default result and display options, then show the real dialog with those settings. Built for spec
+            reviews: display the actual dialog to reviewers instead of describing it, and confirm wording, button
+            order, and which button Enter activates before any code is written. A pre-built .exe is published on
+            GitHub Releases.
+          </p>
         </a>
       </li>
+
+    </ul>
+
+    <h2>Libraries</h2>
+    <ul class="app-card-list">
 
       <li class="app-card">
         <a href="/apps/xaml-extension-pack.html">
           <h3>Xaml.ExtensionPack</h3>
-          <p>A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations and WPF-specific attached behaviors as NuGet packages.</p>
+          <p>
+            A lightweight, dependency-free XAML extension library for WPF, distributed as a NuGet package.
+            Provides the MVVM foundations most applications end up writing by hand — <code>BindableBase</code>,
+            <code>RelayCommand</code>, <code>AsyncRelayCommand</code> with built-in double-execution guarding, and
+            a safe fire-and-forget helper. Multi-targets .NET 10, .NET 8, and .NET Framework 4.7.2, so the same
+            view model code survives a migration to modern .NET.
+          </p>
         </a>
       </li>
+
+    </ul>
+
+    <h2>Utilities</h2>
+    <ul class="app-card-list">
 
       <li class="app-card">
         <a href="/apps/treepaste.html">
           <h3>TreePaste</h3>
-          <p>A Windows tool that pastes copied files while preserving folder structure. With tray-resident behavior and a global shortcut, it streamlines everyday file operations.</p>
+          <p>
+            A Windows tool that pastes copied files while preserving folder structure — and lets you choose how
+            much of it to keep. Copied items appear as a tree, and the level you click becomes the root of the
+            paste, so unwanted parent folders are dropped without deleting them afterwards. Stays in the system
+            tray, opens with Ctrl+Alt+V, and reads the destination from the Explorer window in front of you.
+          </p>
         </a>
       </li>
 

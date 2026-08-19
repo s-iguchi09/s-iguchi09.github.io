@@ -8,10 +8,8 @@
   <title>WPF MessageBoxサンプル作成ツール | プロトタイピングと仕様確認の効率化</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF の MessageBox をリアルタイムに設定・プレビューできる開発支援ツール。GitHub Release でビルド済み exe を公開中のため、環境構築なしで即座に検証可能。設計者やデザイナーとの合意形成を加速させます。">
+  <meta name="description" content="WPF の MessageBox をリアルタイムに設定・プレビューできる開発支援ツールです。ビルド済み exe を GitHub Releases で配布しており、MessageBoxButton と MessageBoxImage のすべての組み合わせをその場で比較できます。">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -32,65 +30,201 @@
     <h2>概要：対話的な MessageBox シミュレーター</h2>
     <p>
       WPF MessageBox サンプル作成ツールは、WPF の標準 <code>MessageBox</code> を直感的にカスタマイズし、その場で実際の挙動を確認できるプロトタイピングアプリです。
+      本文、タイトル、ボタン、アイコン、既定の結果、表示オプションを設定し、その設定のまま実際の MessageBox を表示できます。
     </p>
     <p>
-      本文、タイトル、ボタン（OK/Cancel, Yes/No等）、アイコン（Warning, Error等）を自由に組み合わせ、選択した設定で即座に MessageBox を表示できます。
-      <strong>本ツールは GitHub の Release ページにてビルド済みの実行ファイル（.exe）を公開しているため、Visual Studio などの開発環境がインストールされていない PC でも、ダウンロードするだけで即座に利用可能です。</strong>
+      本ツールは GitHub の Release ページにてビルド済みの実行ファイル（.exe）を公開しているため、Visual Studio などの開発環境がインストールされていない PC でも、ダウンロードするだけで即座に利用可能です。
     </p>
 
-    <div class="app-screenshot">
-      <img src="/attachments/WPFMessageBoxSampleCreator.png" alt="WPF MessageBoxサンプル作成ツールの画面とプレビュー例">
-    </div>
+    <img class="screenshot-img" src="/attachments/WPFMessageBoxSampleCreator.png" alt="WPF MessageBoxサンプル作成ツールのメイン画面。本文、タイトル、ボタン、アイコン、オプションの入力欄が並ぶ">
   </section>
 
   <section class="content-section">
     <h2>開発背景：「環境構築の壁」を取り払うために</h2>
     <p>
       WPF 開発において、エラーメッセージや確認ダイアログの挙動を確認するためだけにコードを書き、リビルドを繰り返すのは非効率な作業です。
+    </p>
+    <p>
       特に、開発者以外のデザイナーや設計者が「実際の挙動を確認したい」と思っても、ソースコードしか公開されていないツールでは、ビルド環境の構築という高いハードルがありました。
-    </p>
-    <p>
-      そこで本ツールでは、誰もがすぐに動かせるよう実行形式での配布を行っています。あえてサードパーティ製ライブラリを一切使わず、WPF 標準コントロールの Style 定義のみで構築したため、軽量で依存関係の少ないツールを実現できました。
-    </p>
-  </section>
-
-  <section class="content-section">
-    <h2>技術解説：プロパティの独立性と運用の利便性</h2>
-    <h3>1. ビルド不要、ダウンロードして実行するだけ</h3>
-    <p>
-      エンジニアが作成したツールを非エンジニアに共有する際、ソースコードの提供だけでは不十分です。本プロジェクトでは GitHub Actions 等を活用したリリース管理を想定し、常に最新の実行ファイルを公開しています。これにより、チーム内の誰もが最新の UI 仕様を実機で確認できるフローを構築しました。
-    </p>
-    <h3>2. プロパティ単位の独立設定</h3>
-    <p>
-      各コントロールをプロパティ単位で独立して設定できるように設計されています。これにより、ボタン構成とアイコンの組み合わせ、あるいは長い本文を入れた際の自動サイズ調整など、複数の属性が絡み合う複雑なケースも、コードの依存関係を気にせずパズルのように試すことが可能です。
-    </p>
-    <h3>3. XAML によるクリーンな UI 管理</h3>
-    <p>
-      操作画面のレイアウトは XAML で厳格に定義されており、ロジックとデザインを分離しています。標準コントロールを Style だけでどこまで使いやすくできるか、その実装サンプルとしても価値を持たせています。
+      そこで本ツールでは、誰もがすぐに動かせるよう実行形式での配布を行っています。
+      あえてサードパーティ製ライブラリを一切使わず、WPF 標準コントロールの Style 定義のみで構築したため、軽量で依存関係の少ないツールを実現できました。
     </p>
   </section>
 
   <section class="content-section">
-    <h2>ターゲット：チーム全体で使う仕様検討ツール</h2>
+    <h2>設定できる項目</h2>
+    <p>
+      <code>MessageBox.Show</code> の引数をそれぞれ独立した入力として公開しているため、
+      コードを書き換えてリビルドすることなく、組み合わせを試せます。
+    </p>
+
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>項目</th>
+          <th>型</th>
+          <th>効果</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>本文</td>
+          <td><code>string</code></td>
+          <td>ダイアログの本文です。長文がどこで折り返され、ダイアログの幅がどう変わるかの確認に使えます。</td>
+        </tr>
+        <tr>
+          <td>タイトル</td>
+          <td><code>string</code></td>
+          <td>タイトルバーに表示される文字列です。</td>
+        </tr>
+        <tr>
+          <td>ボタン</td>
+          <td><code>MessageBoxButton</code></td>
+          <td>ボタンの組み合わせです。OK / OK・キャンセル / はい・いいえ / はい・いいえ・キャンセル から選べます。</td>
+        </tr>
+        <tr>
+          <td>アイコン</td>
+          <td><code>MessageBoxImage</code></td>
+          <td>本文の横に表示されるシステムアイコンです。列挙型の 9 つの値すべてを選択できます。</td>
+        </tr>
+        <tr>
+          <td>既定の結果</td>
+          <td><code>MessageBoxResult</code></td>
+          <td>ダイアログを開いた時点でフォーカスが当たるボタン、すなわち Enter キーで確定されるボタンです。</td>
+        </tr>
+        <tr>
+          <td>オプション</td>
+          <td><code>MessageBoxOptions</code></td>
+          <td>右寄せ表示や右から左への読み取り順序といった、表示に関するオプションです。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>このツールで分かること：アイコン名は 9 つ、実際のアイコンは 4 種類</h2>
+    <p>
+      <code>MessageBoxImage</code> には 9 つのメンバーがあるため、9 種類のアイコンを選べるように見えます。
+      しかし実際にはそうではありません。
+      いくつかのメンバーは同じ数値を共有しており、実行時には区別できません。
+      列挙型が同一の Win32 フラグに対して別名を用意している、というのが実態です。
+    </p>
+
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>列挙型のメンバー</th>
+          <th>値</th>
+          <th>実際に表示されるアイコン</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>None</code></td>
+          <td>0</td>
+          <td>アイコンなし</td>
+        </tr>
+        <tr>
+          <td><code>Error</code> / <code>Hand</code> / <code>Stop</code></td>
+          <td>16</td>
+          <td>赤い円の中の白い ×</td>
+        </tr>
+        <tr>
+          <td><code>Question</code></td>
+          <td>32</td>
+          <td>円の中の疑問符</td>
+        </tr>
+        <tr>
+          <td><code>Exclamation</code> / <code>Warning</code></td>
+          <td>48</td>
+          <td>黄色い三角形の中の感嘆符</td>
+        </tr>
+        <tr>
+          <td><code>Asterisk</code> / <code>Information</code></td>
+          <td>64</td>
+          <td>円の中の小文字の i</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      <code>Error</code>・<code>Hand</code>・<code>Stop</code> を順に選び、毎回まったく同じダイアログが表示されるのを見れば、
+      列挙型の定義を読んでいるときに湧く疑問がその場で解消します。
+      同時に、この 3 つのどれを使うかはコードの読みやすさの問題であって、ユーザーに見える違いではないことも分かります。
+    </p>
+    <p>
+      もう 1 点、使う前に知っておく価値のある注意があります。
+      Microsoft は <code>Question</code> アイコンを非推奨としています。
+      疑問符はメッセージの種類を示しておらず、ヘルプ機能と誤解されうる、というのがその理由です。
+      現在も列挙型に残っているのは後方互換性のためです。
+      確認ダイアログには <code>Warning</code> を使うか、アイコンを付けないほうが無難です。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>技術的な工夫：柔軟性と可搬性</h2>
+    <h3>1. ビルド不要ですぐ動かせる</h3>
+    <p>
+      開発者以外とツールを共有するには、ソースコードを提供するだけでは足りません。
+      実行ファイルを公開し続けることで、チームの誰もが最新の UI 仕様を自分のマシンで即座に確認できる状態を作りました。
+    </p>
+    <h3>2. 各プロパティを独立して設定できる</h3>
+    <p>
+      各コントロールは独立して設定できるように構成しています。
+      特定のボタンとアイコンの組み合わせや、本文の長さに応じた自動リサイズといった条件を、コード上のロジックを気にせず試せます。
+    </p>
+    <h3>3. XAML による見通しのよい UI 管理</h3>
+    <p>
+      レイアウトは XAML のみで定義し、デザインとロジックを分離しています。
+      標準コントロールを Style の定義だけでどこまで整えられるかという、実装サンプルとしても参照できます。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>主な用途</h2>
     <ul>
-      <li><strong>デザイナー：</strong> 実機環境での視認性を、ビルドの手間なくチェック。</li>
-      <li><strong>設計者・テスター：</strong> システム仕様に即したメッセージをその場でシミュレート。</li>
-      <li><strong>エンジニア：</strong> 複雑な引数の組み合わせによる表示の違いをクイックに確認。</li>
+      <li>
+        <strong>仕様レビューでダイアログの文言を確定する。</strong>
+        口頭で説明する代わりに実物を表示し、その場で本文とボタン構成の合意を取れます。
+      </li>
+      <li>
+        <strong>長い本文の表示結果を確認する。</strong>
+        コード上では問題なく見える文章でも、表示すると不自然な位置で折り返されたり、ダイアログが横に伸びたりします。
+        実際の文字列を貼り付ければ結果がすぐ分かります。
+      </li>
+      <li>
+        <strong>Enter キーでどのボタンが押されるかを確認する。</strong>
+        破壊的な操作の確認ダイアログで既定の結果を誤ると、そのまま使い勝手の不具合になります。
+        コードを書く前にフォーカス位置を確認できます。
+      </li>
+      <li>
+        <strong>右から左のレイアウトを検証する。</strong>
+        オプションで RTL の読み取り順序を指定できます。通常は確認しづらい表示です。
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>動作環境</h2>
+    <ul>
+      <li><strong>OS：</strong> Windows</li>
+      <li><strong>.NET：</strong> .NET 10 / .NET 8（Windows デスクトップ）</li>
+      <li><strong>UI フレームワーク：</strong> WPF、サードパーティ製の依存関係なし</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ダウンロードとリポジトリ</h2>
     <p>
-      実行ファイル（exe）のダウンロード、およびソースコードの確認は GitHub より行えます：
+      実行ファイルのダウンロードとソースコードの閲覧は GitHub から行えます。
     </p>
     <p>
-      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator/releases" target="_blank" class="github-link">
-        🚀 ビルド済み exe をダウンロード (GitHub Releases)
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator/releases" target="_blank" rel="noopener noreferrer" class="github-link">
+        🚀 ビルド済み exe をダウンロード（GitHub Releases）
       </a>
       <br><br>
-      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank">
-        GitHub リポジトリ（ソースコード）を見る
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank" rel="noopener noreferrer">
+        GitHub リポジトリを見る（ソースコード）
       </a>
     </p>
   </section>

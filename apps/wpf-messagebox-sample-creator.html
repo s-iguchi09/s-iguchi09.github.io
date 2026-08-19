@@ -5,13 +5,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WPF MessageBox Sample Creator | Efficiency in Prototyping & UX Design</title>
+  <title>WPF MessageBox Sample Creator | Efficiency in Prototyping &amp; UX Design</title>
   {% include head.html %}
 
-  <meta name="description" content="A development tool to configure and preview WPF MessageBox in real-time. Pre-built .exe available on GitHub Releases—no build required. Accelerate consensus building between designers and engineers.">
+  <meta name="description" content="A development tool to configure and preview WPF MessageBox in real-time. Pre-built .exe available on GitHub Releases—no build required. Compare every MessageBoxButton and MessageBoxImage combination side by side.">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -32,19 +30,130 @@
     <h2>Overview: Interactive MessageBox Simulator</h2>
     <p>
       The WPF MessageBox Sample Creator is a prototyping application that allows you to intuitively customize the standard <code>MessageBox</code> and preview its actual behavior instantly.
+      Set the message text, caption, button set, icon, default result and display options, then show the dialog with exactly those settings.
     </p>
     <p>
       <strong>Since pre-built executable files (.exe) are available on the GitHub Releases page, anyone can use the tool immediately by simply downloading it—no Visual Studio or development environment required.</strong>
     </p>
+
+    <img class="screenshot-img" src="/attachments/WPFMessageBoxSampleCreator.png" alt="WPF MessageBox Sample Creator main window with input fields for message text, caption, buttons, icon, and options">
   </section>
 
   <section class="content-section">
-    <h2>Background: Removing the "Build Barrier"</h2>
+    <h2>Background: Removing the &ldquo;Build Barrier&rdquo;</h2>
     <p>
       In WPF development, repeatedly writing code just to check the behavior of dialogs is inefficient. Furthermore, designers and architects often find it difficult to use tools that are only shared as source code, as setting up a build environment is a significant hurdle.
     </p>
     <p>
       To solve this, this tool is distributed in a ready-to-run format. By adhering strictly to standard WPF Style definitions without third-party libraries, I achieved a lightweight tool with minimal dependencies that runs smoothly on any Windows machine.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Configurable Parameters</h2>
+    <p>
+      Every argument of <code>MessageBox.Show</code> is exposed as an independent input, so combinations can be
+      tried without editing and rebuilding code:
+    </p>
+
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Type</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Message text</td>
+          <td><code>string</code></td>
+          <td>The body of the dialog. Useful for checking how long text wraps and how the dialog resizes.</td>
+        </tr>
+        <tr>
+          <td>Caption</td>
+          <td><code>string</code></td>
+          <td>The title bar text.</td>
+        </tr>
+        <tr>
+          <td>Buttons</td>
+          <td><code>MessageBoxButton</code></td>
+          <td>The button set: OK, OK/Cancel, Yes/No, or Yes/No/Cancel.</td>
+        </tr>
+        <tr>
+          <td>Icon</td>
+          <td><code>MessageBoxImage</code></td>
+          <td>The system icon shown beside the message. All nine enum values are selectable.</td>
+        </tr>
+        <tr>
+          <td>Default result</td>
+          <td><code>MessageBoxResult</code></td>
+          <td>Which button receives focus when the dialog opens — that is, what Enter activates.</td>
+        </tr>
+        <tr>
+          <td>Options</td>
+          <td><code>MessageBoxOptions</code></td>
+          <td>Display options such as right-aligned text and right-to-left reading order.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>What the Tool Makes Obvious: Nine Icon Names, Four Icons</h2>
+    <p>
+      <code>MessageBoxImage</code> has nine members, which suggests nine different icons are available.
+      It is not the case. Several members share the same underlying numeric value, so they are indistinguishable
+      at runtime — the enum simply offers alternative names for the same Win32 flag:
+    </p>
+
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Enum members</th>
+          <th>Value</th>
+          <th>Icon actually displayed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>None</code></td>
+          <td>0</td>
+          <td>No icon</td>
+        </tr>
+        <tr>
+          <td><code>Error</code> / <code>Hand</code> / <code>Stop</code></td>
+          <td>16</td>
+          <td>White X in a red circle</td>
+        </tr>
+        <tr>
+          <td><code>Question</code></td>
+          <td>32</td>
+          <td>Question mark in a circle</td>
+        </tr>
+        <tr>
+          <td><code>Exclamation</code> / <code>Warning</code></td>
+          <td>48</td>
+          <td>Exclamation point in a yellow triangle</td>
+        </tr>
+        <tr>
+          <td><code>Asterisk</code> / <code>Information</code></td>
+          <td>64</td>
+          <td>Lowercase i in a circle</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      Selecting <code>Error</code>, <code>Hand</code> and <code>Stop</code> in turn and seeing the identical dialog
+      each time settles a question that reading the enum definition tends to raise. It also means picking between
+      those names is a readability decision for the code, not a visual one for the user.
+    </p>
+    <p>
+      One further caveat worth knowing before you reach for it: Microsoft documents the
+      <code>Question</code> icon as no longer recommended, on the grounds that a question mark does not identify a
+      category of message and can be mistaken for a help affordance. It remains in the enum for backward
+      compatibility. For a confirmation prompt, <code>Warning</code> or no icon at all is the safer choice.
     </p>
   </section>
 
@@ -65,16 +174,47 @@
   </section>
 
   <section class="content-section">
-    <h2>Downloads & Repository</h2>
+    <h2>Typical Uses</h2>
+    <ul>
+      <li>
+        <strong>Settling dialog wording in a spec review.</strong> Show the actual dialog to reviewers instead of
+        describing it, and agree on the text and button set in the meeting itself.
+      </li>
+      <li>
+        <strong>Checking how long messages render.</strong> A message that reads fine in code can wrap awkwardly
+        or stretch the dialog once displayed. Pasting the real string in shows the result immediately.
+      </li>
+      <li>
+        <strong>Confirming which button Enter triggers.</strong> Getting the default result wrong on a destructive
+        confirmation is a real usability defect; the tool shows where focus lands before the code is written.
+      </li>
+      <li>
+        <strong>Verifying right-to-left layout.</strong> The options parameter covers RTL reading order, which is
+        otherwise awkward to check.
+      </li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>System Requirements</h2>
+    <ul>
+      <li><strong>OS:</strong> Windows</li>
+      <li><strong>.NET:</strong> .NET 10 / .NET 8 (Windows desktop)</li>
+      <li><strong>UI framework:</strong> WPF, no third-party dependencies</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Downloads &amp; Repository</h2>
     <p>
       You can download the executable or browse the source code on GitHub:
     </p>
     <p>
-      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator/releases" target="_blank" class="github-link">
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator/releases" target="_blank" rel="noopener noreferrer" class="github-link">
         🚀 Download Pre-built .exe (GitHub Releases)
       </a>
       <br><br>
-      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank">
+      <a href="https://github.com/s-iguchi09/WPFMessageBoxSampleCreator" target="_blank" rel="noopener noreferrer">
         View GitHub Repository (Source Code)
       </a>
     </p>

@@ -8,10 +8,8 @@
   <title>Xaml.ExtensionPack | WPF MVVM Extension Library</title>
   {% include head.html %}
 
-  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) via a NuGet package.">
+  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) via a NuGet package, with usage examples for each type.">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -32,13 +30,26 @@
     <h2>Overview</h2>
     <p>
       Xaml.ExtensionPack is a NuGet library designed to eliminate boilerplate in WPF/XAML application development.
+      It ships the four things almost every MVVM application ends up writing by hand — a change-notification base class,
+      a synchronous command, an async command, and a safe fire-and-forget helper — and nothing else.
     </p>
-    <ul>
-      <li>
-        <strong>Xaml.ExtensionPack</strong> — A framework-agnostic core library providing foundational MVVM logic.
-        Targets .NET 10, .NET 8, and .NET Framework 4.7.2.
-      </li>
-    </ul>
+    <p>
+      The package has <strong>no third-party dependencies</strong>. It references only the base class library,
+      so adding it does not pull a dependency tree into your project and does not force an application architecture on you.
+      You can adopt a single type from it and ignore the rest.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Installation</h2>
+    <p>Install from NuGet using the .NET CLI:</p>
+<pre><code>dotnet add package Xaml.ExtensionPack</code></pre>
+    <p>Or from the Package Manager Console in Visual Studio:</p>
+<pre><code>Install-Package Xaml.ExtensionPack</code></pre>
+    <p>
+      All public types live in the <code>Xaml.ExtensionPack</code> namespace, so a single using directive is enough:
+    </p>
+<pre><code>using Xaml.ExtensionPack;</code></pre>
   </section>
 
   <section class="content-section">
@@ -49,32 +60,225 @@
       While community toolkits exist, they often pull in large dependency trees or enforce architectural conventions beyond what a project needs.
     </p>
     <p>
-      Xaml.ExtensionPack was created to provide only what is genuinely necessary — a small, focused set of utilities
-      that integrate cleanly into any WPF project without extra overhead.
+      There is also a practical constraint that rules many toolkits out: line-of-business WPF applications frequently
+      still target .NET Framework 4.7.2, and a library that has dropped it cannot be used at all.
+      Xaml.ExtensionPack multi-targets <code>net10.0</code>, <code>net8.0</code>, and <code>net472</code> from a single package,
+      so the same view model code compiles across a migration from .NET Framework to modern .NET.
     </p>
   </section>
 
   <section class="content-section">
-    <h2>What's Included</h2>
+    <h2>What Is Included</h2>
 
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Kind</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>BindableBase</code></td>
+          <td>abstract class</td>
+          <td>
+            Implements <code>INotifyPropertyChanged</code>. Provides <code>SetProperty</code> (with an optional
+            post-change callback) and both string-based and lambda-based <code>OnPropertyChanged</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>RelayCommand</code></td>
+          <td>class</td>
+          <td>
+            Delegate-based command taking an <code>Action</code> and an optional <code>Func&lt;bool&gt;</code>
+            for <code>CanExecute</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>RelayCommand&lt;T&gt;</code></td>
+          <td>class</td>
+          <td>
+            Typed variant that receives <code>CommandParameter</code> as <code>T</code>.
+            Handles a null parameter for both reference and value types.
+          </td>
+        </tr>
+        <tr>
+          <td><code>AsyncRelayCommand</code></td>
+          <td>class</td>
+          <td>
+            Async command wrapping a <code>Func&lt;Task&gt;</code>. Exposes <code>IsExecuting</code> and blocks
+            re-entry while the task is running.
+          </td>
+        </tr>
+        <tr>
+          <td><code>AsyncRelayCommand&lt;T&gt;</code></td>
+          <td>class</td>
+          <td>Typed variant of the above, wrapping a <code>Func&lt;T, Task&gt;</code>.</td>
+        </tr>
+        <tr>
+          <td><code>IRaiseCanExecuteChanged</code></td>
+          <td>interface</td>
+          <td>
+            Extends <code>ICommand</code> with <code>RaiseCanExecuteChanged()</code>, so a view model can
+            re-evaluate command availability without depending on a concrete command type.
+          </td>
+        </tr>
+        <tr>
+          <td><code>IAsyncCommand</code></td>
+          <td>interface</td>
+          <td>
+            Contract for the async commands, exposing <code>ExecuteAsync</code> and <code>IsExecuting</code>
+            alongside the <code>ICommand</code> members.
+          </td>
+        </tr>
+        <tr>
+          <td><code>TaskExtensions.FireAndForget</code></td>
+          <td>extension method</td>
+          <td>
+            Awaits a <code>Task</code> in a discarded context with an optional exception handler,
+            avoiding unobserved task exceptions.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>Usage</h2>
+
+    <h3>BindableBase — property change notification</h3>
+    <p>
+      Derive a view model from <code>BindableBase</code> and route setters through <code>SetProperty</code>.
+      It compares the current value with <code>EqualityComparer&lt;T&gt;.Default</code> and raises
+      <code>PropertyChanged</code> only when the value actually changes, so redundant notifications do not
+      reach the binding system.
+    </p>
+<pre><code>public class MainViewModel : BindableBase
+{
+    private string _userName = string.Empty;
+
+    public string UserName
+    {
+        get =&gt; _userName;
+        set =&gt; SetProperty(ref _userName, value);
+    }
+}</code></pre>
+
+    <p>
+      The overload taking an <code>Action</code> runs a callback only when the value changed — useful for
+      refreshing a dependent command or a derived property:
+    </p>
+<pre><code>private int _quantity;
+
+public int Quantity
+{
+    get =&gt; _quantity;
+    set =&gt; SetProperty(ref _quantity, value, () =&gt; SubmitCommand.RaiseCanExecuteChanged());
+}</code></pre>
+
+    <p>
+      When you need to notify for a property other than the one being set, the lambda overload keeps the
+      reference refactoring-safe — renaming the property updates the notification automatically, which a
+      string literal would not:
+    </p>
+<pre><code>set
+{
+    SetProperty(ref _firstName, value);
+    OnPropertyChanged(() =&gt; FullName);
+}</code></pre>
+
+    <h3>RelayCommand — binding a method to a button</h3>
+    <p>
+      <code>RelayCommand</code> takes the execution delegate and an optional predicate.
+      WPF disables the bound control automatically whenever <code>CanExecute</code> returns <code>false</code>.
+    </p>
+<pre><code>public class MainViewModel : BindableBase
+{
+    public RelayCommand SubmitCommand { get; }
+
+    public MainViewModel()
+    {
+        SubmitCommand = new RelayCommand(Submit, () =&gt; !string.IsNullOrEmpty(UserName));
+    }
+
+    private void Submit()
+    {
+        // ...
+    }
+}</code></pre>
+<pre><code>&lt;Button Content="Submit" Command="{Binding SubmitCommand}" /&gt;</code></pre>
+    <p>
+      Note that <code>CanExecute</code> is not re-evaluated on its own. Call <code>RaiseCanExecuteChanged()</code>
+      when the state it depends on changes — the <code>SetProperty</code> callback overload shown above is the
+      usual place to do it.
+    </p>
+
+    <h3>RelayCommand&lt;T&gt; — receiving a command parameter</h3>
+<pre><code>public RelayCommand&lt;Order&gt; DeleteCommand { get; }
+
+// in the constructor
+DeleteCommand = new RelayCommand&lt;Order&gt;(
+    order =&gt; Orders.Remove(order!),
+    order =&gt; order is not null);</code></pre>
+<pre><code>&lt;Button Content="Delete"
+        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+        CommandParameter="{Binding}" /&gt;</code></pre>
+
+    <h3>AsyncRelayCommand — preventing double execution</h3>
+    <p>
+      The common failure mode for an async command is the user clicking the button twice before the first
+      operation finishes. <code>AsyncRelayCommand</code> sets <code>IsExecuting</code> for the duration of the task
+      and returns <code>false</code> from <code>CanExecute</code> while it is set, so the button disables itself
+      until the work completes — no manual flag handling in the view model.
+    </p>
+<pre><code>public AsyncRelayCommand LoadCommand { get; }
+
+// in the constructor
+LoadCommand = new AsyncRelayCommand(LoadAsync);
+
+private async Task LoadAsync()
+{
+    Items = await _repository.GetItemsAsync();
+}</code></pre>
+    <p>
+      <code>IsExecuting</code> is public, so it can also drive a progress indicator directly from XAML:
+    </p>
+<pre><code>&lt;ProgressBar IsIndeterminate="True"
+             Visibility="{Binding LoadCommand.IsExecuting,
+                          Converter={StaticResource BooleanToVisibilityConverter}}" /&gt;</code></pre>
+
+    <h3>FireAndForget — starting a task without awaiting it</h3>
+    <p>
+      Calling an async method without awaiting it means an exception inside the task is never observed and is
+      silently swallowed. <code>FireAndForget</code> makes that case explicit and gives the exception somewhere to go:
+    </p>
+<pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>Design Notes</h2>
     <ul>
       <li>
-        <strong>BindableBase</strong> — Abstract base class implementing <code>INotifyPropertyChanged</code>.
-        Provides <code>SetProperty</code> helpers (with optional callback) and lambda-based <code>OnPropertyChanged</code>
-        for refactoring-safe notifications.
+        <strong>Commands expose <code>RaiseCanExecuteChanged</code> through an interface.</strong>
+        Depending on <code>IRaiseCanExecuteChanged</code> rather than the concrete <code>RelayCommand</code> type
+        means a command property can be swapped between the sync and async implementations without touching the
+        code that refreshes it.
       </li>
       <li>
-        <strong>RelayCommand / RelayCommand&lt;T&gt;</strong> — Lightweight <code>ICommand</code> implementations
-        that delegate execution logic via delegates. Support optional <code>CanExecute</code> predicates and
-        expose <code>RaiseCanExecuteChanged</code> via the <code>IRaiseCanExecuteChanged</code> interface.
+        <strong>Null command parameters are handled explicitly.</strong>
+        <code>RelayCommand&lt;T&gt;</code> distinguishes value types from reference types when the incoming
+        <code>CommandParameter</code> is null, instead of failing the type check and silently doing nothing.
       </li>
       <li>
-        <strong>AsyncRelayCommand</strong> — An async-aware <code>ICommand</code> that prevents concurrent execution
-        and automatically updates <code>CanExecute</code> while a task is running.
+        <strong>Async execution is guarded in <code>CanExecute</code>, not in the body.</strong>
+        Because re-entry is blocked by <code>CanExecute</code> returning <code>false</code>, the UI reflects the
+        busy state automatically rather than the command accepting the invocation and discarding it.
       </li>
       <li>
-        <strong>TaskExtensions.FireAndForget</strong> — A safe fire-and-forget extension method for <code>Task</code>
-        that accepts an optional exception handler, avoiding unobserved task exceptions.
+        <strong>No source generators, no analyzers, no attributes.</strong>
+        The types are ordinary classes, so behavior is visible at the call site and debugging steps into
+        real code rather than generated partials.
       </li>
     </ul>
   </section>
@@ -84,6 +288,7 @@
     <ul>
       <li><strong>Language:</strong> C# (latest)</li>
       <li><strong>Target Frameworks:</strong> .NET 10, .NET 8, .NET Framework 4.7.2</li>
+      <li><strong>Dependencies:</strong> none at runtime</li>
       <li><strong>License:</strong> MIT</li>
     </ul>
   </section>
@@ -91,7 +296,7 @@
   <section class="content-section">
     <h2>Repository</h2>
     <p>
-      Source code and issue tracking are available on GitHub:
+      Source code, the sample application, and issue tracking are available on GitHub:
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer" class="github-link">

@@ -10,8 +10,6 @@
 
   <meta name="description" content="TreePaste は、クリップボードにコピーしたファイルをフォルダー構成を維持したまま貼り付けできる Windows アプリです。タスクトレイ常駐と Ctrl+Alt+V による呼び出しで、日常のファイル整理を効率化します。">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -35,9 +33,33 @@
       単純な一括貼り付けではなく、コピー元の階層をツリー表示し、どの階層から貼り付けるかを選択できます。
     </p>
 
-    <div class="app-screenshot">
-      <img src="/attachments/TreePaste.png" alt="TreePaste のメイン画面。フォルダー階層の表示と貼り付け起点の選択画面">
-    </div>
+    <img class="screenshot-img" src="/attachments/TreePaste.png" alt="TreePaste のメイン画面。フォルダー階層の表示と貼り付け起点の選択画面">
+  </section>
+
+  <section class="content-section">
+    <h2>解決する課題</h2>
+    <p>
+      エクスプローラーの貼り付けで得られる結果は、実質的に 2 通りしかありません。
+      フォルダーをコピーすればそのフォルダー自体を含むサブツリー全体が貼り付けられ、
+      中のファイルをコピーすれば構造が失われたフラットなファイル群になります。
+      「構造は保ったまま、3 階層下から始めたい」という指定はできません。
+    </p>
+    <p>
+      たとえば、プロジェクトの階層深くに置かれた報告書を考えます。
+    </p>
+<pre><code>D:\Projects\ClientA\2026\Reports\Q1\summary.xlsx
+D:\Projects\ClientA\2026\Reports\Q1\appendix.xlsx
+D:\Projects\ClientA\2026\Reports\Q2\summary.xlsx</code></pre>
+    <p>
+      ここで <code>Reports</code> と <code>Q1</code> のフォルダーは残しつつ、
+      <code>Projects</code>・<code>ClientA</code>・<code>2026</code> は落として
+      <code>Reports\Q1\summary.xlsx</code> の形で貼り付けたい場合、エクスプローラーでは一度の操作で実現できません。
+      通常はすべて貼り付けてから不要な親フォルダーを手作業で削除することになり、この工程でミスが起きます。
+    </p>
+    <p>
+      TreePaste はコピーした項目をツリーとして表示し、貼り付けの起点となる階層をクリックで指定できます。
+      <code>Reports</code> を選べば、貼り付け先には <code>Reports\Q1\summary.xlsx</code> が作られ、それより上の階層は破棄されます。
+    </p>
   </section>
 
   <section class="content-section">
@@ -45,6 +67,11 @@
     <p>
       複数のファイルやフォルダーを別の場所へ移す作業では、不要な親フォルダーまで含めて貼り付いてしまったり、逆に必要な構造が崩れてしまったりすることがあります。
       TreePaste は、コピー元の構造を視覚的に確認しながら貼り付け起点を決められるようにすることで、こうした手戻りを減らすことを目的に開発しました。
+    </p>
+    <p>
+      設計方針として重視したのは、作業の流れを止めないことです。
+      ウィンドウを占有せずタスクトレイに常駐し、アイコンを探してクリックするのではなくグローバルショートカットで呼び出せるようにし、
+      貼り付け先はダイアログで選ばせるのではなく、すでに目の前で開いているエクスプローラーから推定するようにしました。
     </p>
   </section>
 
@@ -71,6 +98,61 @@
       <li>表示されたツリーから貼り付け起点の階層を選択します。</li>
       <li>貼り付けを実行します。</li>
     </ol>
+    <p>
+      手順 3 は見た目以上に重要です。貼り付け先は、ショートカットを押した時点で最前面にあるエクスプローラーウィンドウから読み取ります。
+      呼び出す前に目的のフォルダーを前面に出しておくことが、貼り付け先を正しく決めるための条件になります。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>貼り付け先の検出方法</h2>
+    <p>
+      TreePaste は貼り付け先をユーザーに選ばせるのではなく、直前まで見ていたウィンドウから読み取ります。
+      検出は次の 3 段階で行っています。
+    </p>
+    <ol>
+      <li>
+        <code>GetForegroundWindow</code> で最前面のウィンドウを取得し、
+        <code>GetWindowThreadProcessId</code> でそのウィンドウを所有するプロセスを特定します。
+      </li>
+      <li>
+        プロセスが <code>explorer</code> であれば、<code>Shell.Application</code> COM オブジェクト経由で開いているシェルウィンドウを列挙し、
+        <code>HWND</code> が最前面ウィンドウのハンドルと一致するものを探して、その <code>LocationURL</code> から表示中のフォルダーパスを取得します。
+      </li>
+      <li>
+        最前面がエクスプローラーではない場合、あるいはシェル側の検索で該当が得られなかった場合は、
+        デスクトップにフォールバックし、貼り付け先が常に有効になるようにします。
+      </li>
+    </ol>
+    <p>
+      最初に見つかったシェルウィンドウを使うのではなく、ウィンドウハンドルの一致で絞り込んでいる点がポイントです。
+      これにより、エクスプローラーを複数開いている状況でも、貼り付け先が任意のウィンドウではなく、
+      実際にフォーカスのあったウィンドウに定まります。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>動作上の注意点</h2>
+    <ul>
+      <li>
+        <strong>貼り付け先はフォーカスに追従します。</strong>
+        Ctrl+Alt+V を押した時点でエクスプローラー以外のウィンドウ（ブラウザーやエディターなど）が最前面にあると、
+        読み取るべきエクスプローラーのパスが存在しないため、貼り付け先はデスクトップになります。
+        先に貼り付け先フォルダーのウィンドウをクリックしてください。
+      </li>
+      <li>
+        <strong>ツリーはウィンドウを開いた時点のクリップボードの内容を反映します。</strong>
+        先にファイルをコピーしてから TreePaste を呼び出してください。
+      </li>
+      <li>
+        <strong>Ctrl+Alt+V はシステム全体のショートカットです。</strong>
+        他の常駐アプリが同じ組み合わせをすでに登録している場合、先に登録した側にキーが渡ります。
+      </li>
+      <li>
+        <strong>配色は Windows のカラーモードに追従します。</strong>
+        ライトモードとダークモードの切り替えは、アプリ側の設定を変更しなくても反映されます。
+      </li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -78,7 +160,20 @@
     <ul>
       <li><strong>OS：</strong> Windows 10 / 11 (x64)</li>
       <li><strong>.NET：</strong> .NET 10</li>
+      <li><strong>UI フレームワーク：</strong> WPF</li>
     </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ソースからのビルド</h2>
+    <p>
+      .NET 10 SDK が導入されていれば、ソリューションをそのままビルドできます。
+    </p>
+<pre><code>dotnet build src/TreePaste/TreePaste.slnx</code></pre>
+    <p>
+      実行可能な形にする場合は、win-x64 ランタイム向けに Release 構成で発行します。
+      出力は <code>src/publish/win-x64/</code> 配下に書き出されます。
+    </p>
   </section>
 
   <section class="content-section">
