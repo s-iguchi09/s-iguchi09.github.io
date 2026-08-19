@@ -52,8 +52,16 @@
 <pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
     <p>
       ローカルでパックし、ローカルフィードから参照する方法もあります。
+      パッケージを任意のディレクトリへ出力し、そのディレクトリを NuGet のソースとして登録したうえで、
+      通常どおりパッケージを追加します。
     </p>
-<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release</code></pre>
+<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
+<pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack</code></pre>
+    <p>
+      フィードを恒久的に登録したくない場合は、追加時にディレクトリを直接指定することもできます。
+      <code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code>
+    </p>
     <p>
       公開されている型はすべて <code>Xaml.ExtensionPack</code> 名前空間に配置しているため、using ディレクティブは 1 行で済みます。
     </p>

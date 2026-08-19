@@ -33,7 +33,9 @@
       本文、タイトル、ボタン、アイコン、既定の結果、表示オプションを設定し、その設定のまま実際の MessageBox を表示できます。
     </p>
     <p>
-      本ツールは GitHub の Release ページにてビルド済みの実行ファイル（.exe）を公開しているため、Visual Studio などの開発環境がインストールされていない PC でも、ダウンロードするだけで即座に利用可能です。
+      本ツールは GitHub の Release ページにてビルド済みの実行ファイル（.exe）を公開しているため、Visual Studio などの開発環境がインストールされていない PC でもダウンロードするだけで利用できます。
+      ただし配布しているビルドはフレームワーク依存のため、対応する x64 版の .NET デスクトップ ランタイムは導入済みである必要があります。
+      詳細は後述の<a href="#requirements">動作環境</a>を参照してください。
     </p>
 
     <img class="screenshot-img" src="/attachments/WPFMessageBoxSampleCreator.png" alt="WPF MessageBoxサンプル作成ツールのメイン画面。本文、タイトル、ボタン、アイコン、オプションの入力欄が並ぶ">
@@ -210,7 +212,7 @@
   </section>
 
   <section class="content-section">
-    <h2>動作環境</h2>
+    <h2 id="requirements">動作環境</h2>
     <ul>
       <li><strong>OS：</strong> Windows（x64）</li>
       <li>

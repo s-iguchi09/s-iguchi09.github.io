@@ -50,9 +50,16 @@
 <pre><code>git clone https://github.com/s-iguchi09/Xaml.ExtensionPack.git</code></pre>
 <pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
     <p>
-      Alternatively, pack it locally and consume it from a local feed:
+      Alternatively, pack it locally and consume it from a local feed. Build the package into a directory,
+      register that directory as a NuGet source, then add the package as usual:
     </p>
-<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release</code></pre>
+<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
+<pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack</code></pre>
+    <p>
+      If you would rather not register the feed permanently, pass the directory to the add command instead:
+      <code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code>.
+    </p>
     <p>
       All public types live in the <code>Xaml.ExtensionPack</code> namespace, so a single using directive is enough:
     </p>
