@@ -247,6 +247,15 @@ private async Task LoadAsync()
 <pre><code>&lt;ProgressBar IsIndeterminate="True"
              Visibility="{Binding LoadCommand.IsExecuting,
                           Converter={StaticResource BooleanToVisibilityConverter}}" /&gt;</code></pre>
+    <p>
+      <code>StaticResource</code> resolves its key while the XAML is being loaded, so the converter has to be
+      defined under that same key beforehand — in <code>Window.Resources</code>, in <code>App.xaml</code>, or in
+      a merged <code>ResourceDictionary</code>. If no such resource exists, loading the XAML throws rather than
+      silently leaving the binding unset:
+    </p>
+<pre><code>&lt;Window.Resources&gt;
+    &lt;BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /&gt;
+&lt;/Window.Resources&gt;</code></pre>
 
     <h3>FireAndForget — starting a task without awaiting it</h3>
     <p>

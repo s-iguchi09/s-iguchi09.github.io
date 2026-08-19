@@ -251,6 +251,16 @@ private async Task LoadAsync()
 <pre><code>&lt;ProgressBar IsIndeterminate="True"
              Visibility="{Binding LoadCommand.IsExecuting,
                           Converter={StaticResource BooleanToVisibilityConverter}}" /&gt;</code></pre>
+    <p>
+      <code>StaticResource</code> は XAML の読み込み時にキーを解決するため、
+      同じキーのコンバーターをあらかじめ定義しておく必要があります。
+      定義場所は <code>Window.Resources</code>、<code>App.xaml</code>、
+      あるいはマージする <code>ResourceDictionary</code> のいずれかです。
+      該当するリソースが存在しない場合、バインドが未設定のまま放置されるのではなく、XAML の読み込み自体が例外になります。
+    </p>
+<pre><code>&lt;Window.Resources&gt;
+    &lt;BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /&gt;
+&lt;/Window.Resources&gt;</code></pre>
 
     <h3>FireAndForget —— await せずにタスクを開始する</h3>
     <p>

@@ -52,8 +52,10 @@
   <section class="content-section">
     <h2>Configurable Parameters</h2>
     <p>
-      Every argument of <code>MessageBox.Show</code> is exposed as an independent input, so combinations can be
-      tried without editing and rebuilding code:
+      The arguments of the <code>MessageBox.Show</code> overload this tool calls are each exposed as an
+      independent input, so combinations can be tried without editing and rebuilding code.
+      The overloads that take an owner <code>Window</code> as their first argument are out of scope —
+      the tool does not set an owner:
     </p>
 
     <table class="prop-table">
