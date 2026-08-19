@@ -103,11 +103,20 @@
       大きな依存関係ツリーを引き込んだり、プロジェクトが必要としない設計上の規約まで要求したりすることが少なくありません。
     </p>
     <p>
-      さらに、多くのツールキットが選択肢から外れる実務的な制約があります。
-      業務系の WPF アプリケーションでは .NET Framework 4.7.2 を対象とし続けている案件が今も多く、
-      サポートを打ち切ったライブラリはそもそも使えません。
-      Xaml.ExtensionPack は単一パッケージで <code>net10.0</code> / <code>net8.0</code> / <code>net472</code> をマルチターゲットしているため、
-      .NET Framework からモダン .NET への移行をまたいでも、同じ ViewModel のコードがそのままコンパイルできます。
+      さらに、選択肢を絞り込む実務的な制約があります。
+      業務系の WPF アプリケーションでは .NET Framework 4.7.2 を対象とし続けている案件が今も多いためです。
+      ただし、ここで効くのは <code>net472</code> を明示的に対象にしているかどうかではありません。
+      .NET Framework 4.6.1 以降は <code>netstandard2.0</code> 向けのアセットを利用できるため、
+      それを同梱しているツールキットは引き続き使えます。
+      使えなくなるのは <code>net472</code> と互換なアセットを一切持たない場合、
+      つまりモダン .NET だけを対象にしたパッケージです。
+    </p>
+    <p>
+      Xaml.ExtensionPack は単一パッケージで <code>net10.0</code> / <code>net8.0</code> / <code>net472</code> を
+      マルチターゲットしているため、どの対象でも同じ API を提供します。
+      .NET Framework からモダン .NET への移行をまたいでも、
+      このライブラリに依存している部分の ViewModel のコードは書き換える必要がありません。
+      それ以外の API に触れているコードについては、別途検討が必要です。
     </p>
   </section>
 
@@ -335,9 +344,27 @@ private async Task LoadAsync()
     <p>
       非同期メソッドを await せずに呼び出すと、タスク内で発生した例外は戻り値の <code>Task</code> に保持され、
       その <code>Task</code> は faulted 状態のまま残ります。
-      例外が表に出るのは、そのタスクを await するか、<code>Wait()</code> を呼ぶか、<code>Exception</code> を読んだときだけです。
-      戻り値を捨てる呼び出し方ではそのいずれも起きないため、失敗が呼び出し側で気付かれないまま終わります。
+      失敗したその場で例外が表に出ることはありません。
+      そのタスクを await するか、<code>Wait()</code> を呼ぶか、<code>Exception</code> を読めば表に出ますが、
+      戻り値を捨てる呼び出し方では、そのいずれも起きないためです。
+    </p>
+    <p>
+      ただし、例外がそのまま握り潰されるわけではありません。
+      faulted のまま残ったタスクがファイナライズされる際に、ランタイムが
+      <code>TaskScheduler.UnobservedTaskException</code> を発生させます。
+      もっともこれは診断用の経路であって、エラー処理の代わりにはなりません。
+      発生するのは GC がそのタスクを回収したタイミングであり、
+      失敗から大きく遅れることも、プログラムの無関係な箇所で起きることもあります。
+      現行の .NET、および .NET Framework 4.5 以降では、ハンドラーが観測したかどうかに関わらず
+      プロセスはそのまま動き続けます。
+      .NET Framework では、構成ファイルに
+      <code>&lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;</code> を指定することで、
+      プロセスを終了する以前の動作に戻せます。
+      いずれにせよ、ここで初めて表に出た時点で、その失敗は処理されないまま終わっています。
+    </p>
+    <p>
       <code>FireAndForget</code> は内部でタスクを await し、捕捉した例外を渡されたハンドラーに引き渡します。
+      これにより、失敗が起きたその場で観測されます。
     </p>
 <pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
   </section>
