@@ -1,3 +1,14 @@
+# AdSense のコンテンツクローラ。
+# コントロール別デモページは同一テンプレート構成で独自性が乏しいため広告枠にしない。
+# 広告コード自体を出力しない対応は _includes/head.html 側で行っており、
+# ここではあわせてクロール対象からも外し、AdSense のサイト評価に含まれないようにする。
+User-agent: Mediapartners-Google
+Disallow: /apps/wpf-standard-control-demo/
+Disallow: /ja/apps/wpf-standard-control-demo/
+
+# 通常の検索エンジンはサイト全体をクロールしてよい。
+# デモページのインデックス除外は robots.txt ではなく noindex メタで行う。
+# ここで Disallow にすると noindex メタ自体が読まれず、URL だけがインデックスされうるため。
 User-agent: *
 Allow: /
 
