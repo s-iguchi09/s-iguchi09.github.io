@@ -10,8 +10,6 @@
 
   <meta name="description" content="TreePaste is a Windows app that pastes copied files while preserving the original folder structure. Select the paste starting level in a tree view and launch quickly with Ctrl+Alt+V.">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -35,9 +33,33 @@
       Instead of a one-step paste, it visualizes copied items as a tree so you can choose the exact hierarchy level used as the paste starting point.
     </p>
 
-    <div class="app-screenshot">
-      <img src="/attachments/TreePaste.png" alt="TreePaste main window showing folder hierarchy and paste level selection">
-    </div>
+    <img class="screenshot-img" src="/attachments/TreePaste.png" alt="TreePaste main window showing folder hierarchy and paste level selection">
+  </section>
+
+  <section class="content-section">
+    <h2>The Problem It Solves</h2>
+    <p>
+      Explorer gives you exactly two outcomes when you paste. Copy a folder and you get the whole subtree including
+      the folder itself. Copy the files inside it and you get a flat set of files with the structure gone.
+      There is no way to say &ldquo;keep the structure, but start it three levels down.&rdquo;
+    </p>
+    <p>
+      Consider a report buried in a project tree:
+    </p>
+<pre><code>D:\Projects\ClientA\2026\Reports\Q1\summary.xlsx
+D:\Projects\ClientA\2026\Reports\Q1\appendix.xlsx
+D:\Projects\ClientA\2026\Reports\Q2\summary.xlsx</code></pre>
+    <p>
+      If you want <code>Reports\Q1\summary.xlsx</code> to land in the destination — keeping the
+      <code>Reports</code> and <code>Q1</code> folders but dropping <code>Projects</code>, <code>ClientA</code>
+      and <code>2026</code> — Explorer cannot do it in one step. The usual workaround is to paste everything and
+      then delete the unwanted parent folders by hand, which is where mistakes happen.
+    </p>
+    <p>
+      TreePaste shows the copied items as a tree and lets you click the level that becomes the root of the paste.
+      Select <code>Reports</code> and the destination receives <code>Reports\Q1\summary.xlsx</code>, with everything
+      above it discarded.
+    </p>
   </section>
 
   <section class="content-section">
@@ -45,6 +67,11 @@
     <p>
       In real file management workflows, a normal paste often includes too many parent folders or loses structure that should remain intact.
       TreePaste was built to reduce these mistakes by making folder hierarchy visible before execution and letting you select where the paste begins.
+    </p>
+    <p>
+      The design goal was that the tool should never interrupt the flow of work. It stays in the tray rather than
+      occupying a window, it is summoned by a global shortcut rather than by finding and clicking an icon, and it
+      infers the destination from the Explorer window already in front of you rather than asking you to browse for it.
     </p>
   </section>
 
@@ -71,6 +98,62 @@
       <li>Select the paste starting point from the tree.</li>
       <li>Execute the paste.</li>
     </ol>
+    <p>
+      Step 3 matters more than it looks: the destination is read from whichever Explorer window is in the
+      foreground at the moment you press the shortcut. Bringing the target folder to the front before invoking
+      TreePaste is what makes the destination correct.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>How Destination Detection Works</h2>
+    <p>
+      Rather than asking the user to pick a destination folder, TreePaste reads it from the window you were just
+      looking at. The lookup runs in three stages:
+    </p>
+    <ol>
+      <li>
+        Get the foreground window with <code>GetForegroundWindow</code>, then resolve its owning process via
+        <code>GetWindowThreadProcessId</code>.
+      </li>
+      <li>
+        If that process is <code>explorer</code>, enumerate the open shell windows through the
+        <code>Shell.Application</code> COM object, match the one whose <code>HWND</code> equals the foreground
+        window handle, and read its <code>LocationURL</code> to obtain the displayed folder path.
+      </li>
+      <li>
+        If the foreground window is not an Explorer window — or the shell lookup yields nothing — fall back to
+        the Desktop so the paste always has a valid target.
+      </li>
+    </ol>
+    <p>
+      Matching on the window handle rather than simply taking the first shell window is what makes the behavior
+      predictable when several Explorer windows are open at once: the destination is always the specific window
+      that had focus, not an arbitrary one.
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>Notes and Known Behavior</h2>
+    <ul>
+      <li>
+        <strong>The destination follows focus.</strong> If a non-Explorer window (a browser, an editor) is in the
+        foreground when you press Ctrl+Alt+V, there is no Explorer path to read and the paste targets the Desktop.
+        Click the destination folder window first.
+      </li>
+      <li>
+        <strong>The tree reflects the clipboard at the moment you open the window.</strong> Copy the files first,
+        then invoke TreePaste.
+      </li>
+      <li>
+        <strong>Ctrl+Alt+V is a system-wide shortcut.</strong> If another resident application has already
+        registered the same combination, whichever registered it first receives the key.
+      </li>
+      <li>
+        <strong>Colors follow the Windows color mode.</strong> Switching between light and dark mode is picked up
+        without reconfiguring the app.
+      </li>
+    </ul>
   </section>
 
   <section class="content-section">
@@ -78,7 +161,20 @@
     <ul>
       <li><strong>OS:</strong> Windows 10 / 11 (x64)</li>
       <li><strong>.NET:</strong> .NET 10</li>
+      <li><strong>UI framework:</strong> WPF</li>
     </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>Building from Source</h2>
+    <p>
+      With the .NET 10 SDK installed, build the solution directly:
+    </p>
+<pre><code>dotnet build src/TreePaste/TreePaste.slnx</code></pre>
+    <p>
+      To produce a runnable build, publish for the win-x64 runtime in Release configuration.
+      The output is written under <code>src/publish/win-x64/</code>.
+    </p>
   </section>
 
   <section class="content-section">

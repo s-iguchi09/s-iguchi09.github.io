@@ -7,9 +7,19 @@
   内容も公式リファレンスの整理が中心のため、サイト全体の評価を下げないよう noindex とする。
   ページ側の front matter に `noindex: true` を書いても同じ扱いになる。
   なお follow は残すため、デモページからのリンクは引き続きたどられる。
+
+  あわせて、noindex 対象のページには AdSense の広告コードを出力しない。
+  サイト全体の評価を下げると判断したページを広告枠にすることは、
+  AdSense の「有用性の低いコンテンツ」ポリシーに抵触するため。
+  広告コードはこのファイルで一元管理し、各ページに直接書かないこと。
+  各ページに直接書くと、この出し分けをすり抜けて noindex ページにも広告が出てしまう。
 {% endcomment %}
 {% if page.noindex or page.url contains '/wpf-standard-control-demo/' %}
   <meta name="robots" content="noindex, follow">
+{% else %}
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
+    crossorigin="anonymous"></script>
 {% endif %}
 
 {% if page.url contains '/ja/' %}

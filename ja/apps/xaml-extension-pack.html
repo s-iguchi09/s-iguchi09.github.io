@@ -5,13 +5,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Xaml.ExtensionPack | WPF MVVM 拡張ライブラリ</title>
+  <title>Xaml.ExtensionPack | WPF 向け MVVM 拡張ライブラリ</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。MVVM の基盤（BindableBase、RelayCommand、AsyncRelayCommand）を NuGet パッケージとして提供します。">
+  <meta name="description" content="WPF 向けの軽量な XAML 拡張ライブラリです。利用側に第三者製の実行時依存を追加しません。BindableBase、RelayCommand、AsyncRelayCommand といった MVVM の土台を提供する小さなライブラリです。各機能の使用例も掲載しています。">
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7740689107675714"
-    crossorigin="anonymous"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -23,59 +21,473 @@
   <section class="hero">
     <h1>Xaml.ExtensionPack</h1>
     <p>
-      WPF 向けの軽量・依存関係ゼロの XAML 拡張ライブラリ。
-      MVVM の基盤となるユーティリティを NuGet パッケージとして提供します。
+      WPF 向けの軽量な XAML 拡張ライブラリです。利用側に第三者製の実行時依存を追加しません。
+      MVVM の土台となる機能を、単一の小さなライブラリとして提供します。
     </p>
   </section>
 
   <section class="content-section">
     <h2>概要</h2>
     <p>
-      Xaml.ExtensionPack は、WPF/XAML アプリケーション開発における定型コードを削減するための NuGet ライブラリです。
-    </p>
-    <ul>
-      <li>
-        <strong>Xaml.ExtensionPack</strong> — フレームワーク非依存のコアライブラリ。MVVM の基盤ロジックを提供します。
-        .NET 10、.NET 8、.NET Framework 4.7.2 をターゲットとしています。
-      </li>
-    </ul>
-  </section>
-
-  <section class="content-section">
-    <h2>開発背景：大規模な依存なしにボイラープレートを排除する</h2>
-    <p>
-      MVVM パターンで構築された WPF アプリケーションには、<code>INotifyPropertyChanged</code> の実装、
-      <code>ICommand</code> のラッパー、非同期対応の fire-and-forget ヘルパーなど、繰り返し記述される定型コードが多く発生しがちです。
-      コミュニティのツールキットも存在しますが、大きな依存関係ツリーを引き込んだり、プロジェクトの要件を超えた
-      アーキテクチャの規約を強制したりすることがあります。
+      Xaml.ExtensionPack は、WPF / XAML アプリケーション開発で繰り返し書くことになる定型コードを削減するための小さなライブラリです。
+      中核となるのは、MVVM アプリケーションでほぼ必ず自前実装することになる 4 つ ——
+      変更通知の基底クラス、同期コマンド、非同期コマンド、安全な fire-and-forget ヘルパー —— で、
+      これらのコマンドを公開するための小さなインターフェイスが付属します。
     </p>
     <p>
-      Xaml.ExtensionPack は、本当に必要なものだけを提供するために作られました。
-      余分なオーバーヘッドなく、どんな WPF プロジェクトにもクリーンに統合できる、小さく的を絞ったユーティリティ群です。
+      このライブラリは<strong>利用側のプロジェクトにサードパーティ製の依存関係を持ち込みません</strong>。
+      導入しても依存関係のツリーが付いてくることはなく、特定のアプリケーション構成を強制することもありません。
+      必要な型だけを採用し、それ以外は使わないという導入の仕方ができます。
+    </p>
+    <p>
+      なお、ライブラリ自体はビルド時の参照を 1 つ持っています。
+      <code>net472</code> 向けのビルドに必要な参照アセンブリを供給する
+      <code>Microsoft.NETFramework.ReferenceAssemblies</code> です。
+      これは <code>PrivateAssets="all"</code> を指定して宣言しているため、このプロジェクトの内部にとどまり、
+      利用側へは伝播しません。
     </p>
   </section>
 
   <section class="content-section">
-    <h2>含まれる機能</h2>
+    <h2>インストール</h2>
+    <p>
+      本プロジェクトは NuGet パッケージを生成する構成になっていますが、
+      <strong>NuGet.org へはまだ公開していません</strong>。
+      NuGet.org だけをソースにしている場合、<code>dotnet add package</code> には解決先がありません。
+      パッケージを置いたローカルフィードやプライベートフィードが設定済みであれば、通常どおり解決できます。
+      利用できるフィードがない場合は、リポジトリをクローンしてプロジェクトを直接参照してください。
+    </p>
+<pre><code>git clone https://github.com/s-iguchi09/Xaml.ExtensionPack.git</code></pre>
+<pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
+    <p>
+      ローカルでパックし、ローカルフィードから参照する方法もあります。
+      パッケージを任意のディレクトリへ出力し、そのディレクトリを NuGet のソースとして登録したうえで、
+      バージョンを明示してパッケージを追加します。
+      プロジェクトファイルでバージョンを指定していないため、<code>dotnet pack</code> の出力は <code>1.0.0</code> になります。
+    </p>
+<pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
+<pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --version 1.0.0 --source ./local-feed</code></pre>
+    <p>
+      ソースとバージョンは、どちらも明示しておく価値があります。
+      このパッケージ ID は NuGet.org で取得されていないため、ソースを指定しないと、
+      将来だれかが同じ名前で公開したパッケージを引いてしまう可能性があり、
+      バージョンを固定していないと、そうなったときに大きい方が選ばれてしまいます。
+      継続的に使う場合は、<code>nuget.config</code> の
+      <a href="https://learn.microsoft.com/nuget/consume-packages/package-source-mapping" target="_blank" rel="noopener noreferrer">Package Source Mapping</a>
+      で ID をローカルフィードに固定します。
+      このセクションを定義すると、推移的な依存を含むプロジェクト内のすべてのパッケージがいずれかのパターンに
+      一致している必要があります。下の例の <code>*</code> がその受け皿です。
+      <code>packageSourceMapping</code> の各キーは、<code>packageSources</code> で宣言したソースを指します。
+      <code>&lt;clear /&gt;</code> は、継承した設定を除外したいときに指定します。
+      NuGet はディレクトリをさかのぼって見つけたすべての <code>nuget.config</code> に加え、
+      ユーザー単位・マシン単位の設定についても、コレクション要素を結合して適用します。
+      そのため上位に設定がある環境では、<code>&lt;clear /&gt;</code> がないと、
+      継承されたソースや、同じ ID に対する継承されたマッピングが残ってしまいます。
+      継承する設定がなければ必須ではありませんが、
+      どの環境でも同じ結果になるよう、書いておくほうが安全です。
+    </p>
+<pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration&gt;
+  &lt;packageSources&gt;
+    &lt;clear /&gt;
+    &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" /&gt;
+    &lt;add key="xaml-extensionpack-local" value="./local-feed" /&gt;
+  &lt;/packageSources&gt;
+  &lt;packageSourceMapping&gt;
+    &lt;clear /&gt;
+    &lt;packageSource key="xaml-extensionpack-local"&gt;
+      &lt;package pattern="Xaml.ExtensionPack" /&gt;
+    &lt;/packageSource&gt;
+    &lt;packageSource key="nuget.org"&gt;
+      &lt;package pattern="*" /&gt;
+    &lt;/packageSource&gt;
+  &lt;/packageSourceMapping&gt;
+&lt;/configuration&gt;</code></pre>
+    <p>
+      これには制約が 2 つあります。
+      1 つは対応ツールの要件です。Package Source Mapping は NuGet 6.0 で追加されたため、
+      Visual Studio 2022、.NET SDK 6.0.100、nuget.exe 6.0.0 のいずれか以降が必要です。
+      それより古いツールはこのセクションを警告なく無視するので、
+      CI を含め、このプロジェクトを restore するすべての環境が対応バージョンである必要があります。
+      もう 1 つは適用範囲です。効くのは restore がパッケージをダウンロードするときだけで、
+      <code>dotnet add package</code> が他のソースへメタデータを問い合わせること自体は止まりません。
+      その点でも <code>--source</code> の指定が必要になります。
+    </p>
+    <p>
+      公開されている型はすべて <code>Xaml.ExtensionPack</code> 名前空間に配置しているため、using ディレクティブは 1 行で済みます。
+    </p>
+<pre><code>using Xaml.ExtensionPack;</code></pre>
+  </section>
 
+  <section class="content-section">
+    <h2>開発背景：重い依存関係なしで定型コードを削る</h2>
+    <p>
+      MVVM パターンで構築した WPF アプリケーションでは、
+      <code>INotifyPropertyChanged</code> の実装、<code>ICommand</code> のラッパー、非同期処理を安全に投げ放つためのヘルパーといった、
+      同じ形の基盤コードが積み上がっていきます。
+      同種の機能を提供するコミュニティ製ツールキットも存在しますが、
+      大きな依存関係ツリーを引き込んだり、プロジェクトが必要としない設計上の規約まで要求したりすることが少なくありません。
+    </p>
+    <p>
+      さらに、選択肢を絞り込む実務的な制約があります。
+      業務系の WPF アプリケーションでは .NET Framework 4.7.2 を対象とし続けている案件が今も多いためです。
+      ただし、ここで効くのは <code>net472</code> を明示的に対象にしているかどうかではありません。
+      .NET Framework 4.6.1 以降は <code>netstandard2.0</code> 向けのアセットを利用できるため、
+      それを同梱しているツールキットは引き続き使えます。
+      なお、この組み合わせについて Microsoft が推奨しているのは 4.7.2 以降です。
+      それより前のバージョンには既知の問題があります。
+      使えなくなるのは <code>net472</code> と互換なアセットを一切持たない場合、
+      つまりモダン .NET だけを対象にしたパッケージです。
+    </p>
+    <p>
+      ここまでは <code>netstandard2.0</code> のライブラリ一般の話で、
+      本ライブラリが提供する互換性とは分けて考える必要があります。
+      Xaml.ExtensionPack は <code>netstandard2.0</code> のアセットを同梱しておらず、
+      .NET Framework 向けには <code>net472</code> を対象としています。
+      そのため 4.6.1 から 4.7.1 のプロジェクトではこのアセットが選択されません。
+      本ライブラリに関しては、4.7.2 は推奨ではなく下限です。
+    </p>
+    <p>
+      Xaml.ExtensionPack は単一パッケージで <code>net10.0</code> / <code>net8.0</code> / <code>net472</code> を
+      マルチターゲットしているため、どの対象でも同じ API を提供します。
+      .NET Framework からモダン .NET への移行をまたいでも、
+      このライブラリに依存している部分の ViewModel のコードは書き換える必要がありません。
+      それ以外の API に触れているコードについては、別途検討が必要です。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>提供する機能</h2>
+
+    <table class="prop-table">
+      <thead>
+        <tr>
+          <th>型</th>
+          <th>種別</th>
+          <th>役割</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>BindableBase</code></td>
+          <td>抽象クラス</td>
+          <td>
+            <code>INotifyPropertyChanged</code> を実装します。
+            変更後のコールバックを受け取れる <code>SetProperty</code> と、
+            文字列指定・ラムダ式指定の両方の <code>OnPropertyChanged</code> を提供します。
+          </td>
+        </tr>
+        <tr>
+          <td><code>RelayCommand</code></td>
+          <td>クラス</td>
+          <td>
+            <code>Action</code> と、任意の <code>Func&lt;bool&gt;</code>（<code>CanExecute</code> 用）を受け取る
+            デリゲートベースのコマンドです。
+          </td>
+        </tr>
+        <tr>
+          <td><code>RelayCommand&lt;T&gt;</code></td>
+          <td>クラス</td>
+          <td>
+            <code>CommandParameter</code> を <code>T</code> として受け取る型付き版です。
+            パラメーターが null の場合を参照型・値型の双方で処理します。
+          </td>
+        </tr>
+        <tr>
+          <td><code>AsyncRelayCommand</code></td>
+          <td>クラス</td>
+          <td>
+            <code>Func&lt;Task&gt;</code> をラップする非同期コマンドです。
+            <code>IsExecuting</code> を公開し、実行中の再入を遮断します。
+          </td>
+        </tr>
+        <tr>
+          <td><code>AsyncRelayCommand&lt;T&gt;</code></td>
+          <td>クラス</td>
+          <td><code>Func&lt;T, Task&gt;</code> をラップする、上記の型付き版です。</td>
+        </tr>
+        <tr>
+          <td><code>IRaiseCanExecuteChanged</code></td>
+          <td>インターフェース</td>
+          <td>
+            <code>ICommand</code> に <code>RaiseCanExecuteChanged()</code> を追加したインターフェースです。
+            ViewModel が具象コマンド型に依存せずに実行可否を再評価できます。
+          </td>
+        </tr>
+        <tr>
+          <td><code>IAsyncCommand</code></td>
+          <td>インターフェース</td>
+          <td>
+            非同期コマンドの契約です。<code>ICommand</code> のメンバーに加えて
+            <code>ExecuteAsync</code> と <code>IsExecuting</code> を公開します。
+          </td>
+        </tr>
+        <tr>
+          <td><code>TaskExtensions.FireAndForget</code></td>
+          <td>拡張メソッド</td>
+          <td>
+            <code>Task</code> を破棄コンテキストで await し、任意の例外ハンドラーを受け取ります。
+            観測されない例外の発生を防ぎます。
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="content-section">
+    <h2>使い方</h2>
+
+    <h3>BindableBase —— プロパティの変更通知</h3>
+    <p>
+      ViewModel を <code>BindableBase</code> から派生させ、セッターの処理を <code>SetProperty</code> に通します。
+      内部で <code>EqualityComparer&lt;T&gt;.Default</code> により現在値と比較し、
+      実際に値が変わったときだけ <code>PropertyChanged</code> を発行するため、
+      不要な通知がバインディングに届きません。
+    </p>
+<pre><code>public class MainViewModel : BindableBase
+{
+    private string _userName = string.Empty;
+
+    public string UserName
+    {
+        get =&gt; _userName;
+        set =&gt; SetProperty(ref _userName, value);
+    }
+}</code></pre>
+
+    <p>
+      <code>Action</code> を受け取るオーバーロードは、値が変わったときにだけコールバックを実行します。
+      依存するコマンドや派生プロパティを更新したい場面で使えます。
+    </p>
+<pre><code>private int _quantity;
+
+public int Quantity
+{
+    get =&gt; _quantity;
+    set =&gt; SetProperty(ref _quantity, value, () =&gt; SubmitCommand.RaiseCanExecuteChanged());
+}</code></pre>
+
+    <p>
+      設定対象とは別のプロパティについて通知したい場合は、ラムダ式のオーバーロードを使うとリファクタリングに強くなります。
+      プロパティ名を変更しても通知先が自動的に追随するため、文字列リテラルで指定した場合のような修正漏れが起きません。
+    </p>
+<pre><code>set
+{
+    SetProperty(ref _firstName, value);
+    OnPropertyChanged(() =&gt; FullName);
+}</code></pre>
+
+    <h3>RelayCommand —— メソッドをボタンにバインドする</h3>
+    <p>
+      <code>RelayCommand</code> は実行処理のデリゲートと、任意の実行可否判定を受け取ります。
+      <code>CanExecute</code> が <code>false</code> を返している間、WPF がバインド先のコントロールを自動的に無効化します。
+    </p>
+<pre><code>public class MainViewModel : BindableBase
+{
+    private string _userName = string.Empty;
+
+    public RelayCommand SubmitCommand { get; }
+
+    public MainViewModel()
+    {
+        SubmitCommand = new RelayCommand(Submit, () =&gt; !string.IsNullOrEmpty(UserName));
+    }
+
+    public string UserName
+    {
+        get =&gt; _userName;
+        set =&gt; SetProperty(ref _userName, value, () =&gt; SubmitCommand.RaiseCanExecuteChanged());
+    }
+
+    private void Submit()
+    {
+        // ...
+    }
+}</code></pre>
+<pre><code>&lt;Button Content="送信" Command="{Binding SubmitCommand}" /&gt;</code></pre>
+    <p>
+      注意点として、<code>CanExecute</code> は自動では再評価されません。
+      判定が依存している状態が変化したタイミングで <code>RaiseCanExecuteChanged()</code> を呼ぶ必要があります。
+      前述の <code>SetProperty</code> のコールバック付きオーバーロードが、その呼び出し場所として使いやすい選択肢です。
+    </p>
+
+    <h3>RelayCommand&lt;T&gt; —— コマンドパラメーターを受け取る</h3>
+<pre><code>public RelayCommand&lt;Order&gt; DeleteCommand { get; }
+
+// コンストラクター内
+DeleteCommand = new RelayCommand&lt;Order&gt;(
+    order =&gt; Orders.Remove(order!),
+    order =&gt; order is not null);</code></pre>
+<pre><code>&lt;Button Content="削除"
+        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+        CommandParameter="{Binding}" /&gt;</code></pre>
+
+    <h3>AsyncRelayCommand —— 二重実行を防ぐ</h3>
+    <p>
+      非同期コマンドでよく起きる不具合が、1 回目の処理が終わる前にユーザーがボタンを続けて押してしまうケースです。
+      <code>AsyncRelayCommand</code> はタスクの実行中に <code>IsExecuting</code> を立て、
+      その間 <code>CanExecute</code> が <code>false</code> を返すため、処理が完了するまでボタンが自動的に無効になります。
+      ボタンの有効・無効を切り替えるだけであれば、ViewModel 側で実行中フラグを自前管理する必要はありません。
+    </p>
+    <p>
+      この仕組みが対象にしているのは、UI スレッド上で続けて呼び出されるケース、
+      つまりボタンにバインドしたコマンドで実際に起きる状況です。
+      排他制御の仕組みではありません。
+      <code>ExecuteAsync</code> は <code>CanExecute</code> の確認と <code>IsExecuting</code> の設定を
+      別々の手順として行うため、複数のスレッドから同時に呼び出すと、両方が確認を通過しえます。
+      複数スレッドから並行して実行する場合は、呼び出し側で同期を取ってください。
+    </p>
+    <p>
+      ボタンにバインドする前に知っておくべき挙動が 1 つあります。
+      クリック時に WPF が通る経路である <code>ICommand.Execute</code> は、
+      <code>ExecuteAsync(parameter).FireAndForget()</code> を<strong>ハンドラーを渡さずに</strong>呼び出します。
+      後述のとおり <code>FireAndForget</code> はハンドラーを省略すると例外を握り潰すため、
+      この経路では非同期処理で起きた失敗が何も表に出ないまま消えます。
+      コマンドに渡すデリゲートの内側で捕捉するか、
+      <code>ExecuteAsync</code> を自分で呼び、処理できる場所で await してください。
+    </p>
+<pre><code>LoadCommand = new AsyncRelayCommand(async () =&gt;
+{
+    try
+    {
+        Items = await _repository.GetItemsAsync();
+    }
+    catch (Exception ex)
+    {
+        _logger.Error(ex);
+    }
+});</code></pre>
+<pre><code>public AsyncRelayCommand LoadCommand { get; }
+
+// コンストラクター内
+LoadCommand = new AsyncRelayCommand(LoadAsync);
+
+private async Task LoadAsync()
+{
+    Items = await _repository.GetItemsAsync();
+}</code></pre>
+    <p>
+      進捗表示を切り替える場合、<code>LoadCommand.IsExecuting</code> へ直接バインドしては<strong>いけません</strong>。
+      このプロパティは値が変わったときに <code>CanExecuteChanged</code> を発行するだけで、
+      <code>PropertyChanged</code> は発行しません（コマンドのクラスは <code>INotifyPropertyChanged</code> を実装していません）。
+      そのためバインドは初回に評価されたきり更新されず、進捗表示は現れも消えもしません。
+      実行状態は、変更通知を発行する ViewModel のプロパティとして公開してください。
+    </p>
+<pre><code>private bool _isLoading;
+
+public bool IsLoading
+{
+    get =&gt; _isLoading;
+    private set =&gt; SetProperty(ref _isLoading, value);
+}
+
+private async Task LoadAsync()
+{
+    IsLoading = true;
+    try
+    {
+        Items = await _repository.GetItemsAsync();
+    }
+    finally
+    {
+        IsLoading = false;
+    }
+}</code></pre>
+<pre><code>&lt;ProgressBar IsIndeterminate="True"
+             Visibility="{Binding IsLoading,
+                          Converter={StaticResource BooleanToVisibilityConverter}}" /&gt;</code></pre>
+    <p>
+      <code>StaticResource</code> は XAML の読み込み時にキーを解決するため、
+      同じキーのコンバーターをあらかじめ定義しておく必要があります。
+      定義場所は <code>Window.Resources</code>、<code>App.xaml</code>、
+      あるいはマージする <code>ResourceDictionary</code> のいずれかです。
+      該当するリソースが存在しない場合、バインドが未設定のまま放置されるのではなく、XAML の読み込み自体が例外になります。
+    </p>
+<pre><code>&lt;Window.Resources&gt;
+    &lt;BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" /&gt;
+&lt;/Window.Resources&gt;</code></pre>
+    <p>
+      なお、ボタン自体の制御には <code>IsExecuting</code> がそのまま効きます。
+      <code>CanExecute</code> がこの値を参照しており、コマンドの仕組みが監視しているのは
+      <code>CanExecuteChanged</code> のほうであるため、バインド先のコントロールは自動で無効化・再有効化されます。
+    </p>
+
+    <h3>FireAndForget —— await せずにタスクを開始する</h3>
+    <p>
+      <code>Task</code> を返す非同期メソッドを await せずに呼び出すと、タスク内で発生した例外は
+      その <code>Task</code> に保持され、<code>Task</code> は faulted 状態のまま残ります。
+      失敗したその場で例外が表に出ることはありません。
+      そのタスクを await するか <code>Wait()</code> を呼べば呼び出し元に再スローされ、
+      <code>Exception</code> を読めば例外は投げられずに <code>AggregateException</code> として取得できますが、
+      戻り値を捨てる呼び出し方では、そのいずれも起きないためです。
+      なお <code>async void</code> のメソッドは別の話で、例外を保持する <code>Task</code> がなく、
+      呼び出し元のコンテキスト上で送出されます。
+    </p>
+    <p>
+      ただし、例外がそのまま握り潰されるわけではありません。
+      例外を保持している内部オブジェクトがファイナライズされる際に、ランタイムが
+      <code>TaskScheduler.UnobservedTaskException</code> を発生させます。
+      ファイナライザーを持つのは <code>Task</code> 自体ではなく、この内部オブジェクトの側です。
+      もっともこれは診断用の経路であって、エラー処理の代わりにはなりません。
+      発生するのはその内部オブジェクトのファイナライザーが動いたタイミングであり、
+      失敗から大きく遅れることも、プログラムの無関係な箇所で起きることもあります。
+      現行の .NET、および .NET Framework 4.5 以降では、ハンドラーが観測したかどうかに関わらず
+      プロセスはそのまま動き続けます。
+      .NET Framework では、構成ファイルで以前の動作に戻せます。
+    </p>
+<pre><code>&lt;configuration&gt;
+  &lt;runtime&gt;
+    &lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;
+  &lt;/runtime&gt;
+&lt;/configuration&gt;</code></pre>
+    <p>
+      このイベントは診断や記録のために購読しておく価値がありますが、購読は任意であり、
+      発生するタイミングも遅いため、ここで初めて表に出た時点では、
+      その処理に固有の対応を取れる段階を過ぎています。
+    </p>
+    <p>
+      <code>FireAndForget</code> は内部でタスクを await し、捕捉した例外を渡されたハンドラーに引き渡します。
+      これにより、失敗が起きたその場で観測されます。タスクが正常に完了した場合は何も行いません。
+    </p>
+<pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
+    <p>
+      使う前に知っておく必要のある性質が 2 つあります。
+      1 つは、ハンドラーが省略可能である点です。省略すると例外は報告されずに握り潰されるため、
+      失敗を捨てることが目的でない限り、必ず渡してください。
+      もう 1 つは、ハンドラーが <code>async void</code> メソッドの <code>catch</code> の中で実行される点です。
+      そのため、ハンドラー自身が投げた例外は捕捉されず、呼び出し元のコンテキストへ未処理例外として届きます。
+      ハンドラーの処理は、ログ出力のように例外を投げにくいものに留めてください。
+    </p>
+  </section>
+
+  <section class="content-section">
+    <h2>設計上の判断</h2>
     <ul>
       <li>
-        <strong>BindableBase</strong> — <code>INotifyPropertyChanged</code> を実装した抽象基底クラス。
-        コールバック付き <code>SetProperty</code> ヘルパーや、リファクタリングに強いラムダ式ベースの
-        <code>OnPropertyChanged</code> を提供します。
+        <strong><code>RaiseCanExecuteChanged</code> をインターフェース経由で公開している。</strong>
+        具象型の <code>RelayCommand</code> ではなく <code>IRaiseCanExecuteChanged</code> に依存させることで、
+        コマンドのプロパティを同期版と非同期版のあいだで差し替えても、実行可否を更新する側のコードに手を入れずに済みます。
       </li>
       <li>
-        <strong>RelayCommand / RelayCommand&lt;T&gt;</strong> — デリゲートで実行ロジックを委譲する軽量な
-        <code>ICommand</code> 実装。省略可能な <code>CanExecute</code> 述語をサポートし、
-        <code>IRaiseCanExecuteChanged</code> インターフェースを通じて <code>RaiseCanExecuteChanged</code> を公開します。
+        <strong>コマンドパラメーターの null を明示的に処理している。</strong>
+        <code>RelayCommand&lt;T&gt;</code> は渡された <code>CommandParameter</code> が null のとき、値型か参照型かを判別して処理します。
+        型チェックに失敗して何も起きない、という挙動になりません。
       </li>
       <li>
-        <strong>AsyncRelayCommand</strong> — 非同期対応の <code>ICommand</code>。
-        タスク実行中の並行実行を防止し、タスク実行中は <code>CanExecute</code> を自動的に更新します。
+        <strong>非同期の再入を <code>CanExecute</code> で遮断している。</strong>
+        実行中は <code>CanExecute</code> が <code>false</code> を返すため、
+        コマンドが呼び出しを受け付けたうえで内部的に破棄するのではなく、UI 側に実行中であることが自動的に反映されます。
+        <code>IsExecuting</code> の設定時には <code>CanExecuteChanged</code> を発行してバインド先を更新し、
+        <code>ExecuteAsync</code> も先頭で同じ条件を確認して、成り立たない場合は直ちに処理を終えます。
+        バインドを経由せず直接呼び出す場合はこちらが効きます。
       </li>
       <li>
-        <strong>TaskExtensions.FireAndForget</strong> — <code>Task</code> 向けの安全な fire-and-forget 拡張メソッド。
-        省略可能な例外ハンドラを受け取り、未観測タスク例外を防ぎます。
+        <strong>ソースジェネレーター・アナライザー・独自の属性を使っていない。</strong>
+        いずれも通常のクラスとして実装しており、使っている属性は
+        <code>SetProperty</code> と <code>OnPropertyChanged</code> の引数に付く <code>[CallerMemberName]</code> だけです。
+        そのため呼び出し箇所から挙動を追うことができ、
+        デバッグ時も生成された partial クラスではなく実際のコードにステップインできます。
       </li>
     </ul>
   </section>
@@ -83,8 +495,9 @@
   <section class="content-section">
     <h2>技術スタック</h2>
     <ul>
-      <li><strong>言語：</strong> C#（最新バージョン）</li>
-      <li><strong>ターゲットフレームワーク：</strong> .NET 10、.NET 8、.NET Framework 4.7.2</li>
+      <li><strong>言語：</strong> C#（latest）</li>
+      <li><strong>ターゲットフレームワーク：</strong> .NET 10 / .NET 8 / .NET Framework 4.7.2</li>
+      <li><strong>依存関係：</strong> 実行時の依存関係なし。net472 のビルドに使う参照が 1 つあるが、利用側へは伝播しない</li>
       <li><strong>ライセンス：</strong> MIT</li>
     </ul>
   </section>
@@ -92,11 +505,11 @@
   <section class="content-section">
     <h2>リポジトリ</h2>
     <p>
-      ソースコードおよびイシュートラッキングは GitHub にて公開しています：
+      ソースコード、サンプルアプリケーション、Issue は GitHub で公開しています。
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/Xaml.ExtensionPack" target="_blank" rel="noopener noreferrer" class="github-link">
-        GitHub リポジトリを見る — Xaml.ExtensionPack
+        GitHub リポジトリを見る —— Xaml.ExtensionPack
       </a>
     </p>
   </section>
