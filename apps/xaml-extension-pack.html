@@ -30,8 +30,9 @@
     <h2>Overview</h2>
     <p>
       Xaml.ExtensionPack is a small library designed to eliminate boilerplate in WPF/XAML application development.
-      It ships the four things almost every MVVM application ends up writing by hand — a change-notification base class,
-      a synchronous command, an async command, and a safe fire-and-forget helper — and nothing else.
+      Its four building blocks are the things almost every MVVM application ends up writing by hand — a
+      change-notification base class, a synchronous command, an async command, and a safe fire-and-forget helper —
+      alongside the small interfaces those commands are exposed through.
     </p>
     <p>
       The package brings <strong>no third-party dependencies into your project</strong>. Adding it does not pull
@@ -122,6 +123,12 @@
       usable — and 4.7.2 is the version Microsoft recommends for that combination, the earlier ones having known
       issues with it. What rules a library out is shipping no <code>net472</code>-compatible asset at all, which is
       what happens once a package targets modern .NET exclusively.
+    </p>
+    <p>
+      That is the general rule for <code>netstandard2.0</code> libraries, and it is worth separating from what this
+      one offers. Xaml.ExtensionPack ships no <code>netstandard2.0</code> asset: its .NET Framework support is the
+      <code>net472</code> target specifically. A project on 4.6.1 through 4.7.1 will not pick that asset up, so
+      4.7.2 is the floor here rather than a recommendation.
     </p>
     <p>
       Xaml.ExtensionPack multi-targets <code>net10.0</code>, <code>net8.0</code>, and <code>net472</code> from a
@@ -310,6 +317,24 @@ DeleteCommand = new RelayCommand&lt;Order&gt;(
       and then sets <code>IsExecuting</code> as two separate steps, so two threads calling it at the same moment can
       both pass the check. Driving the command from several threads at once needs synchronization of your own.
     </p>
+    <p>
+      One behavior to know before wiring a command to a button: <code>ICommand.Execute</code> — the path WPF takes
+      on a click — runs <code>ExecuteAsync(parameter).FireAndForget()</code> with no handler argument. As described
+      below, <code>FireAndForget</code> without a handler swallows the exception, so a failure inside the async
+      operation disappears silently on that path. Catch inside the delegate you hand to the command, or call
+      <code>ExecuteAsync</code> yourself and await it somewhere you can handle the failure:
+    </p>
+<pre><code>LoadCommand = new AsyncRelayCommand(async () =&gt;
+{
+    try
+    {
+        Items = await _repository.GetItemsAsync();
+    }
+    catch (Exception ex)
+    {
+        _logger.Error(ex);
+    }
+});</code></pre>
 <pre><code>public AsyncRelayCommand LoadCommand { get; }
 
 // in the constructor
@@ -377,13 +402,20 @@ private async Task LoadAsync()
       The exception is not discarded outright. When the internal object holding it is finalized — the
       <code>Task</code> itself has no finalizer — the runtime raises
       <code>TaskScheduler.UnobservedTaskException</code>. That is a diagnostic channel rather than error handling:
-      it fires whenever garbage collection happens to reach the task, which can be long after the failure and in an
+      it fires whenever that object's finalizer happens to run, which can be long after the failure and in an
       unrelated part of the program. On modern .NET, and on .NET Framework since 4.5, the process then keeps running
-      whether or not a handler observed the exception; .NET Framework can restore the older terminate-on-unobserved
-      behavior with <code>&lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;</code> in the application
-      configuration file. Subscribing to the event is worth doing for telemetry, but it is an optional subscription
-      and it fires late: a failure that only reaches it has already passed the point where anything specific to the
-      operation could respond.
+      whether or not a handler observed the exception. .NET Framework can restore the older terminate-on-unobserved
+      behavior through the application configuration file:
+    </p>
+<pre><code>&lt;configuration&gt;
+  &lt;runtime&gt;
+    &lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;
+  &lt;/runtime&gt;
+&lt;/configuration&gt;</code></pre>
+    <p>
+      Subscribing to the event is worth doing for telemetry, but it is an optional subscription and it arrives late:
+      a failure that only reaches it has already passed the point where anything specific to the operation could
+      respond.
     </p>
     <p>
       <code>FireAndForget</code> awaits the task internally and passes the caught exception to the handler you

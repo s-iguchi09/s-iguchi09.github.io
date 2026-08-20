@@ -30,8 +30,9 @@
     <h2>概要</h2>
     <p>
       Xaml.ExtensionPack は、WPF / XAML アプリケーション開発で繰り返し書くことになる定型コードを削減するための小さなライブラリです。
-      MVVM アプリケーションでほぼ必ず自前実装することになる 4 つ ——
-      変更通知の基底クラス、同期コマンド、非同期コマンド、安全な fire-and-forget ヘルパー —— のみを提供します。
+      中核となるのは、MVVM アプリケーションでほぼ必ず自前実装することになる 4 つ ——
+      変更通知の基底クラス、同期コマンド、非同期コマンド、安全な fire-and-forget ヘルパー —— で、
+      これらのコマンドを公開するための小さなインターフェイスが付属します。
     </p>
     <p>
       このライブラリは<strong>利用側のプロジェクトにサードパーティ製の依存関係を持ち込みません</strong>。
@@ -138,6 +139,14 @@
       それより前のバージョンには既知の問題があります。
       使えなくなるのは <code>net472</code> と互換なアセットを一切持たない場合、
       つまりモダン .NET だけを対象にしたパッケージです。
+    </p>
+    <p>
+      ここまでは <code>netstandard2.0</code> のライブラリ一般の話で、
+      本ライブラリが提供する互換性とは分けて考える必要があります。
+      Xaml.ExtensionPack は <code>netstandard2.0</code> のアセットを同梱しておらず、
+      .NET Framework 向けには <code>net472</code> を対象としています。
+      そのため 4.6.1 から 4.7.1 のプロジェクトではこのアセットが選択されません。
+      本ライブラリに関しては、4.7.2 は推奨ではなく下限です。
     </p>
     <p>
       Xaml.ExtensionPack は単一パッケージで <code>net10.0</code> / <code>net8.0</code> / <code>net472</code> を
@@ -329,6 +338,26 @@ DeleteCommand = new RelayCommand&lt;Order&gt;(
       別々の手順として行うため、複数のスレッドから同時に呼び出すと、両方が確認を通過しえます。
       複数スレッドから並行して実行する場合は、呼び出し側で同期を取ってください。
     </p>
+    <p>
+      ボタンにバインドする前に知っておくべき挙動が 1 つあります。
+      クリック時に WPF が通る経路である <code>ICommand.Execute</code> は、
+      <code>ExecuteAsync(parameter).FireAndForget()</code> を<strong>ハンドラーを渡さずに</strong>呼び出します。
+      後述のとおり <code>FireAndForget</code> はハンドラーを省略すると例外を握り潰すため、
+      この経路では非同期処理で起きた失敗が何も表に出ないまま消えます。
+      コマンドに渡すデリゲートの内側で捕捉するか、
+      <code>ExecuteAsync</code> を自分で呼び、処理できる場所で await してください。
+    </p>
+<pre><code>LoadCommand = new AsyncRelayCommand(async () =&gt;
+{
+    try
+    {
+        Items = await _repository.GetItemsAsync();
+    }
+    catch (Exception ex)
+    {
+        _logger.Error(ex);
+    }
+});</code></pre>
 <pre><code>public AsyncRelayCommand LoadCommand { get; }
 
 // コンストラクター内
@@ -401,13 +430,18 @@ private async Task LoadAsync()
       <code>TaskScheduler.UnobservedTaskException</code> を発生させます。
       ファイナライザーを持つのは <code>Task</code> 自体ではなく、この内部オブジェクトの側です。
       もっともこれは診断用の経路であって、エラー処理の代わりにはなりません。
-      発生するのは GC がそのタスクを回収したタイミングであり、
+      発生するのはその内部オブジェクトのファイナライザーが動いたタイミングであり、
       失敗から大きく遅れることも、プログラムの無関係な箇所で起きることもあります。
       現行の .NET、および .NET Framework 4.5 以降では、ハンドラーが観測したかどうかに関わらず
       プロセスはそのまま動き続けます。
-      .NET Framework では、構成ファイルに
-      <code>&lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;</code> を指定することで、
-      プロセスを終了する以前の動作に戻せます。
+      .NET Framework では、構成ファイルで以前の動作に戻せます。
+    </p>
+<pre><code>&lt;configuration&gt;
+  &lt;runtime&gt;
+    &lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;
+  &lt;/runtime&gt;
+&lt;/configuration&gt;</code></pre>
+    <p>
       このイベントは診断や記録のために購読しておく価値がありますが、購読は任意であり、
       発生するタイミングも遅いため、ここで初めて表に出た時点では、
       その処理に固有の対応を取れる段階を過ぎています。
