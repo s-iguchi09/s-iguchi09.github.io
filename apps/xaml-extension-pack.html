@@ -71,15 +71,20 @@
       <a href="https://learn.microsoft.com/nuget/consume-packages/package-source-mapping" target="_blank" rel="noopener noreferrer">Package Source Mapping</a>
       in <code>nuget.config</code>. Once that section exists, every package in the project — transitive ones
       included — has to match a pattern, which is what the <code>*</code> entry covers. The keys under
-      <code>packageSourceMapping</code> refer back to the sources declared in <code>packageSources</code>:
+      <code>packageSourceMapping</code> refer back to the sources declared in <code>packageSources</code>.
+      The <code>&lt;clear /&gt;</code> entries matter: NuGet walks up the directory tree and merges collection
+      elements from every <code>nuget.config</code> it finds, plus the user- and machine-level ones, so without them
+      an inherited source or an inherited mapping for the same ID would still be in play:
     </p>
 <pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;configuration&gt;
   &lt;packageSources&gt;
+    &lt;clear /&gt;
     &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" /&gt;
     &lt;add key="xaml-extensionpack-local" value="./local-feed" /&gt;
   &lt;/packageSources&gt;
   &lt;packageSourceMapping&gt;
+    &lt;clear /&gt;
     &lt;packageSource key="xaml-extensionpack-local"&gt;
       &lt;package pattern="Xaml.ExtensionPack" /&gt;
     &lt;/packageSource&gt;

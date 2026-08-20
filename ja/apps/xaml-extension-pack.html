@@ -78,14 +78,20 @@
       このセクションを定義すると、推移的な依存を含むプロジェクト内のすべてのパッケージがいずれかのパターンに
       一致している必要があります。下の例の <code>*</code> がその受け皿です。
       <code>packageSourceMapping</code> の各キーは、<code>packageSources</code> で宣言したソースを指します。
+      <code>&lt;clear /&gt;</code> は省略できません。
+      NuGet はディレクトリをさかのぼって見つけたすべての <code>nuget.config</code> に加え、
+      ユーザー単位・マシン単位の設定についても、コレクション要素を結合して適用します。
+      <code>&lt;clear /&gt;</code> がないと、継承されたソースや、同じ ID に対する継承されたマッピングが残ってしまいます。
     </p>
 <pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;configuration&gt;
   &lt;packageSources&gt;
+    &lt;clear /&gt;
     &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" /&gt;
     &lt;add key="xaml-extensionpack-local" value="./local-feed" /&gt;
   &lt;/packageSources&gt;
   &lt;packageSourceMapping&gt;
+    &lt;clear /&gt;
     &lt;packageSource key="xaml-extensionpack-local"&gt;
       &lt;package pattern="Xaml.ExtensionPack" /&gt;
     &lt;/packageSource&gt;
