@@ -374,7 +374,8 @@ private async Task LoadAsync()
       the exception, which is raised on the calling context instead.
     </p>
     <p>
-      The exception is not discarded outright. When the faulted task is finalized, the runtime raises
+      The exception is not discarded outright. When the internal object holding it is finalized — the
+      <code>Task</code> itself has no finalizer — the runtime raises
       <code>TaskScheduler.UnobservedTaskException</code>. That is a diagnostic channel rather than error handling:
       it fires whenever garbage collection happens to reach the task, which can be long after the failure and in an
       unrelated part of the program. On modern .NET, and on .NET Framework since 4.5, the process then keeps running
