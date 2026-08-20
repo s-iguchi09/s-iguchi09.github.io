@@ -8,7 +8,7 @@
   <title>Xaml.ExtensionPack | WPF MVVM Extension Library</title>
   {% include head.html %}
 
-  <meta name="description" content="A lightweight, dependency-free XAML extension library for WPF. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) with usage examples for each type.">
+  <meta name="description" content="A lightweight XAML extension library for WPF that adds no runtime dependencies. Provides MVVM foundations (BindableBase, RelayCommand, AsyncRelayCommand) with usage examples for each type.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,7 +21,7 @@
   <section class="hero">
     <h1>Xaml.ExtensionPack</h1>
     <p>
-      A lightweight, dependency-free XAML extension library for WPF.
+      A lightweight XAML extension library for WPF that adds no runtime dependencies.
       Provides essential MVVM foundations as a single small library.
     </p>
   </section>
@@ -49,35 +49,45 @@
   <section class="content-section">
     <h2>Installation</h2>
     <p>
-      The project is set up to build a NuGet package, but it is <strong>not published to NuGet.org yet</strong>,
-      so <code>dotnet add package</code> will not resolve it. Until it is published, clone the repository and
-      reference the project directly:
+      The project is set up to build a NuGet package, but it is <strong>not published to NuGet.org yet</strong>.
+      If NuGet.org is the only source configured, <code>dotnet add package</code> has nothing to resolve against;
+      a local or private feed that holds the package works normally. With no such feed available, clone the
+      repository and reference the project directly:
     </p>
 <pre><code>git clone https://github.com/s-iguchi09/Xaml.ExtensionPack.git</code></pre>
 <pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
     <p>
       Alternatively, pack it locally and consume it from a local feed. Build the package into a directory,
-      register that directory as a NuGet source, then add the package as usual:
+      register that directory as a NuGet source, then add the package by exact version. The project file does not
+      set a version, so <code>dotnet pack</code> produces <code>1.0.0</code>:
     </p>
 <pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
 <pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
-<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --version 1.0.0 --source ./local-feed</code></pre>
     <p>
-      Name the source explicitly rather than letting the command search every configured feed. This package ID is
-      unclaimed on NuGet.org, so an unqualified lookup could resolve to whatever someone else publishes under that
-      name later. For an ongoing setup, pin the ID to the local feed with
+      Both the source and the version are worth naming explicitly. This package ID is unclaimed on NuGet.org, so an
+      unqualified lookup could resolve to whatever someone else publishes under that name later, and leaving the
+      version open lets a higher one win once that happens. For an ongoing setup, pin the ID to the local feed with
       <a href="https://learn.microsoft.com/nuget/consume-packages/package-source-mapping" target="_blank" rel="noopener noreferrer">Package Source Mapping</a>
       in <code>nuget.config</code>. Once that section exists, every package in the project — transitive ones
-      included — has to match a pattern, which is what the <code>*</code> entry below covers:
+      included — has to match a pattern, which is what the <code>*</code> entry covers. The keys under
+      <code>packageSourceMapping</code> refer back to the sources declared in <code>packageSources</code>:
     </p>
-<pre><code>&lt;packageSourceMapping&gt;
-  &lt;packageSource key="xaml-extensionpack-local"&gt;
-    &lt;package pattern="Xaml.ExtensionPack" /&gt;
-  &lt;/packageSource&gt;
-  &lt;packageSource key="nuget.org"&gt;
-    &lt;package pattern="*" /&gt;
-  &lt;/packageSource&gt;
-&lt;/packageSourceMapping&gt;</code></pre>
+<pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration&gt;
+  &lt;packageSources&gt;
+    &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" /&gt;
+    &lt;add key="xaml-extensionpack-local" value="./local-feed" /&gt;
+  &lt;/packageSources&gt;
+  &lt;packageSourceMapping&gt;
+    &lt;packageSource key="xaml-extensionpack-local"&gt;
+      &lt;package pattern="Xaml.ExtensionPack" /&gt;
+    &lt;/packageSource&gt;
+    &lt;packageSource key="nuget.org"&gt;
+      &lt;package pattern="*" /&gt;
+    &lt;/packageSource&gt;
+  &lt;/packageSourceMapping&gt;
+&lt;/configuration&gt;</code></pre>
     <p>
       Source mapping governs where restore downloads from. It does not stop <code>dotnet add package</code> from
       querying other sources for metadata, which is the other reason to pass <code>--source</code>.
@@ -99,8 +109,9 @@
       There is also a practical constraint that narrows the field: line-of-business WPF applications frequently
       still target .NET Framework 4.7.2. An explicit <code>net472</code> target is not what decides this — .NET
       Framework 4.6.1 and later consume <code>netstandard2.0</code> assets, so a toolkit that ships one remains
-      usable. What rules a library out is shipping no <code>net472</code>-compatible asset at all, which is what
-      happens once a package targets modern .NET exclusively.
+      usable — and 4.7.2 is the version Microsoft recommends for that combination, the earlier ones having known
+      issues with it. What rules a library out is shipping no <code>net472</code>-compatible asset at all, which is
+      what happens once a package targets modern .NET exclusively.
     </p>
     <p>
       Xaml.ExtensionPack multi-targets <code>net10.0</code>, <code>net8.0</code>, and <code>net472</code> from a
@@ -238,11 +249,19 @@ public int Quantity
     </p>
 <pre><code>public class MainViewModel : BindableBase
 {
+    private string _userName = string.Empty;
+
     public RelayCommand SubmitCommand { get; }
 
     public MainViewModel()
     {
         SubmitCommand = new RelayCommand(Submit, () =&gt; !string.IsNullOrEmpty(UserName));
+    }
+
+    public string UserName
+    {
+        get =&gt; _userName;
+        set =&gt; SetProperty(ref _userName, value, () =&gt; SubmitCommand.RaiseCanExecuteChanged());
     }
 
     private void Submit()
@@ -273,7 +292,13 @@ DeleteCommand = new RelayCommand&lt;Order&gt;(
       The common failure mode for an async command is the user clicking the button twice before the first
       operation finishes. <code>AsyncRelayCommand</code> sets <code>IsExecuting</code> for the duration of the task
       and returns <code>false</code> from <code>CanExecute</code> while it is set, so the button disables itself
-      until the work completes — no manual flag handling in the view model.
+      until the work completes — for the button's enabled state, nothing has to be tracked in the view model.
+    </p>
+    <p>
+      The guard covers invocations arriving one after another on the UI thread, which is what a command bound to a
+      button produces. It is not a concurrency primitive: <code>ExecuteAsync</code> checks <code>CanExecute</code>
+      and then sets <code>IsExecuting</code> as two separate steps, so two threads calling it at the same moment can
+      both pass the check. Driving the command from several threads at once needs synchronization of your own.
     </p>
 <pre><code>public AsyncRelayCommand LoadCommand { get; }
 
@@ -331,10 +356,12 @@ private async Task LoadAsync()
 
     <h3>FireAndForget — starting a task without awaiting it</h3>
     <p>
-      Calling an async method without awaiting it leaves any exception captured inside the returned
-      <code>Task</code>, which is left in a faulted state. Nothing surfaces it where it happened: awaiting the task,
-      calling <code>Wait()</code>, or reading <code>Exception</code> would, and a call site that simply discards the
-      result does none of them.
+      Calling a <code>Task</code>-returning async method without awaiting it leaves any exception captured inside
+      that <code>Task</code>, which is left in a faulted state. Nothing surfaces it where it happened: awaiting the
+      task or calling <code>Wait()</code> would rethrow it to the caller, and reading <code>Exception</code> would
+      hand back the <code>AggregateException</code> without throwing, but a call site that simply discards the
+      result does none of the three. An <code>async void</code> method is a separate case — it has no task to hold
+      the exception, which is raised on the calling context instead.
     </p>
     <p>
       The exception is not discarded outright. When the faulted task is finalized, the runtime raises
@@ -343,13 +370,22 @@ private async Task LoadAsync()
       unrelated part of the program. On modern .NET, and on .NET Framework since 4.5, the process then keeps running
       whether or not a handler observed the exception; .NET Framework can restore the older terminate-on-unobserved
       behavior with <code>&lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;</code> in the application
-      configuration file. Either way, a failure that only shows up there has already gone unhandled.
+      configuration file. Subscribing to the event is worth doing for telemetry, but it is an optional subscription
+      and it fires late: a failure that only reaches it has already passed the point where anything specific to the
+      operation could respond.
     </p>
     <p>
       <code>FireAndForget</code> awaits the task internally and passes the caught exception to the handler you
-      supply, so the failure is observed at the point it occurs:
+      supply, so the failure is observed where it occurs. A task that completes successfully does nothing further:
     </p>
 <pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
+    <p>
+      Two things about the helper are worth knowing before relying on it. The handler is optional, and leaving it
+      out swallows the exception entirely instead of reporting it, so pass one unless discarding failures is the
+      intent. And the handler runs inside the <code>catch</code> block of an <code>async void</code> method, which
+      means an exception thrown by the handler itself is not caught — it reaches the calling context unhandled.
+      Keep the handler to logging, or something equally unlikely to throw.
+    </p>
   </section>
 
   <section class="content-section">
@@ -367,14 +403,18 @@ private async Task LoadAsync()
         <code>CommandParameter</code> is null, instead of failing the type check and silently doing nothing.
       </li>
       <li>
-        <strong>Async execution is guarded in <code>CanExecute</code>, not in the body.</strong>
-        Because re-entry is blocked by <code>CanExecute</code> returning <code>false</code>, the UI reflects the
-        busy state automatically rather than the command accepting the invocation and discarding it.
+        <strong>Async re-entry is guarded through <code>CanExecute</code>.</strong>
+        <code>CanExecute</code> returns <code>false</code> while the command is running, so the UI reflects the busy
+        state on its own rather than the command accepting the invocation and discarding it. Setting
+        <code>IsExecuting</code> raises <code>CanExecuteChanged</code> so bound controls refresh, and
+        <code>ExecuteAsync</code> re-checks the same condition on entry and returns immediately when it no longer
+        holds, which covers callers that invoke it directly instead of through the binding.
       </li>
       <li>
-        <strong>No source generators, no analyzers, no attributes.</strong>
-        The types are ordinary classes, so behavior is visible at the call site and debugging steps into
-        real code rather than generated partials.
+        <strong>No source generators, no analyzers, no custom attributes.</strong>
+        The types are ordinary classes — the only attribute in play is <code>[CallerMemberName]</code> on the
+        <code>SetProperty</code> and <code>OnPropertyChanged</code> parameters — so behavior is visible at the call
+        site and debugging steps into real code rather than generated partials.
       </li>
     </ul>
   </section>

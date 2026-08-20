@@ -8,7 +8,7 @@
   <title>Xaml.ExtensionPack | WPF 向け MVVM 拡張ライブラリ</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリです。BindableBase、RelayCommand、AsyncRelayCommand といった MVVM の土台を提供する小さなライブラリです。各機能の使用例も掲載しています。">
+  <meta name="description" content="WPF 向けの軽量な XAML 拡張ライブラリです。利用側に実行時の依存関係を追加しません。BindableBase、RelayCommand、AsyncRelayCommand といった MVVM の土台を提供する小さなライブラリです。各機能の使用例も掲載しています。">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,7 +21,7 @@
   <section class="hero">
     <h1>Xaml.ExtensionPack</h1>
     <p>
-      WPF 向けの軽量・依存関係なしの XAML 拡張ライブラリです。
+      WPF 向けの軽量な XAML 拡張ライブラリです。利用側に実行時の依存関係を追加しません。
       MVVM の土台となる機能を、単一の小さなライブラリとして提供します。
     </p>
   </section>
@@ -51,37 +51,49 @@
     <h2>インストール</h2>
     <p>
       本プロジェクトは NuGet パッケージを生成する構成になっていますが、
-      <strong>NuGet.org へはまだ公開していません</strong>。そのため <code>dotnet add package</code> では解決できません。
-      公開までは、リポジトリをクローンしてプロジェクトを直接参照してください。
+      <strong>NuGet.org へはまだ公開していません</strong>。
+      NuGet.org だけをソースにしている場合、<code>dotnet add package</code> には解決先がありません。
+      パッケージを置いたローカルフィードやプライベートフィードが設定済みであれば、通常どおり解決できます。
+      利用できるフィードがない場合は、リポジトリをクローンしてプロジェクトを直接参照してください。
     </p>
 <pre><code>git clone https://github.com/s-iguchi09/Xaml.ExtensionPack.git</code></pre>
 <pre><code>dotnet add YourApp.csproj reference path/to/Xaml.ExtensionPack/src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj</code></pre>
     <p>
       ローカルでパックし、ローカルフィードから参照する方法もあります。
       パッケージを任意のディレクトリへ出力し、そのディレクトリを NuGet のソースとして登録したうえで、
-      通常どおりパッケージを追加します。
+      バージョンを明示してパッケージを追加します。
+      プロジェクトファイルでバージョンを指定していないため、<code>dotnet pack</code> の出力は <code>1.0.0</code> になります。
     </p>
 <pre><code>dotnet pack src/Xaml.ExtensionPack/Xaml.ExtensionPack.csproj -c Release -o ./local-feed</code></pre>
 <pre><code>dotnet nuget add source ./local-feed --name xaml-extensionpack-local</code></pre>
-<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --source ./local-feed</code></pre>
+<pre><code>dotnet add YourApp.csproj package Xaml.ExtensionPack --version 1.0.0 --source ./local-feed</code></pre>
     <p>
-      設定済みのすべてのフィードを検索させるのではなく、ソースを明示してください。
+      ソースとバージョンは、どちらも明示しておく価値があります。
       このパッケージ ID は NuGet.org で取得されていないため、ソースを指定しないと、
-      将来だれかが同じ名前で公開したパッケージを引いてしまう可能性があります。
+      将来だれかが同じ名前で公開したパッケージを引いてしまう可能性があり、
+      バージョンを固定していないと、そうなったときに大きい方が選ばれてしまいます。
       継続的に使う場合は、<code>nuget.config</code> の
       <a href="https://learn.microsoft.com/nuget/consume-packages/package-source-mapping" target="_blank" rel="noopener noreferrer">Package Source Mapping</a>
       で ID をローカルフィードに固定します。
       このセクションを定義すると、推移的な依存を含むプロジェクト内のすべてのパッケージがいずれかのパターンに
       一致している必要があります。下の例の <code>*</code> がその受け皿です。
+      <code>packageSourceMapping</code> の各キーは、<code>packageSources</code> で宣言したソースを指します。
     </p>
-<pre><code>&lt;packageSourceMapping&gt;
-  &lt;packageSource key="xaml-extensionpack-local"&gt;
-    &lt;package pattern="Xaml.ExtensionPack" /&gt;
-  &lt;/packageSource&gt;
-  &lt;packageSource key="nuget.org"&gt;
-    &lt;package pattern="*" /&gt;
-  &lt;/packageSource&gt;
-&lt;/packageSourceMapping&gt;</code></pre>
+<pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;configuration&gt;
+  &lt;packageSources&gt;
+    &lt;add key="nuget.org" value="https://api.nuget.org/v3/index.json" /&gt;
+    &lt;add key="xaml-extensionpack-local" value="./local-feed" /&gt;
+  &lt;/packageSources&gt;
+  &lt;packageSourceMapping&gt;
+    &lt;packageSource key="xaml-extensionpack-local"&gt;
+      &lt;package pattern="Xaml.ExtensionPack" /&gt;
+    &lt;/packageSource&gt;
+    &lt;packageSource key="nuget.org"&gt;
+      &lt;package pattern="*" /&gt;
+    &lt;/packageSource&gt;
+  &lt;/packageSourceMapping&gt;
+&lt;/configuration&gt;</code></pre>
     <p>
       Package Source Mapping が効くのは restore がパッケージをダウンロードするときです。
       <code>dotnet add package</code> が他のソースへメタデータを問い合わせること自体は止まらないため、
@@ -108,6 +120,8 @@
       ただし、ここで効くのは <code>net472</code> を明示的に対象にしているかどうかではありません。
       .NET Framework 4.6.1 以降は <code>netstandard2.0</code> 向けのアセットを利用できるため、
       それを同梱しているツールキットは引き続き使えます。
+      なお、この組み合わせについて Microsoft が推奨しているのは 4.7.2 以降です。
+      それより前のバージョンには既知の問題があります。
       使えなくなるのは <code>net472</code> と互換なアセットを一切持たない場合、
       つまりモダン .NET だけを対象にしたパッケージです。
     </p>
@@ -248,11 +262,19 @@ public int Quantity
     </p>
 <pre><code>public class MainViewModel : BindableBase
 {
+    private string _userName = string.Empty;
+
     public RelayCommand SubmitCommand { get; }
 
     public MainViewModel()
     {
         SubmitCommand = new RelayCommand(Submit, () =&gt; !string.IsNullOrEmpty(UserName));
+    }
+
+    public string UserName
+    {
+        get =&gt; _userName;
+        set =&gt; SetProperty(ref _userName, value, () =&gt; SubmitCommand.RaiseCanExecuteChanged());
     }
 
     private void Submit()
@@ -283,7 +305,15 @@ DeleteCommand = new RelayCommand&lt;Order&gt;(
       非同期コマンドでよく起きる不具合が、1 回目の処理が終わる前にユーザーがボタンを続けて押してしまうケースです。
       <code>AsyncRelayCommand</code> はタスクの実行中に <code>IsExecuting</code> を立て、
       その間 <code>CanExecute</code> が <code>false</code> を返すため、処理が完了するまでボタンが自動的に無効になります。
-      ViewModel 側で実行中フラグを自前管理する必要はありません。
+      ボタンの有効・無効を切り替えるだけであれば、ViewModel 側で実行中フラグを自前管理する必要はありません。
+    </p>
+    <p>
+      この仕組みが対象にしているのは、UI スレッド上で続けて呼び出されるケース、
+      つまりボタンにバインドしたコマンドで実際に起きる状況です。
+      排他制御の仕組みではありません。
+      <code>ExecuteAsync</code> は <code>CanExecute</code> の確認と <code>IsExecuting</code> の設定を
+      別々の手順として行うため、複数のスレッドから同時に呼び出すと、両方が確認を通過しえます。
+      複数スレッドから並行して実行する場合は、呼び出し側で同期を取ってください。
     </p>
 <pre><code>public AsyncRelayCommand LoadCommand { get; }
 
@@ -342,11 +372,14 @@ private async Task LoadAsync()
 
     <h3>FireAndForget —— await せずにタスクを開始する</h3>
     <p>
-      非同期メソッドを await せずに呼び出すと、タスク内で発生した例外は戻り値の <code>Task</code> に保持され、
-      その <code>Task</code> は faulted 状態のまま残ります。
+      <code>Task</code> を返す非同期メソッドを await せずに呼び出すと、タスク内で発生した例外は
+      その <code>Task</code> に保持され、<code>Task</code> は faulted 状態のまま残ります。
       失敗したその場で例外が表に出ることはありません。
-      そのタスクを await するか、<code>Wait()</code> を呼ぶか、<code>Exception</code> を読めば表に出ますが、
+      そのタスクを await するか <code>Wait()</code> を呼べば呼び出し元に再スローされ、
+      <code>Exception</code> を読めば例外は投げられずに <code>AggregateException</code> として取得できますが、
       戻り値を捨てる呼び出し方では、そのいずれも起きないためです。
+      なお <code>async void</code> のメソッドは別の話で、例外を保持する <code>Task</code> がなく、
+      呼び出し元のコンテキスト上で送出されます。
     </p>
     <p>
       ただし、例外がそのまま握り潰されるわけではありません。
@@ -360,13 +393,23 @@ private async Task LoadAsync()
       .NET Framework では、構成ファイルに
       <code>&lt;ThrowUnobservedTaskExceptions enabled="true"/&gt;</code> を指定することで、
       プロセスを終了する以前の動作に戻せます。
-      いずれにせよ、ここで初めて表に出た時点で、その失敗は処理されないまま終わっています。
+      このイベントは診断や記録のために購読しておく価値がありますが、購読は任意であり、
+      発生するタイミングも遅いため、ここで初めて表に出た時点では、
+      その処理に固有の対応を取れる段階を過ぎています。
     </p>
     <p>
       <code>FireAndForget</code> は内部でタスクを await し、捕捉した例外を渡されたハンドラーに引き渡します。
-      これにより、失敗が起きたその場で観測されます。
+      これにより、失敗が起きたその場で観測されます。タスクが正常に完了した場合は何も行いません。
     </p>
 <pre><code>_notifier.SendAsync(message).FireAndForget(ex =&gt; _logger.Error(ex));</code></pre>
+    <p>
+      使う前に知っておく必要のある性質が 2 つあります。
+      1 つは、ハンドラーが省略可能である点です。省略すると例外は報告されずに握り潰されるため、
+      失敗を捨てることが目的でない限り、必ず渡してください。
+      もう 1 つは、ハンドラーが <code>async void</code> メソッドの <code>catch</code> の中で実行される点です。
+      そのため、ハンドラー自身が投げた例外は捕捉されず、呼び出し元のコンテキストへ未処理例外として届きます。
+      ハンドラーの処理は、ログ出力のように例外を投げにくいものに留めてください。
+    </p>
   </section>
 
   <section class="content-section">
@@ -383,13 +426,18 @@ private async Task LoadAsync()
         型チェックに失敗して何も起きない、という挙動になりません。
       </li>
       <li>
-        <strong>非同期の実行制御を本体ではなく <code>CanExecute</code> 側で行っている。</strong>
-        再入を <code>CanExecute</code> の <code>false</code> で遮断しているため、
+        <strong>非同期の再入を <code>CanExecute</code> で遮断している。</strong>
+        実行中は <code>CanExecute</code> が <code>false</code> を返すため、
         コマンドが呼び出しを受け付けたうえで内部的に破棄するのではなく、UI 側に実行中であることが自動的に反映されます。
+        <code>IsExecuting</code> の設定時には <code>CanExecuteChanged</code> を発行してバインド先を更新し、
+        <code>ExecuteAsync</code> も先頭で同じ条件を確認して、成り立たない場合は直ちに処理を終えます。
+        バインドを経由せず直接呼び出す場合はこちらが効きます。
       </li>
       <li>
-        <strong>ソースジェネレーター・アナライザー・属性を使っていない。</strong>
-        いずれも通常のクラスとして実装しているため、呼び出し箇所から挙動を追うことができ、
+        <strong>ソースジェネレーター・アナライザー・独自の属性を使っていない。</strong>
+        いずれも通常のクラスとして実装しており、使っている属性は
+        <code>SetProperty</code> と <code>OnPropertyChanged</code> の引数に付く <code>[CallerMemberName]</code> だけです。
+        そのため呼び出し箇所から挙動を追うことができ、
         デバッグ時も生成された partial クラスではなく実際のコードにステップインできます。
       </li>
     </ul>
