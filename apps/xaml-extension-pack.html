@@ -72,9 +72,11 @@
       in <code>nuget.config</code>. Once that section exists, every package in the project — transitive ones
       included — has to match a pattern, which is what the <code>*</code> entry covers. The keys under
       <code>packageSourceMapping</code> refer back to the sources declared in <code>packageSources</code>.
-      The <code>&lt;clear /&gt;</code> entries matter: NuGet walks up the directory tree and merges collection
-      elements from every <code>nuget.config</code> it finds, plus the user- and machine-level ones, so without them
-      an inherited source or an inherited mapping for the same ID would still be in play:
+      The <code>&lt;clear /&gt;</code> entries drop inherited configuration. NuGet walks up the directory tree and
+      merges collection elements from every <code>nuget.config</code> it finds, plus the user- and machine-level
+      ones, so wherever such a file exists an inherited source or an inherited mapping for the same ID would
+      otherwise still be in play. They are not required when nothing is inherited, but keeping them makes the
+      result the same on every machine:
     </p>
 <pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;configuration&gt;

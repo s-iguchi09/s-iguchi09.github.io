@@ -78,10 +78,13 @@
       このセクションを定義すると、推移的な依存を含むプロジェクト内のすべてのパッケージがいずれかのパターンに
       一致している必要があります。下の例の <code>*</code> がその受け皿です。
       <code>packageSourceMapping</code> の各キーは、<code>packageSources</code> で宣言したソースを指します。
-      <code>&lt;clear /&gt;</code> は省略できません。
+      <code>&lt;clear /&gt;</code> は、継承した設定を除外したいときに指定します。
       NuGet はディレクトリをさかのぼって見つけたすべての <code>nuget.config</code> に加え、
       ユーザー単位・マシン単位の設定についても、コレクション要素を結合して適用します。
-      <code>&lt;clear /&gt;</code> がないと、継承されたソースや、同じ ID に対する継承されたマッピングが残ってしまいます。
+      そのため上位に設定がある環境では、<code>&lt;clear /&gt;</code> がないと、
+      継承されたソースや、同じ ID に対する継承されたマッピングが残ってしまいます。
+      継承する設定がなければ必須ではありませんが、
+      どの環境でも同じ結果になるよう、書いておくほうが安全です。
     </p>
 <pre><code>&lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;configuration&gt;
