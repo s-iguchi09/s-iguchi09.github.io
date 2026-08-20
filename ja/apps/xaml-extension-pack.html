@@ -101,8 +101,13 @@
   &lt;/packageSourceMapping&gt;
 &lt;/configuration&gt;</code></pre>
     <p>
-      Package Source Mapping が効くのは restore がパッケージをダウンロードするときです。
-      <code>dotnet add package</code> が他のソースへメタデータを問い合わせること自体は止まらないため、
+      これには制約が 2 つあります。
+      1 つは対応ツールの要件です。Package Source Mapping は NuGet 6.0 で追加されたため、
+      Visual Studio 2022、.NET SDK 6.0.100、nuget.exe 6.0.0 のいずれか以降が必要です。
+      それより古いツールはこのセクションを警告なく無視するので、
+      CI を含め、このプロジェクトを restore するすべての環境が対応バージョンである必要があります。
+      もう 1 つは適用範囲です。効くのは restore がパッケージをダウンロードするときだけで、
+      <code>dotnet add package</code> が他のソースへメタデータを問い合わせること自体は止まりません。
       その点でも <code>--source</code> の指定が必要になります。
     </p>
     <p>

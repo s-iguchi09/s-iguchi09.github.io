@@ -94,8 +94,11 @@
   &lt;/packageSourceMapping&gt;
 &lt;/configuration&gt;</code></pre>
     <p>
-      Source mapping governs where restore downloads from. It does not stop <code>dotnet add package</code> from
-      querying other sources for metadata, which is the other reason to pass <code>--source</code>.
+      Two limits come with it. Package Source Mapping arrived in NuGet 6.0, so it needs Visual Studio 2022,
+      .NET SDK 6.0.100, or nuget.exe 6.0.0 or later; older tooling ignores the section silently, which means every
+      environment that restores the project — CI included — has to be on a compatible version for the pin to hold.
+      And source mapping governs only where restore downloads from: it does not stop <code>dotnet add package</code>
+      from querying other sources for metadata, which is the other reason to pass <code>--source</code>.
     </p>
     <p>
       All public types live in the <code>Xaml.ExtensionPack</code> namespace, so a single using directive is enough:
