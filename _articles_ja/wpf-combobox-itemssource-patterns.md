@@ -270,5 +270,6 @@ ViewModel 側で `null` を許容する型（例: `string?`, `int?`）を使う�
 ---
 
 <!-- 関連記事 -->
+- [WPF で RadioButton を enum にバインドすると初期選択が表示されない問題と GroupName の役割](/ja/articles/wpf-radiobutton-enum-binding/)
 <!-- - [WPF DataGrid の並び替えを実装する方法](/articles/wpf-datagrid-sorting) -->
 <!-- - [英語版: WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/en/articles/wpf-combobox-itemssource-patterns) -->
