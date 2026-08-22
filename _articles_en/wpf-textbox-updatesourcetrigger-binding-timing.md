@@ -158,4 +158,5 @@ For the pitfalls of the `UpdateSource()` call itself when writing an `Explicit` 
 ---
 
 <!-- Related articles -->
+- [Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — The Role of GroupName](/articles/wpf-radiobutton-enum-binding/)
 <!-- - [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/) -->

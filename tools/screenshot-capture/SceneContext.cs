@@ -57,12 +57,19 @@ internal sealed class SceneContext(string slug, string outputDirectory)
     /// 図と本文のコードが食い違わないようにする。
     /// 既定の名前空間は <see cref="ParserContext"/> 側で補うため、
     /// 呼び出し側は xmlns を書く必要がない。
+    /// シーン側で定義した型（列挙体・コンバーターなど）を参照する XAML では、
+    /// <paramref name="extraNamespaces"/> に接頭辞と CLR 名前空間の組を渡す。
     /// </summary>
-    public static T LoadXaml<T>(string xaml) where T : class
+    public static T LoadXaml<T>(string xaml, params (string Prefix, string Namespace)[] extraNamespaces) where T : class
     {
         var parserContext = new ParserContext();
         parserContext.XmlnsDictionary.Add(string.Empty, "http://schemas.microsoft.com/winfx/2006/xaml/presentation");
         parserContext.XmlnsDictionary.Add("x", "http://schemas.microsoft.com/winfx/2006/xaml");
+
+        foreach ((string prefix, string ns) in extraNamespaces)
+        {
+            parserContext.XmlnsDictionary.Add(prefix, ns);
+        }
 
         object element = XamlReader.Parse(xaml, parserContext);
         return element as T

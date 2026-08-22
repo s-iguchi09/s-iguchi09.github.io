@@ -285,4 +285,5 @@ Using `SelectedValuePath`, or ensuring the exact same instance is referenced, re
 ---
 
 <!-- Related articles -->
+- [Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — The Role of GroupName](/articles/wpf-radiobutton-enum-binding/)
 <!-- - [WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法](/ja/articles/wpf-combobox-itemssource-patterns) -->

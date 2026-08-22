@@ -224,4 +224,5 @@ WPF のバインディングエラーは例外を出さないため、出力ウ�
 ---
 
 <!-- 関連記事 -->
+- [WPF で RadioButton を enum にバインドすると初期選択が表示されない問題と GroupName の役割](/ja/articles/wpf-radiobutton-enum-binding/)
 <!-- - [WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法](/articles/wpf-combobox-itemssource-patterns) -->

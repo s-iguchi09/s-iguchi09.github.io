@@ -36,6 +36,7 @@ internal static class Program
         new TreeViewSelectItemScene(),
         new ValidationErrorNotDisplayedScene(),
         new UserControlDependencyPropertyScene(),
+        new RadioButtonEnumBindingScene(),
         new NaturalSortScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
