@@ -202,7 +202,7 @@ public string Keyword
 ```
 
 `Refresh` applies the predicate again.
-The invocation count matches the size of the source collection rather than the size of the filtered view, so a source of 10,000 items costs 10,000 predicate calls per `Refresh`.
+In the `ListCollectionView` implementation the invocation count matches the size of the source collection rather than the size of the filtered view, so a source of 10,000 items costs 10,000 predicate calls per `Refresh`.
 A search box using `UpdateSourceTrigger=PropertyChanged` calls `Refresh` on every keystroke, and the cost of the predicate then turns directly into input lag.
 
 To track item properties, treat the view as `ICollectionViewLiveShaping` and register the properties the predicate reads.
@@ -218,6 +218,8 @@ liveShaping.LiveFilteringProperties.Add(nameof(Product.Stock));
 
 What gets registered is **the property the predicate reads**, not the property that is displayed.
 Live filtering does nothing while `LiveFilteringProperties` is empty.
+Enabling `IsLiveFiltering` and registering a property each rebuild the view, so those two lines re-evaluate every item in the source.
+The invocation count drops to just the items that changed only for changes that follow.
 Assigning `null` to `IsLiveFiltering` throws `ArgumentNullException`, so assign `false` to turn it off.
 
 The cast above throws `InvalidCastException` when the source does not implement `IList`.
@@ -280,11 +282,11 @@ Reading the contents or the current position of the view inside the scope throws
 
 ## Notes
 
-- **Live filtering is not applied synchronously.** Enumerating the view in the same method right after writing a property returns the previous contents. The update runs on a `Dispatcher` callback, so a unit test must pump the message queue, for example with a `DispatcherFrame`, before asserting.
+- **Live filtering is not applied synchronously.** Enumerating the view in the same method right after writing a property returns the previous contents. The update runs on a `Dispatcher` callback, so a unit test must pump the message queue, for example with a `DispatcherFrame`, before asserting. Repeated changes to the same item before the `Dispatcher` processes them collapse into a single re-test.
 - **Changes to unregistered properties are ignored.** A configuration whose predicate reads `IsActive` while only `Stock` is registered in `LiveFilteringProperties` will not react to `IsActive`. Revisit the registrations whenever the filter condition changes.
 - **Live filtering requires items to implement `INotifyPropertyChanged`.** Without change notifications, no re-evaluation trigger reaches the view.
 - **The default view is shared by every control bound to that collection.** Handing the same `ObservableCollection<T>` to two `ListBox` controls and then setting a filter on `CollectionViewSource.GetDefaultView` narrows both. Assigning `ItemsControl.Items.Filter` writes to the same default view, so it cannot narrow one screen alone. Create separate `CollectionViewSource` instances to keep views independent.
-- **`Refresh` raises `Reset`, so an `ItemsControl` rebuilds its item containers.** Containers for items that remain in the view are regenerated as well. Live filtering raises `Add` and `Remove` only for items that enter or leave the view, so containers for the surviving items are reused. The difference becomes noticeable when item containers carry an expensive template.
+- **`Refresh` raises `Reset`, so an `ItemsControl` rebuilds its realized item containers.** Containers for items that remain in the view are regenerated as well. Live filtering raises `Add` and `Remove` only for items that enter or leave the view, so containers for the surviving items are reused. Only realized containers are affected, so with virtualization enabled the items that were never generated are untouched (a source of 500 items had 11 realized containers). Both figures come from a `ListBox`; how containers are generated and reused in practice depends on the panel implementation and the virtualization settings. The difference becomes noticeable when item containers carry an expensive template.
 - **"`Refresh` drops the selection" is not accurate.** As long as the selected item keeps passing the filter, `SelectedItem`, `SelectedItems`, and `CurrentItem` all survive a `Refresh`. This was confirmed on a `ListBox` with `SelectionMode` set to `Single` and, separately, to `Extended`. Selection is lost when the selected item stops passing the filter and leaves the view, and live filtering behaves the same way in that case. The cause differs from [selection loss under UI virtualization](/articles/wpf-listbox-virtualization-selecteditems/).
 - **Views over a `DataView` or a `BindingList<T>` cannot use `Filter`.** Their default view is a `BindingListCollectionView` whose `CanFilter` is `false` in both cases, and assigning `Filter` throws `NotSupportedException`. `CanChangeLiveFiltering` is `false` as well, so setting `IsLiveFiltering` throws `InvalidOperationException`.
 - **`CustomFilter` works only on a collection that implements `IBindingListView`.** The fallback for `Filter` is to pass a string expression to `CustomFilter`. `DataView` implements `IBindingListView`, so its `CanCustomFilter` is `true`; `BindingList<T>` does not, so its `CanCustomFilter` is `false` and assigning `CustomFilter` throws `NotSupportedException` as well. Test `CanCustomFilter` before assigning.
@@ -297,8 +299,8 @@ Reading the contents or the current position of the view inside the scope throws
 
 | Approach | Re-evaluation trigger | Predicate invocations | Notification | Constraints |
 |---|---|---|---|---|
-| `Refresh` | An explicit call | Every item in the source (10,000 calls for 10,000 items) | One `Reset`; all item containers regenerated | A missed call leaves stale contents on screen |
-| `IsLiveFiltering` + `LiveFilteringProperties` | Change notifications for registered properties | Only the items that changed (10 calls for 10 changes) | `Add` / `Remove` only for items entering or leaving; surviving containers reused | Does not track conditions outside the items; applied asynchronously |
+| `Refresh` | An explicit call | Every item in the source (10,000 calls for 10,000 items on `ListCollectionView`) | One `Reset`; all realized item containers regenerated | A missed call leaves stale contents on screen |
+| `IsLiveFiltering` + `LiveFilteringProperties` | Change notifications for registered properties | Only the items that changed (10 calls when 10 distinct items each change once); every item when it is switched on | `Add` / `Remove` only for items entering or leaving; surviving realized containers reused | Does not track conditions outside the items; applied asynchronously |
 | A hand-built filtered collection | Whenever the rebuild is invoked | Determined by the rebuild implementation | `Reset` from `Clear` and re-adding | Selection is lost for every item, including those that remain; sorting and grouping must be reimplemented |
 
 Building a filtered `ObservableCollection<T>` by hand escapes the constraints of `ICollectionView` but handles selection worst of the three.
@@ -314,7 +316,7 @@ When the display looks stale, what to examine is not the condition in the predic
 
 - **When the filter reads only item properties:**
 Enable `IsLiveFiltering` and register every property the predicate reads in `LiveFilteringProperties`.
-Re-evaluation stays limited to the items that changed and item containers are reused, which makes this the default choice.
+Subsequent re-evaluation stays limited to the items that changed and realized item containers are reused, which makes this the default choice.
 - **When the filter reads state outside the items, such as a search keyword:**
 Call `Refresh` from the code that writes that state.
 Live filtering cannot track it.
