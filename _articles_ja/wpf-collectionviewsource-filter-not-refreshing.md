@@ -14,7 +14,7 @@ image: /images/articles/wpf-collectionviewsource-filter-not-refreshing/collectio
 それにもかかわらず、以後に項目の値や検索条件を変えても表示は古いまま残る。
 
 原因はフィルタの述語ではない。
-`ICollectionView` はフィルタを保持するが、**フィルタを再評価する契機は限られており、項目のプロパティ変更はその契機に含まれない**。
+`ICollectionView` はフィルタを保持するが、**フィルタを再評価する契機は限られており、既定では項目のプロパティ変更がその契機に含まれない**。
 
 本記事では、どの操作がフィルタの再評価を起こし、どの操作が起こさないかを実測で切り分ける。
 そのうえで、`ICollectionView.Refresh` による全件再評価、`ICollectionViewLiveShaping` によるライブフィルタ、フィルタ済みコレクションの自前構築という 3 方式を、再評価コスト・通知の粒度・選択状態への影響の観点から比較する。
@@ -26,7 +26,8 @@ image: /images/articles/wpf-collectionviewsource-filter-not-refreshing/collectio
 - フレームワーク: .NET 6 以降 / WPF
 - 検証環境: .NET 10 / Windows 11（本記事の実測値と図はこの環境で取得した）
 - 追検証: フィルタ再評価の契機・`DeferRefresh` の挙動・`BindingListCollectionView` の制約・XAML の解決は .NET Framework 4.8 でも同一の結果を確認した
-- 言語: C# / XAML（コード例は nullable 参照型有効を前提とする）
+- 言語: C# 12 以降 / XAML（コード例はコレクション式を使う。既定の言語バージョンが C# 12 に満たない .NET 6・.NET 7 では `LangVersion` を引き上げるか、コレクション初期化子に書き換える）
+- コード例は nullable 参照型有効を前提とする
 - 対象の型: `System.ComponentModel.ICollectionView`、`System.ComponentModel.ICollectionViewLiveShaping`、`System.Windows.Data.CollectionViewSource`、`System.Windows.Data.ListCollectionView`
 - アーキテクチャ: MVVM（コレクションを ViewModel が保持し、ビューを介して `ItemsControl` へ渡す構成）
 - 名前空間: `System.Collections.ObjectModel`、`System.ComponentModel`、`System.Windows.Data`
@@ -169,7 +170,7 @@ _keyword = "Nut";
 方針は 2 つある。
 
 - **全件を評価し直す** — `ICollectionView.Refresh` を呼ぶ。ビューは全項目にフィルタを掛け直し、`Reset` を 1 回通知する。フィルタが項目以外の状態に依存する場合はこれを使う。
-- **変更された項目だけを評価し直す** — `ICollectionViewLiveShaping.IsLiveFiltering` を有効にし、`LiveFilteringProperties` にフィルタが読むプロパティ名を登録する。ビューは登録されたプロパティの変更通知を購読し、その項目だけを再判定して `Add` / `Remove` を通知する。フィルタが項目のプロパティだけに依存する場合はこれを使う。
+- **変更された項目だけを評価し直す** — `ICollectionViewLiveShaping.IsLiveFiltering` を有効にし、`LiveFilteringProperties` にフィルタが読むプロパティ名を登録する。ビューは登録されたプロパティの変更通知を購読し、その項目だけを再判定して、ビューへの出入りが生じたときだけ `Add` / `Remove` を通知する。フィルタが項目のプロパティだけに依存する場合はこれを使う。
 
 `ListCollectionView`（`ObservableCollection<T>` や `List<T>` を元にした既定のビューの実体）は `ICollectionViewLiveShaping` を実装しており、`CanChangeLiveFiltering` は `true` を返す。
 両者は排他ではなく、項目のプロパティにはライブフィルタで追随させ、検索キーワードの変更時にだけ `Refresh` を呼ぶ、という併用が実務では扱いやすい。
@@ -285,11 +286,11 @@ using (View.DeferRefresh())
 - **登録していないプロパティの変更は無視される。** フィルタが `IsActive` を読むのに `LiveFilteringProperties` へ `Stock` だけを登録した構成では、`IsActive` を変えても表示は変わらない。フィルタの条件を変更したときは登録内容の見直しが必要である。
 - **項目が `INotifyPropertyChanged` を実装していないとライブフィルタは機能しない。** 変更通知が無ければビューに再判定の契機が届かない。
 - **既定のビューは、そのコレクションにバインドしたすべてのコントロールで共有される。** 同じ `ObservableCollection<T>` を 2 つの `ListBox` に渡した状態で `CollectionViewSource.GetDefaultView` にフィルタを設定すると、両方の表示が絞り込まれる。`ItemsControl.Items.Filter` への設定も同じ既定のビューへ書き込まれるため、片方の画面だけを絞り込む用途には使えない。画面ごとに独立させるには `CollectionViewSource` のインスタンスを別に用意する。
-- **`Refresh` は `Reset` を通知するため、`ItemsControl` は項目コンテナを作り直す。** ビューに残り続ける項目のコンテナも再生成される。ライブフィルタは `Add` / `Remove` を通知するので、残る項目のコンテナはそのまま再利用される。項目コンテナに描画コストの高いテンプレートを載せている場合、この差が体感に出る。
+- **`Refresh` は `Reset` を通知するため、`ItemsControl` は項目コンテナを作り直す。** ビューに残り続ける項目のコンテナも再生成される。ライブフィルタが `Add` / `Remove` を通知するのはビューへの出入りが生じた項目についてだけで、ビューに残る項目のコンテナはそのまま再利用される。項目コンテナに描画コストの高いテンプレートを載せている場合、この差が体感に出る。
 - **「`Refresh` で選択が失われる」は正確ではない。** 選択中の項目がフィルタを通り続ける限り、`Refresh` の前後で `SelectedItem`・`SelectedItems`・`CurrentItem` はいずれも保たれる（`ListBox` の `SelectionMode` が `Single` の場合と `Extended` の場合の双方で確認した）。選択が失われるのは、選択中の項目がフィルタから外れてビューから消えたときであり、これはライブフィルタでも同じである。この点は[仮想化環境での選択状態](/ja/articles/wpf-listbox-virtualization-selecteditems/)の問題とは原因が異なる。
 - **`DataView` や `BindingList<T>` を元にしたビューでは `Filter` を使えない。** これらの既定のビューは `BindingListCollectionView` で、`CanFilter` はどちらも `false` を返し、`Filter` への代入は `NotSupportedException` になる。`CanChangeLiveFiltering` も `false` のため、`IsLiveFiltering` の設定は `InvalidOperationException` になる。
 - **`CustomFilter` は `IBindingListView` を実装したコレクションにのみ使える。** `Filter` の代替は、文字列式を渡す `CustomFilter` である。`DataView` は `IBindingListView` を実装しているため `CanCustomFilter` が `true` になるのに対し、`BindingList<T>` は実装しておらず `CanCustomFilter` は `false` で、`CustomFilter` への代入も `NotSupportedException` になる。代入の前に `CanCustomFilter` を確認する。
-- **`IList` を実装しないソースではライブフィルタを使えない。** LINQ の戻り値のような `IEnumerable` から得られる既定のビューは `CollectionView` を基底とする内部クラスで、`Filter` は使えるが `ICollectionViewLiveShaping` を実装しない。公開型ではないため、型名でのキャストや型検査には使えない。
+- **`IList` を実装しないソースではライブフィルタを使えない。** LINQ の戻り値のような `IEnumerable` から得られる既定のビューは `CollectionView` を基底とする内部クラスで、`Filter` は使えるが `ICollectionViewLiveShaping` を実装しない。実行時の型は公開されていないため型名を指定したキャストはできないが、`ICollectionViewLiveShaping` に対する型検査自体は可能で、結果が `false` になる。
 - **並び替えにも同じ設定が必要である。** ライブフィルタを有効にしても並び順は追随しない。`IsLiveSorting` と `LiveSortingProperties` を別途設定する。`DataGrid` の列ヘッダーによる並び替えも同じ `ICollectionView` の上で動くため、[並び替えの実装](/ja/articles/wpf-datagrid-sorting/)と組み合わせる場合は設定の対象が同一のビューであることに注意する。
 
 ---
@@ -299,7 +300,7 @@ using (View.DeferRefresh())
 | 方法 | 再評価の契機 | 述語の呼び出し回数 | 通知 | 制約 |
 |---|---|---|---|---|
 | `Refresh` | 明示的な呼び出し | ソースの全項目（1 万件なら 1 万回） | `Reset` 1 回。項目コンテナは全て再生成 | 呼び忘れると古い表示のまま残る |
-| `IsLiveFiltering` + `LiveFilteringProperties` | 登録したプロパティの変更通知 | 変更された項目のみ（10 件変更なら 10 回） | `Add` / `Remove`。残る項目のコンテナは再利用 | 項目のプロパティ以外の条件には追随しない。反映は非同期 |
+| `IsLiveFiltering` + `LiveFilteringProperties` | 登録したプロパティの変更通知 | 変更された項目のみ（10 件変更なら 10 回） | 出入りが生じた項目についてのみ `Add` / `Remove`。残る項目のコンテナは再利用 | 項目のプロパティ以外の条件には追随しない。反映は非同期 |
 | フィルタ済みコレクションを自前で作る | 作り直しを呼んだとき | 作り直しの実装次第 | `Clear` と再追加で `Reset` | 残る項目を含めて選択が全て失われる。並び替え・グループ化を自前で持つ必要がある |
 
 自前でフィルタ済みの `ObservableCollection<T>` を組み立てる方式は、`ICollectionView` の制約を受けない代わりに選択状態の扱いが最も悪い。

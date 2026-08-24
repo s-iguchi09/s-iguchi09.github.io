@@ -14,7 +14,7 @@ The display is correct immediately after the filter is assigned.
 Yet later changes to item values or to the search condition leave the list showing stale contents.
 
 The predicate is not at fault.
-An `ICollectionView` holds the filter, but **the triggers that cause it to be re-evaluated are limited, and a property change on an item is not one of them**.
+An `ICollectionView` holds the filter, but **the triggers that cause it to be re-evaluated are limited, and by default a property change on an item is not among them**.
 
 This article isolates which operations re-evaluate the filter and which do not.
 It then compares three approaches — full re-evaluation through `ICollectionView.Refresh`, incremental re-evaluation through `ICollectionViewLiveShaping`, and building a filtered collection by hand — in terms of re-evaluation cost, notification granularity, and the effect on selection state.
@@ -26,7 +26,8 @@ It then compares three approaches — full re-evaluation through `ICollectionVie
 - Framework: .NET 6 or later / WPF
 - Verified on: .NET 10 / Windows 11 (all measurements and figures in this article were taken there)
 - Cross-checked: the re-evaluation triggers, the `DeferRefresh` behavior, the `BindingListCollectionView` restrictions, and the XAML resolution produced identical results on .NET Framework 4.8
-- Language: C# / XAML (samples assume nullable reference types are enabled)
+- Language: C# 12 or later / XAML (the samples use collection expressions; on .NET 6 and .NET 7, whose default language versions are lower, raise `LangVersion` or rewrite them as collection initializers)
+- The samples assume nullable reference types are enabled
 - Types involved: `System.ComponentModel.ICollectionView`, `System.ComponentModel.ICollectionViewLiveShaping`, `System.Windows.Data.CollectionViewSource`, `System.Windows.Data.ListCollectionView`
 - Architecture: MVVM (the collection lives in the view model and reaches an `ItemsControl` through a view)
 - Namespaces: `System.Collections.ObjectModel`, `System.ComponentModel`, `System.Windows.Data`
@@ -166,7 +167,7 @@ Supply the re-evaluation trigger explicitly.
 There are two strategies.
 
 - **Re-evaluate every item** — call `ICollectionView.Refresh`. The view applies the filter to all items and raises a single `Reset`. Use this when the filter depends on state outside the items.
-- **Re-evaluate only the items that changed** — enable `ICollectionViewLiveShaping.IsLiveFiltering` and register the property names the predicate reads in `LiveFilteringProperties`. The view subscribes to change notifications for those properties, re-tests only the affected item, and raises `Add` or `Remove`. Use this when the filter depends solely on item properties.
+- **Re-evaluate only the items that changed** — enable `ICollectionViewLiveShaping.IsLiveFiltering` and register the property names the predicate reads in `LiveFilteringProperties`. The view subscribes to change notifications for those properties, re-tests only the affected item, and raises `Add` or `Remove` only when that item enters or leaves the view. Use this when the filter depends solely on item properties.
 
 `ListCollectionView`, which is the concrete type behind the default view of an `ObservableCollection<T>` or a `List<T>`, implements `ICollectionViewLiveShaping` and returns `true` from `CanChangeLiveFiltering`.
 The two strategies are not exclusive.
@@ -283,11 +284,11 @@ Reading the contents or the current position of the view inside the scope throws
 - **Changes to unregistered properties are ignored.** A configuration whose predicate reads `IsActive` while only `Stock` is registered in `LiveFilteringProperties` will not react to `IsActive`. Revisit the registrations whenever the filter condition changes.
 - **Live filtering requires items to implement `INotifyPropertyChanged`.** Without change notifications, no re-evaluation trigger reaches the view.
 - **The default view is shared by every control bound to that collection.** Handing the same `ObservableCollection<T>` to two `ListBox` controls and then setting a filter on `CollectionViewSource.GetDefaultView` narrows both. Assigning `ItemsControl.Items.Filter` writes to the same default view, so it cannot narrow one screen alone. Create separate `CollectionViewSource` instances to keep views independent.
-- **`Refresh` raises `Reset`, so an `ItemsControl` rebuilds its item containers.** Containers for items that remain in the view are regenerated as well. Live filtering raises `Add` and `Remove`, so containers for the surviving items are reused. The difference becomes noticeable when item containers carry an expensive template.
+- **`Refresh` raises `Reset`, so an `ItemsControl` rebuilds its item containers.** Containers for items that remain in the view are regenerated as well. Live filtering raises `Add` and `Remove` only for items that enter or leave the view, so containers for the surviving items are reused. The difference becomes noticeable when item containers carry an expensive template.
 - **"`Refresh` drops the selection" is not accurate.** As long as the selected item keeps passing the filter, `SelectedItem`, `SelectedItems`, and `CurrentItem` all survive a `Refresh`. This was confirmed on a `ListBox` with `SelectionMode` set to `Single` and, separately, to `Extended`. Selection is lost when the selected item stops passing the filter and leaves the view, and live filtering behaves the same way in that case. The cause differs from [selection loss under UI virtualization](/articles/wpf-listbox-virtualization-selecteditems/).
 - **Views over a `DataView` or a `BindingList<T>` cannot use `Filter`.** Their default view is a `BindingListCollectionView` whose `CanFilter` is `false` in both cases, and assigning `Filter` throws `NotSupportedException`. `CanChangeLiveFiltering` is `false` as well, so setting `IsLiveFiltering` throws `InvalidOperationException`.
 - **`CustomFilter` works only on a collection that implements `IBindingListView`.** The fallback for `Filter` is to pass a string expression to `CustomFilter`. `DataView` implements `IBindingListView`, so its `CanCustomFilter` is `true`; `BindingList<T>` does not, so its `CanCustomFilter` is `false` and assigning `CustomFilter` throws `NotSupportedException` as well. Test `CanCustomFilter` before assigning.
-- **Sources that do not implement `IList` cannot use live filtering.** The default view over a plain `IEnumerable`, such as the result of a LINQ query, is an internal class derived from `CollectionView`; it supports `Filter` but does not implement `ICollectionViewLiveShaping`. Because the type is not public, it cannot be used in a cast or a type test.
+- **Sources that do not implement `IList` cannot use live filtering.** The default view over a plain `IEnumerable`, such as the result of a LINQ query, is an internal class derived from `CollectionView`; it supports `Filter` but does not implement `ICollectionViewLiveShaping`. The runtime type is not public, so it cannot be named in a cast, but a type test against `ICollectionViewLiveShaping` is still valid and simply returns `false`.
 - **Sorting needs its own settings.** Enabling live filtering does not keep the sort order current. Configure `IsLiveSorting` and `LiveSortingProperties` separately. Column-header sorting in a `DataGrid` runs on the same `ICollectionView`, so when live filtering is combined with [column sorting](/articles/wpf-datagrid-sorting/), keep in mind that both settings act on the same view.
 
 ---
@@ -297,7 +298,7 @@ Reading the contents or the current position of the view inside the scope throws
 | Approach | Re-evaluation trigger | Predicate invocations | Notification | Constraints |
 |---|---|---|---|---|
 | `Refresh` | An explicit call | Every item in the source (10,000 calls for 10,000 items) | One `Reset`; all item containers regenerated | A missed call leaves stale contents on screen |
-| `IsLiveFiltering` + `LiveFilteringProperties` | Change notifications for registered properties | Only the items that changed (10 calls for 10 changes) | `Add` / `Remove`; surviving containers reused | Does not track conditions outside the items; applied asynchronously |
+| `IsLiveFiltering` + `LiveFilteringProperties` | Change notifications for registered properties | Only the items that changed (10 calls for 10 changes) | `Add` / `Remove` only for items entering or leaving; surviving containers reused | Does not track conditions outside the items; applied asynchronously |
 | A hand-built filtered collection | Whenever the rebuild is invoked | Determined by the rebuild implementation | `Reset` from `Clear` and re-adding | Selection is lost for every item, including those that remain; sorting and grouping must be reimplemented |
 
 Building a filtered `ObservableCollection<T>` by hand escapes the constraints of `ICollectionView` but handles selection worst of the three.
