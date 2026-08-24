@@ -38,6 +38,7 @@ internal static class Program
         new UserControlDependencyPropertyScene(),
         new RadioButtonEnumBindingScene(),
         new NaturalSortScene(),
+        new CollectionViewFilterRefreshScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
         new LinqBackportNet7Scene(),
