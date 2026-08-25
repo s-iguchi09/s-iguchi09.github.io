@@ -217,7 +217,8 @@ liveShaping.IsLiveFiltering = true;
 ```
 
 What gets registered is **the property the predicate reads**, not the property that is displayed.
-Live filtering does nothing while `LiveFilteringProperties` is empty.
+While `LiveFilteringProperties` is empty, no re-test happens on a property change.
+Filtering itself is unaffected: the initial build, `Refresh`, and the evaluation of newly added items all still apply the predicate.
 Registering the property first and enabling `IsLiveFiltering` afterwards keeps the initial full re-evaluation down to a single pass.
 Reversing the order rebuilds the view twice, which cost 1,000 predicate calls each — 2,000 in total — on a source of 1,000 items.
 Either way, the invocation count drops to just the items that changed only for changes that follow.
