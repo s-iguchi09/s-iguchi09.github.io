@@ -214,14 +214,15 @@ ICollectionView view = CollectionViewSource.GetDefaultView(Products);
 view.Filter = item => ((Product)item).Stock > 0;
 
 var liveShaping = (ICollectionViewLiveShaping)view;
-liveShaping.IsLiveFiltering = true;
 liveShaping.LiveFilteringProperties.Add(nameof(Product.Stock));
+liveShaping.IsLiveFiltering = true;
 ```
 
 登録するのは**述語が読むプロパティ**であり、表示に使うプロパティではない。
 `LiveFilteringProperties` が空のままだとライブフィルタは何も行わない。
-なお `IsLiveFiltering` の有効化とプロパティの登録はそれぞれビューの再構築を伴うため、この 2 行の時点ではソースの全件が評価し直される。
-呼び出し回数が変更された項目だけに減るのは、以後の変更に対してである。
+プロパティの登録を先に置き、`IsLiveFiltering` の有効化を後に置いているのは、初期の全件再評価を 1 回で済ませるためである。
+順序を逆にすると有効化と登録のそれぞれでビューが再構築され、1,000 件のソースでは述語が 1,000 回ずつ、計 2,000 回呼ばれた。
+いずれの順序でも、呼び出し回数が変更された項目だけに減るのは以後の変更に対してである。
 なお `IsLiveFiltering` に `null` を代入すると `ArgumentNullException` になるため、無効化するときは `false` を代入する。
 
 上のキャストは、ソースが `IList` を実装しない場合に `InvalidCastException` になる。
@@ -286,7 +287,7 @@ using (View.DeferRefresh())
 
 - **ライブフィルタの反映は同期ではない。** プロパティを書き換えた直後に同じメソッド内でビューを列挙すると、更新前の内容が返る。反映は `Dispatcher` のコールバックで行われるため、単体テストで確認する場合は `DispatcherFrame` などでメッセージポンプを回してから検証する。`Dispatcher` が処理するまでの間に同じ項目を何度変更しても、再判定は 1 回にまとめられる。
 - **登録していないプロパティの変更は無視される。** フィルタが `IsActive` を読むのに `LiveFilteringProperties` へ `Stock` だけを登録した構成では、`IsActive` を変えても表示は変わらない。フィルタの条件を変更したときは登録内容の見直しが必要である。
-- **項目が `INotifyPropertyChanged` を実装していないとライブフィルタは機能しない。** 変更通知が無ければビューに再判定の契機が届かない。
+- **項目が変更通知を出さないとライブフィルタは機能しない。** 通常の CLR プロパティで通知を届けるには `INotifyPropertyChanged` の実装が要る。`DependencyObject` の依存関係プロパティは、項目が `INotifyPropertyChanged` を実装していなくてもそのままライブフィルタの対象になる。どちらも持たない POCO では、プロパティを変えても表示は変わらない。
 - **既定のビューは、そのコレクションにバインドしたすべてのコントロールで共有される。** 同じ `ObservableCollection<T>` を 2 つの `ListBox` に渡した状態で `CollectionViewSource.GetDefaultView` にフィルタを設定すると、両方の表示が絞り込まれる。`ItemsControl.Items.Filter` への設定も同じ既定のビューへ書き込まれるため、片方の画面だけを絞り込む用途には使えない。画面ごとに独立させるには `CollectionViewSource` のインスタンスを別に用意する。
 - **`Refresh` は `Reset` を通知するため、`ItemsControl` は実現済みの項目コンテナを作り直す。** ビューに残り続ける項目のコンテナも再生成される。ライブフィルタが `Add` / `Remove` を通知するのはビューへの出入りが生じた項目についてだけで、ビューに残る項目のコンテナは再利用される。対象は実現済みのコンテナに限られ、仮想化が有効なら未生成の項目は影響を受けない（500 件のソースで実現済みは 11 件だった）。いずれも `ListBox` での実測であり、コンテナの生成と再利用の実際はパネルの実装と仮想化の設定に依存する。項目コンテナに描画コストの高いテンプレートを載せている場合、この差が体感に出る。
 - **「`Refresh` で選択が失われる」は正確ではない。** 選択中の項目がフィルタを通り続ける限り、`Refresh` の前後で `SelectedItem`・`SelectedItems`・`CurrentItem` はいずれも保たれる（`ListBox` の `SelectionMode` が `Single` の場合と `Extended` の場合の双方で確認した）。選択が失われるのは、選択中の項目がフィルタから外れてビューから消えたときであり、これはライブフィルタでも同じである。この点は[仮想化環境での選択状態](/ja/articles/wpf-listbox-virtualization-selecteditems/)の問題とは原因が異なる。

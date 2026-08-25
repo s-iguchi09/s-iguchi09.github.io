@@ -212,14 +212,15 @@ ICollectionView view = CollectionViewSource.GetDefaultView(Products);
 view.Filter = item => ((Product)item).Stock > 0;
 
 var liveShaping = (ICollectionViewLiveShaping)view;
-liveShaping.IsLiveFiltering = true;
 liveShaping.LiveFilteringProperties.Add(nameof(Product.Stock));
+liveShaping.IsLiveFiltering = true;
 ```
 
 What gets registered is **the property the predicate reads**, not the property that is displayed.
 Live filtering does nothing while `LiveFilteringProperties` is empty.
-Enabling `IsLiveFiltering` and registering a property each rebuild the view, so those two lines re-evaluate every item in the source.
-The invocation count drops to just the items that changed only for changes that follow.
+Registering the property first and enabling `IsLiveFiltering` afterwards keeps the initial full re-evaluation down to a single pass.
+Reversing the order rebuilds the view twice, which cost 1,000 predicate calls each — 2,000 in total — on a source of 1,000 items.
+Either way, the invocation count drops to just the items that changed only for changes that follow.
 Assigning `null` to `IsLiveFiltering` throws `ArgumentNullException`, so assign `false` to turn it off.
 
 The cast above throws `InvalidCastException` when the source does not implement `IList`.
@@ -284,7 +285,7 @@ Reading the contents or the current position of the view inside the scope throws
 
 - **Live filtering is not applied synchronously.** Enumerating the view in the same method right after writing a property returns the previous contents. The update runs on a `Dispatcher` callback, so a unit test must pump the message queue, for example with a `DispatcherFrame`, before asserting. Repeated changes to the same item before the `Dispatcher` processes them collapse into a single re-test.
 - **Changes to unregistered properties are ignored.** A configuration whose predicate reads `IsActive` while only `Stock` is registered in `LiveFilteringProperties` will not react to `IsActive`. Revisit the registrations whenever the filter condition changes.
-- **Live filtering requires items to implement `INotifyPropertyChanged`.** Without change notifications, no re-evaluation trigger reaches the view.
+- **Live filtering requires items to raise change notifications.** For an ordinary CLR property that means implementing `INotifyPropertyChanged`. A dependency property on a `DependencyObject` is tracked even when the item does not implement `INotifyPropertyChanged`. A POCO with neither never updates the view when its properties change.
 - **The default view is shared by every control bound to that collection.** Handing the same `ObservableCollection<T>` to two `ListBox` controls and then setting a filter on `CollectionViewSource.GetDefaultView` narrows both. Assigning `ItemsControl.Items.Filter` writes to the same default view, so it cannot narrow one screen alone. Create separate `CollectionViewSource` instances to keep views independent.
 - **`Refresh` raises `Reset`, so an `ItemsControl` rebuilds its realized item containers.** Containers for items that remain in the view are regenerated as well. Live filtering raises `Add` and `Remove` only for items that enter or leave the view, so containers for the surviving items are reused. Only realized containers are affected, so with virtualization enabled the items that were never generated are untouched (a source of 500 items had 11 realized containers). Both figures come from a `ListBox`; how containers are generated and reused in practice depends on the panel implementation and the virtualization settings. The difference becomes noticeable when item containers carry an expensive template.
 - **"`Refresh` drops the selection" is not accurate.** As long as the selected item keeps passing the filter, `SelectedItem`, `SelectedItems`, and `CurrentItem` all survive a `Refresh`. This was confirmed on a `ListBox` with `SelectionMode` set to `Single` and, separately, to `Extended`. Selection is lost when the selected item stops passing the filter and leaves the view, and live filtering behaves the same way in that case. The cause differs from [selection loss under UI virtualization](/articles/wpf-listbox-virtualization-selecteditems/).
