@@ -536,6 +536,28 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-collectionviewsource-filter-not-refreshing/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-collectionviewsource-filter-not-refreshing/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-collectionviewsource-filter-not-refreshing/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-collectionviewsource-filter-not-refreshing/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-refresh.png</image:loc></image:image>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-collectionviewsource-filter-not-refreshing/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-collectionviewsource-filter-not-refreshing/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-collectionviewsource-filter-not-refreshing/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-collectionviewsource-filter-not-refreshing/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-refresh.png</image:loc></image:image>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-combobox-itemssource-patterns/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-combobox-itemssource-patterns/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-combobox-itemssource-patterns/" />
