@@ -192,3 +192,9 @@ private void SwitchTheme(string themeName)
 `SystemColors` や `SystemParameters` などの OS 設定と連動させる場合も `DynamicResource` が必要となる。
 
 原則として `StaticResource` を基本とし、動的な変更が求められる箇所にのみ `DynamicResource` を適用する設計が、保守性とパフォーマンスのバランスとして適切である。
+
+---
+
+## 関連記事
+
+- [WPF Fluent テーマでカスタム Style を持つコントロールだけ旧外観に戻る問題](/ja/articles/wpf-fluent-theme-custom-style-not-applied/)

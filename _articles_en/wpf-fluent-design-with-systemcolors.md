@@ -230,3 +230,4 @@ This approach is generally the most maintainable option for long-lived WPF appli
 ## Related Articles
 
 - [Hiding the Clear Button on a Fluent-Themed WPF TextBox](/articles/wpf-fluent-textbox-hide-clear-button/)
+- [Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme](/articles/wpf-fluent-theme-custom-style-not-applied/)
