@@ -1,0 +1,9 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- 記事「WPF Fluent テーマでカスタム Style を持つコントロールだけ旧外観に戻る問題」の
+       実装例に載せている Styles.xaml と同じ内容。図と本文のコードを一致させるため、
+       記事の XAML をそのまま置いている。 -->
+  <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+    <Setter Property="Padding" Value="16,6" />
+  </Style>
+</ResourceDictionary>

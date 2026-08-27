@@ -196,3 +196,9 @@ Definition order alone is not sufficient, though: resolution also fails when the
 
 The recommended approach is to default to `StaticResource` and apply `DynamicResource` only where runtime changes are explicitly required.
 This strategy balances maintainability and rendering performance.
+
+---
+
+## Related Articles
+
+- [Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme](/articles/wpf-fluent-theme-custom-style-not-applied/)

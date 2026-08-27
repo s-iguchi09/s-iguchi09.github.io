@@ -296,3 +296,4 @@ For most cases such as single-line search and filter fields, make Approach 1 the
 ## Related Articles
 
 - [Applying Fluent Design in WPF Without Extra Libraries](/articles/wpf-fluent-design-with-systemcolors/)
+- [Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme](/articles/wpf-fluent-theme-custom-style-not-applied/)

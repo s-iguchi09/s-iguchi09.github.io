@@ -29,6 +29,7 @@ internal static class Program
         new LabelVsTextBlockScene(),
         new ComboBoxItemsSourceScene(),
         new FluentSystemColorsScene(),
+        new FluentCustomStyleScene(),
         new RelayCommandCanExecuteScene(),
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),

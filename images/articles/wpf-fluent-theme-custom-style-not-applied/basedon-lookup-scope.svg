@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 360" width="780" height="360" role="img">
+  <defs>
+    <style>
+      .panel { fill: #ffffff; stroke: #c3ccdb; stroke-width: 1.5; }
+      .group { fill: #eef2f9; stroke: #9aa4b2; stroke-width: 1.2; stroke-dasharray: 6 4; }
+      .dict { fill: #ffffff; stroke: #9aa4b2; stroke-width: 1.5; }
+      .style-box { fill: #f5f7fb; stroke: #c3ccdb; stroke-width: 1.2; }
+      .el { font-family: Consolas, "Courier New", monospace; font-size: 13.5px; fill: #1f2933; }
+      .key { font-family: Consolas, "Courier New", monospace; font-size: 12px; fill: #2563eb; }
+      .lbl { font-family: Consolas, "Courier New", monospace; font-size: 11.5px; fill: #6b7280; }
+      .bad { font-family: Consolas, "Courier New", monospace; font-size: 13.5px; fill: #d64545; }
+      .good { font-family: Consolas, "Courier New", monospace; font-size: 13.5px; fill: #2f9e6e; }
+      .ok { stroke: #2f9e6e; stroke-width: 2; fill: none; }
+      .ng { stroke: #d64545; stroke-width: 2; fill: none; stroke-dasharray: 5 4; }
+      .mark-ok { stroke: #2f9e6e; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .mark-ng { stroke: #d64545; stroke-width: 3.5; fill: none; stroke-linecap: round; }
+    </style>
+    <marker id="ok-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2f9e6e" />
+    </marker>
+    <marker id="ng-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d64545" />
+    </marker>
+  </defs>
+
+  <!-- 左: スタイルを Application.Resources 直下へ置いた場合 -->
+  <text class="el" x="20" y="24">Application.Resources</text>
+  <rect class="panel" x="20" y="36" width="350" height="300" rx="8" />
+
+  <text class="lbl" x="36" y="60">MergedDictionaries</text>
+  <rect class="group" x="36" y="68" width="298" height="96" rx="6" />
+  <rect class="dict" x="48" y="78" width="274" height="76" rx="6" />
+  <text class="el" x="60" y="100">Fluent.Light.xaml</text>
+  <rect class="style-box" x="60" y="110" width="250" height="32" rx="5" />
+  <text class="key" x="72" y="131">{x:Type Button}</text>
+
+  <!-- Fluent の暗黙スタイルへ到達しない経路 -->
+  <path class="ng" d="M 185 200 L 185 178" marker-end="url(#ng-head)" />
+  <path class="mark-ng" d="M 204 178 L 220 194 M 220 178 L 204 194" />
+
+  <rect class="style-box" x="36" y="200" width="298" height="110" rx="6" />
+  <text class="key" x="48" y="226">{x:Type Button}</text>
+  <text class="el" x="48" y="252">BasedOn: {x:Type Button}</text>
+  <text class="bad" x="48" y="284">&#8594; null</text>
+
+  <!-- 右: スタイルを MergedDictionaries 内の別ファイルへ置いた場合 -->
+  <text class="el" x="410" y="24">Application.Resources</text>
+  <rect class="panel" x="410" y="36" width="350" height="300" rx="8" />
+
+  <text class="lbl" x="426" y="60">MergedDictionaries</text>
+  <rect class="group" x="426" y="68" width="298" height="252" rx="6" />
+  <rect class="dict" x="438" y="78" width="274" height="76" rx="6" />
+  <text class="el" x="450" y="100">Fluent.Light.xaml</text>
+  <rect class="style-box" x="450" y="110" width="250" height="32" rx="5" />
+  <text class="key" x="462" y="131">{x:Type Button}</text>
+
+  <!-- Fluent の暗黙スタイルへ到達する経路 -->
+  <path class="ok" d="M 575 210 L 575 146" marker-end="url(#ok-head)" />
+  <path class="mark-ok" d="M 596 166 L 602 172 L 616 158" />
+
+  <rect class="dict" x="438" y="178" width="274" height="130" rx="6" />
+  <text class="el" x="450" y="200">Styles.xaml</text>
+  <rect class="style-box" x="450" y="210" width="250" height="88" rx="6" />
+  <text class="key" x="462" y="234">{x:Type Button}</text>
+  <text class="el" x="462" y="258">BasedOn: {x:Type Button}</text>
+  <text class="good" x="462" y="286">&#8594; Fluent.Light.xaml</text>
+</svg>
