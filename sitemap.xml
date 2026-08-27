@@ -698,7 +698,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-design-with-systemcolors/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -710,7 +710,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-design-with-systemcolors/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -722,7 +722,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-textbox-hide-clear-button/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -734,7 +734,33 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-textbox-hide-clear-button/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-theme-custom-style-not-applied/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-shadows-fluent.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/basedon-lookup-scope.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png</image:loc></image:image>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-fluent-theme-custom-style-not-applied/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-theme-custom-style-not-applied/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-shadows-fluent.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/basedon-lookup-scope.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png</image:loc></image:image>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -925,7 +951,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -936,7 +962,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
-    <lastmod>2026-08-04</lastmod>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
