@@ -34,7 +34,9 @@ internal sealed class FluentCustomStyleScene : IScene
         application.ThemeMode = ThemeMode.Light;
 #pragma warning restore WPF0001
 
-        var styles = new ResourceDictionary { Source = new Uri(StylesDictionaryUri) };
+        // ディクショナリの読み込みも try の中で行う。URI やパースに失敗しても
+        // ThemeMode を必ず元へ戻すため。
+        ResourceDictionary? styles = null;
 
         try
         {
@@ -47,12 +49,17 @@ internal sealed class FluentCustomStyleScene : IScene
 
             // 解決した状態: 記事の実装例と同じく、BasedOn を持つ暗黙スタイルを別の
             // リソースディクショナリから Application.Resources へマージする。
+            styles = new ResourceDictionary { Source = new Uri(StylesDictionaryUri) };
             application.Resources.MergedDictionaries.Add(styles);
             await context.ShootAsync(BuildWindow(), "implicit-style-basedon-fluent.png");
         }
         finally
         {
-            application.Resources.MergedDictionaries.Remove(styles);
+            if (styles is not null)
+            {
+                application.Resources.MergedDictionaries.Remove(styles);
+            }
+
             application.Resources.Remove(typeof(Button));
 #pragma warning disable WPF0001
             application.ThemeMode = original;

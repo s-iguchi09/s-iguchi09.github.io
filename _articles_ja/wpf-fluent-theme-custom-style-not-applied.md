@@ -302,7 +302,7 @@ Style? basedOn = style?.BasedOn;
 - **`Style="{x:Null}"` は Fluent を外す。** スタイルの適用を明示的に無効化すると、そのコントロールだけ Aero2 の外観になる。既定の見た目に戻す目的で `{x:Null}` を使っている箇所は、Fluent 導入時に見直す。
 - **`ThemeMode` を使うなら Fluent のテーマディクショナリを手動でマージしない。** [`Application.ThemeMode` プロパティ](https://learn.microsoft.com/dotnet/api/system.windows.application.thememode)のリファレンスは、このプロパティを設定する場合に Fluent のテーマディクショナリを手動で追加しないよう推奨している。手動で追加したものが優先されるためである。同リファレンスによれば `ThemeMode` はウィンドウの背景素材とダークモードの適用も制御するため、`Fluent.xaml` の手動マージと等価ではない。
 - **マージ辞書の順序で結果が変わる。** [マージされたリソースディクショナリ](https://learn.microsoft.com/dotnet/desktop/wpf/systems/xaml-resources-merged-dictionaries)が述べるとおり、同じ `MergedDictionaries` に同じキーがある場合は後に並べた側が採用される。実測では、`Fluent.xaml` を自前のスタイルより後にマージすると、自前の `Setter` が失われた。`Fluent.xaml` を手動でマージするときは、自前のスタイルより前に置く。
-- **`Fluent.xaml` を直接マージすると起動時の Windows のテーマ設定に従う。** 実測では、ダークモードの環境で `Fluent.xaml` をマージすると内部でダーク側のディクショナリが読み込まれた。明暗を固定するには、手動マージを取りやめたうえで `ThemeMode` に `Light` または `Dark` を指定する。手動マージを残したまま `ThemeMode` を足しても、手動マージ側が優先されるため、コントロールの配色は固定できない。
+- **`Fluent.xaml` を直接マージすると Windows のテーマ設定に従う。** 実測では、ダークモードの環境で `Fluent.xaml` をマージすると、起動時にダーク側のディクショナリが読み込まれた。実行中に OS のテーマを切り替えたときの追従は、本記事では検証していない。明暗を固定するには、手動マージを取りやめたうえで `ThemeMode` に `Light` または `Dark` を指定する。手動マージを残したまま `ThemeMode` を足しても、手動マージ側が優先されるため、コントロールの配色は固定できない。
 - **`ThemeMode` と Fluent は変更が続いている。** `ThemeMode` は .NET 10 時点でも実験的 API のままであり、リファレンスには将来のバージョンで削除される可能性があると記されている。Fluent のスタイル実装も継続中である。本記事の対応表は .NET 9 / .NET 10 で確認した結果であり、将来のバージョンでは再確認が必要である。
 
 ---
