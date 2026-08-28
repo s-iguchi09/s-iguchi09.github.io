@@ -112,10 +112,15 @@ EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_conf
 #     match; Liquid's `page.noindex` only sees top-level keys
 #   - the value accepts the YAML 1.1 spellings Jekyll resolves to boolean true
 #     (Psych treats yes/on as booleans, and Liquid then compares equal to true)
-#   - a trailing `# comment` is allowed, since YAML ignores it
+#   - a trailing `# comment` is allowed, but only with whitespace in front of the
+#     `#`; YAML starts a comment only after a space, so `true#x` is the string
+#     "true#x" and must not count
+#   - the colon needs at least one space after it, because `noindex:true` is a
+#     plain scalar in YAML rather than a mapping, and Liquid then sees nothing
 #   - a quoted "true" is a string, not a boolean, so it is left out on purpose
 NOINDEX_FRONT_MATTER_RE = re.compile(
-    r"^noindex[ \t]*:[ \t]*(?:true|True|TRUE|yes|Yes|YES|on|On|ON)[ \t]*(?:#.*)?$"
+    r"^noindex[ \t]*:[ \t]+(?:true|True|TRUE|yes|Yes|YES|on|On|ON)"
+    r"(?:[ \t]+#.*|[ \t]*)$"
 )
 
 
