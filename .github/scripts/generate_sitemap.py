@@ -103,13 +103,26 @@ EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_conf
 # ("wpf-standard-control-demo/") instead. That coupled the sitemap to one
 # directory and had to be kept in sync with head.html by hand. Reading the front
 # matter keeps the two in step on their own.
-NOINDEX_FRONT_MATTER_RE = re.compile(r"^\s*noindex\s*:\s*true\s*$", re.IGNORECASE)
+# Front matter is scanned rather than parsed as YAML: the workflow installs a
+# bare Python via actions/setup-python, so PyYAML is not available and pulling it
+# in for one boolean is not worth the dependency. The pattern is therefore pinned
+# to what head.html actually reads:
+#
+#   - the key must sit at column 0, so a nested `seo:\n  noindex: true` does not
+#     match; Liquid's `page.noindex` only sees top-level keys
+#   - the value accepts the YAML 1.1 spellings Jekyll resolves to boolean true
+#     (Psych treats yes/on as booleans, and Liquid then compares equal to true)
+#   - a trailing `# comment` is allowed, since YAML ignores it
+#   - a quoted "true" is a string, not a boolean, so it is left out on purpose
+NOINDEX_FRONT_MATTER_RE = re.compile(
+    r"^noindex[ \t]*:[ \t]*(?:true|True|TRUE|yes|Yes|YES|on|On|ON)[ \t]*(?:#.*)?$"
+)
 
 
 def is_excluded_from_sitemap(rel_path: str) -> bool:
     """Return True if the page is noindex and must not appear in the sitemap.
 
-    Only a bare boolean `true` counts, matching `page.noindex == true` in
+    Only a top-level boolean true counts, matching `page.noindex == true` in
     _includes/head.html. A quoted `"true"` or `"false"` is a YAML string, which
     neither side treats as noindex.
     """
