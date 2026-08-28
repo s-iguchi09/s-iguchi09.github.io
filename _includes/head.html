@@ -5,6 +5,11 @@
   検索エンジンのインデックス対象から外すページ。
   front matter に `noindex: true` を書いたページだけを対象にする。
 
+  判定は真偽値の true との比較で行い、page.noindex をそのまま真偽値として扱う書き方はしない。
+  Liquid は空でない文字列を真として扱うため、後者だと `noindex: "false"` と書いた場合に
+  このページは noindex になる一方、サイトマップ生成側（.github/scripts/generate_sitemap.py）は
+  除外せず、両者が食い違うことになる。両方で真偽値の true だけを見ることで揃えている。
+
   コントロール別デモページ（日英 72 ページ）は 2026-07-25 に noindex としていたが、
   2026-08-29 に解除した。Search Console の実測が、その判断を否定したためである。
 
@@ -25,7 +30,7 @@
   広告コードはこのファイルで一元管理し、各ページに直接書かないこと。
   各ページに直接書くと、この出し分けをすり抜けて noindex ページにも広告が出てしまう。
 {% endcomment %}
-{% if page.noindex %}
+{% if page.noindex == true %}
   <meta name="robots" content="noindex, follow">
 {% else %}
   <!-- Google AdSense -->

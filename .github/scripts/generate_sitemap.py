@@ -109,15 +109,14 @@ NOINDEX_FRONT_MATTER_RE = re.compile(r"^\s*noindex\s*:\s*true\s*$", re.IGNORECAS
 def is_excluded_from_sitemap(rel_path: str) -> bool:
     """Return True if the page is noindex and must not appear in the sitemap.
 
-    Only English pages reach this check; a Japanese page is paired to its English
-    counterpart afterwards and follows whatever was decided for it. Marking just
-    one side of a pair `noindex: true` therefore does not drop it here, so set the
-    flag on the English page when a pair should leave the sitemap.
+    Only a bare boolean `true` counts, matching `page.noindex == true` in
+    _includes/head.html. A quoted `"true"` or `"false"` is a YAML string, which
+    neither side treats as noindex.
     """
     path = os.path.join(REPO_ROOT, rel_path)
     try:
         # utf-8-sig so a byte order mark does not hide the opening delimiter.
-        with open(path, "r", encoding="utf-8-sig") as handle:
+        with open(path, encoding="utf-8-sig") as handle:
             # Front matter has to start on the first line, or there is none.
             if handle.readline().strip() != "---":
                 return False
@@ -130,6 +129,16 @@ def is_excluded_from_sitemap(rel_path: str) -> bool:
         # An unreadable page is left in the sitemap rather than silently dropped.
         return False
     return False
+
+
+def is_pair_excluded_from_sitemap(*rel_paths: Optional[str]) -> bool:
+    """Return True when any side of an English/Japanese pair is noindex.
+
+    The two languages are emitted together, so `noindex: true` on either one has
+    to drop both. Otherwise the sitemap would advertise a page that head.html
+    tells search engines to leave out.
+    """
+    return any(path and is_excluded_from_sitemap(path) for path in rel_paths)
 
 # Priority rules (matched in order, first match wins)
 PRIORITY_RULES = [
@@ -270,8 +279,8 @@ def collect_english_paths() -> list:
         # Skip Japanese pages (handled separately via pairing)
         if rel.startswith("ja/"):
             continue
-        # Skip noindex pages
-        if is_excluded_from_sitemap(rel):
+        # Skip noindex pages, on either side of the en/ja pair
+        if is_pair_excluded_from_sitemap(rel, find_ja_counterpart(rel)):
             continue
         paths.append(rel)
     return sorted(paths)
@@ -291,6 +300,14 @@ def collect_article_en_paths() -> list:
     if os.path.isdir(collection_dir):
         for md_file in glob.glob(os.path.join(collection_dir, "*.md")):
             slug = os.path.splitext(os.path.basename(md_file))[0]
+            # Skip noindex articles, on either side of the en/ja pair
+            ja_md = (
+                f"_articles_ja/{slug}.md"
+                if find_ja_article_counterpart(slug)
+                else None
+            )
+            if is_pair_excluded_from_sitemap(f"_articles_en/{slug}.md", ja_md):
+                continue
             slugs.append(slug)
     return sorted(slugs)
 
