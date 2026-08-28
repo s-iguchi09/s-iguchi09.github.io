@@ -94,16 +94,73 @@ BASE_URL = load_base_url()
 # directories the site build drops never reaches the sitemap.
 EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_config_excludes()
 
-# Path fragments whose pages are excluded from the sitemap.
-# These pages carry <meta name="robots" content="noindex"> (see _includes/head.html),
-# so listing them in the sitemap would send search engines a contradictory signal.
-EXCLUDE_PATH_FRAGMENTS = ("wpf-standard-control-demo/",)
+# Pages whose front matter sets `noindex: true` are excluded from the sitemap.
+# This mirrors the condition in _includes/head.html, which emits
+# <meta name="robots" content="noindex"> for the same pages; listing them here
+# would send search engines a contradictory signal.
+#
+# Until 2026-08-29 this matched a hard-coded path fragment
+# ("wpf-standard-control-demo/") instead. That coupled the sitemap to one
+# directory and had to be kept in sync with head.html by hand. Reading the front
+# matter keeps the two in step on their own.
+# Front matter is scanned rather than parsed as YAML: the workflow installs a
+# bare Python via actions/setup-python, so PyYAML is not available and pulling it
+# in for one boolean is not worth the dependency. The pattern is therefore pinned
+# to what head.html actually reads:
+#
+#   - the key must sit at column 0, so a nested `seo:\n  noindex: true` does not
+#     match; Liquid's `page.noindex` only sees top-level keys
+#   - the value matches what Jekyll's YAML parser resolves to boolean true.
+#     Psych compares case-insensitively against yes/true/on, so `tRuE` and `oN`
+#     are booleans too; Liquid then compares them equal to true:
+#       BOOLEAN_TRUE = /^(yes|true|on)$/i
+#     (ruby/psych, lib/psych/scalar_scanner.rb). Matching the spec's enumeration
+#     of fixed capitalisations instead would miss those spellings.
+#   - a trailing `# comment` is allowed, but only with whitespace in front of the
+#     `#`; YAML starts a comment only after a space, so `true#x` is the string
+#     "true#x" and must not count
+#   - the colon needs at least one space after it, because `noindex:true` is a
+#     plain scalar in YAML rather than a mapping, and Liquid then sees nothing
+#   - a quoted "true" is a string, not a boolean, so it is left out on purpose
+NOINDEX_FRONT_MATTER_RE = re.compile(
+    r"^noindex[ \t]*:[ \t]+(?i:true|yes|on)"
+    r"(?:[ \t]+#.*|[ \t]*)$"
+)
 
 
 def is_excluded_from_sitemap(rel_path: str) -> bool:
-    """Return True if the page is noindex and must not appear in the sitemap."""
-    normalized = rel_path.replace("\\", "/")
-    return any(fragment in normalized for fragment in EXCLUDE_PATH_FRAGMENTS)
+    """Return True if the page is noindex and must not appear in the sitemap.
+
+    Only a top-level boolean true counts, matching `page.noindex == true` in
+    _includes/head.html. A quoted `"true"` or `"false"` is a YAML string, which
+    neither side treats as noindex.
+    """
+    path = os.path.join(REPO_ROOT, rel_path)
+    try:
+        # utf-8-sig so a byte order mark does not hide the opening delimiter.
+        with open(path, encoding="utf-8-sig") as handle:
+            # Front matter has to start on the first line, or there is none.
+            if handle.readline().strip() != "---":
+                return False
+            for line in handle:
+                if line.strip() == "---":
+                    return False
+                if NOINDEX_FRONT_MATTER_RE.match(line):
+                    return True
+    except OSError:
+        # An unreadable page is left in the sitemap rather than silently dropped.
+        return False
+    return False
+
+
+def is_pair_excluded_from_sitemap(*rel_paths: Optional[str]) -> bool:
+    """Return True when any side of an English/Japanese pair is noindex.
+
+    The two languages are emitted together, so `noindex: true` on either one has
+    to drop both. Otherwise the sitemap would advertise a page that head.html
+    tells search engines to leave out.
+    """
+    return any(path and is_excluded_from_sitemap(path) for path in rel_paths)
 
 # Priority rules (matched in order, first match wins)
 PRIORITY_RULES = [
@@ -244,8 +301,8 @@ def collect_english_paths() -> list:
         # Skip Japanese pages (handled separately via pairing)
         if rel.startswith("ja/"):
             continue
-        # Skip noindex pages
-        if is_excluded_from_sitemap(rel):
+        # Skip noindex pages, on either side of the en/ja pair
+        if is_pair_excluded_from_sitemap(rel, find_ja_counterpart(rel)):
             continue
         paths.append(rel)
     return sorted(paths)
@@ -265,6 +322,14 @@ def collect_article_en_paths() -> list:
     if os.path.isdir(collection_dir):
         for md_file in glob.glob(os.path.join(collection_dir, "*.md")):
             slug = os.path.splitext(os.path.basename(md_file))[0]
+            # Skip noindex articles, on either side of the en/ja pair
+            ja_md = (
+                f"_articles_ja/{slug}.md"
+                if find_ja_article_counterpart(slug)
+                else None
+            )
+            if is_pair_excluded_from_sitemap(f"_articles_en/{slug}.md", ja_md):
+                continue
             slugs.append(slug)
     return sorted(slugs)
 
