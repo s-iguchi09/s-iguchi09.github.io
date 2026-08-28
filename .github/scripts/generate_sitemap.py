@@ -94,16 +94,42 @@ BASE_URL = load_base_url()
 # directories the site build drops never reaches the sitemap.
 EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_config_excludes()
 
-# Path fragments whose pages are excluded from the sitemap.
-# These pages carry <meta name="robots" content="noindex"> (see _includes/head.html),
-# so listing them in the sitemap would send search engines a contradictory signal.
-EXCLUDE_PATH_FRAGMENTS = ("wpf-standard-control-demo/",)
+# Pages whose front matter sets `noindex: true` are excluded from the sitemap.
+# This mirrors the condition in _includes/head.html, which emits
+# <meta name="robots" content="noindex"> for the same pages; listing them here
+# would send search engines a contradictory signal.
+#
+# Until 2026-08-29 this matched a hard-coded path fragment
+# ("wpf-standard-control-demo/") instead. That coupled the sitemap to one
+# directory and had to be kept in sync with head.html by hand. Reading the front
+# matter keeps the two in step on their own.
+NOINDEX_FRONT_MATTER_RE = re.compile(r"^\s*noindex\s*:\s*true\s*$", re.IGNORECASE)
 
 
 def is_excluded_from_sitemap(rel_path: str) -> bool:
-    """Return True if the page is noindex and must not appear in the sitemap."""
-    normalized = rel_path.replace("\\", "/")
-    return any(fragment in normalized for fragment in EXCLUDE_PATH_FRAGMENTS)
+    """Return True if the page is noindex and must not appear in the sitemap.
+
+    Only English pages reach this check; a Japanese page is paired to its English
+    counterpart afterwards and follows whatever was decided for it. Marking just
+    one side of a pair `noindex: true` therefore does not drop it here, so set the
+    flag on the English page when a pair should leave the sitemap.
+    """
+    path = os.path.join(REPO_ROOT, rel_path)
+    try:
+        # utf-8-sig so a byte order mark does not hide the opening delimiter.
+        with open(path, "r", encoding="utf-8-sig") as handle:
+            # Front matter has to start on the first line, or there is none.
+            if handle.readline().strip() != "---":
+                return False
+            for line in handle:
+                if line.strip() == "---":
+                    return False
+                if NOINDEX_FRONT_MATTER_RE.match(line):
+                    return True
+    except OSError:
+        # An unreadable page is left in the sitemap rather than silently dropped.
+        return False
+    return False
 
 # Priority rules (matched in order, first match wins)
 PRIORITY_RULES = [
