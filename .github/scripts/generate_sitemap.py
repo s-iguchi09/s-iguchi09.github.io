@@ -110,8 +110,12 @@ EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_conf
 #
 #   - the key must sit at column 0, so a nested `seo:\n  noindex: true` does not
 #     match; Liquid's `page.noindex` only sees top-level keys
-#   - the value accepts the YAML 1.1 spellings Jekyll resolves to boolean true
-#     (Psych treats yes/on as booleans, and Liquid then compares equal to true)
+#   - the value matches what Jekyll's YAML parser resolves to boolean true.
+#     Psych compares case-insensitively against yes/true/on, so `tRuE` and `oN`
+#     are booleans too; Liquid then compares them equal to true:
+#       BOOLEAN_TRUE = /^(yes|true|on)$/i
+#     (ruby/psych, lib/psych/scalar_scanner.rb). Matching the spec's enumeration
+#     of fixed capitalisations instead would miss those spellings.
 #   - a trailing `# comment` is allowed, but only with whitespace in front of the
 #     `#`; YAML starts a comment only after a space, so `true#x` is the string
 #     "true#x" and must not count
@@ -119,7 +123,7 @@ EXCLUDE_DIRS = {"_includes", "_layouts", "_site", ".github", ".git"} | load_conf
 #     plain scalar in YAML rather than a mapping, and Liquid then sees nothing
 #   - a quoted "true" is a string, not a boolean, so it is left out on purpose
 NOINDEX_FRONT_MATTER_RE = re.compile(
-    r"^noindex[ \t]*:[ \t]+(?:true|True|TRUE|yes|Yes|YES|on|On|ON)"
+    r"^noindex[ \t]*:[ \t]+(?i:true|yes|on)"
     r"(?:[ \t]+#.*|[ \t]*)$"
 )
 
