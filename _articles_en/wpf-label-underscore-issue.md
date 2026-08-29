@@ -110,10 +110,16 @@ How the main `Content` is rendered differs by control.
 
 | Control | `ContentPresenter` instances in its own template |
 | --- | --- |
-| `GroupBox`, `Expander` | Two: one for `Header` (`True`) and one for `Content` (`False`) |
+| `GroupBox` | Two: one for `Header` (`True`) and one for `Content` (`False`) |
 | `MenuItem` | Two: one for `Header` (`True`) and one for `Icon` (`False`). `MenuItem` has no `Content` property |
 | `TabItem` | One: for `Header` (`True`). The selected `Content` is rendered by `PART_SelectedContentHost` on the parent `TabControl` |
+| `Expander` | One: `ExpandSite` for `Content` (`False`). The one for `Header` (`True`) lives in the template of the header `ToggleButton` |
 
+On `Expander` and `TabItem`, the presenters for `Header` and `Content` are split across different controls' templates.
+Which template a `ContentPresenter` belongs to can be determined from its `TemplatedParent`.
+Walking the visual tree alone also counts template parts belonging to child controls, so the table above counts only presenters whose `TemplatedParent` is the control itself.
+
+In every case, `RecognizesAccessKey="True"` applies only to the presenter that renders the `Header`.
 Consequently, within the same control, only strings placed in the header lose their underscores.
 
 The rendering result for the principal controls, all given the same string, is shown below.

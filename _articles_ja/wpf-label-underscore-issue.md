@@ -110,10 +110,16 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 
 | コントロール | 自身のテンプレート内の `ContentPresenter` |
 | --- | --- |
-| `GroupBox`・`Expander` | 2 つ。`Header` 用（`True`）と `Content` 用（`False`） |
+| `GroupBox` | 2 つ。`Header` 用（`True`）と `Content` 用（`False`） |
 | `MenuItem` | 2 つ。`Header` 用（`True`）と `Icon` 用（`False`）。`MenuItem` は `Content` プロパティを持たない |
-| `TabItem` | 1 つだけ。`Header` 用（`True`）。選択中の `Content` は親の `TabControl` にある `PART_SelectedContentHost` が描画する |
+| `TabItem` | 1 つ。`Header` 用（`True`）。選択中の `Content` は親の `TabControl` にある `PART_SelectedContentHost` が描画する |
+| `Expander` | 1 つ。`ExpandSite`（`Content` 用、`False`）。`Header` 用（`True`）は、ヘッダーの `ToggleButton` のテンプレート内にある |
 
+`Expander` と `TabItem` は、`Header` と `Content` を描く `ContentPresenter` が別のコントロールのテンプレートに分かれている。
+`ContentPresenter` がどのテンプレートに属するかは、`TemplatedParent` を見ると判別できる。
+visual ツリーを単に走査すると、子コントロールのテンプレート部品まで数に入ってしまうため、上表は `TemplatedParent` が対象コントロール自身であるものだけを数えている。
+
+いずれの場合も、`RecognizesAccessKey="True"` なのは `Header` を描く側だけである。
 このため、同じコントロールでもヘッダーに置いた文字列だけアンダーバーが消える。
 
 主要なコントロールについて、同じ文字列を与えて描画した結果を次に示す。
