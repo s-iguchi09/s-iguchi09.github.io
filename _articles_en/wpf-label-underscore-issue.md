@@ -105,8 +105,15 @@ The table below records whether an `AccessText` appears in the visual tree when 
 | `StatusBarItem` | Preserved | — |
 | `TextBlock` | Preserved | — |
 
-`GroupBox`, `Expander`, `TabItem`, and `MenuItem` each contain two `ContentPresenter` instances in their template.
-Only the header-side presenter has `RecognizesAccessKey="True"`; the one for the main `Content` is `False`.
+`GroupBox`, `Expander`, `TabItem`, and `MenuItem` each contain two `ContentPresenter` instances in their template, and only the header-side one has `RecognizesAccessKey="True"`.
+What the other presenter serves differs by control.
+
+| Control | The other `ContentPresenter` |
+| --- | --- |
+| `GroupBox`, `Expander`, `TabItem` | Renders the main `Content` |
+| `MenuItem` | Renders the `Icon` (`MenuItem` has no `Content` property) |
+
+`RecognizesAccessKey` is `False` on all of them.
 Consequently, within the same control, only strings placed in the header lose their underscores.
 
 The rendering result for the principal controls, all given the same string, is shown below.
@@ -128,7 +135,7 @@ There are four workarounds. The appropriate one depends on the use case.
 - To simply escape the underscore, write it twice as `__` (Workaround 1).
 - When access keys are unnecessary and the text is display-only, switch to `TextBlock` (Workaround 2).
 - To keep `Label` while rendering dynamically bound data correctly, use a `TextBlock` in `ContentTemplate` (Workaround 3).
-- To disable access-key interpretation itself regardless of the `Content` type, set `RecognizesAccessKey="False"` in a `ControlTemplate` (Workaround 4). This replaces the default template, so the `Border` and padding must be rebuilt by hand.
+- To disable access-key interpretation in the default string display itself, set `RecognizesAccessKey="False"` in a `ControlTemplate` (Workaround 4). This replaces the default template, so the `Border` and padding must be rebuilt by hand.
 
 Workaround 1 is the only approach that fixes the display while retaining access-key functionality. Workarounds 2 through 4 all give up access keys in exchange for handling strings verbatim.
 
@@ -230,9 +237,13 @@ Replace the `ControlTemplate` and set `RecognizesAccessKey` to `False` on the `C
 </Label>
 ```
 
-The `ContentPresenter` no longer produces an `AccessText`, so underscores render as-is whether `Content` is a string or an object.
+The `ContentPresenter` no longer selects an `AccessText` for the default string display, so underscores render as-is.
 
-- **Advantage:** Disables access-key interpretation reliably, independent of the `Content` type.
+This setting only affects the default path where the `ContentPresenter` picks a display element from a string.
+An explicit `ContentTemplate` takes precedence, and an `AccessText` placed directly in `Content` is rendered as that element.
+In neither case does the value of `RecognizesAccessKey` change the result.
+
+- **Advantage:** Strips access-key interpretation from the default string display without requiring a `ContentTemplate`. As long as the bound data is a string, it applies uniformly regardless of the value.
 - **Disadvantage:** Replacing the `ControlTemplate` means reimplementing what the default template provides, such as the `Border` and the disabled-state appearance (the foreground color when `IsEnabled="False"`). Placing only a `ContentPresenter`, as in the example above, discards them.
 
 When the default appearance must be preserved, Workaround 3 has a smaller blast radius than replacing the entire `ControlTemplate`.
@@ -273,7 +284,7 @@ The relationship between control choice and rendering cost is covered in detail 
 | Workaround 1: Escape with `__` | One-line XAML edit; access keys retained | Dynamic data needs ViewModel work; risk of double application | Static strings where access keys are also needed |
 | Workaround 2: Switch to `TextBlock` | Simplest and most lightweight | Loses `Label`'s `Target` feature and default padding | Display-only text where access keys are unused |
 | Workaround 3: Override `ContentTemplate` | Handles dynamic binding; preserves default appearance | More verbose XAML; applies regardless of `Content` type | Keeping `Label` with dynamic string binding |
-| Workaround 4: `RecognizesAccessKey="False"` | Disables the cause directly, independent of type | Requires reimplementing the `ControlTemplate` | Projects that already use a custom template |
+| Workaround 4: `RecognizesAccessKey="False"` | Disables the cause directly; no `ContentTemplate` needed | Requires reimplementing the `ControlTemplate`; affects only the default string display | Projects that already use a custom template |
 
 ---
 

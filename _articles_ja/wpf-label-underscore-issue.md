@@ -105,8 +105,15 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 | `StatusBarItem` | 消えない | — |
 | `TextBlock` | 消えない | — |
 
-`GroupBox`・`Expander`・`TabItem`・`MenuItem` は、テンプレート内に `ContentPresenter` を 2 つ持つ。
-`Header` 側だけが `RecognizesAccessKey="True"` で、本体の `Content` 側は `False` である。
+`GroupBox`・`Expander`・`TabItem`・`MenuItem` は、テンプレート内に `ContentPresenter` を 2 つ持ち、`RecognizesAccessKey="True"` なのは `Header` 側だけである。
+もう一方が担当する対象はコントロールによって異なる。
+
+| コントロール | もう一方の `ContentPresenter` |
+| --- | --- |
+| `GroupBox`・`Expander`・`TabItem` | 本体の `Content` を描画する |
+| `MenuItem` | `Icon` を描画する（`MenuItem` は `Content` プロパティを持たない） |
+
+いずれも `RecognizesAccessKey` は `False` である。
 このため、同じコントロールでもヘッダーに置いた文字列だけアンダーバーが消える。
 
 主要なコントロールについて、同じ文字列を与えて描画した結果を次に示す。
@@ -128,7 +135,7 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 - アンダーバーをエスケープしたいだけなら、`__` と 2 つ重ねて書く（方法 1）。
 - アクセスキー機能が不要で単純にテキストを表示したい場合は、`TextBlock` に変更する（方法 2）。
 - `Label` のまま動的なバインドデータを正しく表示したい場合は、`ContentTemplate` で `TextBlock` を使う（方法 3）。
-- `Content` の型に関わらずアクセスキー解釈そのものを止めたい場合は、`ControlTemplate` で `RecognizesAccessKey="False"` を指定する（方法 4）。ただし既定テンプレートを置き換えるため、`Border` や余白は自前で作り直すことになる。
+- 既定の文字列表示でのアクセスキー解釈そのものを止めたい場合は、`ControlTemplate` で `RecognizesAccessKey="False"` を指定する（方法 4）。ただし既定テンプレートを置き換えるため、`Border` や余白は自前で作り直すことになる。
 
 方法 1 だけが「アクセスキー機能を残したまま表示を直す」手段であり、方法 2〜4 はいずれもアクセスキー機能を捨てる代わりに文字列をそのまま扱えるようにする手段である。
 
@@ -230,9 +237,13 @@ public string DisplayName => Name.Replace("_", "__");
 </Label>
 ```
 
-`ContentPresenter` が `AccessText` を生成しなくなるため、`Content` が文字列でもオブジェクトでもアンダーバーはそのまま表示される。
+`ContentPresenter` が既定の文字列表示で `AccessText` を選ばなくなるため、アンダーバーはそのまま表示される。
 
-- **メリット:** `Content` の型に依存せず、アクセスキー解釈だけを確実に無効化できる。
+この設定が効くのは、`ContentPresenter` が文字列から表示要素を選ぶ既定の経路だけである。
+`ContentTemplate` を明示した場合はそちらのテンプレートが優先され、`Content` に `AccessText` を直接置いた場合はその要素がそのまま描画される。
+いずれの場合も `RecognizesAccessKey` の値は結果に影響しない。
+
+- **メリット:** `ContentTemplate` を用意せずに、既定の文字列表示からアクセスキー解釈だけを外せる。バインドしたデータが文字列である限り、値の内容によらず一律に効く。
 - **デメリット:** `ControlTemplate` を差し替えるため、既定テンプレートが持つ `Border` や無効時の表示（`IsEnabled="False"` のときの前景色）を自前で書き直す必要がある。上の例のように `ContentPresenter` だけを置くと、それらは失われる。
 
 既定の外観を保ちたい場合は、`ControlTemplate` を全面的に差し替えるのではなく、方法 3 を選ぶほうが影響範囲が小さい。
@@ -273,7 +284,7 @@ public string DisplayName => Name.Replace("_", "__");
 | 方法 1: `__` でエスケープ           | XAML 1 箇所の修正で済む。アクセスキーを維持できる | 動的データには ViewModel 側の処理が必要。二重適用の危険がある | 静的な文字列で、アクセスキーも使いたい場合 |
 | 方法 2: `TextBlock` に変更          | 最もシンプルで軽量                           | `Label` の `Target` 機能と既定余白を失う       | 表示専用でアクセスキーが不要な場合 |
 | 方法 3: `ContentTemplate` を変更    | 動的バインドに対応でき、既定の外観を保てる   | XAML 量が増える。`Content` の型を選ばない       | `Label` を維持しつつ動的表示が必要 |
-| 方法 4: `RecognizesAccessKey="False"` | 型に依存せず原因を直接無効化できる           | `ControlTemplate` の再実装が必要         | 独自テンプレートを既に持っている場合 |
+| 方法 4: `RecognizesAccessKey="False"` | 原因を直接無効化できる。`ContentTemplate` が不要 | `ControlTemplate` の再実装が必要。既定の文字列表示にしか効かない | 独自テンプレートを既に持っている場合 |
 
 ---
 

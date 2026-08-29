@@ -61,7 +61,8 @@ With virtualization active, only as many `ListBoxItem` instances exist as the vi
 Measured on a 600px-tall `ListBox`, the number of realized containers stayed constant at 31 across collections of 100, 10,000, and 100,000 items.
 Those measurements appear in the figure under "Keeping Virtualization Intact" below.
 
-Only those 31 containers carry a binding; the remaining 9,969 items have none.
+With 10,000 items bound, only those 31 containers carry a binding and the remaining 9,969 have none.
+Raising the item count leaves the binding count at 31, so the proportion of items without a binding grows with the collection.
 The belief that "state is safe as long as it lives on the data" **holds only in the data-to-container direction**.
 The write-back direction, from container to data, works only for the 31 realized items.
 
