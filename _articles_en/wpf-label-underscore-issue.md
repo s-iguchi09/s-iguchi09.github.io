@@ -3,109 +3,187 @@ layout: article-en
 title: "Why WPF Label Hides Underscores and How to Fix It"
 date: 2026-06-09
 category: WPF
-excerpt: "When a string containing an underscore (_) is set on a WPF Label, the character disappears from the screen. This article explains the cause and three ways to work around it."
+excerpt: "When a string containing an underscore (_) is set on a WPF Label, the character disappears from the screen. This article explains the underlying ContentPresenter.RecognizesAccessKey behavior, identifies which controls are affected, and covers four workarounds with measured results."
 image: /images/articles/wpf-label-underscore-issue/label-underscore-rendering.png
 ---
 
 ## Overview
 
-When a string containing `_` (underscore) is set as the `Content` of a WPF `Label` control, the underscore is not rendered and disappears from the display.  
-This behavior is by design in WPF. This article explains the cause and the representative workarounds.  
+When a string containing `_` (underscore) is set as the `Content` of a WPF `Label` control, the underscore is not rendered and disappears from the display.
+This behavior is by design in WPF. This article explains the cause and the representative workarounds.
+
+The issue is commonly treated as specific to `Label`, but the same result occurs on several other controls including `Button` and `CheckBox`.
+This article establishes the affected range of controls through measurement, then presents four workarounds and the criteria for choosing among them.
 
 ---
 
 ## Prerequisites / Environment
 
-- Framework / Language: WPF / C# / XAML
-- Target control: `Label`
+- Framework / Language: .NET 10 / C# / WPF / XAML
+- Target controls: `Label`, and standard controls deriving from `ContentControl` in general
 - Architecture: Applies to both MVVM and code-behind approaches
+- Verification environment: Windows 11, default theme (Aero2), display scaling 100%
 - Prior knowledge: WPF basics, XAML fundamentals
+
+The figures and measured values in this article were captured by actually running an application in the environment above.
+The behavior itself is unchanged since .NET Framework: as long as `AccessText` is involved, the result is the same on any version from .NET 6 onward.
 
 ---
 
 ## Problem
 
-When a string containing an underscore (for example, `my_variable`) is set on a `Label`'s `Content`, the screen displays `myvariable` with the underscore missing.  
-When the string contains `_F`, the letter `F` is rendered with an underline instead of showing `_F` as-is.  
-The same issue occurs with dynamically bound data: if the bound string contains an underscore, it is silently dropped from the display.  
+When a string containing an underscore (for example, `my_variable`) is set on a `Label`'s `Content`, the screen displays `myvariable` with the underscore missing.
+When the string contains `_F`, the letter `F` is rendered with an underline instead of showing `_F` as-is.
+The same issue occurs with dynamically bound data: if the bound string contains an underscore, it is silently dropped from the display.
+
+File paths, identifiers, database column names, and snake_case keys are all common cases where underscores reach the screen.
+Feeding such values directly into a `Label` often goes unnoticed during development and surfaces only once real data is displayed.
 
 ---
 
 ## Cause / Background
 
-`Label` internally uses a control called `AccessText` to render its text.  
-`AccessText` interprets underscores as markers for access keys — the shortcut feature that moves focus to a control when the corresponding Alt key combination is pressed.  
+`Label` internally uses a control called `AccessText` to render its text.
+`AccessText` interprets underscores as markers for access keys — the shortcut feature that moves focus to a control when the corresponding Alt key combination is pressed.
 
 The specific rendering behavior is as follows:
 
-| Input string | Rendered output | Interpretation                                            |
-| ------------ | --------------- | --------------------------------------------------------- |
-| `_File`      | **F**ile        | `F` is registered as an access key                          |
-| `my_var`     | my**v**ar       | `v` is registered as an access key                          |
-| `name_`      | name_           | No character follows, so the underscore is rendered as-is   |
+| Input string | Rendered output | Interpretation                                          |
+| ------------ | --------------- | ------------------------------------------------------- |
+| `_File`      | **F**ile        | `F` is registered as the access key                     |
+| `my_var`     | my**v**ar       | `v` is registered as the access key                     |
+| `name_`      | name_           | No character follows, so the underscore remains visible |
 
-The image below shows the three cases from the table rendered by an actual application.
+The image below shows those three cases rendered by an actual application.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png" alt="A WPF window showing Label controls set to _File, my_var and name_. The first two render as File and myvar with the underscore missing, while name_ keeps its underscore." width="461" height="166" loading="lazy">
-  <figcaption>Rendering results on .NET 10 / Windows 11. The XAML markup is on the left and the actual output on the right. <code>_File</code> and <code>my_var</code> lose their underscore, whereas <code>name_</code> keeps it because no character follows the underscore for the access key to consume.</figcaption>
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png" alt="A WPF window showing Label controls set to _File, my_var, and name_. _File renders as File and my_var renders as myvar, with the underscore removed. Only name_ keeps its underscore." width="461" height="166" loading="lazy">
+  <figcaption>Result of assigning each string to a <code>Label</code> on .NET 10 / Windows 11. The left column is the XAML markup and the right column is the actual rendering. <code>_File</code> and <code>my_var</code> lose their underscore, while <code>name_</code> is not treated as an access key because no character follows it.</figcaption>
 </figure>
 
-As a result, any underscore in the bound data causes unintended display corruption.  
-Because only an underscore that is followed by a character is consumed, the outcome depends on where the underscore appears in the string.  
+As a result, display corruption occurs simply because the data contains an underscore.
+Because the underscore is only consumed when a character follows it, the outcome depends on where the underscore sits in the string.
+
+When a string contains multiple underscores, only the first one is registered as an access key.
+Given `a_b_c`, the access key becomes `b` and the second underscore is rendered as-is.
+
+### What Decides Whether AccessText Is Used
+
+Whether `AccessText` is used is determined not by the `Label` type itself, but by the **`RecognizesAccessKey` property of the `ContentPresenter` placed in the default `ControlTemplate`**.
+When that property is `True` and `Content` is a string, the `ContentPresenter` produces an `AccessText` instead of a plain `TextBlock`.
+
+Walking the visual tree makes the difference explicit.
+
+| `Content` | Visual tree that gets built |
+| --- | --- |
+| `Status Running` | `Label` → `Border` → `ContentPresenter` → `TextBlock` |
+| `Status _Running` | `Label` → `Border` → `ContentPresenter` → `AccessText` → `TextBlock` |
+
+An `AccessText` layer is inserted only when the content contains an underscore.
+The accurate statement is therefore not that `Label` swallows underscores, but that a `ContentPresenter` with `RecognizesAccessKey="True"` does.
+
+### Which Controls Are Affected
+
+`Label` is not the only control whose default template sets `RecognizesAccessKey` to `True`.
+The table below records whether an `AccessText` appears in the visual tree when the same string `my_var` is assigned to each control.
+
+| Control | Underscore handling | Affected property |
+| --- | --- | --- |
+| `Label` | Removed | `Content` |
+| `Button` | Removed | `Content` |
+| `CheckBox` | Removed | `Content` |
+| `RadioButton` | Removed | `Content` |
+| `ToggleButton` | Removed | `Content` |
+| `GroupBox` | Removed | `Header` only |
+| `Expander` | Removed | `Header` only |
+| `TabItem` | Removed | `Header` only |
+| `MenuItem` | Removed | `Header` only |
+| `TreeViewItem` | Preserved | — |
+| `ListBoxItem` | Preserved | — |
+| `ComboBoxItem` | Preserved | — |
+| `StatusBarItem` | Preserved | — |
+| `TextBlock` | Preserved | — |
+
+`GroupBox`, `Expander`, `TabItem`, and `MenuItem` each contain two `ContentPresenter` instances in their template.
+Only the header-side presenter has `RecognizesAccessKey="True"`; the one for the main `Content` is `False`.
+Consequently, within the same control, only strings placed in the header lose their underscores.
+
+The rendering result for the principal controls, all given the same string, is shown below.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png" alt="A WPF window where the string my_var is assigned to a Label, Button, CheckBox, GroupBox header, ListBoxItem, and TextBlock. The first four render myvar while ListBoxItem and TextBlock render my_var." width="504" height="309" loading="lazy">
+  <figcaption>Result of assigning the same string <code>my_var</code> to each control on .NET 10 / Windows 11. <code>Label</code>, <code>Button</code>, <code>CheckBox</code>, and the <code>GroupBox</code> header lose the underscore, while <code>ListBoxItem</code> and <code>TextBlock</code> preserve it. The difference comes from <code>ContentPresenter.RecognizesAccessKey</code> in the default templates.</figcaption>
+</figure>
+
+`ListBoxItem` and `ComboBoxItem` are unaffected because assigning access keys to entries in a list serves no purpose.
+Conversely, placing a `Label` or `Button` inside an `ItemTemplate` reintroduces the problem at that point.
 
 ---
 
 ## Solution
 
-There are three main workarounds. Choose the one that fits the situation.  
+There are four workarounds. The appropriate one depends on the use case.
 
-- To escape individual underscores, write `__` (two underscores) in place of each `_` (Workaround 1).
-- If the access-key feature is not needed and the goal is simply to display text, replace `Label` with `TextBlock` (Workaround 2).
-- To keep `Label` while correctly displaying dynamically bound strings that contain underscores, override `ContentTemplate` with a `TextBlock` (Workaround 3).
+- To simply escape the underscore, write it twice as `__` (Workaround 1).
+- When access keys are unnecessary and the text is display-only, switch to `TextBlock` (Workaround 2).
+- To keep `Label` while rendering dynamically bound data correctly, use a `TextBlock` in `ContentTemplate` (Workaround 3).
+- To keep the appearance and padding of `Label` while disabling access-key interpretation, set `RecognizesAccessKey="False"` in a `ControlTemplate` (Workaround 4).
+
+Workaround 1 is the only approach that fixes the display while retaining access-key functionality. Workarounds 2 through 4 all give up access keys in exchange for handling strings verbatim.
 
 ---
 
 ## Implementation
 
-### Workaround 1: Escape underscores by doubling them
+### Workaround 1: Escape the Underscore by Doubling It
 
-Writing `__` renders a single underscore on screen.  
-This approach is suitable when the string is set statically in XAML.  
+Writing `__` renders a single underscore on screen.
+This suits cases where the string is set statically in XAML.
 
 ```xml
 <Label Content="my__variable" />
 ```
 
-- **Advantage:** A single change in XAML is all that is required.
-- **Disadvantage:** When the bound data comes from a ViewModel and contains underscores, a replacement step must be performed in code before binding.
+- **Advantage:** Requires a single edit in XAML. Access-key functionality remains available.
+- **Disadvantage:** When the data is dynamically bound, replacement logic is required on the ViewModel side.
+
+For dynamic data handled by replacement, write it as follows.
+
+```csharp
+// Escape underscores for display purposes. The original value is left untouched.
+public string DisplayName => Name.Replace("_", "__");
+```
+
+This replacement **must be applied exactly once**.
+Applying it again to an already-escaped string turns `a_b` into `a____b`, which renders incorrectly as `a__b`.
+Computing the value in a property getter each time makes double application easy to avoid.
 
 ---
 
-### Workaround 2: Replace Label with TextBlock
+### Workaround 2: Switch to the TextBlock Control
 
-If the access-key feature and the `Target` property for focus navigation are not needed, replacing `Label` with `TextBlock` is the best practice.  
-`TextBlock` does not use `AccessText`, so underscores are displayed as-is.  
+When access-key functionality and focus control via the `Target` property are unnecessary, switching `Label` to `TextBlock` is the simplest fix.
+`TextBlock` does not use `AccessText`, so underscores render as-is.
 
 ```xml
 <TextBlock Text="my_variable" />
 ```
 
-Dynamic binding works the same way without any special handling.  
+Binding works the same way.
 
 ```xml
 <TextBlock Text="{Binding VariableName}" />
 ```
 
-- **Advantage:** No escaping is required. `TextBlock` is also more lightweight than `Label`, making it the appropriate choice for display-only use.
-- **Disadvantage:** The `Label`'s `Target` property for focus control cannot be used.
+- **Advantage:** Underscores no longer require attention. `TextBlock` is lighter than `Label` and is the appropriate choice for display-only text.
+- **Disadvantage:** Focus control through `Label`'s `Target` property is lost. The default `Padding` also disappears, so line spacing and alignment need rechecking.
 
 ---
 
-### Workaround 3: Customize ContentTemplate to use TextBlock
+### Workaround 3: Use a TextBlock in ContentTemplate
 
-To keep `Label` while correctly rendering bound strings that contain underscores, set a `ContentTemplate` that uses `TextBlock` for the content.  
-This causes `Label` to render its `Content` through `TextBlock` instead of `AccessText`.  
+To keep `Label` while correctly rendering dynamically bound data that contains underscores, specify a `TextBlock` in `ContentTemplate`.
+This makes `Label` render its `Content` through a `TextBlock` rather than an `AccessText`.
 
 ```xml
 <Label Content="{Binding VariableName}">
@@ -117,7 +195,7 @@ This causes `Label` to render its `Content` through `TextBlock` instead of `Acce
 </Label>
 ```
 
-For application-wide consistency, the template can be extracted into a shared style.  
+To apply this consistently across an application, define the template as a style.
 
 ```xml
 <Style x:Key="PlainLabel" TargetType="Label">
@@ -131,48 +209,87 @@ For application-wide consistency, the template can be extracted into a shared st
 </Style>
 ```
 
-- **Advantage:** Dynamically bound data containing underscores is displayed correctly. Defining this as a shared style makes it easy to apply across multiple locations.
-- **Disadvantage:** The XAML becomes more verbose.
+- **Advantage:** Dynamically bound data containing underscores renders correctly. Sharing the template as a style makes it easy to apply in many places.
+- **Disadvantage:** The XAML grows. `ContentTemplate` also applies when `Content` is an object rather than a string, so its scope must be constrained.
 
-Running the three workarounds side by side produces the same rendered output for all of them.
+---
+
+### Workaround 4: Set RecognizesAccessKey to False in a ControlTemplate
+
+This addresses the cause directly.
+Replace the `ControlTemplate` and set `RecognizesAccessKey` to `False` on the `ContentPresenter`.
+
+```xml
+<Label Content="{Binding VariableName}">
+    <Label.Template>
+        <ControlTemplate TargetType="Label">
+            <ContentPresenter RecognizesAccessKey="False" />
+        </ControlTemplate>
+    </Label.Template>
+</Label>
+```
+
+The `ContentPresenter` no longer produces an `AccessText`, so underscores render as-is whether `Content` is a string or an object.
+
+- **Advantage:** Disables access-key interpretation reliably, independent of the `Content` type.
+- **Disadvantage:** Replacing the `ControlTemplate` means reimplementing what the default template provides, such as the `Border` and the disabled-state appearance (the foreground color when `IsEnabled="False"`). Placing only a `ContentPresenter`, as in the example above, discards them.
+
+When the default appearance must be preserved, Workaround 3 has a smaller blast radius than replacing the entire `ControlTemplate`.
+
+Applying each of the four workarounds produces the same rendered result.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="A WPF window showing the three workarounds. An escaped Label, a TextBlock and a Label with a replaced ContentTemplate all render my_variable." width="554" height="166" loading="lazy">
-  <figcaption>The three workarounds running in the same application. Escaping with <code>__</code>, switching to <code>TextBlock</code>, and replacing the <code>ContentTemplate</code> all render <code>my_variable</code> without dropping the underscore.</figcaption>
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="A WPF window showing four workarounds: an escaped Label, a TextBlock, a Label with a replaced ContentTemplate, and a Label with RecognizesAccessKey set to False. All four render my_variable." width="554" height="202" loading="lazy">
+  <figcaption>The four workarounds executed in the same application. Escaping with <code>__</code>, switching to <code>TextBlock</code>, replacing <code>ContentTemplate</code>, and setting <code>RecognizesAccessKey="False"</code> all display <code>my_variable</code> without loss.</figcaption>
 </figure>
 
 ---
 
-## Notes
+## Notes and Limitations
 
-- When using the `Target` property to move focus via access keys, the access-key mechanism must remain active. In that case, Workaround 2 and Workaround 3 are not suitable; use Workaround 1 (escaping) instead.
-- When applying Workaround 3, the `ContentTemplate` is applied regardless of the `Content` type. Confirm that the bound data is of type `string` before adopting this approach.
-- Replacing `_` with `__` in the ViewModel is also possible, but it introduces a View-layer concern into the ViewModel and should generally be avoided.
+- When focus movement via the `Target` property is required, the access-key mechanism must stay enabled, so Workarounds 2, 3, and 4 do not apply. Use Workaround 1 (escaping) in that case.
+- `ContentTemplate` in Workaround 3 also applies when `Content` is an object rather than a string. Confirm that the bound data type is `string` before applying it.
+- Replacing `_` with `__` on the ViewModel side pushes a View-level display rule into the ViewModel. Leave the original property referenced by value objects and business logic unchanged, and expose a separate display-only property.
+- The same problem occurs on `Button` and `MenuItem`. Fixing only `Label` leaves the text broken wherever the same string is used as a button caption. Audit every place where data-derived strings are displayed.
+- An unintentionally registered access key affects **keyboard operation**, not just rendering. When multiple controls in the same scope share an access key, Alt-key focus movement cycles between them, making interaction unpredictable.
+- For strings inside a list, `ListBox` itself is unaffected, but a `Label` placed inside the `ItemTemplate` still drops the underscore. Check the template contents as well.
+
+### Side Effect on Rendering Cost
+
+Inserting an `AccessText` adds one visual layer, which affects rendering cost as well.
+Placing 1,000 `Label` controls in a non-virtualized `StackPanel`, layout with underscore-containing strings takes roughly three times as long as without them.
+A `Label` with the Workaround 3 `ContentTemplate` applied, by contrast, costs roughly the same as a `Label` without underscores.
+
+On screens that display large amounts of text from underscore-bearing data, Workaround 3 improves both correctness and rendering cost.
+The relationship between control choice and rendering cost is covered in detail in [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/).
 
 ---
 
 ## Alternatives / Comparison
 
-| Approach                            | Advantage                                        | Disadvantage                                           | Best suited for                                 |
-| ----------------------------------- | ------------------------------------------------ | ------------------------------------------------------ | ----------------------------------------------- |
-| Workaround 1: Escape with `__`      | Simple one-line XAML change                      | Requires replacement logic in code for dynamic data    | Fixing individual static strings in XAML        |
-| Workaround 2: Switch to `TextBlock` | Simplest and most lightweight                    | `Label`'s `Target` feature is unavailable              | Display-only text where access keys are unused  |
-| Workaround 3: Override `ContentTemplate` | Handles dynamic bound data correctly        | More verbose XAML                                      | Keeping `Label` with dynamic string binding     |
+| Approach | Advantages | Disadvantages | Best suited for |
+| --- | --- | --- | --- |
+| Workaround 1: Escape with `__` | One-line XAML edit; access keys retained | Dynamic data needs ViewModel work; risk of double application | Static strings where access keys are also needed |
+| Workaround 2: Switch to `TextBlock` | Simplest and most lightweight | Loses `Label`'s `Target` feature and default padding | Display-only text where access keys are unused |
+| Workaround 3: Override `ContentTemplate` | Handles dynamic binding; preserves default appearance | More verbose XAML; applies regardless of `Content` type | Keeping `Label` with dynamic string binding |
+| Workaround 4: `RecognizesAccessKey="False"` | Disables the cause directly, independent of type | Requires reimplementing the `ControlTemplate` | Projects that already use a custom template |
 
 ---
 
 ## Summary
 
-Underscores disappear in WPF `Label` because the internal `AccessText` control interprets them as access-key markers.  
+Underscores disappear in WPF `Label` because the `ContentPresenter` in its default template has `RecognizesAccessKey="True"` and therefore renders strings through `AccessText`.
+This is not specific to `Label`: `Button`, `CheckBox`, and `RadioButton`, as well as the `Header` of `GroupBox`, `Expander`, `TabItem`, and `MenuItem`, all behave the same way.
 
 - For display-only text, switching to `TextBlock` (Workaround 2) is the simplest and most appropriate solution.
-- When `Label` must be used with static strings, escaping with `__` (Workaround 1) is the quickest fix.
-- When `Label` must be used with dynamically bound data that contains underscores, override `ContentTemplate` to render via `TextBlock` (Workaround 3).
+- When `Label` must be used with static strings and access keys must be retained, escape with `__` (Workaround 1).
+- When dynamically bound data contains underscores, use a `TextBlock` in `ContentTemplate` (Workaround 3). This preserves the default appearance and avoids the rendering cost added by `AccessText`.
+- When a custom `ControlTemplate` already exists, set `RecognizesAccessKey="False"` on its `ContentPresenter` (Workaround 4).
 
-Choosing the right approach based on the use case ensures that underscores are always displayed correctly.  
+Whether access keys are needed is the deciding factor.
+If they are, use Workaround 1. If not, choose among Workarounds 2 through 4 based on how much of `Label`'s appearance must be preserved.
 
 ---
 
 <!-- Related articles -->
-<!-- - [WPF の Label でアンダーバーが消える理由と回避方法](/ja/articles/wpf-label-underscore-issue) -->
-<!-- - [How to Display Selectable, Read-Only Text in WPF](/articles/wpf-selectable-readonly-text-display) -->
+- [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/)

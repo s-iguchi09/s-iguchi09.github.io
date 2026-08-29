@@ -14,7 +14,41 @@ internal sealed class LabelUnderscoreScene : IScene
     public async Task CaptureAsync(SceneContext context)
     {
         await context.ShootAsync(BuildSymptomWindow(), "label-underscore-rendering.png");
+        await context.ShootAsync(BuildAffectedControlsWindow(), "label-underscore-affected-controls.png");
         await context.ShootAsync(BuildWorkaroundWindow(), "label-underscore-workarounds.png");
+    }
+
+    /// <summary>
+    /// 同じ文字列を各コントロールへ与え、アンダーバーが消える範囲が
+    /// <c>Label</c> に限らないことを示す。
+    /// 既定テンプレートの <c>ContentPresenter.RecognizesAccessKey</c> が
+    /// <c>True</c> かどうかで結果が分かれる。
+    /// </summary>
+    private static Window BuildAffectedControlsWindow()
+    {
+        var rows = new[]
+        {
+            new DemoLayout.Row(
+                """<Label Content="my_var" />""",
+                SceneContext.LoadXaml<Label>("""<Label Content="my_var" Padding="0" />""")),
+            new DemoLayout.Row(
+                """<Button Content="my_var" />""",
+                SceneContext.LoadXaml<Button>("""<Button Content="my_var" Padding="8,2" />""")),
+            new DemoLayout.Row(
+                """<CheckBox Content="my_var" />""",
+                SceneContext.LoadXaml<CheckBox>("""<CheckBox Content="my_var" />""")),
+            new DemoLayout.Row(
+                """<GroupBox Header="my_var" />""",
+                SceneContext.LoadXaml<GroupBox>("""<GroupBox Header="my_var" Width="150" Height="44" />""")),
+            new DemoLayout.Row(
+                """<ListBoxItem Content="my_var" />""",
+                SceneContext.LoadXaml<ListBoxItem>("""<ListBoxItem Content="my_var" Padding="0" />""")),
+            new DemoLayout.Row(
+                """<TextBlock Text="my_var" />""",
+                SceneContext.LoadXaml<TextBlock>("""<TextBlock Text="my_var" />""")),
+        };
+
+        return DemoLayout.BuildComparisonWindow("RecognizesAccessKey", rows);
     }
 
     /// <summary>
@@ -59,6 +93,18 @@ internal sealed class LabelUnderscoreScene : IScene
                           <TextBlock Text="{Binding}" />
                         </DataTemplate>
                       </Label.ContentTemplate>
+                    </Label>
+                    """)),
+            new DemoLayout.Row(
+                """<Label RecognizesAccessKey="False" />""",
+                SceneContext.LoadXaml<Label>(
+                    """
+                    <Label Content="my_variable" Padding="0">
+                      <Label.Template>
+                        <ControlTemplate TargetType="Label">
+                          <ContentPresenter RecognizesAccessKey="False" />
+                        </ControlTemplate>
+                      </Label.Template>
                     </Label>
                     """)),
         };
