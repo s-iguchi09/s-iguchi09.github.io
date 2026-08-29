@@ -26,7 +26,7 @@ This article establishes the affected range of controls through measurement, the
 - Prior knowledge: WPF basics, XAML fundamentals
 
 The figures and measured values in this article were captured by actually running an application in the environment above.
-The behavior itself is unchanged since .NET Framework: as long as `AccessText` is involved, the result is the same on any version from .NET 6 onward.
+**Other versions and themes were not verified.** Because the behavior depends on `RecognizesAccessKey` in the default templates, results can differ where the theme or `ControlTemplate` has been replaced.
 
 ---
 
@@ -105,15 +105,15 @@ The table below records whether an `AccessText` appears in the visual tree when 
 | `StatusBarItem` | Preserved | — |
 | `TextBlock` | Preserved | — |
 
-`GroupBox`, `Expander`, `TabItem`, and `MenuItem` each contain two `ContentPresenter` instances in their template, and only the header-side one has `RecognizesAccessKey="True"`.
-What the other presenter serves differs by control.
+On these header-bearing controls, the only `ContentPresenter` with `RecognizesAccessKey="True"` is the one that renders the `Header`.
+How the main `Content` is rendered differs by control.
 
-| Control | The other `ContentPresenter` |
+| Control | `ContentPresenter` instances in its own template |
 | --- | --- |
-| `GroupBox`, `Expander`, `TabItem` | Renders the main `Content` |
-| `MenuItem` | Renders the `Icon` (`MenuItem` has no `Content` property) |
+| `GroupBox`, `Expander` | Two: one for `Header` (`True`) and one for `Content` (`False`) |
+| `MenuItem` | Two: one for `Header` (`True`) and one for `Icon` (`False`). `MenuItem` has no `Content` property |
+| `TabItem` | One: for `Header` (`True`). The selected `Content` is rendered by `PART_SelectedContentHost` on the parent `TabControl` |
 
-`RecognizesAccessKey` is `False` on all of them.
 Consequently, within the same control, only strings placed in the header lose their underscores.
 
 The rendering result for the principal controls, all given the same string, is shown below.

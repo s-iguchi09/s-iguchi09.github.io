@@ -26,7 +26,7 @@ WPF の `Label` コントロールに `_` （アンダーバー）を含む文�
 - 前提知識: WPF 基本操作、XAML の基礎
 
 本記事に載せた図と実測値は、上記の環境で実際にアプリケーションを起動して取得したものである。
-挙動自体は .NET Framework 時代から変わっておらず、`AccessText` を使う限り .NET 6 以降のどのバージョンでも同じ結果になる。
+**他のバージョンやテーマでは確認していない。** 既定テンプレートの `RecognizesAccessKey` に依存する挙動であるため、テーマや `ControlTemplate` を差し替えた環境では結果が変わりうる。
 
 ---
 
@@ -105,15 +105,15 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 | `StatusBarItem` | 消えない | — |
 | `TextBlock` | 消えない | — |
 
-`GroupBox`・`Expander`・`TabItem`・`MenuItem` は、テンプレート内に `ContentPresenter` を 2 つ持ち、`RecognizesAccessKey="True"` なのは `Header` 側だけである。
-もう一方が担当する対象はコントロールによって異なる。
+`Header` を持つこれらのコントロールでは、`RecognizesAccessKey="True"` なのは `Header` を描画する `ContentPresenter` だけである。
+本体の `Content` を描画する側の構成はコントロールによって異なる。
 
-| コントロール | もう一方の `ContentPresenter` |
+| コントロール | 自身のテンプレート内の `ContentPresenter` |
 | --- | --- |
-| `GroupBox`・`Expander`・`TabItem` | 本体の `Content` を描画する |
-| `MenuItem` | `Icon` を描画する（`MenuItem` は `Content` プロパティを持たない） |
+| `GroupBox`・`Expander` | 2 つ。`Header` 用（`True`）と `Content` 用（`False`） |
+| `MenuItem` | 2 つ。`Header` 用（`True`）と `Icon` 用（`False`）。`MenuItem` は `Content` プロパティを持たない |
+| `TabItem` | 1 つだけ。`Header` 用（`True`）。選択中の `Content` は親の `TabControl` にある `PART_SelectedContentHost` が描画する |
 
-いずれも `RecognizesAccessKey` は `False` である。
 このため、同じコントロールでもヘッダーに置いた文字列だけアンダーバーが消える。
 
 主要なコントロールについて、同じ文字列を与えて描画した結果を次に示す。
