@@ -61,10 +61,10 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    private static List<RowItemViewModel> CreateRows()
+    private static List<RowItemViewModel> CreateRows(int count = ItemCount)
     {
-        var rows = new List<RowItemViewModel>(ItemCount);
-        for (int i = 1; i <= ItemCount; i++)
+        var rows = new List<RowItemViewModel>(count);
+        for (int i = 1; i <= count; i++)
         {
             rows.Add(new RowItemViewModel { Name = $"Row {i}" });
         }
@@ -170,17 +170,36 @@ internal sealed class ListBoxSelectionSyncScene : IScene
     }
 
     /// <summary>
-    /// <c>CanContentScroll</c> を切り替えたときに、実体化される
-    /// <see cref="ListBoxItem"/> の数とレイアウト時間がどう変わるかを測る。
+    /// 実体化される <see cref="ListBoxItem"/> の数が件数に依存しないことと、
+    /// <c>CanContentScroll</c> を <c>False</c> にすると仮想化が止まることを測る。
+    /// 前者を示すため、件数を変えた 3 通りを同じ条件で計測する。
     /// </summary>
     private static Window BuildVirtualizationCostWindow()
     {
+        // CanContentScroll="False" は全件分のコンテナを作るため、
+        // 件数を増やした組み合わせは測らない。
+        (int Items, bool CanContentScroll)[] conditions =
+        [
+            (100, true),
+            (ItemCount, true),
+            (100_000, true),
+            (ItemCount, false),
+        ];
+
         var rows = new List<IReadOnlyList<string>>();
 
         // ウィンドウの生成コストを計測に含めないよう、空のウィンドウを先に表示しておく。
         using var host = new HostWindow();
 
-        foreach (bool canContentScroll in new[] { true, false })
+        // JIT とテンプレート初期化の影響が最初の条件だけに乗ると、
+        // 件数が多いほど速いという誤解を招く並びになるため、先に暖機する。
+        for (int i = 0; i < 2; i++)
+        {
+            host.MeasureMount(CreateListBox(CreateRows(), bindIsSelected: true));
+            host.Clear();
+        }
+
+        foreach ((int items, bool canContentScroll) in conditions)
         {
             double best = double.MaxValue;
             int containers = 0;
@@ -189,8 +208,8 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             // 単発では GC やレンダリングの影響でばらつくため、複数回試して最小値を採る。
             for (int i = 0; i < MeasureIterations; i++)
             {
-                List<RowItemViewModel> items = CreateRows();
-                ListBox listBox = CreateListBox(items, bindIsSelected: true, canContentScroll);
+                List<RowItemViewModel> data = CreateRows(items);
+                ListBox listBox = CreateListBox(data, bindIsSelected: true, canContentScroll);
 
                 best = Math.Min(best, host.MeasureMount(listBox));
                 containers = FindAll<ListBoxItem>(listBox).Count;
@@ -201,6 +220,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
 
             rows.Add(
             [
+                Format(items),
                 canContentScroll.ToString(),
                 Format(containers),
                 Format(visuals),
@@ -209,8 +229,8 @@ internal sealed class ListBoxSelectionSyncScene : IScene
         }
 
         return DemoLayout.BuildTableWindow(
-            $"ListBox, {ItemCount:N0} items",
-            ["CanContentScroll", "ListBoxItem", "visuals", "layout ms"],
+            "ListBox, IsVirtualizing=True",
+            ["items", "CanContentScroll", "ListBoxItem", "visuals", "layout ms"],
             rows);
     }
 

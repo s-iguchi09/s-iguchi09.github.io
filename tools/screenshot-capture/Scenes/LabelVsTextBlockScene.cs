@@ -138,7 +138,7 @@ internal sealed class LabelVsTextBlockScene : IScene
         var label = new Measurement();
         var textBlock = new Measurement();
 
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < Iterations; i++)
         {
             label.Add(MeasureVirtualized(labelItem));
             textBlock.Add(MeasureVirtualized(textBlockItem));
@@ -189,8 +189,9 @@ internal sealed class LabelVsTextBlockScene : IScene
         host.UpdateLayout();
         stopwatch.Stop();
 
-        // ホストの Border 自身は数えない。
-        return new Sample(CountVisuals(host) - 1, stopwatch.Elapsed.TotalMilliseconds);
+        // 並べた要素の分だけを数えるため、入れ物である Border と StackPanel の
+        // 2 個を除く。こうすると 1 個あたりの visual 数がそのまま倍率になる。
+        return new Sample(CountVisuals(host) - 2, stopwatch.Elapsed.TotalMilliseconds);
     }
 
     /// <summary>

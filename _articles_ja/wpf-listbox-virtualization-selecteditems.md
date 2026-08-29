@@ -58,7 +58,8 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 ### 実体化されるコンテナは件数に依存しない
 
 仮想化が有効なとき、同時に存在する `ListBoxItem` は表示範囲に必要な数だけである。
-高さ 600px の `ListBox` で計測すると、コレクションの件数を 100 件から 100,000 件まで変えても、実体化されるコンテナは 31 個で一定であった。
+高さ 600px の `ListBox` で計測すると、コレクションの件数を 100 件・10,000 件・100,000 件と変えても、実体化されるコンテナは 31 個で一定であった。
+この計測結果は、後掲の「仮想化を壊さない」の図に示している。
 
 この 31 個だけがバインドを持ち、残り 9,969 件にはバインドが存在しない。
 「選択状態がデータ側にあれば安全」という理解は、**データからコンテナへの方向にしか当てはまらない**。
@@ -232,8 +233,30 @@ private void RowListBox_SelectionChanged(object sender, SelectionChangedEventArg
 }
 ```
 
-MVVM を保ちたい場合は、同じ処理を添付ビヘイビアや `System.Windows.Interactivity` の `EventTrigger` から呼び出す。
-`SelectionChanged` は `ListBox` の実装詳細ではなくユーザー操作の通知であるため、ViewModel のコマンドへ委譲しても構成上の問題はない。
+`SelectionChanged` はユーザー操作だけで発生するイベントではない。
+`SelectAll` の呼び出し、`SelectedItem` への代入、そして本節の構成では**コンテナが実体化されてバインドが選択状態を復元したとき**にも発生する。
+そのため上のハンドラーは、復元のたびに「すでに `true` の項目へ `true` を代入する」呼び出しを受ける。
+前掲の `RowItemViewModel` のように**セッターで同値を弾いておく**ことで、この経路が余計な変更通知を発生させずに済む。
+
+MVVM を保ちたい場合は、同じ処理を添付ビヘイビアか、`Microsoft.Xaml.Behaviors.Wpf` パッケージの `EventTrigger` から呼び出す。
+`System.Windows.Interactivity`（Blend SDK）は後継の `Microsoft.Xaml.Behaviors` に置き換えられており、新規に使うものではない。
+
+```xml
+<ListBox ItemsSource="{Binding Items}"
+         SelectionMode="Extended"
+         xmlns:b="http://schemas.microsoft.com/xaml/behaviors">
+    <b:Interaction.Triggers>
+        <b:EventTrigger EventName="SelectionChanged">
+            <b:InvokeCommandAction Command="{Binding SelectionChangedCommand}"
+                                   PassEventArgsToCommand="True" />
+        </b:EventTrigger>
+    </b:Interaction.Triggers>
+    <!-- ItemTemplate と ItemContainerStyle は前掲のまま -->
+</ListBox>
+```
+
+`PassEventArgsToCommand="True"` により、コマンドは `SelectionChangedEventArgs` を受け取る。
+`e.AddedItems` / `e.RemovedItems` の扱いはコードビハインド版と同じである。
 
 XAML 側でイベントを結び付ける。
 
@@ -280,11 +303,14 @@ ViewModel で `IsSelected` を書き換えた場合、その効果は実体化�
 その影響を計測した結果が次の表である。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png" alt="CanContentScroll の値による違いを比較した表。True では ListBoxItem が 31 個、visual が 152 個であるのに対し、False では 10,000 個と 40,028 個に増え、レイアウト時間も 2 桁大きくなっている。" width="463" height="160" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、10,000 件をバインドした <code>ListBox</code> の <code>ScrollViewer.CanContentScroll</code> を切り替えて計測した値。5 回試行の最小値を採っている。<code>False</code> にすると全件分のコンテナが構築され、レイアウト時間は 2 桁大きくなる。所要時間は実行環境に依存するため、絶対値ではなく比率として読む。</figcaption>
+  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png" alt="件数と CanContentScroll を変えて計測した表。CanContentScroll が True なら 100 件でも 100,000 件でも ListBoxItem は 31 個、visual は 152 個で一定である。10,000 件で False にすると 10,000 個と 40,028 個に増え、レイアウト時間も 2 桁大きくなる。" width="542" height="221" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、件数と <code>ScrollViewer.CanContentScroll</code> を変えて計測した値。5 回試行の最小値を採っている。<code>True</code> の 3 行は、件数を 1,000 倍にしてもコンテナ数・visual 数・レイアウト時間がいずれも変わらないことを示す。<code>False</code> にすると全件分のコンテナが構築され、レイアウト時間は 2 桁大きくなる。所要時間は実行環境に依存するため、絶対値ではなく比率として読む。</figcaption>
 </figure>
 
-`False` にすると、実体化される `ListBoxItem` は 31 個から 10,000 個へ、visual の総数は 152 個から 40,028 個へ増える。
+`True` のままであれば、件数を 100 件から 100,000 件へ 1,000 倍にしても、実体化される `ListBoxItem` は 31 個、visual の総数は 152 個で変わらない。
+仮想化の効果は、まさにこの「コストが件数に依存しない」という点にある。
+
+`False` にすると、10,000 件で実体化される `ListBoxItem` は 31 個から 10,000 個へ、visual の総数は 152 個から 40,028 個へ増える。
 レイアウト時間の差は 2 桁に達する。
 
 滑らかなピクセル単位スクロールを求めて `CanContentScroll="False"` を設定すると、仮想化が失われて大量件数では実用にならない。

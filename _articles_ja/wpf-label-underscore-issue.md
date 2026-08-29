@@ -20,7 +20,7 @@ WPF の `Label` コントロールに `_` （アンダーバー）を含む文�
 ## 前提・対象環境
 
 - フレームワーク／言語: .NET 10 / C# / WPF / XAML
-- 対象コントロール: `Label` を中心に、`ContentControl` を継承する標準コントロール全般
+- 対象コントロール: 既定テンプレートの `ContentPresenter` が `RecognizesAccessKey="True"` である標準コントロール（`Label`・`Button`・`CheckBox`・`RadioButton`・`ToggleButton` と、`GroupBox`・`Expander`・`TabItem`・`MenuItem` の `Header`）
 - アーキテクチャ: MVVM / コードビハインドのいずれでも発生する
 - 検証環境: Windows 11、既定テーマ（Aero2）、表示スケール 100%
 - 前提知識: WPF 基本操作、XAML の基礎
@@ -70,7 +70,8 @@ WPF の `Label` コントロールに `_` （アンダーバー）を含む文�
 ### AccessText を挟むかどうかを決めているもの
 
 `AccessText` が使われるかどうかは、`Label` という型そのものではなく、**既定の `ControlTemplate` に置かれた `ContentPresenter` の `RecognizesAccessKey` プロパティ**で決まる。
-このプロパティが `True` で、かつ `Content` が文字列のとき、`ContentPresenter` は通常の `TextBlock` ではなく `AccessText` を生成する。
+`ContentPresenter` は、`RecognizesAccessKey` が `True` で、**かつ文字列にアンダーバーが含まれるときにだけ** `AccessText` を生成する。
+アンダーバーを含まない文字列では、`RecognizesAccessKey` が `True` であっても通常の `TextBlock` が使われる。
 
 visual ツリーを実際にたどると、この差がそのまま現れる。
 
@@ -127,7 +128,7 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 - アンダーバーをエスケープしたいだけなら、`__` と 2 つ重ねて書く（方法 1）。
 - アクセスキー機能が不要で単純にテキストを表示したい場合は、`TextBlock` に変更する（方法 2）。
 - `Label` のまま動的なバインドデータを正しく表示したい場合は、`ContentTemplate` で `TextBlock` を使う（方法 3）。
-- `Label` の見た目と余白を保ったまま、アクセスキー解釈だけを止めたい場合は、`ControlTemplate` で `RecognizesAccessKey="False"` を指定する（方法 4）。
+- `Content` の型に関わらずアクセスキー解釈そのものを止めたい場合は、`ControlTemplate` で `RecognizesAccessKey="False"` を指定する（方法 4）。ただし既定テンプレートを置き換えるため、`Border` や余白は自前で作り直すことになる。
 
 方法 1 だけが「アクセスキー機能を残したまま表示を直す」手段であり、方法 2〜4 はいずれもアクセスキー機能を捨てる代わりに文字列をそのまま扱えるようにする手段である。
 
@@ -239,7 +240,7 @@ public string DisplayName => Name.Replace("_", "__");
 4 つの方法をそれぞれ実行すると、いずれも同じ表示結果になる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="4 つの回避方法を適用した WPF アプリの画面。エスケープした Label、TextBlock、ContentTemplate を差し替えた Label、RecognizesAccessKey を False にした Label のいずれもが my_variable と表示している。" width="554" height="202" loading="lazy">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="4 つの回避方法を適用した WPF アプリの画面。エスケープした Label、TextBlock、ContentTemplate を差し替えた Label、RecognizesAccessKey を False にした Label のいずれもが my_variable と表示している。" width="619" height="202" loading="lazy">
   <figcaption>4 つの回避方法を同一アプリ上で実行した結果。<code>__</code> でのエスケープ、<code>TextBlock</code> への変更、<code>ContentTemplate</code> の差し替え、<code>RecognizesAccessKey="False"</code> のいずれでも <code>my_variable</code> が欠落せずに表示される。</figcaption>
 </figure>
 

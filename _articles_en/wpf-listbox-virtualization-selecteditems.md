@@ -58,7 +58,8 @@ With `VirtualizationMode="Recycling"`, containers are reused, which makes incons
 ### Realized Containers Do Not Scale with Item Count
 
 With virtualization active, only as many `ListBoxItem` instances exist as the visible range requires.
-Measured on a 600px-tall `ListBox`, the number of realized containers stayed constant at 31 whether the collection held 100 items or 100,000.
+Measured on a 600px-tall `ListBox`, the number of realized containers stayed constant at 31 across collections of 100, 10,000, and 100,000 items.
+Those measurements appear in the figure under "Keeping Virtualization Intact" below.
 
 Only those 31 containers carry a binding; the remaining 9,969 items have none.
 The belief that "state is safe as long as it lives on the data" **holds only in the data-to-container direction**.
@@ -231,8 +232,30 @@ private void RowListBox_SelectionChanged(object sender, SelectionChangedEventArg
 }
 ```
 
-To preserve MVVM, invoke the same logic from an attached behavior or an `EventTrigger`.
-`SelectionChanged` reports a user action rather than a `ListBox` implementation detail, so delegating it to a ViewModel command raises no structural concern.
+`SelectionChanged` is not raised by user interaction alone.
+It also fires on a `SelectAll` call, on assignment to `SelectedItem`, and — in the configuration described here — **when a container is realized and the binding restores its selection state**.
+The handler above therefore receives a call assigning `true` to an item that is already `true` every time a container is restored.
+Rejecting an unchanged value in the setter, as `RowItemViewModel` does above, keeps that path from emitting redundant change notifications.
+
+To preserve MVVM, invoke the same logic from an attached behavior or from an `EventTrigger` in the `Microsoft.Xaml.Behaviors.Wpf` package.
+`System.Windows.Interactivity` (the Blend SDK) has been superseded by `Microsoft.Xaml.Behaviors` and should not be used for new work.
+
+```xml
+<ListBox ItemsSource="{Binding Items}"
+         SelectionMode="Extended"
+         xmlns:b="http://schemas.microsoft.com/xaml/behaviors">
+    <b:Interaction.Triggers>
+        <b:EventTrigger EventName="SelectionChanged">
+            <b:InvokeCommandAction Command="{Binding SelectionChangedCommand}"
+                                   PassEventArgsToCommand="True" />
+        </b:EventTrigger>
+    </b:Interaction.Triggers>
+    <!-- ItemTemplate and ItemContainerStyle as shown above -->
+</ListBox>
+```
+
+`PassEventArgsToCommand="True"` hands the command a `SelectionChangedEventArgs`.
+`e.AddedItems` and `e.RemovedItems` are handled exactly as in the code-behind version.
 
 Wire the event up in XAML.
 
@@ -279,11 +302,14 @@ Setting `ScrollViewer.CanContentScroll` to `False` changes the scroll unit from 
 The impact was measured as follows.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png" alt="A table comparing CanContentScroll values. With True there are 31 ListBoxItem containers and 152 visuals; with False these rise to 10,000 and 40,028, and layout time grows by two orders of magnitude." width="463" height="160" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by toggling <code>ScrollViewer.CanContentScroll</code> on a <code>ListBox</code> bound to 10,000 items, taking the minimum of five runs. With <code>False</code>, containers are built for every item and layout time grows by two orders of magnitude. Elapsed time depends on the execution environment, so read the values as ratios rather than absolute numbers.</figcaption>
+  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png" alt="A table measured across item counts and CanContentScroll values. With CanContentScroll True, ListBoxItem stays at 31 and visuals at 152 for 100 items and for 100,000. Setting False at 10,000 items raises these to 10,000 and 40,028, and layout time grows by two orders of magnitude." width="542" height="221" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 across item counts and <code>ScrollViewer.CanContentScroll</code> values, taking the minimum of five runs. The three <code>True</code> rows show that a thousandfold increase in item count changes neither the container count, the visual count, nor the layout time. With <code>False</code>, containers are built for every item and layout time grows by two orders of magnitude. Elapsed time depends on the execution environment, so read the values as ratios rather than absolute numbers.</figcaption>
 </figure>
 
-With `False`, realized `ListBoxItem` containers rise from 31 to 10,000 and the total visual count from 152 to 40,028.
+While `CanContentScroll` stays `True`, raising the item count a thousandfold from 100 to 100,000 leaves realized `ListBoxItem` containers at 31 and the total visual count at 152.
+Cost being independent of item count is precisely what virtualization buys.
+
+With `False` at 10,000 items, realized containers rise from 31 to 10,000 and the total visual count from 152 to 40,028.
 The difference in layout time reaches two orders of magnitude.
 
 Setting `CanContentScroll="False"` in pursuit of smooth pixel-based scrolling sacrifices virtualization and becomes impractical at large item counts.

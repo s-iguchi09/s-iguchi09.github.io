@@ -20,7 +20,7 @@ This article establishes the affected range of controls through measurement, the
 ## Prerequisites / Environment
 
 - Framework / Language: .NET 10 / C# / WPF / XAML
-- Target controls: `Label`, and standard controls deriving from `ContentControl` in general
+- Target controls: standard controls whose default template sets `ContentPresenter.RecognizesAccessKey` to `True` — `Label`, `Button`, `CheckBox`, `RadioButton`, `ToggleButton`, and the `Header` of `GroupBox`, `Expander`, `TabItem`, and `MenuItem`
 - Architecture: Applies to both MVVM and code-behind approaches
 - Verification environment: Windows 11, default theme (Aero2), display scaling 100%
 - Prior knowledge: WPF basics, XAML fundamentals
@@ -70,7 +70,8 @@ Given `a_b_c`, the access key becomes `b` and the second underscore is rendered 
 ### What Decides Whether AccessText Is Used
 
 Whether `AccessText` is used is determined not by the `Label` type itself, but by the **`RecognizesAccessKey` property of the `ContentPresenter` placed in the default `ControlTemplate`**.
-When that property is `True` and `Content` is a string, the `ContentPresenter` produces an `AccessText` instead of a plain `TextBlock`.
+The `ContentPresenter` produces an `AccessText` only when `RecognizesAccessKey` is `True` **and the string contains an underscore**.
+For a string without one, a plain `TextBlock` is used even though `RecognizesAccessKey` is `True`.
 
 Walking the visual tree makes the difference explicit.
 
@@ -127,7 +128,7 @@ There are four workarounds. The appropriate one depends on the use case.
 - To simply escape the underscore, write it twice as `__` (Workaround 1).
 - When access keys are unnecessary and the text is display-only, switch to `TextBlock` (Workaround 2).
 - To keep `Label` while rendering dynamically bound data correctly, use a `TextBlock` in `ContentTemplate` (Workaround 3).
-- To keep the appearance and padding of `Label` while disabling access-key interpretation, set `RecognizesAccessKey="False"` in a `ControlTemplate` (Workaround 4).
+- To disable access-key interpretation itself regardless of the `Content` type, set `RecognizesAccessKey="False"` in a `ControlTemplate` (Workaround 4). This replaces the default template, so the `Border` and padding must be rebuilt by hand.
 
 Workaround 1 is the only approach that fixes the display while retaining access-key functionality. Workarounds 2 through 4 all give up access keys in exchange for handling strings verbatim.
 
@@ -239,7 +240,7 @@ When the default appearance must be preserved, Workaround 3 has a smaller blast 
 Applying each of the four workarounds produces the same rendered result.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="A WPF window showing four workarounds: an escaped Label, a TextBlock, a Label with a replaced ContentTemplate, and a Label with RecognizesAccessKey set to False. All four render my_variable." width="554" height="202" loading="lazy">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png" alt="A WPF window showing four workarounds: an escaped Label, a TextBlock, a Label with a replaced ContentTemplate, and a Label with RecognizesAccessKey set to False. All four render my_variable." width="619" height="202" loading="lazy">
   <figcaption>The four workarounds executed in the same application. Escaping with <code>__</code>, switching to <code>TextBlock</code>, replacing <code>ContentTemplate</code>, and setting <code>RecognizesAccessKey="False"</code> all display <code>my_variable</code> without loss.</figcaption>
 </figure>
 

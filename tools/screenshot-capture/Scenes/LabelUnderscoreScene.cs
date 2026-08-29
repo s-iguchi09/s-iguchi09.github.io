@@ -71,7 +71,7 @@ internal sealed class LabelUnderscoreScene : IScene
     }
 
     /// <summary>
-    /// 本文「実装例」の 3 つの回避方法が、いずれも my_variable と表示されることを示す。
+    /// 本文「実装例」の 4 つの回避方法が、いずれも my_variable と表示されることを示す。
     /// </summary>
     private static Window BuildWorkaroundWindow()
     {
@@ -95,8 +95,9 @@ internal sealed class LabelUnderscoreScene : IScene
                       </Label.ContentTemplate>
                     </Label>
                     """)),
+            // 差し替えた ControlTemplate のうち、結果を決めている要素だけを見出しに出す。
             new DemoLayout.Row(
-                """<Label RecognizesAccessKey="False" />""",
+                """<ContentPresenter RecognizesAccessKey="False" />""",
                 SceneContext.LoadXaml<Label>(
                     """
                     <Label Content="my_variable" Padding="0">
