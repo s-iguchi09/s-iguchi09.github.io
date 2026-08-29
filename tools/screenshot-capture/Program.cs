@@ -49,6 +49,7 @@ internal static class Program
         new CSharpFrameworkMatrixScene(),
         new BitmapImageFileLockScene(),
         new ShutdownLifetimeScene(),
+        new CollectionCrossThreadScene(),
     ];
 
     [STAThread]

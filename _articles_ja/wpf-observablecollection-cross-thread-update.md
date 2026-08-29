@@ -21,6 +21,7 @@ WPF で `ItemsControl` にバインドした `ObservableCollection<T>` を、UI 
 - 対象コントロール・機能: `ObservableCollection<T>`、`ItemsControl`（`ListBox`・`DataGrid`・`ListView` 等を含む）、`CollectionView`
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 前提: バックグラウンドスレッド（`Task.Run` やワーカースレッド）でコレクションを更新する構成
+- 検証環境: .NET 10 / Windows 11（本文の実測結果はこの環境で取得した）
 
 ---
 
@@ -67,6 +68,24 @@ WPF のオブジェクトの多くは `DispatcherObject` から派生し、生�
 `CollectionView` も `DispatcherObject` から派生し、既定ではバインド対象コレクションが別スレッドから変更されることを許可しない。
 そのため、`CollectionChanged` 通知が UI スレッド以外から届くと、`CollectionView` はクロススレッドの変更を許可しないものとして `NotSupportedException` を送出する。
 問題の本質は「コレクションを別スレッドで触ったこと」ではなく、「別スレッドからの変更通知を UI スレッド専有の `CollectionView` が受け取れないこと」にある。
+
+### 実測: バインドの有無で結果が変わる
+
+この違いは、バインドしていない `ObservableCollection<T>` を同じ手順で操作してみると確認できる。
+バインドの有無と対処の有無を変えて、バックグラウンドスレッドから `Add` を呼んだ結果が次の表である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.png" alt="バックグラウンドスレッドから Add を呼んだ結果の表。バインドしていない ObservableCollection では例外が発生しない。ItemsControl にバインドすると NotSupportedException になる。Dispatcher.Invoke と EnableCollectionSynchronization ではいずれも例外が発生しない。" width="684" height="221" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Task.Run</code> の中から <code>ObservableCollection&lt;string&gt;.Add</code> を呼んだ結果。1 行目はどこにもバインドしていないコレクション、2 行目以降は <code>ItemsControl.ItemsSource</code> にバインドしたうえでウィンドウに表示したコレクションである。</figcaption>
+</figure>
+
+**バインドしていないコレクションは、バックグラウンドスレッドから変更しても例外にならない。**
+`ObservableCollection<T>` 自体がスレッドアフィニティを持つのであれば、この行も例外になるはずである。
+例外が出るのは `ItemsControl.ItemsSource` にバインドして `CollectionView` が介在したときだけであり、原因が `CollectionView` の側にあることがここで確認できる。
+
+なお、バインドしていないコレクションで例外が出ないことは、**スレッドセーフであることを意味しない**。
+`ObservableCollection<T>` は複数スレッドからの同時アクセスに対する保護を持たないため、競合する更新を行えば別の形で壊れる。
+ここで確認できるのは、あくまで「`NotSupportedException` の発生源はバインド先である」という点だけである。
 
 ---
 
