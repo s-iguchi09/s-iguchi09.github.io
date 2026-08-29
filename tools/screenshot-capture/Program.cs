@@ -52,6 +52,7 @@ internal static class Program
         new CollectionCrossThreadScene(),
         new BindingErrorTraceScene(),
         new UpdateSourcePitfallScene(),
+        new ExtensionReceiverMatrixScene(),
     ];
 
     [STAThread]

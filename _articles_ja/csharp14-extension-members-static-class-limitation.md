@@ -28,6 +28,7 @@ excerpt: "C# 14 の extension ブロックで Directory のような静的クラ
 - フレームワーク: .NET 10（確認に使用した SDK は 10.0.302）
 - 対象機能: 拡張メンバー（`extension` ブロック構文）
 - 比較対象: 従来の拡張メソッド（`this` 引数構文）
+- 検証環境: .NET 10 SDK 10.0.302 / Windows 11（本文のコンパイル結果はこの環境で取得した）
 
 ---
 
@@ -147,6 +148,22 @@ extension(Directory)
 名前が無い以上、インスタンスメンバーは宣言できない。
 
 この 2 つのエラーが挟み撃ちになる結果、静的クラスに対してインスタンス形式の拡張メンバーを書く方法は存在しないことになる。
+
+### 実測: 組み合わせごとのコンパイル結果
+
+レシーバーの書き方とメンバーの種類をすべて組み合わせて、実際にコンパイルした結果が次の表である。
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.png" alt="レシーバーの書き方とメンバーの種類を組み合わせてコンパイルした結果の表。extension(Directory) に静的メンバーはコンパイルが通り、インスタンスメンバーは CS9303 になる。extension(Directory directory) はメンバーの種類によらず CS0721 になる。対照として extension(DirectoryInfo info) にインスタンスメンバーを置いた場合はコンパイルが通る。" width="505" height="251" loading="lazy">
+  <figcaption>.NET 10 SDK 10.0.302 / <code>LangVersion 14.0</code> で <code>net10.0</code> を対象にコンパイルした結果。最終行は対照で、静的でない型（<code>DirectoryInfo</code>）であれば名前付きレシーバーにインスタンスメンバーを置けることを示す。</figcaption>
+</figure>
+
+**`extension(Directory directory)` の行は、メンバーの種類によらず `CS0721` になる。**
+レシーバーに名前を付けた時点でエラーが確定するため、ブロックの中身は評価されない。
+静的クラスに対して書ける拡張メンバーが静的メンバーだけに限られるのは、この 2 つのエラーの組み合わせによる。
+
+最終行が示すとおり、同じ「名前付きレシーバー＋インスタンスメンバー」でも、対象が静的クラスでなければ問題なくコンパイルできる。
+制限は `extension` ブロックそのものではなく、**静的クラスをパラメーターの型に使えない**という C# の既存の規則から来ている。
 
 ---
 
