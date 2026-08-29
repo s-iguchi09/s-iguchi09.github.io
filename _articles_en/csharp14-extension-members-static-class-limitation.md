@@ -154,7 +154,7 @@ Caught between these two errors, there is no way to write an instance-style exte
 Every combination of receiver form and member kind was compiled.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.png" alt="A table of compilation results per receiver form and member kind. A static member in extension(Directory) compiles, an instance member reports CS9303. extension(Directory directory) reports CS0721 regardless of member kind. As a control, an instance member in extension(DirectoryInfo info) compiles." width="505" height="251" loading="lazy">
+  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg" alt="A table of compilation results per receiver form and member kind. A static member in extension(Directory) compiles, an instance member reports CS9303. extension(Directory directory) reports CS0721 regardless of member kind. As a control, an instance member in extension(DirectoryInfo info) compiles." width="524" height="230" loading="lazy">
   <figcaption>Compiled against <code>net10.0</code> with .NET SDK 10.0.302 and <code>LangVersion 14.0</code>. The last row is a control showing that a named receiver can carry an instance member as long as the type is not static (<code>DirectoryInfo</code>).</figcaption>
 </figure>
 

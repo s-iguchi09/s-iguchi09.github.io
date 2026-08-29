@@ -11,4 +11,4 @@ verifies:
   - "extension(Directory directory) がメンバーの種類によらず CS0721 になること"
   - "静的でない型なら名前付きレシーバーにインスタンスメンバーを置けること"
 images:
-  - "images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.png"
+  - "images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg"

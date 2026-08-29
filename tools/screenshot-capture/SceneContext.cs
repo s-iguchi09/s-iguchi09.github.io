@@ -1,3 +1,4 @@
+using System.Text;
 using System.Windows;
 using System.Windows.Markup;
 
@@ -60,6 +61,25 @@ internal sealed class SceneContext(string slug, string outputDirectory)
         {
             window.Close();
         }
+    }
+
+    /// <summary>
+    /// 実測値の表を SVG として保存する。
+    ///
+    /// 表は文字と罫線だけなので、ウィンドウを撮影せず直接描く。
+    /// 拡大しても文字がぼやけず、差分でも値の変化が読める。
+    /// 実行して得た値を描く点は <see cref="ShootAsync"/> と変わらない。
+    /// </summary>
+    public async Task SaveTableAsync(
+        string title,
+        IReadOnlyList<string> headers,
+        IEnumerable<IReadOnlyList<string>> rows,
+        string fileName)
+    {
+        string svg = DemoLayout.BuildTableSvg(title, headers, rows);
+        string path = Path.Combine(OutputDirectory, fileName);
+        await File.WriteAllTextAsync(path, svg, new UTF8Encoding(false));
+        _saved.Add(path);
     }
 
     /// <summary>

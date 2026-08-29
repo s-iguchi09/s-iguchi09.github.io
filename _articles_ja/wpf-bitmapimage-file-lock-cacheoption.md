@@ -212,7 +212,7 @@ private static BitmapImage LoadFromStream(string path)
 本記事で挙げた読み込み方それぞれについて、画像を読み込んだ直後に `File.Delete` を試みた結果が次の表である。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.png" alt="読み込み方ごとに File.Delete の可否を比較した表。new BitmapImage(uri)、その後に CacheOption を設定した場合、BeginInit だけの場合、IgnoreImageCache を付けた場合、ImageSourceConverter はいずれも IOException。CacheOption に OnLoad を指定した場合と StreamSource + OnLoad は削除できる。既定のまま参照を捨てて GC を実行した場合も削除できる。" width="484" height="342" loading="lazy">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="読み込み方ごとに File.Delete の可否を比較した表。new BitmapImage(uri)、その後に CacheOption を設定した場合、BeginInit だけの場合、IgnoreImageCache を付けた場合、ImageSourceConverter はいずれも IOException。CacheOption に OnLoad を指定した場合と StreamSource + OnLoad は削除できる。既定のまま参照を捨てて GC を実行した場合も削除できる。" width="500" height="320" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、各方法により 64x48 の PNG を読み込んだ直後に <code>File.Delete</code> を実行した結果。<code>size</code> はいずれの方法でも画像が正しく読めていることを示す。最終行は既定の読み込み方で <code>BitmapImage</code> への参照を手放し、強制的にガベージコレクションを行った後の結果である。</figcaption>
 </figure>
 

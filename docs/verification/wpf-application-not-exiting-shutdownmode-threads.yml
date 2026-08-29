@@ -11,4 +11,4 @@ verifies:
   - "既定の new Thread がプロセスを引き止め、IsBackground=true では引き止めないこと"
   - "2 つ目の UI スレッドは InvokeShutdown を呼ばない限りプロセスを残すこと"
 images:
-  - "images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.png"
+  - "images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.svg"

@@ -154,7 +154,7 @@ extension(Directory)
 レシーバーの書き方とメンバーの種類をすべて組み合わせて、実際にコンパイルした結果が次の表である。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.png" alt="レシーバーの書き方とメンバーの種類を組み合わせてコンパイルした結果の表。extension(Directory) に静的メンバーはコンパイルが通り、インスタンスメンバーは CS9303 になる。extension(Directory directory) はメンバーの種類によらず CS0721 になる。対照として extension(DirectoryInfo info) にインスタンスメンバーを置いた場合はコンパイルが通る。" width="505" height="251" loading="lazy">
+  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg" alt="レシーバーの書き方とメンバーの種類を組み合わせてコンパイルした結果の表。extension(Directory) に静的メンバーはコンパイルが通り、インスタンスメンバーは CS9303 になる。extension(Directory directory) はメンバーの種類によらず CS0721 になる。対照として extension(DirectoryInfo info) にインスタンスメンバーを置いた場合はコンパイルが通る。" width="524" height="230" loading="lazy">
   <figcaption>.NET 10 SDK 10.0.302 / <code>LangVersion 14.0</code> で <code>net10.0</code> を対象にコンパイルした結果。最終行は対照で、静的でない型（<code>DirectoryInfo</code>）であれば名前付きレシーバーにインスタンスメンバーを置けることを示す。</figcaption>
 </figure>
 

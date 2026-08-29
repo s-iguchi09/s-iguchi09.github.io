@@ -25,11 +25,15 @@ internal sealed class BitmapImageFileLockScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
-        await context.ShootAsync(BuildLoadStyleWindow(), "bitmapimage-file-lock-matrix.png");
+        await context.SaveTableAsync(
+            "BitmapImage: File.Delete right after loading",
+            ["how the image is loaded", "size", "File.Delete"],
+            MeasureLoadStyles(),
+            "bitmapimage-file-lock-matrix.svg");
     }
 
     /// <summary>読み込み方と、その直後にファイルを削除できるかの対応。</summary>
-    private static Window BuildLoadStyleWindow()
+    private static List<IReadOnlyList<string>> MeasureLoadStyles()
     {
         (string Label, Func<string, BitmapSource> Load)[] cases =
         [
@@ -64,10 +68,7 @@ internal sealed class BitmapImageFileLockScene : IScene
         rows.Add(["(default) after GC", "-", DeleteResult(collected)]);
         TryCleanup(collected);
 
-        return DemoLayout.BuildTableWindow(
-            "BitmapImage: File.Delete right after loading",
-            ["how the image is loaded", "size", "File.Delete"],
-            rows);
+        return rows;
     }
 
     private static BitmapSource LoadWithConstructor(string path)

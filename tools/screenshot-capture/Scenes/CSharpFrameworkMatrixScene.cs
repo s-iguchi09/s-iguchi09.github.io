@@ -143,12 +143,11 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
             rows.Add([item.Syntax, bare.Succeeded ? "OK" : "NG", bare.MissingType, afterPolyfill]);
         }
 
-        Window window = DemoLayout.BuildTableWindow(
+        await context.SaveTableAsync(
             $"compiled against {TargetFramework}, LangVersion=latest",
             ["", TargetFramework, "missing type", "+ polyfill"],
-            rows);
-
-        await context.ShootAsync(window, "csharp-net-framework-matrix.png");
+            rows,
+            "csharp-net-framework-matrix.svg");
     }
 
     private readonly record struct CompileResult(bool Succeeded, string MissingType);

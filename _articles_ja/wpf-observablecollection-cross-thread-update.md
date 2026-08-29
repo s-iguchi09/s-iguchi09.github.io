@@ -75,7 +75,7 @@ WPF のオブジェクトの多くは `DispatcherObject` から派生し、生�
 バインドの有無と対処の有無を変えて、バックグラウンドスレッドから `Add` を呼んだ結果が次の表である。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.png" alt="バックグラウンドスレッドから Add を呼んだ結果の表。バインドしていない ObservableCollection では例外が発生しない。ItemsControl にバインドすると NotSupportedException になる。Dispatcher.Invoke と EnableCollectionSynchronization ではいずれも例外が発生しない。" width="684" height="221" loading="lazy">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="バックグラウンドスレッドから Add を呼んだ結果の表。バインドしていない ObservableCollection では例外が発生しない。ItemsControl にバインドすると NotSupportedException になる。Dispatcher.Invoke と EnableCollectionSynchronization ではいずれも例外が発生しない。" width="720" height="200" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>Task.Run</code> の中から <code>ObservableCollection&lt;string&gt;.Add</code> を呼んだ結果。1 行目はどこにもバインドしていないコレクション、2 行目以降は <code>ItemsControl.ItemsSource</code> にバインドしたうえでウィンドウに表示したコレクションである。</figcaption>
 </figure>
 

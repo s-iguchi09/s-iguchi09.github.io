@@ -49,12 +49,11 @@ internal sealed class ExtensionReceiverMatrixScene : IScene
             rows.Add([receiver, member, await CompileAsync(workspace, body)]);
         }
 
-        Window window = DemoLayout.BuildTableWindow(
+        await context.SaveTableAsync(
             $"extension block, {TargetFramework}, LangVersion={LanguageVersion}",
             ["receiver", "member kind", "result"],
-            rows);
-
-        await context.ShootAsync(window, "extension-receiver-matrix.png");
+            rows,
+            "extension-receiver-matrix.svg");
     }
 
     /// <summary>型だけを書いたレシーバーに静的メンバーを置く。</summary>

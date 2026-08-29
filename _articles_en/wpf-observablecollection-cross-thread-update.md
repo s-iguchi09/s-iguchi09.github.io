@@ -75,7 +75,7 @@ The distinction is visible by performing the same operation on an `ObservableCol
 The table below records the result of calling `Add` from a background thread, varying whether the collection is bound and which countermeasure is applied.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.png" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception." width="684" height="221" loading="lazy">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception." width="720" height="200" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window.</figcaption>
 </figure>
 

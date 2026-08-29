@@ -4,7 +4,6 @@ title: "C# Operators and Initialization Syntax by Version"
 date: 2026-06-22
 category: C#
 excerpt: "A version-by-version guide to C# operators and initialization syntax, built from actual compilation against net48. Shows which constructs need only LangVersion, which need BCL types, and how to supply the missing ones."
-image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png
 ---
 
 ## Overview
@@ -103,7 +102,7 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, and primary constructors are OK. a[^1], a[1..3], init, with, and required are NG with the missing type named, and all become OK once a polyfill is added." width="484" height="402" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, and primary constructors are OK. a[^1], a[1..3], init, with, and required are NG with the missing type named, and all become OK once a polyfill is added." width="497" height="380" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 

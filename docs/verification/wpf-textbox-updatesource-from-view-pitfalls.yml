@@ -10,4 +10,4 @@ verifies:
   - "バインドを張ったまま UpdateSource を呼んだ場合と、Text を書き換えてから呼んだ場合の違い"
   - "OneWay / OneTime では Text への代入がバインドを外し、その後の UpdateSource が例外になること"
 images:
-  - "images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.png"
+  - "images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg"

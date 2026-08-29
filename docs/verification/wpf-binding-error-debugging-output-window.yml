@@ -10,4 +10,4 @@ verifies:
   - "パス解決失敗が Error 40、ConvertBack 失敗が Error 7、空のインデクサーが Error 17 であること"
   - "DataContext 未設定は既定の Warning では何も出力されず、Information 10 であること"
 images:
-  - "images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.png"
+  - "images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg"

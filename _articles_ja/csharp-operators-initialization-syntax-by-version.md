@@ -4,7 +4,6 @@ title: "C# バージョン別 演算子と初期化構文シンタックスシ�
 date: 2026-06-22
 category: C#
 excerpt: ".NET Framework 環境では ??= などの C# 新構文が使用できない場合がある。各バージョンで追加された演算子と初期化の糖衣構文を、net48 に対して実際にコンパイルした結果とともに整理する。BCL 型を要する構文と、その補い方も実測で示す。"
-image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png
 ---
 
 ## 概要
@@ -96,7 +95,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタは OK。a[^1]、a[1..3]、init、with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="484" height="402" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタは OK。a[^1]、a[1..3]、init、with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="497" height="380" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 

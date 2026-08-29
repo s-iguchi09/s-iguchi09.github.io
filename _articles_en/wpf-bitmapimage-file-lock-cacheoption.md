@@ -212,7 +212,7 @@ The latter hands a new `ImageSource` to the control on every change, so the `Bit
 The table below records the result of calling `File.Delete` immediately after loading the image each way described in this article.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.png" alt="A table comparing File.Delete outcomes per loading method. new BitmapImage(uri), setting CacheOption after that constructor, BeginInit alone, adding IgnoreImageCache, and ImageSourceConverter all raise IOException. Specifying OnLoad on CacheOption and StreamSource plus OnLoad allow deletion, as does the default method after dropping the reference and forcing garbage collection." width="484" height="342" loading="lazy">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="A table comparing File.Delete outcomes per loading method. new BitmapImage(uri), setting CacheOption after that constructor, BeginInit alone, adding IgnoreImageCache, and ImageSourceConverter all raise IOException. Specifying OnLoad on CacheOption and StreamSource plus OnLoad allow deletion, as does the default method after dropping the reference and forcing garbage collection." width="500" height="320" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11, calling <code>File.Delete</code> immediately after loading a 64x48 PNG each way. The <code>size</code> column confirms the image loaded correctly in every case. The last row is the default loading method after releasing the <code>BitmapImage</code> reference and forcing a garbage collection.</figcaption>
 </figure>
 

@@ -48,12 +48,11 @@ internal sealed class BindingErrorTraceScene : IScene
             PresentationTraceSources.DataBindingSource.Listeners.Remove(listener);
         }
 
-        Window window = DemoLayout.BuildTableWindow(
+        await context.SaveTableAsync(
             "System.Windows.Data trace output",
             ["binding", "Switch.Level", "reported as", "message"],
-            rows);
-
-        await context.ShootAsync(window, "binding-error-trace-matrix.png");
+            rows,
+            "binding-error-trace-matrix.svg");
     }
 
     /// <summary>1 つのパターンを実行し、拾えたエラー番号とメッセージの要点を返す。</summary>

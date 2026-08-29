@@ -59,7 +59,7 @@ Calling it while the binding is detached from its target throws an `InvalidOpera
 The conditions above were verified by running them.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.png" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null from GetBindingExpression. OneTime and OneWay do nothing when called on an intact binding but raise InvalidOperationException once Text has been assigned. OneWayToSource and TwoWay update the source after Text has been assigned." width="813" height="342" loading="lazy">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null from GetBindingExpression. OneTime and OneWay do nothing when called on an intact binding but raise InvalidOperationException once Text has been assigned. OneWayToSource and TwoWay update the source after Text has been assigned." width="858" height="320" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text</code> is the call made after assigning a value to <code>TextBox.Text</code>. <code>no change</code> means the source value was left unchanged.</figcaption>
 </figure>
 

@@ -53,12 +53,11 @@ internal sealed class ShutdownLifetimeScene : IScene
             rows.Add([label, result.ExitRaised, result.RunReturned, result.Lifetime]);
         }
 
-        Window window = DemoLayout.BuildTableWindow(
+        await context.SaveTableAsync(
             "process lifetime by condition",
             ["", "Application.Exit", "Run() returns", "process ends"],
-            rows);
-
-        await context.ShootAsync(window, "shutdown-lifetime-matrix.png");
+            rows,
+            "shutdown-lifetime-matrix.svg");
     }
 
     private readonly record struct Measurement(string ExitRaised, string RunReturned, string Lifetime);

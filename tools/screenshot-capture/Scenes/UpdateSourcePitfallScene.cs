@@ -41,12 +41,11 @@ internal sealed class UpdateSourcePitfallScene : IScene
             return true;
         }, clearBeforeUpdate: true));
 
-        Window window = DemoLayout.BuildTableWindow(
+        await context.SaveTableAsync(
             "GetBindingExpression() and UpdateSource()",
             ["how Text is set", "GetBindingExpression", "UpdateSource() as-is", "after editing Text"],
-            rows);
-
-        await context.ShootAsync(window, "updatesource-pitfall-matrix.png");
+            rows,
+            "updatesource-pitfall-matrix.svg");
     }
 
     /// <summary>

@@ -10,4 +10,4 @@ verifies:
   - "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）"
   - "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること"
 images:
-  - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.png"
+  - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg"

@@ -36,12 +36,11 @@ internal sealed class CollectionCrossThreadScene : IScene
         rows.Add(["bound to ItemsControl", "Dispatcher.Invoke", await RunAsync(Bound.Yes, Fix.Dispatcher)]);
         rows.Add(["bound to ItemsControl", "EnableCollectionSynchronization", await RunAsync(Bound.Yes, Fix.Synchronization)]);
 
-        Window window = DemoLayout.BuildTableWindow(
+        await context.SaveTableAsync(
             "Add() from a background thread",
             ["collection", "countermeasure", "result"],
-            rows);
-
-        await context.ShootAsync(window, "collection-cross-thread-matrix.png");
+            rows,
+            "collection-cross-thread-matrix.svg");
     }
 
     private enum Bound

@@ -11,4 +11,4 @@ verifies:
   - "IgnoreImageCache ではファイルのロックを回避できないこと"
   - "既定の読み込み方でも参照を手放して GC が走れば解放されること"
 images:
-  - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.png"
+  - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg"
