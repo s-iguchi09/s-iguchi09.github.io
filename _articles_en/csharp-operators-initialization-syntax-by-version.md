@@ -3,7 +3,8 @@ layout: article-en
 title: "C# Operators and Initialization Syntax by Version"
 date: 2026-06-22
 category: C#
-excerpt: "A version-by-version guide to C# operators and initialization syntax, with guidance for .NET Framework compatibility and language-version constraints."
+excerpt: "A version-by-version guide to C# operators and initialization syntax, built from actual compilation against net48. Shows which constructs need only LangVersion, which need BCL types, and how to supply the missing ones."
+image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png
 ---
 
 ## Overview
@@ -17,8 +18,15 @@ The goal is to help with implementation decisions when newer syntax cannot be us
 ## Prerequisites / Environment
 
 - Language: C# 1.0 to C# 12
-- Frameworks: .NET Framework 2.0 to 4.8 / .NET Core / .NET 5 to 8
+- Frameworks: .NET Framework 2.0 to 4.8 / .NET Core / .NET 5 and later
 - Target features: null-safe operators, index and range operators, type operators, and initialization syntax sugar
+- Verification environment: .NET SDK 10.0.302 / .NET Framework 4.8.9337.0 / Windows 11
+
+The tables in this article record **what actually compiled**.
+Each construct was compiled against `net10.0` with `LangVersion` lowered step by step to find the minimum the compiler accepts, and against `net48` to determine whether the BCL supplies the types it needs.
+For `^` and `..`, the compiled output was also executed on .NET Framework to confirm the returned values.
+
+That process surfaced **three discrepancies that documentation alone does not reveal**. Each is called out where it applies.
 
 ---
 
@@ -55,8 +63,8 @@ The following table summarizes the operators and syntax covered in this article 
 Plotted over time, they line up as follows.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg" alt="A timeline from C# 1.0 to 12.0 with the operators and syntax added in each version. Only ^, .. and required are shaded to mark that they need a BCL type or attribute." width="900" height="300" loading="lazy">
-  <figcaption>The C# version that introduced each construct. The shaded chips need more than a higher <code>LangVersion</code>: they depend on a BCL type (<code>System.Index</code> / <code>System.Range</code>) or attribute. <code>??=</code> sits at C# 8.0.</figcaption>
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg" alt="A timeline from C# 1.0 to 12.0 with the operators and syntax added in each version. The chips for ^, .., init, with, and required are shaded to mark that they need a BCL type or attribute." width="900" height="300" loading="lazy">
+  <figcaption>The C# version that introduced each construct. The shaded chips need more than a higher <code>LangVersion</code>: they depend on a BCL type or attribute. <code>??=</code> sits at C# 8.0. The shading matches the compilation results in the next section.</figcaption>
 </figure>
 
 | Operator / Syntax | C# Version | .NET Version | .NET Framework Support |
@@ -73,15 +81,47 @@ Plotted over time, they line up as follows.
 | `!` (null-forgiving) | C# 8.0 | .NET Core 3.0 / .NET 5 | ✅ Language feature only (†1) |
 | `^` (index from end) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `..` (range) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
-| `with` expression | C# 9.0 | .NET 5 | ✅ Language feature only (†1) |
+| `init` accessor | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
+| `with` expression | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ Language feature only (†1) |
-| `required` property | C# 11.0 | .NET 7 | ⚠️ Requires BCL attribute (†3) |
+| `required` property | C# 11.0 | .NET 7 | ⚠️ Requires BCL attributes (†4) |
 | Collection expressions | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
 | Primary constructors | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
 
 - **†1**: Pure language features. These can be used on .NET Framework if `LangVersion` is set to the corresponding C# version, or if Visual Studio / the .NET SDK is updated.
-- **†2**: Requires `System.Index` / `System.Range`, which were added in .NET Core 3.0+. On .NET Framework, these types require an additional reference or polyfill such as the `System.Index` / `System.Range` package.
-- **†3**: Requires `System.Runtime.CompilerServices.RequiredMemberAttribute`, which was added in .NET 7+. On .NET Framework, the attribute must be defined manually or supplied through an additional package.
+- **†2**: Requires `System.Index` / `System.Range`, added in .NET Core 3.0+. Array slicing with `a[1..3]` additionally requires `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray`.
+- **†3**: Requires `System.Runtime.CompilerServices.IsExternalInit`, added in .NET 5+. A `with` expression targets a `record` or a type with `init` accessors, so it inherits the same constraint as `init`.
+- **†4**: Requires `RequiredMemberAttribute` plus `CompilerFeatureRequiredAttribute` and `IsExternalInit` (all in `System.Runtime.CompilerServices`).
+
+**Classifying `with` and `init` as †1 (language feature only) is incorrect.**
+Because a `with` expression involves a `record` or an `init` accessor, it does not compile on .NET Framework — where `IsExternalInit` does not exist — no matter how high `LangVersion` is set.
+The next section shows this classification as actual compiler output.
+
+### Compilation Results Against .NET Framework 4.8
+
+The table below records the result of compiling each construct against `net48` with `LangVersion=latest`.
+Whether defining the missing type makes it compile was checked the same way.
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, and primary constructors are OK. a[^1], a[1..3], init, with, and required are NG with the missing type named, and all become OK once a polyfill is added." width="612" height="376" loading="lazy">
+  <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
+</figure>
+
+Three things follow from the table.
+
+**1. `??=` and `!` work on .NET Framework by raising `LangVersion` alone.**
+The same holds for target-typed `new`, collection expressions, and primary constructors.
+For the problem this article opens with — `??=` being unavailable — raising `LangVersion` is sufficient.
+
+**2. `with` and `init` do not compile even at the highest `LangVersion`.**
+`System.Runtime.CompilerServices.IsExternalInit` does not exist on .NET Framework.
+A `with` expression targets a `record` or an `init` accessor, so it inherits the same constraint as `init`.
+
+**3. `required` needs more than one type.**
+Besides `RequiredMemberAttribute`, it also requires `CompilerFeatureRequiredAttribute` and `IsExternalInit`.
+Defining `RequiredMemberAttribute` alone does not resolve it.
+
+In every case, defining the missing types locally makes the code compile. The definitions appear under "Option 3: Supply the missing types yourself" below.
 
 ---
 
@@ -120,6 +160,124 @@ int[] sliced = array.Skip(1).Take(3).ToArray();
 ```
 
 These examples preserve the same meaning while using older syntax. The LINQ example requires `using System.Linq;`.
+
+### Option 3: Supply the Missing Types Yourself
+
+When only a BCL type is missing, defining that type in your own project makes the code compile.
+The compiler looks for a type with a matching namespace and shape; which assembly provides it is irrelevant.
+
+The definitions below were compiled against `net48` and confirmed to work.
+
+For `init` and `with`, define `IsExternalInit`.
+
+```csharp
+namespace System.Runtime.CompilerServices
+{
+    // Marker type required by init accessors and records. No members are needed.
+    internal static class IsExternalInit { }
+}
+```
+
+For `required`, two more attributes are needed.
+
+```csharp
+using System;
+
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit { }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct
+        | AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
+    internal sealed class RequiredMemberAttribute : Attribute { }
+
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+    internal sealed class CompilerFeatureRequiredAttribute : Attribute
+    {
+        public CompilerFeatureRequiredAttribute(string featureName) => FeatureName = featureName;
+
+        public string FeatureName { get; }
+    }
+}
+```
+
+For `^` and `..`, define `System.Index` and `System.Range`, plus the `RuntimeHelpers.GetSubArray` method that array slicing compiles down to.
+
+```csharp
+using System;
+
+namespace System
+{
+    internal readonly struct Index
+    {
+        private readonly int _value;
+
+        public Index(int value, bool fromEnd = false) => _value = fromEnd ? ~value : value;
+
+        public int Value => _value < 0 ? ~_value : _value;
+
+        public bool IsFromEnd => _value < 0;
+
+        public int GetOffset(int length) => IsFromEnd ? length - Value : Value;
+
+        public static implicit operator Index(int value) => new Index(value);
+    }
+
+    internal readonly struct Range
+    {
+        public Range(Index start, Index end) { Start = start; End = end; }
+
+        public Index Start { get; }
+
+        public Index End { get; }
+
+        public (int Offset, int Length) GetOffsetAndLength(int length)
+        {
+            int start = Start.GetOffset(length);
+            return (start, End.GetOffset(length) - start);
+        }
+    }
+}
+
+namespace System.Runtime.CompilerServices
+{
+    // The compiler rewrites a[1..3] on an array into a call to this method.
+    internal static class RuntimeHelpers
+    {
+        public static T[] GetSubArray<T>(T[] array, Range range)
+        {
+            (int offset, int length) = range.GetOffsetAndLength(array.Length);
+            var result = new T[length];
+            Array.Copy(array, offset, result, 0, length);
+            return result;
+        }
+    }
+}
+```
+
+Running a `net48` console application that includes these definitions returns the same values as .NET 5 and later.
+For `int[] a = { 10, 20, 30, 40, 50 }`, `a[^1]` returned `50` and `a[1..3]` returned `[20, 30]` on actual .NET Framework.
+
+#### A Caveat About NuGet Packages
+
+`IndexRange` is a package that supplies `Index` and `Range`.
+**There is no NuGet package named `System.Index`** — nuget.org returns 404 for it.
+
+Referencing `IndexRange` 1.1.1 from `net48` makes `a[^1]` and the `Index` / `Range` types available, but **array slicing with `a[1..3]` still fails to compile**.
+
+```text
+error CS0656: Missing compiler required member
+'System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray'
+```
+
+The package does not include `GetSubArray`.
+Array slicing therefore still requires defining `RuntimeHelpers` as shown above.
+
+#### Notes on Defining These Yourself
+
+- `RuntimeHelpers` also exists in `mscorlib`. Defining it locally makes the local type win inside that project. If other `RuntimeHelpers` members (such as `InitializeArray`) are in use, define them too or qualify the calls.
+- Declare all of these as `internal`. Making them `public` can collide with the types of assemblies that reference yours.
+- Remove the definitions after retargeting to .NET 5 or later. Duplicating a BCL type means the local definition wins, which can produce unintended behavior.
 
 ---
 
@@ -396,9 +554,16 @@ var lightTheme = new AppTheme { ThemeName = "Light Mode" };
 // var invalidTheme = new AppTheme { Author = "s-iguchi" };
 ```
 
-`required` was introduced in C# 11.0.
-Starting with .NET 7, `System.Runtime.CompilerServices.RequiredMemberAttribute` is provided by the platform.
-In environments such as .NET Framework where the attribute is not available, it must be defined manually or supplied through an additional package.
+`required` was introduced in C# 11.0. Starting with .NET 7, the attributes it needs are provided by the platform.
+
+On .NET Framework, three types are missing. Compiling the example above against `net48` reports all three at once.
+
+- `System.Runtime.CompilerServices.RequiredMemberAttribute`
+- `System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute`
+- `System.Runtime.CompilerServices.IsExternalInit` (because the example uses an `init` accessor)
+
+Defining `RequiredMemberAttribute` alone does not resolve it.
+All three definitions appear under "Option 3: Supply the Missing Types Yourself".
 
 #### Primary constructor — C# 12.0 and later
 
@@ -429,8 +594,9 @@ Primary constructors were introduced in C# 12.0 and require a compiler and SDK t
 - Even when targeting .NET Framework, language features such as `??=` and `!` can be used if the compiler and `LangVersion` support them.
 - `!` suppresses compile-time warnings only and does not perform a runtime null check.
   If `null` is actually passed to the marked location, a `NullReferenceException` can still occur.
-- `with`, Target-typed `new`, collection expressions, and primary constructors are pure language features.
-  They can be used on .NET Framework if the appropriate `LangVersion` is selected, but related helper types may still be required in some cases.
+- Target-typed `new`, collection expressions, and primary constructors are pure language features and work on .NET Framework once `LangVersion` is raised (confirmed against `net48`).
+  **`with` and `init` are not pure language features.** They require `IsExternalInit`, so raising `LangVersion` alone does not make them compile on .NET Framework.
+  `required` additionally requires `RequiredMemberAttribute` and `CompilerFeatureRequiredAttribute`.
 - The `..` spread operator in collection expressions uses the same symbol as the C# 8.0 range operator, but the purpose is different.
   In collection expressions, it expands elements within the collection literal.
 
@@ -445,7 +611,8 @@ The following table compares the main approaches for handling compile errors cau
 | Raise `LangVersion` | New syntax can be used directly. Code remains concise. | Requires updates to the build environment such as Visual Studio or the SDK. | Projects where compiler settings can be changed. |
 | Update the build environment | Provides the latest language features and tooling support. | May have a wider impact on existing projects. | New development or environments that can be updated. |
 | Rewrite to older syntax | Works without changing the environment. | Code becomes more verbose and newer features cannot be used. | Legacy environments where updates are not allowed. |
-| Add BCL type polyfills (`^` / `..`) | Enables `System.Index` / `System.Range` on .NET Framework. | Requires extra maintenance for polyfills. | Projects that need these operators but must stay on .NET Framework. |
+| Define the missing types yourself | Enables `^`, `..`, `init`, `with`, and `required` on .NET Framework. No extra package needed. | The definitions need maintaining and must be removed when retargeting to .NET 5+. `RuntimeHelpers` shadows the BCL type of the same name. | Projects that need BCL-dependent syntax but must stay on .NET Framework. |
+| Reference the `IndexRange` package | Supplies `Index` / `Range` and makes `a[^1]` work. | Does not cover array slicing `a[1..3]`, since it omits `GetSubArray`; that still needs a local definition. | Projects where `^` alone is sufficient. |
 
 ---
 
@@ -457,9 +624,13 @@ Whether a feature can be used depends mainly on the compiler configuration (`Lan
 The following selection criteria are practical guidelines.
 
 - **.NET Framework without compiler updates**: `??` (C# 2.0), `?.` (C# 6.0), `nameof` (C# 6.0), and `is` pattern matching (C# 7.0) are the upper baseline.
-- **.NET Framework with `LangVersion` set to C# 8.0 or later**: `??=`, `!`, `with`, and Target-typed `new` become available as language features. `^` and `..` still require BCL support.
+- **.NET Framework with `LangVersion` raised**: `??=`, `!`, target-typed `new`, collection expressions, and primary constructors become available (confirmed against `net48`). `^`, `..`, `init`, `with`, and `required` remain unusable until the missing BCL types are defined.
 - **.NET 5 to 6 (C# 9 to 10)**: all C# 9 to 10 features are available, including the required supporting BCL types.
 - **.NET 7 (C# 11) and later**: `required` properties are available.
 - **.NET 8 (C# 12) and later**: collection expressions and primary constructors are available.
 
-The appropriate syntax should be selected after confirming the combination of compiler version (`LangVersion`) and target framework.
+Compiling against `net48` showed that **whether a construct is a pure language feature cannot be inferred from how it looks**.
+`with` reads like an operator yet requires `IsExternalInit`, while larger additions such as primary constructors and collection expressions require no BCL type at all.
+
+The reliable way to tell whether raising `LangVersion` is enough, or whether types must be supplied, is to **compile against the target framework and see**.
+The compiler names the missing types in `CS0518` / `CS0656`, which can then be defined directly.

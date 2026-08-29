@@ -46,6 +46,7 @@ internal static class Program
         new LinqBackportNet8Scene(),
         new LinqBackportNet9Scene(),
         new LinqBackportNet10Scene(),
+        new CSharpFrameworkMatrixScene(),
     ];
 
     [STAThread]

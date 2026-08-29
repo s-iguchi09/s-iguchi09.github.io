@@ -3,7 +3,8 @@ layout: article-ja
 title: "C# バージョン別 演算子と初期化構文シンタックスシュガー一覧"
 date: 2026-06-22
 category: C#
-excerpt: ".NET Framework 環境では ??= などの C# 新構文が使用できない場合がある。本記事では C# 各バージョンで追加された演算子と初期化の糖衣構文をバージョン対応表とコード例とともに網羅的に整理する。"
+excerpt: ".NET Framework 環境では ??= などの C# 新構文が使用できない場合がある。各バージョンで追加された演算子と初期化の糖衣構文を、net48 に対して実際にコンパイルした結果とともに整理する。BCL 型を要する構文と、その補い方も実測で示す。"
+image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png
 ---
 
 ## 概要
@@ -16,8 +17,15 @@ excerpt: ".NET Framework 環境では ??= などの C# 新構文が使用でき�
 ## 前提・対象環境
 
 - 言語: C# 1.0 〜 C# 12
-- フレームワーク: .NET Framework 2.0〜4.8 / .NET Core / .NET 5〜8
+- フレームワーク: .NET Framework 2.0〜4.8 / .NET Core / .NET 5 以降
 - 対象機能: Null 安全演算子、インデックス・範囲演算子、型演算子、初期化の糖衣構文
+- 検証環境: .NET SDK 10.0.302 / .NET Framework 4.8.9337.0 / Windows 11
+
+本記事の対応表は、各構文を**実際にコンパイルして確かめた結果**である。
+`LangVersion` を下げながら `net10.0` へコンパイルして構文が受け付けられる下限を求め、`net48` へコンパイルして BCL 側の型が足りるかどうかを確かめている。
+`^` と `..` については、`net48` 上で実行して戻り値も確認した。
+
+その結果、**ドキュメントの記述だけでは分からない差異が 3 点見つかっている**。いずれも本文中で該当箇所に記す。
 
 ---
 
@@ -48,8 +56,8 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 導入時期を時系列で見ると次のようになる。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg" alt="C# 1.0 から 12.0 までの時系列に、各バージョンで追加された演算子と構文を配置した図。^ と .. および required だけが BCL 側の型や属性を必要とすることが色分けされている。" width="900" height="300" loading="lazy">
-  <figcaption>各構文が追加された C# のバージョン。枠が色付きのものは <code>LangVersion</code> を上げるだけでは足りず、BCL 側の型（<code>System.Index</code> / <code>System.Range</code>）や属性を必要とするものである。<code>??=</code> は C# 8.0 の位置にある。</figcaption>
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg" alt="C# 1.0 から 12.0 までの時系列に、各バージョンで追加された演算子と構文を配置した図。^ と ..、init、with、required が BCL 側の型や属性を必要とすることが色分けされている。" width="900" height="300" loading="lazy">
+  <figcaption>各構文が追加された C# のバージョン。枠が色付きのものは <code>LangVersion</code> を上げるだけでは足りず、BCL 側の型や属性を必要とする。<code>??=</code> は C# 8.0 の位置にある。色分けは次節のコンパイル結果に対応する。</figcaption>
 </figure>
 
 | 演算子 / 構文 | C# バージョン | .NET バージョン | .NET Framework 対応 |
@@ -66,15 +74,47 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 | `!`（null 免除） | C# 8.0 | .NET Core 3.0 / .NET 5 | ✅ 言語機能のみ（†1） |
 | `^`（末尾インデックス） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `..`（範囲） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
-| `with`（with 式） | C# 9.0 | .NET 5 | ✅ 言語機能のみ（†1） |
+| `init` アクセサ | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
+| `with`（with 式） | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ 言語機能のみ（†1） |
-| `required` プロパティ | C# 11.0 | .NET 7 | ⚠️ BCL 属性が必要（†3） |
+| `required` プロパティ | C# 11.0 | .NET 7 | ⚠️ BCL 属性が必要（†4） |
 | コレクション式 | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
 | プライマリコンストラクタ | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
 
 - **†1**: 純粋な言語機能。`LangVersion` を対応する C# バージョンに設定（または Visual Studio / .NET SDK を更新）すれば .NET Framework 上でも使用できる。
-- **†2**: `System.Index` / `System.Range`（.NET Core 3.0+ で追加された BCL 型）が必要。.NET Framework では `System.Index`（NuGet。`System.Index` / `System.Range` を提供）などで型を補うか、ポリフィルを自前で定義する必要がある。
-- **†3**: `System.Runtime.CompilerServices.RequiredMemberAttribute`（.NET 7+ で追加された BCL 属性）が必要。.NET Framework では属性を自前で定義するか NuGet パッケージで補う必要がある。
+- **†2**: `System.Index` / `System.Range`（.NET Core 3.0+ で追加された BCL 型）が必要。配列のスライス `a[1..3]` はさらに `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray` を要求する。
+- **†3**: `System.Runtime.CompilerServices.IsExternalInit`（.NET 5+ で追加された BCL 型）が必要。`with` 式は対象を `record` または `init` アクセサを持つ型に限るため、`init` と同じ制約を受ける。
+- **†4**: `RequiredMemberAttribute` に加えて `CompilerFeatureRequiredAttribute` と `IsExternalInit`（いずれも `System.Runtime.CompilerServices`）が必要。
+
+**`with` と `init` を †1（言語機能のみ）に分類している解説は誤りである。**
+`with` 式は `record` あるいは `init` アクセサを伴うため、`IsExternalInit` が存在しない .NET Framework では `LangVersion` を上げてもコンパイルできない。
+次節に、この分類を実際のコンパイル結果で示す。
+
+### .NET Framework 4.8 に対するコンパイル結果
+
+各構文を `net48` へ `LangVersion=latest` でコンパイルした結果が次の表である。
+不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタは OK。a[^1]、a[1..3]、init、with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="612" height="376" loading="lazy">
+  <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
+</figure>
+
+読み取れることは 3 点ある。
+
+**1. `??=` や `!` は `LangVersion` を上げるだけで .NET Framework でも使える。**
+Target-typed `new`、コレクション式、プライマリコンストラクタも同様である。
+これらは記事冒頭の問題（`??=` が使えない）に対して、`LangVersion` の引き上げだけで解決できることを意味する。
+
+**2. `with` と `init` は `LangVersion` を上げても通らない。**
+`System.Runtime.CompilerServices.IsExternalInit` が .NET Framework に存在しないためである。
+`with` 式は `record` あるいは `init` アクセサを対象とするため、`init` と同じ制約を受ける。
+
+**3. `required` が要求する型は 1 つではない。**
+`RequiredMemberAttribute` だけでなく、`CompilerFeatureRequiredAttribute` と `IsExternalInit` も必要になる。
+`RequiredMemberAttribute` だけを自前定義しても解決しない。
+
+いずれも、不足する型を自前定義すればコンパイルは通る。具体的な定義は後掲の「不足する型を自前で補う」に示す。
 
 ---
 
@@ -113,6 +153,124 @@ int[] sliced = array.Skip(1).Take(3).ToArray();
 ```
 
 上記はいずれも意味を保ったまま旧構文で表現した例である（LINQ 例は `using System.Linq;` が必要）。
+
+### 方法3：不足する型を自前で補う
+
+BCL 側の型が足りないだけであれば、その型を自分のプロジェクトに定義すればコンパイルは通る。
+コンパイラは名前空間と形が一致する型を探すだけであり、それがどのアセンブリにあるかは問わない。
+
+以下は `net48` に対して実際にコンパイルし、通ることを確認した定義である。
+
+`init` と `with` を使う場合は、`IsExternalInit` を定義する。
+
+```csharp
+namespace System.Runtime.CompilerServices
+{
+    // init アクセサと record が要求するマーカー型。中身は不要である。
+    internal static class IsExternalInit { }
+}
+```
+
+`required` を使う場合は、さらに 2 つの属性が必要になる。
+
+```csharp
+using System;
+
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit { }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct
+        | AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
+    internal sealed class RequiredMemberAttribute : Attribute { }
+
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+    internal sealed class CompilerFeatureRequiredAttribute : Attribute
+    {
+        public CompilerFeatureRequiredAttribute(string featureName) => FeatureName = featureName;
+
+        public string FeatureName { get; }
+    }
+}
+```
+
+`^` と `..` については、`System.Index` と `System.Range` に加え、配列のスライスで呼ばれる `RuntimeHelpers.GetSubArray` も定義する必要がある。
+
+```csharp
+using System;
+
+namespace System
+{
+    internal readonly struct Index
+    {
+        private readonly int _value;
+
+        public Index(int value, bool fromEnd = false) => _value = fromEnd ? ~value : value;
+
+        public int Value => _value < 0 ? ~_value : _value;
+
+        public bool IsFromEnd => _value < 0;
+
+        public int GetOffset(int length) => IsFromEnd ? length - Value : Value;
+
+        public static implicit operator Index(int value) => new Index(value);
+    }
+
+    internal readonly struct Range
+    {
+        public Range(Index start, Index end) { Start = start; End = end; }
+
+        public Index Start { get; }
+
+        public Index End { get; }
+
+        public (int Offset, int Length) GetOffsetAndLength(int length)
+        {
+            int start = Start.GetOffset(length);
+            return (start, End.GetOffset(length) - start);
+        }
+    }
+}
+
+namespace System.Runtime.CompilerServices
+{
+    // 配列に対する a[1..3] は、コンパイラがこのメソッドへ変換する。
+    internal static class RuntimeHelpers
+    {
+        public static T[] GetSubArray<T>(T[] array, Range range)
+        {
+            (int offset, int length) = range.GetOffsetAndLength(array.Length);
+            var result = new T[length];
+            Array.Copy(array, offset, result, 0, length);
+            return result;
+        }
+    }
+}
+```
+
+この定義を含む `net48` のコンソールアプリを実行すると、`a[^1]` と `a[1..3]` はいずれも .NET 5 以降と同じ値を返す。
+`int[] a = { 10, 20, 30, 40, 50 }` に対して `a[^1]` は `50`、`a[1..3]` は `[20, 30]` となることを実機で確認した。
+
+#### NuGet パッケージを使う場合の注意
+
+`Index` / `Range` を提供する NuGet パッケージとしては `IndexRange` がある。
+**`System.Index` という名前の NuGet パッケージは存在しない**（`nuget.org` は 404 を返す）。
+
+`IndexRange` 1.1.1 を `net48` に参照させて確かめたところ、`a[^1]` と `Index` / `Range` 型は使えるようになるが、**配列のスライス `a[1..3]` は依然としてコンパイルできない**。
+
+```text
+error CS0656: コンパイラが必要とするメンバー
+'System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray' がありません
+```
+
+このパッケージは `GetSubArray` を含まないためである。
+配列のスライスまで使うのであれば、上の `RuntimeHelpers` を自前で定義する必要がある。
+
+#### 自前定義の注意点
+
+- `RuntimeHelpers` は `mscorlib` にも同名の型が存在する。自プロジェクトで定義すると、そのプロジェクト内ではこちらが優先される。`RuntimeHelpers` の他のメンバー（`InitializeArray` など）を使っている場合は、そちらも定義するか完全修飾名で呼び分ける必要がある。
+- いずれの型も `internal` で定義する。`public` にすると、そのアセンブリを参照する側と型が衝突しうる。
+- ターゲットを .NET 5 以降へ移行した際は、これらの定義を削除する。BCL 側の型と重複すると、自プロジェクトの定義が優先されて意図しない挙動になりうる。
 
 ---
 
@@ -380,8 +538,16 @@ var lightTheme = new AppTheme { ThemeName = "Light Mode" };
 // var invalidTheme = new AppTheme { Author = "s-iguchi" };
 ```
 
-`required` は C# 11.0 で導入された構文であり、.NET 7 以降では `System.Runtime.CompilerServices.RequiredMemberAttribute` が標準で提供される。
-一方 .NET Framework など属性が存在しない環境では、属性の自前定義または追加参照（ポリフィル）が別途必要になる。
+`required` は C# 11.0 で導入された構文であり、.NET 7 以降では必要な属性が標準で提供される。
+
+.NET Framework では 3 つの型が不足する。`net48` へコンパイルすると、次の 3 件がまとめて報告される。
+
+- `System.Runtime.CompilerServices.RequiredMemberAttribute`
+- `System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute`
+- `System.Runtime.CompilerServices.IsExternalInit`（上の例が `init` アクセサを使うため）
+
+`RequiredMemberAttribute` だけを自前定義しても解決しない点に注意する。
+3 つすべての定義は「方法3：不足する型を自前で補う」に示した。
 
 #### プライマリコンストラクタ — C# 12.0 以降
 
@@ -412,7 +578,7 @@ public class LogWriter(string logFilePath, LogLevel minimumLevel)
 - .NET Framework をターゲットにする場合でも、`??=` や `!` のような言語機能はビルド環境（コンパイラ／`LangVersion`）が対応していれば使用できる。一方 `^` / `..`（Index / Range）は必要な型・API（`System.Index` / `System.Range` など）の有無に依存するため、追加参照／ポリフィルが必要になるか、利用できない場合がある。
 - `!`（null 免除演算子）はコンパイル時の警告を抑制するだけであり、実行時の `null` チェックを行わない。
   使用した箇所で `null` が渡された場合は `NullReferenceException` が発生するため、使用箇所を最小限に抑える。
-- `with` 式、Target-typed `new`、コレクション式、プライマリコンストラクタは純粋な言語機能であり、`LangVersion` を対応バージョンに設定することで .NET Framework 上でも使用可能である。`required` は `System.Runtime.CompilerServices.RequiredMemberAttribute` が必要なため、追加参照または自前定義が別途必要になる。
+- Target-typed `new`、コレクション式、プライマリコンストラクタは純粋な言語機能であり、`LangVersion` を対応バージョンに設定すれば .NET Framework 上でも使用できる（`net48` で確認済み）。一方 **`with` と `init` は純粋な言語機能ではない**。`IsExternalInit` を必要とするため、`LangVersion` を上げただけでは .NET Framework でコンパイルできない。`required` はさらに `RequiredMemberAttribute` と `CompilerFeatureRequiredAttribute` を要する。
 - コレクション式の `..` スプレッド演算子は、C# 8.0 の範囲演算子 `..` と同じ記号を使用するが、用途が異なる（コレクション式の中での要素展開）。
 
 ---
@@ -426,7 +592,8 @@ C# 新構文でコンパイルエラーが発生した場合の対処アプロ�
 | `LangVersion` を引き上げる | 新構文をそのまま使用できる。コードの簡潔さが維持される。 | ビルド環境（VS / SDK）のアップデートが必要。 | 開発環境を更新できる場合。長期的に保守するプロジェクト。 |
 | ビルド環境（VS / .NET SDK）を更新する | 最新の言語機能・ツールサポートを得られる。 | 既存プロジェクトへの影響範囲が広い場合がある。 | 新規または移行可能なプロジェクト。 |
 | 旧構文に書き換える | 環境を一切変更せずに対応できる。 | コードが冗長になる。新機能の恩恵を受けられない。 | レガシー環境で環境変更が許可されない場合。 |
-| BCL 型のポリフィルを追加する（`^` / `..` 向け） | `System.Index` / `System.Range` を .NET Framework で使用できる。 | ポリフィルの管理が追加で必要になる。 | `^` / `..` を .NET Framework プロジェクトで利用したい場合。 |
+| 不足する型を自前で定義する | `^` / `..` / `init` / `with` / `required` を .NET Framework で使用できる。追加パッケージが要らない。 | 定義の管理が必要。.NET 5 以降へ移行する際は削除する。`RuntimeHelpers` は BCL の同名型を隠す。 | BCL 型が不足する構文を .NET Framework で利用したい場合。 |
+| `IndexRange` パッケージを参照する | `Index` / `Range` 型と `a[^1]` が使えるようになる。 | 配列のスライス `a[1..3]` には対応しない（`GetSubArray` を含まないため、別途自前定義が必要）。 | `^` だけを使えれば足りる場合。 |
 
 ---
 
@@ -437,12 +604,16 @@ C# の演算子と初期化構文は言語バージョンとともに段階的�
 環境ごとの選択基準は以下のとおりである。
 
 - **.NET Framework 環境（コンパイラを更新しない場合）**：`??`（C# 2.0）、`?.`（C# 6.0）、`nameof`（C# 6.0）、`is` パターンマッチング（C# 7.0）が上限の目安となる。`^1` は `array[array.Length - 1]` に、`..` は LINQ に置き換えて対処する。
-- **.NET Framework 環境（LangVersion を C# 8.0 以上に設定した場合）**：`??=`、`!`、`with`、Target-typed `new` などの言語機能が追加で利用可能になる。`^` / `..` は `System.Index` / `System.Range` のポリフィルが別途必要。
+- **.NET Framework 環境（LangVersion を引き上げた場合）**：`??=`、`!`、Target-typed `new`、コレクション式、プライマリコンストラクタが追加で利用可能になる（`net48` で確認済み）。一方 `^` / `..` / `init` / `with` / `required` は BCL 側の型が不足するため、自前定義するまで使えない。
 - **.NET 5〜6（C# 9〜10）**：BCL 型も含めてすべての C# 9〜10 機能が使用可能になる。
 - **.NET 7（C# 11）以降**：`required` プロパティが利用可能になる。
 - **.NET 8（C# 12）以降**：コレクション式、プライマリコンストラクタが利用可能になる。
 
-コンパイラ（`LangVersion`）とターゲットフレームワークの組み合わせを事前に確認したうえで、利用可能な構文を選択することが適切である。
+実際に `net48` へコンパイルして確かめたところ、**「純粋な言語機能かどうか」は構文の見た目からは判断できない**ことが分かった。
+`with` は演算子のように見えるが `IsExternalInit` を要し、逆にプライマリコンストラクタやコレクション式のような大きな構文追加が BCL 型を要さない。
+
+したがって、`LangVersion` を上げれば済むのか、型を補う必要があるのかは、**対象フレームワークへ実際にコンパイルして確認する**のが確実である。
+不足する型はコンパイラが `CS0518` / `CS0656` で名指しするため、そのまま自前定義すればよい。
 
 ---
 
