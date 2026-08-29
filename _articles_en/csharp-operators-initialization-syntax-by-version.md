@@ -103,7 +103,7 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, and primary constructors are OK. a[^1], a[1..3], init, with, and required are NG with the missing type named, and all become OK once a polyfill is added." width="612" height="376" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, and primary constructors are OK. a[^1], a[1..3], init, with, and required are NG with the missing type named, and all become OK once a polyfill is added." width="484" height="402" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 

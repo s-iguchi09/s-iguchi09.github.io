@@ -160,6 +160,67 @@ internal static class DemoLayout
     }
 
     /// <summary>
+    /// 実測値を表として並べたウィンドウを作る。
+    /// 図中の文言は日英で共有するため、識別子と数値だけで構成する。
+    /// 先頭列は左寄せ、それ以外は数値の桁を揃えるため右寄せにする。
+    /// </summary>
+    public static Window BuildTableWindow(
+        string title,
+        IReadOnlyList<string> headers,
+        IEnumerable<IReadOnlyList<string>> rows)
+    {
+        var grid = new Grid { Margin = new Thickness(18) };
+        for (int i = 0; i < headers.Count; i++)
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        }
+
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        for (int column = 0; column < headers.Count; column++)
+        {
+            AddTableCell(grid, 0, column, headers[column], header: true);
+        }
+
+        int rowIndex = 1;
+        foreach (IReadOnlyList<string> row in rows)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            for (int column = 0; column < headers.Count; column++)
+            {
+                AddTableCell(grid, rowIndex, column, column < row.Count ? row[column] : string.Empty);
+            }
+
+            rowIndex++;
+        }
+
+        return CreateWindow(title, grid);
+    }
+
+    private static void AddTableCell(Grid grid, int row, int column, string text, bool header = false)
+    {
+        var cell = new Border
+        {
+            BorderBrush = FrameBrush,
+            // 隣接するセルで枠線が二重にならないよう、左辺と上辺は先頭の行・列だけ描く。
+            BorderThickness = new Thickness(column == 0 ? 1 : 0, row == 0 ? 1 : 0, 1, 1),
+            Background = header ? CellFill : Brushes.White,
+            Padding = new Thickness(14, 7, 14, 7),
+            Child = new TextBlock
+            {
+                Text = text,
+                FontFamily = CodeFont,
+                FontSize = 13,
+                Foreground = CodeBrush,
+                HorizontalAlignment = column == 0 ? HorizontalAlignment.Left : HorizontalAlignment.Right,
+            },
+        };
+
+        Grid.SetRow(cell, row);
+        Grid.SetColumn(cell, column);
+        grid.Children.Add(cell);
+    }
+
+    /// <summary>
     /// 「マークアップ → 描画結果」の行を縦に並べたウィンドウを作る。
     /// </summary>
     public static Window BuildComparisonWindow(string title, IEnumerable<Row> rows)

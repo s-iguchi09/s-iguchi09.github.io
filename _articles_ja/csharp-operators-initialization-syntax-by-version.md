@@ -96,7 +96,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタは OK。a[^1]、a[1..3]、init、with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="612" height="376" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタは OK。a[^1]、a[1..3]、init、with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="484" height="402" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
