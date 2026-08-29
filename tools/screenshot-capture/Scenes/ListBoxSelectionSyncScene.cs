@@ -229,7 +229,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
         }
 
         return DemoLayout.BuildTableWindow(
-            "ListBox, IsVirtualizing=True",
+            "ListBox",
             ["items", "CanContentScroll", "ListBoxItem", "visuals", "layout ms"],
             rows);
     }
