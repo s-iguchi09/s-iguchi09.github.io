@@ -21,6 +21,7 @@ It does not cover choosing among the three `UpdateSourceTrigger` values that dec
 - Target control / feature: two-way binding on `TextBox.Text` (`Mode=TwoWay` / `OneWayToSource`)
 - Architecture: MVVM (a ViewModel property bound to a `TextBox` in the View)
 - Assumed knowledge: change notification via `INotifyPropertyChanged` and the basics of `UpdateSourceTrigger`
+- Verification environment: .NET 10 / Windows 11 (the measured results in this article were obtained here)
 
 `UpdateSource()` writes the current value of the target (`TextBox.Text`) back to the source (the ViewModel).
 For a binding with `UpdateSourceTrigger=Explicit`, the source is never updated unless this method is called.
@@ -52,6 +53,27 @@ In addition, when the target `TextBox` sits inside another control's template an
 Second, `UpdateSource()` does nothing unless the binding's `Mode` is `TwoWay` or `OneWayToSource`.
 Calling it on a `OneWay` or `OneTime` binding is silently ignored without an exception.
 Calling it while the binding is detached from its target throws an `InvalidOperationException`.
+
+### Measured: Behavior by Configuration
+
+The conditions above were verified by running them.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.png" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null from GetBindingExpression. OneTime and OneWay do nothing when called on an intact binding but raise InvalidOperationException once Text has been assigned. OneWayToSource and TwoWay update the source after Text has been assigned." width="813" height="342" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text</code> is the call made after assigning a value to <code>TextBox.Text</code>. <code>no change</code> means the source value was left unchanged.</figcaption>
+</figure>
+
+**The two columns disagree for `OneWay` and `OneTime`, and that difference matters.**
+
+Calling `UpdateSource()` on an intact binding raises no exception and does nothing, as described above.
+Assigning a value to `TextBox.Text` first and then calling it, however, raises `InvalidOperationException`.
+
+The reason is that **assigning a local value to the target of a `OneWay` or `OneTime` binding replaces the binding with that local value and detaches it**.
+The "silently ignored because the mode does not qualify" state and the "throws because it is detached" state are therefore not independent: real code ends up in the second one.
+The same applies to user input — with `OneWay`, typing into the box loses the binding at that moment.
+
+With `OneWayToSource` and `TwoWay`, assigning to `Text` and then calling updates the source.
+The binding survives because those two modes carry a path from target to source.
 
 Third, `UpdateSource()` writes back only the single `BindingExpression` it was called on.
 Committing an entire form requires calling it on each target `TextBox` individually, or using a bulk-update mechanism described below.

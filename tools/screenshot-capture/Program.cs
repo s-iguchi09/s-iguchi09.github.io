@@ -51,6 +51,7 @@ internal static class Program
         new ShutdownLifetimeScene(),
         new CollectionCrossThreadScene(),
         new BindingErrorTraceScene(),
+        new UpdateSourcePitfallScene(),
     ];
 
     [STAThread]
