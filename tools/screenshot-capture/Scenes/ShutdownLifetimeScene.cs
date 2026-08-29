@@ -17,6 +17,14 @@ internal sealed class ShutdownLifetimeScene : IScene
     /// <summary>これを超えて生き残ったプロセスは、終了しないものとして扱う。</summary>
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(9);
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "条件ごとに Application.Exit の発生・Run() の戻り・プロセスの生存時間を測る",
+        "ウィンドウを生成しない場合と閉じないウィンドウがある場合に Application.Exit が発生しないこと",
+        "既定の new Thread がプロセスを引き止め、IsBackground=true では引き止めないこと",
+        "2 つ目の UI スレッドは InvokeShutdown を呼ばない限りプロセスを残すこと",
+    ];
+
     public string Slug => "wpf-application-not-exiting-shutdownmode-threads";
 
     /// <summary>表に載せる条件。<c>Key</c> は検証用アプリへ渡す引数。</summary>

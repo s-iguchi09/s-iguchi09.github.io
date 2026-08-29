@@ -18,6 +18,14 @@ internal sealed class ExtensionReceiverMatrixScene : IScene
 
     private const string LanguageVersion = "14.0";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "レシーバーの書き方とメンバーの種類の全組み合わせをコンパイルする",
+        "extension(Directory) + 静的メンバーが通り、インスタンスメンバーが CS9303 になること",
+        "extension(Directory directory) がメンバーの種類によらず CS0721 になること",
+        "静的でない型なら名前付きレシーバーにインスタンスメンバーを置けること",
+    ];
+
     public string Slug => "csharp14-extension-members-static-class-limitation";
 
     public async Task CaptureAsync(SceneContext context)

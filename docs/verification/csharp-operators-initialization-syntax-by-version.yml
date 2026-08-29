@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- csharp-operators-initialization-syntax-by-version
+slug: "csharp-operators-initialization-syntax-by-version"
+scene: "CSharpFrameworkMatrixScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "net48 に対して各構文をコンパイルし、通るか・不足する型は何かを確かめる"
+  - "with と init が IsExternalInit を要し、言語機能だけでは足りないこと"
+  - "required が RequiredMemberAttribute 以外に 2 つの型を要すること"
+  - "不足する型を自前定義すればコンパイルが通ること"
+images:
+  - "images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.png"

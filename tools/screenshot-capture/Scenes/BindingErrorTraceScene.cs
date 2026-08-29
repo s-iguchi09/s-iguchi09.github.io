@@ -18,6 +18,13 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class BindingErrorTraceScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "失敗パターンごとに System.Windows.Data トレースへ記録される番号を確かめる",
+        "パス解決失敗が Error 40、ConvertBack 失敗が Error 7、空のインデクサーが Error 17 であること",
+        "DataContext 未設定は既定の Warning では何も出力されず、Information 10 であること",
+    ];
+
     public string Slug => "wpf-binding-error-debugging-output-window";
 
     public async Task CaptureAsync(SceneContext context)

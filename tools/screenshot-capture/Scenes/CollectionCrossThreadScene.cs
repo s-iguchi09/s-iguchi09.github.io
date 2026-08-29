@@ -19,6 +19,13 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class CollectionCrossThreadScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "バックグラウンドスレッドからの Add で送出される例外を確かめる",
+        "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）",
+        "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること",
+    ];
+
     public string Slug => "wpf-observablecollection-cross-thread-update";
 
     public async Task CaptureAsync(SceneContext context)

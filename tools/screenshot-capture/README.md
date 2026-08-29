@@ -29,12 +29,49 @@ dotnet run --project tools/screenshot-capture -c Release -- wpf-label-underscore
 実行中はウィンドウが順に表示されてフォーカスを奪う。数秒で終了する。
 保存したファイルのパスが標準出力に列挙される。
 
+## 検証記録（`docs/verification/`）
+
+シーンが「実際に動かして確かめていること」を `Verifies` として宣言すると、実行時に
+`docs/verification/<slug>.yml` へ自動で書き出される。
+
+```yaml
+slug: "wpf-binding-error-debugging-output-window"
+scene: "BindingErrorTraceScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "パス解決失敗が Error 40、ConvertBack 失敗が Error 7、空のインデクサーが Error 17 であること"
+images:
+  - "images/articles/.../binding-error-trace-matrix.png"
+```
+
+**目的は、同じ検証を何度も繰り返さないことである。**
+記事の書式（`検証環境` の行があるか、PNG を参照しているか）から推測すると、書き方の違いで
+検証済みの記事を未検証と誤判定する。実際にそれが起きて、既に実測済みの記事を再検証したことがある。
+
+```bash
+# 実測で検証済みの記事:
+ls docs/verification/ | sed 's/\.yml$//' | sort
+
+# 未検証の記事:
+comm -23 \
+  <(ls _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort) \
+  <(ls docs/verification/ 2>/dev/null | sed 's/\.yml$//' | sort)
+```
+
+このファイルは手で編集しない。内容を変えるにはシーンの `Verifies` を直して再実行する。
+`docs` は `_config.yml` の `exclude` に入っているため、サイトには出力されない。
+
+図を描くだけで何も検証していないシーンは `Verifies` を空のままにする。その場合は記録も作られない。
+
 ## シーンの追加
 
 1. `Scenes/` に `IScene` を実装したクラスを追加する。
    - `Slug` に対応する記事の slug を返す。
    - `CaptureAsync` で `SceneContext.ShootAsync(window, fileName)` を呼び、ウィンドウを保存する。
    - フォーカスやテンプレートパーツの操作など、表示後に行う処理は `ShootAsync` の `beforeCapture` に渡す。
+   - 実行結果で記事の主張を確かめている場合は、`Verifies` にその内容を書く。
 2. `Program.cs` の `AllScenes` に登録する。
 3. 実行して `images/articles/<slug>/` に出力されることを確認する。
 

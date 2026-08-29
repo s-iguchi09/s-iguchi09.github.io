@@ -16,6 +16,13 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class UpdateSourcePitfallScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "GetBindingExpression が null を返す条件（リテラル・MultiBinding・TemplateBinding）",
+        "バインドを張ったまま UpdateSource を呼んだ場合と、Text を書き換えてから呼んだ場合の違い",
+        "OneWay / OneTime では Text への代入がバインドを外し、その後の UpdateSource が例外になること",
+    ];
+
     public string Slug => "wpf-textbox-updatesource-from-view-pitfalls";
 
     public async Task CaptureAsync(SceneContext context)

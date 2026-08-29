@@ -13,6 +13,14 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class BitmapImageFileLockScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "読み込み方ごとに、直後の File.Delete が成功するかを確かめる",
+        "BitmapImage(Uri) の後に CacheOption を設定しても効かないこと",
+        "IgnoreImageCache ではファイルのロックを回避できないこと",
+        "既定の読み込み方でも参照を手放して GC が走れば解放されること",
+    ];
+
     public string Slug => "wpf-bitmapimage-file-lock-cacheoption";
 
     public async Task CaptureAsync(SceneContext context)

@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-bitmapimage-file-lock-cacheoption
+slug: "wpf-bitmapimage-file-lock-cacheoption"
+scene: "BitmapImageFileLockScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "読み込み方ごとに、直後の File.Delete が成功するかを確かめる"
+  - "BitmapImage(Uri) の後に CacheOption を設定しても効かないこと"
+  - "IgnoreImageCache ではファイルのロックを回避できないこと"
+  - "既定の読み込み方でも参照を手放して GC が走れば解放されること"
+images:
+  - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.png"

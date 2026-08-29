@@ -11,6 +11,16 @@ internal interface IScene
     /// <summary>対応する記事の slug。出力先 <c>images/articles/&lt;slug&gt;/</c> になる。</summary>
     string Slug { get; }
 
+    /// <summary>
+    /// このシーンが「実際に動かして」確かめている主張。
+    ///
+    /// 図を描くだけのシーンは空のままでよい。値を返すシーンは、実行結果が
+    /// 記事のどの記述を裏づけているかを 1 項目ずつ書く。
+    /// 実行するたびに <c>docs/verification/&lt;slug&gt;.yml</c> へ書き出されるため、
+    /// 「どの記事が実測で確かめられているか」を毎回調べ直さずに済む。
+    /// </summary>
+    IReadOnlyList<string> Verifies => [];
+
     Task CaptureAsync(SceneContext context);
 }
 

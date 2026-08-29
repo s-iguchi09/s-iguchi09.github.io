@@ -1,0 +1,13 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-observablecollection-cross-thread-update
+slug: "wpf-observablecollection-cross-thread-update"
+scene: "CollectionCrossThreadScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "バックグラウンドスレッドからの Add で送出される例外を確かめる"
+  - "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）"
+  - "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること"
+images:
+  - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.png"

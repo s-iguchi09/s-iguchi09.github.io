@@ -21,6 +21,14 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
     /// <summary>検証に使うターゲットフレームワーク。</summary>
     private const string TargetFramework = "net48";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "net48 に対して各構文をコンパイルし、通るか・不足する型は何かを確かめる",
+        "with と init が IsExternalInit を要し、言語機能だけでは足りないこと",
+        "required が RequiredMemberAttribute 以外に 2 つの型を要すること",
+        "不足する型を自前定義すればコンパイルが通ること",
+    ];
+
     public string Slug => "csharp-operators-initialization-syntax-by-version";
 
     /// <summary>
