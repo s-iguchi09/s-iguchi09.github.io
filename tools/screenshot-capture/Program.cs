@@ -48,6 +48,7 @@ internal static class Program
         new LinqBackportNet10Scene(),
         new CSharpFrameworkMatrixScene(),
         new BitmapImageFileLockScene(),
+        new ShutdownLifetimeScene(),
     ];
 
     [STAThread]

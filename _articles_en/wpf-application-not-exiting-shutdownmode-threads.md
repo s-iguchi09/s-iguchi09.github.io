@@ -28,7 +28,8 @@ Every value quoted here was obtained by running the code in the environment desc
 - Target features: `Application.ShutdownMode`, `Application.Windows`, `System.Threading.Thread`, `Dispatcher`
 - Architecture: standalone desktop application (identical for MVVM and code-behind)
 - Diagnostic tool: `dotnet-stack`, installed separately with `dotnet tool install --global dotnet-stack`
-- Measurement method: a test application with an explicit `Main` closes its window automatically after a fixed delay and records the process lifetime and the timestamp of each event to a file
+- Verification environment: .NET 10 / Windows 11
+- Measurement method: a test application with an explicit `Main` closes its window automatically after a fixed delay and records the process lifetime and the timestamp of each event to a file. The measurement is implemented as a `tools/screenshot-capture` scene, so the figure is re-measured every time it is captured
 
 The code below is reduced to the parts relevant to the topic.
 `Trace` lives in `System.Diagnostics`; `Thread`, `ManualResetEventSlim` and `ApartmentState` in `System.Threading`; `Application`, `Window` and `ExitEventArgs` in `System.Windows`; and `Dispatcher` in `System.Windows.Threading`.
@@ -114,13 +115,24 @@ Where a background workload is present, it starts immediately and sleeps for six
 | Visible window only (control) | Raised | Returns | Immediately after the window closes |
 | `Run()` called without ever creating a window | **Never raised** | Does not return | Never terminates |
 | One `Window` instantiated but never closed | **Never raised** | Does not return | Never terminates |
-| `new Thread(...)` left at its default | Raised | Returns | **When the remaining sleep time elapses, about 4 seconds later** |
+| `new Thread(...)` left at its default | Raised | Returns | **Stays alive until the remaining sleep elapses** |
+| Same, plus `IsBackground = true` | Raised | Returns | Immediately (the sleep is cut short) |
 | `Task.Run(...)` | Raised | Returns | Immediately (the work is cut short) |
 | `Dispatcher.Run()` on a second UI thread | Raised | Returns | **Never terminates** |
 | Same, plus `InvokeShutdown()` from `Exit` | Raised | Returns | Immediately |
 
+The measured values are shown below.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.png" alt="A table of measured process lifetimes by configuration. Visible window only, a thread with IsBackground enabled, Task.Run, and the InvokeShutdown configuration all terminate within seconds. Creating no window and leaving a window unclosed never raise Application.Exit and never terminate. A default new Thread stays alive until its sleep elapses, and a second UI thread never terminates." width="677" height="342" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by launching a test application that differs only in the configuration under test. <code>process ends</code> is the measured time from process start to exit; <code>never</code> means the process was still alive after nine seconds. The window closes automatically two seconds after start, and background work is represented by a six-second sleep. Elapsed time depends on the execution environment, so read the values as differences between configurations rather than absolute numbers.</figcaption>
+</figure>
+
 The six-second sleep used for measurement stands in for the work that causes the real failure: a loop that was never stopped.
-The `new Thread(...)` row therefore terminates after about four seconds, whereas a loop that never ends keeps the process alive indefinitely.
+The `new Thread(...)` row therefore terminates after a few seconds, whereas a loop that never ends keeps the process alive indefinitely.
+
+The `IsBackground = true` row shows the same thread no longer holding the process open.
+That row also confirms that the remedy described below actually works.
 
 The table shows that the presence or absence of `Application.Exit` is directly usable as the gate test.
 The rows that read "Never raised" are the one that never creates a window and the one that leaves an unclosed window, and those are the configurations stalled at gate 1.

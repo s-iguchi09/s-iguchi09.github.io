@@ -28,7 +28,8 @@ WPF の終了処理には**「アプリケーションが終了する」段階**
 - 対象機能: `Application.ShutdownMode`、`Application.Windows`、`System.Threading.Thread`、`Dispatcher`
 - アーキテクチャ: 単体で動作するデスクトップアプリケーション（MVVM・コードビハインドのいずれでも同じ）
 - 診断ツール: `dotnet-stack`（`dotnet tool install --global dotnet-stack` で別途インストールする）
-- 計測方法: 明示的な `Main` を持つ検証用アプリケーションで、ウィンドウを一定時間後に自動で閉じ、プロセスの生存時間と各イベントの発生時刻をファイルへ記録した
+- 検証環境: .NET 10 / Windows 11
+- 計測方法: 明示的な `Main` を持つ検証用アプリケーションで、ウィンドウを一定時間後に自動で閉じ、プロセスの生存時間と各イベントの発生時刻をファイルへ記録した。この計測は `tools/screenshot-capture` のシーンとして実装しており、図は撮影のたびに測り直している
 
 掲載するコードは記事の主題に関わる部分だけを抜き出している。
 `Trace` は `System.Diagnostics`、`Thread` と `ManualResetEventSlim` と `ApartmentState` は `System.Threading`、`Application` と `Window` と `ExitEventArgs` は `System.Windows`、`Dispatcher` は `System.Windows.Threading` にある。
@@ -114,13 +115,24 @@ WPF は `Application.Shutdown` が呼ばれたときにアプリケーション�
 | 可視ウィンドウのみ（対照） | 発生する | 戻る | ウィンドウを閉じた直後 |
 | ウィンドウを 1 つも生成せずに `Run()` を呼ぶ | **発生しない** | 戻らない | 終了しない |
 | 生成だけして閉じない `Window` が 1 つある | **発生しない** | 戻らない | 終了しない |
-| `new Thread(...)`（既定のまま） | 発生する | 戻る | **残りのスリープ時間が尽きた時点（約 4 秒後）** |
+| `new Thread(...)`（既定のまま） | 発生する | 戻る | **残りのスリープ時間が尽きるまで残る** |
+| 同上 ＋ `IsBackground = true` | 発生する | 戻る | 直後（スリープは打ち切られる） |
 | `Task.Run(...)` | 発生する | 戻る | 直後（処理は打ち切られる） |
 | 2 つ目の UI スレッドで `Dispatcher.Run()` | 発生する | 戻る | **終了しない** |
 | 同上 ＋ `Exit` で `InvokeShutdown()` | 発生する | 戻る | 直後 |
 
+実際に計測した値が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.png" alt="条件別にプロセスの生存時間を計測した表。可視ウィンドウのみ、IsBackground を有効にしたスレッド、Task.Run、InvokeShutdown を呼ぶ構成は数秒で終了する。ウィンドウを生成しない場合と閉じないウィンドウがある場合は Application.Exit が発生せず終了しない。既定の new Thread はスリープが尽きるまで残り、2 つ目の UI スレッドは終了しない。" width="677" height="342" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、条件だけを変えた検証用アプリを起動して計測した値。<code>process ends</code> はプロセス起動から終了までの実測時間で、<code>never</code> は 9 秒を超えても終了しなかったことを示す。ウィンドウは起動から 2 秒後に自動で閉じ、バックグラウンド処理は 6 秒のスリープに置き換えている。所要時間は実行環境に依存するため、絶対値ではなく条件間の差として読む。</figcaption>
+</figure>
+
 計測に使った 6 秒のスリープは、実際の障害で問題になる「止め忘れて終わらない処理」を有限時間に置き換えたものである。
-そのため `new Thread(...)` の行はプロセスが約 4 秒後に終了しているが、実際に終わらないループを回していれば、そのままプロセスは残り続ける。
+そのため `new Thread(...)` の行は数秒後にプロセスが終了しているが、実際に終わらないループを回していれば、そのままプロセスは残り続ける。
+
+`IsBackground = true` を付けた行は、同じスレッドがプロセスを引き止めなくなることを示している。
+これは後述の対処が実際に効くことの確認でもある。
 
 この表から、`Application.Exit` の有無が関門の判別にそのまま使えることが分かる。
 「発生しない」は、ウィンドウを 1 つも生成しない条件と、生成だけして閉じないウィンドウがある条件の 2 つだけであり、これが第 1 関門で止まっているパターンである。
