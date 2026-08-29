@@ -50,6 +50,7 @@ internal static class Program
         new BitmapImageFileLockScene(),
         new ShutdownLifetimeScene(),
         new CollectionCrossThreadScene(),
+        new BindingErrorTraceScene(),
     ];
 
     [STAThread]

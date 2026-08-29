@@ -25,6 +25,7 @@ WPF の `Binding` が期待どおりに動かないとき、コントロール�
 - IDE: Visual Studio 2026
 - アーキテクチャ: MVVM（`DataContext` 経由のバインド）
 - 前提知識: WPF バインド基礎、`INotifyPropertyChanged`
+- 検証環境: .NET 10 / Windows 11（トレース出力の実測はこの環境で取得した）
 
 ---
 
@@ -108,7 +109,15 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 ## よくあるエラーパターンと対処
 
 出力ウィンドウのメッセージは、原因ごとに現れる文言が異なる。
-代表的なパターンとその対処を示す。
+代表的なパターンについて、実際にそのバインドを評価させ、`System.Windows.Data` のトレースに何が記録されるかを確認した結果が次の表である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.png" alt="バインドの失敗パターンごとにトレース出力を記録した表。パス解決失敗は Error 40、ConvertBack の失敗は Error 7、空の Validation.Errors へのインデクサーアクセスは Error 17 として出力される。DataContext 未設定は既定の Warning レベルでは何も出力されず、Information レベルまで下げると Information 10 として DataItem=null が現れる。解決できるバインドは何も出力しない。" width="727" height="281" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>Switch.Level</code> は既定に相当する <code>Warning</code> を基本とし、<code>DataContext</code> 未設定の行のみ <code>Information</code> まで下げた場合も併記している。</figcaption>
+</figure>
+
+エラー番号は原因ごとに固定されており、`Error: 40` はパス解決失敗、`Error: 7` は `ConvertBack` の変換失敗、`Error: 17` はインデクサーアクセスの失敗に対応する。
+一方で `DataContext` の未設定だけは番号を持つエラーとして出力されない。この違いは切り分けの起点になるため、以下で個別に述べる。
 
 ### パス解決失敗（Error: 40）
 
@@ -119,11 +128,29 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 `ItemContainerStyle` の `Setter` に書いたバインドも同じくアイテムを起点に解決されるため、アイテムの型に該当プロパティが無ければこのエラーになる（[WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由](/ja/articles/wpf-treeview-select-item-programmatically/)）。
 `UserControl` の内部で、その `UserControl` 自身に定義した依存関係プロパティを素の `{Binding}` で参照した場合も、継承した `DataContext` が `null` でなく、かつそのプロパティを持たなければ同じメッセージで現れる（[WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計](/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)）。
 
-### DataContext が未設定（DataItem=null）
+### DataContext が未設定（DataItem=null）— 既定では何も出力されない
 
-`DataItem=null` と出力される場合、バインド評価時点で `DataContext` が設定されていない。
-`DataContext` を設定する前にバインドが評価されると、この状態になる。
-初期化順序を見直すか、要素の読み込み完了後に `DataContext` を設定する。
+このパターンだけは、**既定のトレース設定では出力ウィンドウに何も現れない**。
+`DataContext` が `null` のままバインドが評価されても、WPF はそれをエラーとして扱わないためである。
+
+実際に確認すると、`DataItem=null` の状態は `Error` ではなく `Information: 10` として記録される。
+
+```text
+System.Windows.Data Information: 10 : Cannot retrieve value using the binding
+and no valid fallback value exists; using default instead.
+BindingExpression:Path=UserName; DataItem=null;
+target element is 'TextBox' (Name=''); target property is 'Text' (type 'String')
+```
+
+既定のトレースは `Error` と `Warning` までを対象とするため、この行は出力されない。
+確認するには、後述の `PresentationTraceSources.TraceLevel` を対象のバインドに設定するか、`System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level` を `Information` 以上に下げる。
+
+**注意すべきなのは、`DataContext` が未設定のときはパス解決のエラー（`Error: 40`）も出ないことである。**
+バインド元が `null` である以上、プロパティを探しにいく段階に到達しないためである。
+そのため「出力ウィンドウに何も出ていない」ことは、バインドが正しいことを意味しない。
+値が表示されないのにトレースが無い場合、まず疑うのは `DataContext` の未設定である。
+
+対処としては、初期化順序を見直すか、要素の読み込み完了後に `DataContext` を設定する。
 なお、後から `DataContext` が設定されればバインドは再評価されるため、初期化直後の一時的な `DataItem=null` は問題にならないこともある。
 
 ### 型変換の失敗（Error: 7 など）
