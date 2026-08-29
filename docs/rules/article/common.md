@@ -109,8 +109,18 @@ Search Console で「クロール済み - インデックス未登録」と判�
 # 「検証環境」を明記していない記事（実測で確認した形跡が無い）:
 grep -L -E '^- (検証環境|計測環境)' _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort
 
-# 実行画面（PNG）を持たない記事（概念図だけで、動かして確かめていない可能性が高い）:
-grep -L '\.png"' _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort
+# 実行画面（PNG）を参照していない記事（概念図だけで、動かして確かめていない可能性が高い）:
+# コード例に .png が現れる記事を誤検出しないよう、img の src 属性だけを見る。
+grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort
+```
+
+`tools/screenshot-capture` にシーンが無い記事は、図があっても再生成できない。
+次で、シーンを持たない記事を列挙できる。
+
+```bash
+comm -23 \
+  <(ls _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort) \
+  <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ | sed 's/.*"\(.*\)"/\1/' | sort)
 ```
 
 両方に該当する記事を最優先とする。

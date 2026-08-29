@@ -42,8 +42,12 @@ description: 技術ブログの新規記事案を、別セッションにその�
    ```bash
    # 「検証環境」を明記していない記事:
    grep -L -E '^- (検証環境|計測環境)' _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort
-   # 実行画面（PNG）を持たない記事:
-   grep -L '\.png"' _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort
+   # 実行画面（PNG）を参照していない記事:
+   grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort
+   # tools/screenshot-capture にシーンが無い記事（図を再生成できない）:
+   comm -23 \
+     <(ls _articles_ja/*.md | xargs -n1 basename | sed 's/\.md$//' | sort) \
+     <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ | sed 's/.*"\(.*\)"/\1/' | sort)
    ```
 
    **新規テーマより既存記事の補強を優先する**(`common.md` §8)。N 件のうち、少なくとも半数は補強案にする。
