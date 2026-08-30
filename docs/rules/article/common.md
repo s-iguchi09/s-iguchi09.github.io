@@ -34,7 +34,7 @@
 
 記事の文体・構成・必須要素・チェックは、以下のルールファイルに従う。作業前に必ず読むこと。
 
-- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)
+- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)・**主張の検証(§12)**・内部リンクの正規 URL(§7.1)
 - `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(見出し構成)
 - `docs/rules/article/review-checklist.md` — 公開前レビューチェックリスト
 - `.markdownlint.json` — 有効な lint ルール(`MD060` は無効)
@@ -91,3 +91,81 @@
 
 - 各記事のテーマは、必要に応じてファイル先頭のフロントマター(`title` / `category` / `excerpt`)を読んで把握する。
 - **新しい slug は上記の既存ファイル名と重複させない。** テーマも既存記事と実質的に重ならないようにする。
+
+---
+
+## 8. 既存記事の補強
+
+`guidelines.md` §12 の検証ルールは 2026-08-29 に追加したもので、それ以前の記事はこのルールを通っていない。
+Search Console で「クロール済み - インデックス未登録」と判定された記事を実測で検証したところ、前提と図でバージョンが食い違う、計測していない性能差を断定している、推奨した実装が期待どおり動かない、といった誤りが見つかった。
+
+同種の記事が残っているため、既存記事を実測で確かめ直す作業が必要になる。
+これは**記事作成のワークフローとは別の作業**として、対象を選んで個別に行う。
+`article-ideas` / `article-workflow` / `article-auto` は新規記事の作成を担うスキルであり、この作業を兼ねさせない。
+
+本節は、その補強作業を行うときの参照情報である。
+
+### 8.1 補強が必要な記事の把握
+
+補強候補は、その時点のリポジトリ状態から機械的に列挙する。ハードコードした一覧を持たない。
+日英どちらの記事も対象にする。
+
+> **以下は推測であり、確実な判定ではない。** 記事の書式から「実測した形跡があるか」を推し量っているだけなので、
+> 実測済みでも書式が違えば未検証と誤判定する。実際にそれが起きて、既に実測した記事を再検証したことがある。
+> 候補を絞る用途に使い、最終的な判断は記事とシーンの中身を見て行う。
+
+`grep -L` は該当が 0 件のとき何も出力しない。`xargs` にそのまま渡すと引数無しで
+`basename` が実行されて失敗するため、`-r`（`--no-run-if-empty`）を付ける。
+
+```bash
+# 「検証環境」を明記していない記事:
+grep -L -E '^- 検証環境' _articles_ja/*.md _articles_en/*.md \
+  | xargs -r -n1 basename | sed 's/\.md$//' | sort -u
+
+# 実行画面（PNG）を参照していない記事（概念図だけで、動かして確かめていない可能性が高い）:
+# コード例に .png が現れる記事を誤検出しないよう、img の src 属性だけを見る。
+grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md _articles_en/*.md \
+  | xargs -r -n1 basename | sed 's/\.md$//' | sort -u
+```
+
+`検証環境` の代わりに `計測環境` と書いた記事も実測済みである。両方を対象から外したい場合は
+`-E '^- (検証環境|計測環境)'` にする。上のコマンドは `検証環境` の欠落だけを見ているため、
+`計測環境` しか書いていない記事も候補に挙がる。どちらを使うかは目的に合わせて選ぶ。
+
+`tools/screenshot-capture` にシーンが無い記事は、図があっても再生成できない。
+次で、シーンを持たない記事を列挙できる。
+
+```bash
+comm -23 \
+  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
+      | sed 's/.*"\(.*\)"/\1/' | sort -u)
+```
+
+3 つすべてに該当する記事は、実行による検証がまったく行われていない可能性が高い。
+積集合は次で求める。
+
+```bash
+comm -12 \
+  <(grep -L -E '^- 検証環境' _articles_ja/*.md _articles_en/*.md \
+      | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md _articles_en/*.md \
+      | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  | comm -12 - \
+      <(comm -23 \
+          <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+          <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
+              | sed 's/.*"\(.*\)"/\1/' | sort -u))
+```
+
+Search Console で「クロール済み - インデックス未登録」と判定されている記事があれば、それも対象として優先度が高い。
+
+### 8.2 補強の進め方
+
+1. 対象記事の主張を洗い出し、`tools/screenshot-capture` のシーンとして実装して実行する。
+2. **実測が記事の記述と食い違った場合は、記事のほうを修正する**(`guidelines.md` §12.1)。
+   誤りの訂正は、分量を増やすことより価値が高い。
+3. 実測で分かった内容を加筆し、「前提・対象環境」に検証環境を明記する(`guidelines.md` §12.2)。
+4. 数値は図に出力し、本文は比率で書く(`guidelines.md` §12.3)。
+
+分量を増やすことは目的ではない。**検証されていない記述を検証済みにすること**が目的である。
