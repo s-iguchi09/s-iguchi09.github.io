@@ -1,0 +1,16 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-label-vs-textblock-performance
+slug: "wpf-label-vs-textblock-performance"
+scene: "LabelVsTextBlockScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Label と TextBlock を同数だけ並べ、visual 要素数とレイアウト時間を測る"
+  - "非仮想化の StackPanel と仮想化した ListBox の両方で測り、差が仮想化で消えること"
+  - "Content にアンダーバーを含めると AccessText が 1 段挟まり、要素数とレイアウト時間が変わること"
+  - "1,000 個配置時のマネージドヒープ増分"
+images:
+  - "images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png"
+  - "images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png"
+  - "images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.png"

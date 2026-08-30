@@ -157,6 +157,15 @@ namespace System.Linq
 #endif
 ```
 
+この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。KeyValuePair 版とタプル版の ToDictionary のいずれも、境界値を含めて同じ結果になっている。" width="890" height="320" loading="lazy">
+  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+キーが重複したときに `ArgumentException` になる点まで一致している。比較子に `OrdinalIgnoreCase` を渡すと、大文字小文字だけが違うキーが重複と判定されて同じ例外になる。
+
 コンパイル時に `NET8_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 8 未満の環境）でのみ、上記クラスが有効になる。
 
 ---

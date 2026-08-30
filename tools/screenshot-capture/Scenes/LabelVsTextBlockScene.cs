@@ -20,6 +20,14 @@ internal sealed class LabelVsTextBlockScene : IScene
     /// <summary>本文の実装例と同じ文字列を使う。</summary>
     private const string Text = "Status: Running";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "Label と TextBlock を同数だけ並べ、visual 要素数とレイアウト時間を測る",
+        "非仮想化の StackPanel と仮想化した ListBox の両方で測り、差が仮想化で消えること",
+        "Content にアンダーバーを含めると AccessText が 1 段挟まり、要素数とレイアウト時間が変わること",
+        "1,000 個配置時のマネージドヒープ増分",
+    ];
+
     public string Slug => "wpf-label-vs-textblock-performance";
 
     public async Task CaptureAsync(SceneContext context)

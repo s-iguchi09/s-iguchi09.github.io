@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- linq-backport-netframework-to-net9
+slug: "linq-backport-netframework-to-net9"
+scene: "LinqBackportNet9Scene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる"
+  - "CountBy / AggregateBy が返すキーの順序（最初に現れた順か）"
+  - "Index が返すタプルの中身と、空の並びに対する結果"
+images:
+  - "images/articles/linq-backport-netframework-to-net9/linq-countby-aggregateby-index.png"
+  - "images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg"

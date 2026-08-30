@@ -111,6 +111,15 @@ namespace System.Linq
 #endif
 ```
 
+この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Order・OrderDescending のいずれも、境界値を含めて同じ結果になっている。" width="866" height="290" loading="lazy">
+  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
+
 委譲型では `yield return` を書かないため、イテレータ自作型で必要だった「引数検証とイテレータの分離」（[基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)）は考えなくてよい。
 `source` の null チェックは呼び出し時点で即座に実行され、並び替え自体は委譲先の `OrderBy` が持つ遅延評価のまま動く。
 検証済みの既存 API に処理を委ねるため、アルゴリズム起因のバグが入り込む余地がない。

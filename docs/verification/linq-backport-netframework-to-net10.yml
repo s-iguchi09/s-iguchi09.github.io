@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- linq-backport-netframework-to-net10
+slug: "linq-backport-netframework-to-net10"
+scene: "LinqBackportNet10Scene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる"
+  - "相手が居ない行に対して LeftJoin / RightJoin が渡す既定値"
+  - "Shuffle が元の並びの並べ替えになっていること（乱数のため整列して比較する）"
+images:
+  - "images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png"
+  - "images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg"
