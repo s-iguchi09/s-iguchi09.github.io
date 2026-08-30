@@ -34,7 +34,7 @@
 
 記事の文体・構成・必須要素・チェックは、以下のルールファイルに従う。作業前に必ず読むこと。
 
-- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)
+- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)・**主張の検証(§12)**・内部リンクの正規 URL(§7.1)
 - `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(見出し構成)
 - `docs/rules/article/review-checklist.md` — 公開前レビューチェックリスト
 - `.markdownlint.json` — 有効な lint ルール(`MD060` は無効)
@@ -91,3 +91,68 @@
 
 - 各記事のテーマは、必要に応じてファイル先頭のフロントマター(`title` / `category` / `excerpt`)を読んで把握する。
 - **新しい slug は上記の既存ファイル名と重複させない。** テーマも既存記事と実質的に重ならないようにする。
+
+---
+
+## 8. 既存記事の補強
+
+`guidelines.md` §12 の検証ルールは 2026-08-29 に追加したもので、それ以前の記事はこのルールを通っていない。
+Search Console で「クロール済み - インデックス未登録」と判定された記事を実測で検証したところ、前提と図でバージョンが食い違う、計測していない性能差を断定している、推奨した実装が期待どおり動かない、といった誤りが見つかった。
+
+同種の記事が残っているため、既存記事を実測で確かめ直す作業が必要になる。
+これは**記事作成のワークフローとは別の作業**として、対象を選んで個別に行う。
+`article-ideas` / `article-workflow` / `article-auto` は新規記事の作成を担うスキルであり、この作業を兼ねさせない。
+
+本節は、その補強作業を行うときの参照情報である。
+
+### 8.1 補強が必要な記事の把握
+
+**検証済みかどうかは `docs/verification/` を見れば分かる。** 推測する必要はない。
+
+シーンが `IScene.Verifies` を宣言していると、実行時に `docs/verification/<slug>.yml` が
+生成される（`guidelines.md` §12.4）。このファイルの有無が、実測で確かめた記録そのものである。
+
+```bash
+# 実測で検証済みの記事:
+ls docs/verification/ | sed 's/\.yml$//' | sort
+
+# 未検証の記事:
+comm -23 \
+  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(ls docs/verification/ 2>/dev/null | sed 's/\.yml$//' | sort)
+```
+
+記録の中身を読めば、何をどこまで確かめたかも分かる。
+
+```bash
+cat docs/verification/<slug>.yml
+```
+
+以前は記事の書式（`検証環境` の行があるか、PNG を参照しているか）から推測していた。
+**この方法は使わない。** 書き方の違いで検証済みの記事を未検証と誤判定し、
+実際に再検証してしまったことがある。
+
+なお、`docs/verification/` に記録があっても「記事のすべての主張を確かめた」ことにはならない。
+記録の `verifies` に並ぶのは、そのシーンが実際に測った内容だけである。
+補強の対象を選ぶときは、記事の主張と `verifies` を突き合わせ、測られていない主張が残っていないかを見る。
+
+シーンをまだ持たない記事は、次で列挙できる。
+
+```bash
+comm -23 \
+  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
+      | sed 's/.*"\(.*\)"/\1/' | sort -u)
+```
+
+Search Console で「クロール済み - インデックス未登録」と判定されている記事があれば、それも対象として優先度が高い。
+
+### 8.2 補強の進め方
+
+1. 対象記事の主張を洗い出し、`tools/screenshot-capture` のシーンとして実装して実行する。
+2. **実測が記事の記述と食い違った場合は、記事のほうを修正する**(`guidelines.md` §12.1)。
+   誤りの訂正は、分量を増やすことより価値が高い。
+3. 実測で分かった内容を加筆し、「前提・対象環境」に検証環境を明記する(`guidelines.md` §12.2)。
+4. 数値は図に出力し、本文は比率で書く(`guidelines.md` §12.3)。
+
+分量を増やすことは目的ではない。**検証されていない記述を検証済みにすること**が目的である。
