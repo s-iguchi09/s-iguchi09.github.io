@@ -98,26 +98,47 @@ The table below records whether an `AccessText` appears in the visual tree when 
 | `GroupBox` | Removed | `Header` only |
 | `Expander` | Removed | `Header` only |
 | `TabItem` | Removed | `Header` only |
-| `MenuItem` | Removed | `Header` only |
+| `MenuItem` | Removed | `Header` only (both top level and submenu) |
 | `TreeViewItem` | Preserved | — |
 | `ListBoxItem` | Preserved | — |
 | `ComboBoxItem` | Preserved | — |
 | `StatusBarItem` | Preserved | — |
 | `TextBlock` | Preserved | — |
 
+The table above was not compiled by eye: each control was given the same string and displayed, and its visual tree was walked to see whether an `AccessText` appeared.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg" alt="A table of 15 controls given my_var and checked for a generated AccessText. Label, Button, CheckBox, RadioButton, ToggleButton, GroupBox, Expander, TabItem, and MenuItem at both top level and submenu show disappears. TreeViewItem, ListBoxItem, ComboBoxItem, StatusBarItem, and TextBlock show kept." width="406" height="530" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. <code>disappears</code> means an <code>AccessText</code> was generated in the visual tree; <code>kept</code> means none was. <code>ComboBoxItem</code> and the submenu <code>MenuItem</code> were inspected after opening their popups so that the containers are realized.</figcaption>
+</figure>
+
 On these header-bearing controls, the only `ContentPresenter` with `RecognizesAccessKey="True"` is the one that renders the `Header`.
 How the main `Content` is rendered differs by control.
 
-| Control | `ContentPresenter` instances in its own template |
-| --- | --- |
-| `GroupBox` | Two: one for `Header` (`True`) and one for `Content` (`False`) |
-| `MenuItem` | Two: one for `Header` (`True`) and one for `Icon` (`False`). `MenuItem` has no `Content` property |
-| `TabItem` | One: for `Header` (`True`). The selected `Content` is rendered by `PART_SelectedContentHost` on the parent `TabControl` |
-| `Expander` | One: `ExpandSite` for `Content` (`False`). The one for `Header` (`True`) lives in the template of the header `ToggleButton` |
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg" alt="A table counting the ContentPresenter instances belonging to each control's own template. GroupBox has two, one of them True. Expander has one, ExpandSite, at False. TabItem has one, contentPresenter, at True. MenuItem has two at both menu levels: Icon at False and the header presenter at True." width="587" height="230" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by displaying each control and counting its <code>ContentPresenter</code> instances. Only presenters whose <code>TemplatedParent</code> is the control itself are counted. <code>name</code> is the name within the template; <code>(unnamed)</code> means none was assigned.</figcaption>
+</figure>
 
-On `Expander` and `TabItem`, the presenters for `Header` and `Content` are split across different controls' templates.
+Three things follow from the figure.
+
+**The `Header` presenter of `Expander` does not live in the `Expander`'s own template.**
+Its own template holds only `ExpandSite`, the presenter for `Content`, whose `RecognizesAccessKey` is `False`.
+The one that renders the `Header` lives in the template of the header `ToggleButton`.
+
+**`TabItem` is the reverse: its own template holds only the presenter for `Header`.**
+The selected `Content` is rendered by `PART_SelectedContentHost` on the parent `TabControl`.
+
+**`MenuItem` changes template with menu level, but neither the count nor `RecognizesAccessKey` changes.**
+At both the top level and in a submenu it has two — `Icon` (`False`) and the header presenter (`True`).
+Only the header presenter's name differs, `(unnamed)` versus `menuHeaderContainer`.
+
+On `Expander` and `TabItem`, then, the presenters for `Header` and `Content` are split across different controls' templates.
 Which template a `ContentPresenter` belongs to can be determined from its `TemplatedParent`.
-Walking the visual tree alone also counts template parts belonging to child controls, so the table above counts only presenters whose `TemplatedParent` is the control itself.
+
+**Walking the visual tree alone also counts template parts belonging to child controls.**
+The figure counts only presenters whose `TemplatedParent` is the control itself, and that condition is written into the scene's code.
+Counting by eye leads to attributing the `Expander` header presenter to the `Expander` itself.
 
 In every case, `RecognizesAccessKey="True"` applies only to the presenter that renders the `Header`.
 Consequently, within the same control, only strings placed in the header lose their underscores.
