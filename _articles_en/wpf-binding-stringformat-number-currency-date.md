@@ -146,6 +146,24 @@ The value of each child `Binding` is assigned in order to the placeholder with t
 
 ---
 
+## Measured: The Culture Used, and the Target Property Type
+
+The outcome can be confirmed by displaying the elements and reading the text that was actually rendered.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.svg" alt="A table of formatting results. FrameworkElement.Language defaults to en-us while CultureInfo.CurrentCulture is ja-JP. Without ConverterCulture the values render as a dollar amount and M/d/yyyy; with ja-JP they render as a yen amount and yyyy/MM/dd. Label.Content with StringFormat renders 1234.5 unformatted, while ContentStringFormat formats it." width="665" height="320" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with Japanese regional settings, reading the rendered string out of the visual tree. <code>rendered text</code> is the string as displayed.</figcaption>
+</figure>
+
+**The mismatch between the first two rows is the cause of this problem.**
+`CultureInfo.CurrentCulture` follows the OS regional settings and reads `ja-JP`, while `FrameworkElement.Language` still defaults to `en-us`.
+A binding without `ConverterCulture` uses the latter, so it renders `$` and `M/d/yyyy` regardless of the OS setting.
+
+The last two rows cover `Label.Content`. With `StringFormat` the value renders as `1234.5`, unformatted.
+Switching to `ContentStringFormat` applies the format.
+
+---
+
 ## Culture Dependency Constraint
 
 The biggest pitfall of `Binding.StringFormat` is that the culture used for formatting is not the OS regional setting.

@@ -1,0 +1,16 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-binding-stringformat-number-currency-date
+slug: "wpf-binding-stringformat-number-currency-date"
+scene: "BindingStringFormatScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "FrameworkElement.Language の既定値と CultureInfo.CurrentCulture を読み出す"
+  - "ConverterCulture 未指定のとき、OS の地域設定ではなく en-US で書式化されること"
+  - "ConverterCulture を指定すると書式が変わること"
+  - "Label.Content では StringFormat が効かず、ContentStringFormat が要ること"
+images:
+  - "images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png"
+  - "images/articles/wpf-binding-stringformat-number-currency-date/stringformat-contentcontrol.png"
+  - "images/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.svg"

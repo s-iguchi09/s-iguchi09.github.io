@@ -1,0 +1,16 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- csharp-natural-sort-strcmplogicalw-icomparer
+slug: "csharp-natural-sort-strcmplogicalw-icomparer"
+scene: "NaturalSortScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "同じ入力を比較器ごとに並べ替え、結果の並びを比べる"
+  - "序数比較でもカルチャ比較でも item10 が item2 より前になること"
+  - "StrCmpLogicalW が数字をまとめて数値として比較すること"
+  - "StrCmpLogicalW が大文字小文字を区別しないこと"
+images:
+  - "images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-comparison.png"
+  - "images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.svg"
+  - "images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.svg"

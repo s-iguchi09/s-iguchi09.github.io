@@ -11,12 +11,26 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class BindingStringFormatScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "FrameworkElement.Language の既定値と CultureInfo.CurrentCulture を読み出す",
+        "ConverterCulture 未指定のとき、OS の地域設定ではなく en-US で書式化されること",
+        "ConverterCulture を指定すると書式が変わること",
+        "Label.Content では StringFormat が効かず、ContentStringFormat が要ること",
+    ];
+
     public string Slug => "wpf-binding-stringformat-number-currency-date";
 
     public async Task CaptureAsync(SceneContext context)
     {
         await context.ShootAsync(BuildCultureWindow(), "stringformat-converterculture.png");
         await context.ShootAsync(BuildContentControlWindow(), "stringformat-contentcontrol.png");
+
+        await context.SaveTableAsync(
+            "what StringFormat actually produces",
+            ["binding target and format", "culture", "rendered text"],
+            await FormatAndSortMeasurements.StringFormatAsync(),
+            "stringformat-culture-matrix.svg");
     }
 
     /// <summary>
