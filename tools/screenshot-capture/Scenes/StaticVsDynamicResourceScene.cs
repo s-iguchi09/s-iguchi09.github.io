@@ -45,6 +45,13 @@ internal sealed class StaticVsDynamicResourceScene : IScene
         </Grid>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "リソースを差し替えたとき、StaticResource で参照した側は値が変わらないこと",
+        "DynamicResource で参照した側は値が追随すること",
+        "差し替え前は両者が同じ値であること",
+    ];
+
     public string Slug => "wpf-staticresource-vs-dynamicresource";
 
     public async Task CaptureAsync(SceneContext context)
@@ -67,5 +74,11 @@ internal sealed class StaticVsDynamicResourceScene : IScene
             content.Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
             await Task.Delay(250);
         });
+
+        await context.SaveTableAsync(
+            "Brush resource replaced at run time (White -> Red)",
+            ["configuration", "Border.Background"],
+            await ValuePrecedenceMeasurements.ResourceSwapAsync(),
+            "static-vs-dynamic-resource-update.svg");
     }
 }

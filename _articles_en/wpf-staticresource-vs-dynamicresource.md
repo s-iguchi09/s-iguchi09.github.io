@@ -78,6 +78,17 @@ Whenever the corresponding entry in the resource dictionary changes at runtime, 
 
 ---
 
+The difference can be confirmed by replacing the resource at run time and reading the property back.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="A table of Border.Background before and after the resource is replaced from white to red. StaticResource stays white in both; DynamicResource is white before and red after." width="433" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by replacing the value behind the same key <code>PanelBrush</code> from white to red at run time and reading <code>Border.Background</code> before and after. Nothing differs between the two rows except how the resource is referenced.</figcaption>
+</figure>
+
+Both hold the same value before the swap. The two diverge only afterwards, where the `StaticResource` side stays white.
+
+---
+
 ## Solution
 
 To reflect runtime resource changes in the UI, replace `StaticResource` with `DynamicResource` at the affected binding site.

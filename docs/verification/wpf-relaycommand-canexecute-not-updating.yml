@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-relaycommand-canexecute-not-updating
+slug: "wpf-relaycommand-canexecute-not-updating"
+scene: "RelayCommandCanExecuteScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "CanExecute の戻り値を変えただけでは Button.IsEnabled が変わらないこと"
+  - "InvalidateRequerySuggested で更新されるのは RequerySuggested に委譲した実装だけであること"
+  - "自前で CanExecuteChanged を発火した場合に更新されるのはその実装だけであること"
+  - "Command が未設定のボタンは有効のままであること"
+images:
+  - "images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png"
+  - "images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg"

@@ -77,6 +77,17 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 
 ---
 
+この違いは、実行中にリソースを差し替えてプロパティを読めば確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="リソースを白から赤へ差し替える前後の Border.Background を測った表。StaticResource は差し替え前後とも白のまま。DynamicResource は差し替え前が白、差し替え後は赤になる。" width="433" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、同じキー <code>PanelBrush</code> の値を実行中に白から赤へ差し替え、その前後で <code>Border.Background</code> を読んだ結果。参照の書き方以外の条件は同一である。</figcaption>
+</figure>
+
+差し替え前は両者とも同じ値である。差が出るのは差し替えた後だけであり、`StaticResource` 側は白のまま変わらない。
+
+---
+
 ## 解決方法
 
 実行時にリソースの変更を画面に反映させるには、`StaticResource` を `DynamicResource` に置き換える。

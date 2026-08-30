@@ -15,6 +15,14 @@ internal sealed class RelayCommandCanExecuteScene : IScene
 {
     private const string TypedName = "taro";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "CanExecute の戻り値を変えただけでは Button.IsEnabled が変わらないこと",
+        "InvalidateRequerySuggested で更新されるのは RequerySuggested に委譲した実装だけであること",
+        "自前で CanExecuteChanged を発火した場合に更新されるのはその実装だけであること",
+        "Command が未設定のボタンは有効のままであること",
+    ];
+
     public string Slug => "wpf-relaycommand-canexecute-not-updating";
 
     public async Task CaptureAsync(SceneContext context)
@@ -39,6 +47,12 @@ internal sealed class RelayCommandCanExecuteScene : IScene
             CommandManager.InvalidateRequerySuggested();
             await Task.Delay(250);
         });
+
+        await context.SaveTableAsync(
+            "Button.IsEnabled after CanExecute starts returning true",
+            ["implementation / what was called", "before", "after"],
+            await ValuePrecedenceMeasurements.RelayCommandRequeryAsync(),
+            "relaycommand-requery.svg");
     }
 
     private static UIElement BuildRow(NameViewModel viewModel)

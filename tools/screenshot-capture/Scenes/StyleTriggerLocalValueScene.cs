@@ -57,6 +57,14 @@ internal sealed class StyleTriggerLocalValueScene : IScene
         </Grid>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "ローカル値を持つ要素では、条件が成立しても Style の Trigger が反映されないこと",
+        "そのときの実効値の BaseValueSource が Local になること",
+        "既定値を Setter へ移すと Trigger が反映され、BaseValueSource が変わること",
+        "ClearValue でローカル値を取り除いても Trigger が反映されるようになること",
+    ];
+
     public string Slug => "wpf-style-trigger-not-working-local-value";
 
     public async Task CaptureAsync(SceneContext context)
@@ -76,6 +84,12 @@ internal sealed class StyleTriggerLocalValueScene : IScene
         };
 
         await context.ShootAsync(window, "style-trigger-local-value.png");
+
+        await context.SaveTableAsync(
+            "Border.Background, DataTrigger on HasError",
+            ["configuration", "effective value (BaseValueSource)"],
+            await ValuePrecedenceMeasurements.StyleTriggerPrecedenceAsync(),
+            "style-trigger-precedence.svg");
     }
 
     /// <summary>DataTrigger の条件に使う ViewModel 相当の状態。</summary>

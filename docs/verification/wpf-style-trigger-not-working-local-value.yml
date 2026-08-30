@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-style-trigger-not-working-local-value
+slug: "wpf-style-trigger-not-working-local-value"
+scene: "StyleTriggerLocalValueScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ローカル値を持つ要素では、条件が成立しても Style の Trigger が反映されないこと"
+  - "そのときの実効値の BaseValueSource が Local になること"
+  - "既定値を Setter へ移すと Trigger が反映され、BaseValueSource が変わること"
+  - "ClearValue でローカル値を取り除いても Trigger が反映されるようになること"
+images:
+  - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png"
+  - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg"

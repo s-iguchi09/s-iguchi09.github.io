@@ -84,6 +84,20 @@ Supplying the default through a setter rather than a local value therefore resto
 
 ---
 
+This precedence can be confirmed by displaying the elements and reading `DependencyPropertyHelper.GetValueSource`.
+The figure below records the result under varying conditions.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg" alt="A table of the effective Border.Background and where the value came from. With a local value it stays white at Local; once the default moves to a Setter the trigger color applies at StyleTrigger; with the trigger unmet it is white at Style; and after ClearValue removes the local value the trigger color applies at StyleTrigger." width="598" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with <code>HasError</code> set to <code>True</code>. The value in parentheses is the <code>BaseValueSource</code> returned by <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
+</figure>
+
+**On the row where the value does not change, `BaseValueSource` is `Local`.** That is why the trigger value never replaces it.
+Moving the default into the `Setter` changes the source to `StyleTrigger`, and the trigger color becomes the effective value.
+Clearing the local value with `ClearValue` produces the same result, which confirms the local value is the cause.
+
+---
+
 ## Solution
 
 Remove the local value from the target element and move the default into a `Setter` inside the `Style`.
