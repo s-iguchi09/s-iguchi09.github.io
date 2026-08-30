@@ -74,6 +74,28 @@ UpdateSourceTrigger def = metadata.DefaultUpdateSourceTrigger; // => LostFocus
 
 ---
 
+実際にメタデータを読み出して並べると、`TextBox.Text` だけが他と異なることが分かる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg" alt="依存関係プロパティごとの DefaultUpdateSourceTrigger を測った表。TextBox.Text だけが LostFocus で、CheckBox.IsChecked、ComboBox.SelectedItem、Slider.Value、TextBlock.Text はいずれも PropertyChanged である。" width="634" height="260" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>DependencyProperty.GetMetadata</code> から得た <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> を読み出した結果。<code>BindsTwoWayByDefault</code> も併せて示す。</figcaption>
+</figure>
+
+**`LostFocus` なのは `TextBox.Text` だけである。** 他は既定で `PropertyChanged` であり、入力や操作の直後にソースが更新される。
+「バインドしたのに値が渡ってこない」が `TextBox` でばかり起きるのは、この 1 行の差による。
+
+値が実際にソースへ渡る時点も、入力とフォーカス移動を分けて測れる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg" alt="UpdateSourceTrigger 別に、1 文字入力した直後とフォーカスを外した後のソースの値を測った表。Default は入力直後が空でフォーカスを外すと値が入る。PropertyChanged は入力直後に値が入る。Explicit はフォーカスを外しても空のままで、UpdateSource を呼んで初めて値が入る。" width="528" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> へ 1 文字入力し、その直後と別のコントロールへフォーカスを移した後のソースの値を読んだ結果。<code>Explicit</code> の行だけ、最後に <code>UpdateSource()</code> を呼んでいる。</figcaption>
+</figure>
+
+`Default`（＝`TextBox.Text` では `LostFocus`）の行が、入力直後は空でフォーカスを外して初めて値が入ることを示している。
+`Explicit` はフォーカスを外しても空のままで、`UpdateSource()` を呼ぶまで渡らない。
+
+---
+
 ## 解決方法
 
 タイミングを制御するには、バインディングに `UpdateSourceTrigger` を明示する。

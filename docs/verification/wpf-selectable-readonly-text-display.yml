@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-selectable-readonly-text-display
+slug: "wpf-selectable-readonly-text-display"
+scene: "SelectableReadOnlyTextScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TextBlock にはテキストを選択する API が無いこと"
+  - "IsReadOnly の TextBox では選択できること"
+  - "見た目を寄せる設定を加えても選択できること"
+  - "IsTabStop を切ってもフォーカス可能なままであること"
+images:
+  - "images/articles/wpf-selectable-readonly-text-display/selectable-readonly-text.png"
+  - "images/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.svg"

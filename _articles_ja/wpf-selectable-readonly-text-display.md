@@ -39,6 +39,21 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
 このため、表示用途では `TextBlock` の代替として同じように扱うことができる。  
 ---
 
+表示専用の候補ごとに、テキストを選択できるかとフォーカスの扱いを測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.svg" alt="表示専用の候補ごとに選択可否とフォーカスの扱いを測った表。TextBlock には選択の API が無く Focusable も False。IsReadOnly の TextBox は選択でき Focusable も True。枠と背景を消しても、IsTabStop を切っても選択できる。" width="623" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、同じ文字列を各候補に与えて測った結果。<code>SelectAll() selects</code> は <code>SelectAll()</code> の後に <code>SelectedText</code> から読み出した内容である。</figcaption>
+</figure>
+
+**`TextBlock` は `Focusable` が `False` である。** 選択の API を持たないだけでなく、フォーカスも受け取らない。
+`TextBox` に変えると選択でき、枠と背景を消しても選択できることは変わらない。見た目と機能は独立している。
+
+最終行が示すとおり、`IsTabStop` を `False` にしても `Focusable` は `True` のままである。
+Tab キーの巡回からは外れるが、クリックでのフォーカスと選択は残る。表示専用の見た目に寄せつつ選択を残したい場合は、この組み合わせになる。
+
+---
+
 ## 解決方法
 
 表示専用のテキストを選択可能にしたい場合は、`TextBlock` の代わりに `TextBox` を利用する。  

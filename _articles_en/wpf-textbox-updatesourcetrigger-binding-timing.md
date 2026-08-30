@@ -74,6 +74,28 @@ No source update occurs unless focus moves away.
 
 ---
 
+Reading the metadata and listing it side by side shows that `TextBox.Text` is the outlier.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg" alt="A table of DefaultUpdateSourceTrigger per dependency property. Only TextBox.Text is LostFocus; CheckBox.IsChecked, ComboBox.SelectedItem, Slider.Value, and TextBlock.Text are all PropertyChanged." width="634" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by reading <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> from <code>DependencyProperty.GetMetadata</code>. <code>BindsTwoWayByDefault</code> is shown alongside.</figcaption>
+</figure>
+
+**`TextBox.Text` is the only one at `LostFocus`.** The others default to `PropertyChanged` and update the source right after the input or interaction.
+That single row of difference is why "the binding is set up but no value arrives" happens mostly on `TextBox`.
+
+When the value actually reaches the source can be measured too, separating the keystroke from the focus change.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg" alt="A table of the source value right after one keystroke and after focus moves away, per UpdateSourceTrigger. Default is empty after input and holds the value after focus leaves. PropertyChanged holds it right after input. Explicit stays empty even after focus leaves and only fills in once UpdateSource is called." width="528" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by entering one character into the <code>TextBox</code> and reading the source right afterwards, then again after moving focus to another control. Only the <code>Explicit</code> row calls <code>UpdateSource()</code> at the end.</figcaption>
+</figure>
+
+The `Default` row — which for `TextBox.Text` means `LostFocus` — is empty right after the keystroke and fills in only once focus leaves.
+`Explicit` stays empty even then, and nothing reaches the source until `UpdateSource()` is called.
+
+---
+
 ## Solution
 
 To control the timing, specify `UpdateSourceTrigger` explicitly on the binding.

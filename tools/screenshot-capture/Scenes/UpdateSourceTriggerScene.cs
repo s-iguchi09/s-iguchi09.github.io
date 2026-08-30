@@ -13,6 +13,13 @@ internal sealed class UpdateSourceTriggerScene : IScene
 {
     private const string TypedText = "sato";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "プロパティごとの DefaultUpdateSourceTrigger をメタデータから読み出す",
+        "TextBox.Text だけが LostFocus で、他の多くは PropertyChanged であること",
+        "既定・PropertyChanged・Explicit で、ソースへ値が渡る時点が異なること",
+    ];
+
     public string Slug => "wpf-textbox-updatesourcetrigger-binding-timing";
 
     public async Task CaptureAsync(SceneContext context)
@@ -46,6 +53,18 @@ internal sealed class UpdateSourceTriggerScene : IScene
             immediateBox.CaretIndex = TypedText.Length;
             await Task.Delay(200);
         });
+
+        await context.SaveTableAsync(
+            "DefaultUpdateSourceTrigger read from property metadata",
+            ["dependency property", "DefaultUpdateSourceTrigger", "BindsTwoWayByDefault"],
+            SelectionAndTriggerMeasurements.DefaultUpdateSourceTriggers(),
+            "updatesourcetrigger-defaults.svg");
+
+        await context.SaveTableAsync(
+            "source value after one keystroke, then after focus moves away",
+            ["UpdateSourceTrigger", "after input", "after LostFocus", "final"],
+            await SelectionAndTriggerMeasurements.UpdateTimingAsync(),
+            "updatesourcetrigger-timing.svg");
     }
 
     /// <summary>

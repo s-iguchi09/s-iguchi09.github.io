@@ -12,6 +12,14 @@ internal sealed class SelectableReadOnlyTextScene : IScene
 {
     private const string Message = "System.IO.FileNotFoundException: config.json";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "TextBlock にはテキストを選択する API が無いこと",
+        "IsReadOnly の TextBox では選択できること",
+        "見た目を寄せる設定を加えても選択できること",
+        "IsTabStop を切ってもフォーカス可能なままであること",
+    ];
+
     public string Slug => "wpf-selectable-readonly-text-display";
 
     public async Task CaptureAsync(SceneContext context)
@@ -47,5 +55,11 @@ internal sealed class SelectableReadOnlyTextScene : IScene
             textBox.Select(0, "System.IO.FileNotFoundException".Length);
             await Task.Delay(200);
         });
+
+        await context.SaveTableAsync(
+            "can the text be selected, and how does it take focus?",
+            ["control", "SelectAll() selects", "Focusable", "IsTabStop"],
+            await SelectionAndTriggerMeasurements.SelectableTextAsync(),
+            "selectable-text-matrix.svg");
     }
 }
