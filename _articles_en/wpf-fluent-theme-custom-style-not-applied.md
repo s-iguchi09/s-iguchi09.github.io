@@ -122,8 +122,9 @@ In both cases the application style does not **extend** the Fluent style; it **r
 Once hidden, the Fluent template is no longer supplied, and the control falls back to the built-in WPF theme style, Aero2.
 That is why a style adding nothing but `Padding` discards the whole Fluent appearance.
 
-**All of this describes a style written without `BasedOn`.** Inheriting the original through `BasedOn` keeps the template while still adding your own setters.
-The last two rows of the figure below measure exactly that, and the Solution section covers the approach.
+**All of this describes a style written without `BasedOn`.** Where the original can be inherited through `BasedOn`, the template survives while your own setters still apply.
+The last two rows of the figure below measure that for a `TextBox` style placed in `Window.Resources`.
+Depending on where the style lives, though, `BasedOn` itself may fail to resolve. The Solution section covers that condition.
 
 ---
 
@@ -142,7 +143,9 @@ On the third row, an application-side implicit style under the same key that car
 `Padding` reads 8, so the application style did take effect. **It is precisely because it took effect that the Fluent style was replaced and its template lost with it.**
 
 The last two rows inherit the original through `BasedOn`. On both routes — `ThemeMode` and a direct merge of `Fluent.xaml` — `Padding` reads 8 just the same and `DeleteButton` survives.
-Those two rows are this article's solution working.
+
+What this figure measures is an implicit `TextBox` style placed in `Window.Resources`.
+A `Button`, or a style placed directly in `Application.Resources`, lands elsewhere; the table in the Solution section covers those.
 
 ---
 
