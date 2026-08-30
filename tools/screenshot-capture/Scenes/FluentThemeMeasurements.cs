@@ -13,9 +13,18 @@ internal static class FluentThemeMeasurements
     /// 記事に載せた「余白だけを変える暗黙スタイル」。
     /// これを当てると Fluent のテンプレートが供給されなくなる、というのが記事の主張である。
     /// </summary>
-    private static Style PaddingOnlyStyle()
+    /// <summary>
+    /// <c>Padding</c> だけを指定した暗黙スタイル。<c>Template</c> は指定しない。
+    ///
+    /// <paramref name="basedOn"/> を渡すと、そのスタイルを引き継ぐ。
+    /// 引き継がない場合と引き継ぐ場合で結果が変わるため、両方を測れるようにしている。
+    /// </summary>
+    private static Style PaddingOnlyStyle(Style? basedOn = null)
     {
-        var style = new Style(typeof(TextBox));
+        var style = basedOn is null
+            ? new Style(typeof(TextBox))
+            : new Style(typeof(TextBox), basedOn);
+
         style.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(8)));
         return style;
     }
@@ -43,6 +52,15 @@ internal static class FluentThemeMeasurements
         rows.Add(await MeasureAsync(
             "merge Fluent.xaml + implicit Style", themeMode: null, implicitStyle: true, mergeFluent: true));
 
+        // ここまでの暗黙スタイルは BasedOn も Template も持たない。
+        // 元のスタイルを BasedOn で引き継いだ場合まで同じ結果とは限らないため、別に測る。
+        rows.Add(await MeasureAsync(
+            "merge Fluent.xaml + implicit Style, BasedOn",
+            themeMode: null,
+            implicitStyle: true,
+            mergeFluent: true,
+            basedOnThemeStyle: true));
+
         return rows;
     }
 
@@ -58,7 +76,11 @@ internal static class FluentThemeMeasurements
     };
 
     private static async Task<IReadOnlyList<string>> MeasureAsync(
-        string label, string? themeMode, bool implicitStyle, bool mergeFluent = false)
+        string label,
+        string? themeMode,
+        bool implicitStyle,
+        bool mergeFluent = false,
+        bool basedOnThemeStyle = false)
     {
         var box = new TextBox { Text = "sample", Width = 160 };
         var host = new Grid();
@@ -92,7 +114,17 @@ internal static class FluentThemeMeasurements
 
         if (implicitStyle)
         {
-            window.Resources.Add(typeof(TextBox), PaddingOnlyStyle());
+            // BasedOn で元のスタイルを引き継ぐかどうかで結果が変わる。
+            // 引き継ぐ場合は、テーマが供給しているスタイルを探してから重ねる。
+            Style? baseStyle = null;
+            if (basedOnThemeStyle)
+            {
+                baseStyle = window.TryFindResource(typeof(TextBox)) as Style
+                    ?? throw new InvalidOperationException(
+                        "引き継ぐ元のスタイルが見つからない。BasedOn の測定になっていない。");
+            }
+
+            window.Resources.Add(typeof(TextBox), PaddingOnlyStyle(baseStyle));
         }
 
         try

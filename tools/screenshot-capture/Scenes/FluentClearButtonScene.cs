@@ -18,7 +18,8 @@ internal sealed class FluentClearButtonScene : IScene
         "Fluent テーマの TextBox テンプレートに存在する名前付きパーツを列挙する",
         ".NET 10 でのクリアボタンのパーツ名",
         "ThemeMode を設定した場合と Fluent.xaml を直接マージした場合のどちらでもパーツが現れること",
-        "同じキーの暗黙スタイルを置くと、どちらの経路でもパーツが消えること",
+        "BasedOn を書かない暗黙スタイルを同じキーに置くと、どちらの経路でもパーツが消えること",
+        "BasedOn で元のスタイルを引き継いだ暗黙スタイルでは、自前の Setter が効いたままパーツが残ること",
     ];
 
     public string Slug => "wpf-fluent-textbox-hide-clear-button";
