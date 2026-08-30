@@ -81,16 +81,18 @@ Plotted over time, they line up as follows.
 | `^` (index from end) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `..` (range) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `init` accessor | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
-| `with` expression | C# 9.0 | .NET 5 | ⚠️ Requires a BCL type only when the target has `init` (†3) |
+| `with` (record class) | C# 9.0 | .NET 5 | ⚠️ Requires a BCL type (†3) |
+| `with` (struct / record struct) | C# 10.0 | .NET 6 | ✅ Language feature only (†1, †5) |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ Language feature only (†1) |
 | `required` property | C# 11.0 | .NET 7 | ⚠️ Requires BCL attributes (†4) |
 | Collection expressions | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
 | Primary constructors | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
 
-- **†1**: Pure language features. These can be used on .NET Framework if `LangVersion` is set to the corresponding C# version, or if Visual Studio / the .NET SDK is updated.
+- **†1**: Pure language features. These can be used on .NET Framework once `LangVersion` is set to the corresponding C# version. **Updating the SDK or Visual Studio is not enough on its own:** a project targeting .NET Framework defaults to C# 7.3 and does not move off it when the tooling is updated, so `LangVersion` has to be set explicitly in the `.csproj`.
 - **†2**: Requires `System.Index` / `System.Range`, added in .NET Core 3.0+. Array slicing with `a[1..3]` additionally requires `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray`.
 - **†3**: Requires `System.Runtime.CompilerServices.IsExternalInit`, added in .NET 5+. Whether a `with` expression needs it depends on **whether the target type has `init` accessors**. A `record` class and a `readonly record struct` generate them and therefore need it; a mutable `struct` and a positional `record struct` do not.
-- **†4**: Requires `RequiredMemberAttribute` plus `CompilerFeatureRequiredAttribute` and `IsExternalInit` (all in `System.Runtime.CompilerServices`).
+- **†4**: Paired with `init`, it needs `CompilerFeatureRequiredAttribute` and `IsExternalInit` on top of `RequiredMemberAttribute` (all in `System.Runtime.CompilerServices`). Paired with `set`, `IsExternalInit` is not involved and the first two suffice.
+- **†5**: A mutable `struct` and a positional `record struct` do not generate `init`, so `IsExternalInit` is not required. The `with` expression itself is C# 10.0 or later, however: leaving `LangVersion` at 9.0 fails with `CS8773`.
 
 **Classifying `init` as †1 (language feature only) is incorrect.**
 Because a `with` expression involves a `record` or an `init` accessor, it does not compile on .NET Framework — where `IsExternalInit` does not exist — no matter how high `LangVersion` is set.
@@ -102,11 +104,11 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, and required are NG with the missing type named, and all become OK once a polyfill is added." width="576" height="440" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two." width="646" height="470" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 
-Three things follow from the table.
+Four things follow from the table.
 
 **1. `??=` and `!` work on .NET Framework by raising `LangVersion` alone.**
 The same holds for target-typed `new`, collection expressions, and primary constructors.
@@ -118,9 +120,25 @@ What decides this is not the `with` syntax but **whether the target type has `in
 As the table shows, `with` on a mutable `struct` and on a positional `record struct` compiles on `net48` as-is, because those generate ordinary setters.
 A `record` class and a `readonly record struct` generate `init` and therefore need `IsExternalInit`.
 
-**3. `required` needs more than one type.**
-Besides `RequiredMemberAttribute`, it also requires `CompilerFeatureRequiredAttribute` and `IsExternalInit`.
-Defining `RequiredMemberAttribute` alone does not resolve it.
+**3. What `required` needs depends on whether it is paired with `init`.**
+`required` can be declared alongside either `init` or `set`.
+Paired with `init` it needs all three of `RequiredMemberAttribute`, `CompilerFeatureRequiredAttribute`, and `IsExternalInit`.
+Paired with `set` it needs only the first two — `IsExternalInit` is not involved, as the differing count of missing types on the two rows shows.
+Either way, defining `RequiredMemberAttribute` alone does not resolve it.
+
+**4. The C# version that allows `with` depends on the shape of the target type.**
+A `record` class works from C# 9.0, but a `struct` and a `record struct` require C# 10.0.
+Writing `with` against a `struct` at `LangVersion` 9.0 fails with `CS8773`.
+
+The figure below records the lowest `LangVersion` that compiles for each construct.
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg" alt="A table of the lowest LangVersion that compiles on net48 per construct. With no LangVersion set, every row fails. The minimum is 8.0 for ??=, 9.0 for new() and with on a record class, 10.0 for with on a struct and a record struct, and 12.0 for collection expressions." width="603" height="260" loading="lazy">
+  <figcaption>Measured with .NET SDK 10.0.302 against <code>net48</code>, raising <code>LangVersion</code> from 7.3 upward and recording the first value that compiles. Constructs needing BCL types were measured with their polyfill applied.</figcaption>
+</figure>
+
+**Note that every row fails in the column with no `LangVersion` set.** A project targeting .NET Framework stays on C# 7.3 by default and does not move off it when the SDK or Visual Studio is updated.
+`LangVersion` has to be stated explicitly in the `.csproj`.
 
 In every case, defining the missing types locally makes the code compile. The definitions appear under "Option 3: Supply the missing types yourself" below.
 

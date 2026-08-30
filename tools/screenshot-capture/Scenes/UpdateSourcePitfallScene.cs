@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace ScreenshotCapture.Scenes;
 
@@ -21,6 +22,7 @@ internal sealed class UpdateSourcePitfallScene : IScene
         "GetBindingExpression が null を返す条件（リテラル・MultiBinding・TemplateBinding）",
         "バインドを張ったまま UpdateSource を呼んだ場合と、Text を書き換えてから呼んだ場合の違い",
         "OneWay / OneTime では Text への代入がバインドを外し、その後の UpdateSource が例外になること",
+        "同じ OneWay / OneTime でも、TextInput 経由の入力ではバインドが外れず、ソースも更新されないこと",
     ];
 
     public string Slug => "wpf-textbox-updatesource-from-view-pitfalls";
@@ -35,6 +37,11 @@ internal sealed class UpdateSourcePitfallScene : IScene
         rows.Add(Run("Binding Mode=OneWay", box => SetBinding(box, BindingMode.OneWay)));
         rows.Add(Run("Binding Mode=OneWayToSource", box => SetBinding(box, BindingMode.OneWayToSource)));
         rows.Add(Run("Binding Mode=TwoWay", box => SetBinding(box, BindingMode.TwoWay)));
+        // 入力とコード代入では結果が違う。エディタが通る TextInput 経由も測る。
+        rows.Add(RunTextInput("OneWay, typed via TextInput", BindingMode.OneWay));
+        rows.Add(RunTextInput("OneTime, typed via TextInput", BindingMode.OneTime));
+        rows.Add(RunTextInput("TwoWay, typed via TextInput", BindingMode.TwoWay));
+
         rows.Add(Run("TwoWay, then ClearBinding", box =>
         {
             SetBinding(box, BindingMode.TwoWay);
@@ -86,6 +93,45 @@ internal sealed class UpdateSourcePitfallScene : IScene
         string afterEdit = Call(box.GetBindingExpression(TextBox.TextProperty) ?? expression, source);
 
         return [label, "obtained", asIs, afterEdit];
+    }
+
+    /// <summary>
+    /// コードからの代入ではなく、<c>TextBox</c> のエディタが通る経路で 1 文字入れて測る。
+    ///
+    /// キーボード入力は <c>TextInput</c> イベントを経由し、この経路では
+    /// ローカル値による置き換えが起きないためバインドが外れない。
+    /// コードからの <c>box.Text = ...</c> とは結果が変わる。
+    /// </summary>
+    private static IReadOnlyList<string> RunTextInput(string label, BindingMode mode)
+    {
+        var source = new AmountViewModel { Amount = "before" };
+        var box = new TextBox { DataContext = source };
+        SetBinding(box, mode);
+
+        var host = new Window { Content = box, Width = 200, Height = 80, ShowActivated = false };
+        try
+        {
+            host.Show();
+            box.Focus();
+            box.CaretIndex = box.Text.Length;
+
+            box.RaiseEvent(new TextCompositionEventArgs(
+                Keyboard.PrimaryDevice,
+                new TextComposition(InputManager.Current, box, "X"))
+            {
+                RoutedEvent = TextCompositionManager.TextInputEvent,
+            });
+
+            BindingExpression? after = box.GetBindingExpression(TextBox.TextProperty);
+            string state = after is null ? "detached" : "still bound";
+            string sourceValue = source.Amount == "before" ? "unchanged" : $"\"{source.Amount}\"";
+
+            return [label, state, sourceValue, "-"];
+        }
+        finally
+        {
+            host.Close();
+        }
     }
 
     /// <summary><c>UpdateSource()</c> を呼び、ソースが変わったかどうかを返す。</summary>

@@ -74,16 +74,18 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 | `^`（末尾インデックス） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `..`（範囲） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `init` アクセサ | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
-| `with`（with 式） | C# 9.0 | .NET 5 | ⚠️ 対象が `init` を持つ場合のみ BCL 型が必要（†3） |
+| `with`（record クラス） | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
+| `with`（struct / record struct） | C# 10.0 | .NET 6 | ✅ 言語機能のみ（†1・†5） |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ 言語機能のみ（†1） |
 | `required` プロパティ | C# 11.0 | .NET 7 | ⚠️ BCL 属性が必要（†4） |
 | コレクション式 | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
 | プライマリコンストラクタ | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
 
-- **†1**: 純粋な言語機能。`LangVersion` を対応する C# バージョンに設定（または Visual Studio / .NET SDK を更新）すれば .NET Framework 上でも使用できる。
+- **†1**: 純粋な言語機能。`LangVersion` を対応する C# バージョンに設定すれば .NET Framework 上でも使用できる。**SDK や Visual Studio を更新するだけでは足りない。** .NET Framework をターゲットにしたプロジェクトの既定は C# 7.3 のままであり、更新によって自動的に上がることはない（`.csproj` の `LangVersion` を明示する）。
 - **†2**: `System.Index` / `System.Range`（.NET Core 3.0+ で追加された BCL 型）が必要。配列のスライス `a[1..3]` はさらに `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray` を要求する。
 - **†3**: `System.Runtime.CompilerServices.IsExternalInit`（.NET 5+ で追加された BCL 型）が必要。`with` 式が要求するかどうかは**対象の型が `init` アクセサを持つか**で決まる。`record` クラスと `readonly record struct` は `init` を生成するため必要になる。一方、可変な `struct` と positional の `record struct` は `init` を生成しないため不要である。
-- **†4**: `RequiredMemberAttribute` に加えて `CompilerFeatureRequiredAttribute` と `IsExternalInit`（いずれも `System.Runtime.CompilerServices`）が必要。
+- **†4**: `init` と併用する場合は `RequiredMemberAttribute` に加えて `CompilerFeatureRequiredAttribute` と `IsExternalInit`（いずれも `System.Runtime.CompilerServices`）が必要。`set` と併用する場合は `IsExternalInit` が不要で、前の 2 つだけでよい。
+- **†5**: 可変な `struct` と positional の `record struct` は `init` を生成しないため `IsExternalInit` を要さない。ただし `with` 自体が C# 10.0 以降であり、`LangVersion` を 9.0 に留めると `CS8773` になる。
 
 **`init` を †1（言語機能のみ）に分類している解説は誤りである。**
 `init` アクセサを持つ型に対する `with` 式も同じ制約を受ける。`IsExternalInit` が存在しない .NET Framework では `LangVersion` を上げてもコンパイルできない。
@@ -95,11 +97,11 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="576" height="440" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。" width="646" height="470" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
-読み取れることは 3 点ある。
+読み取れることは 4 点ある。
 
 **1. `??=` や `!` は `LangVersion` を上げるだけで .NET Framework でも使える。**
 Target-typed `new`、コレクション式、プライマリコンストラクタも同様である。
@@ -111,9 +113,25 @@ Target-typed `new`、コレクション式、プライマリコンストラク�
 表のとおり、可変な `struct` と positional の `record struct` への `with` は `net48` でもそのまま通る。これらは `init` ではなく通常のセッターを生成するためである。
 一方、`record` クラスと `readonly record struct` は `init` を生成するため `IsExternalInit` を要する。
 
-**3. `required` が要求する型は 1 つではない。**
-`RequiredMemberAttribute` だけでなく、`CompilerFeatureRequiredAttribute` と `IsExternalInit` も必要になる。
-`RequiredMemberAttribute` だけを自前定義しても解決しない。
+**3. `required` が要求する型は、`init` と併用するかで変わる。**
+`required` は `init` とも `set` とも組み合わせて宣言できる。
+`init` と併用した場合は `RequiredMemberAttribute`・`CompilerFeatureRequiredAttribute`・`IsExternalInit` の 3 つが必要になる。
+`set` と併用した場合に必要なのは前の 2 つだけで、`IsExternalInit` は要らない（表の 2 行を見比べると、不足する型の数が違う）。
+いずれの場合も `RequiredMemberAttribute` だけを自前定義しても解決しない。
+
+**4. `with` が使える C# のバージョンは、対象の型の形で違う。**
+`record` クラスは C# 9.0 から使えるが、`struct` と `record struct` は C# 10.0 からである。
+`LangVersion` を 9.0 に設定して `struct` へ `with` を書くと `CS8773` になる。
+
+構文ごとに、通る最小の `LangVersion` を求めた結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg" alt="構文ごとに net48 で通る最小の LangVersion を測った表。LangVersion を指定しない既定ではいずれも NG。最小値は ??= が 8.0、new() と record class への with が 9.0、struct と record struct への with が 10.0、コレクション式が 12.0 である。" width="603" height="260" loading="lazy">
+  <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に、<code>LangVersion</code> を 7.3 から順に上げながらコンパイルし、最初に通った値を記録した結果。BCL 型が要る構文にはポリフィルを適用したうえで測っている。</figcaption>
+</figure>
+
+**`LangVersion` を指定しない列がすべて NG である点に注意する。** .NET Framework をターゲットにしたプロジェクトの既定は C# 7.3 のままであり、SDK や Visual Studio を更新しても自動的には上がらない。
+`.csproj` に `LangVersion` を明示する必要がある。
 
 いずれも、不足する型を自前定義すればコンパイルは通る。具体的な定義は後掲の「不足する型を自前で補う」に示す。
 

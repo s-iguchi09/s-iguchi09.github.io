@@ -112,7 +112,7 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 代表的なパターンについて、実際にそのバインドを評価させ、`System.Windows.Data` のトレースに何が記録されるかを確認した結果が次の表である。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="バインドの失敗パターンごとにトレース出力を記録した表。パス解決失敗は Error 40、ConvertBack の失敗は Error 7、空の Validation.Errors へのインデクサーアクセスは Error 17 として出力される。DataContext 未設定は既定の Warning レベルでは何も出力されず、Information レベルまで下げると Information 10 として DataItem=null が現れる。解決できるバインドは何も出力しない。" width="764" height="260" loading="lazy">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="バインドの失敗パターンごとにトレース出力を記録した表。パス解決失敗は Error 40、ConvertBack の失敗は Error 7、空の Validation.Errors へのインデクサーアクセスとゲッターが例外を送出した場合はいずれも Error 17 として出力される。DataContext 未設定は既定の Warning レベルでは何も出力されず、Information レベルまで下げると Information 10 として DataItem=null が現れる。解決できるバインドは何も出力しない。" width="788" height="290" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>Switch.Level</code> は既定に相当する <code>Warning</code> を基本とし、<code>DataContext</code> 未設定の行のみ <code>Information</code> まで下げた場合も併記している。</figcaption>
 </figure>
 

@@ -58,9 +58,9 @@ Calling it while the binding is detached from its target throws an `InvalidOpera
 
 The conditions above were verified by running them.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null from GetBindingExpression. OneTime and OneWay do nothing when called on an intact binding but raise InvalidOperationException once Text has been assigned. OneWayToSource and TwoWay update the source after Text has been assigned." width="858" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text</code> is the call made after assigning a value to <code>TextBox.Text</code>. <code>no change</code> means the source value was left unchanged.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null. OneTime and OneWay do nothing on an intact binding and raise InvalidOperationException once Text has been assigned. Typing through TextInput leaves the binding alive in every mode and does not update the source." width="866" height="410" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text</code> is the call made after assigning a value to <code>TextBox.Text</code>. The last three rows type one character through the <code>TextInput</code> event instead of assigning, and their <code>GetBindingExpression</code> column reports whether the binding survived. <code>no change</code> means the source value was left unchanged.</figcaption>
 </figure>
 
 **The two columns disagree for `OneWay` and `OneTime`, and that difference matters.**
