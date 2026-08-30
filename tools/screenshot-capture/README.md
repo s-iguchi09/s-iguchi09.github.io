@@ -29,6 +29,13 @@ dotnet run --project tools/screenshot-capture -c Release -- wpf-label-underscore
 実行中はウィンドウが順に表示されてフォーカスを奪う。数秒で終了する。
 保存したファイルのパスが標準出力に列挙される。
 
+> ⚠️ **ディスプレイが表示状態である必要がある。**
+> 電源管理でモニターが切れていると、DWM がウィンドウの内容を合成しないため、
+> `PrintWindow` はタイトルバーと枠だけが写った**中身が白紙の画像**を返す。
+> 失敗ではなく正常終了するので、生成後は画像を目視で確認する。
+> 無人で回す場合は、実行前にマウス操作などで画面を復帰させる
+> （`powercfg /query SCHEME_CURRENT SUB_VIDEO VIDEOIDLE` で現在のタイムアウトを確認できる）。
+
 ## 検証記録（`docs/verification/`）
 
 シーンが「実際に動かして確かめていること」を `Verifies` として宣言すると、実行時に
@@ -43,7 +50,7 @@ environment:
 verifies:
   - "パス解決失敗が Error 40、ConvertBack 失敗が Error 7、空のインデクサーが Error 17 であること"
 images:
-  - "images/articles/.../binding-error-trace-matrix.png"
+  - "images/articles/.../binding-error-trace-matrix.svg"
 ```
 
 **目的は、同じ検証を何度も繰り返さないことである。**
