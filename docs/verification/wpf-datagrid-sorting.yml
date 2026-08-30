@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-datagrid-sorting
+slug: "wpf-datagrid-sorting"
+scene: "DataGridSortingScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "列の作り方ごとに SortMemberPath と CanUserSort に何が入るかを確かめる"
+  - "SortMemberPath を明示しない DataGridTextColumn では Binding のパスが入ること"
+  - "Binding を持たないテンプレート列では SortMemberPath が空になり、並び替えられないこと"
+images:
+  - "images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png"
+  - "images/articles/wpf-datagrid-sorting/datagrid-sortability.svg"

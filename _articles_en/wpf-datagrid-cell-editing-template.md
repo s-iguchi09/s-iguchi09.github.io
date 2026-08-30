@@ -31,6 +31,18 @@ Display mode prioritizes lightweight rendering and readability, while edit mode 
 Trying to satisfy both goals with one control usually compromises one side.
 `DataGrid` already provides a mode switch mechanism, so separating display and editing templates is the more maintainable design.
 
+That the element in the cell is genuinely swapped between display and editing can be measured.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.svg" alt="A table of the element placed in the cell while displaying and while editing. Displaying gives a TextBlock with cell.IsEditing False; calling BeginEdit gives a ComboBox with cell.IsEditing True." width="532" height="140" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with a <code>DataGridTemplateColumn</code> holding a <code>TextBlock</code> in its <code>CellTemplate</code> and a <code>ComboBox</code> in its <code>CellEditingTemplate</code>. The element type is read out of the visual tree.</figcaption>
+</figure>
+
+**The element itself is replaced.** Rather than one control changing appearance, the `CellTemplate` content is discarded and the `CellEditingTemplate` content is created.
+A heavy control in the editing template therefore costs nothing while the cell is merely displaying.
+
+---
+
 ## Solution
 
 Use `DataGridTemplateColumn` and define `CellTemplate` for normal display and `CellEditingTemplate` for editing.

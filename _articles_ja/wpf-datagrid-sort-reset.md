@@ -42,6 +42,23 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 
 そのため、「初期状態に戻す」にはコードによる制御が必要です。
 
+並び替えの状態は 2 か所に分かれている。操作ごとに両方を測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="操作ごとに SortDescriptions の件数と列の SortDirection、並び順を測った表。SortDescriptions を足しただけでは SortDirection は null のまま。SortDescriptions を消しただけでは SortDirection が Ascending のまま残る。両方を消して初めて初期状態に戻る。" width="827" height="260" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 での実測結果。<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。</figcaption>
+</figure>
+
+**`SortDescriptions.Clear()` を呼んだ行を見ると、並び順は初期状態に戻っているのに `column.SortDirection` は `Ascending` のまま残っている。**
+この状態ではヘッダーに矢印が表示されたままになり、並び替えが効いているように見える。
+
+逆に `SortDescriptions` を足しただけの行では、並び順が変わっているのに `SortDirection` は `null` のままである。
+**この 2 つは自動では同期しない。** どちらの向きにも、両方を明示的に設定する必要がある。
+
+最終行は `SortDescriptions` を 2 つ足した場合で、複数列ソートになっている。Shift + クリックはこの状態を作る操作であり、解除ではない。
+
+---
+
 ## 解決方法
 
 以下の方針で要件に応じて初期化方法を選択します。  

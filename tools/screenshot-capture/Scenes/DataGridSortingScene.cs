@@ -12,6 +12,13 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class DataGridSortingScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "列の作り方ごとに SortMemberPath と CanUserSort に何が入るかを確かめる",
+        "SortMemberPath を明示しない DataGridTextColumn では Binding のパスが入ること",
+        "Binding を持たないテンプレート列では SortMemberPath が空になり、並び替えられないこと",
+    ];
+
     public string Slug => "wpf-datagrid-sorting";
 
     public async Task CaptureAsync(SceneContext context)
@@ -42,6 +49,12 @@ internal sealed class DataGridSortingScene : IScene
 
             return Task.CompletedTask;
         });
+
+        await context.SaveTableAsync(
+            "sortability by how the column is declared",
+            ["column", "SortMemberPath", "CanUserSort", "order after sorting"],
+            await DataGridMeasurements.SortabilityAsync(),
+            "datagrid-sortability.svg");
     }
 
     private static DataGrid BuildGrid()

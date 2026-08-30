@@ -40,6 +40,20 @@ By default, every column in a `DataGrid` is sortable as long as its `SortMemberP
 Clicking the **Name** header once sorts ascending, and clicking again reverses to descending.  
 The default behavior does not return to an unsorted state, so clear logic must be implemented explicitly when needed — see [How to Reset DataGrid Sorting in WPF](/articles/wpf-datagrid-sort-reset/) for that pattern.  
 
+The figure below records what lands in `SortMemberPath` and `CanUserSort` for each way of declaring a column.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="A table of SortMemberPath and CanUserSort per column declaration. A DataGridTextColumn with only a Binding takes the binding path as its SortMemberPath and is sortable. An explicit SortMemberPath takes precedence. Setting CanUserSort to False disables sorting. A template column with no binding ends up with an empty SortMemberPath and CanUserSort False." width="803" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, varying only the column declaration. <code>order after sorting</code> is the order after sorting ascending by that column&#39;s <code>SortMemberPath</code>; a column that cannot sort keeps the original order.</figcaption>
+</figure>
+
+**`SortMemberPath` is filled in from the `Binding` path even when it is not written.** Stating it in the XAML above makes the intent explicit; omitting it produces the same result.
+
+The last row is the one to note. A `DataGridTemplateColumn` without a `Binding` ends up with an empty `SortMemberPath`, and **`CanUserSort` becomes `False`** as well.
+It stays out of sorting even with `CanUserSortColumns` set to `True`. Making a template column sortable requires stating `SortMemberPath` explicitly.
+
+---
+
 ## Sorting via Code-Behind
 
 Sorting can be triggered programmatically by manipulating `DataGrid.Items.SortDescriptions`:

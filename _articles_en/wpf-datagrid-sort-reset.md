@@ -42,6 +42,23 @@ It is not a built-in shortcut to clear sorting.
 
 For this reason, explicit reset logic is required when an application needs deterministic unsorted behavior.
 
+The sort state lives in two places. The figure below records both after each operation.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="A table of the SortDescriptions count, the column SortDirection, and the row order after each operation. Adding a SortDescription leaves SortDirection null. Clearing SortDescriptions leaves SortDirection at Ascending. Only clearing both returns to the initial state." width="827" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. <code>SortDescriptions</code> is the number of sort conditions on the view; <code>column.SortDirection</code> is the property that drives the arrow in the column header.</figcaption>
+</figure>
+
+**On the row that calls `SortDescriptions.Clear()`, the order is back to its initial state while `column.SortDirection` still reads `Ascending`.**
+The header keeps showing its arrow in that state, making it look as though the sort is still applied.
+
+The reverse holds on the row that only adds a `SortDescription`: the order changes while `SortDirection` stays `null`.
+**The two never synchronize on their own.** Both have to be set explicitly, in either direction.
+
+The last row adds two `SortDescriptions`, producing a multi-column sort. Shift-clicking builds exactly that state; it does not clear anything.
+
+---
+
 ## Solution
 
 The reset strategy should be selected by architecture and UX requirements.  

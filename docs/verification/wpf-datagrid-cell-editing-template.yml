@@ -1,0 +1,13 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-datagrid-cell-editing-template
+slug: "wpf-datagrid-cell-editing-template"
+scene: "DataGridEditingTemplateScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "表示中は CellTemplate、編集中は CellEditingTemplate の要素がセルに置かれること"
+  - "BeginEdit を呼ぶと実際に要素の型が入れ替わること"
+images:
+  - "images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png"
+  - "images/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.svg"
