@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-fluent-theme-custom-style-not-applied
+slug: "wpf-fluent-theme-custom-style-not-applied"
+scene: "FluentCustomStyleScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ThemeMode の有無で、コントロールに供給されるテンプレートが変わること"
+  - "アプリ側の暗黙スタイルが当たったかを Style プロパティで判別する"
+  - "同じキーの暗黙スタイルを置くと Fluent のテンプレートが供給されなくなること"
+  - "テンプレートの出どころを名前付きパーツで判別する"
+images:
+  - "images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-shadows-fluent.png"
+  - "images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png"

@@ -42,6 +42,20 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 どのプロパティをバインドするかはデータ構造に依存するため、構造ごとに設定を合わせる必要がある。  
 ---
 
+同じ選択に対して 3 つのプロパティが何を返すかは、実際に選択して読み出せば確かめられる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="設定を変えて 2 件目を選択したときの SelectedItem・SelectedValue・SelectedIndex と表示文字列を測った表。SelectedValuePath を設定しない場合、SelectedValue は項目そのものを返す。SelectedValuePath=Id では 20 という Int32 を返す。" width="894" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Id</code> と <code>Name</code> を持つ 3 件のうち 2 件目を選択して測った結果。<code>displayed</code> は閉じた状態の <code>ComboBox</code> に表示されている文字列である。</figcaption>
+</figure>
+
+**`SelectedValuePath` を設定しないとき、`SelectedValue` は項目そのものを返す。** 上の表では「`SelectedValuePath` で指定したプロパティ値」と説明したが、未設定時は `SelectedItem` と同じものが返る点に注意する。
+`SelectedValuePath=Id` にすると `Int32` の `20` になり、型まで変わる。ID だけを ViewModel に渡したい場合はこの設定が要る。
+
+`DisplayMemberPath` は表示だけに効き、`SelectedValue` の中身には影響しない。この 2 つは独立している。
+
+---
+
 ## 解決方法
 
 実装に入る前に、`ItemsSource` の要素型に応じて選択関連プロパティを使い分ける。  

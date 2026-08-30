@@ -30,6 +30,13 @@ internal sealed class DatePickerFormatScene : IScene
         </DatePicker>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "SelectedDateFormat が Short と Long の 2 つしか持たず、任意の書式にできないこと",
+        "それぞれの設定で実際に表示される文字列",
+        "テンプレート内のテキスト部分を書き換えると任意の書式にできること",
+    ];
+
     public string Slug => "wpf-datepicker-custom-format";
 
     public async Task CaptureAsync(SceneContext context)
@@ -47,5 +54,11 @@ internal sealed class DatePickerFormatScene : IScene
         await context.ShootAsync(
             DemoLayout.BuildComparisonWindow("DatePicker", rows),
             "datepicker-default-vs-custom-format.png");
+
+        await context.SaveTableAsync(
+            "text shown in the DatePicker",
+            ["configuration", "SelectedDateFormat", "displayed text"],
+            await ComboBoxAndDatePickerMeasurements.DatePickerFormatsAsync(),
+            "datepicker-format-matrix.svg");
     }
 }

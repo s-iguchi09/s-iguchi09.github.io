@@ -47,6 +47,20 @@ The appropriate binding target depends on the data structure, so the configurati
 
 ---
 
+What the three properties return for the same selection can be confirmed by selecting an item and reading them back.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="A table of SelectedItem, SelectedValue, SelectedIndex, and the displayed text after selecting the second item under varying settings. Without SelectedValuePath, SelectedValue returns the item itself. With SelectedValuePath set to Id it returns the Int32 20." width="894" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by selecting the second of three items carrying an <code>Id</code> and a <code>Name</code>. <code>displayed</code> is the string shown on the closed <code>ComboBox</code>.</figcaption>
+</figure>
+
+**Without `SelectedValuePath`, `SelectedValue` returns the item itself.** The table above describes it as the value at `SelectedValuePath`; when that path is unset, what comes back is the same object as `SelectedItem`.
+Setting `SelectedValuePath=Id` produces the `Int32` `20`, changing the type as well. Passing only an ID to the view model requires that setting.
+
+`DisplayMemberPath` affects only what is displayed and leaves `SelectedValue` untouched. The two are independent.
+
+---
+
 ## Solution
 
 Before looking at implementations, choose the selection properties based on the element type of `ItemsSource`:

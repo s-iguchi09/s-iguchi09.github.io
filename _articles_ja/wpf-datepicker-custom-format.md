@@ -24,6 +24,20 @@ WPF の `DatePicker` は、選択された日付をシステムのロケール�
 テンプレートを全面的に差し替えた `DatePicker` ではこの要素が公開されない場合があり、その際はコードビハインド方式か、カスタムテンプレート内での整形に頼ることになる。
 後述するコンバーターが整形するのは、`DatePicker` 本体ではなく併設の表示である。
 
+`DatePicker` に実際に表示される文字列は、設定を変えて読み出せば確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg" alt="DatePicker の設定ごとに表示される文字列を測った表。既定と Short はいずれも 2026/07/17、Long は 2026年7月17日、テキスト部分を書き換えた場合は 2026/07/17 (金) になる。" width="555" height="200" loading="lazy">
+  <figcaption>.NET 10 / 日本語環境の Windows 11 で、<code>2026-07-17</code> を選択した <code>DatePicker</code> のテキスト部分を読み取った結果。</figcaption>
+</figure>
+
+**`SelectedDateFormat` は `Short` と `Long` の 2 つしか持たない。** 既定は `Short` であり、任意の書式を指定する手段が用意されていない。
+これが、以降で述べる回避方法が必要になる理由である。
+
+最終行は、テンプレート内のテキスト部分を直接書き換えた場合である。曜日を含む書式のように、2 つの既定形式では表せない表示もこの方法なら作れる。
+
+---
+
 ## XAML スタイルによる方法
 
 コントロールテンプレート内の `DatePickerTextBox` をスタイル経由で対象にし、`Text` プロパティに `StringFormat` を指定する。
