@@ -64,15 +64,18 @@ Whether these four exist in the .NET Framework BCL is settled by compiling again
 Defining them unconditionally as a polyfill while targeting 4.8 therefore collides with the BCL definitions and fails to compile with `CS0121` (ambiguous call).
 The implementation below guards those two with an extra `#if !NET471_OR_GREATER`.
 
-**That guard only works in SDK-style projects, though.** `NET471_OR_GREATER` is a symbol defined automatically from `TargetFramework`, and a legacy-format project — one specifying `TargetFrameworkVersion` — does not define it.
-The figure below builds the same source in both formats.
+**That guard only works while the SDK's implicit defines are in effect, though.** `NET471_OR_GREATER` is a symbol an SDK-style project defines implicitly from `TargetFramework`, and a legacy-format project — one specifying `TargetFrameworkVersion` — does not define it.
+The figure below builds the same source in several configurations.
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="A table of whether NET471_OR_GREATER is defined and what the build produces, per project format, for one and the same source. The SDK-style project defines the symbol, skips the polyfill, and builds. The legacy format does not define it, compiles the polyfill in, and fails with CS0121. Defining the symbol through DefineConstants makes the legacy format build." width="1047" height="170" loading="lazy">
-  <figcaption>The polyfill placed in <code>namespace System.Linq</code> as the article does, with a call to <code>Append</code>, built in three project configurations. The <code>symbol</code> column is not inferred from whether the build succeeded: it comes from which branch of a <code>#warning</code> placed in the source fired.</figcaption>
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="A table of whether NET471_OR_GREATER is defined and what the build produces, per project format, for one and the same source. The SDK-style project defines the symbol, skips the polyfill, and builds. An SDK-style project with DisableImplicitFrameworkDefines, and the legacy format, do not define it, compile the polyfill in, and fail with CS0121. Defining the symbol through DefineConstants makes the legacy format build." width="1047" height="200" loading="lazy">
+  <figcaption>The polyfill placed in <code>namespace System.Linq</code> as the article does, with a call to <code>Append</code>, built in four configurations. The <code>symbol</code> column is not inferred from whether the build succeeded: it comes from which branch of a <code>#warning</code> placed in the source fired.</figcaption>
 </figure>
 
 In the legacy format `NET471_OR_GREATER` is undefined, so the guard always holds, the polyfill is compiled in, and it collides with the BCL `Append` as `CS0121`.
+As the second row shows, an SDK-style project reaches the same result once `DisableImplicitFrameworkDefines` switches the implicit defines off.
+What the symbol depends on is the SDK's implicit definition, not the project format as such.
+
 **A legacy-format project has to define the symbol itself.**
 
 ```xml
@@ -81,7 +84,10 @@ In the legacy format `NET471_OR_GREATER` is undefined, so the guard always holds
 </PropertyGroup>
 ```
 
-The third row of the table adds exactly that, and lands on the same result as the SDK-style project.
+The fourth row of the table adds exactly that, and lands on the same result as the SDK-style project.
+
+That definition belongs only in a project targeting .NET Framework 4.7.1 or later, though.
+Defining it while targeting 4.7 or earlier switches the polyfill off where the BCL has no `Append` / `Prepend` either, and the call then fails to resolve.
 
 `TakeLast` and `SkipLast`, by contrast, exist in no version of .NET Framework. Those are the ones that need a polyfill.
 
@@ -116,6 +122,10 @@ namespace System.Linq
     /// </summary>
     public static partial class LinqExtensions
     {
+        // Append and Prepend exist in the BCL from .NET Framework 4.7.1 onward.
+        // Defining them unconditionally causes CS0121 (ambiguous call), so guard them further.
+#if !NET471_OR_GREATER
+
         // ==========================================
         // 1. Append
         // ==========================================
@@ -151,6 +161,8 @@ namespace System.Linq
                 yield return item;
             }
         }
+
+#endif
 
         // ==========================================
         // 3. TakeLast

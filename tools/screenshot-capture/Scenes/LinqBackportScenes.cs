@@ -28,7 +28,7 @@ internal sealed class LinqBackportNet5Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "TakeLast / SkipLast に 0・要素数超過・負数を渡したときの挙動",
         "空の並びに対する TakeLast",
-        "NET471_OR_GREATER が SDK 形式のプロジェクトでしか定義されず、従来形式では同じソースが CS0121 になること",
+        "NET471_OR_GREATER が SDK 形式の暗黙定義に依存しており、それを切った場合と従来形式では同じソースが CS0121 になること、および DefineConstants で明示すれば通ること",
     ];
 
     private static readonly string[] Frameworks = ["net46", "net47", "net471", "net48", "net10.0"];
@@ -90,7 +90,7 @@ internal sealed class LinqBackportNet5Scene : IScene
             "linq-net5-polyfill-parity.svg");
 
         await context.SaveTableAsync(
-            "is NET471_OR_GREATER defined? (same source, two project formats)",
+            "is NET471_OR_GREATER defined? (same source, four project configurations)",
             ["project format", "symbol", "polyfill", "build result"],
             await ProjectFormatProbe.SymbolAvailabilityAsync(),
             "linq-net5-project-format.svg");

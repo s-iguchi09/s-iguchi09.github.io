@@ -128,7 +128,7 @@ Which source supplied the template can be told apart by the named parts inside i
 The Fluent `TextBox` template holds a `DeleteButton`; the classic theme does not.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present only when ThemeMode is set. Adding an implicit style removes it, leaving only PART_ContentHost." width="827" height="200" loading="lazy">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. On either route, adding an implicit style that overrides it removes DeleteButton, leaving only PART_ContentHost." width="842" height="260" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11. The <code>Style applied</code> column reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
 </figure>
 

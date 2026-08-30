@@ -62,16 +62,16 @@ Switching the OS to dark theme swaps them.
 `HighlightColor` is the highlight color of a selected item. The accent color the user picks in personalization settings is a separate key, `AccentColor`, and the two are easily confused.
 The machine used here has its accent set to a red, so the table shows `HighlightColor` as `#FF0078D7` and `AccentColor` as `#FFE2241A`. A hard-coded accent will disagree with that setting.
 
-**Reading these keys is not by itself enough to follow a switch, though.**
+**Reading these keys is not by itself enough to follow a later replacement, though.**
 Reading a color directly, as in `SystemColors.WindowColor`, bakes in the value as of that read.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg" alt="A table of the value before and after the system brush is replaced, per way of referencing the color. A brush built from SystemColors.WindowColor stays white; only the side referencing SystemColors.WindowBrushKey through DynamicResource takes the new color." width="697" height="140" loading="lazy">
-  <figcaption>An OS theme switch reaches an application as a replacement of these resources. The table performs the same replacement on the application's resources and reads the values on both sides of it.</figcaption>
+  <figcaption><code>SystemColors.WindowBrushKey</code> in the application's resources replaced, with both values read on either side of the replacement. What this measures is whether each side follows that replacement; an OS theme switch itself is not measured here.</figcaption>
 </figure>
 
 The directly read side keeps its value; only the side referencing the resource key through `DynamicResource` takes the new color.
-**Following the switch requires referencing a resource key such as `SystemColors.WindowBrushKey` through `DynamicResource`, not the color.**
+**Following a replacement requires referencing a resource key such as `SystemColors.WindowBrushKey` through `DynamicResource`, not the color.**
 
 ---
 

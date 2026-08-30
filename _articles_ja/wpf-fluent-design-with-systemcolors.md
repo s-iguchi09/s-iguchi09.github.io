@@ -60,16 +60,16 @@ OS 側でダークテーマに切り替えると、この表の値が入れ替�
 `HighlightColor` は選択項目のハイライト色である。ユーザーが個人用設定で選ぶアクセント色は別のキーの `AccentColor` で、両者は混同されやすい。
 撮影した環境ではアクセント色を赤にしてあるため、表でも `HighlightColor` が `#FF0078D7`、`AccentColor` が `#FFE2241A` と別の値になっている。アクセントを固定色で書くと、この設定と食い違う。
 
-**ただし、これらのキーを読むだけでは切り替えに追随しない。**
-`SystemColors.WindowColor` のように色を直接読むと、読んだ時点の値がそのまま焼き込まれる。
+**ただし、これらのキーを読み取るだけでは、後からの差し替えに追随しない。**
+`SystemColors.WindowColor` のように色を直接読み取ると、読み取った時点の値がそのまま焼き込まれる。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg" alt="色の参照方法ごとに、システムのブラシを差し替える前後の値を測った表。SystemColors.WindowColor から作ったブラシは差し替え後も白のまま。DynamicResource で SystemColors.WindowBrushKey を参照した側だけが新しい色に変わる。" width="697" height="140" loading="lazy">
-  <figcaption>OS のテーマ切り替えは、これらのリソースが差し替わる形でアプリケーションへ伝わる。表は同じ差し替えをアプリケーションのリソース側で起こし、前後の値を読み取った結果である。</figcaption>
+  <figcaption>アプリケーションのリソースにある <code>SystemColors.WindowBrushKey</code> を差し替え、その前後で両者の値を読み取った結果。測っているのはこの差し替えへの追随であり、OS のテーマ切り替えそのものは測っていない。</figcaption>
 </figure>
 
-直接読んだ側は差し替え後も値が変わらず、リソースキーを `DynamicResource` で参照した側だけが新しい色になっている。
-**追随させるには、色ではなく `SystemColors.WindowBrushKey` のようなリソースキーを `DynamicResource` で参照する必要がある。**
+直接読み取った側は差し替え後も値が変わらず、リソースキーを `DynamicResource` で参照した側だけが新しい色になっている。
+**差し替えに追随させるには、色ではなく `SystemColors.WindowBrushKey` のようなリソースキーを `DynamicResource` で参照する必要がある。**
 
 ---
 

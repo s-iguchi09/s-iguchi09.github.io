@@ -119,8 +119,8 @@ Everything described so far can be confirmed from code.
 
 **The table shows the two obstacles arising separately.**
 The first two rows show that the property cannot be written because it is read-only.
-The next three show that `IsSelected` has nothing to be set on while the container does not exist.
-**Setting `IsExpanded` to `true` is not enough on its own.** The container is still `null` immediately afterwards and only becomes available once a layout pass runs.
+The next two show that `IsSelected` has nothing to be set on while the container does not exist.
+**Setting `IsExpanded` to `true` is not enough on its own.** The container is still `null` immediately afterward and only becomes available once a layout pass runs.
 As the last row shows, once the container does exist, `IsSelected` propagates to `SelectedItem` on its own.
 
 ---

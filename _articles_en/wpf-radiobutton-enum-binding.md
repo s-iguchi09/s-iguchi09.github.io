@@ -178,7 +178,7 @@ Because the converter returns `Binding.DoNothing` for `false`, the view model is
 Only the display is wrong, which is why logging the view model never leads to the cause.
 
 With `GroupName` set, no `ConvertBack` call occurs while the view initializes, and both stay checked.
-This row measures initialization only. Changing the selection afterwards still calls `ConvertBack(true)` on the newly checked button, as described above.
+This row measures initialization only. Changing the selection afterward still calls `ConvertBack(true)` on the newly checked button, as described above.
 
 ---
 

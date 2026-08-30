@@ -36,11 +36,29 @@ internal static class FluentThemeMeasurements
         rows.Add(await MeasureAsync("ThemeMode=Light + implicit Style", themeMode: "Light", implicitStyle: true));
         rows.Add(await MeasureAsync("no ThemeMode + implicit Style", themeMode: null, implicitStyle: true));
 
+        // 記事は ThemeMode 以外に「Fluent.xaml を直接マージする」経路も扱っている。
+        // ThemeMode だけを測って結論を書くと、そちらへ一般化できてしまう。
+        rows.Add(await MeasureAsync(
+            "merge Fluent.xaml directly", themeMode: null, implicitStyle: false, mergeFluent: true));
+        rows.Add(await MeasureAsync(
+            "merge Fluent.xaml + implicit Style", themeMode: null, implicitStyle: true, mergeFluent: true));
+
         return rows;
     }
 
+    /// <summary>
+    /// <c>ThemeMode</c> を使わず、Fluent のリソースディクショナリを直接マージする。
+    /// 記事の「App.xaml にリソースディクショナリを追加する」方法にあたる。
+    /// </summary>
+    private static ResourceDictionary FluentDictionary() => new()
+    {
+        Source = new Uri(
+            "pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml",
+            UriKind.Absolute),
+    };
+
     private static async Task<IReadOnlyList<string>> MeasureAsync(
-        string label, string? themeMode, bool implicitStyle)
+        string label, string? themeMode, bool implicitStyle, bool mergeFluent = false)
     {
         var box = new TextBox { Text = "sample", Width = 160 };
         var host = new Grid();
@@ -65,6 +83,11 @@ internal static class FluentThemeMeasurements
                 _ => ThemeMode.System,
             };
 #pragma warning restore WPF0001
+        }
+
+        if (mergeFluent)
+        {
+            window.Resources.MergedDictionaries.Add(FluentDictionary());
         }
 
         if (implicitStyle)
@@ -135,12 +158,14 @@ internal static class FluentThemeMeasurements
     }
 
     /// <summary>
-    /// 色の参照方法によって、後からの差し替えに追随するかどうかが変わることを測る。
+    /// 色の参照方法によって、後からのリソース差し替えに追随するかどうかが変わることを測る。
     ///
-    /// OS のテーマ切り替えは、<see cref="SystemColors"/> のリソースが差し替わる形で
-    /// アプリケーションへ伝わる。ここではそれと同じくアプリケーションのリソースを
+    /// アプリケーションのリソースにある <see cref="SystemColors.WindowBrushKey"/> を
     /// 差し替え、色を直接読んで焼き込んだ場合とリソースキーで参照した場合とで
     /// 結果が分かれることを示す。
+    ///
+    /// ここで測っているのはアプリケーションリソースの差し替えへの追随だけである。
+    /// OS のテーマ切り替えそのものは測っていないため、そこまで主張しない。
     /// </summary>
     public static async Task<List<IReadOnlyList<string>>> ColorReferenceTrackingAsync()
     {

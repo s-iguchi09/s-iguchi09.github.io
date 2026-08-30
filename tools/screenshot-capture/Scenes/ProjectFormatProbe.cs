@@ -34,7 +34,12 @@ internal static class ProjectFormatProbe
         {
             return
             [
-                await MeasureSdkStyleAsync(root),
+                await MeasureSdkStyleAsync(root, "plain", disableImplicitDefines: false),
+
+                // SDK 形式でも、暗黙のフレームワーク定義を切れば定義されなくなる。
+                // 「SDK 形式なら必ず定義される」と書かないために測る。
+                await MeasureSdkStyleAsync(root, "disabled", disableImplicitDefines: true),
+
                 await MeasureLegacyStyleAsync(root, msbuild, "plain", defineConstants: null),
 
                 // 従来形式でも、シンボルを自分で定義すれば SDK 形式と同じ結果になる。
@@ -49,16 +54,21 @@ internal static class ProjectFormatProbe
     }
 
     /// <summary>SDK 形式。TFM から <c>NET471_OR_GREATER</c> が自動で定義される。</summary>
-    private static async Task<IReadOnlyList<string>> MeasureSdkStyleAsync(string root)
+    private static async Task<IReadOnlyList<string>> MeasureSdkStyleAsync(
+        string root, string variant, bool disableImplicitDefines)
     {
-        string workspace = Path.Combine(root, "sdk-style");
+        string workspace = Path.Combine(root, "sdk-style-" + variant);
         Directory.CreateDirectory(workspace);
+
+        string disableElement = disableImplicitDefines
+            ? $"{Environment.NewLine}    <DisableImplicitFrameworkDefines>true</DisableImplicitFrameworkDefines>"
+            : string.Empty;
 
         var utf8 = new UTF8Encoding(true);
         File.WriteAllText(Path.Combine(workspace, "Program.cs"), ProbeSource, utf8);
         File.WriteAllText(
             Path.Combine(workspace, "sdk-style.csproj"),
-            """
+            $$"""
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
@@ -66,14 +76,19 @@ internal static class ProjectFormatProbe
                 <LangVersion>latest</LangVersion>
                 <Nullable>disable</Nullable>
                 <AssemblyName>probe</AssemblyName>
-                <RootNamespace>probe</RootNamespace>
+                <RootNamespace>probe</RootNamespace>{{disableElement}}
               </PropertyGroup>
             </Project>
             """,
             utf8);
 
         (int exitCode, string output) = await RunAsync("dotnet", "build -c Release -v m --nologo", workspace);
-        return ["SDK-style, <TargetFramework>net48</TargetFramework>", .. Interpret(exitCode, output)];
+
+        string label = disableImplicitDefines
+            ? "SDK-style + <DisableImplicitFrameworkDefines>true"
+            : "SDK-style, <TargetFramework>net48</TargetFramework>";
+
+        return [label, .. Interpret(exitCode, output)];
     }
 
     /// <summary>
