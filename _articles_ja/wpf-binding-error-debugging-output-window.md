@@ -116,7 +116,9 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
   <figcaption>.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>Switch.Level</code> は既定に相当する <code>Warning</code> を基本とし、<code>DataContext</code> 未設定の行のみ <code>Information</code> まで下げた場合も併記している。</figcaption>
 </figure>
 
-エラー番号は原因ごとに固定されており、`Error: 40` はパス解決失敗、`Error: 7` は `ConvertBack` の変換失敗、`Error: 17` はインデクサーアクセスの失敗に対応する。
+`.NET 10 / Windows 11` で確認した範囲では、`Error: 40` がパス解決失敗、`Error: 7` が `ConvertBack` の変換失敗、`Error: 17` が値の取得に失敗した場合に対応する。
+これらの番号は `System.Windows.Data` トレースの内部実装が付ける識別子であり、公開 API の契約として全バージョンで固定されることは保証されていない。番号だけに頼らず、併記されるメッセージ本文も読む。
+また `Error: 17` はインデクサーアクセスに限らない。値を取得する過程で例外が発生した場合にも出力される。
 一方で `DataContext` の未設定だけは番号を持つエラーとして出力されない。この違いは切り分けの起点になるため、以下で個別に述べる。
 
 ### パス解決失敗（Error: 40）

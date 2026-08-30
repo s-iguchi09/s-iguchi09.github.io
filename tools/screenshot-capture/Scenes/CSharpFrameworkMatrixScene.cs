@@ -24,7 +24,8 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "net48 に対して各構文をコンパイルし、通るか・不足する型は何かを確かめる",
-        "with と init が IsExternalInit を要し、言語機能だけでは足りないこと",
+        "with 式が IsExternalInit を要するのは対象が init アクセサを持つ場合に限ること",
+        "可変な struct と positional record struct の with は IsExternalInit を要さないこと",
         "required が RequiredMemberAttribute 以外に 2 つの型を要すること",
         "不足する型を自前定義すればコンパイルが通ること",
     ];
@@ -47,7 +48,22 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
         new("a[^1]", "public class C { public int M(int[] a) { return a[^1]; } }", IndexRangePolyfill),
         new("a[1..3]", "public class C { public int[] M(int[] a) { return a[1..3]; } }", IndexRangePolyfill),
         new("{ get; init; }", "public class R { public string Name { get; init; } }", IsExternalInitPolyfill),
-        new("r with { }", "public record R(string Name);\npublic class C { public R M(R r) => r with { Name = \"x\" }; }", IsExternalInitPolyfill),
+
+        // with 式は「対象が init アクセサを持つか」で結果が分かれる。
+        // 可変な struct や positional record struct は init を生成しないため、
+        // IsExternalInit が無くてもコンパイルできる。区別せずに一括りにしない。
+        new(
+            "struct s with { }",
+            "public struct S { public int X { get; set; } }\npublic class C { public S M(S s) => s with { X = 9 }; }",
+            IsExternalInitPolyfill),
+        new(
+            "record struct s with { }",
+            "public record struct S(int X);\npublic class C { public S M(S s) => s with { X = 9 }; }",
+            IsExternalInitPolyfill),
+        new(
+            "record r with { }",
+            "public record R(string Name);\npublic class C { public R M(R r) => r with { Name = \"x\" }; }",
+            IsExternalInitPolyfill),
         new("required", "public class R { public required string Name { get; init; } }", RequiredPolyfill),
     ];
 
@@ -95,7 +111,16 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
                 public (int Offset, int Length) GetOffsetAndLength(int length)
                 {
                     int start = Start.GetOffset(length);
-                    return (start, End.GetOffset(length) - start);
+                    int end = End.GetOffset(length);
+
+                    // 検査を省くと a[3..1] が負の長さを返す。
+                    // 標準の System.Range は ArgumentOutOfRangeException を送出するため、そこへ揃える。
+                    if ((uint)end > (uint)length || (uint)start > (uint)end)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(length));
+                    }
+
+                    return (start, end - start);
                 }
             }
         }

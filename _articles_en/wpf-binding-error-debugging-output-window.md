@@ -117,7 +117,9 @@ The table below records what actually reaches the `System.Windows.Data` trace wh
   <figcaption>Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>. <code>Switch.Level</code> is <code>Warning</code>, matching the default, except for the extra <code>DataContext</code> row where it is lowered to <code>Information</code>.</figcaption>
 </figure>
 
-The error numbers are fixed per cause: `Error: 40` for path resolution, `Error: 7` for a `ConvertBack` conversion failure, and `Error: 17` for an indexer access failure.
+On `.NET 10 / Windows 11`, `Error: 40` corresponds to path resolution, `Error: 7` to a `ConvertBack` conversion failure, and `Error: 17` to a failure while retrieving the value.
+These numbers are identifiers assigned by the internal implementation behind the `System.Windows.Data` trace, not a public API contract guaranteed to stay fixed across versions. Read the accompanying message text rather than relying on the number alone.
+`Error: 17` is also not limited to indexer access; it is emitted whenever an exception occurs while retrieving the value.
 An unset `DataContext` is the exception: it is not reported as a numbered error at all. That difference is the starting point for diagnosis, so it is covered separately below.
 
 ### Path Resolution Failure (Error: 40)

@@ -70,7 +70,9 @@ Assigning a value to `TextBox.Text` first and then calling it, however, raises `
 
 The reason is that **assigning a local value to the target of a `OneWay` or `OneTime` binding replaces the binding with that local value and detaches it**.
 The "silently ignored because the mode does not qualify" state and the "throws because it is detached" state are therefore not independent: real code ends up in the second one.
-The same applies to user input — with `OneWay`, typing into the box loses the binding at that moment.
+**Typing does not detach it, however.** The `TextBox` editor writes the value through the `TextInput` event, and that path leaves the binding in place.
+Measured on `OneWay`, a keystroke leaves the binding alive: the display changes and the source does not. Only an assignment from code, such as `box.Text = ...`, replaces the binding.
+The accurate statement is not that typing loses the binding, but that typing does not update the source.
 
 With `OneWayToSource` and `TwoWay`, assigning to `Text` and then calling updates the source.
 The binding survives because those two modes carry a path from target to source.
