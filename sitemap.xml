@@ -1563,8 +1563,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-underscore-issue/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-label-underscore-issue/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1575,8 +1576,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-underscore-issue/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-label-underscore-issue/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <lastmod>2026-08-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1587,7 +1589,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-vs-textblock-performance/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-label-vs-textblock-performance/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.png</image:loc></image:image>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1598,7 +1602,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-vs-textblock-performance/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-label-vs-textblock-performance/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png</image:loc></image:image>
-    <lastmod>2026-07-26</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.png</image:loc></image:image>
+    <lastmod>2026-08-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1609,7 +1615,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-listbox-virtualization-selecteditems/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-listbox-virtualization-selecteditems/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg</image:loc></image:image>
-    <lastmod>2026-08-11</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png</image:loc></image:image>
+    <lastmod>2026-08-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1620,7 +1628,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-listbox-virtualization-selecteditems/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-listbox-virtualization-selecteditems/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg</image:loc></image:image>
-    <lastmod>2026-08-11</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png</image:loc></image:image>
+    <lastmod>2026-08-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
