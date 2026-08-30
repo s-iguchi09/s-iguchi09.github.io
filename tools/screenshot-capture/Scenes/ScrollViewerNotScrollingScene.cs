@@ -15,6 +15,14 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
 
     private const double RegionHeight = 190;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "親のレイアウトを変えて ScrollViewer の ExtentHeight / ViewportHeight / ScrollableHeight を測る",
+        "StackPanel の中では ScrollableHeight が 0 のままでスクロールバーが出ないこと",
+        "Grid や DockPanel では高さが制約され、スクロールできること",
+        "StackPanel でも高さを明示すればスクロールできること",
+    ];
+
     public string Slug => "wpf-scrollviewer-not-scrolling";
 
     public async Task CaptureAsync(SceneContext context)
@@ -27,6 +35,12 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
             ]);
 
         await context.ShootAsync(window, "scrollviewer-stackpanel-vs-grid.png");
+
+        await context.SaveTableAsync(
+            "ScrollViewer with 40 rows of 20px, parent constrained to 200px",
+            ["parent layout", "Extent", "Viewport", "Scrollable", "scrollbar"],
+            await ViewAndTemplateMeasurements.ScrollViewerHeightAsync(),
+            "scrollviewer-height-matrix.svg");
     }
 
     /// <summary>

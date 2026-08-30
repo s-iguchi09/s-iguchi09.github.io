@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 674 200" width="674" height="200" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="674" height="200" />
+  <text class="title" x="12" y="24">ScrollViewer with 40 rows of 20px, parent constrained to 200px</text>
+  <rect class="head" x="12" y="38" width="650" height="30" />
+  <text class="cell" x="26" y="57.5">parent layout</text>
+  <text class="cell" x="352" y="57.5" text-anchor="end">Extent</text>
+  <text class="cell" x="443" y="57.5" text-anchor="end">Viewport</text>
+  <text class="cell" x="550" y="57.5" text-anchor="end">Scrollable</text>
+  <text class="cell" x="648" y="57.5" text-anchor="end">scrollbar</text>
+  <text class="cell" x="26" y="87.5">inside StackPanel</text>
+  <text class="cell" x="352" y="87.5" text-anchor="end">800</text>
+  <text class="cell" x="443" y="87.5" text-anchor="end">800</text>
+  <text class="cell" x="550" y="87.5" text-anchor="end">0</text>
+  <text class="cell" x="648" y="87.5" text-anchor="end">Collapsed</text>
+  <text class="cell" x="26" y="117.5">inside Grid</text>
+  <text class="cell" x="352" y="117.5" text-anchor="end">800</text>
+  <text class="cell" x="443" y="117.5" text-anchor="end">200</text>
+  <text class="cell" x="550" y="117.5" text-anchor="end">600</text>
+  <text class="cell" x="648" y="117.5" text-anchor="end">Visible</text>
+  <text class="cell" x="26" y="147.5">inside DockPanel (LastChildFill)</text>
+  <text class="cell" x="352" y="147.5" text-anchor="end">800</text>
+  <text class="cell" x="443" y="147.5" text-anchor="end">200</text>
+  <text class="cell" x="550" y="147.5" text-anchor="end">600</text>
+  <text class="cell" x="648" y="147.5" text-anchor="end">Visible</text>
+  <text class="cell" x="26" y="177.5">StackPanel + explicit Height</text>
+  <text class="cell" x="352" y="177.5" text-anchor="end">800</text>
+  <text class="cell" x="443" y="177.5" text-anchor="end">200</text>
+  <text class="cell" x="550" y="177.5" text-anchor="end">600</text>
+  <text class="cell" x="648" y="177.5" text-anchor="end">Visible</text>
+  <line class="line" x1="12" y1="38" x2="662" y2="38" />
+  <line class="line" x1="12" y1="68" x2="662" y2="68" />
+  <line class="line" x1="12" y1="98" x2="662" y2="98" />
+  <line class="line" x1="12" y1="128" x2="662" y2="128" />
+  <line class="line" x1="12" y1="158" x2="662" y2="158" />
+  <line class="line" x1="12" y1="188" x2="662" y2="188" />
+  <line class="line" x1="12" y1="38" x2="12" y2="188" />
+  <line class="line" x1="291" y1="38" x2="291" y2="188" />
+  <line class="line" x1="366" y1="38" x2="366" y2="188" />
+  <line class="line" x1="457" y1="38" x2="457" y2="188" />
+  <line class="line" x1="564" y1="38" x2="564" y2="188" />
+  <line class="line" x1="662" y1="38" x2="662" y2="188" />
+</svg>

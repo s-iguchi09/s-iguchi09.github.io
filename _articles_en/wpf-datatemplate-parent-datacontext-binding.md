@@ -90,6 +90,19 @@ The following diagram shows where the `DataContext` switches and where the eleme
 
 ---
 
+The figure below records whether the `Command` inside the template resolves, per way of writing the binding.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.svg" alt="A table of whether Button.Command inside a DataTemplate resolves, per binding style. A plain Binding leaves Command null; RelativeSource and ElementName both resolve it. IsEnabled stays True in every case." width="555" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by reading <code>Command</code> off the <code>Button</code> placed in an <code>ItemsControl.ItemTemplate</code>. Nothing differs between the rows except how the binding is written.</figcaption>
+</figure>
+
+**Note the `IsEnabled` column.** It stays `True` even on the row where `Command` is `null`.
+A failed resolution changes nothing visible, so it cannot be spotted by looking at the screen.
+All that remains is the symptom: clicking does nothing.
+
+---
+
 ## Solution
 
 Use the `FindAncestor` mode of `RelativeSource` to walk up to an ancestor that still holds the original `DataContext`, then reach the member through that `DataContext`.

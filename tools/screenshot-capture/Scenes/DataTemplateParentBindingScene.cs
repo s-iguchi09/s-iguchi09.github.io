@@ -61,6 +61,13 @@ internal sealed class DataTemplateParentBindingScene : IScene
         </StackPanel>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "DataTemplate 内の素の Binding では親の DataContext のコマンドが解決されないこと",
+        "解決に失敗しても Button.IsEnabled が true のままであること",
+        "RelativeSource と ElementName では解決されること",
+    ];
+
     public string Slug => "wpf-datatemplate-parent-datacontext-binding";
 
     public async Task CaptureAsync(SceneContext context)
@@ -82,6 +89,12 @@ internal sealed class DataTemplateParentBindingScene : IScene
         };
 
         await context.ShootAsync(window, "datatemplate-parent-binding.png");
+
+        await context.SaveTableAsync(
+            "Button.Command inside a DataTemplate",
+            ["binding written in the template", "Command", "IsEnabled"],
+            await ViewAndTemplateMeasurements.TemplateBindingScopeAsync(),
+            "datatemplate-binding-scope.svg");
     }
 
     /// <summary>ItemsControl に設定する親の ViewModel 相当。</summary>

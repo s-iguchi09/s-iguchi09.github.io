@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-datatemplate-parent-datacontext-binding
+slug: "wpf-datatemplate-parent-datacontext-binding"
+scene: "DataTemplateParentBindingScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "DataTemplate 内の素の Binding では親の DataContext のコマンドが解決されないこと"
+  - "解決に失敗しても Button.IsEnabled が true のままであること"
+  - "RelativeSource と ElementName では解決されること"
+images:
+  - "images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-parent-binding.png"
+  - "images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.svg"
