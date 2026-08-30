@@ -21,6 +21,7 @@ WPF で入力の確定を「送信」ボタンなどのタイミングまで遅�
 - 対象コントロール・機能: `TextBox.Text` の双方向バインディング（`Mode=TwoWay` / `OneWayToSource`）
 - アーキテクチャ: MVVM（ViewModel のプロパティを View の `TextBox` へバインド）
 - 前提知識: `INotifyPropertyChanged` による変更通知、`UpdateSourceTrigger` の基本
+- 検証環境: .NET 10 / Windows 11（本文の実測結果はこの環境で取得した）
 
 `UpdateSource()` は、ターゲット（`TextBox.Text`）の現在値をソース（ViewModel）へ書き戻すメソッドである。
 `UpdateSourceTrigger=Explicit` のバインディングでは、このメソッドを呼ばない限りソースは一切更新されない。
@@ -55,6 +56,29 @@ be.UpdateSource();
 
 第三に、`UpdateSource()` は呼び出したその 1 つの `BindingExpression` だけを書き戻す。
 フォーム全体を確定したい場合は、対象の各 `TextBox` について個別に呼ぶか、後述する一括更新の仕組みを使う必要がある。
+
+### 実測: 構成ごとの挙動
+
+上記の条件を実際に動かして確かめた結果が次の表である。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="Text の設定方法ごとに GetBindingExpression と UpdateSource の結果を並べた表。リテラル・MultiBinding・TemplateBinding では GetBindingExpression が null になる。OneTime と OneWay はバインドを張ったまま呼ぶと何も起きないが、Text を書き換えてから呼ぶと InvalidOperationException になる。OneWayToSource と TwoWay は Text を書き換えてから呼ぶとソースが更新される。TextInput 経由で入力した場合はどのモードでもバインドが残り、UpdateSource は呼ばれずソースも更新されない。" width="976" height="410" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。<code>GetBindingExpression state</code> の列は、行によって読み取った時点が違う。上の 8 行は <code>Text</code> を書き換える前、末尾の 3 行（<code>typed via TextInput</code>）は入力した後の状態である。<code>UpdateSource() as-is</code> はバインドを張った直後にそのまま呼んだ場合、<code>after editing Text / after typing</code> は、代入してから <code>UpdateSource()</code> を呼んだ場合の結果と、入力後のソースの値を兼ねる列である。末尾の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合である。<code>no change</code> はソースの値が変わらなかったことを示す。</figcaption>
+</figure>
+
+**この表で注意を要するのは、`OneWay` と `OneTime` の 2 列が食い違う点である。**
+
+バインドを張った直後にそのまま `UpdateSource()` を呼ぶと、前述のとおり例外は出ず何も起きない。
+ところが `TextBox.Text` に値を代入してから呼ぶと `InvalidOperationException` になる。
+
+理由は、**`OneWay` / `OneTime` のターゲットにローカル値を代入すると、その時点でバインドがローカル値に置き換えられて外れる**ためである。
+つまり「モードが対象外だから黙って無視される」状態と「デタッチ済みだから例外になる」状態は別々に存在するのではなく、実際のコードでは後者に行き着く。
+**ただし、ユーザーがキーボードで入力した場合は外れない。** `TextBox` のエディタは `TextInput` イベント経由で値を書き込み、この経路ではバインドが維持される。
+実測すると、`OneWay` でキー入力した場合はバインドが残り、表示だけが変わってソースは更新されない。バインドを外すのは `box.Text = ...` のようなコードからの代入だけである。
+「入力するとバインドが失われる」ではなく、「入力してもソースは更新されない」が正しい。
+
+`OneWayToSource` と `TwoWay` では、`Text` を書き換えてから呼ぶとソースが更新される。
+バインドが外れないのは、この 2 つがターゲットからソースへ値を流す経路を持つためである。
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-direction-and-null.svg" alt="UpdateSource がターゲットからソースへ、UpdateTarget がソースからターゲットへ値を移すことを示す図。下段には GetBindingExpression が null を返す 3 つの条件が並んでいる。" width="820" height="412" loading="lazy">

@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-binding-error-debugging-output-window
+slug: "wpf-binding-error-debugging-output-window"
+scene: "BindingErrorTraceScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "失敗パターンごとに System.Windows.Data トレースへ記録される番号を確かめる"
+  - "パス解決失敗が Error 40、ConvertBack 失敗が Error 7 であること"
+  - "Error 17 が、空のインデクサーだけでなくゲッターが例外を送出した場合にも出ること"
+  - "DataContext 未設定は既定の Warning では何も出力されず、Information 10 であること"
+images:
+  - "images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg"

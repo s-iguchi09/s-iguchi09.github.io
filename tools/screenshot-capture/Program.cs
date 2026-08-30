@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using ScreenshotCapture.Scenes;
 
@@ -47,6 +49,13 @@ internal static class Program
         new LinqBackportNet8Scene(),
         new LinqBackportNet9Scene(),
         new LinqBackportNet10Scene(),
+        new CSharpFrameworkMatrixScene(),
+        new BitmapImageFileLockScene(),
+        new ShutdownLifetimeScene(),
+        new CollectionCrossThreadScene(),
+        new BindingErrorTraceScene(),
+        new UpdateSourcePitfallScene(),
+        new ExtensionReceiverMatrixScene(),
     ];
 
     [STAThread]
@@ -102,8 +111,73 @@ internal static class Program
             {
                 Console.WriteLine(Path.GetRelativePath(repositoryRoot, file).Replace('\\', '/'));
             }
+
+            string? record = WriteVerificationRecord(repositoryRoot, scene, context);
+            if (record is not null)
+            {
+                Console.WriteLine(Path.GetRelativePath(repositoryRoot, record).Replace('\\', '/'));
+            }
         }
     }
+
+    /// <summary>
+    /// シーンが宣言した検証内容を <c>docs/verification/&lt;slug&gt;.yml</c> へ書き出す。
+    ///
+    /// 手で書かず実行のたびに更新することで、「その記事が実測で確かめられているか」を
+    /// 記事の書式から推測せずに判定できる。<c>docs</c> は <c>_config.yml</c> の
+    /// <c>exclude</c> に入っているため、サイトには出力されない。
+    /// 何も検証していないシーン（図を描くだけ）は記録を作らない。
+    /// 以前に記録があってシーンから Verifies が消えた場合は、その記録を削除する。
+    /// 残しておくと、未検証の記事を検証済みとして数えてしまうためである。
+    /// </summary>
+    private static string? WriteVerificationRecord(string repositoryRoot, IScene scene, SceneContext context)
+    {
+        string directory = Path.Combine(repositoryRoot, "docs", "verification");
+        string path = Path.Combine(directory, scene.Slug + ".yml");
+
+        IReadOnlyList<string> claims = scene.Verifies;
+        if (claims.Count == 0)
+        {
+            // 何も検証しなくなったシーンの記録は消す。
+            // 残しておくと、未検証の記事を検証済みとして数えてしまう。
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                Console.WriteLine(
+                    "removed " + Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'));
+            }
+
+            return null;
+        }
+
+        Directory.CreateDirectory(directory);
+
+        var builder = new StringBuilder();
+        builder.AppendLine("# tools/screenshot-capture が実行時に自動生成する。手で編集しない。");
+        builder.AppendLine("# 再生成: dotnet run --project tools/screenshot-capture -c Release -- " + scene.Slug);
+        builder.AppendLine($"slug: {Yaml(scene.Slug)}");
+        builder.AppendLine($"scene: {Yaml(scene.GetType().Name)}");
+        builder.AppendLine("environment:");
+        builder.AppendLine($"  runtime: {Yaml(RuntimeInformation.FrameworkDescription)}");
+        builder.AppendLine($"  os: {Yaml(RuntimeInformation.OSDescription)}");
+        builder.AppendLine("verifies:");
+        foreach (string claim in claims)
+        {
+            builder.AppendLine($"  - {Yaml(claim)}");
+        }
+
+        builder.AppendLine("images:");
+        foreach (string file in context.SavedFiles)
+        {
+            builder.AppendLine($"  - {Yaml(Path.GetRelativePath(repositoryRoot, file).Replace('\\', '/'))}");
+        }
+
+        File.WriteAllText(path, builder.ToString(), new UTF8Encoding(false));
+        return path;
+    }
+
+    /// <summary>YAML のスカラーとして安全な形に引用する。</summary>
+    private static string Yaml(string value) => "\"" + value.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 
     /// <summary>
     /// 実行ディレクトリから上位をたどり、<c>_config.yml</c> のあるリポジトリルートを探す。

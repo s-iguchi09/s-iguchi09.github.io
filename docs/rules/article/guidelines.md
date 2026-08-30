@@ -216,17 +216,30 @@
 
 - 保存先は `images/articles/<slug>/` とする。日英で同じ画像を共有するため、言語別のディレクトリは作らない。
 - 本文からの参照は **`/images/articles/<slug>/<file>` の形式のサイト絶対パス**にする。相対パスにすると `sitemap.xml` の `<image:image>` に収集されない。
-- 形式は、スクリーンショットが PNG、作図が SVG とする。
+- **形式は原則 SVG とする。** 拡大しても文字がぼやけず、ファイルが小さく、差分で値の変化が読める。
+- **PNG を使うのは、実行中のウィンドウそのものを見せる図に限る。** コントロールの描画結果を示す図は、実際のウィンドウをキャプチャした PNG でなければ意味がない（§11.1 のとおり、作図で代用しない）。
+- 実測値の表は SVG にする。表は文字と罫線だけで構成されるため、ウィンドウを撮影せずに直接描ける。`SceneContext.SaveTableAsync` が実測値から SVG を生成する。ウィンドウを表示しないため、ディスプレイの電源状態にも影響されない。
 - 幅は 880px 以下を目安にする。
 
 ### 11.4 本文への埋め込み
 
 `figure` 要素で囲み、`figcaption` に説明を書く。`_config.yml` で `hard_wrap: true` を設定しているため、**前後に必ず空行を置く**（空行が無いと直前の文と連結されて `<br />` になる）。
 
+原則となる SVG の図（§11.3）はこの形で書く。
+
 ```html
 <figure class="article-figure">
-  <img src="/images/articles/<slug>/<file>.png" alt="（画像の内容を説明する代替テキスト）" width="461" height="166" loading="lazy">
-  <figcaption>（図が何を示しているかの説明。撮影・生成した環境を含める。）</figcaption>
+  <img src="/images/articles/<slug>/<file>.svg" alt="（図の内容を説明する代替テキスト）" width="598" height="200" loading="lazy">
+  <figcaption>（図が何を示しているかの説明。測定・生成した環境を含める。）</figcaption>
+</figure>
+```
+
+実行中のウィンドウのキャプチャだけが PNG になる（§11.3）。拡張子以外は同じである。
+
+```html
+<figure class="article-figure">
+  <img src="/images/articles/<slug>/<file>.png" alt="（画面の内容を説明する代替テキスト）" width="461" height="166" loading="lazy">
+  <figcaption>（画面が何を示しているかの説明。撮影した環境を含める。）</figcaption>
 </figure>
 ```
 
@@ -235,7 +248,9 @@
 - `loading="lazy"` を付ける。
 - 本文幅（およそ 860px）より横に広い図は `class="article-figure article-figure--wide"` とする。狭い画面で図の内側だけが横スクロールする。
 - **日英で同じ画像を使い、`alt` と `figcaption` のみ各言語で書く。** 画像の中に文言を入れる場合は、コード識別子など言語に依存しない表記に留める。
-- 記事を代表するスクリーンショットがある場合は、front matter に `image: /images/articles/<slug>/<file>.png` を設定する。構造化データの `image` として出力される。Google の Article 構造化データは SVG をサポートしないため、**`image` には SVG を指定しない**。
+- 記事を代表する図がある場合は、front matter に `image: /images/articles/<slug>/<file>` を設定する。構造化データの `image` として出力される。
+  - Google の Article 構造化データは、`image` に **Google 画像検索がサポートする形式**を求める。その一覧には BMP・GIF・JPEG・PNG・WebP・**SVG**・AVIF が含まれるため、SVG を指定してよい（[Article](https://developers.google.com/search/docs/appearance/structured-data/article) / [Google 画像検索](https://developers.google.com/search/docs/appearance/google-images#supported-image-formats)）。
+  - 実行画面のキャプチャがある記事ではそれを選ぶ。記事の内容を最も端的に示すためである。無い場合は実測値の表など主要な図を指定する。
 
 ---
 
@@ -278,3 +293,34 @@
 - **環境に依存しない決定的な値**（visual ツリーの要素数、実体化されるコンテナ数など）は本文に書いてよい。ただし**値そのものはシーンで求める**。決定的な値でも、visual ツリーを目で追うと子コントロールのテンプレート部品まで数えてしまうなどの誤りが起きる。判別条件（`TemplatedParent` が対象コントロール自身か、など）をコードに書けば、次に確かめ直しても同じ結果になる。
 - 計測方法をキャプションに明記する（試行回数、最小値か中央値か、暖機の有無）。
 - 条件を交互に試行して実行順の影響を避ける、暖機して JIT の影響を外すなど、**結果を左右する手順はシーン側に実装する**。図の再現性はシーンのコードで担保する。
+
+### 12.4 検証したことをシーンに宣言する
+
+シーンが「実際に動かして確かめていること」を `IScene.Verifies` に書く。
+実行すると `docs/verification/<slug>.yml` へ、確かめた内容・実行環境・生成した図が自動で書き出される。
+
+```yaml
+slug: "wpf-binding-error-debugging-output-window"
+scene: "BindingErrorTraceScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "パス解決失敗が Error 40、ConvertBack 失敗が Error 7 であること"
+images:
+  - "images/articles/.../binding-error-trace-matrix.svg"
+```
+
+**目的は、同じ検証を何度も繰り返さないことである。**
+記事の書式（`検証環境` の行があるか、PNG を参照しているか）から「検証済みか」を推測すると、書き方の違いで検証済みの記事を未検証と誤判定する。
+実際にそれが起きて、既に実測した記事を再検証したことがある。
+
+このファイルは手で編集しない。内容を変えるにはシーンの `Verifies` を直して再実行する。
+`docs` は `_config.yml` の `exclude` に入っているため、サイトには出力されない。
+
+**`Verifies` には、そのシーンが実際に測っていることだけを書く。**
+記事に書いた主張のうち、シーンが実行していないものを `Verifies` に含めてはならない。
+「実測した」と書きながらシーンは別の経路しか通っていない、という食い違いが起きる。
+主張を残すのであれば、その主張を測るケースをシーンへ追加する。
+
+図を描くだけで何も検証していないシーンは `Verifies` を空のままにする。その場合は記録も作られない。

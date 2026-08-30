@@ -26,6 +26,7 @@ The goal is to make initial triage rely on trace output rather than guesswork.
 - IDE: Visual Studio 2026
 - Architecture: MVVM (binding through `DataContext`)
 - Assumed knowledge: WPF binding basics, `INotifyPropertyChanged`
+- Verification environment: .NET 10 / Windows 11 (the trace output shown here was measured in this environment)
 
 ---
 
@@ -109,7 +110,17 @@ Because detailed tracing produces a large amount of output, remove the setting o
 ## Common Error Patterns and How to Handle Them
 
 The wording in the Output window differs by cause.
-The representative patterns and their handling are shown below.
+The table below records what actually reaches the `System.Windows.Data` trace when each pattern is evaluated.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="A table of trace output per binding failure pattern. Path resolution failure reports Error 40, a failed ConvertBack reports Error 7, and both indexing an empty Validation.Errors and a getter that throws report Error 17. An unset DataContext produces nothing at the default Warning level and appears as Information 10 with DataItem=null once the level is lowered to Information. A binding that resolves produces nothing." width="788" height="290" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>. <code>Switch.Level</code> is <code>Warning</code>, matching the default, except for the extra <code>DataContext</code> row where it is lowered to <code>Information</code>.</figcaption>
+</figure>
+
+On `.NET 10 / Windows 11`, `Error: 40` corresponds to path resolution, `Error: 7` to a `ConvertBack` conversion failure, and `Error: 17` to a failure while retrieving the value.
+These numbers are identifiers assigned by the internal implementation behind the `System.Windows.Data` trace, not a public API contract guaranteed to stay fixed across versions. Read the accompanying message text rather than relying on the number alone.
+`Error: 17` is also not limited to indexer access; it is emitted whenever an exception occurs while retrieving the value.
+An unset `DataContext` is the exception: it is not reported as a numbered error at all. That difference is the starting point for diagnosis, so it is covered separately below.
 
 ### Path Resolution Failure (Error: 40)
 
@@ -120,11 +131,29 @@ When `DataItem` names the element type of a collection instead of the expected v
 Bindings written in an `ItemContainerStyle` setter resolve against the item as well, so the same error appears when the item type lacks the property (see [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/)).
 Referencing a dependency property defined on a `UserControl` with a plain `{Binding}` from inside that same control surfaces the same way, provided the inherited `DataContext` is non-null and lacks that property (see [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)).
 
-### DataContext Not Set (DataItem=null)
+### DataContext Not Set (DataItem=null) — Nothing Is Printed by Default
 
-When the message shows `DataItem=null`, the `DataContext` was not set at the time the binding was evaluated.
-This state occurs when the binding is evaluated before the `DataContext` is assigned.
-Review the initialization order, or assign the `DataContext` after the element has loaded.
+This pattern alone produces **no output in the Output window under the default trace settings**.
+WPF does not treat a binding evaluated against a `null` `DataContext` as an error.
+
+Measured, the `DataItem=null` state is recorded as `Information: 10` rather than an error.
+
+```text
+System.Windows.Data Information: 10 : Cannot retrieve value using the binding
+and no valid fallback value exists; using default instead.
+BindingExpression:Path=UserName; DataItem=null;
+target element is 'TextBox' (Name=''); target property is 'Text' (type 'String')
+```
+
+The default trace covers `Error` and `Warning`, so this line never appears.
+To see it, set `PresentationTraceSources.TraceLevel` on the binding as described above, or lower `System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level` to `Information` or below.
+
+**Note that an unset `DataContext` also suppresses the path resolution error (`Error: 40`).**
+With a `null` binding source, evaluation never reaches the stage where the property is looked up.
+An empty Output window therefore does not mean the binding is correct.
+When a value fails to appear and no trace is produced, the first thing to suspect is an unset `DataContext`.
+
+As for the fix, review the initialization order, or assign the `DataContext` after the element has loaded.
 Because the binding is re-evaluated once the `DataContext` is assigned, a temporary `DataItem=null` right after initialization is sometimes not a problem.
 
 ### Type Conversion Failure (Error: 7 and similar)

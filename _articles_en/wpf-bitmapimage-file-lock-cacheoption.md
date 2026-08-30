@@ -23,6 +23,10 @@ It then covers the fix based on `BitmapCacheOption.OnLoad`, the distinction betw
 - Architecture: applicable to both MVVM and code-behind
 - Assumption: the displayed image is a local file that changes at run time (a file chosen by the user, a downloaded temporary file), not a resource embedded at build time
 - Namespaces: code samples assume `System`, `System.IO`, and `System.Windows.Media.Imaging`
+- Verification environment: .NET 10 / Windows 11
+
+The behavior described here was confirmed by loading an image each way in the environment above and attempting `File.Delete` immediately afterwards.
+The results appear under "Measured Results by Loading Method" below.
 
 ---
 
@@ -203,6 +207,33 @@ The latter hands a new `ImageSource` to the control on every change, so the `Bit
 
 ---
 
+## Measured Results by Loading Method
+
+The table below records the result of calling `File.Delete` immediately after loading the image each way described in this article.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="A table comparing File.Delete outcomes per loading method. new BitmapImage(uri), setting CacheOption after that constructor, BeginInit alone, adding IgnoreImageCache, and ImageSourceConverter all raise IOException. Specifying OnLoad on CacheOption and StreamSource plus OnLoad allow deletion, as does the default method after dropping the reference and forcing garbage collection." width="500" height="320" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, calling <code>File.Delete</code> immediately after loading a 64x48 PNG each way. The <code>size</code> column confirms the image loaded correctly in every case. The last row is the default loading method after releasing the <code>BitmapImage</code> reference and forcing a garbage collection.</figcaption>
+</figure>
+
+Four things follow from the table.
+
+**1. Only `CacheOption = OnLoad` allows deletion immediately after loading.**
+This holds whether the image arrives through `UriSource` or `StreamSource`.
+
+**2. Setting `CacheOption` after the `BitmapImage(Uri)` constructor has no effect.**
+Initialization is already complete at construction, so the later assignment is ignored and the file stays held.
+
+**3. `IgnoreImageCache` does not avoid the lock.**
+Setting `BitmapCreateOptions.IgnoreImageCache` on `CreateOptions` still produces an `IOException` immediately after loading.
+That option addresses the separate problem of a stale image being returned for the same path; it is unrelated to how long the stream is held.
+
+**4. The default method does release the file once the reference is dropped and a collection runs.**
+That is the last row. Put the other way round, **release timing is left to the garbage collector**, which is exactly why deletion appears to succeed only sometimes.
+With `OnLoad`, release is determined at `EndInit` rather than waiting for a collection.
+
+---
+
 ## Notes
 
 - **Trade-off against memory:** `OnLoad` expands the entire image into memory.
@@ -212,6 +243,7 @@ The latter hands a new `ImageSource` to the control on every change, so the `Bit
   Peak memory savings are therefore smaller for other formats, such as BMP and TIFF.
 - **A stale image can appear after an overwrite:** WPF keys its image cache by URI, so reloading a replaced file at the same path can still display the previous image.
   Setting `BitmapCreateOptions.IgnoreImageCache` on `CreateOptions` replaces existing cache entries even when they share the same `Uri`.
+  **This is not a workaround for the lock.** As measured above, the file remains held even with `IgnoreImageCache` set. Avoiding the lock is the job of `CacheOption`; the two settings are independent.
 - **Conditions that prevent freezing:** An object cannot be frozen when it has animated or data-bound properties, has properties set by a dynamic resource, or contains sub-objects that cannot be frozen.
   Where the conditions are not predictable, test with `CanFreeze` before calling `Freeze`.
 - **Modifying a frozen object throws:** Attempting to modify a frozen `Freezable` raises an `InvalidOperationException`.

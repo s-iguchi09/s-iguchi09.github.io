@@ -107,55 +107,44 @@ Search Console で「クロール済み - インデックス未登録」と判�
 
 ### 8.1 補強が必要な記事の把握
 
-補強候補は、その時点のリポジトリ状態から機械的に列挙する。ハードコードした一覧を持たない。
-日英どちらの記事も対象にする。
+**検証済みかどうかは `docs/verification/` を見れば分かる。** 推測する必要はない。
 
-> **以下は推測であり、確実な判定ではない。** 記事の書式から「実測した形跡があるか」を推し量っているだけなので、
-> 実測済みでも書式が違えば未検証と誤判定する。実際にそれが起きて、既に実測した記事を再検証したことがある。
-> 候補を絞る用途に使い、最終的な判断は記事とシーンの中身を見て行う。
-
-`grep -L` は該当が 0 件のとき何も出力しない。`xargs` にそのまま渡すと引数無しで
-`basename` が実行されて失敗するため、`-r`（`--no-run-if-empty`）を付ける。
+シーンが `IScene.Verifies` を宣言していると、実行時に `docs/verification/<slug>.yml` が
+生成される（`guidelines.md` §12.4）。このファイルの有無が、実測で確かめた記録そのものである。
 
 ```bash
-# 「検証環境」を明記していない記事:
-grep -L -E '^- 検証環境' _articles_ja/*.md _articles_en/*.md \
-  | xargs -r -n1 basename | sed 's/\.md$//' | sort -u
+# 実測で検証済みの記事:
+find docs/verification -maxdepth 1 -name '*.yml' -printf '%f\n' 2>/dev/null | sed 's/\.yml$//' | sort
 
-# 実行画面（PNG）を参照していない記事（概念図だけで、動かして確かめていない可能性が高い）:
-# コード例に .png が現れる記事を誤検出しないよう、img の src 属性だけを見る。
-grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md _articles_en/*.md \
-  | xargs -r -n1 basename | sed 's/\.md$//' | sort -u
+# 未検証の記事:
+comm -23 \
+  <(find _articles_ja _articles_en -maxdepth 1 -name '*.md' -printf '%f\n' | sed 's/\.md$//' | sort -u) \
+  <(find docs/verification -maxdepth 1 -name '*.yml' -printf '%f\n' 2>/dev/null | sed 's/\.yml$//' | sort)
 ```
 
-`検証環境` の代わりに `計測環境` と書いた記事も実測済みである。両方を対象から外したい場合は
-`-E '^- (検証環境|計測環境)'` にする。上のコマンドは `検証環境` の欠落だけを見ているため、
-`計測環境` しか書いていない記事も候補に挙がる。どちらを使うかは目的に合わせて選ぶ。
+`ls` にグロブを渡すと、対象が 1 件も無いディレクトリでエラーになる。`find` はその場合も正常に終了する。
 
-`tools/screenshot-capture` にシーンが無い記事は、図があっても再生成できない。
-次で、シーンを持たない記事を列挙できる。
+記録の中身を読めば、何をどこまで確かめたかも分かる。
+
+```bash
+cat docs/verification/<slug>.yml
+```
+
+以前は記事の書式（`検証環境` の行があるか、PNG を参照しているか）から推測していた。
+**この方法は使わない。** 書き方の違いで検証済みの記事を未検証と誤判定し、
+実際に再検証してしまったことがある。
+
+なお、`docs/verification/` に記録があっても「記事のすべての主張を確かめた」ことにはならない。
+記録の `verifies` に並ぶのは、そのシーンが実際に測った内容だけである。
+補強の対象を選ぶときは、記事の主張と `verifies` を突き合わせ、測られていない主張が残っていないかを見る。
+
+シーンをまだ持たない記事は、次で列挙できる。
 
 ```bash
 comm -23 \
-  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(find _articles_ja _articles_en -maxdepth 1 -name '*.md' -printf '%f\n' | sed 's/\.md$//' | sort -u) \
   <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
       | sed 's/.*"\(.*\)"/\1/' | sort -u)
-```
-
-3 つすべてに該当する記事は、実行による検証がまったく行われていない可能性が高い。
-積集合は次で求める。
-
-```bash
-comm -12 \
-  <(grep -L -E '^- 検証環境' _articles_ja/*.md _articles_en/*.md \
-      | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
-  <(grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md _articles_en/*.md \
-      | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
-  | comm -12 - \
-      <(comm -23 \
-          <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
-          <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
-              | sed 's/.*"\(.*\)"/\1/' | sort -u))
 ```
 
 Search Console で「クロール済み - インデックス未登録」と判定されている記事があれば、それも対象として優先度が高い。

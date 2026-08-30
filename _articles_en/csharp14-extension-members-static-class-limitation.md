@@ -28,6 +28,7 @@ The article also covers the alternatives when instance-style calls are required,
 - Framework: .NET 10 (verified with SDK 10.0.302)
 - Target feature: Extension members (`extension` block syntax)
 - Reference: Classic extension methods (`this` parameter syntax)
+- Verification environment: .NET SDK 10.0.302 / Windows 11 (the compilation results in this article were obtained here)
 
 ---
 
@@ -147,6 +148,22 @@ The body of an instance member refers to the receiver value, so a name for that 
 Without a name, no instance member can be declared.
 
 Caught between these two errors, there is no way to write an instance-style extension member on a static class.
+
+### Measured: Compilation Result per Combination
+
+Every combination of receiver form and member kind was compiled.
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg" alt="A table of compilation results per receiver form and member kind. A static member in extension(Directory) compiles, an instance member reports CS9303. extension(Directory directory) reports CS0721 regardless of member kind. As a control, an instance member in extension(DirectoryInfo info) compiles." width="524" height="230" loading="lazy">
+  <figcaption>Compiled against <code>net10.0</code> with .NET SDK 10.0.302 and <code>LangVersion 14.0</code>. The last row is a control showing that a named receiver can carry an instance member as long as the type is not static (<code>DirectoryInfo</code>).</figcaption>
+</figure>
+
+**The `extension(Directory directory)` rows report `CS0721` regardless of member kind.**
+Naming the receiver settles the error before the block body is considered.
+The restriction to static members on a static class is the combination of these two errors.
+
+As the last row shows, the same "named receiver plus instance member" shape compiles without issue when the target is not a static class.
+The limitation does not come from the `extension` block itself but from the pre-existing C# rule that **a static class cannot be used as a parameter type**.
 
 ---
 

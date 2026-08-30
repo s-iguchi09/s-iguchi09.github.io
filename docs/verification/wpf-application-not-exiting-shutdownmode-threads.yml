@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-application-not-exiting-shutdownmode-threads
+slug: "wpf-application-not-exiting-shutdownmode-threads"
+scene: "ShutdownLifetimeScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "条件ごとに Application.Exit の発生・Run() の戻り・プロセスの生存時間を測る"
+  - "ウィンドウを生成しない場合と閉じないウィンドウがある場合に Application.Exit が発生しないこと"
+  - "既定の new Thread がプロセスを引き止め、IsBackground=true では引き止めないこと"
+  - "2 つ目の UI スレッドは InvokeShutdown を呼ばない限りプロセスを残すこと"
+images:
+  - "images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.svg"

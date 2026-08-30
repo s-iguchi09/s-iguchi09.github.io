@@ -23,6 +23,10 @@ WPF の `Image` コントロールに `BitmapImage` を与えてローカルの�
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 前提: 表示対象がビルド時に埋め込むアプリケーションリソースではなく、実行時に差し替えられるローカルファイル（ユーザーが選択した画像、ダウンロードした一時ファイルなど）
 - 名前空間: コード例は `System` / `System.IO` / `System.Windows.Media.Imaging` を前提とする
+- 検証環境: .NET 10 / Windows 11
+
+本記事の挙動は、上記の環境で読み込み方を変えながら実際に画像を読み込み、その直後に `File.Delete` を試みて確認した。
+結果は後掲の「読み込み方ごとの実測」に示す。
 
 ---
 
@@ -203,6 +207,33 @@ private static BitmapImage LoadFromStream(string path)
 
 ---
 
+## 読み込み方ごとの実測
+
+本記事で挙げた読み込み方それぞれについて、画像を読み込んだ直後に `File.Delete` を試みた結果が次の表である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="読み込み方ごとに File.Delete の可否を比較した表。new BitmapImage(uri)、その後に CacheOption を設定した場合、BeginInit だけの場合、IgnoreImageCache を付けた場合、ImageSourceConverter はいずれも IOException。CacheOption に OnLoad を指定した場合と StreamSource + OnLoad は削除できる。既定のまま参照を捨てて GC を実行した場合も削除できる。" width="500" height="320" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、各方法により 64x48 の PNG を読み込んだ直後に <code>File.Delete</code> を実行した結果。<code>size</code> はいずれの方法でも画像が正しく読めていることを示す。最終行は既定の読み込み方で <code>BitmapImage</code> への参照を手放し、強制的にガベージコレクションを行った後の結果である。</figcaption>
+</figure>
+
+読み取れることは 4 点ある。
+
+**1. `CacheOption` に `OnLoad` を指定した場合だけ、読み込み直後に削除できる。**
+`UriSource` 経由でも `StreamSource` 経由でも同じである。
+
+**2. `BitmapImage(Uri)` コンストラクタの後に `CacheOption` を設定しても効かない。**
+生成時点で初期化が完了しているため、その後の設定は無視され、ファイルは掴まれたままになる。
+
+**3. `IgnoreImageCache` はロックの回避には使えない。**
+`CreateOptions` に `BitmapCreateOptions.IgnoreImageCache` を指定しても、読み込み直後は `IOException` になる。
+この設定は後述のとおり「同じパスの画像を差し替えたのに古い画像が表示される」問題のためのものであり、ストリームの保持とは別の話である。
+
+**4. 既定の読み込み方でも、参照を手放してガベージコレクションが走れば解放される。**
+表の最終行がそれである。裏を返せば、**解放のタイミングがガベージコレクション任せになる**ということであり、これが「削除できたりできなかったりする」挙動の実体である。
+`OnLoad` を指定した場合の解放は、ガベージコレクションを待たず `EndInit` の完了時点で決まる。
+
+---
+
 ## 注意点
 
 - **メモリ消費とのトレードオフ:** `OnLoad` は画像全体をメモリへ展開する。
@@ -212,6 +243,7 @@ private static BitmapImage LoadFromStream(string path)
   BMP や TIFF などではピーク時のメモリ削減効果が期待どおりにならない。
 - **上書き後に古い画像が表示される:** WPF は画像キャッシュを URI 単位で管理するため、同じパスのファイルを差し替えて再読み込みしても以前の画像が表示されることがある。
   `CreateOptions` に `BitmapCreateOptions.IgnoreImageCache` を指定すると、同じ `Uri` を共有する既存のキャッシュエントリが置き換えられる。
+  **これはロックの回避策ではない。** 実測のとおり、`IgnoreImageCache` を指定してもファイルは掴まれたままである。ロックを避けるのは `CacheOption` の役割であり、両者は独立している。
 - **`Freeze` できない条件がある:** データバインドまたはアニメーション対象のプロパティを持つ場合、`DynamicResource` で設定されたプロパティを持つ場合、凍結できない子オブジェクトを含む場合は凍結できない。
   条件が読めない場面では `CanFreeze` で判定してから `Freeze` を呼ぶ。
 - **凍結後の変更は例外になる:** 凍結した `Freezable` を変更しようとすると `InvalidOperationException` が発生する。

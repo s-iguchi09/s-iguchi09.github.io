@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- csharp14-extension-members-static-class-limitation
+slug: "csharp14-extension-members-static-class-limitation"
+scene: "ExtensionReceiverMatrixScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "レシーバーの書き方とメンバーの種類の全組み合わせをコンパイルする"
+  - "extension(Directory) + 静的メンバーが通り、インスタンスメンバーが CS9303 になること"
+  - "extension(Directory directory) がメンバーの種類によらず CS0721 になること"
+  - "静的でない型なら名前付きレシーバーにインスタンスメンバーを置けること"
+images:
+  - "images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg"

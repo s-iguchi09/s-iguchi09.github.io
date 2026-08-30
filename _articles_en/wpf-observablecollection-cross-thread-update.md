@@ -21,6 +21,7 @@ This article explains that the exception comes from the thread affinity of the `
 - Target controls: `ObservableCollection<T>`, `ItemsControl` (including `ListBox`, `DataGrid`, `ListView`), `CollectionView`
 - Architecture: applicable to both MVVM and code-behind
 - Assumption: the collection is updated on a background thread (`Task.Run` or a worker thread)
+- Verification environment: .NET 10 / Windows 11 (the measured results in this article were obtained here)
 
 ---
 
@@ -67,6 +68,32 @@ Most WPF objects derive from `DispatcherObject` and carry thread affinity to the
 The `CollectionView` also derives from `DispatcherObject` and, by default, does not allow its bound collection to be changed from another thread.
 As a result, when a `CollectionChanged` notification arrives from a non-UI thread, the `CollectionView` throws `NotSupportedException` because it does not permit cross-thread changes.
 The root of the problem is therefore not that the collection was touched on another thread, but that the UI-thread-owned `CollectionView` cannot receive a change notification originating from a different thread.
+
+### Measured: the Outcome Depends on Whether the Collection Is Bound
+
+The distinction is visible by performing the same operation on an `ObservableCollection<T>` that is not bound to anything.
+The table below records the result of calling `Add` from a background thread, varying whether the collection is bound and which countermeasure is applied.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception. Only the EnableCollectionSynchronization row was notified while the lock was held." width="992" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window. The last column gives how many of the <code>CollectionChanged</code> notifications fired while <code>Monitor.IsEntered</code> reported the lock as held, out of the total.</figcaption>
+</figure>
+
+**An unbound collection can be modified from a background thread without an exception.**
+If `ObservableCollection<T>` itself carried thread affinity, that row would fail as well.
+The exception appears only once the collection is bound to `ItemsControl.ItemsSource` and a `CollectionView` sits in between, which confirms that the constraint belongs to the `CollectionView`.
+
+Note that the absence of an exception on the unbound row **does not mean the collection is thread-safe**.
+`ObservableCollection<T>` provides no protection against concurrent access, so competing updates still corrupt it in other ways.
+What the row establishes is narrower: the source of `NotSupportedException` is the binding target.
+
+The last column reports whether the lock was held at the moment `CollectionChanged` fired.
+**Only the `EnableCollectionSynchronization` row reads 1/1, meaning the change and its notification happen inside the same lock.**
+The other rows read 0/1, with the notification raised outside any lock.
+
+That 1/1 is the result **for a configuration where the application wraps the `Add` in a `lock`**.
+It shows that the lock handed to `EnableCollectionSynchronization` is still held when the notification arising from that `Add` is raised.
+Registering alone does not place notifications inside the lock; wrapping the `Add` in the same lock is the application&#39;s responsibility.
 
 ---
 

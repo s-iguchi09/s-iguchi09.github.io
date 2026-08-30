@@ -1,3 +1,4 @@
+using System.Text;
 using System.Windows;
 using System.Windows.Markup;
 
@@ -10,6 +11,16 @@ internal interface IScene
 {
     /// <summary>対応する記事の slug。出力先 <c>images/articles/&lt;slug&gt;/</c> になる。</summary>
     string Slug { get; }
+
+    /// <summary>
+    /// このシーンが「実際に動かして」確かめている主張。
+    ///
+    /// 図を描くだけのシーンは空のままでよい。値を返すシーンは、実行結果が
+    /// 記事のどの記述を裏づけているかを 1 項目ずつ書く。
+    /// 実行するたびに <c>docs/verification/&lt;slug&gt;.yml</c> へ書き出されるため、
+    /// 「どの記事が実測で確かめられているか」を毎回調べ直さずに済む。
+    /// </summary>
+    IReadOnlyList<string> Verifies => [];
 
     Task CaptureAsync(SceneContext context);
 }
@@ -50,6 +61,25 @@ internal sealed class SceneContext(string slug, string outputDirectory)
         {
             window.Close();
         }
+    }
+
+    /// <summary>
+    /// 実測値の表を SVG として保存する。
+    ///
+    /// 表は文字と罫線だけなので、ウィンドウを撮影せず直接描く。
+    /// 拡大しても文字がぼやけず、差分でも値の変化が読める。
+    /// 実行して得た値を描く点は <see cref="ShootAsync"/> と変わらない。
+    /// </summary>
+    public async Task SaveTableAsync(
+        string title,
+        IReadOnlyList<string> headers,
+        IEnumerable<IReadOnlyList<string>> rows,
+        string fileName)
+    {
+        string svg = DemoLayout.BuildTableSvg(title, headers, rows);
+        string path = Path.Combine(OutputDirectory, fileName);
+        await File.WriteAllTextAsync(path, svg, new UTF8Encoding(false));
+        _saved.Add(path);
     }
 
     /// <summary>
