@@ -76,8 +76,11 @@ comm -23 \
 
 1. `Scenes/` に `IScene` を実装したクラスを追加する。
    - `Slug` に対応する記事の slug を返す。
-   - `CaptureAsync` で `SceneContext.ShootAsync(window, fileName)` を呼び、ウィンドウを保存する。
+   - `CaptureAsync` で図を保存する。実行中のウィンドウを見せる図は
+     `SceneContext.ShootAsync(window, fileName)` で PNG として保存する。
    - フォーカスやテンプレートパーツの操作など、表示後に行う処理は `ShootAsync` の `beforeCapture` に渡す。
+   - **実測値の表は `SceneContext.SaveTableAsync(title, headers, rows, fileName)` で SVG として保存する。**
+     ウィンドウを作らないため `ShootAsync` の手順は当てはまらない。ディスプレイの電源状態にも影響されない。
    - 実行結果で記事の主張を確かめている場合は、`Verifies` にその内容を書く。
 2. `Program.cs` の `AllScenes` に登録する。
 3. 実行して `images/articles/<slug>/` に出力されることを確認する。

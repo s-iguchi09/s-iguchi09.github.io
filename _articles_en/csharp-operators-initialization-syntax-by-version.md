@@ -81,7 +81,7 @@ Plotted over time, they line up as follows.
 | `^` (index from end) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `..` (range) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `init` accessor | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
-| `with` expression | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
+| `with` expression | C# 9.0 | .NET 5 | ⚠️ Requires a BCL type only when the target has `init` (†3) |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ Language feature only (†1) |
 | `required` property | C# 11.0 | .NET 7 | ⚠️ Requires BCL attributes (†4) |
 | Collection expressions | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
@@ -89,10 +89,10 @@ Plotted over time, they line up as follows.
 
 - **†1**: Pure language features. These can be used on .NET Framework if `LangVersion` is set to the corresponding C# version, or if Visual Studio / the .NET SDK is updated.
 - **†2**: Requires `System.Index` / `System.Range`, added in .NET Core 3.0+. Array slicing with `a[1..3]` additionally requires `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray`.
-- **†3**: Requires `System.Runtime.CompilerServices.IsExternalInit`, added in .NET 5+. A `with` expression targets a `record` or a type with `init` accessors, so it inherits the same constraint as `init`.
+- **†3**: Requires `System.Runtime.CompilerServices.IsExternalInit`, added in .NET 5+. Whether a `with` expression needs it depends on **whether the target type has `init` accessors**. A `record` class and a `readonly record struct` generate them and therefore need it; a mutable `struct` and a positional `record struct` do not.
 - **†4**: Requires `RequiredMemberAttribute` plus `CompilerFeatureRequiredAttribute` and `IsExternalInit` (all in `System.Runtime.CompilerServices`).
 
-**Classifying `with` and `init` as †1 (language feature only) is incorrect.**
+**Classifying `init` as †1 (language feature only) is incorrect.**
 Because a `with` expression involves a `record` or an `init` accessor, it does not compile on .NET Framework — where `IsExternalInit` does not exist — no matter how high `LangVersion` is set.
 The next section shows this classification as actual compiler output.
 
@@ -102,7 +102,7 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, and primary constructors are OK. a[^1], a[1..3], init, with, and required are NG with the missing type named, and all become OK once a polyfill is added." width="497" height="380" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, and required are NG with the missing type named, and all become OK once a polyfill is added." width="576" height="440" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 
@@ -112,9 +112,11 @@ Three things follow from the table.
 The same holds for target-typed `new`, collection expressions, and primary constructors.
 For the problem this article opens with — `??=` being unavailable — raising `LangVersion` is sufficient.
 
-**2. `with` and `init` do not compile even at the highest `LangVersion`.**
+**2. `init`, and `with` on a type that has `init`, do not compile even at the highest `LangVersion`.**
 `System.Runtime.CompilerServices.IsExternalInit` does not exist on .NET Framework.
-A `with` expression targets a `record` or an `init` accessor, so it inherits the same constraint as `init`.
+What decides this is not the `with` syntax but **whether the target type has `init` accessors**.
+As the table shows, `with` on a mutable `struct` and on a positional `record struct` compiles on `net48` as-is, because those generate ordinary setters.
+A `record` class and a `readonly record struct` generate `init` and therefore need `IsExternalInit`.
 
 **3. `required` needs more than one type.**
 Besides `RequiredMemberAttribute`, it also requires `CompilerFeatureRequiredAttribute` and `IsExternalInit`.
@@ -233,7 +235,16 @@ namespace System
         public (int Offset, int Length) GetOffsetAndLength(int length)
         {
             int start = Start.GetOffset(length);
-            return (start, End.GetOffset(length) - start);
+            int end = End.GetOffset(length);
+
+            // Without these checks a[3..1] yields a negative length. The real System.Range
+            // throws ArgumentOutOfRangeException, so match that.
+            if ((uint)end > (uint)length || (uint)start > (uint)end)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            return (start, end - start);
         }
     }
 }
@@ -274,7 +285,7 @@ Array slicing therefore still requires defining `RuntimeHelpers` as shown above.
 
 #### Notes on Defining These Yourself
 
-- `RuntimeHelpers` also exists in `mscorlib`. Defining it locally makes the local type win inside that project. If other `RuntimeHelpers` members (such as `InitializeArray`) are in use, define them too or qualify the calls.
+- `RuntimeHelpers` also exists in `mscorlib`. Defining it locally makes the local type win inside that project. If other `RuntimeHelpers` members (such as `InitializeArray`) are in use, implement them on the local type as well. **Writing the fully qualified name does not reach the BCL type** — `System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray` still resolves to the local type and fails with `CS0117` (verified on `net48`). If adding those members is undesirable, avoid the array-slicing polyfill and use `Skip` / `Take` instead.
 - Declare all of these as `internal`. Making them `public` can collide with the types of assemblies that reference yours.
 - Remove the definitions after retargeting to .NET 5 or later. Duplicating a BCL type means the local definition wins, which can produce unintended behavior.
 
@@ -594,7 +605,7 @@ Primary constructors were introduced in C# 12.0 and require a compiler and SDK t
 - `!` suppresses compile-time warnings only and does not perform a runtime null check.
   If `null` is actually passed to the marked location, a `NullReferenceException` can still occur.
 - Target-typed `new`, collection expressions, and primary constructors are pure language features and work on .NET Framework once `LangVersion` is raised (confirmed against `net48`).
-  **`with` and `init` are not pure language features.** They require `IsExternalInit`, so raising `LangVersion` alone does not make them compile on .NET Framework.
+  **`init` is not a pure language feature**, and neither is `with` when its target has `init` accessors. Both require `IsExternalInit`, so raising `LangVersion` alone does not make them compile on .NET Framework. A `with` expression on a mutable `struct` or a positional `record struct` does compile, because those generate ordinary setters rather than `init`.
   `required` additionally requires `RequiredMemberAttribute` and `CompilerFeatureRequiredAttribute`.
 - The `..` spread operator in collection expressions uses the same symbol as the C# 8.0 range operator, but the purpose is different.
   In collection expressions, it expands elements within the collection literal.

@@ -24,6 +24,8 @@ internal sealed class CollectionCrossThreadScene : IScene
         "バックグラウンドスレッドからの Add で送出される例外を確かめる",
         "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）",
         "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること",
+        "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている",
+        "この構成では変更と CollectionChanged 通知が同じロックの中で起きるため、UI スレッド側の列挙と競合しないこと",
     ];
 
     public string Slug => "wpf-observablecollection-cross-thread-update";

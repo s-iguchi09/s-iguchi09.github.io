@@ -67,7 +67,7 @@ WPF 側の `ContextMenu` は、`StaysOpen` の設定と表示時のフォアグ�
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-foreground.svg" alt="タスクトレイの右クリックからメニュー表示までの流れを比較した図。SetForegroundWindow を呼ばない場合はフォアグラウンドが別アプリのままでメニューが閉じず、呼ぶ場合はメニューを開く前に自ウィンドウをフォアグラウンドへ移す。" width="880" height="356" loading="lazy">
-  <figcaption>右クリックからメニュー表示までの経路の違い。上段は <code>StaysOpen</code> だけを設定した場合で、フォアグラウンドが別アプリのままメニューが開くため、フォーカス喪失の判定が働かない。下段は表示前に <code>SetForegroundWindow</code> を呼ぶ経路である。Windows にはフォアグラウンド化の制限があり、この API は常に成功するとは限らない（上の P/Invoke 宣言では失敗時に <code>false</code> が返る）が、トレイアイコンのクリック直後は呼び出し元が入力を受けた直後にあたるため、この構成では切り替わる。</figcaption>
+  <figcaption>右クリックからメニュー表示までの経路の違い。上段は <code>StaysOpen</code> だけを設定した場合で、フォアグラウンドが別アプリのままメニューが開くため、フォーカス喪失の判定が働かない。下段は表示前に <code>SetForegroundWindow</code> を呼ぶ経路である。Windows にはフォアグラウンド化の制限があり、この API は常に成功するとは限らない（上の P/Invoke 宣言では失敗時に <code>false</code> が返る）。トレイアイコンのクリック直後は、フォアグラウンド化が許可される条件の 1 つを満たすが、それでも Windows が拒否して <code>false</code> を返すことはある。TreePaste ではこの構成で切り替わることを確認しているが、成功を前提にせず、戻り値を見て失敗時の経路も用意しておく。</figcaption>
 </figure>
 
 ---
@@ -124,7 +124,7 @@ Win32 API の P/Invoke 定義を追加しておくことで、WPF アプリ側�
 
 ## 注意点
 
-- `SetForegroundWindow` は OS のフォアグラウンド制御制約を受けるため、常に完全な制御を保証するものではない。実測では、直前にユーザー入力を受けていないプロセスから別ウィンドウを前面化しようとすると `false` が返り、前面は切り替わらなかった。トレイアイコンのクリック直後はこの制限を受けないが、タイマーやバックグラウンド処理から呼ぶ場合は失敗しうる。
+- `SetForegroundWindow` は OS のフォアグラウンド制御制約を受けるため、常に完全な制御を保証するものではない。実測では、直前にユーザー入力を受けていないプロセスから別ウィンドウを前面化しようとすると `false` が返り、前面は切り替わらなかった。トレイアイコンのクリック直後は許可条件の 1 つを満たすが、**それで成功が保証されるわけではない**。タイマーやバックグラウンド処理から呼ぶ場合はより失敗しやすい。いずれの場合も戻り値を確認し、`false` のときはメニューが閉じない可能性があるものとして扱う。
 - `NotifyIcon` と WPF `ContextMenu` を混在させる実装では、UI スレッド上でメニュー操作を行うため `Dispatcher.Invoke` を維持する。
 - `StaysOpen = false` を設定しても、表示元の状態が不整合なままでは期待どおりに閉じないケースがある。
 - タスクトレイ常駐はウィンドウの有無と寿命が一致しないため、`ShutdownMode` を `OnExplicitShutdown` にしたうえで終了メニューから `Shutdown()` を呼ぶ（呼び忘れるとウィンドウが無いままプロセスが残る。切り分けは[WPF でウィンドウを閉じてもプロセスが終了しない原因の切り分けと ShutdownMode・フォアグラウンドスレッドの扱い](/ja/articles/wpf-application-not-exiting-shutdownmode-threads/)で扱っている）。

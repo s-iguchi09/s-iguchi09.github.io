@@ -74,7 +74,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 | `^`（末尾インデックス） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `..`（範囲） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `init` アクセサ | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
-| `with`（with 式） | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
+| `with`（with 式） | C# 9.0 | .NET 5 | ⚠️ 対象が `init` を持つ場合のみ BCL 型が必要（†3） |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ 言語機能のみ（†1） |
 | `required` プロパティ | C# 11.0 | .NET 7 | ⚠️ BCL 属性が必要（†4） |
 | コレクション式 | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
@@ -82,11 +82,11 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 
 - **†1**: 純粋な言語機能。`LangVersion` を対応する C# バージョンに設定（または Visual Studio / .NET SDK を更新）すれば .NET Framework 上でも使用できる。
 - **†2**: `System.Index` / `System.Range`（.NET Core 3.0+ で追加された BCL 型）が必要。配列のスライス `a[1..3]` はさらに `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray` を要求する。
-- **†3**: `System.Runtime.CompilerServices.IsExternalInit`（.NET 5+ で追加された BCL 型）が必要。`with` 式は対象を `record` または `init` アクセサを持つ型に限るため、`init` と同じ制約を受ける。
+- **†3**: `System.Runtime.CompilerServices.IsExternalInit`（.NET 5+ で追加された BCL 型）が必要。`with` 式が要求するかどうかは**対象の型が `init` アクセサを持つか**で決まる。`record` クラスと `readonly record struct` は `init` を生成するため必要になる。一方、可変な `struct` と positional の `record struct` は `init` を生成しないため不要である。
 - **†4**: `RequiredMemberAttribute` に加えて `CompilerFeatureRequiredAttribute` と `IsExternalInit`（いずれも `System.Runtime.CompilerServices`）が必要。
 
-**`with` と `init` を †1（言語機能のみ）に分類している解説は誤りである。**
-`with` 式は `record` あるいは `init` アクセサを伴うため、`IsExternalInit` が存在しない .NET Framework では `LangVersion` を上げてもコンパイルできない。
+**`init` を †1（言語機能のみ）に分類している解説は誤りである。**
+`init` アクセサを持つ型に対する `with` 式も同じ制約を受ける。`IsExternalInit` が存在しない .NET Framework では `LangVersion` を上げてもコンパイルできない。
 次節に、この分類を実際のコンパイル結果で示す。
 
 ### .NET Framework 4.8 に対するコンパイル結果
@@ -95,7 +95,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタは OK。a[^1]、a[1..3]、init、with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="497" height="380" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。" width="576" height="440" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
@@ -105,9 +105,11 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 Target-typed `new`、コレクション式、プライマリコンストラクタも同様である。
 これらは記事冒頭の問題（`??=` が使えない）に対して、`LangVersion` の引き上げだけで解決できることを意味する。
 
-**2. `with` と `init` は `LangVersion` を上げても通らない。**
+**2. `init` と、`init` を持つ型への `with` は `LangVersion` を上げても通らない。**
 `System.Runtime.CompilerServices.IsExternalInit` が .NET Framework に存在しないためである。
-`with` 式は `record` あるいは `init` アクセサを対象とするため、`init` と同じ制約を受ける。
+ここで分かれ目になるのは `with` という構文ではなく、**対象の型が `init` アクセサを持つかどうか**である。
+表のとおり、可変な `struct` と positional の `record struct` への `with` は `net48` でもそのまま通る。これらは `init` ではなく通常のセッターを生成するためである。
+一方、`record` クラスと `readonly record struct` は `init` を生成するため `IsExternalInit` を要する。
 
 **3. `required` が要求する型は 1 つではない。**
 `RequiredMemberAttribute` だけでなく、`CompilerFeatureRequiredAttribute` と `IsExternalInit` も必要になる。
@@ -226,7 +228,16 @@ namespace System
         public (int Offset, int Length) GetOffsetAndLength(int length)
         {
             int start = Start.GetOffset(length);
-            return (start, End.GetOffset(length) - start);
+            int end = End.GetOffset(length);
+
+            // 検査を省くと a[3..1] が負の長さを返す。標準の System.Range は
+            // ArgumentOutOfRangeException を送出するため、そこへ揃える。
+            if ((uint)end > (uint)length || (uint)start > (uint)end)
+            {
+                throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            return (start, end - start);
         }
     }
 }
@@ -267,7 +278,7 @@ error CS0656: コンパイラが必要とするメンバー
 
 #### 自前定義の注意点
 
-- `RuntimeHelpers` は `mscorlib` にも同名の型が存在する。自プロジェクトで定義すると、そのプロジェクト内ではこちらが優先される。`RuntimeHelpers` の他のメンバー（`InitializeArray` など）を使っている場合は、そちらも定義するか完全修飾名で呼び分ける必要がある。
+- `RuntimeHelpers` は `mscorlib` にも同名の型が存在する。自プロジェクトで定義すると、そのプロジェクト内ではこちらが優先される。`RuntimeHelpers` の他のメンバー（`InitializeArray` など）を使っている場合は、そちらも自前の型へ実装する必要がある。**完全修飾名で書いても BCL 側は呼べない**（`System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray` と書いてもローカル型が優先され、`CS0117` になる。`net48` で確認した）。実装を足したくない場合は、配列スライスのポリフィルを使わず `Skip` / `Take` などで代替する。
 - いずれの型も `internal` で定義する。`public` にすると、そのアセンブリを参照する側と型が衝突しうる。
 - ターゲットを .NET 5 以降へ移行した際は、これらの定義を削除する。BCL 側の型と重複すると、自プロジェクトの定義が優先されて意図しない挙動になりうる。
 
@@ -577,7 +588,7 @@ public class LogWriter(string logFilePath, LogLevel minimumLevel)
 - .NET Framework をターゲットにする場合でも、`??=` や `!` のような言語機能はビルド環境（コンパイラ／`LangVersion`）が対応していれば使用できる。一方 `^` / `..`（Index / Range）は必要な型・API（`System.Index` / `System.Range` など）の有無に依存するため、追加参照／ポリフィルが必要になるか、利用できない場合がある。
 - `!`（null 免除演算子）はコンパイル時の警告を抑制するだけであり、実行時の `null` チェックを行わない。
   使用した箇所で `null` が渡された場合は `NullReferenceException` が発生するため、使用箇所を最小限に抑える。
-- Target-typed `new`、コレクション式、プライマリコンストラクタは純粋な言語機能であり、`LangVersion` を対応バージョンに設定すれば .NET Framework 上でも使用できる（`net48` で確認済み）。一方 **`with` と `init` は純粋な言語機能ではない**。`IsExternalInit` を必要とするため、`LangVersion` を上げただけでは .NET Framework でコンパイルできない。`required` はさらに `RequiredMemberAttribute` と `CompilerFeatureRequiredAttribute` を要する。
+- Target-typed `new`、コレクション式、プライマリコンストラクタは純粋な言語機能であり、`LangVersion` を対応バージョンに設定すれば .NET Framework 上でも使用できる（`net48` で確認済み）。一方 **`init` は純粋な言語機能ではない**。`init` を持つ型への `with` も同様である。`IsExternalInit` を必要とするため、`LangVersion` を上げただけでは .NET Framework でコンパイルできない。可変な `struct` と positional の `record struct` への `with` は、通常のセッターを生成するためそのまま通る。`required` はさらに `RequiredMemberAttribute` と `CompilerFeatureRequiredAttribute` を要する。
 - コレクション式の `..` スプレッド演算子は、C# 8.0 の範囲演算子 `..` と同じ記号を使用するが、用途が異なる（コレクション式の中での要素展開）。
 
 ---
