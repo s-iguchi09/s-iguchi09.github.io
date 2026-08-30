@@ -29,6 +29,7 @@ internal static class Program
         new ScrollViewerNotScrollingScene(),
         new DatePickerFormatScene(),
         new LabelVsTextBlockScene(),
+        new ListBoxSelectionSyncScene(),
         new ComboBoxItemsSourceScene(),
         new FluentSystemColorsScene(),
         new FluentCustomStyleScene(),
