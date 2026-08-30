@@ -50,7 +50,7 @@ internal sealed class UpdateSourcePitfallScene : IScene
 
         await context.SaveTableAsync(
             "GetBindingExpression() and UpdateSource()",
-            ["how Text is set", "GetBindingExpression", "UpdateSource() as-is", "after editing Text / after typing"],
+            ["how Text is set", "GetBindingExpression state", "UpdateSource() as-is", "after editing Text / after typing"],
             rows,
             "updatesource-pitfall-matrix.svg");
     }

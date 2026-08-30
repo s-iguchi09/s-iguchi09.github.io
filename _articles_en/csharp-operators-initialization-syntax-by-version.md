@@ -499,8 +499,11 @@ For that reason, it can also be used in `case` labels and attribute arguments.
 
 #### `with` expression — C# 9.0 for a record class, C# 10.0 for structs
 
-This expression creates a new copy instance based on an immutable object such as a record or struct, while changing only selected properties.
-The original object remains unchanged.
+This expression creates a copy of an existing `record` or struct, changing only selected properties.
+The original instance itself remains unchanged.
+
+What it produces, however, is a **shallow copy**: only the accessible instance properties and fields are duplicated, and reference-type members keep pointing at the same objects.
+Mutating a nested mutable object through the copy is therefore visible from the original as well.
 
 ```csharp
 public record WindowSettings(string Title, double Width, double Height);

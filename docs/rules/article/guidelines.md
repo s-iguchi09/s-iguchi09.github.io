@@ -225,10 +225,21 @@
 
 `figure` 要素で囲み、`figcaption` に説明を書く。`_config.yml` で `hard_wrap: true` を設定しているため、**前後に必ず空行を置く**（空行が無いと直前の文と連結されて `<br />` になる）。
 
+原則となる SVG の図（§11.3）はこの形で書く。
+
 ```html
 <figure class="article-figure">
-  <img src="/images/articles/<slug>/<file>.png" alt="（画像の内容を説明する代替テキスト）" width="461" height="166" loading="lazy">
-  <figcaption>（図が何を示しているかの説明。撮影・生成した環境を含める。）</figcaption>
+  <img src="/images/articles/<slug>/<file>.svg" alt="（図の内容を説明する代替テキスト）" width="598" height="200" loading="lazy">
+  <figcaption>（図が何を示しているかの説明。測定・生成した環境を含める。）</figcaption>
+</figure>
+```
+
+実行中のウィンドウのキャプチャだけが PNG になる（§11.3）。拡張子以外は同じである。
+
+```html
+<figure class="article-figure">
+  <img src="/images/articles/<slug>/<file>.png" alt="（画面の内容を説明する代替テキスト）" width="461" height="166" loading="lazy">
+  <figcaption>（画面が何を示しているかの説明。撮影した環境を含める。）</figcaption>
 </figure>
 ```
 

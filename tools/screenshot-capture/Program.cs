@@ -127,18 +127,30 @@ internal static class Program
     /// 記事の書式から推測せずに判定できる。<c>docs</c> は <c>_config.yml</c> の
     /// <c>exclude</c> に入っているため、サイトには出力されない。
     /// 何も検証していないシーン（図を描くだけ）は記録を作らない。
+    /// 以前に記録があってシーンから Verifies が消えた場合は、その記録を削除する。
+    /// 残しておくと、未検証の記事を検証済みとして数えてしまうためである。
     /// </summary>
     private static string? WriteVerificationRecord(string repositoryRoot, IScene scene, SceneContext context)
     {
+        string directory = Path.Combine(repositoryRoot, "docs", "verification");
+        string path = Path.Combine(directory, scene.Slug + ".yml");
+
         IReadOnlyList<string> claims = scene.Verifies;
         if (claims.Count == 0)
         {
+            // 何も検証しなくなったシーンの記録は消す。
+            // 残しておくと、未検証の記事を検証済みとして数えてしまう。
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                Console.WriteLine(
+                    "removed " + Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/'));
+            }
+
             return null;
         }
 
-        string directory = Path.Combine(repositoryRoot, "docs", "verification");
         Directory.CreateDirectory(directory);
-        string path = Path.Combine(directory, scene.Slug + ".yml");
 
         var builder = new StringBuilder();
         builder.AppendLine("# tools/screenshot-capture が実行時に自動生成する。手で編集しない。");
