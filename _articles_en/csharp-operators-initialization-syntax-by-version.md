@@ -499,7 +499,7 @@ For that reason, it can also be used in `case` labels and attribute arguments.
 
 #### `with` expression — C# 9.0 for a record class, C# 10.0 for structs
 
-This expression creates a new copy instance based on an immutable object such as a record or struct, while changing only selected properties.
+This expression creates a copy of an existing `record` or struct, changing only selected properties.
 The original object remains unchanged.
 
 ```csharp
