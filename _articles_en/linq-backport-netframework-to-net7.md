@@ -111,6 +111,15 @@ namespace System.Linq
 #endif
 ```
 
+Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Order and OrderDescending both produce identical results, boundary cases included." width="866" height="290" loading="lazy">
+  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
+</figure>
+
+The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
+
 Because the delegation style contains no `yield return`, the validation/iterator split required for hand-written iterators ([principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)) does not apply.
 The `source` null check runs immediately at call time, while the sort itself stays lazy through the delegated `OrderBy`.
 Since the work is handed to a proven existing API, there is no room for algorithmic bugs to creep in.

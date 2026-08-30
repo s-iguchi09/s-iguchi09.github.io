@@ -255,6 +255,15 @@ namespace System.Linq
 #endif
 ```
 
+Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Chunk, MaxBy, MinBy, and DistinctBy all produce identical results, boundary cases included." width="905" height="380" loading="lazy">
+  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
+</figure>
+
+The two sides agree even on `MaxBy` over an empty sequence, which throws `InvalidOperationException` for a value type and returns `null` for a reference type. That difference is not readable from the signature.
+
 The class is active only when the `NET6_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 6, including .NET Framework.
 
 ---
