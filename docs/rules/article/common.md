@@ -114,13 +114,15 @@ Search Console で「クロール済み - インデックス未登録」と判�
 
 ```bash
 # 実測で検証済みの記事:
-ls docs/verification/ | sed 's/\.yml$//' | sort
+find docs/verification -maxdepth 1 -name '*.yml' -printf '%f\n' 2>/dev/null | sed 's/\.yml$//' | sort
 
 # 未検証の記事:
 comm -23 \
-  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
-  <(ls docs/verification/ 2>/dev/null | sed 's/\.yml$//' | sort)
+  <(find _articles_ja _articles_en -maxdepth 1 -name '*.md' -printf '%f\n' | sed 's/\.md$//' | sort -u) \
+  <(find docs/verification -maxdepth 1 -name '*.yml' -printf '%f\n' 2>/dev/null | sed 's/\.yml$//' | sort)
 ```
+
+`ls` にグロブを渡すと、対象が 1 件も無いディレクトリでエラーになる。`find` はその場合も正常に終了する。
 
 記録の中身を読めば、何をどこまで確かめたかも分かる。
 
@@ -140,7 +142,7 @@ cat docs/verification/<slug>.yml
 
 ```bash
 comm -23 \
-  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(find _articles_ja _articles_en -maxdepth 1 -name '*.md' -printf '%f\n' | sed 's/\.md$//' | sort -u) \
   <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
       | sed 's/.*"\(.*\)"/\1/' | sort -u)
 ```

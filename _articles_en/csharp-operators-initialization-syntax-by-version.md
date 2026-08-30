@@ -3,6 +3,7 @@ layout: article-en
 title: "C# Operators and Initialization Syntax by Version"
 date: 2026-06-22
 category: C#
+image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg
 excerpt: "A version-by-version guide to C# operators and initialization syntax, built from actual compilation against net48. Shows which constructs need only LangVersion, which need BCL types, and how to supply the missing ones."
 ---
 
@@ -95,7 +96,7 @@ Plotted over time, they line up as follows.
 - **†5**: A mutable `struct` and a positional `record struct` do not generate `init`, so `IsExternalInit` is not required. The `with` expression itself is C# 10.0 or later, however: leaving `LangVersion` at 9.0 fails with `CS8773`.
 
 **Classifying `init` as †1 (language feature only) is incorrect.**
-Because a `with` expression involves a `record` or an `init` accessor, it does not compile on .NET Framework — where `IsExternalInit` does not exist — no matter how high `LangVersion` is set.
+A `with` expression whose target has `init` accessors carries the same constraint: it does not compile on .NET Framework, where `IsExternalInit` does not exist, no matter how high `LangVersion` is set.
 The next section shows this classification as actual compiler output.
 
 ### Compilation Results Against .NET Framework 4.8
@@ -496,7 +497,7 @@ public void UpdateText(string? newText)
 The result of `nameof` is a compile-time constant.
 For that reason, it can also be used in `case` labels and attribute arguments.
 
-#### `with` expression — C# 9.0 and later
+#### `with` expression — C# 9.0 for a record class, C# 10.0 for structs
 
 This expression creates a new copy instance based on an immutable object such as a record or struct, while changing only selected properties.
 The original object remains unchanged.
@@ -508,8 +509,11 @@ var defaultSettings = new WindowSettings("Main", 800, 600);
 var tallSettings = defaultSettings with { Height = 1000 };
 ```
 
-`with` is a C# 9.0 language feature and can be used on .NET Framework when `LangVersion` is set to C# 9.0 or later.
-However, when using `record` or `init` accessors, `.NET Framework` also requires a definition or polyfill for `System.Runtime.CompilerServices.IsExternalInit`.
+The C# version that allows `with` depends on the shape of the target type.
+A `record` class works from C# 9.0; a `struct` and a `record struct` require C# 10.0 (writing `with` against a `struct` at `LangVersion` 9.0 fails with `CS8773`).
+`IsExternalInit` is required **only when the target type has `init` accessors**.
+A `record` class and a `readonly record struct` generate them and therefore need it.
+A mutable `struct` and a positional `record struct` do not, so raising `LangVersion` to 10.0 is enough for them on .NET Framework.
 
 ---
 

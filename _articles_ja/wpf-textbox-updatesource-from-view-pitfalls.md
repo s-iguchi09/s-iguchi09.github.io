@@ -62,8 +62,8 @@ be.UpdateSource();
 上記の条件を実際に動かして確かめた結果が次の表である。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="Text の設定方法ごとに GetBindingExpression と UpdateSource の結果を並べた表。リテラル・MultiBinding・TemplateBinding では GetBindingExpression が null になる。OneTime と OneWay はバインドを張ったまま呼ぶと何も起きないが、Text を書き換えてから呼ぶと InvalidOperationException になる。OneWayToSource と TwoWay は Text を書き換えてから呼ぶとソースが更新される。TextInput 経由で入力した場合はどのモードでもバインドが残り、ソースは更新されない。" width="866" height="410" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。<code>UpdateSource() as-is</code> はバインドを張った直後にそのまま呼んだ場合、<code>after editing Text</code> は <code>TextBox.Text</code> へ値を代入してから呼んだ場合である。末尾の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合で、<code>GetBindingExpression</code> の列にはバインドが残っているかを示している。<code>no change</code> はソースの値が変わらなかったことを示す。</figcaption>
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="Text の設定方法ごとに GetBindingExpression と UpdateSource の結果を並べた表。リテラル・MultiBinding・TemplateBinding では GetBindingExpression が null になる。OneTime と OneWay はバインドを張ったまま呼ぶと何も起きないが、Text を書き換えてから呼ぶと InvalidOperationException になる。OneWayToSource と TwoWay は Text を書き換えてから呼ぶとソースが更新される。TextInput 経由で入力した場合はどのモードでもバインドが残り、UpdateSource は呼ばれずソースも更新されない。" width="929" height="410" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。<code>UpdateSource() as-is</code> はバインドを張った直後にそのまま呼んだ場合、<code>after editing Text / after typing</code> は、代入してから <code>UpdateSource()</code> を呼んだ場合の結果と、入力後のソースの値を兼ねる列である。末尾の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合で、<code>GetBindingExpression</code> の列にはバインドが残っているかを示している。<code>no change</code> はソースの値が変わらなかったことを示す。</figcaption>
 </figure>
 
 **この表で注意を要するのは、`OneWay` と `OneTime` の 2 列が食い違う点である。**
