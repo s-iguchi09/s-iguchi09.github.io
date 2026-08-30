@@ -89,7 +89,11 @@ What the row establishes is narrower: the source of `NotSupportedException` is t
 
 The last column reports whether the lock was held at the moment `CollectionChanged` fired.
 **Only the `EnableCollectionSynchronization` row reads 1/1, meaning the change and its notification happen inside the same lock.**
-The other rows read 0/1, with the notification raised outside any lock. That column is what establishes that the registered lock actually extends as far as the notification.
+The other rows read 0/1, with the notification raised outside any lock.
+
+That 1/1 is the result **for a configuration where the application wraps the `Add` in a `lock`**.
+It shows that the lock handed to `EnableCollectionSynchronization` is still held when the notification arising from that `Add` is raised.
+Registering alone does not place notifications inside the lock; wrapping the `Add` in the same lock is the application&#39;s responsibility.
 
 ---
 

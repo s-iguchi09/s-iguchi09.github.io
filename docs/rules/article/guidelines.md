@@ -237,7 +237,9 @@
 - `loading="lazy"` を付ける。
 - 本文幅（およそ 860px）より横に広い図は `class="article-figure article-figure--wide"` とする。狭い画面で図の内側だけが横スクロールする。
 - **日英で同じ画像を使い、`alt` と `figcaption` のみ各言語で書く。** 画像の中に文言を入れる場合は、コード識別子など言語に依存しない表記に留める。
-- 記事を代表するスクリーンショットがある場合は、front matter に `image: /images/articles/<slug>/<file>.png` を設定する。構造化データの `image` として出力される。Google の Article 構造化データは SVG をサポートしないため、**`image` には SVG を指定しない**。図が SVG しか無い記事では `image` を設定しない。
+- 記事を代表する図がある場合は、front matter に `image: /images/articles/<slug>/<file>` を設定する。構造化データの `image` として出力される。
+  - Google の Article 構造化データは、`image` に **Google 画像検索がサポートする形式**を求める。その一覧には BMP・GIF・JPEG・PNG・WebP・**SVG**・AVIF が含まれるため、SVG を指定してよい（[Article](https://developers.google.com/search/docs/appearance/structured-data/article) / [Google 画像検索](https://developers.google.com/search/docs/appearance/google-images#supported-image-formats)）。
+  - 実行画面のキャプチャがある記事ではそれを選ぶ。記事の内容を最も端的に示すためである。無い場合は実測値の表など主要な図を指定する。
 
 ---
 

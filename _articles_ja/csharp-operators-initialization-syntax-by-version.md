@@ -2,6 +2,7 @@
 layout: article-ja
 title: "C# バージョン別 演算子と初期化構文シンタックスシュガー一覧"
 date: 2026-06-22
+image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg
 category: C#
 excerpt: ".NET Framework 環境では ??= などの C# 新構文が使用できない場合がある。各バージョンで追加された演算子と初期化の糖衣構文を、net48 に対して実際にコンパイルした結果とともに整理する。BCL 型を要する構文と、その補い方も実測で示す。"
 ---
@@ -480,7 +481,7 @@ public void UpdateText(string? newText)
 
 `nameof` の戻り値はコンパイル時定数であるため、`switch` 文の `case` ラベルや属性の引数としても使用できる。
 
-#### `with`（with 式）— C# 9.0 以降
+#### `with`（with 式）— record クラスは C# 9.0、struct 系は C# 10.0 以降
 
 レコード型（`record`）や構造体などの不変オブジェクトをベースに、一部のプロパティのみを変更した新しいコピーインスタンスを生成する。
 元のオブジェクトは変更されない。
@@ -493,8 +494,11 @@ var defaultSettings = new WindowSettings("Main", 800, 600);
 var tallSettings = defaultSettings with { Height = 1000 };
 ```
 
-`with` 式は C# 9.0 で導入された言語機能であり、`LangVersion` を C# 9.0 以上に設定することで .NET Framework 上でも使用可能である。
-ただし `record` や `init` アクセサーを利用する場合、.NET Framework では `System.Runtime.CompilerServices.IsExternalInit` の追加定義（ポリフィル）が必要になることがある。
+`with` 式が使える C# のバージョンは、対象の型の形で異なる。
+`record` クラスは C# 9.0 から、`struct` と `record struct` は C# 10.0 からである（`LangVersion` を 9.0 に留めて `struct` へ書くと `CS8773` になる）。
+`IsExternalInit` が必要になるのは、**対象の型が `init` アクセサを持つ場合に限る**。
+`record` クラスと `readonly record struct` は `init` を生成するため必要になる。
+可変な `struct` と positional の `record struct` は `init` を生成しないため、`LangVersion` を 10.0 以上にするだけで .NET Framework でも使える。
 
 ---
 

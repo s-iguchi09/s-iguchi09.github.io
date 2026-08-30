@@ -50,7 +50,7 @@ internal sealed class UpdateSourcePitfallScene : IScene
 
         await context.SaveTableAsync(
             "GetBindingExpression() and UpdateSource()",
-            ["how Text is set", "GetBindingExpression", "UpdateSource() as-is", "after editing Text"],
+            ["how Text is set", "GetBindingExpression", "UpdateSource() as-is", "after editing Text / after typing"],
             rows,
             "updatesource-pitfall-matrix.svg");
     }
@@ -126,7 +126,9 @@ internal sealed class UpdateSourcePitfallScene : IScene
             string state = after is null ? "detached" : "still bound";
             string sourceValue = source.Amount == "before" ? "unchanged" : $"\"{source.Amount}\"";
 
-            return [label, state, sourceValue, "-"];
+            // この行では UpdateSource() を呼んでいない。呼んだ結果の列に値を出すと、
+            // 書き戻しが起きたように読めてしまう。
+            return [label, state, "not called", sourceValue];
         }
         finally
         {
