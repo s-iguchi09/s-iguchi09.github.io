@@ -122,13 +122,16 @@ In both cases the application style does not **extend** the Fluent style; it **r
 Once hidden, the Fluent template is no longer supplied, and the control falls back to the built-in WPF theme style, Aero2.
 That is why a style adding nothing but `Padding` discards the whole Fluent appearance.
 
+**All of this describes a style written without `BasedOn`.** Inheriting the original through `BasedOn` keeps the template while still adding your own setters.
+The last two rows of the figure below measure exactly that, and the Solution section covers the approach.
+
 ---
 
 Which source supplied the template can be told apart by the named parts inside it.
 The Fluent `TextBox` template holds a `DeleteButton`; the classic theme does not.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the row whose implicit style inherits through BasedOn keeps DeleteButton." width="913" height="290" loading="lazy">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the rows whose implicit style inherits through BasedOn keep DeleteButton on both routes." width="913" height="320" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11. The <code>Style applied</code> column reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
 </figure>
 
@@ -138,8 +141,8 @@ On the first row, without `ThemeMode`, `Style` stays `null` and the template com
 On the third row, an application-side implicit style under the same key that carries no `BasedOn` makes `DeleteButton` disappear.
 `Padding` reads 8, so the application style did take effect. **It is precisely because it took effect that the Fluent style was replaced and its template lost with it.**
 
-The last row is the case that inherits the original through `BasedOn`. `Padding` reads 8 just the same, and `DeleteButton` survives.
-That single row is this article's solution working.
+The last two rows inherit the original through `BasedOn`. On both routes — `ThemeMode` and a direct merge of `Fluent.xaml` — `Padding` reads 8 just the same and `DeleteButton` survives.
+Those two rows are this article's solution working.
 
 ---
 

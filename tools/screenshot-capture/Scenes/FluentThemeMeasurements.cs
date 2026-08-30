@@ -54,6 +54,12 @@ internal static class FluentThemeMeasurements
 
         // ここまでの暗黙スタイルは BasedOn も Template も持たない。
         // 元のスタイルを BasedOn で引き継いだ場合まで同じ結果とは限らないため、別に測る。
+        // 経路によって結果が変わりうるので、2 通りとも測る。
+        rows.Add(await MeasureAsync(
+            "ThemeMode=Light + implicit Style, BasedOn",
+            themeMode: "Light",
+            implicitStyle: true,
+            basedOnThemeStyle: true));
         rows.Add(await MeasureAsync(
             "merge Fluent.xaml + implicit Style, BasedOn",
             themeMode: null,

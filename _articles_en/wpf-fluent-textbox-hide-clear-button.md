@@ -55,7 +55,7 @@ Because of this, no public property is provided to hide only the clear button, s
 Which named parts a template holds can be confirmed by applying it and looking them up.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the row whose implicit style inherits through BasedOn keeps DeleteButton." width="913" height="290" loading="lazy">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the rows whose implicit style inherits through BasedOn keep DeleteButton on both routes." width="913" height="320" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
 </figure>
 
@@ -64,7 +64,7 @@ Which named parts a template holds can be confirmed by applying it and looking t
 The rows with an implicit style deserve attention. Whichever route the theme arrives by, an implicit style under the same key that carries no `BasedOn` makes `DeleteButton` disappear.
 The Fluent template is no longer supplied at all, so looking the part up by name does not work in that state.
 
-The last row is the contrast: an implicit style that inherits the original through `BasedOn`.
+The last two rows are the contrast: an implicit style that inherits the original through `BasedOn`, on both routes.
 `Padding` has changed to 8, so its own setter is in effect, and yet `DeleteButton` is still there.
 **What loses the template is not placing an implicit style, but failing to inherit the original one.**
 

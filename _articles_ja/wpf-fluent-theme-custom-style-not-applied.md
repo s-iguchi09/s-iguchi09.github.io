@@ -122,13 +122,16 @@ Fluent の暗黙スタイルのキーは、アプリ側が書く `<Style TargetT
 隠された結果、Fluent のテンプレートは供給されなくなり、コントロールは WPF 本来のテーマスタイルである Aero2 のテンプレートへフォールバックする。
 `Padding` を 1 つ足しただけのスタイルでも、Fluent のスタイル全体が失われるのはこのためである。
 
+**これは `BasedOn` を書かなかった場合の話である。** `BasedOn` で元のスタイルを引き継げば、自前の `Setter` を足しつつテンプレートは保たれる。
+後述の図の最後の 2 行がその実測で、解決策の節ではこの方法を扱う。
+
 ---
 
 テンプレートがどちらから供給されているかは、テンプレート内の名前付きパーツで判別できる。
 Fluent の `TextBox` テンプレートは `DeleteButton` を持ち、従来のテーマは持たない。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行では DeleteButton が残る。" width="913" height="290" loading="lazy">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行ではどちらの経路でも DeleteButton が残る。" width="913" height="320" loading="lazy">
   <figcaption>.NET 10 / Windows 11 での実測結果。<code>Style applied</code> の列は、<code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（従来のテーマスタイル）を示す。</figcaption>
 </figure>
 
@@ -138,8 +141,8 @@ Fluent の `TextBox` テンプレートは `DeleteButton` を持ち、従来の�
 3 行目で、`BasedOn` を書かない暗黙スタイルをアプリ側が同じキーに置くと `DeleteButton` が消える。
 `Padding` は 8 になっており、アプリ側のスタイルは効いている。**効いているからこそ Fluent のスタイルが置き換わり、テンプレートごと失われている。**
 
-最終行が `BasedOn` で元のスタイルを引き継いだ場合である。`Padding` は同じく 8 に変わりながら、`DeleteButton` は残っている。
-本記事の解決策が効くことが、この 1 行に出ている。
+最後の 2 行が `BasedOn` で元のスタイルを引き継いだ場合である。`ThemeMode` 経由でも `Fluent.xaml` の直接マージでも、`Padding` は同じく 8 に変わりながら `DeleteButton` は残っている。
+本記事の解決策が効くことが、この 2 行に出ている。
 
 ---
 
