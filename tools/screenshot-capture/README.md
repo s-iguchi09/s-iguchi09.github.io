@@ -29,6 +29,13 @@ dotnet run --project tools/screenshot-capture -c Release -- wpf-label-underscore
 実行中はウィンドウが順に表示されてフォーカスを奪う。数秒で終了する。
 保存したファイルのパスが標準出力に列挙される。
 
+> ⚠️ **ディスプレイが表示状態である必要がある。**
+> 電源管理でモニターが切れていると、DWM がウィンドウの内容を合成しないため、
+> `PrintWindow` はタイトルバーと枠だけが写った**中身が白紙の画像**を返す。
+> 失敗ではなく正常終了するので、生成後は画像を目視で確認する。
+> 無人で回す場合は、実行前にマウス操作などで画面を復帰させる
+> （`powercfg /query SCHEME_CURRENT SUB_VIDEO VIDEOIDLE` で現在のタイムアウトを確認できる）。
+
 ## シーンの追加
 
 1. `Scenes/` に `IScene` を実装したクラスを追加する。

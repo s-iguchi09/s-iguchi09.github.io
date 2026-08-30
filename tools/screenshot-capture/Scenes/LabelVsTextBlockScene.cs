@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 
 namespace ScreenshotCapture.Scenes;
@@ -14,51 +15,222 @@ internal sealed class LabelVsTextBlockScene : IScene
     private const int ItemCount = 1000;
 
     /// <summary>計測のばらつきを避けるため複数回実行し、最小値を採る。</summary>
-    private const int Iterations = 7;
+    private const int Iterations = 15;
+
+    /// <summary>本文の実装例と同じ文字列を使う。</summary>
+    private const string Text = "Status: Running";
 
     public string Slug => "wpf-label-vs-textblock-performance";
 
     public async Task CaptureAsync(SceneContext context)
     {
-        Measurement label = Measure(() => new Label { Content = "Status: Running", Padding = new Thickness(0) });
-        Measurement textBlock = Measure(() => new TextBlock { Text = "Status: Running" });
-
-        Window window = BuildResultWindow(label, textBlock);
-        await context.ShootAsync(window, "label-vs-textblock-measurement.png");
-    }
-
-    private readonly record struct Measurement(int VisualCount, double LayoutMilliseconds);
-
-    /// <summary>
-    /// 要素を <see cref="ItemCount"/> 個並べ、レイアウト完了までの時間と
-    /// 生成された visual の総数を測る。
-    /// </summary>
-    private static Measurement Measure(Func<FrameworkElement> createItem)
-    {
-        double best = double.MaxValue;
-        int visualCount = 0;
-
-        for (int iteration = 0; iteration < Iterations; iteration++)
+        // JIT とテンプレート初期化の影響を計測から外す。
+        for (int i = 0; i < 3; i++)
         {
-            var panel = new StackPanel();
-            var host = new Border { Width = 400, Height = 600, Child = panel };
-
-            for (int i = 0; i < ItemCount; i++)
-            {
-                panel.Children.Add(createItem());
-            }
-
-            var stopwatch = Stopwatch.StartNew();
-            host.Measure(new Size(400, 600));
-            host.Arrange(new Rect(0, 0, 400, 600));
-            host.UpdateLayout();
-            stopwatch.Stop();
-
-            best = Math.Min(best, stopwatch.Elapsed.TotalMilliseconds);
-            visualCount = CountVisuals(host);
+            MeasureOnce(200, CreateLabel);
+            MeasureOnce(200, CreateTextBlock);
         }
 
-        return new Measurement(visualCount, best);
+        await context.ShootAsync(BuildBaselineWindow(), "label-vs-textblock-measurement.png");
+        await context.ShootAsync(BuildVariantWindow(), "label-vs-textblock-variants.png");
+        await context.ShootAsync(BuildVirtualizedWindow(), "label-vs-textblock-virtualized.png");
+    }
+
+    private static Label CreateLabel() => new() { Content = Text, Padding = new Thickness(0) };
+
+    private static TextBlock CreateTextBlock() => new() { Text = Text };
+
+    /// <summary>
+    /// 非仮想化の <see cref="StackPanel"/> に並べたときの、要素数ごとの実測値。
+    /// <see cref="Label"/> と <see cref="TextBlock"/> を交互に測り、実行順の影響を避ける。
+    /// </summary>
+    private static Window BuildBaselineWindow()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        foreach (int count in new[] { 250, 1000, 4000 })
+        {
+            var label = new Measurement();
+            var textBlock = new Measurement();
+
+            for (int i = 0; i < Iterations; i++)
+            {
+                label.Add(MeasureOnce(count, CreateLabel));
+                textBlock.Add(MeasureOnce(count, CreateTextBlock));
+            }
+
+            rows.Add(
+            [
+                count.ToString("N0"),
+                label.Visuals.ToString("N0"),
+                label.BestMilliseconds.ToString("F0"),
+                textBlock.Visuals.ToString("N0"),
+                textBlock.BestMilliseconds.ToString("F0"),
+            ]);
+        }
+
+        return DemoLayout.BuildTableWindow(
+            "StackPanel (no virtualization)",
+            ["items", "Label visuals", "Label ms", "TextBlock visuals", "TextBlock ms"],
+            rows);
+    }
+
+    /// <summary>
+    /// 1,000 個で固定し、<see cref="Label"/> の構成を変えたときの差を測る。
+    /// アクセスキーを含む文字列が <c>AccessText</c> を挟むことによる負荷を示す。
+    /// </summary>
+    private static Window BuildVariantWindow()
+    {
+        (string Name, Func<FrameworkElement> Make)[] variants =
+        [
+            ("Label", CreateLabel),
+            ("Label (Content has '_')", () => new Label { Content = "Status: _Running", Padding = new Thickness(0) }),
+            ("Label + ContentTemplate", () => new Label { Content = Text, Padding = new Thickness(0), ContentTemplate = TextBlockTemplate() }),
+            ("ContentPresenter", () => new ContentPresenter { Content = Text }),
+            ("TextBlock", CreateTextBlock),
+        ];
+
+        var results = new Measurement[variants.Length];
+        for (int i = 0; i < results.Length; i++)
+        {
+            results[i] = new Measurement();
+        }
+
+        // 実行順による偏りを避けるため、各構成を 1 回ずつ回す試行を繰り返す。
+        for (int round = 0; round < Iterations; round++)
+        {
+            for (int i = 0; i < variants.Length; i++)
+            {
+                results[i].Add(MeasureOnce(ItemCount, variants[i].Make));
+            }
+        }
+
+        var rows = new List<IReadOnlyList<string>>();
+        for (int i = 0; i < variants.Length; i++)
+        {
+            rows.Add(
+            [
+                variants[i].Name,
+                results[i].Visuals.ToString("N0"),
+                results[i].BestMilliseconds.ToString("F0"),
+            ]);
+        }
+
+        return DemoLayout.BuildTableWindow(
+            $"x {ItemCount:N0} in a StackPanel",
+            ["", "visuals", "layout ms"],
+            rows);
+    }
+
+    /// <summary>
+    /// 仮想化された <see cref="ListBox"/> に 10,000 件を流したときの実測値。
+    /// 非仮想化で見えた差が、仮想化すると残らないことを示す。
+    /// </summary>
+    private static Window BuildVirtualizedWindow()
+    {
+        const string labelItem = """<Label Content="{Binding}" Padding="0" />""";
+        const string textBlockItem = """<TextBlock Text="{Binding}" />""";
+
+        // ウォームアップ。
+        MeasureVirtualized(labelItem);
+        MeasureVirtualized(textBlockItem);
+
+        var label = new Measurement();
+        var textBlock = new Measurement();
+
+        for (int i = 0; i < Iterations; i++)
+        {
+            label.Add(MeasureVirtualized(labelItem));
+            textBlock.Add(MeasureVirtualized(textBlockItem));
+        }
+
+        return DemoLayout.BuildTableWindow(
+            "ListBox, virtualized",
+            ["", "visuals", "layout ms"],
+            [
+                ["Label", label.Visuals.ToString("N0"), label.BestMilliseconds.ToString("F0")],
+                ["TextBlock", textBlock.Visuals.ToString("N0"), textBlock.BestMilliseconds.ToString("F0")],
+            ]);
+    }
+
+    private readonly record struct Sample(int VisualCount, double Milliseconds);
+
+    /// <summary>同一条件の試行をまとめ、最小値と visual 数を保持する。</summary>
+    private sealed class Measurement
+    {
+        public double BestMilliseconds { get; private set; } = double.MaxValue;
+
+        public int Visuals { get; private set; }
+
+        public void Add(Sample sample)
+        {
+            BestMilliseconds = Math.Min(BestMilliseconds, sample.Milliseconds);
+            Visuals = sample.VisualCount;
+        }
+    }
+
+    /// <summary>
+    /// 要素を <paramref name="count"/> 個並べ、レイアウト完了までの時間と
+    /// 生成された visual の総数を 1 回測る。
+    /// </summary>
+    private static Sample MeasureOnce(int count, Func<FrameworkElement> createItem)
+    {
+        var panel = new StackPanel();
+        var host = new Border { Width = 400, Height = 600, Child = panel };
+
+        for (int i = 0; i < count; i++)
+        {
+            panel.Children.Add(createItem());
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+        host.Measure(new Size(400, 600));
+        host.Arrange(new Rect(0, 0, 400, 600));
+        host.UpdateLayout();
+        stopwatch.Stop();
+
+        // 並べた要素の分だけを数えるため、入れ物である Border と StackPanel の
+        // 2 個を除く。こうすると 1 個あたりの visual 数がそのまま倍率になる。
+        return new Sample(CountVisuals(host) - 2, stopwatch.Elapsed.TotalMilliseconds);
+    }
+
+    /// <summary>
+    /// 仮想化された <see cref="ListBox"/> を組み立て、レイアウト完了までを 1 回測る。
+    /// </summary>
+    private static Sample MeasureVirtualized(string itemXaml)
+    {
+        var items = new List<string>();
+        for (int i = 0; i < 10_000; i++)
+        {
+            items.Add(Text);
+        }
+
+        var listBox = new ListBox
+        {
+            ItemsSource = items,
+            Width = 400,
+            Height = 600,
+            ItemTemplate = SceneContext.LoadXaml<DataTemplate>($"<DataTemplate>{itemXaml}</DataTemplate>"),
+        };
+        VirtualizingPanel.SetIsVirtualizing(listBox, true);
+        VirtualizingPanel.SetVirtualizationMode(listBox, VirtualizationMode.Recycling);
+
+        var host = new Border { Width = 400, Height = 600, Child = listBox };
+
+        var stopwatch = Stopwatch.StartNew();
+        host.Measure(new Size(400, 600));
+        host.Arrange(new Rect(0, 0, 400, 600));
+        host.UpdateLayout();
+        stopwatch.Stop();
+
+        return new Sample(CountVisuals(listBox), stopwatch.Elapsed.TotalMilliseconds);
+    }
+
+    private static DataTemplate TextBlockTemplate()
+    {
+        var factory = new FrameworkElementFactory(typeof(TextBlock));
+        factory.SetBinding(TextBlock.TextProperty, new Binding());
+        return new DataTemplate { VisualTree = factory };
     }
 
     private static int CountVisuals(DependencyObject root)
@@ -71,74 +243,5 @@ internal sealed class LabelVsTextBlockScene : IScene
         }
 
         return count;
-    }
-
-    /// <summary>
-    /// 計測結果を表として描画するウィンドウ。表記はコードと数値だけにする。
-    /// </summary>
-    private static Window BuildResultWindow(Measurement label, Measurement textBlock)
-    {
-        var grid = new Grid { Margin = new Thickness(18) };
-        for (int i = 0; i < 3; i++)
-        {
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        }
-
-        AddCell(grid, 0, 0, $"x {ItemCount}", header: true);
-        AddCell(grid, 0, 1, "visual elements", header: true);
-        AddCell(grid, 0, 2, "layout (ms)", header: true);
-
-        AddCell(grid, 1, 0, "Label");
-        AddCell(grid, 1, 1, label.VisualCount.ToString("N0"));
-        AddCell(grid, 1, 2, label.LayoutMilliseconds.ToString("F1"));
-
-        AddCell(grid, 2, 0, "TextBlock");
-        AddCell(grid, 2, 1, textBlock.VisualCount.ToString("N0"));
-        AddCell(grid, 2, 2, textBlock.LayoutMilliseconds.ToString("F1"));
-
-        return new Window
-        {
-            Title = "Label vs TextBlock",
-            Content = grid,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            ResizeMode = ResizeMode.CanMinimize,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            Background = Brushes.White,
-        };
-    }
-
-    private static void AddCell(Grid grid, int row, int column, string text, bool header = false)
-    {
-        var cell = new Border
-        {
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0xC3, 0xCC, 0xDB)),
-            BorderThickness = new Thickness(
-                column == 0 ? 1 : 0,
-                row == 0 ? 1 : 0,
-                1,
-                1),
-            Background = header
-                ? new SolidColorBrush(Color.FromRgb(0xF5, 0xF7, 0xFB))
-                : Brushes.White,
-            Padding = new Thickness(14, 7, 14, 7),
-            MinWidth = column == 0 ? 110 : 130,
-            Child = new TextBlock
-            {
-                Text = text,
-                FontFamily = new FontFamily("Consolas, Courier New"),
-                FontSize = 13,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x1F, 0x29, 0x33)),
-                HorizontalAlignment = column == 0 ? HorizontalAlignment.Left : HorizontalAlignment.Right,
-            },
-        };
-
-        Grid.SetRow(cell, row);
-        Grid.SetColumn(cell, column);
-        grid.Children.Add(cell);
     }
 }
