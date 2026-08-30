@@ -196,6 +196,25 @@ An implementation that raises `ErrorsChanged` independently of the source update
 
 ---
 
+Which stage a case stops at can be told apart by reading `Validation.HasError`, the `Validation.Errors` count, and the number of adorners separately.
+The figure below records those for a `TextBox` bound to a source that always reports an error.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-validation-error-not-displayed/validation-stages.svg" alt="A table of HasError, the Errors count, and the adorner count per validation setup. IDataErrorInfo alone gives False and 0 errors. Turning on ValidatesOnDataErrors gives True, 1, and 1. INotifyDataErrorInfo gives True, 1, and 1 by default. ValidationRules gives True, 1, and 1. Setting ErrorTemplate to null keeps True and 1 but drops the adorner count to 0." width="615" height="230" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with a <code>TextBox</code> bound to a source that always reports an error. <code>adorners</code> is the count returned by <code>AdornerLayer.GetAdorners</code>.</figcaption>
+</figure>
+
+**The first row shows 0 errors.** Implementing `IDataErrorInfo` is not enough to reach stage 1 without `ValidatesOnDataErrors`.
+The second row turns it on: one error appears, and one adorner is drawn.
+
+`INotifyDataErrorInfo` behaves differently, as the third row shows. Its counterpart `ValidatesOnNotifyDataErrors` defaults to enabled, so implementing the interface is enough to take part in validation.
+The two interfaces differing in their default is part of what makes this hard to diagnose.
+
+The last row is a case that reaches stage 3 and stops there. `HasError` is `True` and `Errors` still holds one entry, but the adorner count is 0.
+**The error is held and simply not drawn.** A value that is invalid without any red outline appearing corresponds to this row.
+
+---
+
 ## Solution
 
 Establish each of the three stages explicitly.

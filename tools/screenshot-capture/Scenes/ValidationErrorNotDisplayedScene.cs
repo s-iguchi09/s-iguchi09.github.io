@@ -88,6 +88,14 @@ internal sealed class ValidationErrorNotDisplayedScene : IScene
         </StackPanel>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "検証の発生（Validation.Errors）と描画（アドーナー）を分けて測る",
+        "IDataErrorInfo は実装しただけでは検証に参加せず、ValidatesOnDataErrors が要ること",
+        "INotifyDataErrorInfo は既定で検証に参加すること",
+        "ErrorTemplate を null にすると、エラーは保持されたままアドーナーだけが消えること",
+    ];
+
     public string Slug => "wpf-validation-error-not-displayed";
 
     public async Task CaptureAsync(SceneContext context)
@@ -158,6 +166,12 @@ internal sealed class ValidationErrorNotDisplayedScene : IScene
 
             await Task.CompletedTask;
         });
+
+        await context.SaveTableAsync(
+            "TextBox bound to an always-invalid source",
+            ["configuration", "HasError", "Errors", "adorners"],
+            await ValidationAndScopeMeasurements.ValidationStagesAsync(),
+            "validation-stages.svg");
     }
 
     /// <summary><see cref="IDataErrorInfo"/> で必須チェックを返す ViewModel。</summary>

@@ -165,6 +165,24 @@ WPF の `RadioButton.GroupName` の既定値は空文字列である。
 
 ---
 
+`GroupName` の有無だけを変えて、コンバーターの呼び出しとチェック状態を測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="GroupName の有無別に ConvertBack の呼び出し回数とチェック状態を測った表。GroupName の既定値は空文字列。GroupName を設定しない場合は ConvertBack が false で 1 回呼ばれ、チェックが Single だけになる。GroupName を設定すると呼び出しは 0 回で、Standard と Single の両方にチェックが残る。ソース側の値はどちらも Standard / Single のままである。" width="764" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、同じ <code>StackPanel</code> の下に 2 組（<code>Quality</code> と <code>Layout</code>）のラジオボタンを置いて測った結果。<code>GroupName</code> 属性の有無だけが 2 行の差である。</figcaption>
+</figure>
+
+**`GroupName` を設定しない行では、チェックが `Single` だけになっている。** 別のプロパティにバインドしているにもかかわらず `Standard` が解除されており、これが「初期選択が表示されない」症状の実体である。
+このとき `ConvertBack` が `false` で 1 回呼ばれている。
+
+注目すべきは、**ソース側の値はどちらの行も `Standard / Single` のまま無傷である**点である。
+コンバーターが `false` に対して `Binding.DoNothing` を返しているため、ViewModel は壊れていない。
+壊れているのは画面の表示だけであり、ViewModel をログに出しても原因にたどり着けない。
+
+`GroupName` を設定した行では `ConvertBack` が 1 度も呼ばれず、両方のチェックが残る。
+
+---
+
 ## 解決方法
 
 根本原因は UI 側のグループ化にあるため、対処もグループ化で行う。

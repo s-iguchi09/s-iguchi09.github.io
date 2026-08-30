@@ -1,0 +1,16 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-validation-error-not-displayed
+slug: "wpf-validation-error-not-displayed"
+scene: "ValidationErrorNotDisplayedScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "検証の発生（Validation.Errors）と描画（アドーナー）を分けて測る"
+  - "IDataErrorInfo は実装しただけでは検証に参加せず、ValidatesOnDataErrors が要ること"
+  - "INotifyDataErrorInfo は既定で検証に参加すること"
+  - "ErrorTemplate を null にすると、エラーは保持されたままアドーナーだけが消えること"
+images:
+  - "images/articles/wpf-validation-error-not-displayed/validation-error-display.png"
+  - "images/articles/wpf-validation-error-not-displayed/adorner-layer-required.png"
+  - "images/articles/wpf-validation-error-not-displayed/validation-stages.svg"

@@ -16,9 +16,17 @@ internal sealed class RadioButtonEnumBindingScene : IScene
 {
     private const string LocalNamespace = "clr-namespace:ScreenshotCapture.Scenes;assembly=ScreenshotCapture";
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "RadioButton.GroupName の既定値",
+        "GroupName を設定しない場合、別プロパティにバインドしていても 1 グループとして相互排他になること",
+        "その解除が ConvertBack を false で呼び出すこと",
+        "GroupName を設定すると解除が起きなくなること",
+    ];
+
     public string Slug => "wpf-radiobutton-enum-binding";
 
-    public Task CaptureAsync(SceneContext context)
+    public async Task CaptureAsync(SceneContext context)
     {
         Window window = DemoLayout.BuildPanelWindow(
             "RadioButton + enum",
@@ -27,7 +35,13 @@ internal sealed class RadioButtonEnumBindingScene : IScene
                 new DemoLayout.Panel("GroupName = \"quality\" / \"pageLayout\"", BuildGroup(withGroupName: true)),
             ]);
 
-        return context.ShootAsync(window, "radiobutton-enum-groupname.png");
+        await context.ShootAsync(window, "radiobutton-enum-groupname.png");
+
+        await context.SaveTableAsync(
+            "two enum-bound pairs under one StackPanel",
+            ["configuration", "ConvertBack calls", "checked radios", "source values"],
+            await ValidationAndScopeMeasurements.RadioButtonGroupingAsync(),
+            "radiobutton-grouping.svg");
     }
 
     /// <summary>

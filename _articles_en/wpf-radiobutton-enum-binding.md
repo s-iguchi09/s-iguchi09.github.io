@@ -163,6 +163,24 @@ A test run reproduced `ConvertBack(false)` both in a list where each row was bou
 
 ---
 
+The figure below records the converter calls and the checked state, varying only whether `GroupName` is set.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="A table of ConvertBack calls and checked state with and without GroupName. The GroupName default is the empty string. Without GroupName, ConvertBack runs once with false and only Single stays checked. With GroupName set, ConvertBack never runs and both Standard and Single stay checked. The source values remain Standard and Single in both rows." width="764" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with two pairs of radio buttons — one for <code>Quality</code>, one for <code>Layout</code> — under a single <code>StackPanel</code>. The presence of the <code>GroupName</code> attribute is the only difference between the two rows.</figcaption>
+</figure>
+
+**On the row without `GroupName`, only `Single` remains checked.** `Standard` has been cleared even though it is bound to a different property, and that is the initial selection failing to appear.
+`ConvertBack` runs once with `false` at that moment.
+
+What deserves attention is that **the source values stay `Standard / Single` on both rows.**
+Because the converter returns `Binding.DoNothing` for `false`, the view model is never corrupted.
+Only the display is wrong, which is why logging the view model never leads to the cause.
+
+With `GroupName` set, `ConvertBack` never runs and both stay checked.
+
+---
+
 ## Solution
 
 The root cause lies in UI-side grouping, so the fix belongs there as well.

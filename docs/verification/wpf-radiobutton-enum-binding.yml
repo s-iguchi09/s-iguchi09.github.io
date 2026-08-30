@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-radiobutton-enum-binding
+slug: "wpf-radiobutton-enum-binding"
+scene: "RadioButtonEnumBindingScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "RadioButton.GroupName の既定値"
+  - "GroupName を設定しない場合、別プロパティにバインドしていても 1 グループとして相互排他になること"
+  - "その解除が ConvertBack を false で呼び出すこと"
+  - "GroupName を設定すると解除が起きなくなること"
+images:
+  - "images/articles/wpf-radiobutton-enum-binding/radiobutton-enum-groupname.png"
+  - "images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg"
