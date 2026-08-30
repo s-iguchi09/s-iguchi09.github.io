@@ -26,6 +26,17 @@ reviews:
         - 記述が誤解を招く場合(条件の取り違え、原因と結果の混同など)は、正確な条件へ修正するよう指摘する。
         - 指摘は件数を絞らず、見つけたものをすべて挙げる。
 
+  # レビュー対象から外すパス
+  # ツールが実行時に自動生成するファイルは、人が書いたものではないためレビューしない。
+  # 変更ファイル数が CodeRabbit の上限(100)を超えるとレビュー自体がスキップされるため、
+  # レビューする価値のあるファイルへ枠を割り当てる意味もある。
+  path_filters:
+    # docs/verification/*.yml は tools/screenshot-capture が実行のたびに書き出す検証記録。
+    # 生成するコード(tools/screenshot-capture/Program.cs)はレビュー対象のまま残す。
+    - "!docs/verification/**"
+    # 画像はスクリーンショット取得ツールの出力。差分をテキストとして読む意味がない。
+    - "!images/**"
+
   # markdownlint による Markdown 検査を有効化(リポジトリの .markdownlint.json を尊重)
   tools:
     markdownlint:
