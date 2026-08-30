@@ -113,8 +113,11 @@ internal static class FluentThemeMeasurements
             ("WindowColor", SystemColors.WindowColor),
             ("WindowTextColor", SystemColors.WindowTextColor),
             ("ControlColor", SystemColors.ControlColor),
+            // 選択項目のハイライト色と、個人用設定のアクセント色は別のキーである。
+            // 混同しやすいため並べて出す。
             ("HighlightColor", SystemColors.HighlightColor),
             ("HighlightTextColor", SystemColors.HighlightTextColor),
+            ("AccentColor", SystemColors.AccentColor),
             ("GrayTextColor", SystemColors.GrayTextColor),
         ];
 
@@ -130,6 +133,86 @@ internal static class FluentThemeMeasurements
 
         return rows;
     }
+
+    /// <summary>
+    /// 色の参照方法によって、後からの差し替えに追随するかどうかが変わることを測る。
+    ///
+    /// OS のテーマ切り替えは、<see cref="SystemColors"/> のリソースが差し替わる形で
+    /// アプリケーションへ伝わる。ここではそれと同じくアプリケーションのリソースを
+    /// 差し替え、色を直接読んで焼き込んだ場合とリソースキーで参照した場合とで
+    /// 結果が分かれることを示す。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> ColorReferenceTrackingAsync()
+    {
+        var direct = new Border
+        {
+            Width = 60,
+            Height = 20,
+            // 記事が避けるよう述べている書き方。読んだ時点の色をそのまま持つ。
+            Background = new SolidColorBrush(SystemColors.WindowColor),
+        };
+
+        var viaKey = new Border { Width = 60, Height = 20 };
+        viaKey.SetResourceReference(Border.BackgroundProperty, SystemColors.WindowBrushKey);
+
+        var host = new StackPanel();
+        host.Children.Add(direct);
+        host.Children.Add(viaKey);
+
+        string beforeDirect = string.Empty;
+        string beforeViaKey = string.Empty;
+        string afterDirect = string.Empty;
+        string afterViaKey = string.Empty;
+
+        object key = SystemColors.WindowBrushKey;
+        ResourceDictionary resources = Application.Current.Resources;
+        bool hadOwnValue = resources.Contains(key);
+        object? original = hadOwnValue ? resources[key] : null;
+
+        await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "system brush replacement",
+                host,
+                _ =>
+                {
+                    afterDirect = BrushText(direct.Background);
+                    afterViaKey = BrushText(viaKey.Background);
+                    return [];
+                },
+                Act: _ =>
+                {
+                    beforeDirect = BrushText(direct.Background);
+                    beforeViaKey = BrushText(viaKey.Background);
+
+                    resources[key] = new SolidColorBrush(Color.FromRgb(0x10, 0x20, 0x30));
+                    return Task.CompletedTask;
+                }),
+        ]);
+
+        // 差し替えたリソースを戻す。以降のシーンへ影響させない。
+        if (hadOwnValue)
+        {
+            resources[key] = original!;
+        }
+        else
+        {
+            resources.Remove(key);
+        }
+
+        return
+        [
+            ["new SolidColorBrush(SystemColors.WindowColor)", beforeDirect, afterDirect],
+            ["DynamicResource SystemColors.WindowBrushKey", beforeViaKey, afterViaKey],
+        ];
+    }
+
+    private static string BrushText(Brush? brush) => brush switch
+    {
+        SolidColorBrush solid => solid.Color.ToString(),
+        null => "null",
+        _ => brush.GetType().Name,
+    };
 
     /// <summary>相対輝度。背景と前景のコントラストを読み取れるようにする。</summary>
     private static double Luminance(Color color)

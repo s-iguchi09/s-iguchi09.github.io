@@ -75,8 +75,9 @@ internal sealed class UserControlDependencyPropertyScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "UserControl 内部の要素から見た DataContext が、利用側の ViewModel であること",
-        "素の Binding では自身の依存関係プロパティに届かないこと",
-        "RelativeSource Self / AncestorType では届くこと",
+        "利用側の DataContext を継承している UserControl では、内部の素の Binding が自身の依存関係プロパティに届かないこと",
+        "内部要素に RelativeSource Self を書くとその要素自身を指すため、やはり届かないこと",
+        "RelativeSource AncestorType=UserControl では届くこと",
     ];
 
     public string Slug => "wpf-usercontrol-dependencyproperty-binding-not-working";

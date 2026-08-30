@@ -50,14 +50,26 @@ WPF は柔軟な描画基盤を持つが、Fluent 固有の外観は標準で自
 `SystemColors` が実際に返す色は、読み出して確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="SystemColors の各キーが返す色と相対輝度の表。WindowColor は白、WindowTextColor は黒、HighlightColor は青系で、いずれも OS の設定に対応した値になっている。" width="563" height="260" loading="lazy">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="SystemColors の各キーが返す色と相対輝度の表。WindowColor は白、WindowTextColor は黒、HighlightColor は青系、AccentColor は赤系で、いずれも OS の設定に対応した値になっている。" width="563" height="290" loading="lazy">
   <figcaption>.NET 10 / Windows 11（ライトテーマ）で <code>SystemColors</code> の各キーを読み出した結果。<code>relative luminance</code> は WCAG の相対輝度で、前景と背景のコントラストを見積もるために併記している。</figcaption>
 </figure>
 
 `WindowColor` と `WindowTextColor` の輝度が `1.00` と `0.00` になっており、この環境ではライトテーマの値が返っている。
-OS 側でダークテーマに切り替えると、この表の値が入れ替わる。**色を直接書かずにこれらのキーを参照しておけば、切り替えに追随できる。**
+OS 側でダークテーマに切り替えると、この表の値が入れ替わる。
 
-`HighlightColor` はアクセント色であり、ユーザーが個人設定で変更できる。アクセントを固定色で書くと、この設定と食い違う。
+`HighlightColor` は選択項目のハイライト色である。ユーザーが個人用設定で選ぶアクセント色は別のキーの `AccentColor` で、両者は混同されやすい。
+撮影した環境ではアクセント色を赤にしてあるため、表でも `HighlightColor` が `#FF0078D7`、`AccentColor` が `#FFE2241A` と別の値になっている。アクセントを固定色で書くと、この設定と食い違う。
+
+**ただし、これらのキーを読むだけでは切り替えに追随しない。**
+`SystemColors.WindowColor` のように色を直接読むと、読んだ時点の値がそのまま焼き込まれる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg" alt="色の参照方法ごとに、システムのブラシを差し替える前後の値を測った表。SystemColors.WindowColor から作ったブラシは差し替え後も白のまま。DynamicResource で SystemColors.WindowBrushKey を参照した側だけが新しい色に変わる。" width="697" height="140" loading="lazy">
+  <figcaption>OS のテーマ切り替えは、これらのリソースが差し替わる形でアプリケーションへ伝わる。表は同じ差し替えをアプリケーションのリソース側で起こし、前後の値を読み取った結果である。</figcaption>
+</figure>
+
+直接読んだ側は差し替え後も値が変わらず、リソースキーを `DynamicResource` で参照した側だけが新しい色になっている。
+**追随させるには、色ではなく `SystemColors.WindowBrushKey` のようなリソースキーを `DynamicResource` で参照する必要がある。**
 
 ---
 
@@ -129,14 +141,12 @@ Fluent リソースディクショナリを使う場合は次のように記述�
         Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
 
   <Window.Resources>
-    <SolidColorBrush x:Key="CardBackgroundBrush"
-                     Color="{Binding Source={x:Static SystemColors.ControlLightColor}}" />
-
     <Style x:Key="CardBorderStyle" TargetType="Border">
       <Setter Property="Padding" Value="24" />
       <Setter Property="CornerRadius" Value="12" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+      <Setter Property="Background"
+              Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
       <Setter Property="BorderBrush"
               Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" />
     </Style>

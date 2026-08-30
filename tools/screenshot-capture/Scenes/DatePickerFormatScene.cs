@@ -33,6 +33,7 @@ internal sealed class DatePickerFormatScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "SelectedDateFormat が Short と Long の 2 つしか持たず、任意の書式にできないこと",
+        "SelectedDateFormat を設定しない場合の実効値が Short であり、それが依存関係プロパティのメタデータ既定値（Long）ではなく既定スタイル由来であること",
         "それぞれの設定で実際に表示される文字列",
         "テンプレート内のテキスト部分を書き換えると任意の書式にできること",
     ];

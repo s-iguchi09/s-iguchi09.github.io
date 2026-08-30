@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -101,7 +103,37 @@ internal static class DataGridMeasurements
             grid.Items.Refresh();
         }));
 
+        // ここまでの行はすべてコードから直接操作している。
+        // 列ヘッダー経由の標準ソートでは 2 か所が同時に変わるため、その対照を置く。
+        rows.Add(await MeasureAsync("column header click (standard sort)", (grid, column) =>
+            ClickColumnHeader(grid, column)));
+
         return rows;
+    }
+
+    /// <summary>
+    /// 列ヘッダーのクリックで走る標準のソート処理を実行する。
+    ///
+    /// マウスイベントを組み立てて投げても、<c>ButtonBase</c> は実際のデバイスの
+    /// ボタン状態を見るためクリックとして扱われない。そこで、ヘッダーがクリック時に
+    /// 呼ぶ <c>OnClick</c> をそのまま呼び、その先の <c>DataGrid</c> 側のソート処理を走らせる。
+    /// 入力の伝搬だけを飛ばしており、並び替えの処理自体は標準のものである。
+    /// </summary>
+    private static void ClickColumnHeader(DataGrid grid, DataGridColumn column)
+    {
+        grid.UpdateLayout();
+
+        DataGridColumnHeader header = Descendants(grid)
+            .OfType<DataGridColumnHeader>()
+            .FirstOrDefault(candidate => ReferenceEquals(candidate.Column, column))
+            ?? throw new InvalidOperationException("列ヘッダーが生成されていない。");
+
+        MethodInfo onClick = typeof(DataGridColumnHeader).GetMethod(
+            "OnClick", BindingFlags.Instance | BindingFlags.NonPublic, binder: null, Type.EmptyTypes, modifiers: null)
+            ?? throw new InvalidOperationException("DataGridColumnHeader.OnClick が見つからない。");
+
+        onClick.Invoke(header, null);
+        grid.UpdateLayout();
     }
 
     private static async Task<IReadOnlyList<string>> MeasureAsync(

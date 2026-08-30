@@ -27,12 +27,15 @@ WPF の `DatePicker` は、選択された日付をシステムのロケール�
 `DatePicker` に実際に表示される文字列は、設定を変えて読み出せば確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg" alt="DatePicker の設定ごとに表示される文字列を測った表。既定と Short はいずれも 2026/07/17、Long は 2026年7月17日、テキスト部分を書き換えた場合は 2026/07/17 (金) になる。" width="555" height="200" loading="lazy">
-  <figcaption>.NET 10 / 日本語環境の Windows 11 で、<code>2026-07-17</code> を選択した <code>DatePicker</code> のテキスト部分を読み取った結果。</figcaption>
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg" alt="DatePicker の設定ごとに、SelectedDateFormat の実効値とその出どころ、表示される文字列を測った表。何も設定しない場合は既定スタイル由来の Short になる。Short と既定はいずれも 2026/07/17、Long は 2026年7月17日、テキスト部分を書き換えた場合は 2026/07/17 (金) になる。" width="642" height="200" loading="lazy">
+  <figcaption>.NET 10 / 日本語環境の Windows 11 で、<code>2026-07-17</code> を選択した <code>DatePicker</code> のテキスト部分を読み取った結果。2 列目の括弧内は、その値がどこから来たかを <code>DependencyPropertyHelper.GetValueSource</code> で読んだものである。</figcaption>
 </figure>
 
-**`SelectedDateFormat` は `Short` と `Long` の 2 つしか持たない。** 既定は `Short` であり、任意の書式を指定する手段が用意されていない。
+**`SelectedDateFormat` は `Short` と `Long` の 2 つしか持たない。** どちらも任意の書式を指定する手段を持たない。
 これが、以降で述べる回避方法が必要になる理由である。
+
+何も設定しなければ `Short` になるが、これは依存関係プロパティのメタデータに登録された既定値ではない。
+メタデータの既定値は `Long` であり、`Short` は既定スタイルが設定している。表の 2 列目に出ている `DefaultStyle` がその出どころである。
 
 最終行は、テンプレート内のテキスト部分を直接書き換えた場合である。曜日を含む書式のように、2 つの既定形式では表せない表示もこの方法なら作れる。
 

@@ -319,8 +319,14 @@ internal static class LinqBackportParity
         using var process = Process.Start(startInfo)
             ?? throw new InvalidOperationException($"{fileName} を起動できない。");
 
-        string stdout = await process.StandardOutput.ReadToEndAsync();
-        string stderr = await process.StandardError.ReadToEndAsync();
+        // 片方を EOF まで読み切ってからもう片方を読むと、待っている間に子プロセスが
+        // 読まれていない側のパイプを埋めて書き込みでブロックし、両者が止まる。
+        // dotnet build は標準エラーにも書くため、両方の読み取りを先に始める。
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+
+        string stdout = await stdoutTask;
+        string stderr = await stderrTask;
         await process.WaitForExitAsync();
 
         return (process.ExitCode, stdout + stderr);

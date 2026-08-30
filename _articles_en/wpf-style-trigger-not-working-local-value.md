@@ -89,7 +89,7 @@ The figure below records the result under varying conditions.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg" alt="A table of the effective Border.Background and where the value came from. With a local value it stays white at Local; once the default moves to a Setter the trigger color applies at StyleTrigger; with the trigger unmet it is white at Style; and after ClearValue removes the local value the trigger color applies at StyleTrigger." width="598" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with <code>HasError</code> set to <code>True</code>. The value in parentheses is the <code>BaseValueSource</code> returned by <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
+  <figcaption>Measured on .NET 10 / Windows 11. <code>HasError</code> varies per row: it is <code>False</code> on the <code>trigger not met</code> row and <code>True</code> on the others. The value in parentheses is the <code>BaseValueSource</code> returned by <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
 </figure>
 
 **On the row where the value does not change, `BaseValueSource` is `Local`.** That is why the trigger value never replaces it.

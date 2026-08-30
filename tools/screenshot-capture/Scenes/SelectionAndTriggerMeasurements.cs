@@ -56,8 +56,18 @@ internal static class SelectionAndTriggerMeasurements
             BuildTree,
             (_, parent, _) => Describe(parent.ItemContainerGenerator.ContainerFromIndex(0))));
 
+        // 展開しただけでは足りない。コンテナが作られるのはレイアウトが走った後である。
         rows.Add(await MeasureAsync(
-            "child container after IsExpanded = true",
+            "right after IsExpanded = true, before a layout pass",
+            BuildTree,
+            (_, parent, _) =>
+            {
+                parent.IsExpanded = true;
+                return Describe(parent.ItemContainerGenerator.ContainerFromIndex(0));
+            }));
+
+        rows.Add(await MeasureAsync(
+            "after IsExpanded = true and UpdateLayout()",
             BuildTree,
             (_, parent, _) =>
             {

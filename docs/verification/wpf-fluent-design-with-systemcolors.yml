@@ -7,7 +7,10 @@ environment:
   os: "Microsoft Windows 10.0.26200"
 verifies:
   - "SystemColors の各キーが実際に返す色と、その相対輝度を読み出す"
+  - "選択項目の HighlightColor と、個人用設定のアクセント色 AccentColor が別の値であること"
+  - "色を直接読んで焼き込んだ場合は後からの差し替えに追随せず、リソースキーを DynamicResource で参照した場合だけ追随すること"
 images:
   - "images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png"
   - "images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png"
   - "images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg"
+  - "images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg"

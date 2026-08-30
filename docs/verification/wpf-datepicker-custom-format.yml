@@ -7,6 +7,7 @@ environment:
   os: "Microsoft Windows 10.0.26200"
 verifies:
   - "SelectedDateFormat が Short と Long の 2 つしか持たず、任意の書式にできないこと"
+  - "SelectedDateFormat の既定値が Short であること（設定しない場合の実測値と、依存関係プロパティのメタデータの一致）"
   - "それぞれの設定で実際に表示される文字列"
   - "テンプレート内のテキスト部分を書き換えると任意の書式にできること"
 images:

@@ -89,7 +89,7 @@ WPF の依存関係プロパティは、ローカル値・スタイル・テン�
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg" alt="Border.Background の実効値と、その値の出どころを条件別に測った表。ローカル値がある場合は白のまま Local、既定値を Setter へ移した場合はトリガーの色で StyleTrigger、トリガー不成立では白で Style、ローカル値を ClearValue した後はトリガーの色で StyleTrigger になる。" width="598" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>HasError</code> を <code>True</code> にした状態の <code>Border.Background</code> を測った結果。括弧内は <code>DependencyPropertyHelper.GetValueSource</code> が返す <code>BaseValueSource</code> である。</figcaption>
+  <figcaption>.NET 10 / Windows 11 で <code>Border.Background</code> を測った結果。<code>HasError</code> は行ごとに変えており、<code>trigger not met</code> の行だけ <code>False</code>、他の行は <code>True</code> である。括弧内は <code>DependencyPropertyHelper.GetValueSource</code> が返す <code>BaseValueSource</code> である。</figcaption>
 </figure>
 
 **値が変わらない行では `BaseValueSource` が `Local` になっている。** これがトリガーの値に置き換わらない理由である。

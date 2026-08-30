@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
@@ -95,7 +96,8 @@ internal static class WpfProbe
         null => "null",
         string text => text.Length == 0 ? "(empty)" : text,
         bool flag => flag ? "True" : "False",
-        double number => number.ToString("0.##"),
+        // 図に載る文字列なので、撮影マシンのロケールで小数点が変わらないよう固定する。
+        double number => number.ToString("0.##", CultureInfo.InvariantCulture),
         _ => value.ToString() ?? "null",
     };
 }

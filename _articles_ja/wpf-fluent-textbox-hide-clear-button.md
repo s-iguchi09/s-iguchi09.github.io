@@ -55,11 +55,11 @@ Fluent テーマの `TextBox` は、キーボードフォーカスが入ると�
 テンプレートに存在する名前付きパーツは、実際に適用してから読み出せば確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した場合だけ DeleteButton が存在する。暗黙スタイルを置くと DeleteButton が消え PART_ContentHost だけになる。" width="827" height="200" loading="lazy">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定し、かつそれを上書きする暗黙スタイルが無い行だけ DeleteButton が存在する。暗黙スタイルを置くと DeleteButton が消え PART_ContentHost だけになる。" width="827" height="200" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。<code>Style applied</code> は <code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（従来のテーマスタイル）を示す。</figcaption>
 </figure>
 
-**`DeleteButton` が存在するのは `ThemeMode` を設定した行だけである。** これがクリアボタンの実体であり、`.NET 10` でのパーツ名がこの名前であることが確かめられる。
+**`DeleteButton` が存在するのは、`ThemeMode` を設定し、かつそれを上書きする暗黙スタイルが無い行だけである。** これがクリアボタンの実体であり、`.NET 10` でのパーツ名がこの名前であることが確かめられる。
 
 3 行目にも注意する。`ThemeMode` を設定していても、同じキーの暗黙スタイルを置くと `DeleteButton` が消える。
 Fluent のテンプレート自体が供給されなくなるため、パーツを名前で探す方法はこの状態では使えない。

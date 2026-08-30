@@ -121,13 +121,14 @@ error MC3065: 'SelectedItem' property is read-only and cannot be set from markup
 ここまでの説明は、いずれもコードから確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="TreeView の選択とコンテナ生成を測った表。SelectedItemProperty.ReadOnly は True、外部からの SetValue は InvalidOperationException、子のコンテナは展開前が null で IsExpanded を true にすると TreeViewItem になる。子の IsSelected を true にすると TreeView.SelectedItem がその項目になる。" width="767" height="230" loading="lazy">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="TreeView の選択とコンテナ生成を測った表。SelectedItemProperty.ReadOnly は True、外部からの SetValue は InvalidOperationException、子のコンテナは展開前も IsExpanded を true にした直後もまだ null で、レイアウトが走ってから TreeViewItem になる。子の IsSelected を true にすると TreeView.SelectedItem がその項目になる。" width="767" height="260" loading="lazy">
   <figcaption>.NET 10 / Windows 11 での実測結果。<code>child container</code> は親の <code>ItemContainerGenerator.ContainerFromIndex(0)</code> が返した値の型である。</figcaption>
 </figure>
 
 **2 つの壁が別々に現れていることが、この表で確認できる。**
 1 行目と 2 行目は「読み取り専用だから書き込めない」ことを示す。
-3 行目と 4 行目は「コンテナが存在しないから `IsSelected` を設定する相手が居ない」ことを示す。
+3 行目から 5 行目は「コンテナが存在しないから `IsSelected` を設定する相手が居ない」ことを示す。
+**`IsExpanded` を `true` にしただけでは足りない。** その直後はまだ `null` であり、レイアウトが走って初めてコンテナを取得できる。
 最終行のとおり、コンテナさえ存在すれば `IsSelected` から `SelectedItem` へは自動的に反映される。
 
 ---

@@ -17,6 +17,7 @@ internal sealed class DataGridSortResetScene : IScene
         "SortDescriptions を消しただけでは列の SortDirection が残ること（ヘッダーの矢印が消えない）",
         "SortDescriptions を足しただけでは列の SortDirection が付かないこと",
         "SortDescriptions を 2 つ足すと複数列ソートになること",
+        "コードから一方だけを操作すると 2 か所が食い違うのに対し、列ヘッダークリックで走る標準の並び替えでは両方が同時に更新されること",
     ];
 
     public string Slug => "wpf-datagrid-sort-reset";

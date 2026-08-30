@@ -121,7 +121,13 @@ internal static class ComboBoxAndDatePickerMeasurements
 
         var rows = new List<IReadOnlyList<string>>();
 
-        rows.Add(await MeasureDateAsync("default", date, null, null));
+        // 依存関係プロパティのメタデータ既定値と、設定しなかった場合の実効値は一致しない。
+        // どちらか一方だけを「既定値」と書くと誤るため、両方を表に出す。
+        var metadataDefault = (DatePickerFormat)DatePicker.SelectedDateFormatProperty
+            .GetMetadata(typeof(DatePicker)).DefaultValue!;
+
+        rows.Add(await MeasureDateAsync($"default (property metadata: {metadataDefault})", date, null, null));
+
         rows.Add(await MeasureDateAsync("SelectedDateFormat=Short", date, DatePickerFormat.Short, null));
         rows.Add(await MeasureDateAsync("SelectedDateFormat=Long", date, DatePickerFormat.Long, null));
         rows.Add(await MeasureDateAsync("text part overwritten", date, DatePickerFormat.Short, "yyyy/MM/dd (ddd)"));
@@ -149,7 +155,9 @@ internal static class ComboBoxAndDatePickerMeasurements
                 host,
                 _ =>
                 [
-                    picker.SelectedDateFormat.ToString(),
+                    // 値そのものだけでなく、どこから来た値かも出す。
+                    // 設定しない場合の実効値は、メタデータの既定値とは限らない。
+                    WpfProbe.ValueAndSource(picker, DatePicker.SelectedDateFormatProperty),
                     DatePickerText(picker) ?? "(nothing)",
                 ],
                 Act: _ =>

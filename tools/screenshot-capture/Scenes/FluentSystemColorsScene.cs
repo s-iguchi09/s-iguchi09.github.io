@@ -14,6 +14,8 @@ internal sealed class FluentSystemColorsScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "SystemColors の各キーが実際に返す色と、その相対輝度を読み出す",
+        "選択項目の HighlightColor と、個人用設定のアクセント色 AccentColor が別の値であること",
+        "色を直接読んで焼き込んだ場合は後からの差し替えに追随せず、リソースキーを DynamicResource で参照した場合だけ追随すること",
     ];
 
     public string Slug => "wpf-fluent-design-with-systemcolors";
@@ -28,6 +30,12 @@ internal sealed class FluentSystemColorsScene : IScene
             ["key", "value", "relative luminance"],
             FluentThemeMeasurements.SystemColorValues(),
             "systemcolors-values.svg");
+
+        await context.SaveTableAsync(
+            "does the color follow when the system brush is replaced",
+            ["how the color is referenced", "before", "after the replacement"],
+            await FluentThemeMeasurements.ColorReferenceTrackingAsync(),
+            "systemcolors-tracking.svg");
     }
 
     private static Window BuildWindow(bool fluent)
@@ -105,7 +113,7 @@ internal sealed class FluentSystemColorsScene : IScene
         {
             card.CornerRadius = new CornerRadius(12);
             card.BorderThickness = new Thickness(1);
-            card.Background = new SolidColorBrush(SystemColors.ControlLightColor);
+            card.SetResourceReference(Border.BackgroundProperty, SystemColors.ControlLightBrushKey);
             card.SetResourceReference(Border.BorderBrushProperty, SystemColors.ActiveBorderBrushKey);
         }
 

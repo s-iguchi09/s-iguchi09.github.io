@@ -65,6 +65,25 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 したがって、4.8 を対象にしながらこの 2 つをポリフィルとして無条件に定義すると、BCL 側の定義と衝突して `CS0121`（あいまいな呼び出し）でコンパイルできない。
 後述の実装コードでは、この 2 つを `#if !NET471_OR_GREATER` で追加ガードしている。
 
+**ただし、このガードは SDK 形式のプロジェクトでしか働かない。** `NET471_OR_GREATER` は `TargetFramework` から自動で定義されるシンボルであり、
+`TargetFrameworkVersion` で対象を指定する従来形式のプロジェクトでは定義されない。同じソースを両方の形式でビルドして確かめた結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="同じソースをプロジェクト形式別にビルドし、NET471_OR_GREATER の定義状況とビルド結果を調べた表。SDK 形式ではシンボルが定義されポリフィルが無効になりビルドが通る。従来形式では定義されずポリフィルが有効になり CS0121 になる。従来形式でも DefineConstants でシンボルを定義すればビルドが通る。" width="1047" height="170" loading="lazy">
+  <figcaption>ポリフィルを記事と同じく <code>namespace System.Linq</code> に置き、<code>Append</code> を呼ぶコードを 3 通りのプロジェクトでビルドした結果。<code>symbol</code> 列はビルドの成否からの推定ではなく、ソースに置いた <code>#warning</code> がどちらの分岐から出たかで判定している。</figcaption>
+</figure>
+
+従来形式では `NET471_OR_GREATER` が定義されず、ガードが常に成立してポリフィルが取り込まれ、BCL 側の `Append` と衝突して `CS0121` になる。
+**従来形式のプロジェクトで使う場合は、シンボルを自分で定義する必要がある。**
+
+```xml
+<PropertyGroup>
+  <DefineConstants>$(DefineConstants);NET471_OR_GREATER</DefineConstants>
+</PropertyGroup>
+```
+
+表の 3 行目がこの指定を加えた場合で、SDK 形式と同じ結果になっている。
+
 一方、`TakeLast` と `SkipLast` は .NET Framework のどのバージョンにも存在しない。ポリフィルが要るのはこちらである。
 これらが無いと、`TakeLast` の代わりに `Count` を先に数えて `Skip` したりする回避コードを書き続けることになる。
 意図が読み取りにくく、不要な割り当てや二重列挙の温床になる。
