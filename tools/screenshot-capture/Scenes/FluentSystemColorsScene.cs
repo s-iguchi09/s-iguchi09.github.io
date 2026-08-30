@@ -11,12 +11,23 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class FluentSystemColorsScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "SystemColors の各キーが実際に返す色と、その相対輝度を読み出す",
+    ];
+
     public string Slug => "wpf-fluent-design-with-systemcolors";
 
     public async Task CaptureAsync(SceneContext context)
     {
         await context.ShootAsync(BuildWindow(fluent: false), "fluent-default-theme.png");
         await context.ShootAsync(BuildWindow(fluent: true), "fluent-systemcolors-card.png");
+
+        await context.SaveTableAsync(
+            "what SystemColors keys resolve to on this machine",
+            ["key", "value", "relative luminance"],
+            FluentThemeMeasurements.SystemColorValues(),
+            "systemcolors-values.svg");
     }
 
     private static Window BuildWindow(bool fluent)

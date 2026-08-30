@@ -124,6 +124,22 @@ Fluent の暗黙スタイルのキーは、アプリ側が書く `<Style TargetT
 
 ---
 
+テンプレートがどちらから供給されているかは、テンプレート内の名前付きパーツで判別できる。
+Fluent の `TextBox` テンプレートは `DeleteButton` を持ち、従来のテーマは持たない。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した場合だけ DeleteButton が存在する。暗黙スタイルを置くと DeleteButton が消え PART_ContentHost だけになる。" width="827" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 での実測結果。<code>Style applied</code> の列は、<code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（従来のテーマスタイル）を示す。</figcaption>
+</figure>
+
+**2 行目の `Style applied` が `implicit style` になっている点が要点である。** `ThemeMode` を設定しただけで `Style` プロパティが埋まっており、Fluent がテーマスタイルではなく暗黙スタイルとして届いていることが分かる。
+1 行目（`ThemeMode` なし）では `Style` が `null` のままで、従来のテーマスタイルからテンプレートが供給されている。
+
+3 行目で、同じキーの暗黙スタイルをアプリ側が置くと `DeleteButton` が消える。
+`Padding` は 8 になっており、アプリ側のスタイルは効いている。**効いているからこそ Fluent のスタイルが置き換わり、テンプレートごと失われている。**
+
+---
+
 ## 解決方法
 
 スタイルに `BasedOn` を付け、Fluent の暗黙スタイルを継承させる。

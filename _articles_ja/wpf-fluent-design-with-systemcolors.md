@@ -47,6 +47,20 @@ WPF は柔軟な描画基盤を持つが、Fluent 固有の外観は標準で自
 このとき `SystemColors` を使うと、Windows 側の色設定に依存した色を参照できるため、テーマ変更時の不整合を減らせる。  
 ---
 
+`SystemColors` が実際に返す色は、読み出して確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="SystemColors の各キーが返す色と相対輝度の表。WindowColor は白、WindowTextColor は黒、HighlightColor は青系で、いずれも OS の設定に対応した値になっている。" width="563" height="260" loading="lazy">
+  <figcaption>.NET 10 / Windows 11（ライトテーマ）で <code>SystemColors</code> の各キーを読み出した結果。<code>relative luminance</code> は WCAG の相対輝度で、前景と背景のコントラストを見積もるために併記している。</figcaption>
+</figure>
+
+`WindowColor` と `WindowTextColor` の輝度が `1.00` と `0.00` になっており、この環境ではライトテーマの値が返っている。
+OS 側でダークテーマに切り替えると、この表の値が入れ替わる。**色を直接書かずにこれらのキーを参照しておけば、切り替えに追随できる。**
+
+`HighlightColor` はアクセント色であり、ユーザーが個人設定で変更できる。アクセントを固定色で書くと、この設定と食い違う。
+
+---
+
 ## 解決方法
 
 外部ライブラリを使わず、以下の 3 点を組み合わせる。  

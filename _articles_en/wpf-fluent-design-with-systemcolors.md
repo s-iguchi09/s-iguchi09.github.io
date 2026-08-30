@@ -49,6 +49,20 @@ A Fluent-like result requires explicit decisions for:
 
 ---
 
+What `SystemColors` actually returns can be read back and checked.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="A table of the color each SystemColors key returns along with its relative luminance. WindowColor is white, WindowTextColor is black, and HighlightColor is a blue, all matching the OS settings." width="563" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 in light theme by reading each <code>SystemColors</code> key. <code>relative luminance</code> is the WCAG relative luminance, included to gauge foreground-to-background contrast.</figcaption>
+</figure>
+
+`WindowColor` and `WindowTextColor` come out at `1.00` and `0.00`, the light-theme values on this machine.
+Switching the OS to dark theme swaps them. **Referencing these keys rather than hard-coding colors is what makes an app follow that switch.**
+
+`HighlightColor` is the accent color, which the user can change in personalization settings. A hard-coded accent will disagree with it.
+
+---
+
 ## Solution
 
 Without external libraries, combine the following:

@@ -52,6 +52,20 @@ Because of this, no public property is provided to hide only the clear button, s
 
 ---
 
+Which named parts a template holds can be confirmed by applying it and looking them up.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present only when ThemeMode is set. Adding an implicit style removes it, leaving only PART_ContentHost." width="827" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
+</figure>
+
+**`DeleteButton` is present only on the row where `ThemeMode` is set.** That part is the clear button, and this confirms its name on `.NET 10`.
+
+The third row deserves attention. Even with `ThemeMode` set, adding an implicit style under the same key makes `DeleteButton` disappear.
+The Fluent template is no longer supplied at all, so looking the part up by name does not work in that state.
+
+---
+
 ## Solution
 
 As noted above, there are two families of approaches.

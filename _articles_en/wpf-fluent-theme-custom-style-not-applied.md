@@ -124,6 +124,22 @@ That is why a style adding nothing but `Padding` discards the whole Fluent appea
 
 ---
 
+Which source supplied the template can be told apart by the named parts inside it.
+The Fluent `TextBox` template holds a `DeleteButton`; the classic theme does not.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present only when ThemeMode is set. Adding an implicit style removes it, leaving only PART_ContentHost." width="827" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. The <code>Style applied</code> column reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
+</figure>
+
+**The point is the second row, where `Style applied` reads `implicit style`.** Setting `ThemeMode` alone fills in the `Style` property, showing that Fluent arrives as an implicit style rather than a theme style.
+On the first row, without `ThemeMode`, `Style` stays `null` and the template comes from the classic theme style.
+
+On the third row, an application-side implicit style under the same key makes `DeleteButton` disappear.
+`Padding` reads 8, so the application style did take effect. **It is precisely because it took effect that the Fluent style was replaced and its template lost with it.**
+
+---
+
 ## Solution
 
 Add `BasedOn` to the style so that it inherits the Fluent implicit style.

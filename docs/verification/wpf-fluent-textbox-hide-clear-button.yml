@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-fluent-textbox-hide-clear-button
+slug: "wpf-fluent-textbox-hide-clear-button"
+scene: "FluentClearButtonScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Fluent テーマの TextBox テンプレートに存在する名前付きパーツを列挙する"
+  - ".NET 10 でのクリアボタンのパーツ名"
+images:
+  - "images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png"
+  - "images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png"
+  - "images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg"
