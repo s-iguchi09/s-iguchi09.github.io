@@ -137,7 +137,7 @@ grep -L 'src="/images/[^"]*\.png"' _articles_ja/*.md _articles_en/*.md \
 
 ```bash
 comm -23 \
-  <(ls _articles_ja/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+  <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
   <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
       | sed 's/.*"\(.*\)"/\1/' | sort -u)
 ```
@@ -153,7 +153,7 @@ comm -12 \
       | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
   | comm -12 - \
       <(comm -23 \
-          <(ls _articles_ja/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
+          <(ls _articles_ja/*.md _articles_en/*.md | xargs -r -n1 basename | sed 's/\.md$//' | sort -u) \
           <(grep -rho 'public string Slug => "[^"]*"' tools/screenshot-capture/Scenes/ \
               | sed 's/.*"\(.*\)"/\1/' | sort -u))
 ```
