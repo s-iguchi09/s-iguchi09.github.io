@@ -74,9 +74,9 @@ The root of the problem is therefore not that the collection was touched on anot
 The distinction is visible by performing the same operation on an `ObservableCollection<T>` that is not bound to anything.
 The table below records the result of calling `Add` from a background thread, varying whether the collection is bound and which countermeasure is applied.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception." width="720" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception. Only the EnableCollectionSynchronization row was notified while the lock was held." width="992" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window. The last column gives how many of the <code>CollectionChanged</code> notifications fired while <code>Monitor.IsEntered</code> reported the lock as held, out of the total.</figcaption>
 </figure>
 
 **An unbound collection can be modified from a background thread without an exception.**
@@ -86,6 +86,10 @@ The exception appears only once the collection is bound to `ItemsControl.ItemsSo
 Note that the absence of an exception on the unbound row **does not mean the collection is thread-safe**.
 `ObservableCollection<T>` provides no protection against concurrent access, so competing updates still corrupt it in other ways.
 What the row establishes is narrower: the source of `NotSupportedException` is the binding target.
+
+The last column reports whether the lock was held at the moment `CollectionChanged` fired.
+**Only the `EnableCollectionSynchronization` row reads 1/1, meaning the change and its notification happen inside the same lock.**
+The other rows read 0/1, with the notification raised outside any lock. That column is what establishes that the registered lock actually extends as far as the notification.
 
 ---
 

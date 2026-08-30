@@ -21,7 +21,8 @@ internal sealed class BindingErrorTraceScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "失敗パターンごとに System.Windows.Data トレースへ記録される番号を確かめる",
-        "パス解決失敗が Error 40、ConvertBack 失敗が Error 7、空のインデクサーが Error 17 であること",
+        "パス解決失敗が Error 40、ConvertBack 失敗が Error 7 であること",
+        "Error 17 が、空のインデクサーだけでなくゲッターが例外を送出した場合にも出ること",
         "DataContext 未設定は既定の Warning では何も出力されず、Information 10 であること",
     ];
 
@@ -41,6 +42,7 @@ internal sealed class BindingErrorTraceScene : IScene
             rows.Add(Run(listener, "DataContext not set", SourceLevels.Information, BuildNullDataContext));
             rows.Add(Run(listener, "ConvertBack fails", SourceLevels.Warning, BuildConvertBackFailure));
             rows.Add(Run(listener, "empty (Validation.Errors)[0]", SourceLevels.Warning, BuildEmptyValidationIndexer));
+            rows.Add(Run(listener, "getter throws", SourceLevels.Warning, BuildThrowingGetter));
             rows.Add(Run(listener, "binding that resolves", SourceLevels.Warning, BuildWorkingBinding));
         }
         finally
@@ -101,6 +103,8 @@ internal sealed class BindingErrorTraceScene : IScene
             (@"DataItem=null", "DataItem=null"),
             (@"ConvertBack cannot convert", "ConvertBack cannot convert"),
             (@"Cannot get 'Item\[\]' value", "Cannot get 'Item[]' value"),
+            // インデクサー以外のプロパティで値の取得に失敗した場合。
+            (@"Cannot get '\w+' value", "Cannot get '<property>' value"),
             (@"Cannot retrieve value using the binding", "cannot retrieve value"),
         ];
 
@@ -164,6 +168,24 @@ internal sealed class BindingErrorTraceScene : IScene
         panel.Children.Add(source);
         panel.Children.Add(text);
         return new Window { Content = panel };
+    }
+
+    /// <summary>
+    /// 値を取り出す途中で例外が発生するバインド。
+    /// インデクサー以外でも同じ番号が出るのかを確かめるために置く。
+    /// </summary>
+    private static Window BuildThrowingGetter()
+    {
+        var text = new TextBlock { DataContext = new ThrowingSource() };
+        text.SetBinding(TextBlock.TextProperty, new Binding(nameof(ThrowingSource.Value)));
+
+        return new Window { Content = text };
+    }
+
+    /// <summary>ゲッターが必ず例外を送出するソース。</summary>
+    private sealed class ThrowingSource
+    {
+        public string Value => throw new InvalidOperationException("getter failed");
     }
 
     /// <summary>解決できるバインド。対照として、何も出力されないことを確かめる。</summary>

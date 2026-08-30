@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -25,7 +26,7 @@ internal sealed class CollectionCrossThreadScene : IScene
         "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）",
         "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること",
         "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている",
-        "この構成では変更と CollectionChanged 通知が同じロックの中で起きるため、UI スレッド側の列挙と競合しないこと",
+        "CollectionChanged が通知された時点でそのロックが保持されていたか（Monitor.IsEntered で確認）",
     ];
 
     public string Slug => "wpf-observablecollection-cross-thread-update";
@@ -33,14 +34,21 @@ internal sealed class CollectionCrossThreadScene : IScene
     public async Task CaptureAsync(SceneContext context)
     {
         var rows = new List<IReadOnlyList<string>>();
-        rows.Add(["ObservableCollection alone", "-", await RunAsync(Bound.No, Fix.None)]);
-        rows.Add(["bound to ItemsControl", "-", await RunAsync(Bound.Yes, Fix.None)]);
-        rows.Add(["bound to ItemsControl", "Dispatcher.Invoke", await RunAsync(Bound.Yes, Fix.Dispatcher)]);
-        rows.Add(["bound to ItemsControl", "EnableCollectionSynchronization", await RunAsync(Bound.Yes, Fix.Synchronization)]);
+
+        async Task AddRowAsync(string collection, string countermeasure, Bound bound, Fix fix)
+        {
+            (string result, string lockHeld) = await RunDetailedAsync(bound, fix);
+            rows.Add([collection, countermeasure, result, lockHeld]);
+        }
+
+        await AddRowAsync("ObservableCollection alone", "-", Bound.No, Fix.None);
+        await AddRowAsync("bound to ItemsControl", "-", Bound.Yes, Fix.None);
+        await AddRowAsync("bound to ItemsControl", "Dispatcher.Invoke", Bound.Yes, Fix.Dispatcher);
+        await AddRowAsync("bound to ItemsControl", "EnableCollectionSynchronization", Bound.Yes, Fix.Synchronization);
 
         await context.SaveTableAsync(
             "Add() from a background thread",
-            ["collection", "countermeasure", "result"],
+            ["collection", "countermeasure", "result", "notified while holding the gate"],
             rows,
             "collection-cross-thread-matrix.svg");
     }
@@ -63,9 +71,33 @@ internal sealed class CollectionCrossThreadScene : IScene
     /// </summary>
     private static async Task<string> RunAsync(Bound bound, Fix fix)
     {
+        (string result, _) = await RunDetailedAsync(bound, fix);
+        return result;
+    }
+
+    /// <summary>
+    /// <c>Add</c> の結果に加えて、<c>CollectionChanged</c> が通知された時点で
+    /// 登録したロックが保持されていたかどうかも返す。
+    ///
+    /// 「変更と通知が同じロックの中で起きる」は、通知の中で
+    /// <see cref="Monitor.IsEntered"/> を見なければ確かめたことにならない。
+    /// </summary>
+    private static async Task<(string Result, string LockHeld)> RunDetailedAsync(Bound bound, Fix fix)
+    {
         var items = new ObservableCollection<string>();
         var gate = new object();
         Window? host = null;
+
+        int notifications = 0;
+        int notifiedUnderLock = 0;
+        items.CollectionChanged += (_, _) =>
+        {
+            notifications++;
+            if (Monitor.IsEntered(gate))
+            {
+                notifiedUnderLock++;
+            }
+        };
 
         if (fix == Fix.Synchronization)
         {
@@ -133,7 +165,11 @@ internal sealed class CollectionCrossThreadScene : IScene
             BindingOperations.DisableCollectionSynchronization(items);
         }
 
-        return result;
+        string lockHeld = notifications == 0
+            ? "no notification"
+            : $"{notifiedUnderLock}/{notifications}";
+
+        return (result, lockHeld);
     }
 
     /// <summary>レイアウトとバインドの反映が終わるまでディスパッチャーを回す。</summary>

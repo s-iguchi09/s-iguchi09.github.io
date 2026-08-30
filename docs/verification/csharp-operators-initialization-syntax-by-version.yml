@@ -9,7 +9,10 @@ verifies:
   - "net48 に対して各構文をコンパイルし、通るか・不足する型は何かを確かめる"
   - "with 式が IsExternalInit を要するのは対象が init アクセサを持つ場合に限ること"
   - "可変な struct と positional record struct の with は IsExternalInit を要さないこと"
-  - "required が RequiredMemberAttribute 以外に 2 つの型を要すること"
+  - "required + init は 3 つの型を要するが、required + set では IsExternalInit が不要であること"
+  - "構文ごとに、通る最小の LangVersion を求める（既定のままではどうなるかも測る）"
+  - "with は record class なら C# 9.0、struct 系は C# 10.0 から使えること"
   - "不足する型を自前定義すればコンパイルが通ること"
 images:
   - "images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg"
+  - "images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg"

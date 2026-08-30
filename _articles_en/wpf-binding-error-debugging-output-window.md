@@ -113,7 +113,7 @@ The wording in the Output window differs by cause.
 The table below records what actually reaches the `System.Windows.Data` trace when each pattern is evaluated.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="A table of trace output per binding failure pattern. Path resolution failure reports Error 40, a failed ConvertBack reports Error 7, and indexing an empty Validation.Errors reports Error 17. An unset DataContext produces nothing at the default Warning level and appears as Information 10 with DataItem=null once the level is lowered to Information. A binding that resolves produces nothing." width="764" height="260" loading="lazy">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="A table of trace output per binding failure pattern. Path resolution failure reports Error 40, a failed ConvertBack reports Error 7, and both indexing an empty Validation.Errors and a getter that throws report Error 17. An unset DataContext produces nothing at the default Warning level and appears as Information 10 with DataItem=null once the level is lowered to Information. A binding that resolves produces nothing." width="788" height="290" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>. <code>Switch.Level</code> is <code>Warning</code>, matching the default, except for the extra <code>DataContext</code> row where it is lowered to <code>Information</code>.</figcaption>
 </figure>
 
