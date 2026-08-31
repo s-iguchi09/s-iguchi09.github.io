@@ -145,7 +145,7 @@ In every case, defining the missing types locally makes the code compile. The de
 
 ---
 
-## Solution
+## Three Ways to Deal with It
 
 When a compile error occurs because of new C# syntax, there are two main approaches.
 
@@ -310,7 +310,7 @@ Array slicing therefore still requires defining `RuntimeHelpers` as shown above.
 
 ---
 
-## Implementation
+## Syntax by Version
 
 ### 1. Null-safe operators
 
@@ -637,7 +637,7 @@ Primary constructors were introduced in C# 12.0 and require a compiler and SDK t
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Three
 
 The following table compares the main approaches for handling compile errors caused by new C# syntax.
 
