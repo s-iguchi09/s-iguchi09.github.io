@@ -97,7 +97,7 @@ Registering alone does not place notifications inside the lock; wrapping the `Ad
 
 ---
 
-## Solution
+## Two Approaches
 
 There are two approaches.
 
@@ -105,10 +105,6 @@ There are two approaches.
 - **Use `BindingOperations.EnableCollectionSynchronization`** — provide a lock in the application and register it with WPF, which allows direct modification from a background thread. This is less likely to saturate the UI thread even under heavy updates.
 
 The former moves changes onto the UI thread; the latter lets WPF safely take in changes made on another thread.
-
----
-
-## Implementation
 
 ### Marshal to the UI thread with the Dispatcher
 
@@ -171,18 +167,25 @@ As required by the documentation, the call must occur on the UI thread and befor
 
 ---
 
-## Notes
+## How to Choose
 
-- **Protect all application access with the same lock:** the lock passed to `EnableCollectionSynchronization` must guard every read and write in the application, not only WPF's access. Leaving any path unlocked can race with the `CollectionView`.
-- **Atomicity of change and notification:** a change (such as `Add`) and its `CollectionChanged` notification must be atomic. `ObservableCollection<T>` guarantees this as long as all changes are protected by the same synchronization.
-- **Timing of registration and disabling:** call both `EnableCollectionSynchronization` and `DisableCollectionSynchronization` on the UI thread. To use the same collection on multiple UI threads, register it separately on each.
-- **Overusing `Dispatcher.Invoke` strains the UI:** running a large number of per-item synchronous `Invoke` calls saturates the UI thread and reduces responsiveness. For high item counts, consider `EnableCollectionSynchronization` or a batched add on the UI thread.
-- **UI elements remain UI-thread-only:** this fix relaxes only access to the bound collection. Manipulating a `DependencyObject`, such as a control, directly from another thread remains disallowed.
-- **A worker started with `new Thread` keeps the process alive:** unlike `Task.Run`, it is a foreground thread by default, so a worker left updating the collection prevents the process from exiting even after the window closes. Diagnosis and remedies are covered in [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/).
+Which one applies is settled by the volume and frequency of the updates.
+
+**Occasional updates in small numbers call for `Dispatcher`.**
+It needs no extra setup and touches little of the existing code. The cost of a per-item round-trip to the UI thread does not matter at low counts.
+
+**Heavy, frequent updates from another thread call for `EnableCollectionSynchronization`.**
+Running a large number of per-item synchronous `Invoke` calls saturates the UI thread and reduces responsiveness. Sharing a lock removes those round-trips by allowing direct modification from the background.
+
+**A custom synchronization mechanism such as a semaphore calls for the callback overload.**
+It lets WPF wait on something other than a lock. This is the most complex to implement.
+
+**Work that can apply all its changes at once calls for batching on the UI thread.**
+This avoids producing a cross-thread modification in the first place. The benefit of doing the work in the background shrinks, but no synchronization design is needed.
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Approaches
 
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |
@@ -193,15 +196,21 @@ As required by the documentation, the call must occur on the UI thread and befor
 
 ---
 
+## Notes
+
+- **Protect all application access with the same lock:** the lock passed to `EnableCollectionSynchronization` must guard every read and write in the application, not only WPF's access. Leaving any path unlocked can race with the `CollectionView`.
+- **Atomicity of change and notification:** a change (such as `Add`) and its `CollectionChanged` notification must be atomic. `ObservableCollection<T>` guarantees this as long as all changes are protected by the same synchronization.
+- **Timing of registration and disabling:** call both `EnableCollectionSynchronization` and `DisableCollectionSynchronization` on the UI thread. To use the same collection on multiple UI threads, register it separately on each.
+- **UI elements remain UI-thread-only:** this fix relaxes only access to the bound collection. Manipulating a `DependencyObject`, such as a control, directly from another thread remains disallowed.
+- **A worker started with `new Thread` keeps the process alive:** unlike `Task.Run`, it is a foreground thread by default, so a worker left updating the collection prevents the process from exiting even after the window closes. Diagnosis and remedies are covered in [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/).
+
+---
+
 ## Summary
 
 The exception raised when a bound `ObservableCollection<T>` is modified from another thread comes from the thread affinity of the `CollectionView`, not the collection.
-The selection criteria are as follows.
 
-- **When updates are occasional and few:** marshal changes to the UI thread with `Dispatcher.Invoke` / `InvokeAsync`. This needs no extra setup and is the simplest option.
-- **When updating heavily and frequently on another thread:** share a lock with `EnableCollectionSynchronization` and allow direct modification from the background, avoiding UI thread pressure.
-- **When a custom synchronization mechanism such as a semaphore exists:** use the callback overload.
-
+The deciding factor is the volume and frequency of the updates. Marshal to the UI thread with `Dispatcher` for occasional ones; share a lock with `EnableCollectionSynchronization` for heavy, frequent ones.
 In every case, design with the understanding that UI elements themselves remain UI-thread-only, and that only collection access is relaxed.
 
 ---
