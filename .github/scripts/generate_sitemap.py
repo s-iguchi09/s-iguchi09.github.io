@@ -212,6 +212,76 @@ def get_git_lastmod(rel_path: str) -> str:
     return TODAY
 
 
+def get_git_lastmod_iso(rel_path: str) -> Optional[str]:
+    """Return a file's last-modified timestamp from git history as RFC 3339.
+
+    get_git_lastmod() above returns only the date because that is what the
+    sitemap's <lastmod> takes. Atom's <updated> takes a full timestamp, so the
+    commit date is read here with %cI rather than by trimming %ci.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "log", "--format=%cI", "-1", "--", rel_path],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        stamp = result.stdout.strip()
+        if stamp:
+            return stamp
+    except subprocess.CalledProcessError:
+        pass
+    return None
+
+
+def generate_lastmod_data() -> str:
+    """Build _data/lastmod.yml, mapping each article slug to its git mtime.
+
+    Atom's <updated> means "when this entry last changed", which is not the
+    front matter `date`: that is the publication date and does not move when an
+    article is rewritten. Reusing `date` for <updated> would leave the feed
+    asserting that nothing has changed, defeating the reason the feed exists —
+    telling Google that articles updated after the last crawl are new.
+
+    The only record of real modification dates is git history, and Liquid cannot
+    read it: jekyll-last-modified-at is not on the GitHub Pages plugin
+    whitelist, so `page.last_modified_at` is always nil there. The timestamps
+    are therefore written out here, from the same git history the sitemap
+    already reads, and picked up by feed.xml / ja/feed.xml as site.data.lastmod.
+    """
+    lines = [
+        "# このファイルは .github/scripts/generate_sitemap.py が生成する。手で編集しない。",
+        "# 各記事の最終更新日時(git のコミット日時、RFC 3339)。feed.xml が <updated> に使う。",
+    ]
+    for collection in ("articles_en", "articles_ja"):
+        entries = []
+        collection_dir = os.path.join(REPO_ROOT, f"_{collection}")
+        if os.path.isdir(collection_dir):
+            for md_file in sorted(glob.glob(os.path.join(collection_dir, "*.md"))):
+                slug = os.path.splitext(os.path.basename(md_file))[0]
+                # The slug is interpolated into a double-quoted YAML scalar, so a
+                # quote or a backslash in a filename would corrupt the output.
+                if not re.fullmatch(r"[A-Za-z0-9._-]+", slug):
+                    print(
+                        f"warning: skipping slug with unexpected characters: {slug}",
+                        file=sys.stderr,
+                    )
+                    continue
+                stamp = get_git_lastmod_iso(f"_{collection}/{slug}.md")
+                if stamp:
+                    entries.append(f'  "{slug}": "{stamp}"')
+        if entries:
+            lines.append(f"{collection}:")
+            lines.extend(entries)
+        else:
+            # A bare "collection:" with nothing under it parses as null rather
+            # than as an empty map, and site.data.lastmod.articles_en[slug]
+            # would then fail instead of returning nil.
+            lines.append(f"{collection}: {{}}")
+    return "\n".join(lines) + "\n"
+
+
 def image_element(url: str) -> str:
     """Build one <image:image> entry, XML-escaping the URL.
 
@@ -480,6 +550,7 @@ MAX_BYTES = 50 * 1024 * 1024
 
 SITEMAP_FILENAME = "sitemap.xml"
 SITEMAP_INDEX_FILENAME = "sitemap_index.xml"
+LASTMOD_DATA_FILENAME = "_data/lastmod.yml"
 
 
 def latest_lastmod(sitemap: str) -> str:
@@ -600,7 +671,13 @@ def write_output(filename: str, content: str) -> str:
     """
     output_path = os.path.join(REPO_ROOT, filename)
     directory = os.path.dirname(output_path) or "."
-    fd, tmp_path = tempfile.mkstemp(dir=directory, prefix=f"{filename}.", suffix=".tmp")
+    os.makedirs(directory, exist_ok=True)
+    # prefix にはベース名だけを渡す。filename ("_data/lastmod.yml") をそのまま
+    # 渡すと、mkstemp が dir の下にさらに "_data/" を作ろうとして
+    # FileNotFoundError になる。
+    fd, tmp_path = tempfile.mkstemp(
+        dir=directory, prefix=f"{os.path.basename(filename)}.", suffix=".tmp"
+    )
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             fh.write(content)
@@ -626,6 +703,9 @@ def main():
 
     print(f"{SITEMAP_FILENAME} written to {write_output(SITEMAP_FILENAME, sitemap)} ({url_count} URLs)")
     print(f"{SITEMAP_INDEX_FILENAME} written to {write_output(SITEMAP_INDEX_FILENAME, index)}")
+
+    lastmod_data = generate_lastmod_data()
+    print(f"{LASTMOD_DATA_FILENAME} written to {write_output(LASTMOD_DATA_FILENAME, lastmod_data)}")
     return 0
 
 

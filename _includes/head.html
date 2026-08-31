@@ -47,3 +47,16 @@
   <link rel="alternate" hreflang="ja" href="{{ site.url }}{{ '/ja' | append: page.url | replace: 'index.html', '' }}">
   <link rel="alternate" hreflang="x-default" href="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
 {% endif %}
+
+{% comment %}
+  Atom フィードの自動検出。RSS リーダーがこのリンクを見てフィードを拾う。
+
+  Search Console が sitemap.xml を「読み込めませんでした」と返し検出ページ数が 0 の
+  ままであるため、Google への更新の通知手段としても置いている。
+  Google は XML サイトマップのほかに RSS 2.0 / Atom 1.0 もサイトマップとして受け付ける。
+{% endcomment %}
+{% if page.url contains '/ja/' %}
+  <link rel="alternate" type="application/atom+xml" title="技術記事 - s-iguchi" href="{{ site.url }}/ja/feed.xml">
+{% else %}
+  <link rel="alternate" type="application/atom+xml" title="Articles - s-iguchi" href="{{ site.url }}/feed.xml">
+{% endif %}

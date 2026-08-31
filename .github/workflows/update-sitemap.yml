@@ -77,15 +77,15 @@ jobs:
             # 生成物が不正なら非ゼロ終了する。set -e により、壊れた
             # サイトマップが main へ push されることはない。
             python3 .github/scripts/generate_sitemap.py
-            git add sitemap.xml sitemap_index.xml
+            git add sitemap.xml sitemap_index.xml _data/lastmod.yml
             if git diff --cached --quiet; then
-              echo "sitemap.xml is already up to date."
+              echo "sitemap.xml and _data/lastmod.yml are already up to date."
               exit 0
             fi
 
             # deploy key による push はワークフローを起動しうる（GITHUB_TOKEN と異なる）。
-            # sitemap.xml は上記 paths に含まれないうえ、[skip ci] でも二重に抑止する。
-            git commit -m "chore: update sitemap.xml [skip ci]"
+            # sitemap.xml と _data/lastmod.yml は上記 paths に含まれないうえ、二重に抑止する。
+            git commit -m "chore: update sitemap.xml and feed lastmod data [skip ci]"
             if git push origin HEAD:main; then
               exit 0
             fi
