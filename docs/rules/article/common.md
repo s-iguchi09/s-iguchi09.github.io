@@ -34,8 +34,9 @@
 
 記事の文体・構成・必須要素・チェックは、以下のルールファイルに従う。作業前に必ず読むこと。
 
-- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)・**主張の検証(§12)**・内部リンクの正規 URL(§7.1)
-- `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(見出し構成)
+- `docs/rules/article/structures.md` — **記事の構成型(骨格の選び方)**
+- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(§2 は構成型へ委譲)・必須要素・AdSense 適合性・図とスクリーンショット(§11)・**主張の検証(§12)**・内部リンクの正規 URL(§7.1)
+- `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(構成型 1「診断型・単一原因」の雛形)
 - `docs/rules/article/review-checklist.md` — 公開前レビューチェックリスト
 - `.markdownlint.json` — 有効な lint ルール(`MD060` は無効)
 
@@ -91,6 +92,43 @@
 
 - 各記事のテーマは、必要に応じてファイル先頭のフロントマター(`title` / `category` / `excerpt`)を読んで把握する。
 - **新しい slug は上記の既存ファイル名と重複させない。** テーマも既存記事と実質的に重ならないようにする。
+
+### 7.1 構成の重複
+
+テーマが重ならなくても、骨格が既存記事と揃いすぎることがある。構成型（`structures.md`）を選んだうえで、実際の重複を確認する。
+
+```bash
+# 日本語版と英語版を別々に数える。対応する翻訳どうしは同じ構成になるため、混ぜると常に 2 件ずつ数えてしまう。
+# フェンスの判定は、この確認に必要な範囲で CommonMark に合わせている（完全な実装ではない）。
+#   - 開始記号の文字と長さを覚え、同じ文字で開始以上の長さのものだけを終了として扱う
+#   - 終了フェンスの後ろに置けるのは空白とタブだけ。info string は開始側にしか付かない
+#   - バッククォートの開始フェンスは、info string にバッククォートを含められない
+#   - CRLF のファイルでも同じ判定になるよう、行末の CR を先に落とす
+for dir in _articles_ja _articles_en; do
+  echo "--- $dir"
+  for f in "$dir"/*.md; do
+    awk '
+      { sub(/\r$/, "") }
+      /^ {0,3}(`{3,}|~{3,})/ {
+        line = $0; sub(/^ +/, "", line)
+        ch = substr(line, 1, 1); n = 0
+        while (substr(line, n + 1, 1) == ch) n++
+        rest = substr(line, n + 1)
+        if (!inside) {
+          if (ch == "`" && rest ~ /`/) next
+          inside = 1; fence_char = ch; fence_len = n
+        }
+        else if (ch == fence_char && n >= fence_len && rest ~ /^[ \t]*$/) { inside = 0 }
+        next
+      }
+      !inside && /^## /
+    ' "$f" | paste -sd'>'
+  done | sort | uniq -c | sort -rn | head -5
+done
+```
+
+- **完全に一致する構成は 5 記事までとする。** 6 記事以上になったら、いずれかの題材が型に合っていない可能性が高い。
+- 上限を超えたときは、**見出し名を言い換えるのではなく型の選び直しを検討する**。外形を散らすこと自体が目的ではない（`structures.md`）。
 
 ---
 

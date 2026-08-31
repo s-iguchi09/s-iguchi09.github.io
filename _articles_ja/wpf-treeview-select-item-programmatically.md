@@ -28,7 +28,7 @@ image: /images/articles/wpf-treeview-select-item-programmatically/treeview-selec
 
 ---
 
-## 問題
+## やりたいこと
 
 階層データを `HierarchicalDataTemplate` で表示する、ごく一般的な `TreeView` を対象とする。
 
@@ -86,7 +86,7 @@ error MC3065: 'SelectedItem' property is read-only and cannot be set from markup
 
 ---
 
-## 原因・背景
+## できない理由
 
 `TreeView` は選択状態を自分では保持していない。
 選択されているという状態を持つのは各 `TreeViewItem` であり、その `IsSelected` プロパティが実体である。
@@ -133,7 +133,7 @@ error MC3065: 'SelectedItem' property is read-only and cannot be set from markup
 
 ---
 
-## 解決方法
+## 設計を置き換える
 
 選択状態と展開状態を ViewModel 側のノードに持たせ、`ItemContainerStyle` の `Setter` で `TreeViewItem` の `IsSelected` / `IsExpanded` と双方向にバインドする。
 
@@ -367,7 +367,7 @@ ViewModel 側で複数のノードの `IsSelected` を `true` にしても、実
 
 ---
 
-## 代替案・比較
+## 実装方法の比較
 
 選択を指示する 2 方式と添付ビヘイビアに、選択結果を読み出すだけの `SelectedItemChanged` を加えて比較する。
 

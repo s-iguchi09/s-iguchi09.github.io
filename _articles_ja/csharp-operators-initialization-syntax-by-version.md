@@ -85,7 +85,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 - **†1**: 純粋な言語機能。`LangVersion` を対応する C# バージョンに設定すれば .NET Framework 上でも使用できる。**SDK や Visual Studio を更新するだけでは足りない。** .NET Framework をターゲットにしたプロジェクトの既定は C# 7.3 のままであり、更新によって自動的に上がることはない（`.csproj` の `LangVersion` を明示する）。
 - **†2**: `System.Index` / `System.Range`（.NET Core 3.0+ で追加された BCL 型）が必要。配列のスライス `a[1..3]` はさらに `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray` を要求する。
 - **†3**: `System.Runtime.CompilerServices.IsExternalInit`（.NET 5+ で追加された BCL 型）が必要。`with` 式が要求するかどうかは**対象の型が `init` アクセサを持つか**で決まる。`record` クラスと `readonly record struct` は `init` を生成するため必要になる。一方、可変な `struct` と positional の `record struct` は `init` を生成しないため不要である。
-- **†4**: `init` と併用する場合は `RequiredMemberAttribute` に加えて `CompilerFeatureRequiredAttribute` と `IsExternalInit`（いずれも `System.Runtime.CompilerServices`）が必要。`set` と併用する場合は `IsExternalInit` が不要で、前の 2 つだけでよい。
+- **†4**: `init` と併用する場合は `RequiredMemberAttribute` に加えて `CompilerFeatureRequiredAttribute` と `IsExternalInit`（いずれも `System.Runtime.CompilerServices`）が必要。`set` と併用する場合は `IsExternalInit` が不要で、前の 2 つだけでよい。`record` に持たせる場合と、`[SetsRequiredMembers]` を付けたコンストラクターで設定する場合は、さらに `System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute` も要る。
 - **†5**: 可変な `struct` と positional の `record struct` は `init` を生成しないため `IsExternalInit` を要さない。ただし `with` 自体が C# 10.0 以降であり、`LangVersion` を 9.0 に留めると `CS8773` になる。
 
 **`init` を †1（言語機能のみ）に分類している解説は誤りである。**
@@ -98,7 +98,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。" width="646" height="470" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="693" height="590" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
@@ -120,6 +120,10 @@ Target-typed `new`、コレクション式、プライマリコンストラク�
 `set` と併用した場合に必要なのは前の 2 つだけで、`IsExternalInit` は要らない（表の 2 行を見比べると、不足する型の数が違う）。
 いずれの場合も `RequiredMemberAttribute` だけを自前定義しても解決しない。
 
+**`record` に `required` を持たせる場合は、これらに加えて `System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute` が要る。**
+コンパイラが生成するコピーコンストラクターにこの属性を付けるためであり、3 つだけでは `CS0656` になる。
+`[SetsRequiredMembers]` を明示的に付けたコンストラクターで `required` メンバーを設定する場合も同じである。表の該当する 4 行がその実測にあたる。
+
 **4. `with` が使える C# のバージョンは、対象の型の形で違う。**
 `record` クラスは C# 9.0 から使えるが、`struct` と `record struct` は C# 10.0 からである。
 `LangVersion` を 9.0 に設定して `struct` へ `with` を書くと `CS8773` になる。
@@ -138,9 +142,9 @@ Target-typed `new`、コレクション式、プライマリコンストラク�
 
 ---
 
-## 解決方法
+## 3 つの対処
 
-C# の新構文でコンパイルエラーが発生した場合の対処方法は、主に以下の 2 つである。
+C# の新構文でコンパイルエラーが発生した場合の対処は、主に以下の 3 つである。
 
 ### 方法1：`LangVersion` を引き上げる（またはビルド環境を更新する）
 
@@ -212,7 +216,16 @@ namespace System.Runtime.CompilerServices
         public string FeatureName { get; }
     }
 }
+
+namespace System.Diagnostics.CodeAnalysis
+{
+    [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+    internal sealed class SetsRequiredMembersAttribute : Attribute { }
+}
 ```
+
+最後の `SetsRequiredMembersAttribute` は、`record` に `required` を持たせる場合と、`[SetsRequiredMembers]` を付けたコンストラクターで設定する場合に要る。
+他の 3 つと名前空間が違う点に注意する。`class` に `required` を書くだけなら無くても通るが、含めておいて困ることはない。
 
 `^` と `..` については、`System.Index` と `System.Range` に加え、配列のスライスで呼ばれる `RuntimeHelpers.GetSubArray` も定義する必要がある。
 
@@ -285,6 +298,9 @@ namespace System.Runtime.CompilerServices
 `Index` / `Range` を提供する NuGet パッケージとしては `IndexRange` がある。
 **`System.Index` という名前の NuGet パッケージは存在しない**（`nuget.org` は 404 を返す）。
 
+ただし `IndexRange` は、`netstandard2.0` または .NET Framework 4.6.2 以降を対象にする場合は非推奨とされており、[パッケージの説明](https://www.nuget.org/packages/IndexRange)は代わりに `Microsoft.Bcl.Memory` を使うよう案内している。
+本記事が対象とする `net48` はこの条件に当てはまるため、新規に導入するなら `Microsoft.Bcl.Memory` を選ぶ。以下は既存プロジェクトで `IndexRange` を参照している場合に備えた実測である。
+
 `IndexRange` 1.1.1 を `net48` に参照させて確かめたところ、`a[^1]` と `Index` / `Range` 型は使えるようになるが、**配列のスライス `a[1..3]` は依然としてコンパイルできない**。
 
 ```text
@@ -303,7 +319,7 @@ error CS0656: コンパイラが必要とするメンバー
 
 ---
 
-## 実装例
+## バージョン別の構文一覧
 
 ### 1. Null 安全演算子
 
@@ -618,9 +634,9 @@ public class LogWriter(string logFilePath, LogLevel minimumLevel)
 
 ---
 
-## 代替案・比較
+## 対処の比較
 
-C# 新構文でコンパイルエラーが発生した場合の対処アプローチを比較する。
+C# 新構文でコンパイルエラーが発生した場合の対処を比較する。上の 3 つの方法を、選択の分かれ目ごとに 5 行へ分けている。
 
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
@@ -628,7 +644,8 @@ C# 新構文でコンパイルエラーが発生した場合の対処アプロ�
 | ビルド環境（VS / .NET SDK）を更新する | 最新の言語機能・ツールサポートを得られる。 | 既存プロジェクトへの影響範囲が広い場合がある。 | 新規または移行可能なプロジェクト。 |
 | 旧構文に書き換える | 環境を一切変更せずに対応できる。 | コードが冗長になる。新機能の恩恵を受けられない。 | レガシー環境で環境変更が許可されない場合。 |
 | 不足する型を自前で定義する | `^` / `..` / `init` / `with` / `required` を .NET Framework で使用できる。追加パッケージが要らない。 | 定義の管理が必要。.NET 5 以降へ移行する際は削除する。`RuntimeHelpers` は BCL の同名型を隠す。 | BCL 型が不足する構文を .NET Framework で利用したい場合。 |
-| `IndexRange` パッケージを参照する | `Index` / `Range` 型と `a[^1]` が使えるようになる。 | 配列のスライス `a[1..3]` には対応しない（`GetSubArray` を含まないため、別途自前定義が必要）。 | `^` だけを使えれば足りる場合。 |
+| `Microsoft.Bcl.Memory` を参照する | `Index` / `Range` 型が使えるようになる。.NET Framework 4.6.2 以降で推奨されるパッケージである。 | 配列のスライス `a[1..3]` に必要な `GetSubArray` の扱いは別途確かめる必要がある。 | 新規に NuGet で補う場合。 |
+| `IndexRange` パッケージを参照する | `Index` / `Range` 型と `a[^1]` が使えるようになる。 | 配列のスライス `a[1..3]` には対応しない（`GetSubArray` を含まないため、別途自前定義が必要）。4.6.2 以降では非推奨。 | 既存プロジェクトで既に参照している場合。 |
 
 ---
 

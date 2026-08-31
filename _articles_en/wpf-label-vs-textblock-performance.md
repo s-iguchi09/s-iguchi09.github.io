@@ -123,7 +123,7 @@ Switching controls buys roughly a factor of two; enabling virtualization buys fa
 
 ---
 
-## Solution
+## Order of Improvements
 
 Work through the improvements in this order.
 
@@ -137,11 +137,7 @@ The separation by purpose is as follows.
 - Input form captions: use `Label` only where `Target` or access keys are required.
 - Reworking existing screens: avoid a blanket replacement; convert to `TextBlock` incrementally within what the requirements allow.
 
----
-
-## Implementation
-
-### Keeping Virtualization in Effect
+### Step 1: keep virtualization in effect
 
 For list displays, choose a control backed by a virtualizing panel rather than using `ItemsControl` as-is.
 The default `ItemsPanel` of `ItemsControl` is a `StackPanel`, which does not virtualize.
@@ -163,7 +159,7 @@ Even when selection is unnecessary, using `ListBox` and disabling `Focusable` an
 Note that setting `ScrollViewer.CanContentScroll` to `False` changes the scroll unit from item-based to pixel-based and disables virtualization.
 The default is `True`, and it is sometimes changed in pursuit of smooth scrolling.
 
-### Replacing Display-Only Labels with TextBlock
+### Step 2: replace display-only Labels with TextBlock
 
 Replace `Label` controls used purely for display with `TextBlock`.
 The goal is to reduce rendering cost while preserving appearance.
@@ -179,7 +175,26 @@ The goal is to reduce rendering cost while preserving appearance.
 This removes `Label`-specific features from display-only locations and unifies them into a lightweight rendering structure.
 Because `Label`'s default `Padding` is lost, specify `Margin` or `Padding` explicitly where needed.
 
-### Keeping Label Where It Is Required
+### Step 3: use a ContentTemplate for underscore-bearing data
+
+To keep the appearance of `Label` while avoiding `AccessText`, specify a `TextBlock` in `ContentTemplate`.
+
+```xml
+<Label Content="{Binding FilePath}">
+    <Label.ContentTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding}" />
+        </DataTemplate>
+    </Label.ContentTemplate>
+</Label>
+```
+
+The `ContentPresenter` no longer produces an `AccessText`, so underscores render as-is and the rendering cost returns to that of a `Label` without underscores.
+Because `ContentTemplate` also applies when `Content` is an object rather than a string, restrict its scope to string display.
+
+---
+
+### Where Label stays
 
 The example below shows an input form caption that requires `Label`.
 This pattern keeps `Label` to preserve usability and accessibility.
@@ -198,25 +213,6 @@ Performance work therefore calls for requirement-based separation rather than a 
 
 An `AccessText` is constructed in this example because the access key is intentional, but form captions are few in number and the cost is immaterial.
 `AccessText` cost matters only when displaying **large volumes** of underscore-bearing data.
-
-### Displaying Underscore-Bearing Data in a Label
-
-To keep the appearance of `Label` while avoiding `AccessText`, specify a `TextBlock` in `ContentTemplate`.
-
-```xml
-<Label Content="{Binding FilePath}">
-    <Label.ContentTemplate>
-        <DataTemplate>
-            <TextBlock Text="{Binding}" />
-        </DataTemplate>
-    </Label.ContentTemplate>
-</Label>
-```
-
-The `ContentPresenter` no longer produces an `AccessText`, so underscores render as-is and the rendering cost returns to that of a `Label` without underscores.
-Because `ContentTemplate` also applies when `Content` is an object rather than a string, restrict its scope to string display.
-
----
 
 ## Notes and Limitations
 

@@ -52,7 +52,7 @@ WPF の終了処理には**「アプリケーションが終了する」段階**
 
 ---
 
-## 原因・背景
+## 2 つの関門
 
 プロセスが消えるまでには、直列につながった 2 つの関門がある。
 
@@ -143,7 +143,7 @@ WPF は `Application.Shutdown` が呼ばれたときにアプリケーション�
 
 ---
 
-## 解決方法
+## 切り分けの手順
 
 最初に行うのは修正ではなく切り分けである。
 前掲の実測が示すとおり、UI スレッドが応答している限り、**`Application.Exit` が発生するかどうか**だけで止まっている関門が確定する。
@@ -166,7 +166,7 @@ UI スレッド自体がブロックされている場合の扱いは注意点�
 
 ---
 
-## 実装例
+## 切り分けと対処の実装
 
 切り分け用のログは、`App` クラスの `OnExit` をオーバーライドして仕込む。
 第 1 関門で止まっている場合、このメソッドは呼ばれない。
@@ -283,39 +283,7 @@ nullable 参照型を有効にしているプロジェクトでは、`Dispatcher
 
 ---
 
-## 注意点
-
-- **`Environment.Exit` での強制終了は最後の手段とする。**
-  プロセスは確実に終了するが、`Application.Exit` イベントは発生せず、そこへ置いた保存処理は実行されない。
-  原因を特定するまでの暫定処置として使う場合は、その旨をコードに残す。
-- **`OnExit` をオーバーライドするなら `base.OnExit(e)` を呼ぶ。**
-  基底の実装が `Exit` イベントを発生させるため、これを省くとイベントハンドラー側の処理が動かなくなる。
-- **`Application.Exit` の有無で原因まで絞り込めるのは、UI スレッドが応答している場合に限る。**
-  UI スレッドがデッドロックや長時間の同期待ちでブロックされている場合も `OnExit` は呼ばれない。
-  止まっているのは第 1 関門だが、原因は残存ウィンドウでも `ShutdownMode` でもないため、`dotnet-stack report` で UI スレッドの停止位置を先に確認する。
-- **モーダル表示は UI スレッドのブロックではない。**
-  `Window.ShowDialog()` や `MessageBox.Show` の表示中は入れ子の `Dispatcher` フレームが回っており、UI スレッドはメッセージを処理し続けている。
-  `Window.ShowDialog()` で開いたものは `Application.Windows` に残っているだけであり、通常の残存ウィンドウとして扱える。
-  一方、`MessageBox` と、`OpenFileDialog` などの `CommonDialog` 派生は `Window` を継承しないため、この列挙には現れない。
-- **`OnMainWindowClose` は最初に生成されたウィンドウを基準にする。**
-  `MainWindow` は最初にインスタンス化された `Window` が自動的に設定される（[メイン アプリケーション ウィンドウの取得と設定](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)）。
-  スプラッシュウィンドウを先に生成する構成では、そのスプラッシュが `MainWindow` になる。
-  この設定を使うなら `MainWindow` を明示的に代入する。
-- **`OnExplicitShutdown` は終了漏れをそのままプロセス残留に変える。**
-  トレイ常駐アプリケーションでは必要な設定だが、終了経路が 1 つでも `Shutdown()` を呼び忘れると、ウィンドウが無いまま動き続ける。
-  トレイアイコンの実装で発生する別の落とし穴は[WPF タスクトレイの ContextMenu がフォーカス移動で閉じない問題の解消方法](/ja/articles/wpf-tray-contextmenu-close-on-focus-loss/)で扱っている。
-- **`IsBackground = true` は打ち切ってよいという宣言である。**
-  ランタイムはプロセス終了時にこのスレッドを例外なしで停止させる。
-  ログのフラッシュや一時ファイルの後始末をこのスレッドに任せている場合、その処理は実行されないことがある。
-- **ワーカースレッド上で生成したウィンドウは `Application.Windows` に現れない。**
-  第 1 関門の調査でこの列挙だけを見ていると、2 つ目の UI スレッドが持つウィンドウを見落とす。
-- **`Application.Windows` の参照は `Application` を生成したスレッドからのみ可能である。**
-  他スレッドから診断用に読み出す場合は `Dispatcher.Invoke` を経由する。
-  スレッド親和性が関わる別の症状は[WPF で ObservableCollection をバックグラウンドスレッドから更新するとクロススレッド例外が発生する問題の解決方法](/ja/articles/wpf-observablecollection-cross-thread-update/)で扱っている。
-
----
-
-## 代替案・比較
+## 関門別の対処の選択
 
 ### ShutdownMode の選択
 
@@ -346,6 +314,38 @@ nullable 参照型を有効にしているプロジェクトでは、`Dispatcher
 `Join` にタイムアウトを付けても、この関係は変わらない。
 時間切れで戻るのは待ち側だけで、対象スレッドは停止せずに動き続けるため、フォアグラウンドのままであればプロセスも残る。
 完了が必要な処理では、まずキャンセルに確実に応答する実装にすることが本筋であり、`IsBackground = true` はその代用にならない。
+
+---
+
+## 注意点
+
+- **`Environment.Exit` での強制終了は最後の手段とする。**
+  プロセスは確実に終了するが、`Application.Exit` イベントは発生せず、そこへ置いた保存処理は実行されない。
+  原因を特定するまでの暫定処置として使う場合は、その旨をコードに残す。
+- **`OnExit` をオーバーライドするなら `base.OnExit(e)` を呼ぶ。**
+  基底の実装が `Exit` イベントを発生させるため、これを省くとイベントハンドラー側の処理が動かなくなる。
+- **`Application.Exit` の有無で原因まで絞り込めるのは、UI スレッドが応答している場合に限る。**
+  UI スレッドがデッドロックや長時間の同期待ちでブロックされている場合も `OnExit` は呼ばれない。
+  止まっているのは第 1 関門だが、原因は残存ウィンドウでも `ShutdownMode` でもないため、`dotnet-stack report` で UI スレッドの停止位置を先に確認する。
+- **モーダル表示は UI スレッドのブロックではない。**
+  `Window.ShowDialog()` や `MessageBox.Show` の表示中は入れ子の `Dispatcher` フレームが回っており、UI スレッドはメッセージを処理し続けている。
+  `Window.ShowDialog()` で開いたものは `Application.Windows` に残っているだけであり、通常の残存ウィンドウとして扱える。
+  一方、`MessageBox` と、`OpenFileDialog` などの `CommonDialog` 派生は `Window` を継承しないため、この列挙には現れない。
+- **`OnMainWindowClose` は最初に生成されたウィンドウを基準にする。**
+  `MainWindow` は最初にインスタンス化された `Window` が自動的に設定される（[メイン アプリケーション ウィンドウの取得と設定](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)）。
+  スプラッシュウィンドウを先に生成する構成では、そのスプラッシュが `MainWindow` になる。
+  この設定を使うなら `MainWindow` を明示的に代入する。
+- **`OnExplicitShutdown` は終了漏れをそのままプロセス残留に変える。**
+  トレイ常駐アプリケーションでは必要な設定だが、終了経路が 1 つでも `Shutdown()` を呼び忘れると、ウィンドウが無いまま動き続ける。
+  トレイアイコンの実装で発生する別の落とし穴は[WPF タスクトレイの ContextMenu がフォーカス移動で閉じない問題の解消方法](/ja/articles/wpf-tray-contextmenu-close-on-focus-loss/)で扱っている。
+- **`IsBackground = true` は打ち切ってよいという宣言である。**
+  ランタイムはプロセス終了時にこのスレッドを例外なしで停止させる。
+  ログのフラッシュや一時ファイルの後始末をこのスレッドに任せている場合、その処理は実行されないことがある。
+- **ワーカースレッド上で生成したウィンドウは `Application.Windows` に現れない。**
+  第 1 関門の調査でこの列挙だけを見ていると、2 つ目の UI スレッドが持つウィンドウを見落とす。
+- **`Application.Windows` の参照は `Application` を生成したスレッドからのみ可能である。**
+  他スレッドから診断用に読み出す場合は `Dispatcher.Invoke` を経由する。
+  スレッド親和性が関わる別の症状は[WPF で ObservableCollection をバックグラウンドスレッドから更新するとクロススレッド例外が発生する問題の解決方法](/ja/articles/wpf-observablecollection-cross-thread-update/)で扱っている。
 
 ---
 

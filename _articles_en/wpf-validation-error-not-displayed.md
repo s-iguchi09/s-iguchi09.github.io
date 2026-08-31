@@ -83,9 +83,9 @@ In an application that replaces the `ControlTemplate` of its `Window`, `Validati
 
 ---
 
-## Cause / Background
+## The Three Stages, and Where It Stops
 
-WPF validation consists of three independent stages.
+WPF validation consists of three independent stages, all of which must hold before anything reaches the screen.
 
 1. **Production** — a validation rule associated with the binding runs and creates a `ValidationError`.
 2. **Storage** — the `ValidationError` is added to `Validation.Errors` on the binding target element, and `Validation.HasError` becomes `true`.
@@ -94,7 +94,7 @@ WPF validation consists of three independent stages.
 Stage 2 is handled by the binding engine, so the stages that application code can leave incomplete are 1 and 3.
 The sections below separate the symptoms by which of the two is missing.
 
-### Missing rule association on the binding
+### Stage 1: no rule is associated with the binding
 
 This stops at stage 1.
 Implementing `IDataErrorInfo` does not by itself take part in validation.
@@ -134,7 +134,11 @@ The property behind the difference is `ValidationRule.ValidatesOnTargetUpdated`,
 In the measured run, the built-in `DataErrorValidationRule` and `NotifyDataErrorValidationRule` both returned `true`, while the default for a custom `ValidationRule` was `false`.
 Specifying `ValidatesOnTargetUpdated="True"` makes a custom rule validate from startup as well: the rule was called immediately after launch and then re-evaluated on every change of the source value.
 
-### Missing adorner layer
+To establish this stage, activate the approach in use.
+A design built on `IDataErrorInfo` specifies `ValidatesOnDataErrors="True"` on the binding.
+`INotifyDataErrorInfo` is active by default, allows several messages per property, and can report results that arrive asynchronously, such as a server lookup. Choose it when several messages or asynchronous validation are needed.
+
+### Stage 3: there is no adorner layer
 
 This stops at stage 3.
 `Validation.ErrorTemplate` does not modify the target control itself; it is drawn on top of it, on the adorner layer.
@@ -181,7 +185,10 @@ In the measured run, a `TextBox` placed inside a `ScrollViewer` drew its red bor
 Results therefore diverge between the inside and the outside of a `ScrollViewer` within one screen, and the symptom can surface as "only some fields lack the border".
 When the template has been replaced but the symptom does not reproduce, check whether the control sits inside a `ScrollViewer`.
 
-### Not yet validated before a source update
+To establish this stage, something above the target element must supply an `AdornerLayer`.
+Including `AdornerDecorator` when the `Window` template has been replaced is the usual remedy, but as noted above, inside a `ScrollViewer` the `ScrollContentPresenter` supplies the layer and that alone is enough.
+
+### Before stage 1: the source has not been updated yet
 
 This concerns when stage 1 is reached.
 As described earlier, the two built-in rules have `ValidatesOnTargetUpdated` set to `true`, so they are also evaluated when the binding is established and when the source value changes.
@@ -213,23 +220,14 @@ The two interfaces differing in their default is part of what makes this hard to
 The last row is a case that reaches stage 3 and stops there. `HasError` is `True` and `Errors` still holds one entry, but the adorner count is 0.
 **The error is held and simply not drawn.** A value that is invalid without any red outline appearing corresponds to this row.
 
----
-
-## Solution
-
-Establish each of the three stages explicitly.
-
-1. **Produce the error** — activate the approach in use.
-For a view model that owns validation, implement `INotifyDataErrorInfo`.
-It is active by default, allows several messages per property, and can report results that are determined later, such as a server lookup.
-2. **Secure a rendering surface** — include `AdornerDecorator` when the `Window` template is replaced.
-3. **Align the timing** — specify `UpdateSourceTrigger=PropertyChanged` to report results while the user types.
-
-Then supply an `ErrorTemplate` that renders the message, because the default template draws only a red border and never surfaces the contents of `Validation.Errors`.
+To get past this point, specify `UpdateSourceTrigger=PropertyChanged` on the `TextBox.Text` binding to report results while the user is still typing.
 
 ---
 
-## Implementation
+## Implementing All Three Stages
+
+With the three in place, supply an `ErrorTemplate` that renders the message.
+The default template draws only a red border and never shows the contents of `Validation.Errors`.
 
 The first piece is a base class that stores validation results.
 `INotifyDataErrorInfo` is designed to return a set of messages per property name, so a dictionary keeps the implementation small.

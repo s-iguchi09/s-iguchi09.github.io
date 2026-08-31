@@ -69,6 +69,21 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
         // required は set と組み合わせても宣言できる。IsExternalInit が要るのは init のときだけである。
         new("required + init", "public class R { public required string Name { get; init; } }", RequiredPolyfill),
         new("required + set", "public class R { public required string Name { get; set; } }", RequiredWithoutInitPolyfill),
+        // record が required を持つ場合に、class と違う属性が要るのかを確かめる。
+        new("record with required", "public record R { public required string Name { get; init; } }", RequiredPolyfill),
+        new(
+            "+ SetsRequiredMembersAttribute",
+            "public record R { public required string Name { get; init; } }",
+            RequiredWithSetsPolyfill),
+        // required を設定するコンストラクターに付ける属性は、上の 3 つとは別の名前空間にある。
+        new(
+            "[SetsRequiredMembers] ctor",
+            "public class R { public required string Name { get; init; } [System.Diagnostics.CodeAnalysis.SetsRequiredMembers] public R() { Name = \"x\"; } }",
+            RequiredPolyfill),
+        new(
+            "+ SetsRequiredMembersAttribute",
+            "public class R { public required string Name { get; init; } [System.Diagnostics.CodeAnalysis.SetsRequiredMembers] public R() { Name = \"x\"; } }",
+            RequiredWithSetsPolyfill),
     ];
 
     private const string IsExternalInitPolyfill = """
@@ -90,6 +105,34 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
                 public CompilerFeatureRequiredAttribute(string featureName) { FeatureName = featureName; }
                 public string FeatureName { get; }
             }
+        }
+        """;
+
+    /// <summary>
+    /// required を設定するコンストラクターに付ける <c>SetsRequiredMembers</c> まで含めたもの。
+    /// この属性は他の 3 つと違い <c>System.Diagnostics.CodeAnalysis</c> にある。
+    /// </summary>
+    private const string RequiredWithSetsPolyfill = """
+        using System;
+        namespace System.Runtime.CompilerServices
+        {
+            internal static class IsExternalInit { }
+
+            [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
+            internal sealed class RequiredMemberAttribute : Attribute { }
+
+            [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+            internal sealed class CompilerFeatureRequiredAttribute : Attribute
+            {
+                public CompilerFeatureRequiredAttribute(string featureName) { FeatureName = featureName; }
+                public string FeatureName { get; }
+            }
+        }
+
+        namespace System.Diagnostics.CodeAnalysis
+        {
+            [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+            internal sealed class SetsRequiredMembersAttribute : Attribute { }
         }
         """;
 

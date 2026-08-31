@@ -1,4 +1,6 @@
 ---
+# このファイルは構成型 1「診断型・単一原因」の雛形。型の一覧と選び方は structures.md にある。
+# 記事へコピーするときは、この 2 行を含めない。
 layout: article-ja
 title: "（タイトル）"
 date: YYYY-MM-DD

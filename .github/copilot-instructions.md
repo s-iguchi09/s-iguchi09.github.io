@@ -30,9 +30,10 @@
 ## ルールファイル一覧
 
 - `docs/rules/README.md` — ルールシステムのインデックス
+- `docs/rules/article/structures.md` — 記事の構成型(骨格の選び方)
 - `docs/rules/article/guidelines.md` — 記事執筆ガイドライン
-- `docs/rules/article/template-ja.md` — 日本語記事テンプレート
-- `docs/rules/article/template-en.md` — 英語記事テンプレート
+- `docs/rules/article/template-ja.md` — 日本語記事テンプレート(構成型 1 の雛形)
+- `docs/rules/article/template-en.md` — 英語記事テンプレート(構成型 1 の雛形)
 - `docs/rules/article/review-checklist.md` — 記事レビューチェックリスト
 
 ## コードレビューの指示

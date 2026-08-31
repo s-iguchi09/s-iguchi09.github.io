@@ -92,7 +92,7 @@ Plotted over time, they line up as follows.
 - **†1**: Pure language features. These can be used on .NET Framework once `LangVersion` is set to the corresponding C# version. **Updating the SDK or Visual Studio is not enough on its own:** a project targeting .NET Framework defaults to C# 7.3 and does not move off it when the tooling is updated, so `LangVersion` has to be set explicitly in the `.csproj`.
 - **†2**: Requires `System.Index` / `System.Range`, added in .NET Core 3.0+. Array slicing with `a[1..3]` additionally requires `System.Runtime.CompilerServices.RuntimeHelpers.GetSubArray`.
 - **†3**: Requires `System.Runtime.CompilerServices.IsExternalInit`, added in .NET 5+. Whether a `with` expression needs it depends on **whether the target type has `init` accessors**. A `record` class and a `readonly record struct` generate them and therefore need it; a mutable `struct` and a positional `record struct` do not.
-- **†4**: Paired with `init`, it needs `CompilerFeatureRequiredAttribute` and `IsExternalInit` on top of `RequiredMemberAttribute` (all in `System.Runtime.CompilerServices`). Paired with `set`, `IsExternalInit` is not involved and the first two suffice.
+- **†4**: Paired with `init`, it needs `CompilerFeatureRequiredAttribute` and `IsExternalInit` on top of `RequiredMemberAttribute` (all in `System.Runtime.CompilerServices`). Paired with `set`, `IsExternalInit` is not involved and the first two suffice. Holding it on a `record`, or setting it from a constructor marked `[SetsRequiredMembers]`, additionally needs `System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute`.
 - **†5**: A mutable `struct` and a positional `record struct` do not generate `init`, so `IsExternalInit` is not required. The `with` expression itself is C# 10.0 or later, however: leaving `LangVersion` at 9.0 fails with `CS8773`.
 
 **Classifying `init` as †1 (language feature only) is incorrect.**
@@ -105,7 +105,7 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two." width="646" height="470" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="693" height="590" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 
@@ -127,6 +127,10 @@ Paired with `init` it needs all three of `RequiredMemberAttribute`, `CompilerFea
 Paired with `set` it needs only the first two — `IsExternalInit` is not involved, as the differing count of missing types on the two rows shows.
 Either way, defining `RequiredMemberAttribute` alone does not resolve it.
 
+**A `record` holding a `required` member needs `System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute` on top of those.**
+The compiler marks the generated copy constructor with it, so the three alone produce `CS0656`.
+The same applies to setting `required` members from a constructor explicitly marked `[SetsRequiredMembers]`. The four corresponding rows of the table measure exactly that.
+
 **4. The C# version that allows `with` depends on the shape of the target type.**
 A `record` class works from C# 9.0, but a `struct` and a `record struct` require C# 10.0.
 Writing `with` against a `struct` at `LangVersion` 9.0 fails with `CS8773`.
@@ -145,9 +149,9 @@ In every case, defining the missing types locally makes the code compile. The de
 
 ---
 
-## Solution
+## Three Ways to Deal with It
 
-When a compile error occurs because of new C# syntax, there are two main approaches.
+When a compile error occurs because of new C# syntax, there are three main approaches.
 
 ### Option 1: Raise `LangVersion` or update the build environment
 
@@ -219,7 +223,16 @@ namespace System.Runtime.CompilerServices
         public string FeatureName { get; }
     }
 }
+
+namespace System.Diagnostics.CodeAnalysis
+{
+    [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+    internal sealed class SetsRequiredMembersAttribute : Attribute { }
+}
 ```
+
+That last `SetsRequiredMembersAttribute` is needed for a `record` holding a `required` member, and for setting one from a constructor marked `[SetsRequiredMembers]`.
+Note that its namespace differs from the other three. Writing `required` on a plain `class` compiles without it, but including it costs nothing.
 
 For `^` and `..`, define `System.Index` and `System.Range`, plus the `RuntimeHelpers.GetSubArray` method that array slicing compiles down to.
 
@@ -292,6 +305,9 @@ For `int[] a = { 10, 20, 30, 40, 50 }`, `a[^1]` returned `50` and `a[1..3]` retu
 `IndexRange` is a package that supplies `Index` and `Range`.
 **There is no NuGet package named `System.Index`** — nuget.org returns 404 for it.
 
+`IndexRange` is deprecated for projects targeting `netstandard2.0` or .NET Framework 4.6.2 and later, though; [its package description](https://www.nuget.org/packages/IndexRange) directs those to `Microsoft.Bcl.Memory` instead.
+The `net48` target this article uses falls under that, so `Microsoft.Bcl.Memory` is the choice for a new project. What follows is measured for projects that already reference `IndexRange`.
+
 Referencing `IndexRange` 1.1.1 from `net48` makes `a[^1]` and the `Index` / `Range` types available, but **array slicing with `a[1..3]` still fails to compile**.
 
 ```text
@@ -310,7 +326,7 @@ Array slicing therefore still requires defining `RuntimeHelpers` as shown above.
 
 ---
 
-## Implementation
+## Syntax by Version
 
 ### 1. Null-safe operators
 
@@ -637,9 +653,9 @@ Primary constructors were introduced in C# 12.0 and require a compiler and SDK t
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Approaches
 
-The following table compares the main approaches for handling compile errors caused by new C# syntax.
+The following table compares the approaches for handling compile errors caused by new C# syntax. The three approaches above are split into five rows, one per decision point.
 
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |
@@ -647,7 +663,8 @@ The following table compares the main approaches for handling compile errors cau
 | Update the build environment | Provides the latest language features and tooling support. | May have a wider impact on existing projects. | New development or environments that can be updated. |
 | Rewrite to older syntax | Works without changing the environment. | Code becomes more verbose and newer features cannot be used. | Legacy environments where updates are not allowed. |
 | Define the missing types yourself | Enables `^`, `..`, `init`, `with`, and `required` on .NET Framework. No extra package needed. | The definitions need maintaining and must be removed when retargeting to .NET 5+. `RuntimeHelpers` shadows the BCL type of the same name. | Projects that need BCL-dependent syntax but must stay on .NET Framework. |
-| Reference the `IndexRange` package | Supplies `Index` / `Range` and makes `a[^1]` work. | Does not cover array slicing `a[1..3]`, since it omits `GetSubArray`; that still needs a local definition. | Projects where `^` alone is sufficient. |
+| Reference `Microsoft.Bcl.Memory` | Supplies `Index` / `Range`. This is the package recommended from .NET Framework 4.6.2 onward. | How it handles the `GetSubArray` that array slicing `a[1..3]` needs has to be checked separately. | Filling the gap from NuGet in a new project. |
+| Reference the `IndexRange` package | Supplies `Index` / `Range` and makes `a[^1]` work. | Does not cover array slicing `a[1..3]`, since it omits `GetSubArray`; that still needs a local definition. Deprecated from 4.6.2 onward. | Projects that already reference it. |
 
 ---
 

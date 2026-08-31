@@ -149,7 +149,7 @@ Only the third row, which walks up to the `UserControl` with `AncestorType`, del
 
 ---
 
-## Solution
+## Three Ways to Reference It
 
 Give the internal binding an explicit starting point other than `DataContext`.
 Three options exist.
@@ -167,10 +167,6 @@ Overwriting that breaks the bindings supplied by the caller, as covered under No
 Option 1 suits a small number of reference sites, or cases where the internals also need the consuming `DataContext`.
 Option 2 is near-equivalent to option 1 and is the choice where shorter markup is preferred; the two are compared under Alternatives.
 Option 3 suits controls that reference three or more properties internally.
-
----
-
-## Implementation
 
 Options 1 and 2 are shown side by side inside the same control.
 The root element gets `x:Name="Root"`, and `Title` is displayed three different ways.
@@ -242,6 +238,54 @@ Specifying `Mode=TwoWay` at the call site produces the same result, but for inpu
 
 ---
 
+## How to Choose
+
+Which of the three applies is settled by how many properties the control references internally, and by whether the consuming `DataContext` is used as well.
+
+**One or two reference sites call for `RelativeSource AncestorType`.**
+The source is written per binding, so there is more markup, but `DataContext` stays as the consumer set it. Reading the consuming `DataContext` from inside calls for this or the `ElementName` below.
+
+**Referring to the root element by name calls for `ElementName`.**
+The markup is shorter, but it resolves differently from `RelativeSource`. `ElementName` looks a name up in a namescope, while `RelativeSource AncestorType` walks up the element tree matching a type. Where the name is closed off in a separate namescope and cannot be looked up, `ElementName` does not resolve — though in this arrangement it does resolve from a `DataTemplate`, as covered later. Reading the consuming `DataContext` is written as `Path=DataContext.HeaderText`.
+
+**Three or more internal references call for delegating `DataContext` on the inner root element.**
+One setting covers it, and everything inside can stay written as `{Binding Title}`. It is also the only way to resolve from inside a `ContextMenu` without breaking the binding the consumer supplies.
+
+None of them touches the `DataContext` of the `UserControl` element itself. Writing there breaks the binding the consumer supplies.
+
+---
+
+## Comparing the Approaches
+
+The four ways of reaching a control's own dependency property from inside compare as follows.
+
+| Approach | Amount of markup | Bindings from the caller | Inside `ContextMenu` | Best suited for |
+| --- | --- | --- | --- | --- |
+| `RelativeSource AncestorType` | Per binding | Unaffected | Does not resolve | Few reference sites, or internals that also use the consuming `DataContext` |
+| `ElementName` + `x:Name` on the root | Per binding | Unaffected | Does not resolve | Keeping the markup short |
+| Delegate `DataContext` to the inner root | One place | Unaffected | Resolves | Internals that reference three or more properties |
+| `DataContext = this` | One place | **Breaks** | Resolves | None; avoid |
+
+`RelativeSource` and `ElementName` are equivalent in outcome in ordinary layouts, and they diverge in only two situations.
+
+The first is the case raised under Implementation, where the element holding the binding sits inside another `UserControl`.
+`ElementName` names the target directly and is unaffected.
+In the measured run, evaluating `AncestorType=UserControl` from an element nested inside another `UserControl` selected the inner control rather than the outer one.
+Specifying `AncestorType={x:Type local:InfoCard}` stabilizes the target for `RelativeSource`, though a subclass of that type among the ancestors is still picked first when it is nearer.
+
+The second is a configuration where a template is reused from another control.
+`ElementName` stops resolving as soon as the name scope at the point of use has no `Root`, whereas `AncestorType` holds as long as an ancestor of the given type exists.
+
+Delegating to the inner root has the advantage that internal markup stays as `{Binding Title}`.
+The trade-off is that reaching the consuming `DataContext` from inside takes an extra step.
+Because the `DataContext` of the `UserControl` element itself remains the consuming view model, `{Binding DataContext.HeaderText, RelativeSource={RelativeSource AncestorType={x:Type local:InfoCard}}}` reaches it, and it resolved in the measured run.
+A design that needs that reference is unlikely to be a genuinely reusable part, however, and the data it needs is better received explicitly as dependency properties.
+
+`DataContext = this` offers the same brevity as delegation but breaks bindings from the caller.
+The symptom stays hidden while the control is used in a single view and surfaces as soon as it is reused.
+
+---
+
 ## Notes
 
 Assigning `DataContext = this` in the constructor does make the internal `{Binding Title}` work.
@@ -305,36 +349,6 @@ The `x:Name="Root"` on the `UserControl` root is confined to that control's name
 In the measured run, placing an element of the same name in the consuming view resolved each to a different element with no error.
 
 ---
-
-## Alternatives / Comparison
-
-The four ways of reaching a control's own dependency property from inside compare as follows.
-
-| Approach | Amount of markup | Bindings from the caller | Inside `ContextMenu` | Best suited for |
-| --- | --- | --- | --- | --- |
-| `RelativeSource AncestorType` | Per binding | Unaffected | Does not resolve | Few reference sites, or internals that also use the consuming `DataContext` |
-| `ElementName` + `x:Name` on the root | Per binding | Unaffected | Does not resolve | Keeping the markup short |
-| Delegate `DataContext` to the inner root | One place | Unaffected | Resolves | Internals that reference three or more properties |
-| `DataContext = this` | One place | **Breaks** | Resolves | None; avoid |
-
-`RelativeSource` and `ElementName` are equivalent in outcome in ordinary layouts, and they diverge in only two situations.
-
-The first is the case raised under Implementation, where the element holding the binding sits inside another `UserControl`.
-`ElementName` names the target directly and is unaffected.
-In the measured run, evaluating `AncestorType=UserControl` from an element nested inside another `UserControl` selected the inner control rather than the outer one.
-Specifying `AncestorType={x:Type local:InfoCard}` stabilizes the target for `RelativeSource`, though a subclass of that type among the ancestors is still picked first when it is nearer.
-
-The second is a configuration where a template is reused from another control.
-`ElementName` stops resolving as soon as the name scope at the point of use has no `Root`, whereas `AncestorType` holds as long as an ancestor of the given type exists.
-
-Delegating to the inner root has the advantage that internal markup stays as `{Binding Title}`.
-The trade-off is that reaching the consuming `DataContext` from inside takes an extra step.
-Because the `DataContext` of the `UserControl` element itself remains the consuming view model, `{Binding DataContext.HeaderText, RelativeSource={RelativeSource AncestorType={x:Type local:InfoCard}}}` reaches it, and it resolved in the measured run.
-A design that needs that reference is unlikely to be a genuinely reusable part, however, and the data it needs is better received explicitly as dependency properties.
-
-`DataContext = this` offers the same brevity as delegation but breaks bindings from the caller.
-The symptom stays hidden while the control is used in a single view and surfaces as soon as it is reused.
-
 ---
 
 ## Summary
@@ -349,9 +363,7 @@ Check first whether the `DataContext` of the `UserControl` itself was overwritte
 - **No error appears but the value is wrong** — the consuming `DataContext` exposes a property of the same name.
 This state never reaches the Output window and stays invisible until `RelativeSource` is specified.
 
-Choose the structure on the following basis.
-For controls that reference three or more properties internally, delegate `DataContext` to the inner root element and keep the internal markup as `{Binding Title}`.
-For one or two reference sites, or where the internals also read the consuming `DataContext`, specify `RelativeSource AncestorType={x:Type local:InfoCard}` per binding.
-Use `ElementName` where shorter markup is preferred.
+The deciding factor is how many properties the control references internally.
+Three or more call for delegating `DataContext` to the inner root element; one or two call for specifying `RelativeSource` or `ElementName` per binding.
 In every case, never assign to the `DataContext` of the `UserControl` element itself.
 For input controls that write values back from inside, add `FrameworkPropertyMetadataOptions.BindsTwoWayByDefault`.

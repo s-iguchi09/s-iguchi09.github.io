@@ -56,28 +56,16 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 
 ---
 
-## 解決方法
+## 5 つの実装パターン
 
-実装に入る前に、`ItemsSource` の要素型に応じて選択関連プロパティを使い分ける。  
-
-- 要素が `string` や `enum` のような単純値なら、要素そのものを受け取る `SelectedItem` を使う。
-- 要素がオブジェクトで、選択されたオブジェクト全体を扱いたいなら `SelectedItem` を使う。
-- 要素がオブジェクトで、ID など特定の値だけを ViewModel に持たせたいなら `SelectedValue` と `SelectedValuePath` を使う。
-- 表示用の名称と保持したい値を分けたい場合は、`DisplayMemberPath` と `SelectedValuePath` を組み合わせる。
-- `SelectedIndex` は表示順そのものに意味がある場合に限って使い、通常は値やオブジェクトを直接扱う設定を優先する。
-
-この方針で選べば、ViewModel 側のプロパティ型と `ComboBox` の設定を対応させやすくなり、初期選択や選択変更の反映漏れを防ぎやすい。  
-
-設定の違いは、同じ選択肢を選んだときの表示に現れる。
+`ItemsSource` の要素型と、ViewModel に何を持たせたいかの組み合わせで、代表的な 5 パターンを順に見る。
+要素型が同じでも、選択値の受け取り方や表示の作り方で構成が変わる。
+表示が変わるものもあれば、表示は同じで `SelectedValue` に入る値だけが変わるもの（パターン B と C）もある。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png" alt="3 つの ComboBox を並べた画面。文字列リストと DisplayMemberPath は Baker とだけ表示され、ItemTemplate を使ったものは 102 と Baker の 2 列で表示されている。" width="469" height="184" loading="lazy">
   <figcaption>いずれも 2 件目を選択した状態。文字列リストと <code>DisplayMemberPath</code> は 1 つの文字列を表示するのに対し、<code>ItemTemplate</code> を使うと選択済みの表示にもテンプレートが適用され、複数フィールドを並べられる。</figcaption>
 </figure>
-
----
-
-## 実装例
 
 ### パターン A：文字列リスト
 
@@ -237,6 +225,33 @@ public Priority SelectedPriority
 `SelectedItem` の型は `Priority`（Enum 型）になる`SelectedValue` と `SelectedValuePath` を使って Enum の数値（基底値）だけを取得することも可能だが、明示的に `(int)SelectedPriority` でキャストした方が意図が明確である。  
 ---
 
+## 選択の分岐点
+
+どのパターンを使うかは、`ItemsSource` の要素型と、ViewModel に何を持たせたいかで決まる。
+
+- 要素が `string` や `enum` のような単純値なら、要素そのものを受け取る `SelectedItem` を使う（パターン A・E）。
+- 要素がオブジェクトで、選択されたオブジェクト全体を扱いたいなら `SelectedItem` を使う（パターン B）。
+- 要素がオブジェクトで、ID など特定の値だけを ViewModel に持たせたいなら `SelectedValue` と `SelectedValuePath` を使う（パターン C）。
+- 表示用の名称と保持したい値を分けたい場合は、`DisplayMemberPath` と `SelectedValuePath` を組み合わせる。
+- 1 行に複数フィールドを並べたい場合は `ItemTemplate` を使う（パターン D）。
+- `SelectedIndex` は表示順そのものに意味がある場合に限って使い、通常は値やオブジェクトを直接扱う設定を優先する。
+
+ViewModel 側のプロパティ型と `ComboBox` の設定が対応していれば、初期選択や選択変更の反映漏れは起きにくい。
+
+---
+
+## パターン別の比較
+
+| パターン                             | ItemsSource の型               | 選択値の取得                        | 適するケース                     |
+| ------------------------------------ | ------------------------------ | ----------------------------------- | -------------------------------- |
+| A: 文字列リスト                      | `ObservableCollection<string>` | `SelectedItem`（`string`）          | 選択肢が単純なラベルのみ         |
+| B: オブジェクト ＋ SelectedItem      | `ObservableCollection<T>`      | `SelectedItem`（`T`）               | 選択後に複数フィールドを参照する |
+| C: オブジェクト ＋ SelectedValuePath | `ObservableCollection<T>`      | `SelectedValue`（指定プロパティ型） | ID など特定フィールドだけ必要    |
+| D: ItemTemplate                      | `ObservableCollection<T>`      | `SelectedItem`（`T`）               | 複数フィールドを 1 行に表示する  |
+| E: Enum                              | `IEnumerable<TEnum>`           | `SelectedItem`（`TEnum`）           | 固定の列挙値から選択する         |
+
+---
+
 ## 注意点
 
 - **`DisplayMemberPath` と `ItemTemplate` を同時に設定した場合の挙動**
@@ -256,31 +271,16 @@ public Priority SelectedPriority
 ViewModel 側で `null` を許容する型（例: `string?`, `int?`）を使う。  
 
 ---
-
-## 代替案・比較
-
-| パターン                             | ItemsSource の型               | 選択値の取得                        | 適するケース                     |
-| ------------------------------------ | ------------------------------ | ----------------------------------- | -------------------------------- |
-| A: 文字列リスト                      | `ObservableCollection<string>` | `SelectedItem`（`string`）          | 選択肢が単純なラベルのみ         |
-| B: オブジェクト ＋ SelectedItem      | `ObservableCollection<T>`      | `SelectedItem`（`T`）               | 選択後に複数フィールドを参照する |
-| C: オブジェクト ＋ SelectedValuePath | `ObservableCollection<T>`      | `SelectedValue`（指定プロパティ型） | ID など特定フィールドだけ必要    |
-| D: ItemTemplate                      | `ObservableCollection<T>`      | `SelectedItem`（`T`）               | 複数フィールドを 1 行に表示する  |
-| E: Enum                              | `IEnumerable<TEnum>`           | `SelectedItem`（`TEnum`）           | 固定の列挙値から選択する         |
-
 ---
 
 ## まとめ
 
-`ComboBox` の実装パターンは `ItemsSource` に渡す型によって決まる。  
+`ComboBox` の実装パターンは `ItemsSource` に渡す型によって決まる。
+単純値なら `SelectedItem`、オブジェクトなら全体が要るか特定フィールドだけで足りるかで `SelectedItem` と `SelectedValue` を選び分ける。
 
-- 文字列リストのみの場合は `SelectedItem` に `string` 型をバインドするだけで十分である。
-- オブジェクトリストでオブジェクト全体が必要な場合は `DisplayMemberPath` ＋ `SelectedItem` を使う。
-- オブジェクトリストで特定フィールド（ID など）だけ必要な場合は `SelectedValuePath` ＋ `SelectedValue` を使う。
-- カスタムレイアウトが必要な場合は `ItemTemplate` を使い、`DisplayMemberPath` との同時指定は避ける。
-- Enum は ViewModel でコレクション化し、`SelectedItem` に Enum 型をバインドする。
+初期値が反映されない問題の多くは、参照比較の不一致か `ItemsSource` のセット順序に起因する。
+`SelectedValuePath` を使うか、同一インスタンスを参照するよう設計することで回避できる。
 
-初期値が反映されない問題の多くは、参照比較の不一致か `ItemsSource` のセット順序に起因する。  
-`SelectedValuePath` を使うか、同一インスタンスを参照するよう設計することで回避できる。  
 ---
 
 <!-- 関連記事 -->

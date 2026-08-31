@@ -62,7 +62,7 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 
 ---
 
-## 解決方法
+## 4 つの初期化方法
 
 以下の方針で要件に応じて初期化方法を選択します。  
 
@@ -70,8 +70,6 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 - `Sorting` イベントを処理して列単位の未ソート状態を制御する
 - MVVM 構成では `ICollectionView` 側でソート状態を管理する
 - 共通化が必要な場合は Behavior として再利用する
-
-## 実装例
 
 ### コードで明示的にソートをクリアする
 
@@ -101,7 +99,7 @@ public static class DataGridSortHelper
 }
 ```
 
-### ポイント
+#### ポイント
 
 - `SortDescriptions.Clear()` だけでは見た目の矢印が残る場合がある
 - `column.SortDirection = null` を併用して UI 整合性を保つ
@@ -116,7 +114,7 @@ public static class DataGridSortHelper
   <figcaption>同じデータに対する 3 状態の表示。未ソート（右）では対象列の <code>SortDescription</code> とヘッダーの矢印がどちらも消える。この例は 1 列だけでソートしているため、解除するとコレクション本来の並びに戻る。複数列でソートしている場合は他の列の条件が残るため、必ずしも元の並びには戻らない。</figcaption>
 </figure>
 
-### XAML
+#### XAML
 
 ```xml
 <DataGrid x:Name="MyDataGrid"
@@ -126,7 +124,7 @@ public static class DataGridSortHelper
 この設定により、列ヘッダークリック時の既定ソート処理へ独自ロジックを差し込める。
 また、`DataGridTemplateColumn` などで列ソートを解除対象にする場合は、事前に `SortMemberPath` を設定しておく必要がある。
 
-### C\#
+#### C\#
 
 ```csharp
 using System.ComponentModel;
@@ -193,13 +191,16 @@ public class RowItem
 
 `SortDescriptions` を `ItemsView` 側で管理することで、UI コンポーネントへの依存を減らし、テスト容易性を確保できる。
 
+**ただし、この `ClearSort` が解除するのはビューの並び順だけである。** `DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `then SortDescriptions.Clear() only` の行がその実測である）。
+矢印まで戻すには、ViewModel から列の状態を触れない以上、`DataGrid` 側で `SortDirection` を `null` にする処理が別に要る。Behavior 化する場合は、その処理を Behavior に含めるとコマンドから一度に初期化できる。
+
 ```xml
 <DataGrid ItemsSource="{Binding ItemsView}" />
 ```
 
 ビューは `ItemsView` を表示するだけに限定されるため、ソート初期化の責務を ViewModel 側に集約できる。
 
-### Behaviorクラスの作成
+### Behavior として共通化する
 
 同じカスタムソート挙動を複数画面で使うなら、Behavior 化が有効です。  
 以下は `Microsoft.Xaml.Behaviors.Wpf` を利用する例です。
@@ -263,14 +264,25 @@ Behavior 化により、同じ三状態ソート解除ロジックを画面ご�
 
 XAML 側は Behavior を宣言するだけで済むため、利用画面追加時の実装コストを抑制しやすい。
 
-## 注意点
+## 選択の分岐点
 
-- `SortDescriptions` のクリアだけではヘッダー矢印表示と不整合になる場合があります。  
-- `Sorting` イベント例で `SortMemberPath` をキーに解除する場合、対象列に `SortMemberPath` が未設定だと解除処理が意図どおり動作しない可能性があります。  
-- 複数列ソートを併用する場合は、対象列のみを解除するか全解除するかを要件で明確化する必要があります。  
-- 再利用目的で Behavior 化する場合は、画面ごとのソート仕様差分を吸収できる設計にしておくと保守しやすくなります。
+どの方法を使うかは、初期化を起こす操作と、同じ挙動を何画面に広げるかで決まります。
 
-## 代替案・比較
+**ボタンやメニューから即時に全解除するなら、明示クリア。**
+`SortDescriptions.Clear()` と `SortDirection = null` を並べるだけで済み、導入が最も速い。ただしコードビハインドから `DataGrid` を参照するため、MVVM の分離は緩みます。
+
+**ヘッダークリックだけで完結させるなら、`Sorting` イベントで三状態にする。**
+「昇順 → 降順 → 未ソート」を 1 つの操作系にまとめられます。列単位で解除するのか全解除なのかを先に決めておかないと、イベント処理が複雑になります。
+
+**MVVM を徹底し、コマンド経由で初期化するなら `ICollectionView`。**
+ソート状態を ViewModel 側に置けるため、UI へ依存せずテストできます。View と ViewModel の責務分離が前提になります。
+
+**同じルールを複数の `DataGrid` へ適用するなら Behavior 化。**
+XAML に宣言を 1 行足すだけで横展開でき、重複コードを減らせます。画面ごとの差分を吸収する拡張ポイントを設計しておく必要があります。
+
+---
+
+## 方法別の比較
 
 | 方法 | メリット | デメリット | 適するケース |
 |---|---|---|---|
@@ -279,19 +291,23 @@ XAML 側は Behavior を宣言するだけで済むため、利用画面追加�
 | `ICollectionView` で ViewModel 管理 | テストしやすく UI 依存を最小化できる。 | View と ViewModel の責務分離設計が前提となる。 | MVVM を徹底し、コマンド経由で初期化する場合。 |
 | Behavior 化 | 複数画面へ横展開しやすく重複コードを削減できる。 | 画面差分要件を吸収する拡張ポイント設計が必要。 | 同一ルールのソート挙動を複数 DataGrid へ適用する場合。 |
 
+---
+
+## 注意点
+
+- `SortDescriptions` のクリアだけではヘッダー矢印表示と不整合になる場合があります。  
+- `Sorting` イベント例で `SortMemberPath` をキーに解除する場合、対象列に `SortMemberPath` が未設定だと解除処理が意図どおり動作しない可能性があります。  
+- 複数列ソートを併用する場合は、対象列のみを解除するか全解除するかを要件で明確化する必要があります。  
+
+---
+
 ## まとめ
 
-WPF `DataGrid` のソート初期化は、用途に応じて実装方法を選べます。
+WPF `DataGrid` のソート状態は `ICollectionView.SortDescriptions` と `DataGridColumn.SortDirection` の 2 か所に分かれており、コードから一方だけを触ると食い違います。初期化ではその両方を戻す必要があります。
 
-- 標準操作の理解（Shift+クリックは複数列ソート）
-- 明示クリア（`SortDescriptions.Clear` + `SortDirection = null`）
-- 3状態遷移（`Sorting` イベント）
-- MVVM 対応（`ICollectionView`）
-- 再利用性（Behavior 化）
-
-要件が単純ならヘルパーメソッド、画面横断で使うなら Behavior 化、MVVM 徹底なら `CollectionView` 中心で設計するのが実践的です。
+分岐点は、初期化を起こす操作と、同じ挙動を何画面に広げるかにあります。
+ボタンから即時に解除するなら明示クリア、ヘッダークリックで完結させるなら `Sorting` イベント、MVVM 徹底なら `ICollectionView`、複数画面へ広げるなら Behavior 化を選びます。
 
 ## 関連記事
 
 - [WPF DataGrid の並び替えを実装する方法](/ja/articles/wpf-datagrid-sorting/)
-- [WPF DataGridTemplateColumn で表示と編集のテンプレートを分離する方法](/ja/articles/wpf-datagrid-cell-editing-template/)

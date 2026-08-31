@@ -167,17 +167,13 @@ The limitation does not come from the `extension` block itself but from the pre-
 
 ---
 
-## Solution
+## Three Options
 
 The right option depends on what you are trying to achieve.
 
 - **Option A**: Call it as `Directory.Xxx(...)` — declare a static extension member with a type-only receiver.
 - **Option B**: Call it as `xxx.Yyy()` — declare an extension member on the corresponding instance type (`DirectoryInfo`).
 - **Option C**: Support C# 13 or earlier — use a plain static helper class.
-
----
-
-## Implementation
 
 ### Option A: Static extension member
 
@@ -301,26 +297,39 @@ The `Directory.DeleteIfExists(...)` form is not available, but the location of t
 
 ---
 
-## Notes
+## How to Choose
 
-- The `extension` block syntax is available only in C# 14 (.NET 10) and later.
-  Earlier versions are limited to the classic `this`-parameter extension method syntax.
-- Static extension members also require the declaring namespace to be imported at the call site.
-  Forgetting it yields `CS0117` (no such definition), which does not obviously indicate a failed extension member lookup.
-- An `extension` block that extends a static class cannot contain user-defined operators (`CS9321`).
-  An operator must take the extended type as a parameter, and a static class cannot be one.
-- The API shapes of `Directory` (static methods) and `DirectoryInfo` (instance members) differ.
-  The counterpart of `Directory.Exists(path)` is the `directoryInfo.Exists` property — one takes an argument and the other does not.
+Which of the three applies is settled by the call form and the target version.
+
+**Calling it as `Directory.Xxx(path)` calls for Option A.**
+It matches the shape of the standard API, so it blends into existing code. The receiver carries only the type, and instance members cannot be declared there.
+
+**Unifying on the `xxx.Yyy()` instance form calls for Option B.**
+It extends a corresponding instance type such as `DirectoryInfo`. Resolving a path once and performing several operations benefits from holding on to the instance. The API shapes genuinely differ, though: the counterpart of `Directory.Exists(path)` is the `directoryInfo.Exists` property, one taking an argument and the other not.
+
+**Supporting C# 13 or earlier calls for Option C.**
+The `extension` block is available only from C# 14 (.NET 10). Anything earlier falls back to a conventional static helper class. The call form no longer matches the standard API, but the location is the most obvious of the three.
+
+Options A and B both require the declaring namespace to be imported at the call site. Forgetting it yields `CS0117`, which does not obviously indicate a failed extension member lookup.
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Options
 
 | Approach | Call form | Pros | Cons | Best suited for |
 |---|---|---|---|---|
 | Static extension member (Option A) | `Directory.DeleteIfExists(path)` | Looks identical to the standard API | C# 14 or later only; a missing `using` is easy to misdiagnose | Filling gaps in a static class API on C# 14 or later |
 | Extension member on `DirectoryInfo` (Option B) | `dir.DeleteIfExists()` | Consistent instance-style calls | Requires an instance; C# 14 or later only | Resolving a path once and performing several operations |
 | Static helper class (Option C) | `DirectoryHelper.DeleteIfExists(path)` | No version dependency; obvious location | Call form differs from the standard API | Supporting C# 13 or earlier |
+
+---
+
+## Notes
+
+- An `extension` block that extends a static class cannot contain user-defined operators (`CS9321`).
+  An operator must take the extended type as a parameter, and a static class cannot be one.
+- The classic `this`-parameter syntax declares instance extension methods only; it cannot attach static members.
+  Option A is therefore available only from C# 14, where the `extension` block was introduced.
 
 ---
 
@@ -344,9 +353,8 @@ Adding a member such as `Directory.DeleteIfExists(...)` to a static class first 
 Targeting a static class with an `extension` block is possible.
 What is not possible is adding an instance member: naming the receiver turns the static class into a parameter type, which produces `CS0721`.
 
-- To call it as `Directory.Xxx(...)`, declare static members inside `extension(Directory)` (Option A).
-- To call it instance-style, define the members on a corresponding instance type such as `DirectoryInfo` (Option B).
-- To support C# 13 or earlier, fall back to a conventional static helper class (Option C).
+The deciding factors are the call form and the target version.
+Option A matches the standard API's shape, Option B unifies on instance-style calls, and Option C covers C# 13 or earlier.
 
 ---
 

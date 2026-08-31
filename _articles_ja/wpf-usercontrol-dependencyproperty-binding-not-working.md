@@ -150,7 +150,7 @@ ViewModel 側にも `Title` という名前のプロパティが存在すると�
 
 ---
 
-## 解決方法
+## 3 つの参照方法
 
 内部のバインディングに、`DataContext` 以外の起点を明示する。
 選択肢は 3 つある。
@@ -169,10 +169,6 @@ ViewModel 側にも `Title` という名前のプロパティが存在すると�
 参照箇所が少ない場合や、内部で利用側の `DataContext` も併用したい場合は 1 を採る。
 2 は 1 とほぼ等価であり、記述を短くしたい場合に選ぶ（両者の差は「代替案・比較」で扱う）。
 内部で参照するプロパティが 3 つ以上あるコントロールでは 3 を採る。
-
----
-
-## 実装例
 
 まず 1 と 2 を、同じコントロールの中に並べて確認する。
 ルート要素へ `x:Name="Root"` を付け、`Title` を 3 通りの書き方で表示する。
@@ -245,6 +241,54 @@ public static readonly DependencyProperty TitleProperty =
 
 ---
 
+## 選択の分岐点
+
+3 つのどれを使うかは、内部で参照するプロパティの数と、利用側の `DataContext` も併用するかで決まる。
+
+**参照箇所が 1、2 か所にとどまるなら `RelativeSource AncestorType`。**
+バインディングごとに起点を書くため記述は増えるが、`DataContext` は利用側のまま残る。内部で利用側の `DataContext` も併せて参照したい場合は、この方法か次の `ElementName` を使う。
+
+**ルート要素を名前で指すなら `ElementName`。**
+記述は短くなるが、解決の仕組みは `RelativeSource` と異なる。`ElementName` は名前スコープから対象の名前を引き、`RelativeSource AncestorType` は要素ツリーを上へたどって型で探す。名前が別の名前スコープに閉じていて引けない位置では `ElementName` が解決しない（この構成での `DataTemplate` からの参照は後述のとおり解決する）。利用側の `DataContext` を参照するときは `Path=DataContext.HeaderText` のように書く。
+
+**内部で参照するプロパティが 3 つ以上あるなら、内側のルート要素へ `DataContext` を委譲する。**
+1 か所の設定で済み、以降は内部のすべてを `{Binding Title}` のまま書ける。`ContextMenu` の中からの参照が解決するのも、利用側からのバインディングを壊さない方法のうちではこれだけである。
+
+いずれも `UserControl` 要素そのものの `DataContext` には手を触れない。ここを書き換えると利用側からのバインディングが壊れる。
+
+---
+
+## 方法別の比較
+
+内部から自身の依存関係プロパティを参照する 4 つの方法を比較する。
+
+| 方法 | 記述量 | 利用側からのバインディング | `ContextMenu` 内 | 適するケース |
+| --- | --- | --- | --- | --- |
+| `RelativeSource AncestorType` | バインディングごとに指定 | 影響なし | 解決しない | 参照箇所が少なく、内部で利用側の `DataContext` も併用する場合 |
+| `ElementName` + ルートの `x:Name` | バインディングごとに指定 | 影響なし | 解決しない | 記述を短くしたい場合 |
+| 内側ルートへ `DataContext` を委譲 | 1 箇所のみ | 影響なし | 解決する | 内部で参照するプロパティが 3 つ以上ある場合 |
+| `DataContext = this` | 1 箇所のみ | **壊れる** | 解決する | 該当なし（採用しない） |
+
+`RelativeSource` と `ElementName` は通常の構成では結果が等価であり、差が出るのは次の 2 つの構成に限られる。
+
+1 つは、実装例で触れた「バインディングを書いた要素が別の `UserControl` の内側に入っている構成」である。
+`ElementName` は名前で直接指すため、この影響を受けない。
+実測でも、別の `UserControl` の内側に置いた要素から `AncestorType=UserControl` を評価すると、外側のコントロールではなく内側のコントロールが選ばれた。
+`AncestorType={x:Type local:InfoCard}` と自身の型を指定すれば `RelativeSource` でも対象は安定するが、その型の派生型が祖先にある場合はやはり近い方が選ばれる。
+
+もう 1 つは、テンプレートを別のコントロールへ再利用する構成である。
+`ElementName` は使用側の名前スコープに `Root` が無い時点で解決できなくなるのに対し、`AncestorType` は祖先の型さえ一致すれば成立する。
+
+内側ルートへの委譲は、内部の記述が `{Binding Title}` のまま済む点が最大の利点である。
+一方で、内部から利用側の `DataContext` を参照するには一手間が要る。
+`UserControl` 要素自身の `DataContext` は利用側の ViewModel のままであるため、`{Binding DataContext.HeaderText, RelativeSource={RelativeSource AncestorType={x:Type local:InfoCard}}}` と書けば到達でき、実測でも解決した。
+ただし、この参照を必要とする設計は再利用可能な部品として成立していない可能性が高く、必要なデータは依存関係プロパティとして明示的に受け取る形へ変えるのが妥当である。
+
+`DataContext = this` は、内部の記述量という点では委譲と同じ利点を持つが、利用側からのバインディングを壊す。
+コントロールを自分の 1 画面でしか使わない段階では症状が出ないため、再利用を始めた時点で問題が表面化する。
+
+---
+
 ## 注意点
 
 コンストラクターで `DataContext = this` と書くと、内部の `{Binding Title}` は動くようになる。
@@ -308,36 +352,6 @@ XAML の解析とバインディングは、`Title` の setter ではなく `Set
 実測でも、利用側に同じ名前の要素を置いた状態で双方が別の要素として解決し、エラーは出なかった。
 
 ---
-
-## 代替案・比較
-
-内部から自身の依存関係プロパティを参照する 4 つの方法を比較する。
-
-| 方法 | 記述量 | 利用側からのバインディング | `ContextMenu` 内 | 適するケース |
-| --- | --- | --- | --- | --- |
-| `RelativeSource AncestorType` | バインディングごとに指定 | 影響なし | 解決しない | 参照箇所が少なく、内部で利用側の `DataContext` も併用する場合 |
-| `ElementName` + ルートの `x:Name` | バインディングごとに指定 | 影響なし | 解決しない | 記述を短くしたい場合 |
-| 内側ルートへ `DataContext` を委譲 | 1 箇所のみ | 影響なし | 解決する | 内部で参照するプロパティが 3 つ以上ある場合 |
-| `DataContext = this` | 1 箇所のみ | **壊れる** | 解決する | 該当なし（採用しない） |
-
-`RelativeSource` と `ElementName` は通常の構成では結果が等価であり、差が出るのは次の 2 つの構成に限られる。
-
-1 つは、実装例で触れた「バインディングを書いた要素が別の `UserControl` の内側に入っている構成」である。
-`ElementName` は名前で直接指すため、この影響を受けない。
-実測でも、別の `UserControl` の内側に置いた要素から `AncestorType=UserControl` を評価すると、外側のコントロールではなく内側のコントロールが選ばれた。
-`AncestorType={x:Type local:InfoCard}` と自身の型を指定すれば `RelativeSource` でも対象は安定するが、その型の派生型が祖先にある場合はやはり近い方が選ばれる。
-
-もう 1 つは、テンプレートを別のコントロールへ再利用する構成である。
-`ElementName` は使用側の名前スコープに `Root` が無い時点で解決できなくなるのに対し、`AncestorType` は祖先の型さえ一致すれば成立する。
-
-内側ルートへの委譲は、内部の記述が `{Binding Title}` のまま済む点が最大の利点である。
-一方で、内部から利用側の `DataContext` を参照するには一手間が要る。
-`UserControl` 要素自身の `DataContext` は利用側の ViewModel のままであるため、`{Binding DataContext.HeaderText, RelativeSource={RelativeSource AncestorType={x:Type local:InfoCard}}}` と書けば到達でき、実測でも解決した。
-ただし、この参照を必要とする設計は再利用可能な部品として成立していない可能性が高く、必要なデータは依存関係プロパティとして明示的に受け取る形へ変えるのが妥当である。
-
-`DataContext = this` は、内部の記述量という点では委譲と同じ利点を持つが、利用側からのバインディングを壊す。
-コントロールを自分の 1 画面でしか使わない段階では症状が出ないため、再利用を始めた時点で問題が表面化する。
-
 ---
 
 ## まとめ
@@ -352,9 +366,7 @@ XAML の解析とバインディングは、`Title` の setter ではなく `Set
 - **エラーが出ないのに値が違う場合** — 利用側の `DataContext` に同名のプロパティが存在する。
 この状態は出力ウィンドウに現れないため、`RelativeSource` を明示するまで気付けない。
 
-構成の選択は次を基準とする。
-内部で参照するプロパティが 3 つ以上あるコントロールでは、内側のルート要素へ `DataContext` を委譲し、内部の記述を `{Binding Title}` のまま保つ。
-参照箇所が 1、2 か所にとどまる場合や、内部で利用側の `DataContext` も併せて参照する場合は、`RelativeSource AncestorType={x:Type local:InfoCard}` を個別に指定する。
-記述を短くしたい場合は `ElementName` を使う。
+分岐点は、内部で参照するプロパティの数にある。
+3 つ以上なら内側のルート要素へ `DataContext` を委譲し、1、2 か所なら `RelativeSource` か `ElementName` を個別に指定する。
 いずれの場合も `UserControl` 要素自身の `DataContext` には代入しない。
 内部から値を書き戻す入力用のコントロールでは、`FrameworkPropertyMetadataOptions.BindsTwoWayByDefault` を併せて指定する。
