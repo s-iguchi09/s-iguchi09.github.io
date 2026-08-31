@@ -8,6 +8,17 @@ layout: null
   検出ページ数が 0 のままであるため、その代替の通知手段として置いている。
   Google は XML サイトマップのほかに RSS 2.0 / Atom 1.0 もサイトマップとして受け付ける。
 
+  <updated> は公開日ではなく最終更新日時である。front matter の date は公開日であり、
+  記事を書き直しても動かないため、これを流用すると「更新は無い」と宣言することになり、
+  フィードを置いた目的そのものを潰す。正しい更新日時を持っているのは git の履歴だけだが、
+  GitHub Pages が許可するプラグインに jekyll-last-modified-at は含まれておらず、
+  Liquid からは読めない。そこで .github/scripts/generate_sitemap.py が git の履歴から
+  _data/lastmod.yml を書き出し、ここではそれを参照する。
+  未生成の間は date へフォールバックするので、フィード自体は壊れない。
+
+  noindex を付けた記事はフィードに載せない。載せると「クロールしてほしい」と
+  「インデックスしないでほしい」を同時に送ることになるため。
+
   記事を追加すれば Jekyll のビルドで自動的に反映されるため、
   Search Console への送信は最初の 1 回だけでよい。
 {%- endcomment -%}
@@ -22,14 +33,14 @@ layout: null
   <author>
     <name>s-iguchi</name>
   </author>
-{%- assign sorted_articles = site.articles_ja | sort: 'date' | reverse -%}
+{%- assign sorted_articles = site.articles_ja | where_exp: "a", "a.noindex != true" | sort: 'date' | reverse -%}
 {%- for article in sorted_articles %}
   <entry>
     <title>{{ article.title | strip_html | escape }}</title>
     <link href="{{ site.url }}{{ article.url }}" rel="alternate" type="text/html" />
     <id>{{ site.url }}{{ article.url }}</id>
     <published>{{ article.date | date_to_xmlschema }}</published>
-    <updated>{{ article.date | date_to_xmlschema }}</updated>
+    <updated>{{ site.data.lastmod.articles_ja[article.slug] | default: article.date | date_to_xmlschema }}</updated>
     <summary type="text">{{ article.excerpt | strip_html | strip_newlines | escape }}</summary>
   </entry>
 {%- endfor %}
