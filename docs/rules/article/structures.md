@@ -219,17 +219,19 @@
 # 日本語版と英語版を別々に数える。対応する翻訳どうしは同じ構成になるため、混ぜると常に 2 件ずつ数えてしまう。
 # フェンスは開始記号の文字と長さを覚え、同じ文字で開始以上の長さのものだけを終了として扱う。
 # ```` で囲んだ中に ``` があっても、そこでは閉じない。
-# 終了フェンスの後ろに文字を置けない（info string は開始側にしか付かない）ことも判定に含める。
+# 終了フェンスの後ろに置けるのは空白とタブだけで、info string は開始側にしか付かない。
+# CRLF のファイルでも同じ判定になるよう、行末の CR を先に落とす。
 for dir in _articles_ja _articles_en; do
   echo "--- $dir"
   for f in "$dir"/*.md; do
     awk '
+      { sub(/\r$/, "") }
       /^ {0,3}(`{3,}|~{3,})/ {
         line = $0; sub(/^ +/, "", line)
         ch = substr(line, 1, 1); n = 0
         while (substr(line, n + 1, 1) == ch) n++
         if (!inside) { inside = 1; fence_char = ch; fence_len = n }
-        else if (ch == fence_char && n >= fence_len && substr(line, n + 1) ~ /^[[:space:]]*$/) { inside = 0 }
+        else if (ch == fence_char && n >= fence_len && substr(line, n + 1) ~ /^[ \t]*$/) { inside = 0 }
         next
       }
       !inside && /^## /
