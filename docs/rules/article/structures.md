@@ -157,6 +157,8 @@
 
 - `できない理由` では、**エラーメッセージや API の登録内容を実測で示す**。「仕様だから」で済ませない。
 - `設計を置き換える` は、元のやり方の代用ではなく、別の設計として書く。
+- 置き換えた設計に複数の実装手段がある場合は、実装例のあとに比較の節を置いてよい。
+  ただし置き換えそのものが主題であり、手段の選択が主題なら[選択型](#5-選択型)である。
 
 **例:** `wpf-treeview-select-item-programmatically`（`SelectedItem` が読み取り専用で、選択状態は `TreeViewItem` 側にある）、`wpf-usercontrol-dependencyproperty-binding-not-working`
 

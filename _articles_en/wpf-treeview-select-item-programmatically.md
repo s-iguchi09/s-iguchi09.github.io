@@ -27,7 +27,7 @@ Every behavior and exception message reported here was observed by running the c
 
 ---
 
-## Problem
+## What We Want to Do
 
 The target is an ordinary `TreeView` that renders hierarchical data through a `HierarchicalDataTemplate`.
 
@@ -80,7 +80,7 @@ A read-only dependency property cannot be the **target** of a binding in any dir
 
 ---
 
-## Cause / Background
+## Why It Cannot Be Done
 
 `TreeView` does not hold the selection itself.
 The state of being selected belongs to each `TreeViewItem` through its `IsSelected` property.
@@ -125,7 +125,7 @@ As the last row shows, once the container does exist, `IsSelected` propagates to
 
 ---
 
-## Solution
+## Replacing the Design
 
 Store the selection and expansion state on the node view model, and bind them two-way to `IsSelected` and `IsExpanded` of `TreeViewItem` through `ItemContainerStyle` setters.
 
@@ -354,7 +354,7 @@ Related interactions between virtualization and selection state are covered in [
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Implementations
 
 The two ways to request a selection and the attached behavior are compared below, together with `SelectedItemChanged`, which only reads the resulting selection.
 
