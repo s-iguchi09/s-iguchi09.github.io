@@ -316,7 +316,7 @@ Placing 1,000 `Label`s in a non-virtualizing `StackPanel` and comparing, the lay
 A `Label` with the `ContentTemplate` of Workaround 3 applied, on the other hand, stays close to the cost of a `Label` with no underscore.
 
 For a screen displaying large amounts of text where the data contains underscores, Workaround 3 addresses both display correctness and rendering cost.
-The relationship between control choice and rendering cost is covered in detail in [Why Placing Many WPF Labels Is Slow, and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/).
+The relationship between control choice and rendering cost is covered in detail in [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/).
 
 ---
 
@@ -340,5 +340,5 @@ On screens handling dynamic data, Workaround 3 is the default choice, addressing
 
 ---
 
-<!-- 関連記事 -->
-- [Why Placing Many WPF Labels Is Slow, and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/)
+<!-- Related articles -->
+- [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/)

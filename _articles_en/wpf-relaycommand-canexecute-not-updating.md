@@ -95,7 +95,7 @@ The last row is a control: a button whose `Command` is unset has nothing to eval
 
 ---
 
-## Solution
+## Two Ways to Raise the Notification
 
 There are two ways to raise `CanExecuteChanged`.
 
@@ -103,10 +103,6 @@ There are two ways to raise `CanExecuteChanged`.
 - **Raise `CanExecuteChanged` manually** — keep a dedicated event and raise it explicitly when the condition changes. Re-evaluation is limited to the command in question, and the trigger is fully under control.
 
 The former rides on WPF's re-evaluation cycle; the latter re-evaluates only when explicitly told to.
-
----
-
-## Implementation
 
 ### Delegate to CommandManager.RequerySuggested
 
@@ -194,17 +190,22 @@ The `RelayCommand` in `CommunityToolkit.Mvvm` uses this approach, exposing an eq
 
 ---
 
-## Notes
+## How to Choose
 
-- **`RequerySuggested` holds handlers by weak reference:** `CommandManager.RequerySuggested` keeps registered handlers as weak references. In the delegating approach the handler registered with `RequerySuggested` is created and held by the command source (such as a `Button`) itself, so it is not collected while that source stays alive in the visual tree, and this is usually fine; but a custom implementation that registers a handler directly with `RequerySuggested` must keep a separate strong reference, or the handler is collected and re-evaluation stops.
-- **Call `InvalidateRequerySuggested` on the UI thread:** the re-evaluation this API prompts is processed on the UI thread by the `CommandManager`, and the target command sources (UI elements) live on the UI thread as well. The call therefore assumes the UI thread; when state changes on a background thread, marshal to the UI thread with the `Dispatcher` before calling it.
-- **Raise manual events on the UI thread as well:** `RaiseCanExecuteChanged` synchronously invokes the button-side handler, which updates a UI element. Raising it from another thread touches UI elements off the UI thread, so marshal to the UI thread with the `Dispatcher`.
-- **Delegation re-evaluates the sources connected to `RequerySuggested`:** `InvalidateRequerySuggested` makes the command sources connected to `RequerySuggested` re-query `CanExecute`. Heavy work inside `CanExecute` makes frequent re-evaluation harm responsiveness, so keep `CanExecute` lightweight.
-- **Do not leave `CanExecuteChanged` declared but unraised:** the opening example, which declares `CanExecuteChanged` without ever raising it, compiles cleanly yet is a classic reason the state stays frozen.
+Which one applies is settled by where the condition that decides executability lives.
+
+**When executability is tied to UI interaction (focus movement, selection changes), delegate.**
+`CommandManager` prompts re-evaluation on those interactions, so the command follows along without raising anything. This needs the least code.
+
+**When executability is determined by a view model property, raise manually.**
+Only the target command is re-evaluated, at the moment the property changes, and the trigger is visible to the reader. Frameworks such as `CommunityToolkit.Mvvm` take this approach.
+
+**To reflect a UI-independent change while still delegating, call `CommandManager.InvalidateRequerySuggested()` at that point.**
+The completion of asynchronous work is one such trigger. It re-queries every command source connected to `RequerySuggested`, though, so a high frequency costs responsiveness.
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Approaches
 
 | Approach | Pros | Cons | Best suited for |
 |---|---|---|---|
@@ -214,15 +215,22 @@ The `RelayCommand` in `CommunityToolkit.Mvvm` uses this approach, exposing an eq
 
 ---
 
+## Notes
+
+- **`RequerySuggested` holds handlers by weak reference:** `CommandManager.RequerySuggested` keeps registered handlers as weak references. In the delegating approach the handler registered with `RequerySuggested` is created and held by the command source (such as a `Button`) itself, so it is not collected while that source stays alive in the visual tree, and this is usually fine; but a custom implementation that registers a handler directly with `RequerySuggested` must keep a separate strong reference, or the handler is collected and re-evaluation stops.
+- **Call `InvalidateRequerySuggested` on the UI thread:** the re-evaluation this API prompts is processed on the UI thread by the `CommandManager`, and the target command sources (UI elements) live on the UI thread as well. The call therefore assumes the UI thread; when state changes on a background thread, marshal to the UI thread with the `Dispatcher` before calling it.
+- **Raise manual events on the UI thread as well:** `RaiseCanExecuteChanged` synchronously invokes the button-side handler, which updates a UI element. Raising it from another thread touches UI elements off the UI thread, so marshal to the UI thread with the `Dispatcher`.
+- **Keep `CanExecute` lightweight:** `InvalidateRequerySuggested` makes the command sources connected to `RequerySuggested` re-query `CanExecute`. Heavy work inside it makes frequent re-evaluation harm responsiveness.
+- **Do not leave `CanExecuteChanged` declared but unraised:** the opening example, which declares `CanExecuteChanged` without ever raising it, compiles cleanly yet is a classic reason the state stays frozen.
+
+---
+
 ## Summary
 
 The button fails to update because of a missing `CanExecuteChanged` notification, not because of the `CanExecute` result itself.
-The selection criteria are as follows.
 
-- **When executability is tied to UI interactions such as focus or selection:** delegate to `CommandManager.RequerySuggested`. It needs the least code and follows UI interactions automatically.
-- **When executability is determined by view model properties:** raise `CanExecuteChanged` manually. Only the target command is re-evaluated, exactly when the condition changes. Using a framework such as `CommunityToolkit.Mvvm` amounts to this approach.
-- **When reflecting an asynchronous completion under the delegating approach:** call `CommandManager.InvalidateRequerySuggested()` at that moment.
-
+The deciding question is whether the condition lives in UI interaction or in the view model.
+Delegate to `CommandManager.RequerySuggested` for the former; raise manually for the latter.
 Raising every notification on the UI thread and keeping `CanExecute` lightweight are the prerequisites for not harming responsiveness.
 
 ---

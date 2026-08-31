@@ -95,7 +95,7 @@ WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは�
 
 ---
 
-## 解決方法
+## 2 つの発火方式
 
 `CanExecuteChanged` を発火する方式は 2 つある。
 
@@ -103,10 +103,6 @@ WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは�
 - **自前で `CanExecuteChanged` を発火する** — 独自のイベントを保持し、条件が変わった時点で明示的に発火する。再評価の対象が当該コマンドに限られ、発火の契機を完全に制御できる。
 
 前者は「WPF の再評価サイクルに相乗りする」方式、後者は「必要なときだけ自分で再評価させる」方式である。
-
----
-
-## 実装例
 
 ### CommandManager.RequerySuggested へ委譲する
 
@@ -194,17 +190,22 @@ public class SaveViewModel
 
 ---
 
-## 注意点
+## 選択の分岐点
 
-- **`RequerySuggested` は弱参照でハンドラを保持する:** `CommandManager.RequerySuggested` は登録されたハンドラを弱参照で保持する。委譲方式で登録されるハンドラはコマンドソース（`Button` など）自身が生成・保持するため、そのコマンドソースがビジュアルツリー上で生存している限りハンドラは回収されず、通常は問題にならない。一方、ハンドラを直接 `RequerySuggested` に登録する独自実装では、強参照を別途保持しないとハンドラが回収されて再評価が止まる。
-- **`InvalidateRequerySuggested` は UI スレッドで呼ぶ:** この API が促す `CommandManager` の再評価は UI スレッド側で処理され、対象のコマンドソース（UI 要素）も UI スレッドに属する。そのため呼び出しも UI スレッドを前提とし、バックグラウンドスレッドで状態を変えた場合は、`Dispatcher` で UI スレッドへ移してから呼ぶ。
-- **自前発火も UI スレッドで行う:** `RaiseCanExecuteChanged` の発火はボタン側のハンドラ（UI 要素の更新）を同期的に呼び出す。別スレッドから発火すると UI 要素へ別スレッドで触れることになるため、`Dispatcher` 経由で UI スレッドに寄せる。
-- **委譲方式は `RequerySuggested` 接続分を広く再評価する:** `InvalidateRequerySuggested` は `RequerySuggested` に接続されたコマンドソースに `CanExecute` を問い直させる。`CanExecute` に重い処理を書くと、頻繁な再評価が UI の応答性を損なう。`CanExecute` は軽量に保つ。
-- **`CanExecute` を空実装のまま放置しない:** 冒頭のように `CanExecuteChanged` を宣言だけして発火しない実装は、コンパイルは通るが状態が固定される典型的な原因である。
+どちらを使うかは、実行可否を決める条件がどこにあるかで決まる。
+
+**実行可否が UI 操作（フォーカス移動・選択の変化）に連動する場合は委譲方式。**
+`CommandManager` はこれらの操作を契機に再評価を促すため、発火を書かなくても追従する。記述が最も少ない。
+
+**実行可否が ViewModel のプロパティで決まる場合は自前発火。**
+プロパティが変わった時点で対象のコマンドだけを再評価でき、契機が読み手に見える。`CommunityToolkit.Mvvm` などのフレームワークもこの方式を採る。
+
+**委譲方式のまま UI 非依存の条件変化を反映したい場合は、その時点で `CommandManager.InvalidateRequerySuggested()` を呼ぶ。**
+非同期処理の完了など、UI 操作を伴わない契機がこれにあたる。ただし `RequerySuggested` に接続されたコマンドソースをまとめて再評価するため、頻度が高いと応答性に響く。
 
 ---
 
-## 代替案・比較
+## 方式別の比較
 
 | 方式 | メリット | デメリット | 適するケース |
 |---|---|---|---|
@@ -214,16 +215,23 @@ public class SaveViewModel
 
 ---
 
+## 注意点
+
+- **`RequerySuggested` は弱参照でハンドラを保持する:** `CommandManager.RequerySuggested` は登録されたハンドラを弱参照で保持する。委譲方式で登録されるハンドラはコマンドソース（`Button` など）自身が生成・保持するため、そのコマンドソースがビジュアルツリー上で生存している限りハンドラは回収されず、通常は問題にならない。一方、ハンドラを直接 `RequerySuggested` に登録する独自実装では、強参照を別途保持しないとハンドラが回収されて再評価が止まる。
+- **`InvalidateRequerySuggested` は UI スレッドで呼ぶ:** この API が促す `CommandManager` の再評価は UI スレッド側で処理され、対象のコマンドソース（UI 要素）も UI スレッドに属する。そのため呼び出しも UI スレッドを前提とし、バックグラウンドスレッドで状態を変えた場合は、`Dispatcher` で UI スレッドへ移してから呼ぶ。
+- **自前発火も UI スレッドで行う:** `RaiseCanExecuteChanged` の発火はボタン側のハンドラ（UI 要素の更新）を同期的に呼び出す。別スレッドから発火すると UI 要素へ別スレッドで触れることになるため、`Dispatcher` 経由で UI スレッドに寄せる。
+- **`CanExecute` は軽量に保つ:** `InvalidateRequerySuggested` は `RequerySuggested` に接続されたコマンドソースに `CanExecute` を問い直させる。重い処理を書くと、頻繁な再評価が UI の応答性を損なう。
+- **`CanExecute` を空実装のまま放置しない:** 冒頭のように `CanExecuteChanged` を宣言だけして発火しない実装は、コンパイルは通るが状態が固定される典型的な原因である。
+
+---
+
 ## まとめ
 
 ボタンの有効・無効が更新されないのは、`CanExecute` の結果ではなく `CanExecuteChanged` の発火漏れが原因である。
-選択基準は次のとおりである。
 
-- **実行可否がフォーカスや選択など UI 操作に連動する場合:** `CommandManager.RequerySuggested` へ委譲する。記述が最も少なく、UI 操作に自動で追従する。
-- **実行可否が ViewModel のプロパティで決まる場合:** 自前で `CanExecuteChanged` を発火する。対象コマンドだけを、条件が変わった時点で再評価できる。既存のフレームワーク（`CommunityToolkit.Mvvm` など）を使う場合もこの方式に相当する。
-- **委譲方式のまま非同期完了などを反映したい場合:** その時点で `CommandManager.InvalidateRequerySuggested()` を呼ぶ。
-
-いずれの発火も UI スレッドで行い、`CanExecute` は軽量に保つことが、応答性を損なわない前提となる。
+分岐点は、実行可否を決める条件が UI 操作にあるか ViewModel にあるかにある。
+UI 操作なら `CommandManager.RequerySuggested` へ委譲し、ViewModel のプロパティなら自前で発火する。
+いずれの発火も UI スレッドで行い、`CanExecute` を軽量に保つことが、応答性を損なわない前提となる。
 
 ---
 
