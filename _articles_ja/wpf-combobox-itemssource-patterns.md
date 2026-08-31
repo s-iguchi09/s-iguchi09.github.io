@@ -59,7 +59,8 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 ## 5 つの実装パターン
 
 `ItemsSource` の要素型と、ViewModel に何を持たせたいかの組み合わせで、代表的な 5 パターンを順に見る。
-要素型が同じでも、選択値の受け取り方や表示の作り方で構成が変わる。設定の違いは、同じ選択肢を選んだときの表示に現れる。
+要素型が同じでも、選択値の受け取り方や表示の作り方で構成が変わる。
+表示が変わるものもあれば、表示は同じで `SelectedValue` に入る値だけが変わるもの（パターン B と C）もある。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png" alt="3 つの ComboBox を並べた画面。文字列リストと DisplayMemberPath は Baker とだけ表示され、ItemTemplate を使ったものは 102 と Baker の 2 列で表示されている。" width="469" height="184" loading="lazy">

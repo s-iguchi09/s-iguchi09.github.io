@@ -245,8 +245,8 @@ Which of the three applies is settled by how many properties the control referen
 **One or two reference sites call for `RelativeSource AncestorType`.**
 The source is written per binding, so there is more markup, but `DataContext` stays as the consumer set it. Reading the consuming `DataContext` from inside calls for this or the `ElementName` below.
 
-**Writing the same thing more briefly calls for `ElementName`.**
-Give the root element an `x:Name` and refer to it by name. It is all but equivalent to `RelativeSource`; the difference is the amount of markup. Reading the consuming `DataContext` is written as `Path=DataContext.HeaderText`.
+**Referring to the root element by name calls for `ElementName`.**
+The markup is shorter, but it resolves differently from `RelativeSource`. `ElementName` looks up a name within the same XAML namescope, while `RelativeSource AncestorType` walks up the element tree matching a type. Somewhere the namescope is separate, such as inside a template, `ElementName` does not resolve. Reading the consuming `DataContext` is written as `Path=DataContext.HeaderText`.
 
 **Three or more internal references call for delegating `DataContext` on the inner root element.**
 One setting covers it, and everything inside can stay written as `{Binding Title}`. It is also the only way to resolve from inside a `ContextMenu` without breaking the binding the consumer supplies.

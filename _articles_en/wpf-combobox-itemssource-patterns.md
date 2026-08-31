@@ -64,7 +64,8 @@ Setting `SelectedValuePath=Id` produces the `Int32` `20`, changing the type as w
 ## Five Implementation Patterns
 
 Five representative patterns, formed by the element type in `ItemsSource` combined with what the ViewModel needs to hold.
-Even with the same element type, the configuration changes with how the selection is received and how the display is built. The difference shows up in how the selected item is rendered.
+Even with the same element type, the configuration changes with how the selection is received and how the display is built.
+Some change what is rendered; others render the same and differ only in what lands in `SelectedValue` (Patterns B and C).
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png" alt="Three ComboBox controls. The string list and the DisplayMemberPath one show only Baker, while the one using ItemTemplate shows 102 and Baker in two columns." width="469" height="184" loading="lazy">

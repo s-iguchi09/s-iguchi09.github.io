@@ -98,11 +98,14 @@
 テーマが重ならなくても、骨格が既存記事と揃いすぎることがある。構成型（`structures.md`）を選んだうえで、実際の重複を確認する。
 
 ```bash
-# コードブロック内の行は見出しとして数えない。
-# 記事に Markdown の見出し例やシェルコメントがあると、見出しでない行まで数えてしまうため。
-for f in _articles_ja/*.md; do
-  awk '/^```/{inside = !inside; next} !inside && /^## /' "$f" | paste -sd'>'
-done | sort | uniq -c | sort -rn | head -5
+# 日本語版と英語版を別々に数える。対応する翻訳どうしは同じ構成になるため、混ぜると常に 2 件ずつ数えてしまう。
+# フェンスの判定は ``` と ~~~、3 スペースまでのインデントに対応する（厳密な Markdown パーサーではない）。
+for dir in _articles_ja _articles_en; do
+  echo "--- $dir"
+  for f in "$dir"/*.md; do
+    awk '/^ {0,3}(```|~~~)/{inside = !inside; next} !inside && /^## /' "$f" | paste -sd'>'
+  done | sort | uniq -c | sort -rn | head -5
+done
 ```
 
 - **完全に一致する構成は 5 記事までとする。** 6 記事以上になったら、いずれかの題材が型に合っていない可能性が高い。

@@ -185,7 +185,8 @@ In the measured run, a `TextBox` placed inside a `ScrollViewer` drew its red bor
 Results therefore diverge between the inside and the outside of a `ScrollViewer` within one screen, and the symptom can surface as "only some fields lack the border".
 When the template has been replaced but the symptom does not reproduce, check whether the control sits inside a `ScrollViewer`.
 
-To establish this stage, include `AdornerDecorator` when the `Window` template has been replaced.
+To establish this stage, something above the target element must supply an `AdornerLayer`.
+Including `AdornerDecorator` when the `Window` template has been replaced is the usual remedy, but as noted above, inside a `ScrollViewer` the `ScrollContentPresenter` supplies the layer and that alone is enough.
 
 ### Before stage 1: the source has not been updated yet
 
