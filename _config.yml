@@ -12,6 +12,10 @@ kramdown:
 include:
   - sitemap.xml
   - sitemap_index.xml
+  # 切り分け用。Search Console が sitemap.xml を「読み込めませんでした」と返し、
+  # 検出ページ数が 0 のままであるため、xhtml:link / changefreq / priority を外した
+  # 最小形式でも同じ結果になるかを比べる。原因が分かったら削除する。
+  - sitemap-min.xml
 
 # 公開サイトに出力しないファイル。
 # docs/rules 配下は AI エージェント向けの内部ルール文書であり、サイトのコンテンツではない。
