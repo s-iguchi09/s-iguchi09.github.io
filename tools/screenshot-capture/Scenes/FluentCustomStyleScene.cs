@@ -23,6 +23,14 @@ internal sealed class FluentCustomStyleScene : IScene
         </Style>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "ThemeMode の有無で、コントロールに供給されるテンプレートが変わること",
+        "アプリ側の暗黙スタイルが当たったかを Style プロパティで判別する",
+        "同じキーの暗黙スタイルを置くと Fluent のテンプレートが供給されなくなること",
+        "テンプレートの出どころを名前付きパーツで判別する",
+    ];
+
     public string Slug => "wpf-fluent-theme-custom-style-not-applied";
 
     public async Task CaptureAsync(SceneContext context)

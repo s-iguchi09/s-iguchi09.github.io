@@ -22,6 +22,23 @@ This article shows how to customise that format so the control always renders da
 The techniques below rely on the default `DatePicker` control template, which contains a `DatePickerTextBox` in its visual tree.  
 A fully retemplated `DatePicker` may not expose that element, in which case changing the picker's own text relies on the code-behind approach or on handling the format inside the custom template. The converter shown later formats companion displays, not the picker itself.  
 
+The text a `DatePicker` actually shows can be confirmed by varying the setting and reading it back.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg" alt="A table of the effective SelectedDateFormat, where that value comes from, and the text shown by a DatePicker per setting. Setting nothing yields Short, sourced from the default style. The default and Short both give 2026/07/17, Long gives a long-form Japanese date, and overwriting the text part gives 2026/07/17 with the weekday appended." width="642" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with Japanese regional settings, reading the text part of a <code>DatePicker</code> holding <code>2026-07-17</code>. The parenthesis in the second column is where the value came from, read through <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
+</figure>
+
+**`SelectedDateFormat` offers only `Short` and `Long`.** Neither can state an arbitrary format.
+That is why the workarounds described below are needed.
+
+Setting nothing yields `Short`, but that is not the default value registered in the dependency property metadata.
+The metadata default is `Long`; `Short` comes from the default style. The `DefaultStyle` in the second column of the table is that source.
+
+The last row overwrites the text part inside the template directly. A format carrying the weekday, which neither built-in form can express, is reachable that way.
+
+---
+
 ## Setting the Format in XAML
 
 `DatePicker` exposes a `SelectedDateFormat` property with two values: `Short` (default) and `Long`.  

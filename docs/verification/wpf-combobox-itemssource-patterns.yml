@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-combobox-itemssource-patterns
+slug: "wpf-combobox-itemssource-patterns"
+scene: "ComboBoxItemsSourceScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "同じ選択に対して SelectedItem / SelectedValue / SelectedIndex が返す値"
+  - "SelectedValuePath の有無で SelectedValue の中身が変わること"
+  - "DisplayMemberPath の有無で表示される文字列が変わること"
+images:
+  - "images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png"
+  - "images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg"

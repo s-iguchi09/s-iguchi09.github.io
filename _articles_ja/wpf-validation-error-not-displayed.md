@@ -197,6 +197,25 @@ WPF の入力検証は、次の 3 段階が独立して成立している。
 
 ---
 
+どの段階で止まっているかは、`Validation.HasError`・`Validation.Errors` の件数・アドーナーの数を分けて読めば判別できる。
+常にエラーを返すソースへバインドした `TextBox` で測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-validation-error-not-displayed/validation-stages.svg" alt="検証の構成別に HasError・Errors の件数・アドーナーの数を測った表。IDataErrorInfo だけでは HasError が False で Errors も 0。ValidatesOnDataErrors を有効にすると True・1・1 になる。INotifyDataErrorInfo は既定で True・1・1。ValidationRules も True・1・1。ErrorTemplate を null にすると True・1 のままアドーナーだけが 0 になる。" width="615" height="230" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、常にエラーを返すソースへバインドした <code>TextBox</code> を測った結果。<code>adorners</code> は <code>AdornerLayer.GetAdorners</code> が返した数である。</figcaption>
+</figure>
+
+**1 行目は `Errors` が 0 である。** `IDataErrorInfo` を実装しても、`ValidatesOnDataErrors` を有効にしなければ段階 1 に到達しない。
+2 行目で有効にすると 1 件になり、アドーナーも 1 つ描かれる。
+
+`INotifyDataErrorInfo` は 3 行目のとおり、対応する `ValidatesOnNotifyDataErrors` が既定で有効なため、実装しただけで検証に参加する。
+2 つのインターフェイスで既定値が異なる点が、この問題を分かりにくくしている。
+
+最終行が段階 3 だけで止まった状態である。`HasError` は `True`、`Errors` は 1 件のまま、アドーナーだけが 0 になっている。
+**エラーは保持されているのに描かれない。** 「値は不正なのに赤枠が出ない」という症状は、この行に当たる。
+
+---
+
 ## 解決方法
 
 3 段階のそれぞれを明示的に成立させる。

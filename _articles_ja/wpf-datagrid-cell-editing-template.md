@@ -30,6 +30,18 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 この要件差を単一コントロールで満たそうとすると、どちらかの体験が犠牲になる。
 `DataGrid` は編集開始時にテンプレートを切り替える仕組みを持つため、表示用と編集用を分離する設計が適している。
 
+表示中と編集中で、セルに置かれる要素が実際に入れ替わることは測って確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.svg" alt="表示中と編集中でセルに置かれる要素を測った表。表示中は TextBlock で cell.IsEditing は False、BeginEdit を呼ぶと ComboBox に変わり cell.IsEditing が True になる。" width="532" height="140" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>CellTemplate</code> に <code>TextBlock</code>、<code>CellEditingTemplate</code> に <code>ComboBox</code> を置いた <code>DataGridTemplateColumn</code> を測った結果。要素の型は visual ツリーから読み取っている。</figcaption>
+</figure>
+
+**要素そのものが差し替わっている。** 同じコントロールの見た目が変わるのではなく、`CellTemplate` の内容が破棄されて `CellEditingTemplate` の内容が生成される。
+このため、編集用テンプレートに重いコントロールを置いても、表示中はその生成コストがかからない。
+
+---
+
 ## 解決方法
 
 `DataGridTemplateColumn` を使い、通常時は `CellTemplate`、編集時は `CellEditingTemplate` を定義する。

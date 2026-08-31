@@ -59,6 +59,28 @@ The comparison is not case-sensitive.
 
 ---
 
+Sorting the same input with each comparer shows the difference directly.
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.svg" alt="A table of the same input sorted by each comparer. Ordinal, CurrentCulture, and OrdinalIgnoreCase all produce Item1, item10, item2, item20, item3. Only StrCmpLogicalW produces Item1, item2, item3, item10, item20." width="488" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, sorting <code>item10, item2, Item1, item20, item3</code> with each comparer.</figcaption>
+</figure>
+
+**Ordinal, culture-aware, and case-insensitive ordinal comparison all give the same result.** Case handling is not what is at stake here.
+Only `StrCmpLogicalW` compares runs of digits as numbers and produces the expected order.
+
+What each comparer returns for an individual pair can be checked as well.
+
+<figure class="article-figure">
+  <img src="/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.svg" alt="A table comparing the return values of StrCmpLogicalW and CompareOrdinal per pair of strings. For item2 versus item10 the signs are opposite. For Item2 versus item2, StrCmpLogicalW returns 0 while CompareOrdinal returns -1." width="508" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by passing each pair to <code>StrCmpLogicalW</code> and <code>string.CompareOrdinal</code>. Only the sign is shown.</figcaption>
+</figure>
+
+**The row for `"Item2"` against `"item2"` reads `0`.** `StrCmpLogicalW` ignores case, so it treats the two as equivalent.
+`"item02"` and `"item2"` are not equivalent, and the zero-padded one sorts first: equal as numbers, they are ordered by their digit count.
+
+---
+
 ## Solution
 
 Declare `StrCmpLogicalW` for P/Invoke with `DllImport`, and call it from the `Compare` method of a class that implements `IComparer<string>`.

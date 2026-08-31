@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- linq-backport-netframework-to-net8
+slug: "linq-backport-netframework-to-net8"
+scene: "LinqBackportNet8Scene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる"
+  - "KeyValuePair 版とタプル版の両方、および IEqualityComparer オーバーロード"
+  - "キーが重複したときに送出される例外の型"
+images:
+  - "images/articles/linq-backport-netframework-to-net8/linq-todictionary-without-selectors.png"
+  - "images/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.svg"

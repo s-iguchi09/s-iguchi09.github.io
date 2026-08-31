@@ -255,6 +255,15 @@ namespace System.Linq
 #endif
 ```
 
+この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Chunk・MaxBy・MinBy・DistinctBy のいずれも、境界値を含めて同じ結果になっている。" width="905" height="380" loading="lazy">
+  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+空の並びに対する `MaxBy` が、値型では `InvalidOperationException`、参照型では `null` になる点まで一致している。この違いはシグネチャからは読み取れない。
+
 コンパイル時に `NET6_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 6 未満の環境）でのみ、上記クラスが有効になる。
 
 ---

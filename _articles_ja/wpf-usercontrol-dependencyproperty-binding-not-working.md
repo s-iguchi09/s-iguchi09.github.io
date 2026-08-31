@@ -135,6 +135,21 @@ ViewModel 側にも `Title` という名前のプロパティが存在すると�
 
 ---
 
+内部要素からの参照方法を変えて、届く値と `DataContext` の型を測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.svg" alt="UserControl 内部の TextBlock からの参照方法別に、届いた文字列と DataContext の型を測った表。素の Binding と、内部要素に書いた RelativeSource Self は空のまま。RelativeSource AncestorType では Title の値が届く。DataContext はいずれも利用側の PageViewModel である。" width="705" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>InfoCard</code>（<code>Title</code> 依存関係プロパティを持つ <code>UserControl</code>）の内部に置いた <code>TextBlock</code> から <code>Title</code> を参照した結果。利用側の <code>DataContext</code> には <code>PageViewModel</code> を設定している。</figcaption>
+</figure>
+
+**`DataContext` の列はどの行も `PageViewModel` である。** 内部要素から見た `DataContext` は `InfoCard` ではなく、利用側の ViewModel である。
+素の `{Binding Title}` はこの `PageViewModel` に `Title` を探しにいくため、値が届かない。
+
+2 行目にも注意する。`RelativeSource Self` は内部要素自身を指すため、`TextBlock` に `Title` を探すことになり、やはり届かない。
+届くのは `AncestorType` で `UserControl` までさかのぼった 3 行目だけである。
+
+---
+
 ## 解決方法
 
 内部のバインディングに、`DataContext` 以外の起点を明示する。

@@ -52,6 +52,24 @@ Fluent テーマの `TextBox` は、キーボードフォーカスが入ると�
 
 ---
 
+テンプレートに存在する名前付きパーツは、実際に適用してから読み出せば確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行ではどちらの経路でも DeleteButton が残る。" width="913" height="320" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。<code>Style applied</code> は <code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（従来のテーマスタイル）を示す。</figcaption>
+</figure>
+
+**`DeleteButton` が存在するのは、Fluent のテンプレートが届いており、かつそれを上書きする暗黙スタイルが無い行である。** `ThemeMode` を設定した場合と `Fluent.xaml` を直接マージした場合の両方で現れる。 これがクリアボタンの実体であり、`.NET 10` でのパーツ名がこの名前であることが確かめられる。
+
+暗黙スタイルを置いた行にも注意する。テーマがどちらの経路で届いていても、`BasedOn` を書かない暗黙スタイルを同じキーに置くと `DeleteButton` が消える。
+Fluent のテンプレート自体が供給されなくなるため、パーツを名前で探す方法はこの状態では使えない。
+
+最後の 2 行はその対照で、`BasedOn` で元のスタイルを引き継いだ暗黙スタイルである。どちらの経路でも同じ結果になっている。
+`Padding` は 8 に変わっていて自前の `Setter` は効いているのに、`DeleteButton` は残っている。
+**テンプレートを失うのは、暗黙スタイルを置いたことではなく、元のスタイルを引き継がなかったことによる。**
+
+---
+
 ## 解決方法
 
 前述のとおり、アプローチは 2 系統ある。

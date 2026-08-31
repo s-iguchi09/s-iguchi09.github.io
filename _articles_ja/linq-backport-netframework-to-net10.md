@@ -192,6 +192,15 @@ namespace System.Linq
 #endif
 ```
 
+この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。LeftJoin・RightJoin・Shuffle のいずれも、境界値を含めて同じ結果になっている。" width="866" height="290" loading="lazy">
+  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+`Shuffle` は乱数を使うため、整列し直したうえで比較している。相手が居ない行に既定値が渡る点も一致している。
+
 `LeftJoin`・`RightJoin` の結果セレクタには、本家と一致する `null` 許容注釈（`LeftJoin` は内部要素 `TInner?`、`RightJoin` は外部要素 `TOuter?`）を付けている。
 これにより「どちら側が欠けうるか」がシグネチャ上で表現され、移行前後の null 許容解析も一致する。
 `Shuffle` の乱数源は入れ子の `#if NET6_0_OR_GREATER` でさらに分岐し、`Random.Shared` の無い .NET Framework では `[ThreadStatic]` なインスタンスでスレッド安全性を確保する。

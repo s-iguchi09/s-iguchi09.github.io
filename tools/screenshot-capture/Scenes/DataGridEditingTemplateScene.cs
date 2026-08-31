@@ -12,6 +12,12 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class DataGridEditingTemplateScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "表示中は CellTemplate、編集中は CellEditingTemplate の要素がセルに置かれること",
+        "BeginEdit を呼ぶと実際に要素の型が入れ替わること",
+    ];
+
     public string Slug => "wpf-datagrid-cell-editing-template";
 
     public async Task CaptureAsync(SceneContext context)
@@ -37,6 +43,12 @@ internal sealed class DataGridEditingTemplateScene : IScene
             editing.BeginEdit();
             await Task.Delay(200);
         });
+
+        await context.SaveTableAsync(
+            "element placed in the cell",
+            ["state", "element in the cell", "cell.IsEditing"],
+            await DataGridMeasurements.EditingTemplateAsync(),
+            "datagrid-editing-template.svg");
     }
 
     private static DataGrid BuildGrid(ObservableCollection<Product> items) => new()

@@ -134,6 +134,21 @@ Reading the messages that do appear is covered in [Reading WPF Binding Errors an
 
 ---
 
+The figure below records the value that arrives and the `DataContext` seen from inside, per way of writing the binding.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.svg" alt="A table of the resulting text and the DataContext type per binding style used from a TextBlock inside the UserControl. A plain Binding and RelativeSource Self both stay empty; RelativeSource AncestorType delivers the Title value. The DataContext is the consuming PageViewModel on every row." width="705" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by referencing <code>Title</code> from a <code>TextBlock</code> placed inside <code>InfoCard</code>, a <code>UserControl</code> holding a <code>Title</code> dependency property. The consuming side sets <code>PageViewModel</code> as its <code>DataContext</code>.</figcaption>
+</figure>
+
+**The `DataContext` column reads `PageViewModel` on every row.** What an element inside sees is not the `InfoCard` but the consuming view model.
+A plain `{Binding Title}` therefore looks for `Title` on that `PageViewModel`, and no value arrives.
+
+The second row deserves attention too. `RelativeSource Self` points at the inner element itself, so it looks for `Title` on the `TextBlock` and likewise finds nothing.
+Only the third row, which walks up to the `UserControl` with `AncestorType`, delivers the value.
+
+---
+
 ## Solution
 
 Give the internal binding an explicit starting point other than `DataContext`.

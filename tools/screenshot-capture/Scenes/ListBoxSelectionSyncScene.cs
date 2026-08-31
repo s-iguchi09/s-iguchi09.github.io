@@ -25,6 +25,13 @@ internal sealed class ListBoxSelectionSyncScene : IScene
     /// <summary>スクロールでコンテナを作り直させる回数。</summary>
     private const int PageDownCount = 10;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "仮想化した ListBox をスクロールさせ、SelectedItems とデータ側の IsSelected が何件一致するかを測る",
+        "ItemContainerStyle のバインドだけでは、スクロールで選択が失われること",
+        "VirtualizingStackPanel の仮想化を切った場合の visual 要素数とレイアウト時間",
+    ];
+
     public string Slug => "wpf-listbox-virtualization-selecteditems";
 
     public async Task CaptureAsync(SceneContext context)

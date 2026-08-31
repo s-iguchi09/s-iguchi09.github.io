@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-staticresource-vs-dynamicresource
+slug: "wpf-staticresource-vs-dynamicresource"
+scene: "StaticVsDynamicResourceScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "リソースを差し替えたとき、StaticResource で参照した側は値が変わらないこと"
+  - "DynamicResource で参照した側は値が追随すること"
+  - "差し替え前は両者が同じ値であること"
+images:
+  - "images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png"
+  - "images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg"

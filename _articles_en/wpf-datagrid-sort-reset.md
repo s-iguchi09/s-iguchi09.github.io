@@ -42,6 +42,26 @@ It is not a built-in shortcut to clear sorting.
 
 For this reason, explicit reset logic is required when an application needs deterministic unsorted behavior.
 
+The sort state lives in two places. The figure below records both after each operation.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="A table of the SortDescriptions count, the column SortDirection, and the row order after each operation. Adding a SortDescription from code leaves SortDirection null. Clearing SortDescriptions leaves SortDirection at Ascending. Only clearing both returns to the initial state. The last row, a column header click, updates both at once." width="827" height="290" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. <code>SortDescriptions</code> is the number of sort conditions on the view; <code>column.SortDirection</code> is the property that drives the arrow in the column header. Every row but the last operates on them directly from code.</figcaption>
+</figure>
+
+**On the row that calls `SortDescriptions.Clear()`, the order is back to its initial state while `column.SortDirection` still reads `Ascending`.**
+The header keeps showing its arrow in that state, making it look as though the sort is still applied.
+
+The reverse holds on the row that only adds a `SortDescription`: the order changes while `SortDirection` stays `null`.
+**Touching one of them from code never updates the other.** Both have to be set explicitly, in either direction.
+
+The row adding two `SortDescriptions` produces a multi-column sort. Shift-clicking builds exactly that state; it does not clear anything.
+
+The last row is the contrast: the standard sort that a click on the column header runs. **That path updates `SortDescriptions` and `SortDirection` together.**
+This is why the arrow and the order never disagree when the user sorts; they diverge only once code touches one side alone.
+
+---
+
 ## Solution
 
 The reset strategy should be selected by architecture and UX requirements.  

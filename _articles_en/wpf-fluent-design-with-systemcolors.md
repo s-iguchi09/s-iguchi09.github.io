@@ -49,6 +49,32 @@ A Fluent-like result requires explicit decisions for:
 
 ---
 
+What `SystemColors` actually returns can be read back and checked.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="A table of the color each SystemColors key returns along with its relative luminance. WindowColor is white, WindowTextColor is black, HighlightColor is a blue, and AccentColor is a red, all matching the OS settings." width="563" height="290" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 in light theme by reading each <code>SystemColors</code> key. <code>relative luminance</code> is the WCAG relative luminance, included to gauge foreground-to-background contrast.</figcaption>
+</figure>
+
+`WindowColor` and `WindowTextColor` come out at `1.00` and `0.00`, the light-theme values on this machine.
+Switching the OS to dark theme swaps them.
+
+`HighlightColor` is the highlight color of a selected item. The accent color the user picks in personalization settings is a separate key, `AccentColor`, and the two are easily confused.
+The machine used here has its accent set to a red, so the table shows `HighlightColor` as `#FF0078D7` and `AccentColor` as `#FFE2241A`. A hard-coded accent will disagree with that setting.
+
+**Reading these keys is not by itself enough to follow a later replacement, though.**
+Reading a color directly, as in `SystemColors.WindowColor`, bakes in the value as of that read.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg" alt="A table of the value before and after the system brush is replaced, per way of referencing the color. A brush built from SystemColors.WindowColor stays white; only the side referencing SystemColors.WindowBrushKey through DynamicResource takes the new color." width="697" height="140" loading="lazy">
+  <figcaption><code>SystemColors.WindowBrushKey</code> in the application's resources replaced, with both values read on either side of the replacement. What this measures is whether each side follows that replacement; an OS theme switch itself is not measured here.</figcaption>
+</figure>
+
+The directly read side keeps its value; only the side referencing the resource key through `DynamicResource` takes the new color.
+**Following a replacement requires referencing a resource key such as `SystemColors.WindowBrushKey` through `DynamicResource`, not the color.**
+
+---
+
 ## Solution
 
 Without external libraries, combine the following:
@@ -118,14 +144,12 @@ The following sample uses `SystemColors` through `DynamicResource`.
         Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
 
   <Window.Resources>
-    <SolidColorBrush x:Key="CardBackgroundBrush"
-                     Color="{Binding Source={x:Static SystemColors.ControlLightColor}}" />
-
     <Style x:Key="CardBorderStyle" TargetType="Border">
       <Setter Property="Padding" Value="24" />
       <Setter Property="CornerRadius" Value="12" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+      <Setter Property="Background"
+              Value="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" />
       <Setter Property="BorderBrush"
               Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" />
     </Style>

@@ -41,6 +41,20 @@ WPF の `DataGrid` コントロールは、列ヘッダーをクリックする�
 標準機能では未ソート状態への復帰は行われないため、解除が必要な場合はコードで明示的に制御する。
 未ソート状態へ戻す実装については [WPF DataGrid のソート状態をリセットする方法](/ja/articles/wpf-datagrid-sort-reset/) を参照する。
 
+列の作り方を変えて、`SortMemberPath` と `CanUserSort` に何が入るかを測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="列の宣言方法ごとに SortMemberPath と CanUserSort を測った表。Binding だけの DataGridTextColumn では SortMemberPath に Binding のパスが入り CanUserSort は True。SortMemberPath を明示するとそちらが使われる。CanUserSort を False にすると並び替えられない。Binding を持たないテンプレート列では SortMemberPath が空になり CanUserSort も False になる。" width="803" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、列の宣言だけを変えて測った結果。<code>order after sorting</code> は、その列の <code>SortMemberPath</code> で昇順に並べ替えた後の並びである（並べ替えられない列では元の並びのまま）。</figcaption>
+</figure>
+
+**`SortMemberPath` を書かなくても、`Binding` のパスが自動で入る。** 上の XAML で `SortMemberPath` を明示しているのは意図を明確にするためであり、省いても同じ結果になる。
+
+注目すべきは最終行である。`Binding` を持たない `DataGridTemplateColumn` では `SortMemberPath` が空になり、**`CanUserSort` も `False` になる**。
+`CanUserSortColumns` を `True` にしていても、並び替えの対象にならない。テンプレート列を並び替え可能にするには `SortMemberPath` を明示する。
+
+---
+
 ## コードでソートを制御する
 
 `DataGrid.Items.SortDescriptions` を直接操作することで、ユーザー操作を介さずプログラムからソートをかけられる。

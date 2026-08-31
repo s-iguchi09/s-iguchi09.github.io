@@ -76,6 +76,25 @@ WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは�
 
 ---
 
+どの発火方法がどちらの実装に効くかは、実際にボタンを表示して `IsEnabled` を読めば確かめられる。
+`CanExecute` が `false` を返す状態で表示し、`true` を返すよう条件を変えてから、何も呼ばない場合・`CommandManager.InvalidateRequerySuggested()` を呼ぶ場合・コマンド自身の `RaiseCanExecuteChanged()` を呼ぶ場合を測った結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="実装と発火方法の組み合わせごとに Button.IsEnabled を測った表。何も呼ばない場合はどちらの実装も False のまま。InvalidateRequerySuggested で True になるのは RequerySuggested に委譲した実装だけ。RaiseCanExecuteChanged で True になるのは自前イベントの実装だけ。Command 未設定のボタンは最初から True。" width="548" height="290" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>CanExecute</code> の戻り値を <code>false</code> から <code>true</code> に変えた前後の <code>Button.IsEnabled</code> を測った結果。<code>before</code> は条件を変える直前、<code>after</code> は変えて発火操作を行った直後の値である。</figcaption>
+</figure>
+
+**何も呼ばなければ、どちらの実装でも `IsEnabled` は `False` のままである。** `CanExecute` の戻り値が変わっただけでは反映されない。
+
+そのうえで、**発火方法と実装は対応していなければ効かない。**
+`InvalidateRequerySuggested()` が効くのは `CanExecuteChanged` を `CommandManager.RequerySuggested` へ委譲した実装だけであり、自前のイベントを持つ実装には届かない。
+逆に `RaiseCanExecuteChanged()` が効くのは自前のイベントを持つ実装だけである。
+どちらの方式を採るかで、条件が変わったときに呼ぶべきものが変わる。
+
+最終行は対照である。`Command` が未設定のボタンは判定の対象が無いため、最初から有効のまま変化しない。
+
+---
+
 ## 解決方法
 
 `CanExecuteChanged` を発火する方式は 2 つある。

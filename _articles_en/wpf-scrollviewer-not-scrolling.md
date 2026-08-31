@@ -62,6 +62,21 @@ The root of the problem is therefore not the `ScrollViewer` but the surrounding 
 
 ---
 
+The difference can be confirmed by changing only the parent layout and reading the heights off the `ScrollViewer`.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.svg" alt="A table of Extent, Viewport, and Scrollable heights plus scrollbar visibility per parent layout. Inside a StackPanel the viewport equals the extent at 800, Scrollable is 0, and the scrollbar is Collapsed. Inside a Grid or DockPanel the viewport is 200, Scrollable is 600, and the scrollbar is Visible." width="674" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with a <code>ScrollViewer</code> holding 40 rows of 20px each (800px total) inside a parent constrained to 200px. Nothing differs between the rows except the parent layout.</figcaption>
+</figure>
+
+**Inside the `StackPanel`, `ViewportHeight` equals `ExtentHeight` at 800.** Although the parent is constrained to 200px, the `ScrollViewer` still claims the height its full content needs.
+`ScrollableHeight` is therefore 0 and the scrollbar stays `Collapsed`.
+
+With a `Grid` or a `DockPanel`, `ViewportHeight` settles at 200 and the remaining 600 becomes `ScrollableHeight`.
+As the last row shows, a `StackPanel` produces the same result once the `ScrollViewer` is given an explicit height. What matters is that a constraint reaches it.
+
+---
+
 ## Solution
 
 Place the `ScrollViewer` in a container that constrains its height.

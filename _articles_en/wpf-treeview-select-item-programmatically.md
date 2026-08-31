@@ -110,6 +110,21 @@ The problem is therefore not "how to write to a read-only property" but a design
 
 ---
 
+Everything described so far can be confirmed from code.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="A table measuring TreeView selection and container generation. SelectedItemProperty.ReadOnly is True, an external SetValue throws InvalidOperationException, the child container is null before expansion and still null right after IsExpanded is set, becoming a TreeViewItem only once a layout pass runs, and setting the child IsSelected makes TreeView.SelectedItem that item." width="767" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. <code>child container</code> is the type returned by the parent&#39;s <code>ItemContainerGenerator.ContainerFromIndex(0)</code>.</figcaption>
+</figure>
+
+**The table shows the two obstacles arising separately.**
+The first two rows show that the property cannot be written because it is read-only.
+The next two show that `IsSelected` has nothing to be set on while the container does not exist.
+**Setting `IsExpanded` to `true` is not enough on its own.** The container is still `null` immediately afterward and only becomes available once a layout pass runs.
+As the last row shows, once the container does exist, `IsSelected` propagates to `SelectedItem` on its own.
+
+---
+
 ## Solution
 
 Store the selection and expansion state on the node view model, and bind them two-way to `IsSelected` and `IsExpanded` of `TreeViewItem` through `ItemContainerStyle` setters.

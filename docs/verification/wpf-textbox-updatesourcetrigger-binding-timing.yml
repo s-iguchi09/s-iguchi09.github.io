@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-textbox-updatesourcetrigger-binding-timing
+slug: "wpf-textbox-updatesourcetrigger-binding-timing"
+scene: "UpdateSourceTriggerScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "プロパティごとの DefaultUpdateSourceTrigger をメタデータから読み出す"
+  - "TextBox.Text だけが LostFocus で、他の多くは PropertyChanged であること"
+  - "既定・PropertyChanged・Explicit で、ソースへ値が渡る時点が異なること"
+images:
+  - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png"
+  - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg"
+  - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg"

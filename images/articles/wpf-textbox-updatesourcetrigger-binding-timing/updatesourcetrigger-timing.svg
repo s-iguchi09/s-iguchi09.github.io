@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 528 170" width="528" height="170" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="528" height="170" />
+  <text class="title" x="12" y="24">source value after one keystroke, then after focus moves away</text>
+  <rect class="head" x="12" y="38" width="504" height="30" />
+  <text class="cell" x="26" y="57.5">UpdateSourceTrigger</text>
+  <text class="cell" x="290" y="57.5" text-anchor="end">after input</text>
+  <text class="cell" x="435" y="57.5" text-anchor="end">after LostFocus</text>
+  <text class="cell" x="502" y="57.5" text-anchor="end">final</text>
+  <text class="cell" x="26" y="87.5">Default</text>
+  <text class="cell" x="290" y="87.5" text-anchor="end">(empty)</text>
+  <text class="cell" x="435" y="87.5" text-anchor="end">"X"</text>
+  <text class="cell" x="502" y="87.5" text-anchor="end">"X"</text>
+  <text class="cell" x="26" y="117.5">PropertyChanged</text>
+  <text class="cell" x="290" y="117.5" text-anchor="end">"X"</text>
+  <text class="cell" x="435" y="117.5" text-anchor="end">"X"</text>
+  <text class="cell" x="502" y="117.5" text-anchor="end">"X"</text>
+  <text class="cell" x="26" y="147.5">Explicit</text>
+  <text class="cell" x="290" y="147.5" text-anchor="end">(empty)</text>
+  <text class="cell" x="435" y="147.5" text-anchor="end">(empty)</text>
+  <text class="cell" x="502" y="147.5" text-anchor="end">"X"</text>
+  <line class="line" x1="12" y1="38" x2="516" y2="38" />
+  <line class="line" x1="12" y1="68" x2="516" y2="68" />
+  <line class="line" x1="12" y1="98" x2="516" y2="98" />
+  <line class="line" x1="12" y1="128" x2="516" y2="128" />
+  <line class="line" x1="12" y1="158" x2="516" y2="158" />
+  <line class="line" x1="12" y1="38" x2="12" y2="158" />
+  <line class="line" x1="189" y1="38" x2="189" y2="158" />
+  <line class="line" x1="304" y1="38" x2="304" y2="158" />
+  <line class="line" x1="449" y1="38" x2="449" y2="158" />
+  <line class="line" x1="516" y1="38" x2="516" y2="158" />
+</svg>

@@ -16,6 +16,14 @@ internal sealed class NaturalSortScene : IScene
     [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
     private static extern int StrCmpLogicalW(string psz1, string psz2);
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "同じ入力を比較器ごとに並べ替え、結果の並びを比べる",
+        "序数比較でもカルチャ比較でも item10 が item2 より前になること",
+        "StrCmpLogicalW が数字をまとめて数値として比較すること",
+        "StrCmpLogicalW が大文字小文字を区別しないこと",
+    ];
+
     public string Slug => "csharp-natural-sort-strcmplogicalw-icomparer";
 
     public async Task CaptureAsync(SceneContext context)
@@ -34,6 +42,18 @@ internal sealed class NaturalSortScene : IScene
             ]);
 
         await context.ShootAsync(window, "natural-sort-comparison.png");
+
+        await context.SaveTableAsync(
+            "same input sorted by each comparer",
+            ["comparer", "resulting order"],
+            FormatAndSortMeasurements.SortOrders(),
+            "natural-sort-orders.svg");
+
+        await context.SaveTableAsync(
+            "comparison result per pair",
+            ["pair", "StrCmpLogicalW", "CompareOrdinal"],
+            FormatAndSortMeasurements.LogicalComparisons(),
+            "natural-sort-pairs.svg");
     }
 
     private static UIElement BuildList(IEnumerable<string> items) => new ListBox

@@ -76,6 +76,25 @@ Note also that the `CommandManager` only detects UI interactions such as focus c
 
 ---
 
+Which way of raising the event reaches which implementation can be confirmed by displaying the button and reading `IsEnabled`.
+The figure below shows the button displayed while `CanExecute` returns `false`, the condition then changed so it returns `true`, and the result of calling nothing, `CommandManager.InvalidateRequerySuggested()`, or the command's own `RaiseCanExecuteChanged()`.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="A table of Button.IsEnabled per implementation and per way of raising the event. Calling nothing leaves both implementations at False. InvalidateRequerySuggested reaches only the implementation that delegates to RequerySuggested. RaiseCanExecuteChanged reaches only the implementation with its own event. A button with no Command is True throughout." width="548" height="290" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, reading <code>Button.IsEnabled</code> before and after <code>CanExecute</code> switches from <code>false</code> to <code>true</code>. <code>before</code> is taken just prior to changing the condition; <code>after</code> is taken once the condition changed and the listed call was made.</figcaption>
+</figure>
+
+**With nothing called, `IsEnabled` stays `False` on both implementations.** A changed return value from `CanExecute` alone does not reach the button.
+
+Beyond that, **the way the event is raised must match the implementation.**
+`InvalidateRequerySuggested()` reaches only an implementation that forwards `CanExecuteChanged` to `CommandManager.RequerySuggested`; it never reaches one that holds its own event.
+`RaiseCanExecuteChanged()` is the reverse, reaching only the implementation with its own event.
+The choice of approach therefore determines what has to be called when a condition changes.
+
+The last row is a control: a button whose `Command` is unset has nothing to evaluate, so it stays enabled throughout.
+
+---
+
 ## Solution
 
 There are two ways to raise `CanExecuteChanged`.

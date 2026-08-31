@@ -15,6 +15,14 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class CollectionViewFilterRefreshScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "操作ごとにフィルタ述語が何回呼ばれるかを数える",
+        "項目の追加は通知が指す項目だけを評価し、削除では評価が起きないこと",
+        "項目の PropertyChanged ではフィルタが再評価されず、CollectionChanged も起きないこと",
+        "Refresh を呼ぶと全件が評価し直されること",
+    ];
+
     public string Slug => "wpf-collectionviewsource-filter-not-refreshing";
 
     public async Task CaptureAsync(SceneContext context)
@@ -49,6 +57,12 @@ internal sealed class CollectionViewFilterRefreshScene : IScene
             // メッセージポンプを回してから撮影する。
             await Task.Delay(400);
         });
+
+        await context.SaveTableAsync(
+            "filter predicate calls per operation (1,000 items, half pass the filter)",
+            ["operation", "filter calls", "CollectionChanged", "items in view"],
+            await ViewAndTemplateMeasurements.FilterRefreshAsync(),
+            "collectionview-filter-calls.svg");
     }
 
     private static (ListBox List, ObservableCollection<Product> Source, ICollectionView View) BuildPanel()

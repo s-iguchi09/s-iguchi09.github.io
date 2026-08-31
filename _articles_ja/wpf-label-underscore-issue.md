@@ -98,26 +98,47 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 | `GroupBox` | 消える | `Header` のみ |
 | `Expander` | 消える | `Header` のみ |
 | `TabItem` | 消える | `Header` のみ |
-| `MenuItem` | 消える | `Header` のみ |
+| `MenuItem` | 消える | `Header` のみ（トップレベル・サブメニューとも） |
 | `TreeViewItem` | 消えない | — |
 | `ListBoxItem` | 消えない | — |
 | `ComboBoxItem` | 消えない | — |
 | `StatusBarItem` | 消えない | — |
 | `TextBlock` | 消えない | — |
 
+上表は目視ではなく、各コントロールに同じ文字列を与えて表示し、visual ツリーに `AccessText` が現れるかを走査して求めている。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg" alt="15 種類のコントロールに my_var を与え、AccessText が生成されるかを調べた表。Label、Button、CheckBox、RadioButton、ToggleButton、GroupBox、Expander、TabItem、MenuItem のトップレベルとサブメニューでは disappears。TreeViewItem、ListBoxItem、ComboBoxItem、StatusBarItem、TextBlock では kept。" width="406" height="530" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 での実測結果。<code>disappears</code> は visual ツリーに <code>AccessText</code> が生成されたこと、<code>kept</code> は生成されなかったことを示す。<code>ComboBoxItem</code> とサブメニューの <code>MenuItem</code> は、ポップアップを開いてコンテナを実体化させてから調べている。</figcaption>
+</figure>
+
 `Header` を持つこれらのコントロールでは、`RecognizesAccessKey="True"` なのは `Header` を描画する `ContentPresenter` だけである。
 本体の `Content` を描画する側の構成はコントロールによって異なる。
 
-| コントロール | 自身のテンプレート内の `ContentPresenter` |
-| --- | --- |
-| `GroupBox` | 2 つ。`Header` 用（`True`）と `Content` 用（`False`） |
-| `MenuItem` | 2 つ。`Header` 用（`True`）と `Icon` 用（`False`）。`MenuItem` は `Content` プロパティを持たない |
-| `TabItem` | 1 つ。`Header` 用（`True`）。選択中の `Content` は親の `TabControl` にある `PART_SelectedContentHost` が描画する |
-| `Expander` | 1 つ。`ExpandSite`（`Content` 用、`False`）。`Header` 用（`True`）は、ヘッダーの `ToggleButton` のテンプレート内にある |
+<figure class="article-figure">
+  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg" alt="対象コントロール自身のテンプレートに属する ContentPresenter を数えた表。GroupBox は 2 個で片方が True。Expander は 1 個で ExpandSite が False。TabItem は 1 個で contentPresenter が True。MenuItem はトップレベル・サブメニューとも 2 個で、Icon が False、ヘッダー側が True。" width="587" height="230" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、各コントロールを実際に表示して <code>ContentPresenter</code> を数えた結果。<code>TemplatedParent</code> が対象コントロール自身であるものだけを数えている。<code>name</code> はテンプレート内での名前で、<code>(unnamed)</code> は名前が付いていないことを示す。</figcaption>
+</figure>
 
-`Expander` と `TabItem` は、`Header` と `Content` を描く `ContentPresenter` が別のコントロールのテンプレートに分かれている。
+読み取れることは 3 点ある。
+
+**`Expander` の `Header` 用 `ContentPresenter` は、`Expander` 自身のテンプレートには無い。**
+自身のテンプレートにあるのは `ExpandSite`（`Content` 用、`RecognizesAccessKey` は `False`）だけである。
+`Header` を描く側は、ヘッダーの `ToggleButton` のテンプレート内にある。
+
+**`TabItem` は逆で、自身のテンプレートにあるのは `Header` 用の 1 個だけである。**
+選択中の `Content` は、親の `TabControl` にある `PART_SelectedContentHost` が描画する。
+
+**`MenuItem` は階層でテンプレートが変わるが、個数と `RecognizesAccessKey` は変わらない。**
+トップレベルでもサブメニューでも `Icon` 用（`False`）とヘッダー用（`True`）の 2 個であり、
+ヘッダー用の名前だけが `(unnamed)` と `menuHeaderContainer` で異なる。
+
+つまり `Expander` と `TabItem` は、`Header` と `Content` を描く `ContentPresenter` が別のコントロールのテンプレートに分かれている。
 `ContentPresenter` がどのテンプレートに属するかは、`TemplatedParent` を見ると判別できる。
-visual ツリーを単に走査すると、子コントロールのテンプレート部品まで数に入ってしまうため、上表は `TemplatedParent` が対象コントロール自身であるものだけを数えている。
+
+**visual ツリーを単に走査すると、子コントロールのテンプレート部品まで数に入る。**
+上図は `TemplatedParent` が対象コントロール自身であるものだけを数えており、この判別条件はシーンのコードに書いてある。
+目で追って数えると `Expander` のヘッダー用 `ContentPresenter` を `Expander` 自身のものと取り違える。
 
 いずれの場合も、`RecognizesAccessKey="True"` なのは `Header` を描く側だけである。
 このため、同じコントロールでもヘッダーに置いた文字列だけアンダーバーが消える。

@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-label-underscore-issue
+slug: "wpf-label-underscore-issue"
+scene: "LabelUnderscoreScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "同じ文字列を各コントロールへ与え、visual ツリーに AccessText が生成されるかを確かめる"
+  - "アンダーバーが消えるのは Label だけではなく、Header を持つコントロールでも起きること"
+  - "対象コントロール自身のテンプレートに属する ContentPresenter の個数と RecognizesAccessKey"
+  - "TemplatedParent で絞らないと、子コントロールのテンプレート部品まで数えてしまうこと"
+images:
+  - "images/articles/wpf-label-underscore-issue/label-underscore-rendering.png"
+  - "images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png"
+  - "images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png"
+  - "images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg"
+  - "images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg"

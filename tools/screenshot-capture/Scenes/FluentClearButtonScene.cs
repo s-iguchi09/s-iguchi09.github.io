@@ -13,6 +13,15 @@ internal sealed class FluentClearButtonScene : IScene
     /// <summary>.NET 10 は "DeleteButton"、.NET 9 は "ClearButton"。</summary>
     private static readonly string[] ClearButtonPartNames = ["DeleteButton", "ClearButton"];
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "Fluent テーマの TextBox テンプレートに存在する名前付きパーツを列挙する",
+        ".NET 10 でのクリアボタンのパーツ名",
+        "ThemeMode を設定した場合と Fluent.xaml を直接マージした場合のどちらでもパーツが現れること",
+        "BasedOn を書かない暗黙スタイルを同じキーに置くと、どちらの経路でもパーツが消えること",
+        "BasedOn で元のスタイルを引き継いだ暗黙スタイルでは、どちらの経路でも自前の Setter が効いたままパーツが残ること",
+    ];
+
     public string Slug => "wpf-fluent-textbox-hide-clear-button";
 
     public async Task CaptureAsync(SceneContext context)
@@ -32,6 +41,12 @@ internal sealed class FluentClearButtonScene : IScene
                 await FocusAsync(hiddenTextBox);
                 HideClearButtonPart(hiddenTextBox);
             });
+
+        await context.SaveTableAsync(
+            "TextBox template parts, by how the theme reaches the control",
+            ["window", "Style applied", "named parts present", "Padding.Left"],
+            await FluentThemeMeasurements.ThemeDeliveryAsync(),
+            "fluent-textbox-parts.svg");
     }
 
     /// <summary>

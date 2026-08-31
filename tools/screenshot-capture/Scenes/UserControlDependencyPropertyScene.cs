@@ -72,6 +72,14 @@ internal sealed class UserControlDependencyPropertyScene : IScene
         </Border>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "UserControl 内部の要素から見た DataContext が、利用側の ViewModel であること",
+        "利用側の DataContext を継承している UserControl では、内部の素の Binding が自身の依存関係プロパティに届かないこと",
+        "内部要素に RelativeSource Self を書くとその要素自身を指すため、やはり届かないこと",
+        "RelativeSource AncestorType=UserControl では届くこと",
+    ];
+
     public string Slug => "wpf-usercontrol-dependencyproperty-binding-not-working";
 
     public async Task CaptureAsync(SceneContext context)
@@ -108,6 +116,12 @@ internal sealed class UserControlDependencyPropertyScene : IScene
 
             await Task.CompletedTask;
         });
+
+        await context.SaveTableAsync(
+            "TextBlock inside the UserControl, bound three ways",
+            ["binding inside the control", "resulting Text", "its DataContext"],
+            await ValidationAndScopeMeasurements.UserControlPropertyScopeAsync(),
+            "usercontrol-dp-scope.svg");
     }
 
     /// <summary>

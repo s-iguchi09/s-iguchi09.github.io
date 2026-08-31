@@ -41,6 +41,15 @@ internal sealed class TreeViewSelectItemScene : IScene
         </DockPanel>
         """;
 
+    public IReadOnlyList<string> Verifies =>
+    [
+        "TreeView.SelectedItemProperty が読み取り専用として登録されていること",
+        "外部からの SetValue が送出する例外の型",
+        "子のコンテナが、親を展開するまで生成されないこと",
+        "IsExpanded を true にした直後はまだ生成されておらず、レイアウトが走って初めて取得できること",
+        "TreeViewItem.IsSelected を true にすると TreeView.SelectedItem に反映されること",
+    ];
+
     public string Slug => "wpf-treeview-select-item-programmatically";
 
     public async Task CaptureAsync(SceneContext context)
@@ -74,6 +83,12 @@ internal sealed class TreeViewSelectItemScene : IScene
                 target.SelectAndReveal();
                 return Task.CompletedTask;
             });
+
+        await context.SaveTableAsync(
+            "TreeView selection and container generation",
+            ["what was measured", "result", ""],
+            await SelectionAndTriggerMeasurements.TreeViewSelectionAsync(),
+            "treeview-selection-facts.svg");
     }
 
     /// <summary>

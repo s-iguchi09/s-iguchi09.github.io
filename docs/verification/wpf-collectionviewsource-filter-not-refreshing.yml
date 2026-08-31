@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-collectionviewsource-filter-not-refreshing
+slug: "wpf-collectionviewsource-filter-not-refreshing"
+scene: "CollectionViewFilterRefreshScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "操作ごとにフィルタ述語が何回呼ばれるかを数える"
+  - "項目の追加は通知が指す項目だけを評価し、削除では評価が起きないこと"
+  - "項目の PropertyChanged ではフィルタが再評価されず、CollectionChanged も起きないこと"
+  - "Refresh を呼ぶと全件が評価し直されること"
+images:
+  - "images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-refresh.png"
+  - "images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.svg"

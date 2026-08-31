@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-datagrid-sort-reset
+slug: "wpf-datagrid-sort-reset"
+scene: "DataGridSortResetScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "並び替えの状態が ICollectionView の SortDescriptions と列の SortDirection に分かれていること"
+  - "SortDescriptions を消しただけでは列の SortDirection が残ること（ヘッダーの矢印が消えない）"
+  - "SortDescriptions を足しただけでは列の SortDirection が付かないこと"
+  - "SortDescriptions を 2 つ足すと複数列ソートになること"
+images:
+  - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png"
+  - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg"

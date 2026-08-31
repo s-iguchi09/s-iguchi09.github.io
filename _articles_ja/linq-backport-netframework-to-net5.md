@@ -9,7 +9,8 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 
 ## 概要
 
-.NET Framework 4.8 は Windows に同梱され続ける一方で機能追加は 2019 年に止まっており、それ以降に LINQ へ加わったメソッドは利用できない。
+.NET Framework 4.8 は Windows に同梱され続ける一方で機能追加は 2019 年に止まっており、それ以降に LINQ へ加わったメソッドの多くは利用できない。
+**ただし「.NET Core で追加されたから .NET Framework には無い」と一括りにはできない。** 実測すると `Append` と `Prepend` は .NET Framework 4.7.1 以降で使える（後述）。
 不足分は拡張メソッド（ポリフィル）として自作できるが、標準 LINQ と同じ使用感を再現するには、シグネチャを揃えるだけでは足りない設計上の配慮がある。
 
 本記事では、.NET Core 2.0〜3.0 期に追加された `Append`・`Prepend`・`TakeLast`・`SkipLast` の 4 メソッドを題材に、LINQ ポリフィルを自作するうえで守るべき 3 つの設計原則を解説する。
@@ -53,8 +54,45 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 | `TakeLast<T>` | .NET Core 3.0 | シーケンスの末尾から指定数の要素を取得する |
 | `SkipLast<T>` | .NET Core 3.0 | シーケンスの末尾から指定数の要素を除外する |
 
-.NET Framework 環境でこれらが無いと、`Append` の代わりに `Concat(new[] { element })` と配列を確保したり、`TakeLast` の代わりに `Count` を先に数えて `Skip` したりする回避コードを書き続けることになる。
-いずれも意図が読み取りにくく、不要な割り当てや二重列挙の温床になる。
+これら 4 つが .NET Framework 側の BCL に存在するかを、ターゲットフレームワークを変えて実際にコンパイルして調べた結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.svg" alt="4 メソッドがポリフィル無しでコンパイルできるかをターゲットフレームワーク別に調べた表。Append と Prepend は net471 以降で yes。TakeLast と SkipLast は .NET Framework のどのバージョンでも no で、net10.0 のみ yes。" width="475" height="200" loading="lazy">
+  <figcaption>ポリフィルを足さずに各メソッドを呼ぶコードをコンパイルし、通ったかどうかを記録した結果。<code>yes</code> はその TFM の BCL にメソッドが存在することを示す。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+**`Append` と `Prepend` は .NET Framework 4.7.1 以降で使える。** .NET Framework 4.7.1 が .NET Standard 2.0 に対応し、そこに両メソッドが含まれるためである。
+したがって、4.8 を対象にしながらこの 2 つをポリフィルとして無条件に定義すると、BCL 側の定義と衝突して `CS0121`（あいまいな呼び出し）でコンパイルできない。
+後述の実装コードでは、この 2 つを `#if !NET471_OR_GREATER` で追加ガードしている。
+
+**ただし、このガードは SDK による暗黙定義が効いている場合しか働かない。** `NET471_OR_GREATER` は SDK 形式のプロジェクトで `TargetFramework` から暗黙に定義されるシンボルであり、
+`TargetFrameworkVersion` で対象を指定する従来形式のプロジェクトでは定義されない。同じソースを構成を変えてビルドして確かめた結果が次の図である。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="同じソースをプロジェクト形式別にビルドし、NET471_OR_GREATER の定義状況とビルド結果を調べた表。SDK 形式ではシンボルが定義されポリフィルが無効になりビルドが通る。DisableImplicitFrameworkDefines を立てた SDK 形式と従来形式では定義されず、ポリフィルが有効になり CS0121 になる。従来形式でも DefineConstants でシンボルを定義すればビルドが通る。" width="1047" height="200" loading="lazy">
+  <figcaption>ポリフィルを記事と同じく <code>namespace System.Linq</code> に置き、<code>Append</code> を呼ぶコードを 4 通りの構成でビルドした結果。<code>symbol</code> 列はビルドの成否からの推定ではなく、ソースに置いた <code>#warning</code> がどちらの分岐から出たかで判定している。</figcaption>
+</figure>
+
+従来形式では `NET471_OR_GREATER` が定義されず、ガードが常に成立してポリフィルが取り込まれ、BCL 側の `Append` と衝突して `CS0121` になる。
+2 行目のとおり、SDK 形式であっても `DisableImplicitFrameworkDefines` を立てて暗黙定義を切れば同じ結果になる。
+このシンボルはプロジェクト形式そのものではなく、SDK による暗黙定義に依存している。
+
+**従来形式のプロジェクトで使う場合は、シンボルを自分で定義する必要がある。**
+
+```xml
+<PropertyGroup>
+  <DefineConstants>$(DefineConstants);NET471_OR_GREATER</DefineConstants>
+</PropertyGroup>
+```
+
+表の 4 行目がこの指定を加えた場合で、SDK 形式と同じ結果になっている。
+
+ただし、この指定は対象が .NET Framework 4.7.1 以降である場合に限る。
+4.7 以前を対象にしたプロジェクトで定義すると、BCL に `Append` / `Prepend` が無いのにポリフィルの側が無効化され、今度は呼び出し先が見つからずコンパイルできない。
+
+一方、`TakeLast` と `SkipLast` は .NET Framework のどのバージョンにも存在しない。ポリフィルが要るのはこちらである。
+これらが無いと、`TakeLast` の代わりに `Count` を先に数えて `Skip` したりする回避コードを書き続けることになる。
+意図が読み取りにくく、不要な割り当てや二重列挙の温床になる。
 
 なお、`Chunk` や `MaxBy` などのメソッド群が追加されたのは .NET 6 からであり、この時点では存在しない。
 それらの実装は[別記事](/ja/articles/linq-backport-netframework-to-net6/)で扱う。
@@ -84,6 +122,10 @@ namespace System.Linq
     /// </summary>
     public static partial class LinqExtensions
     {
+        // Append と Prepend は .NET Framework 4.7.1 以降の BCL に存在する。
+        // 無条件に定義すると CS0121（あいまいな呼び出し）になるため、さらにガードする。
+#if !NET471_OR_GREATER
+
         // ==========================================
         // 1. Append
         // ==========================================
@@ -119,6 +161,8 @@ namespace System.Linq
                 yield return item;
             }
         }
+
+#endif
 
         // ==========================================
         // 3. TakeLast
@@ -177,6 +221,16 @@ namespace System.Linq
 
 #endif
 ```
+
+この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Append、Prepend、TakeLast、SkipLast の通常ケースに加え、0・要素数超過・負数・空の並びを渡した場合も、すべて同じ結果になっている。" width="607" height="410" loading="lazy">
+  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。境界値（<code>0</code>・要素数超過・負数・空の並び）も含めて一致している。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+境界値を含めて一致することが、この図の要点である。
+`TakeLast(-1)` が空を返し、`SkipLast(-1)` が全件を返すといった挙動は、シグネチャを揃えるだけでは自動的には揃わない。
 
 すべてのメソッドが「引数検証を行う public メソッド」と「`yield return` を含む private イテレータ」の 2 段構えになっている点、および `TakeLast` / `SkipLast` が `Queue<T>` を使っている点が、以降で説明する設計原則の実体である。
 

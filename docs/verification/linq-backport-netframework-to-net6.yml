@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- linq-backport-netframework-to-net6
+slug: "linq-backport-netframework-to-net6"
+scene: "LinqBackportNet6Scene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる"
+  - "Chunk の端数・ちょうど・source より大きい size・不正な size での挙動"
+  - "MaxBy / MinBy が空の並びに対して返すもの（値型と参照型で異なる）"
+  - "DistinctBy が残す要素と、その順序"
+images:
+  - "images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png"
+  - "images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg"

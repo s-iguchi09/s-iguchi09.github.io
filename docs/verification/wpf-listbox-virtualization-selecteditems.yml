@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-listbox-virtualization-selecteditems
+slug: "wpf-listbox-virtualization-selecteditems"
+scene: "ListBoxSelectionSyncScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "仮想化した ListBox をスクロールさせ、SelectedItems とデータ側の IsSelected が何件一致するかを測る"
+  - "ItemContainerStyle のバインドだけでは、スクロールで選択が失われること"
+  - "VirtualizingStackPanel の仮想化を切った場合の visual 要素数とレイアウト時間"
+images:
+  - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png"
+  - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png"

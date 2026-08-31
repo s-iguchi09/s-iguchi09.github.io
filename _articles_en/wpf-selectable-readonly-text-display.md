@@ -43,6 +43,21 @@ For display scenarios, this makes it possible to treat a `TextBox` as a practica
 
 ---
 
+The figure below records, for each display-only candidate, whether the text can be selected and how it takes focus.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.svg" alt="A table of selectability and focus handling per display-only candidate. TextBlock has no selection API and is not focusable. A read-only TextBox is selectable and focusable. Removing the border and background, and turning off IsTabStop, both leave it selectable." width="623" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with the same string given to each candidate. <code>SelectAll() selects</code> is the content read back from <code>SelectedText</code> after calling <code>SelectAll()</code>.</figcaption>
+</figure>
+
+**`TextBlock` reports `Focusable` as `False`.** Beyond lacking a selection API, it does not take focus at all.
+Switching to a `TextBox` makes the text selectable, and removing the border and background does not change that. Appearance and behavior are independent here.
+
+As the last row shows, setting `IsTabStop` to `False` leaves `Focusable` at `True`.
+The control drops out of the Tab cycle while click-to-focus and selection remain — which is the combination to use for a display-only look that still allows selection.
+
+---
+
 ## Solution
 
 When display-only text also needs to be selectable, replace `TextBlock` with `TextBox` and apply a small set of visual and behavioral settings.  

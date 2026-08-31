@@ -192,6 +192,15 @@ namespace System.Linq
 #endif
 ```
 
+Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
+
+<figure class="article-figure">
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. LeftJoin, RightJoin, and Shuffle all produce identical results, boundary cases included." width="866" height="290" loading="lazy">
+  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
+</figure>
+
+`Shuffle` draws on randomness, so its output is re-sorted before the comparison. The two sides also agree on the default value handed to a row that has no counterpart.
+
 The result selectors of `LeftJoin` / `RightJoin` carry the same nullable annotations as the built-ins — `TInner?` for `LeftJoin`, `TOuter?` for `RightJoin`.
 The signature itself thus documents which side can be missing, and nullable analysis agrees before and after migration.
 `Shuffle`'s random source branches further on a nested `#if NET6_0_OR_GREATER`: where `Random.Shared` is unavailable, a `[ThreadStatic]` instance provides thread safety.

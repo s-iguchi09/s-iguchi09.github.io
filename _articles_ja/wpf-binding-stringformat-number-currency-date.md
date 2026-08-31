@@ -146,6 +146,24 @@ WPF の既定ではこのカルチャが `en-US` になるため、日本語環�
 
 ---
 
+## 実測: 書式化に使われるカルチャとターゲットの型
+
+書式化の結果は、実際に表示して描画された文字列を読めば確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.svg" alt="書式化の結果を測った表。FrameworkElement.Language の既定値は en-us で、CultureInfo.CurrentCulture は ja-JP である。ConverterCulture を指定しない場合は 1,234.50 ドルと 7/17/2026、ja-JP を指定すると 1,235 円と 2026/07/17 になる。Label.Content に StringFormat を指定すると 1234.5 のまま書式化されず、ContentStringFormat では書式化される。" width="665" height="320" loading="lazy">
+  <figcaption>.NET 10 / 日本語環境の Windows 11 で、実際に描画された文字列を visual ツリーから読み取った結果。<code>rendered text</code> は表示された文字列そのものである。</figcaption>
+</figure>
+
+**1 行目と 2 行目の食い違いが、この問題の原因である。**
+`CultureInfo.CurrentCulture` は OS の地域設定を反映して `ja-JP` になっているのに、`FrameworkElement.Language` の既定値は `en-us` のままである。
+`ConverterCulture` を指定しないバインディングは後者を使うため、OS の設定と関係なく `$` と `M/d/yyyy` になる。
+
+最後の 2 行は `Label.Content` の結果である。`StringFormat` を指定しても `1234.5` のままで、書式が適用されていない。
+`ContentStringFormat` に変えると書式化される。
+
+---
+
 ## カルチャ依存の制約
 
 `Binding.StringFormat` の最大の落とし穴は、書式化に使うカルチャが OS の地域設定ではないことである。

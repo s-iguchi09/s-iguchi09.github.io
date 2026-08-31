@@ -229,6 +229,19 @@ namespace System.Linq
 #endif
 ```
 
+この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。CountBy・AggregateBy・Index のいずれも、境界値を含めて同じ結果になっている。" width="1062" height="320" loading="lazy">
+  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
+</figure>
+
+この入力とこの実行環境では、どちらもキーが最初に現れた順に並んだ。出力はその順序まで含めて一致している。
+
+ただし、この順序は API として保証されているものではない。
+`CountBy` と `AggregateBy` はいずれも `Dictionary<TKey, TValue>` を列挙して結果を返すため、列挙順は実装に依存する。
+順序に意味を持たせる場合は、呼び出し側で明示的に並べ替える。
+
 コンパイル時に `NET9_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 9 未満の環境）でのみ、上記クラスが有効になる。
 `AggregateBy` の `seed` 版は、初期値を返すだけの `seedSelector`（`key => seed`）に読み替えて共通の集計本体へ委譲している。
 

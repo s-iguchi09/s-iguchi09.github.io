@@ -62,6 +62,21 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 
 ---
 
+この違いは、親のレイアウトだけを変えて `ScrollViewer` の高さを読めば確かめられる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.svg" alt="親のレイアウト別に ScrollViewer の Extent・Viewport・Scrollable の各高さとスクロールバーの表示状態を測った表。StackPanel の中では Viewport が Extent と同じ 800 で Scrollable が 0、スクロールバーは Collapsed。Grid と DockPanel では Viewport が 200、Scrollable が 600 でスクロールバーは Visible。" width="674" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、高さ 20px の行を 40 個（合計 800px）持つ <code>ScrollViewer</code> を、高さ 200px に制約した親の中へ置いて測った結果。親のレイアウト以外の条件は同一である。</figcaption>
+</figure>
+
+**`StackPanel` の中では `ViewportHeight` が `ExtentHeight` と同じ 800 になっている。** 200px に制約されたはずの親の中にいながら、内容全体が収まる高さを確保している。
+その結果 `ScrollableHeight` は 0 となり、スクロールバーは `Collapsed` のまま現れない。
+
+`Grid` と `DockPanel` では `ViewportHeight` が 200 に収まり、差の 600 が `ScrollableHeight` になる。
+最終行のとおり、`StackPanel` のままでも `ScrollViewer` に高さを明示すれば同じ結果になる。制約が伝わりさえすればよい。
+
+---
+
 ## 解決方法
 
 `ScrollViewer` を、高さが制約されるコンテナに配置する。

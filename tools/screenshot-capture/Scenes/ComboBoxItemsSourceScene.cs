@@ -10,6 +10,13 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class ComboBoxItemsSourceScene : IScene
 {
+    public IReadOnlyList<string> Verifies =>
+    [
+        "同じ選択に対して SelectedItem / SelectedValue / SelectedIndex が返す値",
+        "SelectedValuePath の有無で SelectedValue の中身が変わること",
+        "DisplayMemberPath の有無で表示される文字列が変わること",
+    ];
+
     public string Slug => "wpf-combobox-itemssource-patterns";
 
     public async Task CaptureAsync(SceneContext context)
@@ -50,6 +57,12 @@ internal sealed class ComboBoxItemsSourceScene : IScene
         await context.ShootAsync(
             DemoLayout.BuildComparisonWindow("ComboBox ItemsSource", rows),
             "combobox-itemssource-patterns.png");
+
+        await context.SaveTableAsync(
+            "what each selection property returns for the same selection",
+            ["configuration", "SelectedItem", "SelectedValue", "SelectedIndex", "displayed"],
+            await ComboBoxAndDatePickerMeasurements.SelectionPropertiesAsync(),
+            "combobox-selection-properties.svg");
     }
 
     /// <summary>選択済みの表示を比べるため、いずれも 2 件目を選択しておく。</summary>

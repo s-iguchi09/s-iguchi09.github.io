@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- linq-backport-netframework-to-net5
+slug: "linq-backport-netframework-to-net5"
+scene: "LinqBackportNet5Scene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "4 メソッドが BCL 側に存在するターゲットフレームワークを、実際にコンパイルして調べる"
+  - "Append / Prepend が .NET Framework 4.7.1 以降で使えること（ポリフィルは衝突を起こす）"
+  - "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる"
+  - "TakeLast / SkipLast に 0・要素数超過・負数を渡したときの挙動"
+  - "空の並びに対する TakeLast"
+  - "NET471_OR_GREATER が SDK 形式の暗黙定義に依存しており、それを切った場合と従来形式では同じソースが CS0121 になること、および DefineConstants で明示すれば通ること"
+images:
+  - "images/articles/linq-backport-netframework-to-net5/linq-append-prepend-takelast-skiplast.png"
+  - "images/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.svg"
+  - "images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg"
+  - "images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg"

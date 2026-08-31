@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-scrollviewer-not-scrolling
+slug: "wpf-scrollviewer-not-scrolling"
+scene: "ScrollViewerNotScrollingScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "親のレイアウトを変えて ScrollViewer の ExtentHeight / ViewportHeight / ScrollableHeight を測る"
+  - "StackPanel の中では ScrollableHeight が 0 のままでスクロールバーが出ないこと"
+  - "Grid や DockPanel では高さが制約され、スクロールできること"
+  - "StackPanel でも高さを明示すればスクロールできること"
+images:
+  - "images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png"
+  - "images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.svg"
