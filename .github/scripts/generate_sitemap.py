@@ -672,7 +672,12 @@ def write_output(filename: str, content: str) -> str:
     output_path = os.path.join(REPO_ROOT, filename)
     directory = os.path.dirname(output_path) or "."
     os.makedirs(directory, exist_ok=True)
-    fd, tmp_path = tempfile.mkstemp(dir=directory, prefix=f"{filename}.", suffix=".tmp")
+    # prefix にはベース名だけを渡す。filename ("_data/lastmod.yml") をそのまま
+    # 渡すと、mkstemp が dir の下にさらに "_data/" を作ろうとして
+    # FileNotFoundError になる。
+    fd, tmp_path = tempfile.mkstemp(
+        dir=directory, prefix=f"{os.path.basename(filename)}.", suffix=".tmp"
+    )
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             fh.write(content)
