@@ -62,7 +62,7 @@ This is why the arrow and the order never disagree when the user sorts; they div
 
 ---
 
-## Solution
+## Four Ways to Reset
 
 The reset strategy should be selected by architecture and UX requirements.  
 
@@ -70,8 +70,6 @@ The reset strategy should be selected by architecture and UX requirements.
 - Use `Sorting` event logic when tri-state transition is required.
 - Manage sorting in `ICollectionView` for MVVM-oriented implementations.
 - Use a Behavior when the same rule must be shared across multiple screens.
-
-## Implementation
 
 ### Explicitly clear sorting in code
 
@@ -113,7 +111,7 @@ The three states appear as follows.
   <figcaption>The three states rendered over the same data. In the unsorted state on the right, both the column's <code>SortDescription</code> and the header arrow are removed. Because this example sorts on a single column, clearing it returns the rows to the order of the underlying collection; when several columns are sorted, the remaining descriptors still apply and the original order is not necessarily restored.</figcaption>
 </figure>
 
-### XAML
+#### XAML
 
 ```xml
 <DataGrid x:Name="MyDataGrid"
@@ -123,7 +121,7 @@ The three states appear as follows.
 This event hook allows custom handling before the default sorting pipeline completes.
 When columns such as `DataGridTemplateColumn` are used, `SortMemberPath` should be set explicitly for columns that need sort-reset handling.
 
-### C\#
+#### C\#
 
 ```csharp
 using System.ComponentModel;
@@ -196,7 +194,7 @@ Managing `SortDescriptions` in `ItemsView` improves testability and keeps view l
 
 With this binding, sorting reset responsibility remains in ViewModel commands.
 
-### Build a reusable Behavior class
+### Share it as a Behavior
 
 When the same tri-state rule is required in multiple screens, encapsulate the logic as a Behavior (`Microsoft.Xaml.Behaviors.Wpf`).
 
@@ -259,35 +257,49 @@ This design reduces duplicated event handlers and centralizes behavior-level cus
 
 XAML usage remains compact, which helps apply identical sorting rules consistently across screens.
 
+## How to Choose
+
+Which approach applies is settled by what triggers the reset and by how many screens share the behavior.
+
+**Resetting everything at once from a button or menu calls for the explicit clear.**
+Placing `SortDescriptions.Clear()` next to `SortDirection = null` is all it takes, which makes it the fastest to adopt. It does reference the `DataGrid` from code-behind, so MVVM separation loosens.
+
+**Keeping the whole interaction on the header calls for tri-state handling in the `Sorting` event.**
+Ascending, descending and unsorted all live in one gesture. Decide up front whether a reset clears one column or all of them, or the event handling grows complicated.
+
+**Strict MVVM with a command-driven reset calls for `ICollectionView`.**
+Sort state lives on the ViewModel side, which makes it testable without the UI. It assumes the View and ViewModel responsibilities are already separated.
+
+**Applying the same rule across several `DataGrid`s calls for a Behavior.**
+One line of XAML per screen carries it across, cutting duplicated code. Provide extension points for the parts that differ per screen.
+
+---
+
+## Comparing the Approaches
+
+| Approach | Pros | Cons | Best suited for |
+|---|---|---|---|
+| Explicit clear (`SortDescriptions.Clear` + `SortDirection = null`) | Simple to implement and quick to adopt. | Requires a `DataGrid` reference, loosening MVVM purity. | Clearing everything at once per screen. |
+| Tri-state handling in the `Sorting` event | Unifies the UX into ascending, descending and unsorted. | Event handling grows complex; per-column requirements need sorting out. | Prioritizing an interaction that lives entirely on the header. |
+| `ICollectionView` managed by the ViewModel | Testable, with minimal UI dependency. | Presumes a design that separates View and ViewModel responsibilities. | Strict MVVM with a command-driven reset. |
+| Behavior | Carries across screens easily and cuts duplication. | Needs extension points for per-screen differences. | Applying one sorting rule to several `DataGrid`s. |
+
+---
+
 ## Notes
 
 - Clearing `SortDescriptions` alone can leave header arrows out of sync with actual data order.
 - In the `Sorting` event example, if reset logic uses `SortMemberPath` as the key, columns without `SortMemberPath` can fail to reset as expected.
 - For multi-column sorting, requirements should define whether reset means full clear or only target-column clear.
-- Behavior-based reuse should provide extension points when screen-specific sorting rules differ.
 
-## Alternatives / Comparison
-
-| Method | Advantages | Disadvantages | Best fit |
-|---|---|---|---|
-| Explicit clear (`SortDescriptions.Clear` + `SortDirection = null`) | Simple implementation and fast adoption. | Requires direct `DataGrid` reference and lowers MVVM purity. | Screen-level commands that always perform full reset. |
-| Tri-state with `Sorting` event | Provides consistent `Ascending -> Descending -> Unsorted` UX. | Event logic can become complex with column-specific requirements. | Header-driven interaction where reset should be available by click sequence. |
-| `ICollectionView` in ViewModel | Better testability and minimal UI dependency. | Requires clear view-model responsibility boundaries. | Strict MVVM implementations with command-based reset. |
-| Behavior-based reuse | Easy to roll out across multiple screens and reduces duplicate code. | Needs extension design for per-screen differences. | Shared sorting policy across many `DataGrid` instances. |
+---
 
 ## Summary
 
-WPF `DataGrid` sorting reset should be selected by requirement scope and architecture.
+Sort state in a WPF `DataGrid` lives in two places — `ICollectionView.SortDescriptions` and `DataGridColumn.SortDirection` — and touching only one of them from code leaves them disagreeing. A reset has to restore both.
 
-- Start with default behavior understanding: Shift+Click means multi-column sorting.
-- Use explicit clear for straightforward full-reset scenarios.
-- Use `Sorting` event handling for tri-state interaction.
-- Use `ICollectionView` for MVVM-centered control.
-- Use Behavior for cross-screen consistency and reuse.
-
-For simple requirements, a helper method is sufficient.  
-For shared screen behavior, Behavior-based design is more maintainable.  
-For strict MVVM, `ICollectionView`-centric control is the most practical option.
+The deciding factors are what triggers the reset and how many screens share the behavior.
+Use the explicit clear for a button-driven reset, the `Sorting` event to keep it on the header, `ICollectionView` for strict MVVM, and a Behavior to carry one rule across screens.
 
 ## Related Articles
 
