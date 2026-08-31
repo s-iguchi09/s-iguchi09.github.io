@@ -70,7 +70,7 @@ The last two rows are the contrast: an implicit style that inherits the original
 
 ---
 
-## Solution
+## Two Families of Approaches
 
 As noted above, there are two families of approaches.
 
@@ -88,10 +88,6 @@ As noted above, there are two families of approaches.
 
 Both approaches obtain the part with `Template.FindName`.
 Wrapping the operations in an attached property allows each to be applied declaratively by adding a single attribute in XAML.
-
----
-
-## Implementation
 
 ### Approach 1: Hide the Named Part (works on both `.NET 10` and `.NET 9`)
 
@@ -283,17 +279,25 @@ As in Approach 1, the `xmlns:helper` declaration maps the prefix to the namespac
 
 ---
 
-## Notes
+## How to Choose
 
-- Approach 1 depends on the internal part name of the template. The name actually changed from `ClearButton` on `.NET 9` to `DeleteButton` on `.NET 10`, and if the structure changes again in a future update, the part will not be found and the clear button reappears (no exception is thrown; it is a graceful degradation where only the hiding stops working).
-- The Approach 2 hide trigger was added in `.NET 10`, so setting `AcceptsReturn=True` on `.NET 9` does not remove the clear button. Use Approach 1 when `.NET 9` is a target.
-- Approach 2 makes the control multi-line internally through `AcceptsReturn=True`. Suppressing Enter and stripping newlines on paste preserves a single line, but IME behavior and multi-line paste handling should be validated further according to application requirements.
-- A `TextBox` whose control template has been fully replaced may not contain a clear-button part. In that case, remove the button element itself within the replaced template.
-- The implementations above only hide the button when `True` is set and do not include logic to restore it dynamically. If toggling on and off at runtime is required, add a branch that restores `Visibility` and the handler registrations.
+Which one applies is settled by the target version and by what you are willing to depend on.
+
+**Including `.NET 9` as a target leaves only Approach 1.**
+The hide trigger Approach 2 relies on was added in `.NET 10`; on `.NET 9`, setting `AcceptsReturn=True` does not remove the clear button.
+
+**Keeping a single-line input calls for Approach 1.**
+Approach 2 makes the control multi-line internally through `AcceptsReturn=True`. Suppressing Enter and stripping newlines on paste preserves the single-line appearance, but IME behavior and multi-line paste handling have to be validated per application.
+
+**Avoiding a dependency on the template's internal part name calls for Approach 2.**
+Approach 1 references the part name directly. It actually changed from `ClearButton` on `.NET 9` to `DeleteButton` on `.NET 10`, and if it changes again the part will not be found and the clear button reappears. That degradation throws no exception, though: only the hiding stops working.
+
+**Building out an entire theme calls for full template replacement.**
+It gives complete control over the structure at the cost of far more markup. That is not a scale you choose for a single clear button.
 
 ---
 
-## Alternatives / Comparison
+## Comparing the Approaches
 
 | Approach | Pros | Cons | Best suited for |
 |---|---|---|---|
@@ -303,11 +307,20 @@ As in Approach 1, the `xmlns:helper` declaration maps the prefix to the namespac
 
 ---
 
+## Notes
+
+- A `TextBox` whose control template has been fully replaced may not contain a clear-button part. In that case, remove the button element itself within the replaced template.
+- The implementations above only hide the button when `True` is set and do not include logic to restore it dynamically. If toggling on and off at runtime is required, add a branch that restores `Visibility` and the handler registrations.
+- When an implicit style overrides the `TextBox` style, omitting `BasedOn` loses the Fluent template altogether and the part ceases to exist. The corresponding row of the table above measures exactly that.
+
+---
+
 ## Summary
 
-To remove the clear button on a Fluent-themed `TextBox`, setting `Visibility=Collapsed` as a local value on the target part (`DeleteButton` on `.NET 10`, `ClearButton` on `.NET 9`) is reliable while preserving input behavior, and it is straightforward to support both versions with Approach 1.
-When resilience to part-name changes matters, choose Approach 2 with the `AcceptsReturn` hide trigger, but this is limited to `.NET 10` or later and requires counteracting the multi-line side effect.
-For most cases such as single-line search and filter fields, make Approach 1 the default, consider Approach 2 only for `.NET 10`-or-later designs that need to avoid part-name dependence, and choose full template replacement when redesigning the entire theme.
+To remove the clear button on a Fluent-themed `TextBox`, setting `Visibility=Collapsed` as a local value on the target part (`DeleteButton` on `.NET 10`, `ClearButton` on `.NET 9`) is the default choice. It removes the button reliably, preserves input behavior, and covers both versions.
+
+The deciding questions are whether `.NET 9` is a target and whether a dependency on the part name is acceptable.
+With `.NET 9` in scope, Approach 1 is the only option; consider Approach 2 only for `.NET 10`-or-later designs that need to avoid part-name dependence. Choose full template replacement when redesigning the entire theme.
 
 ---
 
