@@ -217,7 +217,7 @@ public class SaveViewModel
 
 ## 注意点
 
-- **`RequerySuggested` は弱参照でハンドラを保持する:** `CommandManager.RequerySuggested` は登録されたハンドラを弱参照で保持する。委譲方式で登録されるハンドラはコマンドソース（`Button` など）自身が生成・保持するため、そのコマンドソースがビジュアルツリー上で生存している限りハンドラは回収されず、通常は問題にならない。一方、ハンドラを直接 `RequerySuggested` に登録する独自実装では、強参照を別途保持しないとハンドラが回収されて再評価が止まる。
+- **`RequerySuggested` は弱参照でハンドラを保持する:** `CommandManager.RequerySuggested` は登録されたハンドラを弱参照で保持する。委譲方式では、コマンドソース（`Button` など）が生存している間はハンドラが保たれる仕組みが WPF 側に用意されているため、通常は問題にならない。一方、自分で `RequerySuggested` へハンドラを登録する場合は、そのハンドラが到達可能なまま保たれるよう寿命を管理する必要がある。ローカル変数やラムダのまま登録すると、回収された時点で再評価が止まる。
 - **`InvalidateRequerySuggested` は UI スレッドで呼ぶ:** この API が促す `CommandManager` の再評価は UI スレッド側で処理され、対象のコマンドソース（UI 要素）も UI スレッドに属する。そのため呼び出しも UI スレッドを前提とし、バックグラウンドスレッドで状態を変えた場合は、`Dispatcher` で UI スレッドへ移してから呼ぶ。
 - **自前発火も UI スレッドで行う:** `RaiseCanExecuteChanged` の発火はボタン側のハンドラ（UI 要素の更新）を同期的に呼び出す。別スレッドから発火すると UI 要素へ別スレッドで触れることになるため、`Dispatcher` 経由で UI スレッドに寄せる。
 - **`CanExecute` は軽量に保つ:** `InvalidateRequerySuggested` は `RequerySuggested` に接続されたコマンドソースに `CanExecute` を問い直させる。重い処理を書くと、頻繁な再評価が UI の応答性を損なう。

@@ -133,9 +133,10 @@ This difference explains why a custom rule stays silent when a required field is
 The property behind the difference is `ValidationRule.ValidatesOnTargetUpdated`, which decides whether the rule also runs when the target is updated, that is, when the binding is established and when the source value changes.
 In the measured run, the built-in `DataErrorValidationRule` and `NotifyDataErrorValidationRule` both returned `true`, while the default for a custom `ValidationRule` was `false`.
 Specifying `ValidatesOnTargetUpdated="True"` makes a custom rule validate from startup as well: the rule was called immediately after launch and then re-evaluated on every change of the source value.
+
 To establish this stage, activate the approach in use.
-For a view model that owns validation, implement `INotifyDataErrorInfo`.
-It is active by default, allows several messages per property, and can report results that arrive asynchronously, such as a server lookup.
+A design built on `IDataErrorInfo` specifies `ValidatesOnDataErrors="True"` on the binding.
+`INotifyDataErrorInfo` is active by default, allows several messages per property, and can report results that arrive asynchronously, such as a server lookup. Choose it when several messages or asynchronous validation are needed.
 
 ### Stage 3: there is no adorner layer
 
@@ -183,6 +184,7 @@ The `ScrollContentPresenter` inside a `ScrollViewer` carries a layer as well.
 In the measured run, a `TextBox` placed inside a `ScrollViewer` drew its red border even under a `Window` template that omits `AdornerDecorator`.
 Results therefore diverge between the inside and the outside of a `ScrollViewer` within one screen, and the symptom can surface as "only some fields lack the border".
 When the template has been replaced but the symptom does not reproduce, check whether the control sits inside a `ScrollViewer`.
+
 To establish this stage, include `AdornerDecorator` when the `Window` template has been replaced.
 
 ### Before stage 1: the source has not been updated yet
@@ -217,8 +219,7 @@ The two interfaces differing in their default is part of what makes this hard to
 The last row is a case that reaches stage 3 and stops there. `HasError` is `True` and `Errors` still holds one entry, but the adorner count is 0.
 **The error is held and simply not drawn.** A value that is invalid without any red outline appearing corresponds to this row.
 
----
-To establish this stage, specify `UpdateSourceTrigger=PropertyChanged` to report results while the user is still typing.
+To get past this point, specify `UpdateSourceTrigger=PropertyChanged` on the `TextBox.Text` binding to report results while the user is still typing.
 
 ---
 

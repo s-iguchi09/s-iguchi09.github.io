@@ -147,7 +147,7 @@ In every case, defining the missing types locally makes the code compile. The de
 
 ## Three Ways to Deal with It
 
-When a compile error occurs because of new C# syntax, there are two main approaches.
+When a compile error occurs because of new C# syntax, there are three main approaches.
 
 ### Option 1: Raise `LangVersion` or update the build environment
 
@@ -637,9 +637,9 @@ Primary constructors were introduced in C# 12.0 and require a compiler and SDK t
 
 ---
 
-## Comparing the Three
+## Comparing the Approaches
 
-The following table compares the main approaches for handling compile errors caused by new C# syntax.
+The following table compares the approaches for handling compile errors caused by new C# syntax. The three approaches above are split into five rows, one per decision point.
 
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |

@@ -246,13 +246,13 @@ public static readonly DependencyProperty TitleProperty =
 3 つのどれを使うかは、内部で参照するプロパティの数と、利用側の `DataContext` も併用するかで決まる。
 
 **参照箇所が 1、2 か所にとどまるなら `RelativeSource AncestorType`。**
-バインディングごとに起点を書くため記述は増えるが、`DataContext` は利用側のまま残る。内部で利用側の `DataContext` も併せて参照したい場合はこれしかない。
+バインディングごとに起点を書くため記述は増えるが、`DataContext` は利用側のまま残る。内部で利用側の `DataContext` も併せて参照したい場合は、この方法か次の `ElementName` を使う。
 
 **同じことを短く書きたいなら `ElementName`。**
-ルート要素に `x:Name` を付けて名前で指す。`RelativeSource` とほぼ等価で、差は記述量だけである。
+ルート要素に `x:Name` を付けて名前で指す。`RelativeSource` とほぼ等価で、差は記述量だけである。利用側の `DataContext` を参照するときは `Path=DataContext.HeaderText` のように書く。
 
 **内部で参照するプロパティが 3 つ以上あるなら、内側のルート要素へ `DataContext` を委譲する。**
-1 か所の設定で済み、以降は内部のすべてを `{Binding Title}` のまま書ける。ただし `ContextMenu` の中からの参照は、この方法でしか解決しない点も併せて効いてくる。
+1 か所の設定で済み、以降は内部のすべてを `{Binding Title}` のまま書ける。`ContextMenu` の中からの参照が解決するのも、利用側からのバインディングを壊さない方法のうちではこれだけである。
 
 いずれも `UserControl` 要素そのものの `DataContext` には手を触れない。ここを書き換えると利用側からのバインディングが壊れる。
 
@@ -367,6 +367,6 @@ XAML の解析とバインディングは、`Title` の setter ではなく `Set
 この状態は出力ウィンドウに現れないため、`RelativeSource` を明示するまで気付けない。
 
 分岐点は、内部で参照するプロパティの数にある。
-3 つ以上なら内側のルート要素へ `DataContext` を委譲し、1、2 か所なら `RelativeSource` を個別に指定する。
+3 つ以上なら内側のルート要素へ `DataContext` を委譲し、1、2 か所なら `RelativeSource` か `ElementName` を個別に指定する。
 いずれの場合も `UserControl` 要素自身の `DataContext` には代入しない。
 内部から値を書き戻す入力用のコントロールでは、`FrameworkPropertyMetadataOptions.BindsTwoWayByDefault` を併せて指定する。

@@ -123,7 +123,7 @@ Switching controls buys roughly a factor of two; enabling virtualization buys fa
 
 ---
 
-## The Order to Improve In
+## Order of Improvements
 
 Work through the improvements in this order.
 

@@ -134,9 +134,10 @@ WPF の入力検証は、次の 3 段階が独立して成立して初めて画�
 実測では、組み込みの `DataErrorValidationRule` と `NotifyDataErrorValidationRule` はいずれも `true` を返し、自作の `ValidationRule` の既定は `false` であった。
 自作ルールにも起動時から検証させるには、`ValidatesOnTargetUpdated="True"` を指定する。
 指定した自作ルールは、実測でも起動直後に `Validate` が呼ばれ、以後はソース側の値が変わるたびに評価された。
+
 この段階を成立させるには、使う方式に応じた有効化を行う。
-ViewModel 側で検証する構成では `INotifyDataErrorInfo` を実装する。
-既定で有効なうえ、1 プロパティに複数のメッセージを持たせられ、非同期に完了する検証（サーバー照会など）もあとから反映できる。
+`IDataErrorInfo` を使う構成では、バインディングに `ValidatesOnDataErrors="True"` を指定する。
+`INotifyDataErrorInfo` は既定で有効であり、1 プロパティに複数のメッセージを持たせられ、非同期に完了する検証（サーバー照会など）もあとから反映できる。複数のメッセージや非同期の検証が要るならこちらを選ぶ。
 
 ### 段階 3: アドーナーレイヤーが無い
 
@@ -184,6 +185,7 @@ ViewModel 側で検証する構成では `INotifyDataErrorInfo` を実装する�
 実測では、`AdornerDecorator` を含まないテンプレートの `Window` でも、`ScrollViewer` の中に置いた `TextBox` には赤枠が描かれた。
 同じ画面でも `ScrollViewer` の内側と外側で結果が分かれるため、この症状は「一部の入力欄だけ赤枠が出ない」という形で現れることがある。
 テンプレートを差し替えていながら再現しない場合は、対象が `ScrollViewer` の内側にないかを確認する。
+
 この段階を成立させるには、`Window` のテンプレートを差し替えている場合に `AdornerDecorator` を含める。
 
 ### 段階 1 の手前: ソースがまだ更新されていない
@@ -218,8 +220,7 @@ ViewModel 側で検証する構成では `INotifyDataErrorInfo` を実装する�
 最終行が段階 3 だけで止まった状態である。`HasError` は `True`、`Errors` は 1 件のまま、アドーナーだけが 0 になっている。
 **エラーは保持されているのに描かれない。** 「値は不正なのに赤枠が出ない」という症状は、この行に当たる。
 
----
-この段階を成立させるには、入力の途中で結果を出すなら `UpdateSourceTrigger=PropertyChanged` を指定する。
+この段階の手前を解消するには、入力の途中で結果を出すなら、対象の `TextBox.Text` バインディングに `UpdateSourceTrigger=PropertyChanged` を指定する。
 
 ---
 

@@ -97,7 +97,7 @@ Registering alone does not place notifications inside the lock; wrapping the `Ad
 
 ---
 
-## Two Approaches
+## Two Core Approaches
 
 There are two approaches.
 
@@ -169,7 +169,7 @@ As required by the documentation, the call must occur on the UI thread and befor
 
 ## How to Choose
 
-Which one applies is settled by the volume and frequency of the updates.
+The two core approaches above, plus a variant and a way to avoid the problem entirely, make four in all. Which one applies is settled by the volume and frequency of the updates.
 
 **Occasional updates in small numbers call for `Dispatcher`.**
 It needs no extra setup and touches little of the existing code. The cost of a per-item round-trip to the UI thread does not matter at low counts.

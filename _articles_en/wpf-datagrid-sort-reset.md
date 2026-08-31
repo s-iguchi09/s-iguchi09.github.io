@@ -188,6 +188,9 @@ public class RowItem
 
 Managing `SortDescriptions` in `ItemsView` improves testability and keeps view logic thin.
 
+**This `ClearSort` releases the view order only.** `DataGridColumn.SortDirection` stays on the `DataGrid` side, so the rows return to their initial order while the header arrow remains displayed (the `then SortDescriptions.Clear() only` row of the table above measures exactly that).
+Clearing the arrow as well needs a separate step that sets `SortDirection` to `null` on the `DataGrid`, since the ViewModel cannot reach the column state. Folding that step into a Behavior lets a single command reset both.
+
 ```xml
 <DataGrid ItemsSource="{Binding ItemsView}" />
 ```

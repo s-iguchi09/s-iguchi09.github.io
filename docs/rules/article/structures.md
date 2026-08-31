@@ -216,7 +216,11 @@
 型を選んでいても、同じ型の記事どうしは骨格が近くなる。上限を設けて機械的に確認する。
 
 ```bash
-for f in _articles_ja/*.md; do grep '^## ' "$f" | paste -sd'>'; done | sort | uniq -c | sort -rn | head -5
+# コードブロック内の行は見出しとして数えない。
+# 記事に Markdown の見出し例やシェルコメントがあると、見出しでない行まで数えてしまうため。
+for f in _articles_ja/*.md; do
+  awk '/^```/{inside = !inside; next} !inside && /^## /' "$f" | paste -sd'>'
+done | sort | uniq -c | sort -rn | head -5
 ```
 
 - **完全に一致する構成は 5 記事までとする。** 6 記事以上になったら、いずれかの題材が型に合っていない可能性が高い。見出し名を言い換えるのではなく、**型の選び直しを検討する**。
