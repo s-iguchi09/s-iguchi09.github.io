@@ -1,0 +1,36 @@
+---
+layout: null
+---
+{%- comment -%}
+  英語記事の Atom フィード。
+
+  Search Console が sitemap.xml を「サイトマップを読み込めませんでした」と返し、
+  検出ページ数が 0 のままであるため、その代替の通知手段として置いている。
+  Google は XML サイトマップのほかに RSS 2.0 / Atom 1.0 もサイトマップとして受け付ける。
+
+  記事を追加すれば Jekyll のビルドで自動的に反映されるため、
+  Search Console への送信は最初の 1 回だけでよい。
+{%- endcomment -%}
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Articles - s-iguchi</title>
+  <subtitle>Implementation notes on WPF and .NET desktop development.</subtitle>
+  <link href="{{ site.url }}/feed.xml" rel="self" type="application/atom+xml" />
+  <link href="{{ site.url }}/articles/" rel="alternate" type="text/html" hreflang="en" />
+  <id>{{ site.url }}/feed.xml</id>
+  <updated>{{ site.time | date_to_xmlschema }}</updated>
+  <author>
+    <name>s-iguchi</name>
+  </author>
+{%- assign sorted_articles = site.articles_en | sort: 'date' | reverse -%}
+{%- for article in sorted_articles %}
+  <entry>
+    <title>{{ article.title | strip_html | escape }}</title>
+    <link href="{{ site.url }}{{ article.url }}" rel="alternate" type="text/html" />
+    <id>{{ site.url }}{{ article.url }}</id>
+    <published>{{ article.date | date_to_xmlschema }}</published>
+    <updated>{{ article.date | date_to_xmlschema }}</updated>
+    <summary type="text">{{ article.excerpt | strip_html | strip_newlines | escape }}</summary>
+  </entry>
+{%- endfor %}
+</feed>
