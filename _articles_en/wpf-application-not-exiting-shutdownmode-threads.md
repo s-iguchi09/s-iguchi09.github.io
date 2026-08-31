@@ -52,7 +52,7 @@ Changing `ShutdownMode` without distinguishing the two leaves the second state u
 
 ---
 
-## Cause / Background
+## Two Gates
 
 Two gates stand in series between closing a window and the process disappearing.
 
@@ -143,7 +143,7 @@ The process terminates immediately even with a six-second sleep outstanding, mea
 
 ---
 
-## Solution
+## Narrowing It Down
 
 The first step is not a fix but a test.
 As the measurements above show, **whether `Application.Exit` is raised** is by itself enough to identify the stalled gate, as long as the UI thread is responsive.
@@ -166,7 +166,7 @@ If a second UI thread is involved, stop its `Dispatcher` with `InvokeShutdown()`
 
 ---
 
-## Implementation
+## Diagnosing and Fixing in Code
 
 The diagnostic log belongs in an override of `OnExit` on the `App` class.
 When the stall is at gate 1, this method is never called.
@@ -283,39 +283,7 @@ Changing only the declaration leaves a possible-null-dereference warning on the 
 
 ---
 
-## Notes
-
-- **Treat `Environment.Exit` as a last resort.**
-  It terminates the process reliably, but `Application.Exit` is not raised and any persistence logic placed there does not run.
-  When it is used as a stopgap until the real cause is found, record that intent in the code.
-- **Call `base.OnExit(e)` when overriding `OnExit`.**
-  The base implementation raises the `Exit` event, so omitting it prevents registered event handlers from running.
-- **The `Application.Exit` test narrows the cause only while the UI thread is responsive.**
-  A UI thread blocked by a deadlock or a long synchronous wait also fails to reach `OnExit`.
-  The stall is still at gate 1, but the cause is neither a leftover window nor `ShutdownMode`, so confirm where the UI thread is parked with `dotnet-stack report` first.
-- **A modal dialog is not a blocked UI thread.**
-  While `Window.ShowDialog()` or `MessageBox.Show` is displayed, a nested `Dispatcher` frame keeps pumping the queue and the UI thread continues to process messages.
-  A dialog opened with `Window.ShowDialog()` is a window left in `Application.Windows`, which the ordinary leftover-window analysis already covers.
-  `MessageBox` and `CommonDialog` derivatives such as `OpenFileDialog` do not derive from `Window`, however, and never appear in that enumeration.
-- **`OnMainWindowClose` keys off the first window created.**
-  `MainWindow` is set automatically to the first `Window` instantiated ([How to get or set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)).
-  In a design that creates a splash window first, the splash becomes `MainWindow`.
-  Assign `MainWindow` explicitly when using this mode.
-- **`OnExplicitShutdown` converts a missed exit path directly into a surviving process.**
-  The setting is required for tray-resident applications, but a single exit path that forgets to call `Shutdown()` leaves the application running with no window.
-  A different pitfall in tray icon implementations is covered in [Fixing a WPF Tray ContextMenu That Does Not Close on Focus Loss](/articles/wpf-tray-contextmenu-close-on-focus-loss/).
-- **`IsBackground = true` is a declaration that the work may be abandoned.**
-  The runtime stops such threads at process exit without an exception.
-  Log flushing or temporary-file cleanup assigned to such a thread may never run.
-- **Windows created on a worker thread do not appear in `Application.Windows`.**
-  Investigating gate 1 through that enumeration alone misses windows owned by a second UI thread.
-- **`Application.Windows` is readable only from the thread that created the `Application` object.**
-  Reading it from another thread for diagnostics requires `Dispatcher.Invoke`.
-  A different symptom rooted in thread affinity is covered in [Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF](/articles/wpf-observablecollection-cross-thread-update/).
-
----
-
-## Alternatives / Comparison
+## Choosing the Fix per Gate
 
 ### Choosing a ShutdownMode
 
@@ -345,7 +313,41 @@ Record the outcome on the worker side and inspect it after `Join` returns.
 Its effect is limited to the thread it is set on, so the process still survives if another foreground thread remains.
 Adding a timeout to `Join` does not change the relationship either.
 The timeout returns the waiting side only; the target thread is not stopped and keeps running, so a foreground thread keeps the process alive.
+
 For work that must complete, the real fix is an implementation that reliably honours cancellation; `IsBackground = true` is not a substitute for it.
+
+---
+
+## Notes
+
+- **Treat `Environment.Exit` as a last resort.**
+  It terminates the process reliably, but `Application.Exit` is not raised and any persistence logic placed there does not run.
+  When it is used as a stopgap until the real cause is found, record that intent in the code.
+- **Call `base.OnExit(e)` when overriding `OnExit`.**
+  The base implementation raises the `Exit` event, so omitting it prevents registered event handlers from running.
+- **The `Application.Exit` test narrows the cause only while the UI thread is responsive.**
+  A UI thread blocked by a deadlock or a long synchronous wait also fails to reach `OnExit`.
+  The stall is still at gate 1, but the cause is neither a leftover window nor `ShutdownMode`, so confirm where the UI thread is parked with `dotnet-stack report` first.
+- **A modal dialog is not a blocked UI thread.**
+  While `Window.ShowDialog()` or `MessageBox.Show` is displayed, a nested `Dispatcher` frame keeps pumping the queue and the UI thread continues to process messages.
+  A dialog opened with `Window.ShowDialog()` is a window left in `Application.Windows`, which the ordinary leftover-window analysis already covers.
+  `MessageBox` and `CommonDialog` derivatives such as `OpenFileDialog` do not derive from `Window`, however, and never appear in that enumeration.
+- **`OnMainWindowClose` keys off the first window created.**
+  `MainWindow` is set automatically to the first `Window` instantiated ([How to get or set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)).
+  In a design that creates a splash window first, the splash becomes `MainWindow`.
+  Assign `MainWindow` explicitly when using this mode.
+- **`OnExplicitShutdown` converts a missed exit path directly into a surviving process.**
+  The setting is required for tray-resident applications, but a single exit path that forgets to call `Shutdown()` leaves the application running with no window.
+  A different pitfall in tray icon implementations is covered in [Fixing a WPF Tray ContextMenu That Does Not Close on Focus Loss](/articles/wpf-tray-contextmenu-close-on-focus-loss/).
+- **`IsBackground = true` is a declaration that the work may be abandoned.**
+  The runtime stops such threads at process exit without an exception.
+  Log flushing or temporary-file cleanup assigned to such a thread may never run.
+- **Windows created on a worker thread do not appear in `Application.Windows`.**
+  Investigating gate 1 through that enumeration alone misses windows owned by a second UI thread.
+- **`Application.Windows` is readable only from the thread that created the `Application` object.**
+  Reading it from another thread for diagnostics requires `Dispatcher.Invoke`.
+
+  A different symptom rooted in thread affinity is covered in [Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF](/articles/wpf-observablecollection-cross-thread-update/).
 
 ---
 
