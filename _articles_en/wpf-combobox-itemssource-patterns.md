@@ -61,28 +61,14 @@ Setting `SelectedValuePath=Id` produces the `Int32` `20`, changing the type as w
 
 ---
 
-## Solution
+## Five Implementation Patterns
 
-Before looking at implementations, choose the selection properties based on the element type of `ItemsSource`:
-
-- If the element is a simple value such as a `string` or an `enum`, use `SelectedItem` to receive the element directly.
-- If the element is an object and the entire selected object is needed, use `SelectedItem`.
-- If the element is an object and only a specific value such as an ID needs to be held in the ViewModel, use `SelectedValue` together with `SelectedValuePath`.
-- To separate the display name from the value stored in the ViewModel, combine `DisplayMemberPath` with `SelectedValuePath`.
-- Reserve `SelectedIndex` for cases where the position in the list itself carries meaning; otherwise prefer working with values or objects directly.
-
-This approach keeps the ViewModel property type aligned with the `ComboBox` configuration and reduces missed initial selections or update failures.  
-
-The configuration difference shows up in how the selected item is rendered.
+Five representative patterns, one per type passed to `ItemsSource`. The configuration difference shows up in how the selected item is rendered.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png" alt="Three ComboBox controls. The string list and the DisplayMemberPath one show only Baker, while the one using ItemTemplate shows 102 and Baker in two columns." width="469" height="184" loading="lazy">
   <figcaption>All three have the second entry selected. The string list and <code>DisplayMemberPath</code> render a single string, whereas <code>ItemTemplate</code> is applied to the selected item as well, allowing several fields to be shown side by side.</figcaption>
 </figure>
-
----
-
-## Implementation
 
 ### Pattern A: String List
 
@@ -248,6 +234,33 @@ Retrieving the underlying integer value via `SelectedValue` and `SelectedValuePa
 
 ---
 
+## How to Choose
+
+Which pattern applies is settled by the element type in `ItemsSource` and by what the ViewModel needs to hold.
+
+- For simple values such as `string` or an `enum`, use `SelectedItem`, which hands back the element itself (Patterns A and E).
+- For objects where the whole selected object is needed, use `SelectedItem` (Pattern B).
+- For objects where the ViewModel should hold only one value such as an ID, use `SelectedValue` with `SelectedValuePath` (Pattern C).
+- To separate the display name from the value stored in the ViewModel, combine `DisplayMemberPath` with `SelectedValuePath`.
+- To show several fields on one line, use `ItemTemplate` (Pattern D).
+- Reserve `SelectedIndex` for cases where the position in the list itself carries meaning; otherwise prefer working with values or objects directly.
+
+Keeping the ViewModel property type aligned with the `ComboBox` configuration is what prevents missed initial selections and update failures.
+
+---
+
+## Comparing the Patterns
+
+| Pattern | `ItemsSource` type | Retrieving the selection | Best suited for |
+| --- | --- | --- | --- |
+| A: string list | `ObservableCollection<string>` | `SelectedItem` (`string`) | Options that are plain labels |
+| B: objects + SelectedItem | `ObservableCollection<T>` | `SelectedItem` (`T`) | Referencing several fields after selection |
+| C: objects + SelectedValuePath | `ObservableCollection<T>` | `SelectedValue` (the property's type) | Only one field, such as an ID, is needed |
+| D: ItemTemplate | `ObservableCollection<T>` | `SelectedItem` (`T`) | Showing several fields on one line |
+| E: enum | `IEnumerable<TEnum>` | `SelectedItem` (`TEnum`) | Choosing from a fixed set of enum values |
+
+---
+
 ## Notes
 
 - **Behavior when both `DisplayMemberPath` and `ItemTemplate` are set**
@@ -271,33 +284,15 @@ Retrieving the underlying integer value via `SelectedValue` and `SelectedValuePa
 
 ---
 
-## Alternatives / Comparison
-
-| Pattern                       | ItemsSource type               | Selected value retrieval                  | Best suited for                               |
-| ----------------------------- | ------------------------------ | ----------------------------------------- | --------------------------------------------- |
-| A: String list                | `ObservableCollection<string>` | `SelectedItem` (`string`)                 | Choices are plain labels only                 |
-| B: Object + SelectedItem      | `ObservableCollection<T>`      | `SelectedItem` (`T`)                      | Multiple fields needed after selection        |
-| C: Object + SelectedValuePath | `ObservableCollection<T>`      | `SelectedValue` (specified property type) | Only a specific field such as an ID is needed |
-| D: ItemTemplate               | `ObservableCollection<T>`      | `SelectedItem` (`T`)                      | Multiple fields displayed in a single row     |
-| E: Enum                       | `IEnumerable<TEnum>`           | `SelectedItem` (`TEnum`)                  | Selecting from a fixed enumeration            |
-
----
-
 ## Summary
 
-The appropriate `ComboBox` implementation pattern is determined by the type bound to `ItemsSource`.  
+The implementation pattern for a `ComboBox` follows from the type passed to `ItemsSource`.
+Simple values call for `SelectedItem`; for objects, choose between `SelectedItem` and `SelectedValue` by whether the whole object is needed or one field suffices.
 
-- A string-only list requires nothing more than binding `SelectedItem` to a `string` property.
-- An object list where the whole object is needed in the ViewModel uses `DisplayMemberPath` together with `SelectedItem`.
-- An object list where only a specific field such as an ID is needed uses `SelectedValuePath` with `SelectedValue`.
-- Custom row layouts require `ItemTemplate`; combining it with `DisplayMemberPath` should be avoided.
-- Enum values are exposed as a collection in the ViewModel and bound via `SelectedItem` typed to the enum.
-
-Most initial-value failures trace back to either `Equals`-based mismatch or incorrect assignment order relative to `ItemsSource`.  
-Using `SelectedValuePath`, or ensuring the exact same instance is referenced, resolves the majority of these cases.  
+Most cases where an initial value fails to appear come down to a reference-comparison mismatch or the order in which `ItemsSource` is assigned.
+Using `SelectedValuePath`, or designing so that the same instance is referenced, avoids both.
 
 ---
 
 <!-- Related articles -->
 - [Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — The Role of GroupName](/articles/wpf-radiobutton-enum-binding/)
-<!-- - [WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法](/ja/articles/wpf-combobox-itemssource-patterns) -->
