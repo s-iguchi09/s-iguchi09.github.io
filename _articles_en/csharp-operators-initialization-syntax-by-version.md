@@ -105,7 +105,7 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two." width="693" height="590" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="693" height="590" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 
@@ -223,7 +223,16 @@ namespace System.Runtime.CompilerServices
         public string FeatureName { get; }
     }
 }
+
+namespace System.Diagnostics.CodeAnalysis
+{
+    [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+    internal sealed class SetsRequiredMembersAttribute : Attribute { }
+}
 ```
+
+That last `SetsRequiredMembersAttribute` is needed for a `record` holding a `required` member, and for setting one from a constructor marked `[SetsRequiredMembers]`.
+Note that its namespace differs from the other three. Writing `required` on a plain `class` compiles without it, but including it costs nothing.
 
 For `^` and `..`, define `System.Index` and `System.Range`, plus the `RuntimeHelpers.GetSubArray` method that array slicing compiles down to.
 

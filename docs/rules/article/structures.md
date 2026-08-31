@@ -217,11 +217,22 @@
 
 ```bash
 # 日本語版と英語版を別々に数える。対応する翻訳どうしは同じ構成になるため、混ぜると常に 2 件ずつ数えてしまう。
-# フェンスの判定は ``` と ~~~、3 スペースまでのインデントに対応する（厳密な Markdown パーサーではない）。
+# フェンスは開始記号の文字と長さを覚え、同じ文字で開始以上の長さのものだけを終了として扱う。
+# ```` で囲んだ中に ``` があっても、そこでは閉じない。
 for dir in _articles_ja _articles_en; do
   echo "--- $dir"
   for f in "$dir"/*.md; do
-    awk '/^ {0,3}(```|~~~)/{inside = !inside; next} !inside && /^## /' "$f" | paste -sd'>'
+    awk '
+      /^ {0,3}(`{3,}|~{3,})/ {
+        line = $0; sub(/^ +/, "", line)
+        ch = substr(line, 1, 1); n = 0
+        while (substr(line, n + 1, 1) == ch) n++
+        if (!inside) { inside = 1; fence_char = ch; fence_len = n }
+        else if (ch == fence_char && n >= fence_len) { inside = 0 }
+        next
+      }
+      !inside && /^## /
+    ' "$f" | paste -sd'>'
   done | sort | uniq -c | sort -rn | head -5
 done
 ```

@@ -98,7 +98,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。" width="693" height="590" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="693" height="590" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
@@ -216,7 +216,16 @@ namespace System.Runtime.CompilerServices
         public string FeatureName { get; }
     }
 }
+
+namespace System.Diagnostics.CodeAnalysis
+{
+    [AttributeUsage(AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
+    internal sealed class SetsRequiredMembersAttribute : Attribute { }
+}
 ```
+
+最後の `SetsRequiredMembersAttribute` は、`record` に `required` を持たせる場合と、`[SetsRequiredMembers]` を付けたコンストラクターで設定する場合に要る。
+他の 3 つと名前空間が違う点に注意する。`class` に `required` を書くだけなら無くても通るが、含めておいて困ることはない。
 
 `^` と `..` については、`System.Index` と `System.Range` に加え、配列のスライスで呼ばれる `RuntimeHelpers.GetSubArray` も定義する必要がある。
 

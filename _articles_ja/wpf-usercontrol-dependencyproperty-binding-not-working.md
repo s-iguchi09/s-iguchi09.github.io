@@ -249,7 +249,7 @@ public static readonly DependencyProperty TitleProperty =
 バインディングごとに起点を書くため記述は増えるが、`DataContext` は利用側のまま残る。内部で利用側の `DataContext` も併せて参照したい場合は、この方法か次の `ElementName` を使う。
 
 **ルート要素を名前で指すなら `ElementName`。**
-記述は短くなるが、解決の仕組みは `RelativeSource` と異なる。`ElementName` は同じ XAML 名前スコープ内の名前を引き、`RelativeSource AncestorType` は要素ツリーを上へたどって型で探す。テンプレートの中のように名前スコープが分かれる位置では `ElementName` が解決しない。利用側の `DataContext` を参照するときは `Path=DataContext.HeaderText` のように書く。
+記述は短くなるが、解決の仕組みは `RelativeSource` と異なる。`ElementName` は名前スコープから対象の名前を引き、`RelativeSource AncestorType` は要素ツリーを上へたどって型で探す。名前が別の名前スコープに閉じていて引けない位置では `ElementName` が解決しない（この構成での `DataTemplate` からの参照は後述のとおり解決する）。利用側の `DataContext` を参照するときは `Path=DataContext.HeaderText` のように書く。
 
 **内部で参照するプロパティが 3 つ以上あるなら、内側のルート要素へ `DataContext` を委譲する。**
 1 か所の設定で済み、以降は内部のすべてを `{Binding Title}` のまま書ける。`ContextMenu` の中からの参照が解決するのも、利用側からのバインディングを壊さない方法のうちではこれだけである。
