@@ -1,4 +1,6 @@
 ---
+# This file is the skeleton for structure type 1, "diagnostic / single cause". See structures.md for the list of types.
+# Do not copy these two lines into an article.
 layout: article-en
 title: "(Title)"
 date: YYYY-MM-DD

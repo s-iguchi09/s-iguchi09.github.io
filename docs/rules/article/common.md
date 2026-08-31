@@ -34,8 +34,9 @@
 
 記事の文体・構成・必須要素・チェックは、以下のルールファイルに従う。作業前に必ず読むこと。
 
-- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(問題解決型 §2.1 / 手順・解説型 §2.2)・必須要素・AdSense 適合性・図とスクリーンショット(§11)・**主張の検証(§12)**・内部リンクの正規 URL(§7.1)
-- `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(見出し構成)
+- `docs/rules/article/structures.md` — **記事の構成型(骨格の選び方)**
+- `docs/rules/article/guidelines.md` — 執筆方針・文体・記事構成(§2 は構成型へ委譲)・必須要素・AdSense 適合性・図とスクリーンショット(§11)・**主張の検証(§12)**・内部リンクの正規 URL(§7.1)
+- `docs/rules/article/template-ja.md` / `docs/rules/article/template-en.md` — 記事テンプレート(構成型 1「診断型・単一原因」の雛形)
 - `docs/rules/article/review-checklist.md` — 公開前レビューチェックリスト
 - `.markdownlint.json` — 有効な lint ルール(`MD060` は無効)
 
@@ -91,6 +92,17 @@
 
 - 各記事のテーマは、必要に応じてファイル先頭のフロントマター(`title` / `category` / `excerpt`)を読んで把握する。
 - **新しい slug は上記の既存ファイル名と重複させない。** テーマも既存記事と実質的に重ならないようにする。
+
+### 7.1 構成の重複
+
+テーマが重ならなくても、骨格が既存記事と揃いすぎることがある。構成型（`structures.md`）を選んだうえで、実際の重複を確認する。
+
+```bash
+for f in _articles_ja/*.md; do grep '^## ' "$f" | paste -sd'>'; done | sort | uniq -c | sort -rn | head -5
+```
+
+- **完全に一致する構成は 5 記事までとする。** 6 記事以上になったら、いずれかの題材が型に合っていない可能性が高い。
+- 上限を超えたときは、**見出し名を言い換えるのではなく型の選び直しを検討する**。外形を散らすこと自体が目的ではない（`structures.md`）。
 
 ---
 
