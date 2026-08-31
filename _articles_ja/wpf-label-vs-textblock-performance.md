@@ -123,7 +123,7 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 
 ---
 
-## 解決方法
+## 改善の順序
 
 改善は次の順序で検討する。
 
@@ -137,11 +137,7 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 - 入力フォーム見出し: `Target` やアクセスキーが必要な箇所のみ `Label` を使用する。
 - 既存画面の改修: `Label` を一括で置換せず、要件を満たす範囲で段階的に `TextBlock` 化する。
 
----
-
-## 実装例
-
-### 仮想化を保つ
+### 段階 1: 仮想化を保つ
 
 一覧表示では、`ItemsControl` をそのまま使うのではなく、仮想化パネルを持つコントロールを選ぶ。
 `ItemsControl` の既定の `ItemsPanel` は `StackPanel` であり、仮想化されない。
@@ -163,7 +159,7 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 `ScrollViewer.CanContentScroll` を `False` にすると、スクロール単位がアイテム単位からピクセル単位に変わり、仮想化が無効になる点に注意する。
 この設定は既定値が `True` であり、滑らかなスクロールを求めて変更されることがある。
 
-### 表示専用の Label を TextBlock に置き換える
+### 段階 2: 表示専用の Label を TextBlock に置き換える
 
 単純表示用途の `Label` を `TextBlock` に置き換える。
 この置き換えは、見た目を維持しつつ描画コストを削減する目的で実施する。
@@ -179,7 +175,24 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 この変更により、表示専用箇所から `Label` 固有機能を外し、軽量な描画構成に統一できる。
 ただし `Label` の既定 `Padding` がなくなるため、必要に応じて `Margin` や `Padding` を明示する。
 
-### Label が必要な箇所は残す
+### 段階 3: アンダーバーを含むデータに ContentTemplate を使う
+
+`Label` の外観を保ったまま `AccessText` を避けるには、`ContentTemplate` に `TextBlock` を指定する。
+
+```xml
+<Label Content="{Binding FilePath}">
+    <Label.ContentTemplate>
+        <DataTemplate>
+            <TextBlock Text="{Binding}" />
+        </DataTemplate>
+    </Label.ContentTemplate>
+</Label>
+```
+
+`ContentPresenter` が `AccessText` を生成しなくなるため、アンダーバーがそのまま表示され、描画コストもアンダーバーを含まない `Label` と同等に戻る。
+ただし `ContentTemplate` は `Content` が文字列以外のオブジェクトである場合にも適用されるため、対象は文字列表示に限定する。
+
+### Label を残す箇所
 
 `Label` が必要な入力フォーム見出しの例を示す。
 このパターンでは操作性とアクセシビリティを維持するため、`Label` を継続利用する。
@@ -198,23 +211,6 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 
 なお、この例のようにアクセスキーを意図して使う場合は `AccessText` が構築されるが、フォーム見出しの個数は通常わずかであり、コストは問題にならない。
 `AccessText` のコストが効くのは、アンダーバーを含むデータを**大量に**表示する場合である。
-
-### アンダーバーを含むデータを Label で表示する
-
-`Label` の外観を保ったまま `AccessText` を避けるには、`ContentTemplate` に `TextBlock` を指定する。
-
-```xml
-<Label Content="{Binding FilePath}">
-    <Label.ContentTemplate>
-        <DataTemplate>
-            <TextBlock Text="{Binding}" />
-        </DataTemplate>
-    </Label.ContentTemplate>
-</Label>
-```
-
-`ContentPresenter` が `AccessText` を生成しなくなるため、アンダーバーがそのまま表示され、描画コストもアンダーバーを含まない `Label` と同等に戻る。
-ただし `ContentTemplate` は `Content` が文字列以外のオブジェクトである場合にも適用されるため、対象は文字列表示に限定する。
 
 ---
 
