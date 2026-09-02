@@ -26,11 +26,12 @@ WPF のデータバインディングでは、`double` や `decimal`、`DateTime
 
 `Binding.StringFormat` に指定する書式は、`string.Format` に渡すものと同じ書式指定文字列である。
 したがって、`C`(通貨)・`N`(数値)・`P`(パーセント)といった標準書式指定子や、`#,0.##` などのカスタム書式指定子がそのまま使える。
+ただしこれは書式の意味の話であり、XAML に書くときは別に構文上の制約がある。`{Binding ...}` のショートハンド構文ではカンマが引数の区切りになるため `#,0.##` は引用符で囲む必要があり、`{` で始まる書式には先頭に `{}` のエスケープが要る。いずれも後述する。
 
 本記事の図は、上記の環境で `FrameworkElement.Language` の既定値と `CultureInfo.CurrentCulture` を読み出し、書式化の結果と突き合わせて得たものである。
 この環境で確認しているのは次の点である。
 
-- `ConverterCulture` を指定しない場合、OS の地域設定ではなく `en-US` で書式化される。
+- 対象要素の `Language` が既定値のままなら、`ConverterCulture` を指定しなくても OS の地域設定ではなく `en-US` で書式化される。
 - `ConverterCulture` を指定すると、書式が変わる。
 - `Label.Content` では `StringFormat` が効かず、`ContentStringFormat` が要る。
 

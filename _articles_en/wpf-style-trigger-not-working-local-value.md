@@ -27,7 +27,7 @@ This article explains the cause in terms of dependency property value precedence
 The figures in this article come from reading the effective value and its `BaseValueSource` in the environment above.
 The following points were confirmed in that environment:
 
-- On an element that carries a local value, a `Style` trigger has no effect even when its condition is met.
+- On an element that carries a local value for a property, a `Style` trigger setting that same property has no effect even when its condition is met.
 - The `BaseValueSource` of the effective value is `Local` in that case.
 - Moving the default into a `Setter` makes the trigger take effect, and `BaseValueSource` changes.
 - Removing the local value with `ClearValue` also makes the trigger take effect.

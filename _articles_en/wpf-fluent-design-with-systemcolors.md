@@ -22,12 +22,12 @@ The approach uses built-in WPF styling, spacing, corner radius, visual hierarchy
 - Constraint: no external Fluent UI library (for example, MahApps.Metro or ModernWpf)
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from reading the color each `SystemColors` key returns, and its relative luminance, in the environment above.
+The measurements in this article were taken in the environment above. `systemcolors-values.svg` reads the color each `SystemColors` key returns and its relative luminance; `systemcolors-tracking.svg` reads the referenced values before and after an application resource is swapped.
 The following points were confirmed in that environment:
 
 - `HighlightColor` for a selected item and `AccentColor` from personalization settings are different values.
 - A color read directly and baked in does not follow a later swap.
-- Only a resource key referenced through `DynamicResource` follows the swap.
+- A resource key referenced dynamically (through `DynamicResource` in this article's XAML) does follow the swap.
 
 ---
 

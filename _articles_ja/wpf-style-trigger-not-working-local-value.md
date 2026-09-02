@@ -27,7 +27,7 @@ WPF で `Style.Triggers` に定義した `Trigger` や `DataTrigger` が、条�
 本記事の図は、上記の環境で実効値と、その `BaseValueSource` を読み出して得たものである。
 この環境で確認しているのは次の点である。
 
-- ローカル値を持つ要素では、条件が成立しても `Style` の `Trigger` が反映されない。
+- あるプロパティにローカル値を持つ要素では、そのプロパティを設定する `Style` の `Trigger` は、条件が成立しても反映されない。
 - そのときの実効値の `BaseValueSource` は `Local` になる。
 - 既定値を `Setter` へ移すと `Trigger` が反映され、`BaseValueSource` が変わる。
 - `ClearValue` でローカル値を取り除いても、`Trigger` が反映されるようになる。

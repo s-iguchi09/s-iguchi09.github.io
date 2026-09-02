@@ -33,10 +33,10 @@ It also documents the placements where `BasedOn` is written but never resolved, 
 The measurements in this article were taken in the environment above by reading the template supplied to each control and its `Style` property.
 The following points were confirmed in that environment:
 
-- Whether `ThemeMode` is set changes the template supplied to a control.
-- Whether the application's implicit style applied can be told from the `Style` property.
-- Placing an implicit style under the same key stops the Fluent template from being supplied.
-- Where a template came from can be told from its named parts.
+- Leaving `ThemeMode` unset versus setting it to `Light` changes the template supplied to a control.
+- Whether the application's implicit style applied was determined here from the `Style` property.
+- Placing an implicit style without `BasedOn` under the same key stops the Fluent template from being supplied.
+- Where a template came from was determined from named parts unique to that template.
 
 `ThemeMode` exists on both `Application` and `Window`, so the theme can be set for the whole application or per window.
 The results table below includes combinations whose result depends on which one carries the setting.

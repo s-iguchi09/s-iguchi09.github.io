@@ -30,7 +30,7 @@ It determines the *timing* at which a value is written back from the target (`Te
 The figures in this article come from reading `DefaultUpdateSourceTrigger` from the metadata of each property in the environment above, and measuring when the value reaches the source.
 The following points were confirmed in that environment:
 
-- `TextBox.Text` is the only one that defaults to `LostFocus`; most others default to `PropertyChanged`.
+- Among the bindings in the table, `TextBox.Text` is the only one that defaults to `LostFocus`; the rest default to `PropertyChanged`.
 - The default, `PropertyChanged`, and `Explicit` differ in when the value reaches the source.
 
 ---

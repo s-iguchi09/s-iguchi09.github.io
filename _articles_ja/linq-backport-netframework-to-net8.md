@@ -29,7 +29,8 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 - 言語バージョン: `#nullable enable`・nullable 参照型注釈・`where TKey : notnull` 制約は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`LangVersion` を明示しない古い非 SDK 形式プロジェクトでは特に注意する）
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してそのままビルドし、実行結果を突き合わせて確かめている。
+本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
+`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
 この環境で確認しているのは次の点である。
 
 - `KeyValuePair` 版とタプル版、およびそれぞれの `IEqualityComparer` オーバーロードは、両ターゲットで同じ結果になる。

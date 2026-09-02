@@ -29,7 +29,8 @@ This article implements the selector-free `ToDictionary` polyfill (the `KeyValue
 - Language version: `#nullable enable`, nullable reference annotations, and the `where TKey : notnull` constraint require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (take particular care in older non-SDK projects that do not set `LangVersion` explicitly)
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
+On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
 The following points were confirmed in that environment:
 
 - The `KeyValuePair` and tuple overloads, along with their `IEqualityComparer` variants, produce the same results on both targets.

@@ -31,7 +31,8 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 - 方針: public メソッドと iterator を分離し、`#if !NETCOREAPP` で移行時に自動無効化する
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してそのままビルドし、実行結果を突き合わせて確かめている。
+本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
+`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
 この環境で確認しているのは次の点である。
 
 - `Append` / `Prepend` は .NET Framework 4.7.1 以降の BCL に存在するため、ポリフィルを足すと衝突する。

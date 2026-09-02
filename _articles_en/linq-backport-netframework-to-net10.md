@@ -26,7 +26,8 @@ It then digs into a concern unique to this backport, born from the fact that out
 - Language version: nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) require `LangVersion` 9.0 or later (recommended: `latest`). No other project configuration changes
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
+On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
 The following points were confirmed in that environment:
 
 - The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.

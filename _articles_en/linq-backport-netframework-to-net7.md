@@ -30,7 +30,8 @@ A polyfill built purely on delegation to existing APIs is the counterpart to the
 - Language version: `#nullable enable` and nullable reference annotations require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (dropping `#nullable enable` and the `?` annotations allows C# 7.3)
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
+On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
 The following points were confirmed in that environment:
 
 - The return value is an `IOrderedEnumerable`, so `ThenBy` can be chained onto it.

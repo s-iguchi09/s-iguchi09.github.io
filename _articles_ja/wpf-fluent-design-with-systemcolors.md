@@ -21,12 +21,12 @@ image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-
 - 方針: 外部 UI ライブラリ（MahApps.Metro、ModernWpf など）を追加しない
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で `SystemColors` の各キーが返す色と、その相対輝度を読み出して得たものである。
+本記事の実測は、上記の環境で行った。`systemcolors-values.svg` は各 `SystemColors` キーが返す色とその相対輝度を、`systemcolors-tracking.svg` はアプリケーションリソースを差し替えた前後の参照値を読み出している。
 この環境で確認しているのは次の点である。
 
 - 選択項目の `HighlightColor` と、個人用設定のアクセント色 `AccentColor` は別の値である。
 - 色を直接読んで焼き込んだ場合、後からの差し替えには追随しない。
-- リソースキーを `DynamicResource` で参照した場合だけ、差し替えに追随する。
+- リソースキーを動的に参照した場合（記事の XAML では `DynamicResource`）は、差し替えに追随する。
 
 ---
 

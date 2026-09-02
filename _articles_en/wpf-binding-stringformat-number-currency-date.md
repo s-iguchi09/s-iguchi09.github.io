@@ -26,11 +26,12 @@ This article shows how to format numbers, currency, and dates with implementatio
 
 The format supplied to `Binding.StringFormat` is the same format string passed to `string.Format`.
 Therefore, standard specifiers such as `C` (currency), `N` (number), and `P` (percent), as well as custom specifiers such as `#,0.##`, are used directly.
+That concerns what the format means; writing it in XAML carries separate syntax constraints. In the `{Binding ...}` shorthand a comma separates arguments, so `#,0.##` has to be quoted, and a format that begins with `{` needs a leading `{}` escape. Both are covered below.
 
 The figures in this article come from reading the default value of `FrameworkElement.Language` and `CultureInfo.CurrentCulture` in the environment above and comparing them against the formatted output.
 The following points were confirmed in that environment:
 
-- Without `ConverterCulture`, formatting uses `en-US` rather than the regional settings of the OS.
+- While the target element's `Language` keeps its default, formatting without `ConverterCulture` uses `en-US` rather than the regional settings of the OS.
 - Specifying `ConverterCulture` changes the formatting.
 - `StringFormat` has no effect on `Label.Content`; `ContentStringFormat` is required.
 

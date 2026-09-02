@@ -27,7 +27,7 @@ It also summarizes the pros and cons of this approach and compares it with the a
 The figures in this article come from sorting the same input with each comparer in the environment above and comparing the resulting orders.
 The following points were confirmed in that environment:
 
-- Both ordinal and culture-sensitive comparison place `item10` before `item2`.
+- Under the default culture of the verification environment, both ordinal and culture-sensitive comparison place `item10` before `item2`.
 - `StrCmpLogicalW` treats a run of digits as a single number when comparing.
 - `StrCmpLogicalW` is case-insensitive.
 

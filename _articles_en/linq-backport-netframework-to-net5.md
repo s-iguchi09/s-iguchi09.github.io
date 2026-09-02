@@ -30,7 +30,8 @@ As the foundation article of the series, this piece explains the rationale behin
 - Approach: split public methods from iterators; disable automatically on migration via `#if !NETCOREAPP`
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
+On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
 The following points were confirmed in that environment:
 
 - `Append` and `Prepend` are present in the BCL from .NET Framework 4.7.1 onward, so adding the polyfill causes a conflict.

@@ -27,11 +27,12 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 - 言語バージョン: 実装例は `#nullable enable` と `using var`（C# 8.0）に加え、`MaxBy` / `MinBy` の戻り値 `TSource?`（制約なし型パラメータへの null 許容注釈）を用いるため C# 9.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `9.0` 以上に設定する
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してそのままビルドし、実行結果を突き合わせて確かめている。
+本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
+`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
 この環境で確認しているのは次の点である。
 
 - `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
-- `MaxBy` / `MinBy` が空の並びに対して返す値は、値型と参照型で異なる。
+- `MaxBy` / `MinBy` が空の並びに対して返す値は、`int` のような null 非許容の値型と、参照型とで異なる。
 - `DistinctBy` が残す要素とその順序は、両ターゲットで一致する。
 
 ---
