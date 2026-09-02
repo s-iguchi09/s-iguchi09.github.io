@@ -17,7 +17,7 @@ The article also covers the alternatives when instance-style calls are required,
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-form-matrix.svg" alt="A table showing which extension block declarations are accepted for the static class Directory. With a type-only receiver, a static member compiles and an instance member fails with CS9303. With a named receiver parameter, the block itself fails with CS0721." width="880" height="322" loading="lazy">
-  <figcaption>What an <code>extension</code> block can declare when the target is a static class, verified by building against .NET 10 SDK 10.0.302 with <code>LangVersion 14.0</code>. Once the receiver has a name, the block fails with <code>CS0721</code> regardless of the members that follow.</figcaption>
+  <figcaption>What an <code>extension</code> block can declare when the target is a static class, verified by building against .NET SDK 10.0.302 with <code>LangVersion 14.0</code>. Once the receiver has a name, the block fails with <code>CS0721</code> regardless of the members that follow.</figcaption>
 </figure>
 
 ---
