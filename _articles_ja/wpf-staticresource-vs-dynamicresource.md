@@ -23,7 +23,11 @@ WPF のリソース参照には `StaticResource` と `DynamicResource` の2種�
 - 検証環境: .NET 10 / Windows 11
 
 本記事の図は、上記の環境で同じリソースを `StaticResource` と `DynamicResource` の両方から参照した画面を実際に表示し、実行中にリソースを差し替えて得たものである。
-差し替え前は両者が同じ値であること、差し替え後に `StaticResource` 側の値が変わらず `DynamicResource` 側だけが追随することを、この環境で確認している。
+この環境で確認しているのは次の点である。
+
+- 差し替える前は、両者とも同じ値になる。
+- 差し替えると、`StaticResource` で参照した側の値は変わらない。
+- 差し替えると、`DynamicResource` で参照した側の値は追随する。
 
 ---
 

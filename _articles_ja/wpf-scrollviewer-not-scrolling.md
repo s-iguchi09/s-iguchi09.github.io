@@ -24,7 +24,11 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 - 検証環境: .NET 10 / Windows 11
 
 本記事の図は、上記の環境で `ScrollViewer` の親のレイアウトだけを差し替えながら実際に画面を表示し、`ExtentHeight` / `ViewportHeight` / `ScrollableHeight` を読み出して得たものである。
-`StackPanel` の中では `ScrollableHeight` が 0 のままスクロールバーが出ないこと、`Grid` や `DockPanel` では高さが制約されてスクロールできること、`StackPanel` でも高さを明示すればスクロールできることを、この環境で確認している。
+この環境で確認しているのは次の点である。
+
+- `StackPanel` の中では `ScrollableHeight` が 0 のままで、スクロールバーが出ない。
+- `Grid` や `DockPanel` では高さが制約され、スクロールできる。
+- `StackPanel` でも、高さを明示すればスクロールできる。
 
 ---
 

@@ -25,7 +25,12 @@ WPF の MVVM では、ボタンを ViewModel の `ICommand` にバインドし�
 - 検証環境: .NET 10 / Windows 11
 
 本記事の図は、上記の環境で `CanExecute` の戻り値を切り替えながら実際にボタンを表示し、`Button.IsEnabled` を読み出して得たものである。
-戻り値を変えただけでは `IsEnabled` が変わらないこと、`InvalidateRequerySuggested` で更新されるのは `RequerySuggested` に委譲した実装だけであること、自前で `CanExecuteChanged` を発火した場合に更新されるのはその実装だけであること、`Command` が未設定のボタンは有効のままであることを、この環境で確認している。
+この環境で確認しているのは次の点である。
+
+- `CanExecute` の戻り値を変えただけでは、`Button.IsEnabled` は変わらない。
+- `InvalidateRequerySuggested` で更新されるのは、`RequerySuggested` に委譲した実装だけである。
+- 自前で `CanExecuteChanged` を発火した場合に更新されるのは、その実装だけである。
+- `Command` が未設定のボタンは、有効のまま変わらない。
 
 ---
 

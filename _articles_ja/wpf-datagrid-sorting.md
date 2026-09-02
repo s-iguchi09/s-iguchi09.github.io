@@ -24,7 +24,10 @@ WPF の `DataGrid` コントロールは、列ヘッダーをクリックする�
 以降の例では、`Name` と `Price` プロパティを持つ `Product` 型のコレクションに `DataGrid` がバインドされていることを前提とする。
 
 本記事の図は、上記の環境で列の宣言だけを変えた `DataGrid` を実際に表示し、各列の `SortMemberPath` と `CanUserSort` を読み出して得たものである。
-`SortMemberPath` を明示しない `DataGridTextColumn` に `Binding` のパスが入ること、`Binding` を持たないテンプレート列では `SortMemberPath` が空になり並び替えられないことは、いずれもこの環境で確認している。
+この環境で確認しているのは次の点である。
+
+- `SortMemberPath` を明示しない `DataGridTextColumn` では、`Binding` のパスが入る。
+- `Binding` を持たないテンプレート列では `SortMemberPath` が空になり、並び替えられない。
 
 ## デフォルトのソート設定
 
