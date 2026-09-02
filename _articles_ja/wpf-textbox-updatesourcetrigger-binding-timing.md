@@ -22,9 +22,16 @@ WPF の双方向バインディングでは、`TextBox` に入力した文字が
 - 対象コントロール・機能: `TextBox.Text` の双方向バインディング(`Mode=TwoWay` / `OneWayToSource`)
 - アーキテクチャ: MVVM(ViewModel のプロパティを View の `TextBox` へバインド)
 - 前提知識: `INotifyPropertyChanged` による変更通知、基本的なデータバインディング
+- 検証環境: .NET 10 / Windows 11
 
 `UpdateSourceTrigger` は、双方向(`TwoWay`)または `OneWayToSource` のバインディングでのみ意味を持つ。
 ターゲット(`TextBox.Text`)からソース(ViewModel)へ値を書き戻す方向の「タイミング」を決める設定であり、ソースからターゲットへの表示更新には影響しない。
+
+本記事の図は、上記の環境でプロパティごとの `DefaultUpdateSourceTrigger` をメタデータから読み出し、ソースへ値が渡る時点を計測して得たものである。
+この環境で確認しているのは次の点である。
+
+- 掲載した表の中では `TextBox.Text` だけが `LostFocus` で、他は `PropertyChanged` である。
+- 既定・`PropertyChanged`・`Explicit` で、ソースへ値が渡る時点が異なる。
 
 ---
 

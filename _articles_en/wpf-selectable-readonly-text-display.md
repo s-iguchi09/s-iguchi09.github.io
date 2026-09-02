@@ -21,6 +21,15 @@ For this requirement, a practical approach is to use a read-only `TextBox` and a
 - Target controls / features: `TextBlock`, `TextBox`
 - Architecture: Applicable to both MVVM and code-behind implementations
 - Intended use cases: Error messages, logs, and detail text display
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from displaying a `TextBlock` and a `TextBox` in the environment above and reading whether text can be selected and how focus behaves.
+The following points were confirmed in that environment:
+
+- `TextBlock` exposes no API for selecting text.
+- A `TextBox` with `IsReadOnly` set still allows text selection.
+- Selection still works after applying the settings that make it look like a `TextBlock`.
+- Clearing `IsTabStop` leaves the control focusable.
 
 ---
 

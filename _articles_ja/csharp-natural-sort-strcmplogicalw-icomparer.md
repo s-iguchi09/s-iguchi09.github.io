@@ -22,6 +22,14 @@ Windows エクスプローラーでファイル名を並べると、`item1` `ite
 - フレームワーク: .NET Framework 4.x / .NET 5 以降
 - 実行環境: Windows 専用（`shlwapi.dll` に依存するため）
 - 用途: `List<T>.Sort` / LINQ の `OrderBy` など、`IComparer<string>` を受け取る API
+- 検証環境: .NET 10 / Windows 11
+
+本記事の図は、上記の環境で同じ入力を比較器ごとに実際に並べ替え、結果の並びを比べて得たものである。
+この環境で確認しているのは次の点である。
+
+- 検証環境の既定カルチャでは、序数比較でもカルチャ比較でも `item10` が `item2` より前に来る。
+- `StrCmpLogicalW` は、連続した数字をまとめて数値として比較する。
+- `StrCmpLogicalW` は、大文字小文字を区別しない。
 
 ---
 

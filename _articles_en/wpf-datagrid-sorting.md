@@ -19,8 +19,15 @@ This article covers the essentials and explores patterns for each of those requi
 - Framework / Language: .NET 6 or later / C# 10  
 - Target control: WPF `DataGrid` (`System.Windows.Controls`)  
 - Architecture: applicable to both code-behind and MVVM  
+- Verification environment: .NET 10 / Windows 11
 
 The examples assume the grid is bound to an observable collection of a `Product` type that exposes `Name` and `Price` properties.  
+
+The figures in this article come from displaying a `DataGrid` in the environment above, varying only the column declarations, and reading `SortMemberPath` and `CanUserSort` on each column.
+The following points were confirmed in that environment:
+
+- A `DataGridTextColumn` without an explicit `SortMemberPath` picks up the path from its `Binding`.
+- A template column with no `Binding` ends up with an empty `SortMemberPath` and cannot be sorted.
 
 ## Enabling Default Sorting
 

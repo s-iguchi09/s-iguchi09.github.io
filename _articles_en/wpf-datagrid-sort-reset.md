@@ -26,6 +26,15 @@ This article covers the following approaches for resetting WPF `DataGrid` sortin
 - Language: C# 9 or later.
 - Architecture: MVVM or code-behind.
 - Scope: single-column and multi-column sorting requirements.
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from reading `SortDescriptions` on the `ICollectionView` and `SortDirection` on the columns in the environment above.
+The following points were confirmed in that environment:
+
+- The sort state is held in two places: `SortDescriptions` on the `ICollectionView` and `SortDirection` on the column.
+- Clearing `SortDescriptions` alone leaves `SortDirection` on the column, so the header arrow stays.
+- Adding to `SortDescriptions` alone does not set `SortDirection` on the column.
+- Adding two entries to `SortDescriptions` produces a multi-column sort.
 
 ## Problem
 

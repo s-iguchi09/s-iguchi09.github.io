@@ -20,6 +20,14 @@ The approach uses built-in WPF styling, spacing, corner radius, visual hierarchy
 - Target UI: WPF `Window`, `UserControl`, `Button`, `TextBlock`
 - Architecture: MVVM or code-behind (the XAML patterns in this article work for both)
 - Constraint: no external Fluent UI library (for example, MahApps.Metro or ModernWpf)
+- Verification environment: .NET 10 / Windows 11
+
+The measurements in this article were taken in the environment above. `systemcolors-values.svg` reads the color each `SystemColors` key returns and its relative luminance; `systemcolors-tracking.svg` reads the referenced values before and after an application resource is swapped.
+The following points were confirmed in that environment:
+
+- `HighlightColor` for a selected item and `AccentColor` from personalization settings are different values.
+- A color read directly and baked in does not follow a later swap.
+- A resource key referenced dynamically (through `DynamicResource` in this article's XAML) does follow the swap.
 
 ---
 

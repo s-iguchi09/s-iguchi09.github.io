@@ -22,6 +22,15 @@ WPF の MVVM では、ボタンを ViewModel の `ICommand` にバインドし�
 - 対象機能: `System.Windows.Input.ICommand` を実装した自作 `RelayCommand`、`Button.Command` バインド
 - アーキテクチャ: MVVM（コマンドロジックを ViewModel に置く構成）
 - 名前空間: `System`、`System.Windows.Input`
+- 検証環境: .NET 10 / Windows 11
+
+本記事の図は、上記の環境で `CanExecute` の戻り値を切り替えながら実際にボタンを表示し、`Button.IsEnabled` を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- `CanExecute` の戻り値を変えただけでは、`Button.IsEnabled` は変わらない。
+- `InvalidateRequerySuggested` で更新されるのは、`RequerySuggested` に委譲した実装だけである。
+- 自前で `CanExecuteChanged` を発火した場合に更新されるのは、その実装だけである。
+- `Command` が未設定のボタンは、有効のまま変わらない。
 
 ---
 
