@@ -25,14 +25,23 @@ image: /images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/u
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（実測はすべて .NET 10 / Windows 11 で取得）
+- フレームワーク: .NET 6 以降 / WPF
 - 言語: C# / XAML（掲載するコードは C# 7.0 以降で動作する構文のみを使う）
 - 対象機能: `UserControl`、`DependencyProperty.Register`、`Binding` の `RelativeSource` / `ElementName`
 - アーキテクチャ: MVVM（利用側のウィンドウに ViewModel を `DataContext` として設定する構成）
 - その他制約: `UserControl` を XAML ファイルとコードビハインドの組で定義する構成を基準とする
+- 検証環境: .NET 10 / Windows 11
 
 掲載する XAML の `...` は、標準の `xmlns` 宣言など本題に関係しない属性の省略を示す。
 そのまま貼り付けても解析できないため、実際のファイルでは通常の宣言に置き換える。
+
+本記事の図は、上記の環境で `UserControl` 内部の要素から見た `DataContext` と、バインドの到達可否を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- `UserControl` 内部の要素から見た `DataContext` は、利用側の ViewModel である。
+- 利用側の `DataContext` を継承している `UserControl` では、内部の素の `Binding` が自身の依存関係プロパティに届かない。
+- 内部要素に `RelativeSource Self` を書くとその要素自身を指すため、やはり届かない。
+- `RelativeSource AncestorType=UserControl` では届く。
 
 ---
 

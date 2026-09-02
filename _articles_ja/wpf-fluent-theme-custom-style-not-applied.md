@@ -27,6 +27,8 @@ image: /images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style
 - テーマ適用方法: `ThemeMode` プロパティ、または `Fluent.xaml` リソースディクショナリの直接マージ
 - 対象: `Application.Resources` / `Window.Resources` / 別ファイルのリソースディクショナリに定義したスタイル
 - アーキテクチャ: MVVM・コードビハインドのいずれでも挙動は同じ
+- 検証環境: .NET 10 / Windows 11
+- 追検証: `BasedOn` の解決は .NET 9 でも同じ結果を確認
 
 `ThemeMode` は `Application` と `Window` の双方に用意されており、アプリ全体にもウィンドウ単位にも設定できる。
 本記事の対応表では、どちらに設定したかで結果が変わる組み合わせも扱う。
@@ -44,6 +46,14 @@ pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.xaml
 `ThemeMode` は実験的 API として公開されている。
 本記事の実装例はすべて XAML の属性で設定するため抑制は不要だが、[.NET 9 の WPF における変更点](https://learn.microsoft.com/dotnet/desktop/wpf/whats-new/net90#thememode)が述べるとおり、コードから参照するとエラー `WPF0001` が発生する。
 その場合はプロジェクトファイルで `<NoWarn>$(NoWarn);WPF0001</NoWarn>` を指定するか、`#pragma warning disable WPF0001` で抑制する。
+
+本記事の実測は、上記の環境でコントロールに供給されたテンプレートと `Style` プロパティを読み出して行った。
+この環境で確認しているのは次の点である。
+
+- `ThemeMode` の有無で、コントロールに供給されるテンプレートが変わる。
+- アプリ側の暗黙スタイルが当たったかどうかは、`Style` プロパティで判別できる。
+- 同じキーの暗黙スタイルを置くと、Fluent のテンプレートが供給されなくなる。
+- テンプレートの出どころは、名前付きパーツで判別できる。
 
 ---
 

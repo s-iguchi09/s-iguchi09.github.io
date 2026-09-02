@@ -29,6 +29,15 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 - フレームワーク: .NET Framework 4.8（バックポート先）/ .NET 5+（将来の移行先）
 - 対象: LINQ の 4 メソッド（Append / Prepend / TakeLast / SkipLast）
 - 方針: public メソッドと iterator を分離し、`#if !NETCOREAPP` で移行時に自動無効化する
+- 検証環境: .NET 10 / Windows 11
+
+本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してそのままビルドし、実行結果を突き合わせて確かめている。
+この環境で確認しているのは次の点である。
+
+- `Append` / `Prepend` は .NET Framework 4.7.1 以降の BCL に存在するため、ポリフィルを足すと衝突する。
+- `TakeLast` / `SkipLast` に 0・要素数を超える値・負数を渡した場合の結果は、両ターゲットで一致する。
+- 空の並びに対する `TakeLast` の結果も、両ターゲットで一致する。
+- `NET471_OR_GREATER` は SDK 形式の暗黙定義に依存する。暗黙定義を切った場合と従来形式のプロジェクトでは同じソースが `CS0121` になり、`DefineConstants` で明示すれば通る。
 
 ---
 

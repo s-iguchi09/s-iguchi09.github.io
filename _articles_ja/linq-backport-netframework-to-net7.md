@@ -28,6 +28,13 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 - 対象: LINQ の `Order` / `OrderDescending`（各 `IComparer<T>` オーバーロードを含む計 4 シグネチャ）
 - 方針: `#nullable enable` を適用し、`#if !NET7_0_OR_GREATER` で移行時に自動無効化する
 - 言語バージョン: `#nullable enable` と nullable 参照型注釈は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`#nullable enable` と `?` 注釈を外せば C# 7.3 でも動作する）
+- 検証環境: .NET 10 / Windows 11
+
+本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してそのままビルドし、実行結果を突き合わせて確かめている。
+この環境で確認しているのは次の点である。
+
+- 戻り値は `IOrderedEnumerable` であり、`ThenBy` を連結できる。
+- 比較子で等しくなる要素どうしの順序は保たれる（安定ソート）。
 
 ---
 

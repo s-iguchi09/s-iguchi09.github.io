@@ -26,6 +26,13 @@ image: /images/articles/linq-backport-netframework-to-net9/linq-countby-aggregat
 - 対象: LINQ の 3 メソッド（CountBy / AggregateBy / Index）と各オーバーロード
 - 方針: `#nullable enable` を適用し、`#if !NET9_0_OR_GREATER` で移行時に自動無効化する
 - 言語バージョン: `#nullable enable` と `where TKey : notnull` は C# 8.0 以上を必要とする。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する
+- 検証環境: .NET 10 / Windows 11
+
+本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してそのままビルドし、実行結果を突き合わせて確かめている。
+この環境で確認しているのは次の点である。
+
+- `CountBy` / `AggregateBy` が返すキーは、最初に現れた順に並ぶ。
+- `Index` が返すタプルの中身と、空の並びに対する結果は、両ターゲットで一致する。
 
 ---
 

@@ -20,6 +20,15 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
 - 対象コントロール・機能: `TextBlock`, `TextBox`
 - アーキテクチャ: MVVM / コードビハインドのいずれでも適用可能
 - 想定用途: エラーメッセージ、ログ、詳細情報の表示
+- 検証環境: .NET 10 / Windows 11
+
+本記事の図は、上記の環境で `TextBlock` と `TextBox` を実際に表示し、選択の可否とフォーカスの状態を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- `TextBlock` には、テキストを選択する API が無い。
+- `IsReadOnly` の `TextBox` では、テキストを選択できる。
+- 見た目を `TextBlock` に寄せる設定を加えても、選択できる。
+- `IsTabStop` を切っても、フォーカス可能なままである。
 
 ---
 
