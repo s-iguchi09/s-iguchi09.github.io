@@ -18,6 +18,14 @@ This article shows how to customise that format so the control always renders da
 - Framework / Language: .NET 6 or later / C# 10  
 - Target control: WPF `DatePicker` (`System.Windows.Controls`)  
 - Architecture: applicable to both code-behind and MVVM  
+- Verification environment: .NET 10 / Windows 11 (Japanese regional settings)
+
+The figures in this article come from varying the `DatePicker` settings in the environment above and reading the string shown in its text part.
+The following points were confirmed in that environment:
+
+- `SelectedDateFormat` offers only `Short` and `Long`, so it cannot produce an arbitrary format.
+- `SelectedDateFormat` defaults to `Short`, and that default comes from the default style rather than from the dependency property metadata.
+- Rewriting the text part inside the template does produce an arbitrary format.
 
 The techniques below rely on the default `DatePicker` control template, which contains a `DatePickerTextBox` in its visual tree.  
 A fully retemplated `DatePicker` may not expose that element, in which case changing the picker's own text relies on the code-behind approach or on handling the format inside the custom template. The converter shown later formats companion displays, not the picker itself.  

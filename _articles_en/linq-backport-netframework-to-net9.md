@@ -26,6 +26,13 @@ The two approaches differ not just in memory efficiency but in how they treat `n
 - APIs: LINQ `CountBy`, `AggregateBy`, `Index` and their overloads
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET9_0_OR_GREATER`
 - Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0+. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj`
+- Verification environment: .NET 10 / Windows 11
+
+The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The following points were confirmed in that environment:
+
+- `CountBy` and `AggregateBy` return keys in first-seen order.
+- The contents of the tuple returned by `Index`, and its result for an empty sequence, match on both targets.
 
 ---
 

@@ -24,6 +24,13 @@ It then digs into a concern unique to this backport, born from the fact that out
 - APIs: LINQ `LeftJoin` (2 signatures), `RightJoin` (2 signatures), `Shuffle` (1 signature)
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET10_0_OR_GREATER`
 - Language version: nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) require `LangVersion` 9.0 or later (recommended: `latest`). No other project configuration changes
+- Verification environment: .NET 10 / Windows 11
+
+The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The following points were confirmed in that environment:
+
+- The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.
+- `Shuffle` returns a permutation of the original sequence (compared after sorting, since the order is random).
 
 ---
 

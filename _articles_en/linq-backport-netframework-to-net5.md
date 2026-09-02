@@ -28,6 +28,15 @@ As the foundation article of the series, this piece explains the rationale behin
 - Frameworks: .NET Framework 4.8 (backport target) / .NET 5+ (future migration target)
 - APIs: LINQ `Append`, `Prepend`, `TakeLast`, `SkipLast`
 - Approach: split public methods from iterators; disable automatically on migration via `#if !NETCOREAPP`
+- Verification environment: .NET 10 / Windows 11
+
+The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The following points were confirmed in that environment:
+
+- `Append` and `Prepend` are present in the BCL from .NET Framework 4.7.1 onward, so adding the polyfill causes a conflict.
+- Passing 0, a value larger than the element count, or a negative value to `TakeLast` / `SkipLast` produces the same result on both targets.
+- `TakeLast` on an empty sequence also produces the same result on both targets.
+- `NET471_OR_GREATER` relies on the implicit definitions of the SDK-style project. With those definitions turned off, and in legacy-format projects, the same source fails with `CS0121`; declaring it through `DefineConstants` makes it compile.
 
 ---
 

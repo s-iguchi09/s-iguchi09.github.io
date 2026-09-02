@@ -22,7 +22,7 @@ WPF のデータバインディングでは、`double` や `decimal`、`DateTime
 - 対象コントロール・機能: `TextBlock` / `TextBox` / `Label` / `Button` などのバインディング
 - アーキテクチャ: MVVM(ViewModel の数値・日付プロパティを View へ表示)
 - 前提知識: `System.String.Format` の複合書式指定文字列と標準／カスタム書式指定子
-- 検証環境: .NET 10 / Windows 11
+- 検証環境: .NET 10 / Windows 11（日本語環境）
 
 `Binding.StringFormat` に指定する書式は、`string.Format` に渡すものと同じ書式指定文字列である。
 したがって、`C`(通貨)・`N`(数値)・`P`(パーセント)といった標準書式指定子や、`#,0.##` などのカスタム書式指定子がそのまま使える。

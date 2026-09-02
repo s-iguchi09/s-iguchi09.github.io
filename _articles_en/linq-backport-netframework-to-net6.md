@@ -25,6 +25,14 @@ It also covers the version-specific migration guard that first becomes necessary
 - APIs: LINQ `Chunk`, `MaxBy`, `MinBy`, `DistinctBy`
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET6_0_OR_GREATER`
 - Language version: beyond `#nullable enable` and `using var` (C# 8.0), the implementation uses the `TSource?` return type of `MaxBy` / `MinBy` (a nullable annotation on an unconstrained type parameter), which requires C# 9.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `9.0` or later in the `.csproj`
+- Verification environment: .NET 10 / Windows 11
+
+The polyfill implementations in this article were built as-is for both `net48` and `net10.0` in the environment above, and their results were compared.
+The following points were confirmed in that environment:
+
+- `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source`, or uses an invalid `size`.
+- What `MaxBy` / `MinBy` return for an empty sequence differs between value types and reference types.
+- The elements `DistinctBy` keeps, and their order, match on both targets.
 
 ---
 

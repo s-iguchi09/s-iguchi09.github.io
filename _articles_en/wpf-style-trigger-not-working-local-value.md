@@ -22,6 +22,15 @@ This article explains the cause in terms of dependency property value precedence
 - Target feature: `Trigger` / `DataTrigger` / `MultiTrigger` declared in `Style.Triggers`
 - Default theme: Aero2 (the Fluent theme available from .NET 9 differs from what is described below in both the standard control colors and the structure of the default templates)
 - Architecture: applicable to both MVVM and code-behind
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from reading the effective value and its `BaseValueSource` in the environment above.
+The following points were confirmed in that environment:
+
+- On an element that carries a local value, a `Style` trigger has no effect even when its condition is met.
+- The `BaseValueSource` of the effective value is `Local` in that case.
+- Moving the default into a `Setter` makes the trigger take effect, and `BaseValueSource` changes.
+- Removing the local value with `ClearValue` also makes the trigger take effect.
 
 ---
 

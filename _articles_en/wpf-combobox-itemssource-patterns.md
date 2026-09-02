@@ -20,6 +20,13 @@ This article organizes the representative binding patterns and explains how to s
 - Target control: WPF ComboBox
 - Architecture: MVVM (binding through DataContext)
 - Prior knowledge: WPF binding basics, `INotifyPropertyChanged`
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from reading `SelectedItem`, `SelectedValue`, and `SelectedIndex` for the same selection in the environment above.
+The following points were confirmed in that environment:
+
+- Whether `SelectedValuePath` is set changes what `SelectedValue` holds.
+- Whether `DisplayMemberPath` is set changes the string that is displayed.
 
 ---
 

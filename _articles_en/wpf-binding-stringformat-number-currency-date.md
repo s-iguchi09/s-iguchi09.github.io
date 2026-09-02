@@ -22,9 +22,17 @@ This article shows how to format numbers, currency, and dates with implementatio
 - Target control / feature: bindings on `TextBlock`, `TextBox`, `Label`, `Button`, and similar controls
 - Architecture: MVVM (numeric and date properties on a ViewModel displayed in the View)
 - Assumed knowledge: composite format strings and standard/custom format specifiers of `System.String.Format`
+- Verification environment: .NET 10 / Windows 11 (Japanese regional settings)
 
 The format supplied to `Binding.StringFormat` is the same format string passed to `string.Format`.
 Therefore, standard specifiers such as `C` (currency), `N` (number), and `P` (percent), as well as custom specifiers such as `#,0.##`, are used directly.
+
+The figures in this article come from reading the default value of `FrameworkElement.Language` and `CultureInfo.CurrentCulture` in the environment above and comparing them against the formatted output.
+The following points were confirmed in that environment:
+
+- Without `ConverterCulture`, formatting uses `en-US` rather than the regional settings of the OS.
+- Specifying `ConverterCulture` changes the formatting.
+- `StringFormat` has no effect on `Label.Content`; `ContentStringFormat` is required.
 
 ---
 

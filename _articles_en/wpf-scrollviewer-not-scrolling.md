@@ -21,6 +21,14 @@ This article explains that the behavior comes from how the layout system measure
 - Language: C# / XAML
 - Target controls: `ScrollViewer`, `StackPanel`, `Grid`, `DockPanel`
 - Architecture: applicable to both MVVM and code-behind
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from displaying the screen in the environment above while swapping only the parent layout of the `ScrollViewer`, and reading `ExtentHeight`, `ViewportHeight`, and `ScrollableHeight`.
+The following points were confirmed in that environment:
+
+- Inside a `StackPanel`, `ScrollableHeight` stays at 0 and no scrollbar appears.
+- Inside a `Grid` or `DockPanel`, the height is constrained and scrolling works.
+- Inside a `StackPanel`, scrolling also works once an explicit height is given.
 
 ---
 
