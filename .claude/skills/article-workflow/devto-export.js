@@ -116,25 +116,41 @@ function linkedSlugs(text) {
   return set;
 }
 
+// Node の fetch はリクエスト全体のタイムアウトを持たない(undici の
+// headersTimeout などは別物)。応答が返らないと待ち続けるので、
+// AbortSignal.timeout で上限を切る。
+const FETCH_TIMEOUT_MS = 15000;
+
+function getJson(url) {
+  return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }).then((res) => {
+    if (!res.ok) throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
+    return res.json();
+  });
+}
+
 /** dev.to の公開投稿と、その本文が張っている自サイト記事を集める。 */
 async function fetchDevtoPosts() {
   // 1 ページ 100 件までしか返らない。全部読まないと、投稿が増えたときに
   // 「まだリンクされていない」と誤判定して同じリンクを二重に足すことになる。
   const list = [];
   const PER_PAGE = 100;
-  for (let page = 1; page <= 20; page++) {
-    const res = await fetch(`${DEVTO_API}/articles?username=${DEVTO_USER}&per_page=${PER_PAGE}&page=${page}`);
-    if (!res.ok) throw new Error(`dev.to API がエラーを返した: ${res.status}`);
-    const chunk = await res.json();
+  // 上限は無限ループへの保険。API が終端を返さない異常時に備えるだけなので、
+  // 打ち切ったときは黙って欠落させず警告を出す。
+  const MAX_PAGES = 100;
+  for (let page = 1; ; page++) {
+    const chunk = await getJson(`${DEVTO_API}/articles?username=${DEVTO_USER}&per_page=${PER_PAGE}&page=${page}`);
+    if (chunk.length === 0) break;
     list.push(...chunk);
     if (chunk.length < PER_PAGE) break;
+    if (page >= MAX_PAGES) {
+      console.error(`warning: ${MAX_PAGES} ページ (${list.length} 件) で打ち切った。取得しきれていない可能性がある。`);
+      break;
+    }
   }
 
   const posts = [];
   for (const item of list) {
-    const detailRes = await fetch(`${DEVTO_API}/articles/${item.id}`);
-    if (!detailRes.ok) throw new Error(`記事 ${item.id} の取得に失敗: ${detailRes.status}`);
-    const d = await detailRes.json();
+    const d = await getJson(`${DEVTO_API}/articles/${item.id}`);
     posts.push({
       id: d.id,
       title: d.title,
