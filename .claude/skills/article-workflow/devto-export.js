@@ -41,6 +41,10 @@ const TAGS_BY_CATEGORY = {
 };
 const DEFAULT_TAGS = 'dotnet, csharp';
 
+// slug は記事ファイル名とそのまま結合するので、パス区切りや .. を弾く。
+// 通さないと _articles_en の外を読んだり、--out の外へ書いたりできてしまう。
+const SLUG_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
 function parseArgs(argv) {
   const slugs = [];
   let exportMd = false;
@@ -52,9 +56,21 @@ function parseArgs(argv) {
     if (a === '--export') exportMd = true;
     else if (a === '--status') statusOnly = true;
     else if (a === '--offline') offline = true;
-    else if (a === '--out') outDir = argv[++i];
-    else if (a.startsWith('-')) throw new Error(`不明なオプション: ${a}`);
-    else slugs.push(a.replace(/\/$/, ''));
+    else if (a === '--out') {
+      const v = argv[++i];
+      // 値を取らずに次のオプションを食うと、出力せず正常終了して気づけない。
+      if (v === undefined || v.startsWith('-')) {
+        throw new Error('--out には出力先ディレクトリを指定する');
+      }
+      outDir = v;
+    } else if (a.startsWith('-')) throw new Error(`不明なオプション: ${a}`);
+    else {
+      const s = a.replace(/\/$/, '');
+      if (!SLUG_RE.test(s) || s.includes('..')) {
+        throw new Error(`slug に使えない文字が含まれている: ${a}`);
+      }
+      slugs.push(s);
+    }
   }
   if (slugs.length === 0 && !statusOnly) {
     throw new Error('slug を 1 つ以上指定するか --status を付ける。例: node devto-export.js wpf-scrollviewer-not-scrolling');
@@ -102,9 +118,17 @@ function linkedSlugs(text) {
 
 /** dev.to の公開投稿と、その本文が張っている自サイト記事を集める。 */
 async function fetchDevtoPosts() {
-  const listRes = await fetch(`${DEVTO_API}/articles?username=${DEVTO_USER}&per_page=100`);
-  if (!listRes.ok) throw new Error(`dev.to API がエラーを返した: ${listRes.status}`);
-  const list = await listRes.json();
+  // 1 ページ 100 件までしか返らない。全部読まないと、投稿が増えたときに
+  // 「まだリンクされていない」と誤判定して同じリンクを二重に足すことになる。
+  const list = [];
+  const PER_PAGE = 100;
+  for (let page = 1; page <= 20; page++) {
+    const res = await fetch(`${DEVTO_API}/articles?username=${DEVTO_USER}&per_page=${PER_PAGE}&page=${page}`);
+    if (!res.ok) throw new Error(`dev.to API がエラーを返した: ${res.status}`);
+    const chunk = await res.json();
+    list.push(...chunk);
+    if (chunk.length < PER_PAGE) break;
+  }
 
   const posts = [];
   for (const item of list) {
