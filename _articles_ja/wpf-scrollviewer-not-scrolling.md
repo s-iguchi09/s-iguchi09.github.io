@@ -21,6 +21,14 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 - 言語: C# / XAML
 - 対象コントロール: `ScrollViewer`、`StackPanel`、`Grid`、`DockPanel`
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
+- 検証環境: .NET 10 / Windows 11
+
+本記事の図は、上記の環境で高さ 200 の親の中に `ScrollViewer` を置き、親のレイアウトと `ScrollViewer` 自身の高さ指定を変えながら実際に画面を表示し、`ExtentHeight` / `ViewportHeight` / `ScrollableHeight` を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- 高さ 200 の `StackPanel` の中では、`ScrollableHeight` が 0 のままでスクロールバーが出ない。
+- 同じ高さの `Grid` と `DockPanel`（`LastChildFill`）では `ScrollViewer` に有限の高さが渡り、スクロールできる。コンテナーの種類ではなく、有限の高さが渡るかどうかで決まる。
+- `StackPanel` の中でも、`ScrollViewer` 自体に `Height` を設定すればスクロールできる。
 
 ---
 

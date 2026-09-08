@@ -27,6 +27,16 @@ It also documents the placements where `BasedOn` is written but never resolved, 
 - Theme activation: the `ThemeMode` property, or merging the `Fluent.xaml` resource dictionary directly
 - Target: styles declared in `Application.Resources`, `Window.Resources`, or a separate resource dictionary file
 - Architecture: the behavior is identical for MVVM and code-behind
+- Verification environment: .NET 10 / Windows 11
+- Also confirmed: `BasedOn` resolution behaves the same on .NET 9
+
+The measurements in this article were taken in the environment above by reading the template supplied to each control and its `Style` property.
+The following points were confirmed in that environment:
+
+- Leaving `ThemeMode` unset versus setting it to `Light` changes the template supplied to a control.
+- Whether the application's implicit style applied was determined here from the `Style` property.
+- Placing an implicit style without `BasedOn` under the same key stops the Fluent template from being supplied.
+- Where a template came from was determined from named parts unique to that template.
 
 `ThemeMode` exists on both `Application` and `Window`, so the theme can be set for the whole application or per window.
 The results table below includes combinations whose result depends on which one carries the setting.

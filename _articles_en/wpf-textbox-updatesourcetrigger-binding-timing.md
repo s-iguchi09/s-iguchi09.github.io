@@ -22,9 +22,16 @@ Working from the design reason behind that default, this article walks through h
 - Target control / feature: two-way binding on `TextBox.Text` (`Mode=TwoWay` / `OneWayToSource`)
 - Architecture: MVVM (a ViewModel property bound to a `TextBox` in the View)
 - Assumed knowledge: change notification via `INotifyPropertyChanged` and basic data binding
+- Verification environment: .NET 10 / Windows 11
 
 `UpdateSourceTrigger` is meaningful only on `TwoWay` or `OneWayToSource` bindings.
 It determines the *timing* at which a value is written back from the target (`TextBox.Text`) to the source (the ViewModel); it does not affect the source-to-target display update.
+
+The figures in this article come from reading `DefaultUpdateSourceTrigger` from the metadata of each property in the environment above, and measuring when the value reaches the source.
+The following points were confirmed in that environment:
+
+- Among the bindings in the table, `TextBox.Text` is the only one that defaults to `LostFocus`; the rest default to `PropertyChanged`.
+- The default, `PropertyChanged`, and `Explicit` differ in when the value reaches the source.
 
 ---
 

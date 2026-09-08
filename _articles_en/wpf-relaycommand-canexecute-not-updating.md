@@ -22,6 +22,15 @@ This article explains that the cause is a missing `ICommand.CanExecuteChanged` n
 - Target feature: a custom `RelayCommand` implementing `System.Windows.Input.ICommand`, bound through `Button.Command`
 - Architecture: MVVM (command logic lives in the view model)
 - Namespaces: `System`, `System.Windows.Input`
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from displaying buttons in the environment above while toggling what `CanExecute` returns, and reading `Button.IsEnabled`.
+The following points were confirmed in that environment:
+
+- Changing what `CanExecute` returns does not, by itself, change `Button.IsEnabled`.
+- `InvalidateRequerySuggested` only updates implementations that delegate to `RequerySuggested`.
+- Raising `CanExecuteChanged` yourself only updates that implementation.
+- A button with no `Command` set stays enabled.
 
 ---
 

@@ -19,6 +19,13 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 - 対象コントロール: WPF ComboBox
 - アーキテクチャ: MVVM（DataContext 経由のバインド）
 - 前提知識: WPF バインド基礎、`INotifyPropertyChanged`
+- 検証環境: .NET 10 / Windows 11
+
+本記事の図は、上記の環境で同じ選択に対する `SelectedItem` / `SelectedValue` / `SelectedIndex` を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- `SelectedValuePath` の有無で、`SelectedValue` の中身が変わる。
+- `DisplayMemberPath` の有無で、表示される文字列が変わる。
 
 ---
 

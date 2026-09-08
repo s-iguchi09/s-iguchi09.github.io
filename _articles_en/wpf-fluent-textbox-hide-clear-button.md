@@ -24,6 +24,15 @@ Because the part name differs on `.NET 9`, that difference and the corresponding
 - Target control: WPF `TextBox` (with the Fluent theme applied)
 - Theme: `PresentationFramework.Fluent` (via `ThemeMode` or a merge of `Fluent.xaml`)
 - Architecture: applicable to both MVVM and code-behind
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from enumerating the named parts present in the Fluent theme's `TextBox` template in the environment above.
+The following points were confirmed in that environment:
+
+- The part name of the clear button on .NET 10 was read from the template itself.
+- The part is present both when `ThemeMode` is set and when `Fluent.xaml` is merged directly.
+- Placing an implicit style under the same key without `BasedOn` removes the part on either route.
+- An implicit style that inherits the original through `BasedOn` keeps the part on either route, while its own setters still apply.
 
 ---
 

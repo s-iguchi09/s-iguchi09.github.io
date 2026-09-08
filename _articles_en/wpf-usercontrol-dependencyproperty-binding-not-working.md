@@ -25,11 +25,20 @@ Every value reported here as measured was obtained by running the code in the en
 
 ## Prerequisites / Environment
 
-- Framework: .NET 6 or later / WPF (all measurements taken on .NET 10 / Windows 11)
+- Framework: .NET 6 or later / WPF
 - Language: C# / XAML (the samples use only syntax available in C# 7.0 and later)
 - Target features: `UserControl`, `DependencyProperty.Register`, `Binding` with `RelativeSource` / `ElementName`
 - Architecture: MVVM, with a view model assigned to the consuming window's `DataContext`
 - Other constraints: the `UserControl` is defined as a XAML file paired with code-behind
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from reading the `DataContext` as seen from elements inside the `UserControl`, and whether each binding reaches its target, in the environment above.
+The following points were confirmed in that environment:
+
+- The `DataContext` seen from elements inside the `UserControl` is the consuming view model.
+- In a `UserControl` that inherits the consumer's `DataContext`, a plain `Binding` on an inner element does not reach the control's own dependency property.
+- Writing `RelativeSource Self` on an inner element points at that element itself, so it does not reach it either.
+- `RelativeSource AncestorType=UserControl` does reach it.
 
 The `...` in the XAML samples marks omitted attributes that are irrelevant here, such as the standard `xmlns` declarations.
 The samples therefore do not parse as pasted; replace the marker with the usual declarations in a real file.

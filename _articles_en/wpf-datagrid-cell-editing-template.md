@@ -18,6 +18,13 @@ This article explains the core implementation, common applied patterns, and prac
 - Target control / feature: WPF `DataGrid`
 - Architecture: MVVM
 - Other constraints: A grid designed for both high readability in listing and efficient interaction during editing
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from reading the type of the element actually placed in a `DataGrid` cell in the environment above.
+The following points were confirmed in that environment:
+
+- While displaying, the cell holds the element from `CellTemplate`; while editing, it holds the one from `CellEditingTemplate`.
+- Calling `BeginEdit` swaps the element type for real.
 
 ## Problem
 

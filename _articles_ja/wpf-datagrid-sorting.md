@@ -19,8 +19,15 @@ WPF の `DataGrid` コントロールは、列ヘッダーをクリックする�
 - フレームワーク / 言語: .NET 6 以降 / C# 10
 - 対象コントロール: WPF `DataGrid`(`System.Windows.Controls`)
 - アーキテクチャ: コードビハインド・MVVM のいずれにも適用可能
+- 検証環境: .NET 10 / Windows 11
 
 以降の例では、`Name` と `Price` プロパティを持つ `Product` 型のコレクションに `DataGrid` がバインドされていることを前提とする。
+
+本記事の図は、上記の環境で列の宣言だけを変えた `DataGrid` を実際に表示し、各列の `SortMemberPath` と `CanUserSort` を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- `SortMemberPath` を明示しない `DataGridTextColumn` では、`Binding` のパスが入る。
+- `Binding` を持たないテンプレート列では `SortMemberPath` が空になり、並び替えられない。
 
 ## デフォルトのソート設定
 

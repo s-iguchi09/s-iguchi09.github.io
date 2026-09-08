@@ -28,6 +28,14 @@ A polyfill built purely on delegation to existing APIs is the counterpart to the
 - APIs: LINQ `Order` / `OrderDescending` (4 signatures, including the `IComparer<T>` overloads)
 - Approach: apply `#nullable enable`; disable automatically on migration via `#if !NET7_0_OR_GREATER`
 - Language version: `#nullable enable` and nullable reference annotations require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (dropping `#nullable enable` and the `?` annotations allows C# 7.3)
+- Verification environment: .NET 10 / Windows 11
+
+The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
+On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
+The following points were confirmed in that environment:
+
+- The return value is an `IOrderedEnumerable`, so `ThenBy` can be chained onto it.
+- Elements that compare equal keep their relative order (a stable sort).
 
 ---
 

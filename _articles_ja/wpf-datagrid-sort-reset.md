@@ -26,6 +26,15 @@ WPF の `DataGrid` は便利なソート機能を持っていますが、要件�
 - 言語: C# 9 以降
 - アーキテクチャ: MVVM / コードビハインド
 - 対象要件: 単一列ソート / 複数列ソート
+- 検証環境: .NET 10 / Windows 11
+
+本記事の図は、上記の環境で `ICollectionView` の `SortDescriptions` と列の `SortDirection` を読み出して得たものである。
+この環境で確認しているのは次の点である。
+
+- 並び替えの状態は、`ICollectionView` の `SortDescriptions` と列の `SortDirection` に分かれて保持される。
+- `SortDescriptions` を消しただけでは列の `SortDirection` が残り、ヘッダーの矢印が消えない。
+- `SortDescriptions` を足しただけでは、列の `SortDirection` は付かない。
+- `SortDescriptions` を 2 つ足すと、複数列ソートになる。
 
 ## 問題
 

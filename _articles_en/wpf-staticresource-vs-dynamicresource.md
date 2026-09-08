@@ -19,6 +19,14 @@ This article explains the internal behavior of both mechanisms and provides crit
 
 - Framework / Language: .NET 6 or later / WPF / C#
 - Architecture: Applicable to both MVVM and code-behind patterns
+- Verification environment: .NET 10 / Windows 11
+
+The figures in this article come from displaying a screen in the environment above that references the same resource through both `StaticResource` and `DynamicResource`, then swapping the resource at run time.
+The following points were confirmed in that environment:
+
+- Before the swap, both sides hold the same value.
+- After the swap, the value referenced through `StaticResource` does not change.
+- After the swap, the value referenced through `DynamicResource` follows it.
 
 ---
 
