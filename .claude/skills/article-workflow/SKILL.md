@@ -307,6 +307,107 @@ CodeRabbit 等の自動レビューボットの再レビュー完了・未解決
 
 ---
 
+## Phase 6. 公開後: インデックス登録と外部リンクの準備
+
+マージすると GitHub Pages へ自動デプロイされるが、**それだけでは記事は Google に載らない**。
+このサイトは Search Console のサイトマップ取得が機能しておらず(`sitemap.xml` / `sitemap_index.xml` /
+最小形式 / Atom フィード 2 種の **5 形式すべてが「サイトマップを読み込めませんでした・検出 0」**)、
+外部リンクも 0 件でクロールバジェットがほとんど割かれていない。
+2026-06-23 以降に追加した 26 記事は、一覧ページからリンクされているにもかかわらず
+**1 本も自然発見されなかった**(2026-09-09 に確認)。
+
+そのため、Phase 5 の完了報告に続けて **必ず次の 2 つを提示する**。提示までがこのワークフローの範囲であり、
+Search Console への登録と dev.to への投稿はユーザーが行う。
+
+### 6.1 Search Console に登録する URL を提示する
+
+作成した記事の日英 2 URL を、そのままコピーできる形で出す。
+
+```text
+https://s-iguchi09.github.io/articles/<slug>/
+https://s-iguchi09.github.io/ja/articles/<slug>/
+```
+
+あわせて手順を一行添える: **URL 検査の検索窓に貼る → 「インデックス登録をリクエスト」**。
+
+> 手動登録はこのサイトで効果が実証されている唯一の手段である(6 月までインデックスされていた記事は
+> すべて手動登録によるもの)。1 日あたり約 10 件の上限があるため、1 記事なら日英 2 件で収まる。
+
+### 6.2 dev.to への導線を提示する
+
+**新規記事を必ず dev.to へ転載するわけではない。** 目的は外部リンクを得ることであって、
+記事を書くたびに 1 本ずつ投稿するのは不自然だし、連続投稿はスパム判定の対象にもなる。
+既定は **既に dev.to にある投稿へ 1 行足す**ことである。
+
+| 状況 | やること |
+|---|---|
+| **通常(大半はこちら)** | 既存の dev.to 投稿の `## Related Articles` に新記事の 1 行を追記する |
+| 英語圏で単独の需要が見込める記事を書いたとき | 新規に転載する |
+| dev.to の投稿がまだ数本しかないとき | 転載を優先し、リンクの受け皿を増やす |
+
+どちらの場合も、次のスクリプトが必要な材料を出す。
+
+```bash
+# Search Console 用 URL と、dev.to からのリンク状況・追記先の候補
+node .claude/skills/article-workflow/devto-export.js <slug>
+
+# dev.to の投稿一覧と、各投稿がリンクしている記事数
+node .claude/skills/article-workflow/devto-export.js --status
+
+# 新規転載するときだけ。転載用 Markdown もスクラッチパッドに書き出す
+node .claude/skills/article-workflow/devto-export.js <slug> --export --out <スクラッチパッド>
+```
+
+**どの記事を dev.to に出したかの記録は持たない。** dev.to の公開 API が認証なしで投稿一覧と
+`body_markdown` を返すため、スクリプトが毎回そこから実状を読む。台帳を置くと更新漏れで嘘をつくが、
+API は常に本当のことを言う。これにより、**セッションをまたいでも「この記事は既にリンク済みか」
+「どの投稿に足すべきか」を確実に判断できる**。
+
+出力は状況に応じて変わる。
+
+```text
+wpf-fluent-design-with-systemcolors: 既にリンク済み
+  ← Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme
+
+wpf-datagrid-sort-reset: まだどこからもリンクされていない
+  追記先の候補（タグの重なり順、同点ならリンク数の少ない順）:
+    Controls with Custom Styles ...  (タグ一致 3 / リンク 5 本)
+  Edit → 末尾の Related Articles にこの行を追記して Save changes:
+    - [How to Reset DataGrid Sorting in WPF](https://s-iguchi09.github.io/articles/wpf-datagrid-sort-reset/)
+```
+
+ネットワークが使えない場合は警告を出したうえで、リンク済み判定を省いて追記行だけを出す
+(`--offline` で明示的にその挙動にもできる)。
+
+転載用 Markdown を生成した場合は **`SendUserFile` で渡す**。リポジトリにはコミットしない
+(転載物であり、サイトの公開物ではないため)。複数本あるときは **1 日 1 本**で投稿するよう添える。
+
+**既存投稿への追記の手順**(ユーザーが行う):
+
+1. `https://dev.to/dashboard` で、カテゴリの近い投稿を開く
+2. Edit → 末尾の `## Related Articles` にスクリプトが出した 1 行を貼る
+3. Save changes
+
+編集された記事は dev.to 側で再クロールされるため、新記事への経路がそこで作られる。
+1 本の投稿にリンクを際限なく足すと不自然になるので、**複数の投稿へ分散させる**。
+
+#### なぜ dev.to なのか
+
+`canonical_url` だけでは外部リンクにならない。これは `<link rel="canonical">` を出すだけで、
+重複扱いを防ぐ効果しかない。クロール経路になるのは**本文中の `<a href>`** である。
+
+dev.to の本文リンクには **`nofollow` が付かない**(`noopener noreferrer` のみ。2026-09-09 実測)。
+GitHub の Website 欄・Qiita・Zenn・X はいずれも `nofollow` を付けるため、
+**このサイトが dofollow の外部リンクを得られる数少ない経路**である。
+
+> ⚠️ **CRLF が混ざると dev.to は front matter を解釈しない。** 先頭の `---` が水平線として、
+> 末尾の `---` が直前行を h2 に変える setext heading として描画され、`canonical_url` が効かないまま
+> 公開される。2026-09-09 に実際に踏んだ不具合で、LF へ統一して解消した。
+> 元記事は Windows の CRLF を含むため、スクリプトは出力時に必ず LF へ揃えている。
+> **手作業で変換する場合も同じ処理が要る。**
+
+---
+
 ## 全体フロー要約
 
 ```text
@@ -321,6 +422,9 @@ Phase 4  PR 作成 → CI 監視 ── グリーン＆指摘ゼロまで修正�
          (修正 push 後は CodeRabbit へ @coderabbitai review を要求、対応済みスレッドは解決済みにする、
           マージ前に未解決ゼロを確認。Copilot 再レビューは要求しない)
 Phase 5  マージ → (head ブランチは GitHub が自動削除) → 購読解除 → 完了報告
+Phase 6  devto-export.js で Search Console 用 URL(日英 2 件)と
+         dev.to の Related Articles 追記行を提示(新規転載時のみ --export で Markdown も生成)
+         サイトマップが機能しないため、提示しないと記事は Google に載らない
 ```
 
 ## 判断の原則
@@ -340,3 +444,6 @@ Phase 5  マージ → (head ブランチは GitHub が自動削除) → 購読�
 - **リモートブランチの手動削除コマンドは実行しない**(Web 環境では 403 で必ず失敗する)。
   head ブランチの削除は GitHub の自動削除に任せる(Phase 5)。
 - 手動モードでは、ユーザー承認を得るまで PR を作成しない。
+- **Phase 6 は省略しない。** このサイトはサイトマップが 5 形式すべて読まれず、外部リンクも 0 件のため、
+  提示しなければ記事は公開されただけで Google に載らない(2026-06-23 以降の 26 記事が実際にそうなった)。
+  オートモードでも必ず実施する。ただし登録と投稿の操作自体はユーザーが行うので、**提示までで完了とする**。
