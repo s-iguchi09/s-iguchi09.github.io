@@ -21,7 +21,7 @@
  * なぜこれが要るのか:
  * このサイトは Search Console のサイトマップ取得が 5 形式すべて失敗しており、
  * 外部リンクも 0 件でクロールバジェットがほとんど無い。放置した記事は
- * 一覧ページからリンクされていても自然発見されなかった(2026-09-09 実測)。
+ * 一覧ページからリンクされていても自然発見されなかった(2026-09-09 JST 実測)。
  */
 
 'use strict';
@@ -167,6 +167,38 @@ async function fetchDevtoPosts() {
   return posts;
 }
 
+/**
+ * SVG を参照している figure を、説明文の引用ブロックへ置き換える。
+ *
+ * dev.to の画像プロキシは SVG を変換できず、中身を SVG のまま
+ * Content-Type: image/webp で返す。ブラウザは webp としてデコードを試みて
+ * 失敗し、図が壊れて alt だけが残る(2026-09-11 JST 実測)。data URI での
+ * 埋め込みは "Invalid markdown detected!" で拒否された。
+ *
+ * alt と figcaption には図の内容がそのまま書かれているので、テキストとして
+ * 残せば情報は失われない。あわせて元記事へのリンクが増えるため、
+ * 外部リンクを得るという転載の目的にも沿う。PNG はプロキシが正しく変換する
+ * ので手を触れない。
+ */
+function replaceSvgFigures(body, slug) {
+  return body.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/g, (block) => {
+    const img = block.match(/<img\b[^>]*>/);
+    if (!img || !/\bsrc="[^"]*\.svg"/i.test(img[0])) return block;
+
+    // alt も caption も、改行が残っていると 2 行目以降に "> " が付かず
+    // 引用ブロックの外へ出てしまう。どちらも 1 行へ潰す。
+    const alt = ((img[0].match(/\balt="([^"]*)"/) || [])[1] || '').replace(/\s+/g, ' ').trim();
+    const caption = ((block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/) || [])[1] || '')
+      .replace(/\s+/g, ' ').trim();
+
+    const lines = [];
+    if (alt) lines.push(`**Figure:** ${alt}`);
+    if (caption) lines.push('', caption);
+    lines.push('', `The diagram is rendered in the [original article](${SITE}/articles/${slug}/).`);
+    return lines.map((l) => (l ? `> ${l}` : '>')).join('\n');
+  });
+}
+
 function buildExport(slug) {
   const { fm, body } = readArticle(slug, 'en');
   const title = unquote(fm.title);
@@ -188,7 +220,8 @@ function buildExport(slug) {
   // CRLF が 1 つでも混ざると dev.to は front matter を解釈せず、先頭の --- が
   // 水平線に、末尾の --- が直前行を h2 にする setext heading になる。
   // canonical_url が効かないまま公開されるので、必ず LF に揃える。
-  return (head + absolutize(body).trim() + '\n').replace(/\r\n/g, '\n');
+  const converted = replaceSvgFigures(absolutize(body), slug);
+  return (head + converted.trim() + '\n').replace(/\r\n/g, '\n');
 }
 
 function printStatus(posts) {
