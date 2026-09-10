@@ -21,7 +21,7 @@
  * なぜこれが要るのか:
  * このサイトは Search Console のサイトマップ取得が 5 形式すべて失敗しており、
  * 外部リンクも 0 件でクロールバジェットがほとんど無い。放置した記事は
- * 一覧ページからリンクされていても自然発見されなかった(2026-09-09 実測)。
+ * 一覧ページからリンクされていても自然発見されなかった(2026-09-09 JST 実測)。
  */
 
 'use strict';
@@ -172,7 +172,7 @@ async function fetchDevtoPosts() {
  *
  * dev.to の画像プロキシは SVG を変換できず、中身を SVG のまま
  * Content-Type: image/webp で返す。ブラウザは webp としてデコードを試みて
- * 失敗し、図が壊れて alt だけが残る(2026-09-11 実測)。data URI での
+ * 失敗し、図が壊れて alt だけが残る(2026-09-11 JST 実測)。data URI での
  * 埋め込みは "Invalid markdown detected!" で拒否された。
  *
  * alt と figcaption には図の内容がそのまま書かれているので、テキストとして
@@ -185,12 +185,15 @@ function replaceSvgFigures(body, slug) {
     const img = block.match(/<img\b[^>]*>/);
     if (!img || !/\bsrc="[^"]*\.svg"/i.test(img[0])) return block;
 
-    const alt = (img[0].match(/\balt="([^"]*)"/) || [])[1] || '';
-    const caption = (block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/) || [])[1] || '';
+    // alt も caption も、改行が残っていると 2 行目以降に "> " が付かず
+    // 引用ブロックの外へ出てしまう。どちらも 1 行へ潰す。
+    const alt = ((img[0].match(/\balt="([^"]*)"/) || [])[1] || '').replace(/\s+/g, ' ').trim();
+    const caption = ((block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/) || [])[1] || '')
+      .replace(/\s+/g, ' ').trim();
 
     const lines = [];
-    if (alt.trim()) lines.push(`**Figure:** ${alt.trim()}`);
-    if (caption.trim()) lines.push('', caption.replace(/\s+/g, ' ').trim());
+    if (alt) lines.push(`**Figure:** ${alt}`);
+    if (caption) lines.push('', caption);
     lines.push('', `The diagram is rendered in the [original article](${SITE}/articles/${slug}/).`);
     return lines.map((l) => (l ? `> ${l}` : '>')).join('\n');
   });
