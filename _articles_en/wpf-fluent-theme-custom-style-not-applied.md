@@ -370,3 +370,4 @@ Reference `DefaultButtonStyle` only when the `App.xaml` structure cannot be chan
 - [Applying Fluent Design in WPF Without Extra Libraries](/articles/wpf-fluent-design-with-systemcolors/)
 - [Hiding the Clear Button on a Fluent-Themed WPF TextBox](/articles/wpf-fluent-textbox-hide-clear-button/)
 - [Why StaticResource Changes Are Not Reflected in WPF and How to Fix It](/articles/wpf-staticresource-vs-dynamicresource/)
+- [Diagnosing Why Parts of a WPF App Stay Light After Switching ThemeMode at Runtime](/articles/wpf-fluent-thememode-runtime-switch/)

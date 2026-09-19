@@ -56,6 +56,7 @@ internal static class Program
         new BindingErrorTraceScene(),
         new UpdateSourcePitfallScene(),
         new ExtensionReceiverMatrixScene(),
+        new FluentThemeModeSwitchScene(),
     ];
 
     [STAThread]

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 808 200" width="808" height="200" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="808" height="200" />
+  <text class="title" x="12" y="24">Application.ThemeMode: Light -&gt; Dark</text>
+  <rect class="head" x="12" y="38" width="784" height="30" />
+  <text class="cell" x="26" y="57.5">how the brush is referenced</text>
+  <text class="cell" x="501" y="57.5" text-anchor="end">ReadLocalValue</text>
+  <text class="cell" x="600" y="57.5" text-anchor="end">before</text>
+  <text class="cell" x="699" y="57.5" text-anchor="end">after</text>
+  <text class="cell" x="782" y="57.5" text-anchor="end">follows</text>
+  <text class="cell" x="26" y="87.5">{StaticResource}</text>
+  <text class="cell" x="501" y="87.5" text-anchor="end">SolidColorBrush</text>
+  <text class="cell" x="600" y="87.5" text-anchor="end">#E4000000</text>
+  <text class="cell" x="699" y="87.5" text-anchor="end">#E4000000</text>
+  <text class="cell" x="782" y="87.5" text-anchor="end">no</text>
+  <text class="cell" x="26" y="117.5">{DynamicResource}</text>
+  <text class="cell" x="501" y="117.5" text-anchor="end">ResourceReferenceExpression</text>
+  <text class="cell" x="600" y="117.5" text-anchor="end">#E4000000</text>
+  <text class="cell" x="699" y="117.5" text-anchor="end">#FFFFFFFF</text>
+  <text class="cell" x="782" y="117.5" text-anchor="end">yes</text>
+  <text class="cell" x="26" y="147.5">Foreground = FindResource(...)</text>
+  <text class="cell" x="501" y="147.5" text-anchor="end">SolidColorBrush</text>
+  <text class="cell" x="600" y="147.5" text-anchor="end">#E4000000</text>
+  <text class="cell" x="699" y="147.5" text-anchor="end">#E4000000</text>
+  <text class="cell" x="782" y="147.5" text-anchor="end">no</text>
+  <text class="cell" x="26" y="177.5">Button (Fluent style)</text>
+  <text class="cell" x="501" y="177.5" text-anchor="end">(no local value)</text>
+  <text class="cell" x="600" y="177.5" text-anchor="end">#E4000000</text>
+  <text class="cell" x="699" y="177.5" text-anchor="end">#FFFFFFFF</text>
+  <text class="cell" x="782" y="177.5" text-anchor="end">yes</text>
+  <line class="line" x1="12" y1="38" x2="796" y2="38" />
+  <line class="line" x1="12" y1="68" x2="796" y2="68" />
+  <line class="line" x1="12" y1="98" x2="796" y2="98" />
+  <line class="line" x1="12" y1="128" x2="796" y2="128" />
+  <line class="line" x1="12" y1="158" x2="796" y2="158" />
+  <line class="line" x1="12" y1="188" x2="796" y2="188" />
+  <line class="line" x1="12" y1="38" x2="12" y2="188" />
+  <line class="line" x1="276" y1="38" x2="276" y2="188" />
+  <line class="line" x1="515" y1="38" x2="515" y2="188" />
+  <line class="line" x1="614" y1="38" x2="614" y2="188" />
+  <line class="line" x1="713" y1="38" x2="713" y2="188" />
+  <line class="line" x1="796" y1="38" x2="796" y2="188" />
+</svg>

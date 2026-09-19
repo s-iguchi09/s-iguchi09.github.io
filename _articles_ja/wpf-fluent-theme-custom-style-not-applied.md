@@ -370,3 +370,4 @@ Fluent テーマは、スタイルの供給経路について言えば、テー�
 - [WPF で Fluent デザインを追加ライブラリなしで適用する方法](/ja/articles/wpf-fluent-design-with-systemcolors/)
 - [WPF Fluent テーマの TextBox でクリアボタンを非表示にする方法](/ja/articles/wpf-fluent-textbox-hide-clear-button/)
 - [WPF で StaticResource を変更しても画面が更新されない原因と解決方法](/ja/articles/wpf-staticresource-vs-dynamicresource/)
+- [WPF の ThemeMode を実行時に切り替えても一部だけ Light のまま残る原因の切り分け](/ja/articles/wpf-fluent-thememode-runtime-switch/)

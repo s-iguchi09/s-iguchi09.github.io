@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 876 320" width="876" height="320" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="876" height="320" />
+  <text class="title" x="12" y="24">DumpThemeState(StaticText) after ThemeMode=Dark</text>
+  <rect class="head" x="12" y="38" width="852" height="30" />
+  <text class="cell" x="26" y="57.5">output</text>
+  <text class="cell" x="26" y="87.5">Application.ThemeMode = Dark</text>
+  <text class="cell" x="26" y="117.5">App &gt; pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Dark.xaml</text>
+  <text class="cell" x="26" y="147.5">App &gt; pack://application:,,,/ScreenshotCapture;component/Scenes/FluentThemeMode/Styles.xaml</text>
+  <text class="cell" x="26" y="177.5">App &gt; &gt; pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml</text>
+  <text class="cell" x="26" y="207.5">[MainWindow] Window.ThemeMode = None</text>
+  <text class="cell" x="26" y="237.5">[SettingsWindow] Window.ThemeMode = Light</text>
+  <text class="cell" x="26" y="267.5">[SettingsWindow] &gt; pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml</text>
+  <text class="cell" x="26" y="297.5">Foreground local value = SolidColorBrush</text>
+  <line class="line" x1="12" y1="38" x2="864" y2="38" />
+  <line class="line" x1="12" y1="68" x2="864" y2="68" />
+  <line class="line" x1="12" y1="98" x2="864" y2="98" />
+  <line class="line" x1="12" y1="128" x2="864" y2="128" />
+  <line class="line" x1="12" y1="158" x2="864" y2="158" />
+  <line class="line" x1="12" y1="188" x2="864" y2="188" />
+  <line class="line" x1="12" y1="218" x2="864" y2="218" />
+  <line class="line" x1="12" y1="248" x2="864" y2="248" />
+  <line class="line" x1="12" y1="278" x2="864" y2="278" />
+  <line class="line" x1="12" y1="308" x2="864" y2="308" />
+  <line class="line" x1="12" y1="38" x2="12" y2="308" />
+  <line class="line" x1="864" y1="38" x2="864" y2="308" />
+</svg>
