@@ -259,3 +259,4 @@ WPF で Fluent デザインを適用する実装は、追加ライブラリな�
 
 - [WPF Fluent テーマの TextBox でクリアボタンを非表示にする方法](/ja/articles/wpf-fluent-textbox-hide-clear-button/)
 - [WPF Fluent テーマでカスタム Style を持つコントロールだけ旧外観に戻る問題](/ja/articles/wpf-fluent-theme-custom-style-not-applied/)
+- [WPF の ThemeMode を実行時に切り替えても一部だけ Light のまま残る原因の切り分け](/ja/articles/wpf-fluent-thememode-runtime-switch/)

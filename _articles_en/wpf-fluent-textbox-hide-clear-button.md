@@ -337,3 +337,4 @@ With `.NET 9` in scope, Approach 1 is the only option; consider Approach 2 only 
 
 - [Applying Fluent Design in WPF Without Extra Libraries](/articles/wpf-fluent-design-with-systemcolors/)
 - [Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme](/articles/wpf-fluent-theme-custom-style-not-applied/)
+- [Diagnosing Why Parts of a WPF App Stay Light After Switching ThemeMode at Runtime](/articles/wpf-fluent-thememode-runtime-switch/)

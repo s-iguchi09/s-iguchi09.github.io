@@ -1,0 +1,9 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- 記事「WPF の ThemeMode を実行時に切り替えても一部だけ Light のまま残る原因の切り分け」の
+       「Fluent 辞書が別の辞書の中にネストしている」構成を再現する Styles.xaml。
+       アプリ独自の辞書の中に Fluent.Light.xaml を入れてある。 -->
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="pack://application:,,,/PresentationFramework.Fluent;component/Themes/Fluent.Light.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

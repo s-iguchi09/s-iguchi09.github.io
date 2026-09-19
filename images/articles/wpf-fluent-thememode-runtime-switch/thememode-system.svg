@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 571 110" width="571" height="110" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="571" height="110" />
+  <text class="title" x="12" y="24">ThemeMode.System on this machine</text>
+  <rect class="head" x="12" y="38" width="547" height="30" />
+  <text class="cell" x="26" y="57.5">AppsUseLightTheme</text>
+  <text class="cell" x="321" y="57.5" text-anchor="end">merged dictionary</text>
+  <text class="cell" x="545" y="57.5" text-anchor="end">TextFillColorPrimaryBrush</text>
+  <text class="cell" x="26" y="87.5">0</text>
+  <text class="cell" x="321" y="87.5" text-anchor="end">Fluent.xaml</text>
+  <text class="cell" x="545" y="87.5" text-anchor="end">#FFFFFFFF</text>
+  <line class="line" x1="12" y1="38" x2="559" y2="38" />
+  <line class="line" x1="12" y1="68" x2="559" y2="68" />
+  <line class="line" x1="12" y1="98" x2="559" y2="98" />
+  <line class="line" x1="12" y1="38" x2="12" y2="98" />
+  <line class="line" x1="173" y1="38" x2="173" y2="98" />
+  <line class="line" x1="335" y1="38" x2="335" y2="98" />
+  <line class="line" x1="559" y1="38" x2="559" y2="98" />
+</svg>

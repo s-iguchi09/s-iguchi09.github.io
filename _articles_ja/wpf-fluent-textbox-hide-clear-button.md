@@ -337,3 +337,4 @@ Fluent テーマの `TextBox` のクリアボタンを消すには、対象パ�
 
 - [WPF で Fluent デザインを追加ライブラリなしで適用する方法](/ja/articles/wpf-fluent-design-with-systemcolors/)
 - [WPF Fluent テーマでカスタム Style を持つコントロールだけ旧外観に戻る問題](/ja/articles/wpf-fluent-theme-custom-style-not-applied/)
+- [WPF の ThemeMode を実行時に切り替えても一部だけ Light のまま残る原因の切り分け](/ja/articles/wpf-fluent-thememode-runtime-switch/)

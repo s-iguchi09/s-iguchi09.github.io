@@ -64,6 +64,20 @@ internal sealed class SceneContext(string slug, string outputDirectory)
     }
 
     /// <summary>
+    /// 既に表示しているウィンドウを、描画が安定してから PNG として保存する。閉じはしない。
+    ///
+    /// 複数のウィンドウを同時に開いた状態を撮る場合に使う。
+    /// <see cref="ShootAsync"/> は表示から始めるため、表示済みのウィンドウには使えない。
+    /// </summary>
+    public async Task SaveShownWindowAsync(Window window, string fileName)
+    {
+        await Capture.SettleAsync(window);
+        string path = Path.Combine(OutputDirectory, fileName);
+        Capture.SaveWindow(window, path);
+        _saved.Add(path);
+    }
+
+    /// <summary>
     /// 実測値の表を SVG として保存する。
     ///
     /// 表は文字と罫線だけなので、ウィンドウを撮影せず直接描く。

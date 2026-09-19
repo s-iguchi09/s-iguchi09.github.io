@@ -221,3 +221,4 @@ This strategy balances maintainability and rendering performance.
 ## Related Articles
 
 - [Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme](/articles/wpf-fluent-theme-custom-style-not-applied/)
+- [Diagnosing Why Parts of a WPF App Stay Light After Switching ThemeMode at Runtime](/articles/wpf-fluent-thememode-runtime-switch/)

@@ -1,0 +1,30 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-fluent-thememode-runtime-switch
+slug: "wpf-fluent-thememode-runtime-switch"
+scene: "FluentThemeModeSwitchScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Application.ThemeMode の変更は、Application.Resources 直下の Fluent 辞書を Fluent.Light.xaml から Fluent.Dark.xaml へ差し替えること"
+  - "Window.ThemeMode を指定していないウィンドウと None を指定したウィンドウは切り替えに追従し、Light を指定したウィンドウは追従しないこと"
+  - "Window.Resources に Fluent.Light.xaml を手でマージしたウィンドウは Window.ThemeMode が Light と読め、切り替えに追従しないこと"
+  - "ThemeMode を設定する前に Application.Resources 直下へ手でマージした Fluent.Light.xaml は、ThemeMode の切り替えで Fluent.Dark.xaml に置き換わること"
+  - "Styles.xaml の中にネストした Fluent.Light.xaml は置き換わらず、ThemeMode の辞書より後ろに残るため、Dark にしても Light のブラシが使われ続けること"
+  - "StaticResource とコードで FindResource して代入したブラシは追従せず、DynamicResource だけが追従すること"
+  - "ReadLocalValue の型で、DynamicResource（ResourceReferenceExpression）かどうかを判別できること"
+  - "TextBlock.ForegroundProperty と Control.ForegroundProperty が同じ依存関係プロパティであること"
+  - "Fluent のスタイルから色が決まる Button では、Foreground のローカル値が無い（UnsetValue）こと"
+  - "記事の DumpThemeState が、ネストした辞書・ウィンドウの Fluent 辞書・固定されたブラシを出力に表すこと"
+  - "記事の切り替えヘルパーを通すと、Window.ThemeMode や Window.Resources の Fluent 辞書で固定されていたウィンドウも追従し、ネストした辞書の構成は追従しないこと"
+  - "AppsUseLightTheme が 0 の環境で、ThemeMode.System が Fluent.xaml をマージし、Dark と同じブラシを選ぶこと"
+images:
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png"
+  - "images/articles/wpf-fluent-thememode-runtime-switch/switched-pinned-window.png"
