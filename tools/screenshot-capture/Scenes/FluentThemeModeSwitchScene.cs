@@ -113,7 +113,11 @@ internal sealed class FluentThemeModeSwitchScene : IScene
 
             // 本文の System の主張は、ダーク設定の環境で Dark のブラシが選ばれたことに基づく。
             // それ以外の環境で実行した場合は、主張を検証記録に出さない。
-            _systemDarkMeasured = systemRow[0] == "0" && systemRow[2] == "#FFFFFFFF";
+            // ハイコントラスト環境では ThemeMode.System でも Fluent.HC.xaml が選ばれるため、辞書名も確かめる。
+            _systemDarkMeasured =
+                systemRow[0] == "0" &&
+                systemRow[1] == "Fluent.xaml" &&
+                systemRow[2] == "#FFFFFFFF";
 
             await context.SaveTableAsync(
                 "ThemeMode.System on this machine",
@@ -472,22 +476,27 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     {
         Application app = Application.Current;
         ResourceDictionary styles = AddToApp(new ResourceDictionary { Source = new Uri(StylesUri) });
-        app.ThemeMode = ThemeMode.Light;
 
-        var main = new Window
-        {
-            Title = "MainWindow", Width = 320, Height = 200, ShowActivated = false,
-            Content = SceneContext.LoadXaml<Border>(ContentXaml),
-        };
-        var settings = new Window
-        {
-            Title = "SettingsWindow", Width = 320, Height = 200, ShowActivated = false,
-            Content = SceneContext.LoadXaml<Border>(ContentXaml),
-            ThemeMode = ThemeMode.Light,
-        };
+        // XAML の解析で例外が出ても、辞書の追加と ThemeMode を必ず元へ戻すため、生成も try の中で行う。
+        Window? main = null;
+        Window? settings = null;
 
         try
         {
+            app.ThemeMode = ThemeMode.Light;
+
+            main = new Window
+            {
+                Title = "MainWindow", Width = 320, Height = 200, ShowActivated = false,
+                Content = SceneContext.LoadXaml<Border>(ContentXaml),
+            };
+            settings = new Window
+            {
+                Title = "SettingsWindow", Width = 320, Height = 200, ShowActivated = false,
+                Content = SceneContext.LoadXaml<Border>(ContentXaml),
+                ThemeMode = ThemeMode.Light,
+            };
+
             await Capture.ShowAndSettleAsync(main);
             await Capture.ShowAndSettleAsync(settings);
             app.ThemeMode = ThemeMode.Dark;
@@ -500,8 +509,8 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         }
         finally
         {
-            main.Close();
-            settings.Close();
+            main?.Close();
+            settings?.Close();
             app.Resources.MergedDictionaries.Remove(styles);
             app.ThemeMode = ThemeMode.None;
         }
@@ -516,32 +525,41 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     private static async Task ShootAsync(SceneContext context)
     {
         Application app = Application.Current;
-        app.ThemeMode = ThemeMode.Light;
 
-        var follows = new Window
-        {
-            Title = "MainWindow",
-            SizeToContent = SizeToContent.WidthAndHeight,
-            MinWidth = 300,
-            ResizeMode = ResizeMode.CanMinimize,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            Content = SceneContext.LoadXaml<Border>(ContentXaml),
-        };
-        var pinned = new Window
-        {
-            Title = "SettingsWindow",
-            SizeToContent = SizeToContent.WidthAndHeight,
-            MinWidth = 300,
-            ResizeMode = ResizeMode.CanMinimize,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            Content = SceneContext.LoadXaml<Border>(ContentXaml),
-            ThemeMode = ThemeMode.Light,
-        };
+        // XAML の解析で例外が出ても ThemeMode を元へ戻し、開いたウィンドウを閉じるため、生成も try の中で行う。
+        Window? follows = null;
+        Window? pinned = null;
+
+        // follows は ShootAsync が撮影後に閉じる。ShootAsync に渡す前に失敗した場合だけ、ここで閉じる。
+        bool followsHandedOver = false;
 
         try
         {
+            app.ThemeMode = ThemeMode.Light;
+
+            follows = new Window
+            {
+                Title = "MainWindow",
+                SizeToContent = SizeToContent.WidthAndHeight,
+                MinWidth = 300,
+                ResizeMode = ResizeMode.CanMinimize,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Content = SceneContext.LoadXaml<Border>(ContentXaml),
+            };
+            pinned = new Window
+            {
+                Title = "SettingsWindow",
+                SizeToContent = SizeToContent.WidthAndHeight,
+                MinWidth = 300,
+                ResizeMode = ResizeMode.CanMinimize,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Content = SceneContext.LoadXaml<Border>(ContentXaml),
+                ThemeMode = ThemeMode.Light,
+            };
+
             // 2 枚とも Light の状態で開いてから、アプリ全体を Dark へ切り替える。
             await Capture.ShowAndSettleAsync(pinned);
+            followsHandedOver = true;
             await context.ShootAsync(
                 follows,
                 "switched-main-window.png",
@@ -555,7 +573,12 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         }
         finally
         {
-            pinned.Close();
+            if (!followsHandedOver)
+            {
+                follows?.Close();
+            }
+
+            pinned?.Close();
             app.ThemeMode = ThemeMode.None;
         }
     }
