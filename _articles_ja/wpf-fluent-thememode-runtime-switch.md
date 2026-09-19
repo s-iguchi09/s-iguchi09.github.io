@@ -168,7 +168,7 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 
 - **`[ウィンドウ名] Window.ThemeMode` が `None` 以外と出るウィンドウ**（この例では `Light`）は、ウィンドウ自身が Fluent 辞書を持っている。直後の `[ウィンドウ名] >` の行に、その辞書が出る。
 - **`App > >` のように `>` が 2 つ以上続く行に `Fluent.` を含む URI が出る**場合は、Fluent 辞書がネストしている。
-- **`Foreground local value = SolidColorBrush`** であれば、その要素はブラシの値そのものを保持しており、切り替えに追従しない。`ResourceReferenceExpression` であれば `DynamicResource` で参照できている。`(no local value)` は、値が Style・テンプレート・継承・既定値など、ローカル値以外で決まっていることを示す。
+- **`Foreground local value = SolidColorBrush`** であれば、その要素はブラシの値そのものを保持しており、切り替えに追従しない。`ResourceReferenceExpression` であれば `DynamicResource` で参照できている。ただしこの型名は WPF の内部実装の型であり、公開された契約ではない。本記事の値は検証環境（.NET 10）で読み出したものである。`(no local value)` は、値が Style・テンプレート・継承・既定値など、ローカル値以外で決まっていることを示す。
 
 ---
 
@@ -278,7 +278,12 @@ public static class ThemeSwitcher
 呼び出し側の `ThemeSwitcher.ApplyTheme(ThemeMode.Dark)` も `ThemeMode` 構造体を参照する。
 前述のビルド確認では、ViewModel に相当する通常のクラスから呼ぶ場合、呼び出し側でも `WPF0001` の抑制が要った。
 `Application.Windows` が列挙するのは、UI スレッドで生成され、まだ閉じていないウィンドウである（[Application.Windows の解説](https://learn.microsoft.com/dotnet/api/system.windows.application.windows)）。
-切り替えの後に生成したウィンドウや、別の UI スレッドで生成したウィンドウは対象に含まれないため、そうしたウィンドウでは `ThemeMode` を指定しないことが前提となる。
+このプロパティは `Application` を生成したスレッドからしか使えないため、`ApplyTheme` も UI スレッドから呼ぶ。
+バックグラウンドの処理から切り替える場合は、`Application.Current.Dispatcher.Invoke` を通して UI スレッドで実行する。
+`ApplyTheme` が処理するのは、呼び出した時点で開いているウィンドウだけである。
+その後に生成したウィンドウは、次に `ApplyTheme` を呼ぶまで処理されない。
+別の UI スレッドで生成したウィンドウは、`Application.Windows` に含まれないため処理されない。
+そうしたウィンドウでは `ThemeMode` を指定しないことが前提となる。
 
 前節と同じウィンドウ構成で、`Application.ThemeMode` を直接書き換える代わりにこのメソッドを通した結果を次に示す。
 

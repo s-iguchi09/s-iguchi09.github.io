@@ -45,6 +45,12 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         </Border>
         """;
 
+    /// <summary>
+    /// ThemeMode.System の主張の前提（AppsUseLightTheme が 0）が、実行環境で成り立ったか。
+    /// 成り立たない環境では、その主張を検証記録へ出さない。
+    /// </summary>
+    private bool _systemDarkMeasured;
+
     public IReadOnlyList<string> Verifies =>
     [
         "Application.ThemeMode の変更は、Application.Resources 直下の Fluent 辞書を Fluent.Light.xaml から Fluent.Dark.xaml へ差し替えること",
@@ -58,7 +64,9 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         "Fluent のスタイルから色が決まる Button では、Foreground のローカル値が無い（UnsetValue）こと",
         "記事の DumpThemeState が、ネストした辞書・ウィンドウの Fluent 辞書・固定されたブラシを出力に表すこと",
         "記事の切り替えヘルパーを通すと、Window.ThemeMode や Window.Resources の Fluent 辞書で固定されていたウィンドウも追従し、ネストした辞書の構成は追従しないこと",
-        "AppsUseLightTheme が 0 の環境で、ThemeMode.System が Fluent.xaml をマージし、Dark と同じブラシを選ぶこと",
+        .. (_systemDarkMeasured
+            ? ["AppsUseLightTheme が 0 の環境で、ThemeMode.System が Fluent.xaml をマージし、Dark と同じブラシを選ぶこと"]
+            : Array.Empty<string>()),
     ];
 
     public string Slug => "wpf-fluent-thememode-runtime-switch";
@@ -101,10 +109,16 @@ internal sealed class FluentThemeModeSwitchScene : IScene
                 await MeasureReferenceKindsAsync(),
                 "thememode-reference-kinds.svg");
 
+            IReadOnlyList<string> systemRow = await MeasureSystemAsync();
+
+            // 本文の System の主張は、ダーク設定の環境で Dark のブラシが選ばれたことに基づく。
+            // それ以外の環境で実行した場合は、主張を検証記録に出さない。
+            _systemDarkMeasured = systemRow[0] == "0" && systemRow[2] == "#FFFFFFFF";
+
             await context.SaveTableAsync(
                 "ThemeMode.System on this machine",
                 ["AppsUseLightTheme", "merged dictionary", ProbeKey],
-                [await MeasureSystemAsync()],
+                [systemRow],
                 "thememode-system.svg");
 
             await context.SaveTableAsync(

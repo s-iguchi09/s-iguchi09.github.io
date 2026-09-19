@@ -168,7 +168,7 @@ The output reads as follows.
 
 - **A window whose `[window name] Window.ThemeMode` is anything other than `None`** (`Light` in this example) holds its own Fluent dictionary. The dictionary appears on the following `[window name] >` line.
 - **A URI containing `Fluent.` on a line with two or more `>` in a row, such as `App > >`**, means the Fluent dictionary is nested.
-- **`Foreground local value = SolidColorBrush`** means the element holds the brush value itself and does not follow the switch. `ResourceReferenceExpression` means the brush is referenced through `DynamicResource`. `(no local value)` means the value comes from something other than a local value, such as a style, a template, inheritance, or the default value.
+- **`Foreground local value = SolidColorBrush`** means the element holds the brush value itself and does not follow the switch. `ResourceReferenceExpression` means the brush is referenced through `DynamicResource`. This type name, however, is an internal WPF implementation type, not a public contract; the values in this article were read in the test environment (.NET 10). `(no local value)` means the value comes from something other than a local value, such as a style, a template, inheritance, or the default value.
 
 ---
 
@@ -278,7 +278,12 @@ public static class ThemeSwitcher
 The call site, `ThemeSwitcher.ApplyTheme(ThemeMode.Dark)`, also references the `ThemeMode` struct.
 In the build check described earlier, calling it from an ordinary class equivalent to a ViewModel required `WPF0001` suppression at the call site as well.
 `Application.Windows` enumerates windows instantiated on the UI thread that have not yet been closed ([Application.Windows](https://learn.microsoft.com/dotnet/api/system.windows.application.windows)).
-Windows created after the switch, or on another UI thread, are not included, so this approach assumes that such windows do not set `ThemeMode`.
+This property is available only from the thread that created the `Application`, so `ApplyTheme` must also be called on the UI thread.
+When the switch is triggered from background work, it is run on the UI thread through `Application.Current.Dispatcher.Invoke`.
+`ApplyTheme` processes only the windows that are open when it is called.
+A window created afterward is not processed until the next `ApplyTheme` call.
+A window created on another UI thread is not processed, because it is not included in `Application.Windows`.
+This approach assumes that such windows do not set `ThemeMode`.
 
 The following table shows the result for the same window setups as the previous section, calling this method instead of rewriting `Application.ThemeMode` directly.
 
