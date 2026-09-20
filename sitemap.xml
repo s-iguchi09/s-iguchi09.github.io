@@ -1540,7 +1540,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1554,7 +1554,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1567,7 +1567,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1580,7 +1580,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1594,7 +1594,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/basedon-lookup-scope.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1608,7 +1608,45 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/basedon-lookup-scope.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-thememode-runtime-switch/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-pinned-window.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg</image:loc></image:image>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-fluent-thememode-runtime-switch/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-thememode-runtime-switch/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-pinned-window.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg</image:loc></image:image>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1824,7 +1862,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1836,7 +1874,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
