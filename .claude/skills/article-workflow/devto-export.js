@@ -18,6 +18,11 @@
  * 投稿一覧と body_markdown を返すので、毎回そこから実状を読む。台帳を置くと
  * 更新漏れで嘘をつくが、API は常に本当のことを言う。
  *
+ * 唯一の例外が index-hold.json で、ここには「導線をあえて張らない記事」を書く。
+ * これはユーザーの意図であって API からは読めないため、台帳でしか表現できない。
+ * 代わりに until を必須にし、過ぎたら保留を自動解除して判定を促す。放置されても
+ * 「保留中です」と嘘をつき続けることがない。
+ *
  * なぜこれが要るのか:
  * このサイトは Search Console のサイトマップ取得が 5 形式すべて失敗しており、
  * 外部リンクも 0 件でクロールバジェットがほとんど無い。放置した記事は
@@ -44,6 +49,96 @@ const DEFAULT_TAGS = 'dotnet, csharp';
 // slug は記事ファイル名とそのまま結合するので、パス区切りや .. を弾く。
 // 通さないと _articles_en の外を読んだり、--out の外へ書いたりできてしまう。
 const SLUG_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+const HOLD_FILE = path.join(__dirname, 'index-hold.json');
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * 実行環境の TZ に関わらず JST の日付を返す。
+ * このサイトの運用日付(記事の date、Search Console の確認日)はすべて JST なので、
+ * UTC で判定すると日本時間の午前中に 1 日ずれて保留が早く切れる。
+ */
+function todayJst() {
+  return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+const daysBetween = (from, to) =>
+  Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
+
+/**
+ * インデックス導線をあえて張らない記事を読む。
+ *
+ * 「手動登録をやめてよいか」の判定は、登録も dev.to 追記もしていない新記事が
+ * 自然に拾われるかでしか測れない。2026-09-19 の判定記事は、このワークフローが
+ * 例外なく導線を提示したせいで日英とも登録され、判定が無効になった。
+ *
+ * until が壊れているものは保留のままにする。解除の側に倒すと事故が再発するので、
+ * 迷ったら「出さない」に倒す。
+ */
+function readHolds() {
+  if (!fs.existsSync(HOLD_FILE)) return [];
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(HOLD_FILE, 'utf8'));
+  } catch (err) {
+    throw new Error(`${path.basename(HOLD_FILE)} を読めない: ${err.message}`);
+  }
+  const holds = Array.isArray(parsed.holds) ? parsed.holds : [];
+  const today = todayJst();
+  return holds
+    .filter((h) => h && typeof h.slug === 'string' && h.slug)
+    .map((h) => {
+      const valid = DATE_RE.test(h.until || '');
+      if (!valid) {
+        console.error(`warning: ${h.slug} の until が YYYY-MM-DD 形式でない。保留のまま扱う。`);
+      }
+      return {
+        slug: h.slug,
+        until: h.until || '(未設定)',
+        reason: h.reason || '(理由の記載なし)',
+        expired: valid && h.until < today,
+        daysLeft: valid ? daysBetween(today, h.until) : null,
+      };
+    });
+}
+
+/**
+ * 保留中の記事が既に dev.to からリンクされていないか調べる。
+ *
+ * 事故は「別の記事を処理しているセッションが、ついでに判定記事へ 1 行足す」形で
+ * 起きた。引数に判定記事が含まれない実行でも気づけるよう、保留は毎回全件見る。
+ */
+function reportHoldStatus(holds, posts) {
+  if (holds.length === 0) return false;
+  console.log('=== インデックス導線を保留中の記事 ===\n');
+  let broken = false;
+  for (const h of holds) {
+    if (h.expired) {
+      console.log(`${h.slug}: 判定日 ${h.until} を過ぎた → 保留は解除済み`);
+      console.log(`  ${h.reason}`);
+      console.log('  Search Console の URL 検査で日英 2 URL を調べ、インデックス状況を記録する。');
+      console.log(`  判定を書き留めたら ${path.basename(HOLD_FILE)} の holds から削除する。\n`);
+      continue;
+    }
+    const left = h.daysLeft === null ? '期限不明' : `あと ${h.daysLeft} 日`;
+    console.log(`${h.slug}: 判定日 ${h.until}（${left}）`);
+    console.log(`  ${h.reason}`);
+    console.log('  → Search Console への登録も dev.to への追記もしない。');
+    if (posts) {
+      const linked = posts.filter((p) => p.links.has(h.slug));
+      if (linked.length > 0) {
+        broken = true;
+        console.log('  !! dev.to から既にリンクされている。判定条件が壊れている:');
+        for (const p of linked) console.log(`     ${p.title}\n       ${p.url}`);
+        console.log('     リンクを消しても発見済みの事実は戻らない。別の記事で判定をやり直す。');
+      } else {
+        console.log('  dev.to からのリンク: なし（正常）');
+      }
+    }
+    console.log('');
+  }
+  return broken;
+}
 
 function parseArgs(argv) {
   const slugs = [];
@@ -252,6 +347,7 @@ function suggestTargets(posts, wantTags) {
 
 async function main() {
   const { slugs, exportMd, statusOnly, offline, outDir } = parseArgs(process.argv.slice(2));
+  const holds = readHolds();
 
   let posts = null;
   if (!offline) {
@@ -265,13 +361,30 @@ async function main() {
 
   if (statusOnly) {
     if (!posts) throw new Error('dev.to の状態を取得できなかったため --status は実行できない');
+    reportHoldStatus(holds, posts);
     printStatus(posts);
     return;
   }
 
+  // 保留は引数に関わらず全件出す。事故は「別の記事の作業のついでに判定記事へ
+  // リンクを足す」形で起きたので、判定記事を指定していない実行でこそ目に入る必要がある。
+  // 汚染は黙って流すと気づかれないので、出力は最後まで出したうえで異常終了させる。
+  if (reportHoldStatus(holds, posts)) process.exitCode = 1;
+  const heldNow = new Set(holds.filter((h) => !h.expired).map((h) => h.slug));
+  const active = slugs.filter((s) => !heldNow.has(s));
+
+  if (active.length === 0) {
+    console.log('指定された記事はすべて保留中のため、導線は出さない。');
+    console.log(`判定日まで待つか、方針を変えるなら ${path.basename(HOLD_FILE)} を編集する。`);
+    return;
+  }
+  if (active.length < slugs.length) {
+    console.log(`保留中の ${slugs.length - active.length} 本を除いて続ける。\n`);
+  }
+
   console.log('=== Search Console に登録する URL ===');
   console.log('URL 検査の検索窓に貼る → 「インデックス登録をリクエスト」（1 日 10 件まで）\n');
-  for (const slug of slugs) {
+  for (const slug of active) {
     readArticle(slug, 'en');
     readArticle(slug, 'ja');
     console.log(`${SITE}/articles/${slug}/`);
@@ -279,7 +392,7 @@ async function main() {
   }
 
   console.log('\n=== dev.to からのリンク ===\n');
-  for (const slug of slugs) {
+  for (const slug of active) {
     const { fm } = readArticle(slug, 'en');
     const title = unquote(fm.title);
     const tags = TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS;
@@ -319,7 +432,7 @@ async function main() {
 
   console.log('=== dev.to へ新規転載する Markdown ===');
   fs.mkdirSync(outDir, { recursive: true });
-  for (const slug of slugs) {
+  for (const slug of active) {
     const dest = path.join(outDir, `devto-${slug}.md`);
     fs.writeFileSync(dest, buildExport(slug), 'utf8');
     console.log(dest);
