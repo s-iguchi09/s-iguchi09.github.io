@@ -62,6 +62,20 @@ function todayJst() {
   return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
 }
 
+/**
+ * YYYY-MM-DD として実在する日かを見る。
+ *
+ * 形式だけ見ると 2026-02-30 が通ってしまう。V8 はこれを 2026-03-02 として
+ * 解釈するので daysLeft が 2 日ずれるうえ、expired は文字列比較なので
+ * "2026-02-30" < today が成立し、**保留が黙って解除される**。日付を作り直して
+ * 元の文字列に戻るかで弾く(うるう年も 2024-02-29 は通り 2026-02-29 は落ちる)。
+ */
+function isRealDate(s) {
+  if (!DATE_RE.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
 const daysBetween = (from, to) =>
   Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
 
@@ -88,9 +102,9 @@ function readHolds() {
   return holds
     .filter((h) => h && typeof h.slug === 'string' && h.slug)
     .map((h) => {
-      const valid = DATE_RE.test(h.until || '');
+      const valid = isRealDate(h.until || '');
       if (!valid) {
-        console.error(`warning: ${h.slug} の until が YYYY-MM-DD 形式でない。保留のまま扱う。`);
+        console.error(`warning: ${h.slug} の until が実在する YYYY-MM-DD でない。保留のまま扱う。`);
       }
       return {
         slug: h.slug,
@@ -361,7 +375,9 @@ async function main() {
 
   if (statusOnly) {
     if (!posts) throw new Error('dev.to の状態を取得できなかったため --status は実行できない');
-    reportHoldStatus(holds, posts);
+    // 汚染の扱いは通常モードと揃える。--status で握り潰すと、状況確認のつもりで
+    // 実行したときだけ異常が終了コードに出ない。
+    if (reportHoldStatus(holds, posts)) process.exitCode = 1;
     printStatus(posts);
     return;
   }
