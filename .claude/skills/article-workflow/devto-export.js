@@ -107,7 +107,16 @@ function readHolds() {
   } catch (err) {
     throw new Error(`${path.basename(HOLD_FILE)} を読めない: ${err.message}`);
   }
-  const holds = Array.isArray(parsed.holds) ? parsed.holds : [];
+  // holds が配列でなければ止める。黙って [] にすると heldNow が空になり、
+  // 台帳に書いたはずの保留が全件無効のまま導線が出る。台帳が読めない状態と
+  // 「保留が無い状態」は区別が付かないので、区別が付くように落とす。
+  const holds = parsed && parsed.holds;
+  if (!Array.isArray(holds)) {
+    throw new Error(
+      `${path.basename(HOLD_FILE)} の holds が配列でない。保留を黙って無効化しないために止めた。` +
+        '保留が無いときも "holds": [] と明示する。'
+    );
+  }
   const today = todayJst();
   return holds
     .map((h, i) => {
