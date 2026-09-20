@@ -46,9 +46,14 @@ const TAGS_BY_CATEGORY = {
 };
 const DEFAULT_TAGS = 'dotnet, csharp';
 
+// slug に使える文字。引数の検証(SLUG_RE)と dev.to 本文からの URL 抽出(linkedSlugs)で
+// 同じ定義を使う。食い違うと、抽出できない slug が「まだリンクされていない」と誤判定され、
+// 保留中の記事の汚染検出まで静かに漏れる。
+const SLUG_CHARS = '[A-Za-z0-9][A-Za-z0-9._-]*';
+
 // slug は記事ファイル名とそのまま結合するので、パス区切りや .. を弾く。
 // 通さないと _articles_en の外を読んだり、--out の外へ書いたりできてしまう。
-const SLUG_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const SLUG_RE = new RegExp(`^${SLUG_CHARS}$`);
 
 const HOLD_FILE = path.join(__dirname, 'index-hold.json');
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -219,7 +224,7 @@ function absolutize(body) {
 
 function linkedSlugs(text) {
   const set = new Set();
-  const re = /https:\/\/s-iguchi09\.github\.io\/(?:ja\/)?articles\/([a-z0-9-]+)\//g;
+  const re = new RegExp(`https://s-iguchi09\\.github\\.io/(?:ja/)?articles/(${SLUG_CHARS})/`, 'g');
   let m;
   while ((m = re.exec(text)) !== null) set.add(m[1]);
   return set;
