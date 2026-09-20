@@ -100,7 +100,15 @@ const daysBetween = (from, to) =>
  * 止まったほうがよいので、警告で済ませずに throw する。
  */
 function readHolds() {
-  if (!fs.existsSync(HOLD_FILE)) return [];
+  // 台帳が無いのを「保留が無い」と読み替えない。読み替えると heldNow が空になり、
+  // 保留中の記事にも導線が出る。ファイルはスキルに同梱されているので、無いのは
+  // 取り違えか削除であって、そこで止めたほうがよい。
+  if (!fs.existsSync(HOLD_FILE)) {
+    throw new Error(
+      `${path.basename(HOLD_FILE)} が見つからない。保留を黙って無効化しないために止めた。` +
+        '保留が無いときも {"holds": []} のファイルを置く。'
+    );
+  }
   let parsed;
   try {
     parsed = JSON.parse(fs.readFileSync(HOLD_FILE, 'utf8'));
