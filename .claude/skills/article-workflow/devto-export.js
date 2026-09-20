@@ -181,6 +181,10 @@ function reportHoldStatus(holds, posts) {
       } else {
         console.log('  dev.to からのリンク: なし（正常）');
       }
+    } else {
+      // 黙って飛ばすと「確認した結果なし」と区別が付かない。--offline や API 失敗で
+      // 汚染を見逃した回こそ、見ていないと言う必要がある。
+      console.log('  dev.to の状態を取得していないので、汚染は確認できていない。');
     }
     console.log('');
   }
