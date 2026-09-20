@@ -93,6 +93,11 @@ const daysBetween = (from, to) =>
  *
  * until が壊れているものは保留のままにする。解除の側に倒すと事故が再発するので、
  * 迷ったら「出さない」に倒す。
+ *
+ * slug は引数と同じ規則で検証し、外れたら例外で止める。parseArgs は末尾の / を
+ * 落とすので、台帳に "foo/" と書くと heldNow には "foo/" が入り、引数から来た
+ * "foo" と一致せず**保留が黙って効かない**。保留が効かないまま導線を出すくらいなら
+ * 止まったほうがよいので、警告で済ませずに throw する。
  */
 function readHolds() {
   if (!fs.existsSync(HOLD_FILE)) return [];
@@ -105,14 +110,20 @@ function readHolds() {
   const holds = Array.isArray(parsed.holds) ? parsed.holds : [];
   const today = todayJst();
   return holds
-    .filter((h) => h && typeof h.slug === 'string' && h.slug)
-    .map((h) => {
+    .map((h, i) => {
+      const slug = h && typeof h.slug === 'string' ? h.slug : '';
+      if (!SLUG_RE.test(slug) || slug.includes('..')) {
+        throw new Error(
+          `${path.basename(HOLD_FILE)} の holds[${i}] の slug が不正: ${JSON.stringify(slug)}。` +
+            '引数と同じ規則で書く(末尾の / も付けない)。保留が効かないまま導線を出さないために止めた。'
+        );
+      }
       const valid = isRealDate(h.until || '');
       if (!valid) {
-        console.error(`warning: ${h.slug} の until が実在する YYYY-MM-DD でない。保留のまま扱う。`);
+        console.error(`warning: ${slug} の until が実在する YYYY-MM-DD でない。保留のまま扱う。`);
       }
       return {
-        slug: h.slug,
+        slug,
         until: h.until || '(未設定)',
         reason: h.reason || '(理由の記載なし)',
         expired: valid && h.until < today,
