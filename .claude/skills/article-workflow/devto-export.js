@@ -285,6 +285,12 @@ async function fetchDevtoPosts() {
   const MAX_PAGES = 100;
   for (let page = 1; ; page++) {
     const chunk = await getJson(`${DEVTO_API}/articles?username=${DEVTO_USER}&per_page=${PER_PAGE}&page=${page}`);
+    // getJson は任意の JSON 値を返す。文字列が返ると chunk.length === 0 が成立して
+    // 「投稿なし」に化け、汚染を見逃したまま「なし（正常）」と報告してしまう。
+    if (!Array.isArray(chunk)) {
+      console.error('warning: dev.to の投稿一覧が配列でない。リンク判定が不完全なので未取得として扱う。');
+      return null;
+    }
     if (chunk.length === 0) break;
     list.push(...chunk);
     if (chunk.length < PER_PAGE) break;
@@ -301,7 +307,7 @@ async function fetchDevtoPosts() {
     const d = await getJson(`${DEVTO_API}/articles/${item.id}`);
     // 本文が読めない投稿が 1 つでもあると、そこに張られたリンクを見落とす。
     // 「リンクなし」と「本文を読めていない」は区別が付かないので、未取得に倒す。
-    if (typeof d.body_markdown !== 'string') {
+    if (!d || typeof d.body_markdown !== 'string') {
       console.error(`warning: dev.to の投稿 ${item.id} の本文を取得できない。リンク判定が不完全なので未取得として扱う。`);
       return null;
     }
