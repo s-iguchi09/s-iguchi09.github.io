@@ -289,14 +289,22 @@ async function fetchDevtoPosts() {
     list.push(...chunk);
     if (chunk.length < PER_PAGE) break;
     if (page >= MAX_PAGES) {
-      console.error(`warning: ${MAX_PAGES} ページ (${list.length} 件) で打ち切った。取得しきれていない可能性がある。`);
-      break;
+      // 部分配列を返すと reportHoldStatus が完全な一覧として扱い、未取得ページに
+      // あるリンクを「なし（正常）」と報告してしまう。不完全なら未取得と同じ扱いにする。
+      console.error(`warning: ${MAX_PAGES} ページ (${list.length} 件) で打ち切った。取得しきれていないので未取得として扱う。`);
+      return null;
     }
   }
 
   const posts = [];
   for (const item of list) {
     const d = await getJson(`${DEVTO_API}/articles/${item.id}`);
+    // 本文が読めない投稿が 1 つでもあると、そこに張られたリンクを見落とす。
+    // 「リンクなし」と「本文を読めていない」は区別が付かないので、未取得に倒す。
+    if (typeof d.body_markdown !== 'string') {
+      console.error(`warning: dev.to の投稿 ${item.id} の本文を取得できない。リンク判定が不完全なので未取得として扱う。`);
+      return null;
+    }
     posts.push({
       id: d.id,
       title: d.title,
@@ -411,7 +419,12 @@ async function main() {
   }
 
   if (statusOnly) {
-    if (!posts) throw new Error('dev.to の状態を取得できなかったため --status は実行できない');
+    if (!posts) {
+      // 投稿一覧は出せなくても、保留の一覧と「汚染を確認できていない」ことは伝わる。
+      // 先に出してから落とす。黙って落とすと、保留の存在ごと見えなくなる。
+      reportHoldStatus(holds, null);
+      throw new Error('dev.to の状態を取得できなかったため投稿一覧は出せない');
+    }
     // 汚染の扱いは通常モードと揃える。--status で握り潰すと、状況確認のつもりで
     // 実行したときだけ異常が終了コードに出ない。
     if (reportHoldStatus(holds, posts)) process.exitCode = 1;
