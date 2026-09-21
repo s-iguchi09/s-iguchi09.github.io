@@ -295,7 +295,9 @@ async function fetchDevtoPosts() {
     // 要素が壊れていると item.id で TypeError になったり /undefined を叩いたりして、
     // 明示的な未取得の経路を通らずに例外へ落ちる。結果は同じ「未取得」でも、
     // 何が起きたか分からなくなるので入口で弾く。
-    if (!chunk.every((item) => item && typeof item === 'object' && item.id != null)) {
+    // id は詳細 API の URL にそのまま入るので、正の整数であることまで見る。
+    // != null だけだと {} や "x" や 0 が通り、/articles/[object Object] を叩く。
+    if (!chunk.every((item) => item && typeof item === 'object' && Number.isInteger(item.id) && item.id > 0)) {
       console.error('warning: dev.to の投稿一覧に不正な要素がある。リンク判定が不完全なので未取得として扱う。');
       return null;
     }
