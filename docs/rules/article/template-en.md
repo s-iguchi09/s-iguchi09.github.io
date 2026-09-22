@@ -3,9 +3,11 @@
 # Do not copy these two lines into an article.
 layout: article-en
 title: "(Title)"
+# タイトルが 59 字を超える場合のみ、次の行のコメントを外して 59 字以内の短縮版を書く（guidelines.md §8.1）。
+# seo_title: "(Shortened title for search results)"
 date: YYYY-MM-DD
 category: (Category)
-excerpt: "(Article summary. Keep under 160 characters.)"
+excerpt: "(Article summary. 120-160 characters.)"
 # 代表となるスクリーンショットがある場合のみ、次の行のコメントを外して設定する（SVG は指定しない）。
 # image: /images/articles/(slug)/(file).png
 ---
