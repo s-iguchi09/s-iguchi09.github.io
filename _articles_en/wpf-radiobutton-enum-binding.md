@@ -4,7 +4,7 @@ title: "Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — Th
 seo_title: "WPF RadioButton Enum Binding With No Initial Selection"
 date: 2026-08-22
 category: WPF
-excerpt: "A ViewModel holds the right enum value, yet its radio button appears cleared. Omitting GroupName merges separate enum groups into one. Measured cause and fix."
+excerpt: "A ViewModel holds the right enum value, yet its radio button appears cleared. Omitting GroupName merges enum groups under one parent. Measured cause and fix."
 image: /images/articles/wpf-radiobutton-enum-binding/radiobutton-enum-groupname.png
 ---
 

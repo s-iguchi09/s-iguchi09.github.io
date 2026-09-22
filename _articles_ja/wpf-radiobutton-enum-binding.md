@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF で RadioButton を enum にバインドすると初期選択が表示されない問題と GroupName の役割"
 date: 2026-08-22
 category: WPF
-excerpt: "ViewModel が正しい列挙体の値を保持しているのにラジオボタンが未選択になるのは、GroupName を省いたことで別々の列挙体のボタンが 1 グループに統合されるためである。原因を実測で示し、コンバーターを含む 4 方式の使い分けを整理する。"
+excerpt: "ViewModel が正しい列挙体の値を保持しているのにラジオボタンが未選択になるのは、GroupName を省くと同じ親に置いた別々の列挙体のボタンが 1 グループに統合されるためである。原因を実測で示し、コンバーターを含む 4 方式の使い分けを整理する。"
 image: /images/articles/wpf-radiobutton-enum-binding/radiobutton-enum-groupname.png
 ---
 

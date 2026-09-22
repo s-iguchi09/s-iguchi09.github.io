@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF で ScrollViewer がスクロールしない原因と解決方法"
 date: 2026-07-17
 category: WPF
-excerpt: "StackPanel の中に置いた ScrollViewer がスクロールしないのは、StackPanel が無限の高さを渡し、ScrollViewer がはみ出しを検知できないためである。Grid・DockPanel・MaxHeight による解決方法と選択基準を解説する。"
+excerpt: "縦方向の StackPanel に置いた ScrollViewer がスクロールしないのは、StackPanel が高さを制約せずに測定するためである。原因と、Grid・DockPanel・MaxHeight による解決方法と選択基準を解説する。"
 image: /images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png
 ---
 
