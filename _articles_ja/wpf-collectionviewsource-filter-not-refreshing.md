@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF で ICollectionView のフィルタが再評価されない原因と Refresh・ライブフィルタの使い分け"
 date: 2026-08-24
 category: WPF
-excerpt: "フィルタを設定した直後は正しいのに、項目のプロパティを変えても絞り込み結果が変わらない。ビューが再評価を行う契機を .NET 10 の実測で切り分け、Refresh とライブフィルタを比較する。"
+excerpt: "フィルタを設定した直後は正しいのに、項目のプロパティを変えても絞り込み結果が変わらない。ICollectionView が再評価を行う契機を .NET 10 の実測で切り分け、Refresh とライブフィルタを再評価コストと選択状態への影響から比較する。"
 image: /images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-refresh.png
 ---
 

@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Controls with Custom Styles Fall Back to the Old Look Under the WPF Fluent Theme"
+seo_title: "Custom-Styled Controls Lose the WPF Fluent Theme Look"
 date: 2026-08-27
 category: WPF
 excerpt: "Why controls carrying a custom Style keep the legacy look under the Fluent theme, how BasedOn fixes it, and which placements leave BasedOn unresolved."

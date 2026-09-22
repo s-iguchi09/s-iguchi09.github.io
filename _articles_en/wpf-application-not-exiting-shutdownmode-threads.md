@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads"
+seo_title: "Why a WPF Process Stays Alive After the Window Closes"
 date: 2026-08-18
 category: WPF
 excerpt: "The window is gone but the process stays in Task Manager. WPF shutdown has two gates, app shutdown and process exit, and the fix depends on which one stalled."

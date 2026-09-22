@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Order and OrderDescending by Pure Delegation — A Minimal Polyfill with IOrderedEnumerable Compatibility"
+seo_title: "Order and OrderDescending Polyfill by Pure Delegation"
 date: 2026-07-14
 category: C#
 excerpt: "A delegation-only polyfill for Order and OrderDescending, focused on ThenBy compatibility via IOrderedEnumerable and runtime-specific sort exceptions."

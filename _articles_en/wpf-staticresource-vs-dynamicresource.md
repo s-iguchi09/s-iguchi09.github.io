@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Why StaticResource Changes Are Not Reflected in WPF and How to Fix It"
+seo_title: "Why StaticResource Changes Are Not Reflected in WPF"
 date: 2026-06-11
 category: WPF
 excerpt: "StaticResource resolves its value at XAML load time, so runtime changes have no effect. Use DynamicResource when the value must update at runtime."

@@ -1,6 +1,7 @@
 ---
 layout: article-ja
 title: "WPF で ObservableCollection をバックグラウンドスレッドから更新するとクロススレッド例外が発生する問題の解決方法"
+seo_title: "WPF の ObservableCollection 更新でクロススレッド例外が出る問題の解決方法"
 date: 2026-07-20
 category: WPF
 excerpt: "バインド中の ObservableCollection を別スレッドから変更すると NotSupportedException が発生する。原因のスレッドアフィニティと、EnableCollectionSynchronization・Dispatcher による解決策を整理する。"

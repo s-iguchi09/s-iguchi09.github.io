@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF で Fluent デザインを追加ライブラリなしで適用する方法"
 date: 2026-05-30
 category: WPF
-excerpt: "WPF 標準機能だけで Fluent デザインの見た目を整え、SystemColors を使って Windows の色設定に追従する実装方法を整理します。"
+excerpt: "追加ライブラリを使わず、WPF 標準の Fluent テーマ・角丸・階層表現で Fluent デザインの外観を構築し、SystemColors を参照して Windows の色設定に追従させる実装方法と、外部ライブラリを選ぶべき条件を整理する。"
 image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png
 ---
 

@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Expressing SQL Outer Joins in LINQ — Implementing LeftJoin, RightJoin and Shuffle"
+seo_title: "SQL Outer Joins in LINQ: LeftJoin, RightJoin and Shuffle"
 date: 2026-07-16
 category: C#
 excerpt: "Implementing LeftJoin, RightJoin and Shuffle on .NET Framework, mapping them to SQL outer joins and covering the IQueryable translation pitfall."

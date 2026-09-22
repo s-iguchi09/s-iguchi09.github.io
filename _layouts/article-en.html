@@ -4,7 +4,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{{ page.title }} - Articles</title>
+  {%- comment -%}
+    検索結果のタイトルは接尾辞込みで 70 字以内に収める（Bing の基準）。
+    title が長い記事は front matter の seo_title に短縮版を書き、<h1> や本文リンクは title のまま残す。
+  {%- endcomment %}
+  <title>{{ page.seo_title | default: page.title }} - Articles</title>
   {% include head.html %}
   <meta name="description" content="{{ page.excerpt | strip_html | strip_newlines | escape }}">
   <link rel="stylesheet" href="/style.css">

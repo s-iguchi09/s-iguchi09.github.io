@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Replacing GroupBy and Full-Sort Workarounds — Implementing Chunk, MaxBy, MinBy and DistinctBy"
+seo_title: "LINQ Polyfills for Chunk, MaxBy, MinBy and DistinctBy"
 date: 2026-07-13
 category: C#
 excerpt: "Measuring the runtime cost of GroupBy and full-sort workaround idioms, then replacing them with Chunk, MaxBy, MinBy and DistinctBy polyfills."

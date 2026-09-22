@@ -3,7 +3,7 @@ layout: article-ja
 title: "DatePicker の表示形式をカスタマイズする方法"
 date: 2026-04-15
 category: WPF
-excerpt: "XAML とコードビハインドの両面から、WPF DatePicker の日付表示形式を変更する方法をまとめる。"
+excerpt: "WPF の DatePicker は日付をシステムのロケール形式で表示する。yyyy/MM/dd などの固定形式で表示するため、XAML スタイル・コードビハインド・バリューコンバーターの 3 通りの方法を比較し、それぞれの使い分けの基準を示す。"
 image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 

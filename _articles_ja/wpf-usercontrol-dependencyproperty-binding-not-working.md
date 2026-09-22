@@ -1,6 +1,7 @@
 ---
 layout: article-ja
 title: "WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計"
+seo_title: "WPF の UserControl で自身の DependencyProperty にバインドできない原因"
 date: 2026-08-15
 category: WPF
 excerpt: "UserControl に依存関係プロパティを追加したのに、内部の {Binding Title} だけが空欄になる。DataContext の継承という原因を .NET 10 の実測で切り分け、RelativeSource・ElementName・内側ルートへの委譲を比較する。"

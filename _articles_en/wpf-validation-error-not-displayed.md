@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Why WPF Validation Errors Are Not Displayed, and Choosing Between IDataErrorInfo and INotifyDataErrorInfo"
+seo_title: "Why WPF Validation Errors Are Not Displayed"
 date: 2026-08-13
 category: WPF
 excerpt: "Validation code runs but nothing appears. The causes are isolated on .NET 10: the ValidatesOnDataErrors default, a missing adorner layer, and update timing."

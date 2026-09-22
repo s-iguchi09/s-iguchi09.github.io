@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF TextBox の UpdateSourceTrigger で入力がソースへ反映されるタイミングを制御する"
 date: 2026-07-21
 category: WPF
-excerpt: "TextBox.Text の既定が LostFocus であるために起きる「入力が ViewModel に届かない」問題を、UpdateSourceTrigger の三値の使い分けと落とし穴から整理する。"
+excerpt: "TextBox.Text の既定が LostFocus であるために起きる「入力が ViewModel に届かない」問題を、UpdateSourceTrigger の三値の使い分けと、IME 入力・検証タイミング・フォーカスを奪わないボタンといった落とし穴から整理する。"
 image: /images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png
 ---
 

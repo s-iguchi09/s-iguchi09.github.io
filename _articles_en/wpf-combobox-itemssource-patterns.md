@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval"
+seo_title: "WPF ComboBox ItemsSource Patterns and SelectedValue"
 date: 2026-04-26
 category: WPF
 excerpt: "The correct combination of DisplayMemberPath, SelectedItem, SelectedValue, and SelectedValuePath depends on the element type bound to ItemsSource. This article covers the five main patterns."

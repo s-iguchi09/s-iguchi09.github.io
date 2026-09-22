@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Designing LINQ Polyfills That Preserve Lazy Evaluation — Implementing Append, Prepend, TakeLast and SkipLast"
+seo_title: "Lazy LINQ Polyfills: Append, Prepend, TakeLast, SkipLast"
 date: 2026-07-10
 category: C#
 excerpt: "Three design principles for hand-rolled LINQ polyfills, demonstrated through the Append, Prepend, TakeLast and SkipLast implementations."

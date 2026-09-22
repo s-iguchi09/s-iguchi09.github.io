@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls"
+seo_title: "Calling TextBox UpdateSource from the View in WPF"
 date: 2026-07-22
 category: WPF
 excerpt: "Calling GetBindingExpression().UpdateSource() from the View has pitfalls: null returns, bulk updates, wrong direction, and MVVM, grounded in official docs."

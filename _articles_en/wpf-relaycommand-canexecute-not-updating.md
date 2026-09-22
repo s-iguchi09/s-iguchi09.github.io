@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Fixing a RelayCommand Whose CanExecute Does Not Update the Button State in WPF"
+seo_title: "Fixing RelayCommand CanExecute Not Updating in WPF"
 date: 2026-07-23
 category: WPF
 excerpt: "A custom RelayCommand's button stays stuck when CanExecuteChanged is never raised. This compares delegating to RequerySuggested with raising it manually."

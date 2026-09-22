@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Replicating Windows Explorer Sort Order in C# with StrCmpLogicalW and IComparer"
+seo_title: "Explorer-Style Natural Sort in C# with StrCmpLogicalW"
 date: 2026-07-24
 category: C#
 excerpt: "The default string sort orders \"item10\" before \"item2\". This shows how to reproduce Explorer's natural sort order via StrCmpLogicalW P/Invoke in an IComparer."

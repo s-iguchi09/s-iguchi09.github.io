@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Diagnosing Why Parts of a WPF App Stay Light After Switching ThemeMode at Runtime"
+seo_title: "Why Parts of a WPF App Stay Light After a ThemeMode Switch"
 date: 2026-09-19
 category: WPF
 excerpt: "Parts of a WPF app stay Light after a ThemeMode switch to Dark. The causes: a window-level Fluent dictionary, a nested dictionary, or StaticResource."

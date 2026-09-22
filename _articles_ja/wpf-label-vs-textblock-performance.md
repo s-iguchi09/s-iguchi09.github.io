@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針"
 date: 2026-06-10
 category: WPF
-excerpt: "WPF で Label を大量配置した際に描画が遅くなる原因を、visual ツリーの実測に基づいて整理する。TextBlock との差、アンダーバーを含む文字列が招く追加コスト、仮想化を有効にした場合に差が残るかまでを扱う。"
+excerpt: "WPF で Label を大量配置した際に描画が遅くなる原因を、visual ツリーの実測に基づいて整理する。TextBlock との差、アンダーバーを含む文字列が招く追加コスト、仮想化を有効にした場合に差が残るか、改善をどの順で行うかまでを扱う。"
 image: /images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png
 ---
 

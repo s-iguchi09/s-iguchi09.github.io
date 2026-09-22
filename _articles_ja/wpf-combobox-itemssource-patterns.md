@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法"
 date: 2026-04-26
 category: WPF
-excerpt: "ItemsSource に渡すデータ構造によって、DisplayMemberPath・SelectedItem・SelectedValue の設定方法が変わります。文字列リスト、オブジェクトリスト、Enum の各パターンを整理します。"
+excerpt: "ItemsSource に渡すデータ構造によって、DisplayMemberPath・SelectedItem・SelectedValue の設定方法が変わる。文字列リスト・オブジェクトリスト・Enum などを扱う 5 つの実装パターンと選択の分岐点を整理する。"
 image: /images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png
 ---
 

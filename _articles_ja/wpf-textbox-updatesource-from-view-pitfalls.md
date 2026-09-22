@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装"
 date: 2026-07-22
 category: WPF
-excerpt: "GetBindingExpression().UpdateSource() を View から呼ぶ際に起きる null・一括更新・方向取り違え・MVVM 設計の落とし穴を、一次情報を基に整理する。"
+excerpt: "TextBox の GetBindingExpression().UpdateSource() を View から呼ぶ際に起きる null・一括更新・方向の取り違え・MVVM 設計の落とし穴を整理し、BindingGroup と添付ビヘイビアによる一括確定の実装を示す。"
 ---
 
 ## 概要
