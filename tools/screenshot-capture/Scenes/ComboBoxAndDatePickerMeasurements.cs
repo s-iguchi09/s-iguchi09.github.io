@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Markup;
 using System.Windows.Media;
 
 namespace ScreenshotCapture.Scenes;
@@ -133,6 +134,93 @@ internal static class ComboBoxAndDatePickerMeasurements
         rows.Add(await MeasureDateAsync("text part overwritten", date, DatePickerFormat.Short, "yyyy/MM/dd (ddd)"));
 
         return rows;
+    }
+
+    /// <summary>
+    /// 既定表示のカルチャが、要素の Language（xml:lang）とスレッドの CurrentCulture の
+    /// どちらから来るかを切り分ける。両者を独立に変え、実際に出る文字列を測る。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> DatePickerCultureAsync()
+    {
+        var date = new DateTime(2026, 4, 15);
+        var rows = new List<IReadOnlyList<string>>();
+
+        // 親要素だけに指定した場合（継承した Language）も測る。
+        // DatePicker 自身に指定が無くても、値の出どころが Default でなくなるため。
+        var settings = new (string? Own, string? Parent)[]
+        {
+            (null, null), ("en-US", null), ("de-DE", null), (null, "de-DE"),
+        };
+
+        foreach ((string? own, string? parent) in settings)
+        {
+            foreach (string currentCulture in new[] { "ja-JP", "en-US" })
+            {
+                rows.Add(await MeasureDateCultureAsync(date, own, parent, currentCulture));
+            }
+        }
+
+        return rows;
+    }
+
+    private static async Task<IReadOnlyList<string>> MeasureDateCultureAsync(
+        DateTime date, string? language, string? parentLanguage, string currentCulture)
+    {
+        CultureInfo savedCulture = CultureInfo.CurrentCulture;
+        CultureInfo savedUiCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            // DatePicker は SelectedDate の設定時とテンプレート適用時に文字列を作るため、
+            // コントロールを作る前にスレッドのカルチャを切り替えておく。
+            CultureInfo.CurrentCulture = new CultureInfo(currentCulture);
+            CultureInfo.CurrentUICulture = new CultureInfo(currentCulture);
+
+            var picker = new DatePicker { Width = 200 };
+            if (language is not null)
+            {
+                picker.Language = XmlLanguage.GetLanguage(language);
+            }
+            picker.SelectedDate = date;
+
+            var host = new Grid();
+            if (parentLanguage is not null)
+            {
+                host.Language = XmlLanguage.GetLanguage(parentLanguage);
+            }
+            host.Children.Add(picker);
+
+            string label = (language, parentLanguage) switch
+            {
+                (not null, _) => $"xml:lang=\"{language}\"",
+                (null, not null) => $"parent: xml:lang=\"{parentLanguage}\"",
+                _ => "(not set)",
+            };
+
+            List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    label,
+                    host,
+                    _ =>
+                    [
+                        currentCulture,
+                        WpfProbe.ValueAndSource(picker, FrameworkElement.LanguageProperty),
+                        DatePickerText(picker) ?? "(nothing)",
+                    ],
+                    Act: _ =>
+                    {
+                        picker.UpdateLayout();
+                        return Task.CompletedTask;
+                    }),
+            ]);
+
+            return measured[0];
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = savedCulture;
+            CultureInfo.CurrentUICulture = savedUiCulture;
+        }
     }
 
     private static async Task<IReadOnlyList<string>> MeasureDateAsync(
