@@ -93,6 +93,7 @@ internal static class Program
         new ComboBoxDemoScene(),
         new MenuDemoScene(),
         new ImageDemoScene(),
+        new InkCanvasDemoScene(),
     ];
 
     [STAThread]

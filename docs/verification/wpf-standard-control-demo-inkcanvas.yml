@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-inkcanvas
+slug: "wpf-standard-control-demo-inkcanvas"
+scene: "InkCanvasDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "InkCanvas の EditingMode / EditingModeInverted / ActiveEditingMode / Background / DefaultDrawingAttributes の既定値と、ジェスチャー認識が使えるか"
+  - "デモアプリのコンボボックスの初期値（EditingMode は 1 番目、EditingModeInverted は 3 番目、ペンの色は Colors の 1 番目、背景は Brushes の 0 番目）と、ペンの色と背景のコントラスト比"
+  - "実際のマウスでドラッグしたときのストロークの数、ドラッグ中の ActiveEditingMode、ストロークの色と太さ"
+  - "DefaultDrawingAttributes をその場で書き換えたとき（デモアプリの方法）に、描いた後のストロークの色が変わるか"
+  - "Background が null のときにドラッグで描けるか"
+  - "EditingMode が None / GestureOnly / InkAndGesture / EraseByStroke / EraseByPoint / Select のときにドラッグ・クリックした結果"
+  - "SelectAll / Copy / Undo コマンドを InkCanvas に対して実行できるか（Ink / Select モード、ストロークの有無）と、SelectAll で選ばれたストローク"
+  - "GestureOnly / InkAndGesture で左から右へドラッグしたときに Gesture イベントで認識されたジェスチャー"
+  - "StrokeCollection を ISF で保存して読み込んだときのストロークの数"
+images:
+  - "images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg"
