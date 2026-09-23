@@ -26,7 +26,7 @@ from typing import Optional
 from xml.sax.saxutils import escape as xml_escape
 
 REPO_ROOT = os.path.join(os.path.dirname(__file__), "..", "..")
-TODAY = datetime.date.today().isoformat()
+NOW_UTC = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 DEFAULT_BASE_URL = "https://s-iguchi09.github.io"
 
 
@@ -190,34 +190,36 @@ def get_priority_and_freq(rel_path: str):
     return "0.5", "monthly"
 
 
-def get_git_lastmod(rel_path: str) -> str:
-    """Return the last-modified date (YYYY-MM-DD) of a file from git history.
+def to_utc_w3c(stamp: str) -> str:
+    """Convert an RFC 3339 timestamp with any offset to UTC "YYYY-MM-DDThh:mm:ssZ".
 
-    Falls back to TODAY if the file has no git history.
+    Every <lastmod> is written in this one fixed form so that two values can be
+    compared as plain strings. submit-indexnow.mjs relies on that when it checks
+    whether the published sitemap has caught up with the one just pushed.
     """
-    try:
-        result = subprocess.run(
-            ["git", "log", "--format=%ci", "-1", "--", rel_path],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        date_str = result.stdout.strip()
-        if date_str:
-            # git outputs "YYYY-MM-DD HH:MM:SS +HHMM"; take the date portion
-            return date_str[:10]
-    except subprocess.CalledProcessError:
-        pass
-    return TODAY
+    moment = datetime.datetime.fromisoformat(stamp).astimezone(datetime.timezone.utc)
+    return moment.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def get_git_lastmod(rel_path: str) -> str:
+    """Return the last-modified time of a file from git history for <lastmod>.
+
+    Until 2026-09-23 this returned only the date. Two changes to the same page on
+    one day then produced the same <lastmod>, and the IndexNow submission, which
+    looks for changed <lastmod> values, silently skipped the second one. The
+    sitemap protocol accepts a full W3C Datetime, so the time is kept.
+
+    Falls back to NOW_UTC if the file has no git history.
+    """
+    stamp = get_git_lastmod_iso(rel_path)
+    return to_utc_w3c(stamp) if stamp else NOW_UTC
 
 
 def get_git_lastmod_iso(rel_path: str) -> Optional[str]:
     """Return a file's last-modified timestamp from git history as RFC 3339.
 
-    get_git_lastmod() above returns only the date because that is what the
-    sitemap's <lastmod> takes. Atom's <updated> takes a full timestamp, so the
-    commit date is read here with %cI rather than by trimming %ci.
+    The offset is the committer's own, so get_git_lastmod() normalizes it to UTC
+    for the sitemap. Atom's <updated> takes this value as it is.
     """
     try:
         result = subprocess.run(

@@ -63,6 +63,7 @@ function readKey() {
 // 公開中の sitemap.xml で、更新した URL の lastmod が今回の値以上になるまで待ってから送る。
 // 完全一致で待つと、待機中に次の push が公開された場合にいつまでも一致しない。
 // 削除した URL は、公開中の sitemap から消えていることも確かめる。
+// lastmod は generate_sitemap.py が UTC の固定書式（YYYY-MM-DDThh:mm:ssZ）で出すため、文字列の比較で前後を判定できる。
 export function isDeployed(liveXml, updated, removed) {
   const live = parseSitemap(liveXml);
   return updated.every(([loc, lastmod]) => live.has(loc) && live.get(loc) >= lastmod)
