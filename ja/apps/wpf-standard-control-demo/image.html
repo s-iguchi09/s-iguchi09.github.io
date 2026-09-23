@@ -26,7 +26,7 @@
 
   <section class="content-section">
     <h2>概要</h2>
-    <p><strong>Image</strong> は <code>Control</code> ではなく <code>FrameworkElement</code> から派生し、フォーカスを受け取りません。デモアプリは <code>Source</code> を、ファイルのパスを入れた TextBox の文字にバインドしています。パスの文字は画像に変換され、<code>Source</code> は <code>BitmapFrameDecode</code> になりました。存在しないファイルや SVG ファイルのパスでは、<code>Source</code> は <code>null</code>、Image は 0 &times; 0 のままで、例外は起きませんでした。WPF は SVG をデコードしません。</p>
+    <p><strong>Image</strong> は <code>Control</code> ではなく <code>FrameworkElement</code> から派生し、フォーカスを受け取りません。デモアプリは <code>Source</code> を、ファイルのパスを入れた TextBox の文字にバインドしています。パスの文字は画像に変換され、<code>Source</code> は <code>BitmapFrameDecode</code> になりました。存在しないファイルや SVG ファイルのパスでは、<code>Source</code> は <code>null</code>、Image は 0 &times; 0 のままで、例外は起きませんでした。WPF はインストールされている Windows Imaging Component のコーデックで画像をデコードし、計測したマシンには SVG のコーデックがありませんでした。</p>
     <p>パスで表示したファイルはロックされます。そうしてバインドした PNG を表示している間、ファイルの削除は <code>IOException</code> で失敗し、<code>Source</code> を <code>null</code> にした後も失敗しました。削除できたのはガベージコレクションの後でした。<code>CacheOption</code> を <code>OnLoad</code> にした <code>BitmapImage</code> はファイルをすぐに読み込み、表示している間でもファイルを削除できました。</p>
     <p>デモアプリはパス <code>C:\Windows\Web\Wallpaper\Windows\img0.jpg</code> で始まります。計測したマシン（Windows 11）には、3840 &times; 2400 ピクセル・96 DPI の画像としてありました。コンボボックスは先頭の値の <code>None</code> と <code>UpOnly</code> で始まるので、画像は原寸で表示され、見えるのは左上の部分だけです。欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
   </section>

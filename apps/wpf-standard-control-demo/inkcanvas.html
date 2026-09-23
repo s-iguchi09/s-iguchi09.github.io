@@ -68,7 +68,7 @@
         <tr>
           <td><code>EditingMode</code></td>
           <td><code>None / Ink / GestureOnly / InkAndGesture / Select / EraseByPoint / EraseByStroke</code></td>
-          <td>What the mouse does; the default is <code>Ink</code>. A left-to-right drag drew a stroke with <code>Ink</code> and nothing with <code>None</code>. With <code>GestureOnly</code> and <code>InkAndGesture</code>, the same drag was recognized as the gesture <code>Right</code>, and no stroke remained in either mode. Across a line, <code>EraseByStroke</code> removed the whole line and <code>EraseByPoint</code> cut it in two. With <code>Select</code>, a click on the line selected it.</td>
+          <td>What the mouse does; the default is <code>Ink</code>. A left-to-right drag drew a stroke with <code>Ink</code> and nothing with <code>None</code>. With <code>GestureOnly</code> and <code>InkAndGesture</code>, the same drag was recognized as the gesture <code>Right</code>, and no stroke remained in either mode. Recognizing gestures needs a recognizer on the machine; <code>IsGestureRecognizerAvailable</code> was <code>True</code> on the measuring machine. Across a line, <code>EraseByStroke</code> removed the whole line and <code>EraseByPoint</code> cut it in two. With <code>Select</code>, a click on the line selected it.</td>
         </tr>
         <tr>
           <td><code>ActiveEditingMode</code></td>

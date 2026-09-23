@@ -30,7 +30,7 @@
       <strong>Image</strong> derives from <code>FrameworkElement</code>, not <code>Control</code>, and is not focusable. The demo app
       binds its <code>Source</code> to the text of a TextBox holding a file path. A path string is converted to an image: the
       <code>Source</code> became a <code>BitmapFrameDecode</code>. A path to a missing file, or to an SVG file, left
-      <code>Source</code> <code>null</code> and the Image 0 &times; 0, without an exception. WPF does not decode SVG.
+      <code>Source</code> <code>null</code> and the Image 0 &times; 0, without an exception. WPF decodes pictures with the Windows Imaging Component codecs installed, and the measuring machine had none for SVG.
     </p>
     <p>
       A file shown through a path is locked. While a PNG bound that way was shown, deleting the file failed with an

@@ -45,7 +45,7 @@
         <tr>
           <td><code>EditingMode</code></td>
           <td><code>None / Ink / GestureOnly / InkAndGesture / Select / EraseByPoint / EraseByStroke</code></td>
-          <td>マウスで何をするかで、既定値は <code>Ink</code> です。左から右へのドラッグは、<code>Ink</code> ではストロークを描き、<code>None</code> では何も描きませんでした。<code>GestureOnly</code> と <code>InkAndGesture</code> では、同じドラッグがジェスチャー <code>Right</code> と認識され、どちらのモードでもストロークは残りませんでした。線を横切るドラッグで、<code>EraseByStroke</code> は線全体を消し、<code>EraseByPoint</code> は線を 2 つに切りました。<code>Select</code> では、線をクリックすると選択されました。</td>
+          <td>マウスで何をするかで、既定値は <code>Ink</code> です。左から右へのドラッグは、<code>Ink</code> ではストロークを描き、<code>None</code> では何も描きませんでした。<code>GestureOnly</code> と <code>InkAndGesture</code> では、同じドラッグがジェスチャー <code>Right</code> と認識され、どちらのモードでもストロークは残りませんでした。ジェスチャーの認識にはマシンの認識エンジンが要り、計測したマシンでは <code>IsGestureRecognizerAvailable</code> が <code>True</code> でした。線を横切るドラッグで、<code>EraseByStroke</code> は線全体を消し、<code>EraseByPoint</code> は線を 2 つに切りました。<code>Select</code> では、線をクリックすると選択されました。</td>
         </tr>
         <tr>
           <td><code>ActiveEditingMode</code></td>
