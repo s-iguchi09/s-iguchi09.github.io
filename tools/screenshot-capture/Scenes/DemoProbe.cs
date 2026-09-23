@@ -72,6 +72,51 @@ internal static class DemoProbe
         }
     }
 
+    /// <summary>
+    /// 要素をウィンドウに表示し、描画が落ち着いてから <paramref name="act"/> を実行して閉じる。
+    ///
+    /// キー入力・ポップアップ・装飾層など、表示中のウィンドウが要る計測に使う。
+    /// 値を読むだけなので、ディスプレイが消えていても結果は変わらない（撮影はしない）。
+    /// フォーカスを確かめる計測だけ <paramref name="activate"/> を true にする。
+    /// </summary>
+    public static async Task ShowAsync(FrameworkElement content, Func<Task> act, bool activate = false)
+    {
+        var window = new Window
+        {
+            Content = content,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ShowActivated = activate,
+        };
+
+        try
+        {
+            await Capture.ShowAndSettleAsync(window);
+            if (activate)
+            {
+                window.Activate();
+                await Capture.SettleAsync(window);
+            }
+
+            await act();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>表示中の要素へキー押下のイベントを送る。</summary>
+    public static void PressKey(UIElement target, System.Windows.Input.Key key)
+    {
+        PresentationSource source = PresentationSource.FromVisual(target)
+            ?? throw new InvalidOperationException("ウィンドウに表示していない要素にはキー入力を送れない。");
+        target.RaiseEvent(new System.Windows.Input.KeyEventArgs(
+            System.Windows.Input.Keyboard.PrimaryDevice, source, 0, key)
+        {
+            RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent,
+        });
+    }
+
     public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         int count = VisualTreeHelper.GetChildrenCount(root);

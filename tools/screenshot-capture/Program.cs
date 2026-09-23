@@ -63,6 +63,10 @@ internal static class Program
         new GridSplitterDemoScene(),
         new SliderDemoScene(),
         new TabItemDemoScene(),
+        new DatePickerDemoScene(),
+        new TextBoxDemoScene(),
+        new ListBoxDemoScene(),
+        new PasswordBoxDemoScene(),
     ];
 
     [STAThread]

@@ -7,30 +7,24 @@
   <meta charset="UTF-8">
   <title>DatePicker | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-
-  <meta name="description" content="WPF の DatePicker はポップアップカレンダーを使って日付を選択できるコントロールです。選択可能な日付範囲の制限、週の始まりの曜日設定、表示形式（Short / Long）の切り替えをサポートしています。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
-
+  <meta name="description" content="WPF の DatePicker を .NET 10 で実測して解説します。DisplayDateStart / End は範囲外の日付の入力を止めないこと、不正な入力は元の日付に戻ること、IsTodayHighlighted などの既定値がスタイル由来であることを確かめます。">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
 {% include header-ja.html %}
-
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; DatePicker</p>
     <h1>DatePicker <span class="category-badge">Inputs</span></h1>
-    <p>DatePicker はポップアップカレンダーを使って日付を選択できるコントロールです。選択可能な日付範囲の制限、週の始まりの曜日設定、日付の表示フォーマット変更をサポートしています。</p>
+    <p>DatePicker は、日付を入力するテキスト欄と、カレンダーのポップアップを開くボタンを組み合わせたコントロールです。選んだ日付は null 許容の <code>DateTime</code> です。</p>
   </section>
 
   <section class="content-section">
     <h2>概要</h2>
-    <p>WPF の <strong>DatePicker</strong> は、テキストボックスとポップアップカレンダーを組み合わせた日付入力コントロールです。ユーザーはカレンダーをクリックして日付を選択するか、テキストボックスに直接入力できます。</p>
-    <p><code>SelectedDate</code> プロパティは <code>DateTime?</code>（null 許容）型です。未選択の場合は null になります。MVVM では <code>DateTime?</code> 型の ViewModel プロパティに TwoWay バインドします。</p>
-    <p><code>DisplayDateStart</code> と <code>DisplayDateEnd</code> を設定することで、選択可能な日付範囲を制限できます。例えば、過去の日付を選択不可にする場合は <code>DisplayDateStart="{x:Static sys:DateTime.Today}"</code> のように設定します。</p>
-    <p><code>FirstDayOfWeek</code> でカレンダーの週始まり曜日を変更できます。日本語ロケールでは月曜始まりにしたい場合が多く、<code>FirstDayOfWeek="Monday"</code> と設定します。</p>
-    
+    <p><strong>DatePicker</strong> の値は <code>SelectedDate</code> で、型は <code>DateTime?</code> です。日付を選んでいないときは <code>null</code> になり、既定で TwoWay にバインドされます。テキスト欄はこの値を文字列で表示し、日付を入力して Enter キーを押すと値が設定されます。カレンダーのポップアップは <code>Calendar</code> コントロールで、<code>FirstDayOfWeek</code> や <code>IsTodayHighlighted</code> などのプロパティは DatePicker から引き渡されます。</p>
+    <p>意外に感じやすい点が 2 つあります。1 つ目は、<code>DisplayDateStart</code> と <code>DisplayDateEnd</code> がカレンダーを制限するだけだという点です。範囲外の日はポップアップで無効になりますが、テキスト欄への入力やコードから設定した日付は、範囲外でもそのまま受け付けられます。2 つ目は、既定値のうち 2 つが既定のスタイルから与えられ、プロパティのメタデータと食い違う点です。<code>IsTodayHighlighted</code> はメタデータでは <code>False</code> で、実際には <code>True</code> です。<code>SelectedDateFormat</code> はメタデータでは <code>Long</code> で、実際には <code>Short</code> です。</p>
+    <p>デモアプリには以下の各プロパティの欄があり、各欄の下の「Show Code」リンクでその欄の XAML を表示できます。独自の表示形式にする方法は<a href="/ja/articles/wpf-datepicker-custom-format/">DatePicker の表示形式をカスタマイズする方法</a>で扱っています。</p>
   </section>
 
   <section class="content-section">
@@ -40,44 +34,49 @@
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。</p>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。日付の解析と表示には <code>xml:lang="en-US"</code> を指定しました。</p>
     <table class="prop-table">
       <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>SelectedDate</code></td>
           <td><code>DateTime?</code></td>
-          <td>現在選択されている日付を取得・設定します。MVVM では ViewModel の <code>DateTime?</code> プロパティに <code>Mode=TwoWay</code> でバインドするのが標準パターンです。ユーザーがテキストフィールドの内容を消去すると <code>SelectedDate</code> が null になります。はまりやすいポイント：バインド先が null 非許容の <code>DateTime</code> プロパティの場合、null が返るとバインドエラーになります。DatePicker のバインドには必ず <code>DateTime?</code>（null 許容型）を使用してください。</td>
+          <td>選んだ日付で、選んでいないときは <code>null</code> です。既定で TwoWay にバインドされます。テキスト欄を空にして Enter キーを押すと <code>null</code> になりました。バインド先は <code>DateTime?</code> のプロパティにします。<code>DateTime</code> のプロパティにバインドした状態で <code>null</code> にすると、バインドエラーになりました。ソースは元の日付のままで、DatePicker の <code>Validation.HasError</code> が <code>True</code> になりました。</td>
         </tr>
         <tr>
           <td><code>DisplayDate</code></td>
           <td><code>DateTime</code></td>
-          <td>カレンダーに表示する月を設定します。DatePicker を開いた時に特定の月へプログラムから自動スクロールしたい場合（例：契約開始月に移動）に使用します。<code>SelectedDate</code> とは独立して動作し、<code>DisplayDate</code> を変えてもカレンダーの表示月が移動するだけです。はまりやすいポイント：<code>DisplayDate</code> を変更しても <code>SelectedDate</code> は変わりません。あくまでカレンダーの「見えている月」を変えるだけのため、日付を選択させたい場合は別途 <code>SelectedDate</code> を設定する必要があります。</td>
+          <td>カレンダーに表示する月です。新しく作った DatePicker では今日の日付でした。<code>SelectedDate</code> を 2026-04-15 にすると、<code>DisplayDate</code> も同じ日に移りました。その後で <code>DisplayDate</code> を変えても <code>SelectedDate</code> は変わりませんでした。デモアプリでは、別の DatePicker で選んだ日付（今日の 1 か月後）を <code>DisplayDate</code> にバインドしています。</td>
         </tr>
         <tr>
           <td><code>DisplayDateStart / DisplayDateEnd</code></td>
           <td><code>DateTime?</code></td>
-          <td>選択・表示可能な日付の開始・終了を設定します。例えば今日から 1 年後までの予約受付フォームなら <code>DisplayDateStart=Today, DisplayDateEnd=Today+1年</code> と組み合わせます。範囲外の日付はカレンダー上でグレーアウトされクリックできなくなります。はまりやすいポイント：これらのプロパティはカレンダー UI での表示・選択を制限しますが、ユーザーがテキストボックスに範囲外の日付を直接入力すると <code>SelectedDate</code> がその値になってしまう場合があります。入力検証は ViewModel 側でも別途実装してください。</td>
+          <td>カレンダーで選べる最初と最後の日付です。2026-04-10〜2026-04-20 の範囲では、ポップアップの 04-05 の日付ボタンは無効になりました。範囲が効くのはここだけです。コードから <code>SelectedDate</code> を 04-05 にしても、<code>Text</code> に "4/5/2026" を設定しても、テキスト欄に "4/5/2026" と入力して Enter キーを押しても、日付は 04-05 になりました。例外も <code>DateValidationError</code> も発生しませんでした。選択中の日付より後の <code>DisplayDateStart</code> も効きません。04-10 を選んだ状態で <code>DisplayDateStart = 04-15</code> とすると、04-10 に引き戻されました。デモアプリでは、範囲を直前の月曜日から次の金曜日までにしています。</td>
         </tr>
         <tr>
           <td><code>FirstDayOfWeek</code></td>
           <td><code>DayOfWeek</code></td>
-          <td>カレンダーに表示する週の始まりの曜日を設定します。文化的に日本では月曜始まり、米国では日曜始まりが一般的です。設定するとカレンダーの一番左の列の曜日が変わります。はまりやすいポイント：このプロパティは WPF レベルの設定で OS のロケール設定を自動的には参照しません。日本語アプリで月曜始まりにしたい場合は明示的に <code>FirstDayOfWeek="Monday"</code> を設定する必要があります。</td>
+          <td>カレンダーの左端の列の曜日で、ポップアップの <code>Calendar</code> にも同じ値が渡りました。新しく作った DatePicker は、スレッドの現在のカルチャから値を取ります。en-US と ja-JP では <code>Sunday</code>、de-DE と fr-FR では <code>Monday</code> でした。ユーザーのカルチャと違う曜日から始めたいときだけ、明示的に設定します。</td>
         </tr>
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>カレンダーポップアップが現在開いているかどうかを制御します。フィールドにフォーカスが当たった時にカレンダーを自動的に開くなど、プログラムから開閉を制御する場面に使用します。はまりやすいポイント：DatePicker が完全にレンダリングされる前にプログラムからドロップダウンを開こうとすると、レイアウトの問題が発生することがあります。開く処理は <code>Loaded</code> イベント以降で行ってください。</td>
+          <td>カレンダーのポップアップが開いているかどうかです。既定で TwoWay にバインドされるので、デモアプリのチェックボックスはポップアップを開閉するだけでなく、ポップアップの状態にも追従します。ウィンドウを表示する前に <code>True</code> にしても例外は出ず、ウィンドウが表示された時点でポップアップは開いていました。</td>
         </tr>
         <tr>
           <td><code>IsTodayHighlighted</code></td>
           <td><code>bool</code></td>
-          <td>カレンダー上で今日の日付をハイライト表示するかどうかを制御します。デフォルトは True で、今日の日付に下線や色が付きます。過去のデータ入力など「今日」に特別な意味がない場面では <code>false</code> にしてハイライトを消すとスッキリした見た目になります。はまりやすいポイント：ハイライトを消しても今日の日付はクリックして選択できる有効な日付のままです。ハイライトの有無は見た目のみであり、選択可能かどうかとは無関係です。</td>
+          <td>カレンダーで今日の日付に印を付けるかどうかです。プロパティのメタデータの既定値は <code>False</code> ですが、既定のスタイルが <code>True</code> を設定するため、無効にしない限り今日には印が付きます。<code>False</code> にすると、日付ボタンの表示状態が <code>Today</code> から <code>RegularDay</code> に変わり、今日の印が透明になりました。ボタンは有効なままで、今日の日付は選べます。</td>
         </tr>
         <tr>
           <td><code>SelectedDateFormat</code></td>
           <td><code>Short / Long</code></td>
-          <td>テキストボックスに表示される日付のフォーマットを設定します。<code>Short</code> の表示例はロケールにより異なり（en-US では「1/15/2026」、ja-JP では「2026/01/15」）、<code>Long</code> はより詳細な形式で表示されます。はまりやすいポイント：<code>Long</code> フォーマットはロケール依存のため、ターゲットロケール以外では意図しない表示になる可能性があります。特定のフォーマットを確実に表示したい場合は IValueConverter を使った独自変換を検討してください。</td>
+          <td>テキスト欄に、カルチャの短い形式と長い形式のどちらで日付を表示するかです。値はこの 2 つだけで、実際の既定値は既定のスタイルが設定する <code>Short</code> です。カルチャごとの表示と、これ以外の形式で表示する方法は、<a href="/ja/articles/wpf-datepicker-custom-format/">DatePicker の表示形式をカスタマイズする方法</a>で実測しています。<code>SelectedDate</code> が保持するのは文字列ではなく <code>DateTime</code> なので、記事では DatePicker のテキスト部分の側で形式を変えています。</td>
+        </tr>
+        <tr>
+          <td><code>Text</code></td>
+          <td><code>string</code></td>
+          <td>日付の文字列です。<code>SelectedDate</code> と違い、既定では TwoWay にバインドされません。デモアプリでは、テキストボックスから OneWay でバインドしています。設定するとすぐに DatePicker のカルチャで解析され、"4/15/2026"・"2026-04-15"・"April 15, 2026" はいずれも 2026-04-15 になり、<code>Text</code> は "4/15/2026" に変わりました。解析できない文字列（en-US での "15/4/2026"）を設定すると、<code>SelectedDate</code> は <code>null</code> になりました。テキスト欄に入力した場合は動きが異なり、"abc" と入力して Enter キーを押すと <code>DateValidationError</code> が発生し、日付も文字列も元のまま戻りました。</td>
         </tr>
       </tbody>
     </table>
@@ -85,56 +84,68 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <pre><code class="language-xml">&lt;DatePicker SelectedDate="{Binding BirthDate, Mode=TwoWay}"
-             DisplayDateStart="{Binding MinDate}"
-             DisplayDateEnd="{Binding MaxDate}"
-             FirstDayOfWeek="Monday"
-             IsTodayHighlighted="True"
-             SelectedDateFormat="Short"
-             Width="160" /&gt;</code></pre>
+    <p>デモアプリ（<code>DatePickerUsageControl.xaml</code>）の <code>DisplayDate Range (Start/End)</code> の欄から、スタイルと周囲の GroupBox を省いたものです。<code>DateTimeAdvancedConverter</code> はデモアプリのコンバーターで、今日から直前の月曜日と次の金曜日を求めます。</p>
+    <pre><code class="language-xml">&lt;DatePicker x:Name="DisplayDateStartSourceDatePicker"
+            SelectedDate="{Binding Source={x:Static sys:DateTime.Now},
+                                   Converter={converters:DateTimeAdvancedConverter Operation=Previous, TargetDay=Monday},
+                                   Mode=OneTime}" /&gt;
+&lt;DatePicker x:Name="DisplayDateEndSourceDatePicker"
+            SelectedDate="{Binding Source={x:Static sys:DateTime.Now},
+                                   Converter={converters:DateTimeAdvancedConverter Operation=Next, TargetDay=Friday},
+                                   Mode=OneTime}" /&gt;
+
+&lt;DatePicker x:Name="DisplayDateRangeDatePicker"
+            DisplayDateEnd="{Binding SelectedDate, ElementName=DisplayDateEndSourceDatePicker}"
+            DisplayDateStart="{Binding SelectedDate, ElementName=DisplayDateStartSourceDatePicker}"
+            SelectedDate="{x:Static sys:DateTime.Now}" /&gt;</code></pre>
+    <p>3 つ目の DatePicker には最初から今日が選ばれています。そのため、1 つ目の DatePicker で開始日を今日より後にしても、<code>DisplayDateStart</code> の説明のとおり、範囲は今日より後には狭まりません。</p>
   </section>
 
   <section class="content-section">
     <h2>主な使用例</h2>
     <ul>
-      <li><strong>生年月日入力</strong> — 年齢制限のある登録フォームで DisplayDateStart/End で選択範囲を制限します。</li>
-      <li><strong>予約・スケジュール入力</strong> — 宿泊予約や会議予約で日付を選択する UI に使用します。</li>
-      <li><strong>フィルター条件の日付範囲</strong> — 開始日と終了日を 2 つの DatePicker で指定する期間フィルターを実装します。</li>
-      <li><strong>締め切り設定</strong> — タスクや案件の締め切り日を設定する入力フォームに使用します。</li>
-      <li><strong>帳票の対象日付</strong> — 月次レポートや集計表の対象年月を選択する入力に使用します。</li>
+      <li><strong>期日・締め切り</strong> — <code>DateTime?</code> のプロパティにバインドした DatePicker を 1 つ置き、ユーザーが選ぶまでは空にしておきます。</li>
+      <li><strong>集計の期間</strong> — 開始日と終了日の 2 つの DatePicker を置き、ViewModel で組み合わせて検証します。</li>
+      <li><strong>予約</strong> — <code>DisplayDateStart</code> / <code>DisplayDateEnd</code> でカレンダーを絞り、選べない日を <code>BlackoutDates</code> に入れます。</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ヒントとベストプラクティス</h2>
     <ul>
-      <li><strong>null チェックを必ず実装</strong> — SelectedDate は null 許容型のため、バインド先の ViewModel で未選択（null）の場合の処理を必ず実装します。</li>
-      <li><strong>BlackoutDates で選択不可日を指定</strong> — 祝日や休業日を選択不可にする場合は <code>BlackoutDates</code> コレクションに CalendarDateRange を追加します。</li>
-      <li><strong>日付範囲のバリデーション</strong> — 開始日・終了日を 2 つの DatePicker で入力するフォームでは、開始日 ≤ 終了日であることを ViewModel 側でチェックします。UI ではエラーメッセージを表示して利用者に知らせます。</li>
-      <li><strong>ブラックアウト日付の設定</strong> — 特定の日付を選択不可にするには <code>BlackoutDates.Add(new CalendarDateRange(startDate, endDate))</code> を使います。休業日や祝日をリストから動的に追加できます。</li>
-      <li><strong>FirstDayOfWeek をロケールに合わせる</strong> — アプリのターゲット地域に応じて週の始まりを適切に設定します。</li>
-      <li><strong>テキスト入力の検証</strong> — ユーザーが直接テキスト入力した場合も SelectedDate が正しく更新されます。無効な日付文字列は SelectedDate が null になります。</li>
-      <li><strong>カスタムフォーマットには Converter を使用</strong> — SelectedDateFormat では Short/Long のみ選べます。独自の書式が必要な場合は IValueConverter で変換します。</li>
+      <li><strong>範囲の検証は ViewModel で行う</strong> — <code>DisplayDateStart</code> と <code>DisplayDateEnd</code> はポップアップの日付を無効にするだけで、入力やコードからの範囲外の日付は受け付けられます。</li>
+      <li><strong>選ばせたくない日は <code>BlackoutDates</code> に入れる</strong> — 範囲と違い、BlackoutDates は守られます。コードから該当日を <code>SelectedDate</code> に設定すると <code>ArgumentOutOfRangeException</code> が発生して元の日付のままになり、ポップアップではその日が選択不可（IsBlackedOut）として示されました。</li>
+      <li><strong>開始日・終了日の組を <code>DisplayDateStart</code> に頼らない</strong> — 終了日側の <code>DisplayDateStart</code> を開始日にバインドしても、終了日側にすでにそれより前の日付が入っていると効かず、その日付まで引き戻されます。2 つの日付の前後は ViewModel で確かめます。</li>
+      <li><strong><code>DateValidationError</code> を処理する</strong> — 入力した文字列が受け付けられなかったことを伝えるためです。処理しないと、テキスト欄は何も知らせずに元の日付へ戻ります。</li>
+      <li><strong><code>DateTime?</code> にバインドする</strong> — null 非許容のソースでは、空の状態がバインドエラーになります。</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/DatePickerDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>DatePickerDemoScene</code></a> を使いました。入力は、DatePicker のテキスト部分に文字列を設定して Enter キーのイベントを送って再現し、カレンダーはポップアップを開いて日付ボタンの状態を読みました。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg" alt="2026 年 4 月 10 日から 20 日の範囲を設定した DatePicker の結果を示す表。コード・Text・入力と Enter で与えた範囲外の日付は受け付けられ、解析できない入力は DateValidationError を発生させて元の日付に戻り、範囲外の日付ボタンは無効になり、BlackoutDates の日付をコードから設定すると ArgumentOutOfRangeException が発生し、選択中の日付より後の DisplayDateStart は引き戻される" width="1226" height="560" loading="lazy">
+      <figcaption><code>xml:lang="en-US"</code> での範囲、BlackoutDates、入力の結果。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>関連コントロール</h2>
+    <h2>関連コントロール・記事</h2>
     <ul>
-      <li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — 自由テキスト入力が必要な場合。DatePicker が使えない場合の代替。</li>
-      <li><a href="/ja/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — 年や月のみ選択する場合に数字の ComboBox を組み合わせることもあります。</li>
+      <li><a href="/ja/articles/wpf-datepicker-custom-format/">DatePicker の表示形式をカスタマイズする方法</a> — カルチャごとの <code>SelectedDateFormat</code> の表示の実測と、独自の形式で表示する方法を扱います。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — DatePicker のテキスト部分は TextBox の派生の <code>DatePickerTextBox</code> です。</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/DatePickerUsage" target="_blank" rel="noopener noreferrer">GitHub で DatePicker のソースコードを見る &rarr;</a></p>
   </section>
 
 </main>
-
 {% include footer-ja.html %}
-
 </body>
 </html>

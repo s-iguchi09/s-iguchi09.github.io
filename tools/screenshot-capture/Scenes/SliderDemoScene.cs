@@ -102,28 +102,6 @@ internal sealed class SliderDemoScene : IScene
     private static Track TrackOf(Slider slider) =>
         (Track)slider.Template.FindName("PART_Track", slider);
 
-    private static async Task WithWindowAsync(FrameworkElement content, Func<Task> act, bool activate = false)
-    {
-        var host = new Grid { Margin = new Thickness(12) };
-        host.Children.Add(content);
-        var window = new Window
-        {
-            Content = host,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            ShowActivated = activate,
-        };
-
-        try
-        {
-            await Capture.ShowAndSettleAsync(window);
-            await act();
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
-
     /// <summary>
     /// つまみを、値が <paramref name="rawDelta"/> だけ変わる距離だけドラッグする。
     /// 距離は Track の換算（1 ピクセルあたりの値）から求める。
@@ -145,13 +123,6 @@ internal sealed class SliderDemoScene : IScene
         thumb.RaiseEvent(slider.Orientation == Orientation.Horizontal
             ? new DragDeltaEventArgs(distance, 0)
             : new DragDeltaEventArgs(0, distance));
-    }
-
-    private static void PressKey(UIElement target, Key key)
-    {
-        PresentationSource source = PresentationSource.FromVisual(target)
-            ?? throw new InvalidOperationException("ウィンドウに表示していない要素にはキー入力を送れない。");
-        target.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, key) { RoutedEvent = Keyboard.KeyDownEvent });
     }
 
     private sealed class Source : INotifyPropertyChanged
@@ -317,7 +288,7 @@ internal sealed class SliderDemoScene : IScene
                 slider.TickFrequency = 10;
             }
 
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 PressKey(slider, key);
                 await Task.CompletedTask;
@@ -331,7 +302,7 @@ internal sealed class SliderDemoScene : IScene
             slider.SmallChange = 1;
             slider.LargeChange = 10;
             slider.Value = 50;
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 Track track = TrackOf(slider);
                 var peer = new RepeatButtonAutomationPeer(track.IncreaseRepeatButton);
@@ -348,7 +319,7 @@ internal sealed class SliderDemoScene : IScene
             slider.Value = 50;
             slider.IsSnapToTickEnabled = true;
             slider.TickFrequency = 10;
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 Track track = TrackOf(slider);
                 ((IInvokeProvider)new RepeatButtonAutomationPeer(track.IncreaseRepeatButton)).Invoke();
@@ -383,7 +354,7 @@ internal sealed class SliderDemoScene : IScene
             Slider slider = NewSlider(maximum);
             slider.Value = start;
             configure(slider);
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 DragThumb(slider, rawDelta);
                 await Task.CompletedTask;
@@ -415,7 +386,7 @@ internal sealed class SliderDemoScene : IScene
             var source = new Source();
             Slider slider = NewSlider();
             slider.SetBinding(RangeBase.ValueProperty, new Binding(nameof(Source.Value)) { Source = source });
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 DragThumb(slider, 40);
                 await Task.CompletedTask;
@@ -449,7 +420,7 @@ internal sealed class SliderDemoScene : IScene
                 slider.Ticks = ticks;
             }
 
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 var tickBar = (TickBar)slider.Template.FindName("BottomTick", slider);
                 List<double> xs = TickPositions(tickBar);
@@ -524,7 +495,7 @@ internal sealed class SliderDemoScene : IScene
             Slider slider = NewSlider(target > 100 ? 2000 : 100);
             slider.AutoToolTipPlacement = placement;
             slider.AutoToolTipPrecision = precision;
-            await WithWindowAsync(slider, async () =>
+            await ShowAsync(slider, async () =>
             {
                 DragThumb(slider, target);
                 var toolTip = (ToolTip?)toolTipField.GetValue(slider);
