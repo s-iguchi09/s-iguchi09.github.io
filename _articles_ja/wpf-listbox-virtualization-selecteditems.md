@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法"
 date: 2026-04-24
 category: WPF
-excerpt: "ListBox の仮想化有効時に選択状態が維持されない理由と、IsSelected を各アイテムに持たせて MVVM で安定させる解決方法を解説する。ItemContainerStyle のバインドだけでは選択が失われる条件と、SelectionChanged を併用した対処を実測付きで示す。"
+excerpt: "ListBox の仮想化有効時に選択状態が維持されない理由と、各アイテムの IsSelected で MVVM で安定させる方法を解説する。ItemContainerStyle のバインドだけでは選択が失われる条件と、SelectionChanged を併用した対処を実測で示す。"
 image: /images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png
 ---
 
