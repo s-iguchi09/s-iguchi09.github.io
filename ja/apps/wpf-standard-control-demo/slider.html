@@ -86,7 +86,7 @@
         <tr>
           <td><code>AutoToolTipPlacement</code></td>
           <td><code>None / TopLeft / BottomRight</code></td>
-          <td>つまみのドラッグ中に、現在値のツールチップを表示します。既定値の <code>None</code> では表示されません。表示されるのは数値だけです。Slider には書式を指定するプロパティがなく、関係するのは <code>AutoToolTipPlacement</code> と <code>AutoToolTipPrecision</code> だけです。大きな数には桁区切りが入り、1234.56 を小数 1 桁で表示すると <code>1,234.6</code> になりました。「%」などの単位を付けたい場合は、<code>StringFormat</code> を使った別の <code>TextBlock</code> で値を表示します。</td>
+          <td>つまみのドラッグ中に、現在値のツールチップを表示します。既定値の <code>None</code> では表示されません。表示されるのは数値だけです。Slider には書式を指定するプロパティがなく、関係するのは <code>AutoToolTipPlacement</code> と <code>AutoToolTipPrecision</code> だけです。数値は現在のカルチャに従い、1234.56 を小数 1 桁で表示すると、en-US では <code>1,234.6</code>、de-DE では <code>1.234,6</code> になりました。「%」などの単位を付けたい場合は、<code>StringFormat</code> を使った別の <code>TextBlock</code> で値を表示します。</td>
         </tr>
         <tr>
           <td><code>AutoToolTipPrecision</code></td>
@@ -96,7 +96,7 @@
         <tr>
           <td><code>Delay / Interval</code></td>
           <td><code>int（ミリ秒）</code></td>
-          <td>トラック上でマウスボタンを押し続けたときの繰り返しのタイミングで、繰り返しが始まるまでの待ち時間と、繰り返しの間隔です。既定値は 500 と 33 でした。Slider はこの値をトラックの 2 つの <code>RepeatButton</code> に渡します。デモアプリの 1000 と 50 では、どちらのボタンも <code>Delay="1000"</code>・<code>Interval="50"</code> になりました。トラックを 1 回クリックすると、値は <code>LargeChange</code> だけ動きました。</td>
+          <td>トラック上でマウスボタンを押し続けたときの繰り返しのタイミングで、繰り返しが始まるまでの待ち時間と、繰り返しの間隔です。既定値は Windows のキーボードの設定から決まります。計測した環境（<code>SystemParameters.KeyboardDelay</code> が 1、<code>KeyboardSpeed</code> が 31）では 500 と 33 で、<code>Delay</code> の既定値は（<code>KeyboardDelay</code> + 1）&times; 250 と一致しました。Slider はこの値をトラックの 2 つの <code>RepeatButton</code> に渡します。デモアプリの 1000 と 50 では、どちらのボタンも <code>Delay="1000"</code>・<code>Interval="50"</code> になりました。トラックを 1 回クリックすると、値は <code>LargeChange</code> だけ動きました。</td>
         </tr>
       </tbody>
     </table>
@@ -144,7 +144,7 @@
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a> を使いました。つまみのドラッグは、マウスでドラッグしたときにつまみが発生させるのと同じ <code>DragStarted</code>・<code>DragDelta</code> イベントで、キー操作は表示したウィンドウへキー入力イベントを送って再現しています。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a> を使いました。つまみのドラッグは、マウスでドラッグしたときにつまみが発生させるのと同じ <code>DragStarted</code>・<code>DragDelta</code> イベントで、キー操作は表示したウィンドウへキー入力イベントを送って再現しています。トラックのクリックは、トラックの <code>RepeatButton</code> を UI オートメーションで呼び出し、ボタンのクリック処理を実行して再現しました。</p>
 
     <figure class="article-figure">
       <img src="/images/wpf-standard-control-demo/verification/slider/slider-snap.svg" alt="つまみをドラッグした後の Slider の値を示す表。吸着なしや TickPlacement だけでは 23.4、TickFrequency 10 で 20、1 で 23、TickFrequency 30 では 90 または 100、Ticks 1,3,5,7,9 では 5 と 0、コードから設定した値は吸着せず、バインドしたソースはドラッグ中に更新される" width="700" height="380" loading="lazy">
@@ -152,7 +152,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="目盛り、選択範囲、自動ツールチップを示す表。目盛りは Minimum と Maximum に必ず描かれ、IsDirectionReversed で反転し、TickPlacement で高さが変わり、選択範囲は有効なときだけ表示されて Value を制限せず、ツールチップは AutoToolTipPrecision の桁で四捨五入される" width="1046" height="530" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="目盛り、選択範囲、自動ツールチップを示す表。目盛りは Minimum と Maximum に必ず描かれ、IsDirectionReversed で反転し、TickPlacement で高さが変わり、選択範囲は有効なときだけ表示されて Value を制限せず、ツールチップは AutoToolTipPrecision の桁で四捨五入される" width="1046" height="590" loading="lazy">
       <figcaption>目盛りの位置（左から順に、値に換算）、高さ、選択範囲、自動ツールチップの文字列。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

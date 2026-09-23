@@ -26,7 +26,7 @@ internal sealed class TabItemDemoScene : IScene
         "TabItem の TabStripPlacement が親の TabControl の値に従うこと",
         "IsSelected を True にしたときの SelectedIndex と他のタブの IsSelected、XAML で複数のタブに IsSelected=True を書いた場合とコードから順に設定した場合に選ばれるタブ",
         "IsSelected にバインドしたソースが、SelectedIndex の変更で更新されること",
-        "IsEnabled=False のタブを、コード（SelectedIndex）と UI オートメーション（ユーザー操作の代わり）で選べるか",
+        "IsEnabled=False のタブを、コード（SelectedIndex）と、支援技術が使う UI オートメーション（ISelectionItemProvider.Select）で選べるか",
         "文字列の Header がどの要素で表示されるか（AccessText が作られ、アンダースコアの次の文字がアクセスキーになること）",
         "Header の長さによるタブの幅の違い",
         "XAML に直接書いた Content と ItemsSource + ContentTemplate で作った内容の、Loaded の回数と起動時に測られるか、タブを切り替えたときに同じインスタンスが再利用されるか",
@@ -69,6 +69,22 @@ internal sealed class TabItemDemoScene : IScene
     }
 
     private static TabItem Item(TabControl tabs, int index) => (TabItem)tabs.Items[index]!;
+
+    /// <summary>
+    /// 名前が Template で終わるプロパティを、対応する依存関係プロパティが読み取り専用なら "(read-only)" を付けて並べる。
+    /// </summary>
+    private static string TemplateProperties(Type type) =>
+        string.Join(", ", type.GetProperties()
+            .Where(p => p.Name.EndsWith("Template"))
+            .Select(p => p.Name)
+            .Distinct()
+            .Select(name =>
+            {
+                var field = type.GetField(name + "Property",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy);
+                bool readOnly = field?.GetValue(null) is DependencyProperty { ReadOnly: true };
+                return readOnly ? $"{name} (read-only)" : name;
+            }));
 
     private static async Task WithWindowAsync(FrameworkElement content, Func<Task> act)
     {
@@ -197,7 +213,7 @@ internal sealed class TabItemDemoScene : IScene
                 var peer = (TabItemAutomationPeer)UIElementAutomationPeer.CreatePeerForElement(tabs)
                     .GetChildren().OfType<TabItemAutomationPeer>().ElementAt(1);
                 string thrown = Throws(() => ((ISelectionItemProvider)peer).Select());
-                rows.Add(["Tab2 IsEnabled=False; UI Automation Select() (as a user would): result / SelectedIndex",
+                rows.Add(["Tab2 IsEnabled=False; UI Automation ISelectionItemProvider.Select(): result / SelectedIndex",
                     $"{thrown} / {tabs.SelectedIndex}"]);
                 await Task.CompletedTask;
             });
@@ -234,10 +250,9 @@ internal sealed class TabItemDemoScene : IScene
             });
         }
 
-        rows.Add(["TabControl properties named *Template*",
-            string.Join(", ", typeof(TabControl).GetProperties().Where(p => p.Name.EndsWith("Template")).Select(p => p.Name).Distinct())]);
-        rows.Add(["TabItem properties named *Template*",
-            string.Join(", ", typeof(TabItem).GetProperties().Where(p => p.Name.EndsWith("Template")).Select(p => p.Name).Distinct())]);
+        // 名前だけでなく、対応する依存関係プロパティが読み取り専用かどうかも示す。
+        rows.Add(["TabControl *Template properties (read-only marked)", TemplateProperties(typeof(TabControl))]);
+        rows.Add(["TabItem *Template properties (read-only marked)", TemplateProperties(typeof(TabItem))]);
 
         {
             TabControl tabs = NewTabs(2);

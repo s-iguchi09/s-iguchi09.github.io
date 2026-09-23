@@ -116,7 +116,7 @@
         <tr>
           <td><code>AutoToolTipPlacement</code></td>
           <td><code>None / TopLeft / BottomRight</code></td>
-          <td>Shows a tooltip with the current value while the thumb is dragged; the default <code>None</code> shows none. The text is a plain number. Slider has no property for its format, as the only related properties are <code>AutoToolTipPlacement</code> and <code>AutoToolTipPrecision</code>. Large numbers get a thousands separator: 1234.56 with one decimal was shown as <code>1,234.6</code>. For units such as "%", show the value in a separate <code>TextBlock</code> with a <code>StringFormat</code>.</td>
+          <td>Shows a tooltip with the current value while the thumb is dragged; the default <code>None</code> shows none. The text is a plain number. Slider has no property for its format, as the only related properties are <code>AutoToolTipPlacement</code> and <code>AutoToolTipPrecision</code>. The number follows the current culture: 1234.56 with one decimal was shown as <code>1,234.6</code> with en-US and as <code>1.234,6</code> with de-DE. For units such as "%", show the value in a separate <code>TextBlock</code> with a <code>StringFormat</code>.</td>
         </tr>
         <tr>
           <td><code>AutoToolTipPrecision</code></td>
@@ -126,7 +126,7 @@
         <tr>
           <td><code>Delay / Interval</code></td>
           <td><code>int (ms)</code></td>
-          <td>The repeat timing when the mouse button is held down on the track: the wait before repeating and the time between repeats. The defaults were 500 and 33. The Slider passes them to the two <code>RepeatButton</code>s of its track: with the demo app's 1000 and 50, both buttons had <code>Delay="1000"</code> and <code>Interval="50"</code>. One click on the track moved the value by <code>LargeChange</code>.</td>
+          <td>The repeat timing when the mouse button is held down on the track: the wait before repeating and the time between repeats. The defaults come from the Windows keyboard settings: on the measuring machine, where <code>SystemParameters.KeyboardDelay</code> was 1 and <code>KeyboardSpeed</code> 31, they were 500 and 33, and the <code>Delay</code> default matched (<code>KeyboardDelay</code> + 1) &times; 250. The Slider passes them to the two <code>RepeatButton</code>s of its track: with the demo app's 1000 and 50, both buttons had <code>Delay="1000"</code> and <code>Interval="50"</code>. One click on the track moved the value by <code>LargeChange</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -183,6 +183,8 @@
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a>
       in this site's screenshot tool. Thumb drags were reproduced by raising the same <code>DragStarted</code> and
       <code>DragDelta</code> events that the thumb raises for a mouse drag, and keys by sending key events to a displayed window.
+      Clicks on the track were reproduced by invoking the track's <code>RepeatButton</code> through UI Automation, which runs
+      the button's click handling.
     </p>
 
     <figure class="article-figure">
@@ -191,7 +193,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="Table of tick marks, selection range, and automatic tooltip: tick marks are always drawn at Minimum and Maximum and are mirrored by IsDirectionReversed, tick placement changes the height, the selection range is shown only when enabled, and the tooltip rounds the value to AutoToolTipPrecision" width="1046" height="530" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="Table of tick marks, selection range, and automatic tooltip: tick marks are always drawn at Minimum and Maximum and are mirrored by IsDirectionReversed, tick placement changes the height, the selection range is shown only when enabled, and the tooltip rounds the value to AutoToolTipPrecision" width="1046" height="590" loading="lazy">
       <figcaption>Tick marks (as values, left to right), heights, the selection range, and the automatic tooltip text. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>
