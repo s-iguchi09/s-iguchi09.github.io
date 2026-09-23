@@ -84,6 +84,7 @@ internal static class Program
         new WrapPanelDemoScene(),
         new DockPanelDemoScene(),
         new CanvasDemoScene(),
+        new UniformGridDemoScene(),
     ];
 
     [STAThread]

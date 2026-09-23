@@ -1,60 +1,137 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"><title>UniformGrid | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8">
+  <title>UniformGrid | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の UniformGrid はすべてのセルが同じサイズになるシンプルなグリッドパネルです。行数・列数を指定すると、子要素を均等に配置します。カレンダー・ゲームボード・タイルグリッドなどに使われます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+
+  <meta name="description" content="WPF の UniformGrid を .NET 10 で実測して解説。行と列がいくつになるか、収まらない子がどこへ置かれるか、FirstColumn が無視される条件、各セルの大きさの決まり方を確かめます。折りたたんだ子や空いたセルの扱いも示します。">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-ja.html %}
+
 <main>
+
   <section class="hero">
-    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; UniformGrid</p>
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; UniformGrid</p>
     <h1>UniformGrid <span class="category-badge">Layout</span></h1>
-    <p>UniformGrid はすべてのセルが同じサイズになるシンプルなグリッドパネルです。行数・列数を指定すると、子要素を均等に配置します。カレンダー・ゲームボード・タイルグリッドなどに使われます。</p>
+    <p>UniformGrid は、子を同じ大きさのセルに、行ごとに左から右へ並べるパネルです。指定するのは行数か列数だけで、行や列の定義はありません。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>UniformGrid</strong> は <code>Panel</code> を継承したシンプルなグリッドパネルです。<code>Rows</code> と <code>Columns</code> を設定すると、全セルが同じサイズで子要素を均等に配置します。通常の <code>Grid</code> とは異なり、個別の行・列定義が不要です。</p>
-  <p><code>Rows</code> と <code>Columns</code> の両方を設定しない場合、UniformGrid は子要素の数に基づいて自動的に行数・列数を計算します（正方形に近い形になるよう算出）。子要素が 4 つなら 2×2、9 つなら 3×3 という具合です。</p>
-  <p><code>FirstColumn</code> プロパティを設定すると、最初の行の先頭を空のセルで埋めてオフセットを作ることができます。例えば週カレンダーで月の最初の日が水曜日ならば <code>FirstColumn="3"</code>（0始まりで日月火水...の水=3）と設定します。</p>
-  <p>UniformGrid は動的なセル数には対応していません（子要素数が変わると再計算が必要です）。また、GridSplitter のようなリサイズ機能もありません。シンプルな均等グリッドが必要なケースに特化した軽量なパネルです。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/uniformgrid.png" alt="uniformgrid demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>UniformGrid</strong> は <code>System.Windows.Controls.Primitives</code> 名前空間にあります。<code>Rows</code>・<code>Columns</code>・<code>FirstColumn</code> の既定値は 0 で、0 は「自動で決める」という意味です。どちらも設定しないと、デモアプリの 5 つのラベルは 2 行 3 列になりました。<code>Collapsed</code> の子はセルを使いません。5 つのうち 2 つ目を折りたたんで <code>Columns="2"</code> にすると、3 つ目のラベルが 2 つ目のセルに入り、行数は 2 のままでした。</p>
+    <p>セルはすべて同じ大きさです。幅 300 に広げた 3 列のグリッドでは、幅 150 の子があってもセルの幅は 100 でした。大きさを内容に合わせる場合は、最も幅の広い子がすべてのセルの大きさを決めます。同じグリッドを横の StackPanel に入れると、セルの幅は 150 になりました。</p>
+    <p>デモアプリには、<code>Columns</code>、<code>Rows</code>、<code>FirstColumn</code>、<code>Background</code>、<code>ZIndex</code> の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/uniformgrid.png" alt="uniformgrid demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Rows</code></td><td><code>int (0 = auto)</code></td><td>カレンダーの週行数や三目並べの盤など、行数を明示的に決めたいときに設定します。設定した行数でグリッドが固定され、子要素がその行数内に均等に収まります。0（デフォルト）は子要素の数と Columns の値から自動計算されます。Rows と Columns の積より子要素が多い場合、はみ出た子要素は表示されないため子要素の数を管理してください。</td></tr><tr><td><code>Columns</code></td><td><code>int (0 = auto)</code></td><td>1 週間を 7 列で表す週カレンダーや、4 列タイルのダッシュボードなど、列数を固定したいときに設定します。設定した列数で全子要素が均等幅に並びます。0（デフォルト）は Rows の値と子要素数から自動計算されます。Columns のみ指定し Rows を 0 のままにすると、行数は自動計算されるため子要素が増えても列数は維持されます。</td></tr><tr><td><code>FirstColumn</code></td><td><code>int</code></td><td>月の最初の日が週の途中から始まるカレンダーで、最初の行に空セルのオフセットを作りたいときに使います。設定した数だけ先頭行の前方に空のセルが挿入され、各日付を正しい曜日列に配置できます。FirstColumn の値が Columns の値以上の場合は無視されるため、月初の曜日インデックス（0=日曜日）が Columns 未満に収まるよう管理してください。</td></tr></tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>Columns</code></td>
+          <td><code>int</code></td>
+          <td>列数で、行は必要なだけ増えます。デモアプリの初期値は 1 です。300 &times; 200 のグリッドで、5 つのラベルは <code>Columns="1"</code> で 300 &times; 40 のセルの 5 行に、<code>Columns="2"</code> で 150 &times; 66.67 のセルの 3 行になりました。</td>
+        </tr>
+        <tr>
+          <td><code>Rows</code></td>
+          <td><code>int</code></td>
+          <td>行数で、列は必要なだけ増えます。デモアプリの初期値は 1 です。5 つのラベルは <code>Rows="1"</code> で 5 列の 1 行に、<code>Rows="2"</code> で 2 行 3 列になりました。両方を設定して子が収まらなくても、余った子は捨てられません。<code>Rows="2"</code>・<code>Columns="2"</code> で 5 つのラベルを置くと、5 つ目は 4 つのセルの下の (0, 200)、高さ 200 のグリッドの外に置かれました。</td>
+        </tr>
+        <tr>
+          <td><code>FirstColumn</code></td>
+          <td><code>int</code></td>
+          <td>最初の子の前に空けるセルの数です。デモアプリの初期値は <code>Columns="3"</code>・9 つのラベルで 1 です。1 つ目のラベルは 2 つ目のセルの (100, 0) に置かれ、3 つ目のラベルが 2 行目の先頭になり、グリッドは 4 行になりました。<code>FirstColumn</code> が 3 や 4 と <code>Columns</code> 以上のときは無視され、1 つ目のラベルは (0, 0)、グリッドは 3 行でした。</td>
+        </tr>
+        <tr>
+          <td><code>Background (Panel)</code></td>
+          <td><code>Brush</code></td>
+          <td>パネルの塗りと、空いたセルをクリックできるかどうかです。2 列に 1 つのラベルを置くと、空いたセルのヒットテストで、既定値の <code>null</code> では何も当たらず、<code>Transparent</code> ではグリッドが当たりました。</td>
+        </tr>
+        <tr>
+          <td><code>ZIndex (Panel 添付)</code></td>
+          <td><code>int</code></td>
+          <td>子が重なったときに、どれを上にするかです。デモアプリでは 2 つ目のラベルの上余白が -15 で、1 つ目に重なっています。<code>ZIndex</code> が 1 と 2 では 2 つ目が、3 と 2 では 1 つ目が上になりました。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- 3x3 のゲームボード（三目並べ） --&gt;
-&lt;UniformGrid Rows="3" Columns="3" Width="150" Height="150"&gt;
-  &lt;Button Content="X" /&gt;
-  &lt;Button Content="O" /&gt;
-  &lt;Button /&gt;
-  &lt;Button Content="X" /&gt;
-  &lt;Button /&gt;
-  &lt;Button Content="O" /&gt;
-  &lt;Button /&gt;
-  &lt;Button Content="X" /&gt;
-  &lt;Button /&gt;
-&lt;/UniformGrid&gt;
 
-&lt;!-- 均等タイルグリッド（Columns のみ指定） --&gt;
-&lt;UniformGrid Columns="4"&gt;
-  &lt;Border Background="CornflowerBlue" Margin="2"&gt;
-    &lt;TextBlock Text="タイル 1" HorizontalAlignment="Center" /&gt;
-  &lt;/Border&gt;
-  &lt;!-- ... その他のタイル --&gt;
-&lt;/UniformGrid&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>カレンダーグリッド</strong> — 月間カレンダーの 7 列（日〜土）× 複数行のセルを UniformGrid で実装します。FirstColumn で月初の曜日に対応します。</li><li><strong>ゲームボード</strong> — 三目並べや 15 パズルなどのゲームの均等グリッドを実装します。</li><li><strong>ダッシュボードタイル</strong> — 同じサイズの KPI タイルを均等に並べたダッシュボードグリッドを作成します。</li><li><strong>カラーパレット</strong> — カスタムカラーピッカーで色のタイルを均等に並べたパレットを実装します。</li><li><strong>画像ギャラリー</strong> — サムネイル画像を均等なグリッドで表示するギャラリーに使用します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>動的なアイテム数には WrapPanel を検討する</strong> — アイテム数が動的に変わる場合は UniformGrid より WrapPanel+ItemsControl の組み合わせが柔軟です。</li><li><strong>Rows と Columns の両方を指定する</strong> — 一方のみ指定した場合、もう一方は子要素数から計算されます。明示的にサイズを制御したい場合は両方設定します。</li><li><strong>Grid との使い分け</strong> — 列幅・行高が均等でない場合や、GridSplitter などの高度な機能が必要な場合は Grid を使います。均等セルが必要なシンプルな場合に UniformGrid が適しています。</li><li><strong>ItemsControl のパネルとして使う</strong> — ItemsControl の ItemsPanel に UniformGrid を設定すると、コレクションのアイテムを均等グリッドで表示できます。</li><li><strong>セルサイズは親のサイズに依存する</strong> — UniformGrid は親コンテナのサイズを行数・列数で均等に分割してセルサイズを決めます。親に明示的な Width/Height が設定されていない場合、セルサイズが予期せず 0 になることがあります。ScrollViewer など無限サイズを与えるコンテナに入れる場合は明示的にサイズを設定してください。</li><li><strong>セル内の子要素はデフォルトで Stretch</strong> — UniformGrid の子要素は HorizontalAlignment と VerticalAlignment がデフォルトで Stretch のため、セル全体を埋めます。意図的に左揃えや中央揃えにしたい場合は子要素側で HorizontalAlignment/VerticalAlignment を明示的に設定してください。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/grid.html">Grid</a> — 不均等なセルサイズや高度なレイアウト機能が必要な場合。</li><li><a href="/ja/apps/wpf-standard-control-demo/wrappanel.html">WrapPanel</a> — アイテムを折り返しながら並べるパネル。</li></ul></section>
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>UniformGridUsageControl.xaml</code>）の <code>FirstColumn</code> の欄から、スタイル、周囲の GroupBox、テキストボックスの入力制限のビヘイビア、9 つのうち 6 つのラベルを省いたものです。</p>
+    <pre><code class="language-xml">&lt;TextBox x:Name="FirstColumnTextBox" Text="1" /&gt;
+&lt;TextBox x:Name="ColumnsForFirstColumnTextBox" Text="3" /&gt;
+
+&lt;UniformGrid x:Name="FirstColumnUniformGrid"
+             Columns="{Binding Text, ElementName=ColumnsForFirstColumnTextBox}"
+             FirstColumn="{Binding Text, ElementName=FirstColumnTextBox}"&gt;
+  &lt;Label BorderBrush="Black" BorderThickness="1" Content="Item1" /&gt;
+  &lt;Label BorderBrush="Black" BorderThickness="1" Content="Item2" /&gt;
+  &lt;Label BorderBrush="Black" BorderThickness="1" Content="Item3" /&gt;
+&lt;/UniformGrid&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>カレンダー</strong> — 7 列にし、<code>FirstColumn</code> にその月の 1 日の曜日を設定します。</li>
+      <li><strong>ボタンの並び</strong> — テンキーのように、同じ大きさのキーを並べます。</li>
+      <li><strong>等分の列</strong> — <code>Rows="1"</code> にして、ボタンで幅を均等に分けます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong><code>Rows</code> と <code>Columns</code> はどちらか一方だけを設定する</strong> — 両方を設定すると、余った子はグリッドの外に置かれます。</li>
+      <li><strong><code>FirstColumn</code> は <code>Columns</code> より小さくする</strong> — そうでないと無視されます。</li>
+      <li><strong>グリッドから外したい子は折りたたむ</strong> — 折りたたんだ子はセルを明け渡します。</li>
+      <li><strong>1 つだけ大きい子に注意する</strong> — 大きさを内容に合わせるグリッドでは、すべてのセルがその大きさになります。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/UniformGridDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>UniformGridDemoScene</code></a> を使い、デモアプリと同じラベル（枠 1）で試しました。グリッドは <code>Measure</code> と <code>Arrange</code> でレイアウトし、行と列は子の位置から数えました。大きさは、計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.svg" alt="UniformGrid の計測結果の表。Primitives 名前空間にあり Rows・Columns・FirstColumn の既定値は 0、デモアプリの 5 つのラベルは 5 行 1 列、3 行 2 列、1 行 5 列、2 行 3 列、2 行 3 列に並び、2 行 2 列では 5 つ目がグリッドの下に置かれ、3 列で FirstColumn 1 は 2 つ目のセルから始まり 3 や 4 は無視され、折りたたんだ子はセルを使わず、セルは広げると幅 100、幅 150 の子に合わせると 150 になり、空いたセルは Background があるときだけ当たり、ZIndex がデモアプリの重なったラベルの順序を決める" width="1030" height="560" loading="lazy">
+      <figcaption>行、列、<code>FirstColumn</code>、セルの大きさ。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/grid.html">Grid</a> — 大きさの違う行と列に、結合もできるパネルです。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/wrappanel.html">WrapPanel</a> — 決まった数ではなく、使える幅で子を折り返します。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/UniformGridUsage" target="_blank" rel="noopener noreferrer">GitHub で UniformGrid のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
+
 {% include footer-ja.html %}
+
 </body>
 </html>
