@@ -78,6 +78,7 @@ internal static class Program
         new ProgressBarDemoScene(),
         new ScrollViewerDemoScene(),
         new PopupDemoScene(),
+        new ExpanderDemoScene(),
     ];
 
     [STAThread]
