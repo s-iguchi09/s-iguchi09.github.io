@@ -8,7 +8,7 @@
   <title>ComboBox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF の ComboBox はリストからアイテムを選択できるドロップダウンリストコントロールです。IsEditable を有効にするとテキスト入力も可能になり、データバインドしたコレクションも扱えます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+  <meta name="description" content="WPF の ComboBox を .NET 10 で実測して解説。編集可能なときの自動補完と入力した大文字小文字の保持、IsReadOnly、ドロップダウンの高さ、実際のクリックでの StaysOpenOnEdit、リストの同期を確かめます。">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,32 +21,14 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ComboBox</p>
     <h1>ComboBox <span class="category-badge">Inputs</span></h1>
-    <p>ComboBox はリストからアイテムを選択できるドロップダウンリストコントロールです。IsEditable を有効にするとテキスト入力も可能になります。シンプルなアイテムリストからデータバインドされた複雑なコレクションまで対応しています。</p>
+    <p>ComboBox は、選択中の項目を表示し、ドロップダウンの一覧を開いて別の項目を選ばせるコントロールです。編集可能にして、文字を入力させることもできます。</p>
   </section>
 
   <section class="content-section">
     <h2>概要</h2>
-    <p>
-      WPF の <strong>ComboBox</strong> は、ドロップダウンリストから1つの項目を選択するためのコントロールです。
-      <code>Selector</code> → <code>ItemsControl</code> という継承チェーンにより、
-      <code>ItemsSource</code> へのデータバインドや <code>ItemTemplate</code> による表示カスタマイズが可能です。
-    </p>
-    <p>
-      <code>IsEditable="True"</code> に設定すると、ドロップダウンの選択だけでなく任意テキストの入力も可能になります。
-      これにより、候補リストを参考にしながらも自由な値を入力できる UI を実現できます。
-      <code>StaysOpenOnEdit</code> と組み合わせると、入力中もドロップダウンを表示し続けられます。
-    </p>
-    <p>
-      <code>SelectedValue</code> / <code>SelectedValuePath</code> の組み合わせは、
-      オブジェクトコレクションから特定のプロパティ値（ID など）を取得する際に便利です。
-      例えば、<code>SelectedValuePath="Id"</code> と設定すると、選択されたオブジェクトの Id プロパティ値を
-      <code>SelectedValue</code> で取得できます。
-    </p>
-    <p>
-      <code>DisplayMemberPath</code> を設定すると、ItemTemplate を定義しなくても
-      コレクション内のオブジェクトの特定プロパティをドロップダウンに表示できます。
-      複雑な表示が不要なシナリオではこれが最も簡潔なアプローチです。
-    </p>
+    <p>デモアプリの <strong>ComboBox</strong> はどれも、<code>Name</code> と <code>Value</code> を持つ曜日の項目を <code>DisplayMemberPath="Name"</code>・<code>SelectedValuePath="Value"</code> で表示しています。このような項目では、2 つ目の曜日を選ぶと <code>Text</code> も <code>SelectedValue</code> も <code>Monday</code> になりますが、<code>SelectedItem</code> は項目のオブジェクトそのものです。項目のクラスが <code>ToString</code> を上書きしていないので、その文字はクラス名になり、デモアプリの <code>SelectedItem</code> の表示もそうなります。</p>
+    <p><code>IsDropDownOpen</code> は既定で TwoWay にバインドされます。デモアプリは <code>Mode</code> を指定せずにチェックボックスにバインドしています。チェックボックスで一覧を開いたあと、<kbd>Down</kbd>・<kbd>Down</kbd>・<kbd>Enter</kbd> を押すと、Monday が選ばれて一覧が閉じ、チェックボックスのチェックも外れました。</p>
+    <p>デモアプリには、<code>IsDropDownOpen</code>、<code>IsEditable</code>、<code>IsReadOnly</code>、<code>MaxDropDownHeight</code>、<code>Text</code>、<code>StaysOpenOnEdit</code>、<code>ShouldPreserveUserEnteredPrefix</code>、選択のプロパティ、<code>IsSynchronizedWithCurrentItem</code> の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。<code>ItemsSource</code> のバインドと選択の読み取り方は、下にリンクした記事で扱っています。</p>
   </section>
 
   <section class="content-section">
@@ -56,54 +38,54 @@
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
     <table class="prop-table">
       <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>ドロップダウンリストの開閉をプログラムから制御したい場合や、バインドで現在の開閉状態を追跡したい場合に使用します。<code>True</code> にするとドロップダウンが開き、<code>False</code> にすると閉じます。デフォルトは <code>False</code> です。はまりポイント: このプロパティを <code>TwoWay</code> バインドすると、ユーザーがドロップダウンを閉じた直後に ViewModel 側の値が <code>False</code> に更新され、さらにそれが <code>True</code> に変更されると即座に再オープンしてしまいます。バインド変更のタイミングに十分注意してください。</td>
+          <td>一覧が開いているかどうかです。既定で TwoWay にバインドされるので、バインドしたチェックボックスは一覧が閉じたことに追従します（上を参照）。</td>
         </tr>
         <tr>
           <td><code>IsEditable</code></td>
           <td><code>bool</code></td>
-          <td>リストの選択肢に限らずユーザーが自由な値を入力できるようにしたい場合（オートコンプリート、フリー入力型ドロップダウンなど）に <code>True</code> に設定します。<code>True</code> にすると <code>Text</code> プロパティがアクティブになり、ユーザーが入力したテキストを取得・バインドできます。はまりポイント: <code>IsEditable=True</code> のとき、ユーザーがリストにない値を入力すると <code>SelectedItem</code> は <code>null</code> になります。<code>SelectedItem</code> だけを参照する ViewModel の実装では、フリー入力値が失われる場合があるため <code>Text</code> プロパティも合わせて参照してください。</td>
+          <td>利用者が文字を入力できるかどうかで、既定値は <code>False</code> です。入力すると合う項目で補完され、「tue」は <code>Tuesday</code> になり、<code>SelectedValue</code> も Tuesday になりました。どの項目にも合わない文字は入力のまま残り、「xyz」では <code>SelectedIndex</code> が -1、<code>SelectedValue</code> が <code>null</code> でした。</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td><code>IsEditable=True</code> の状態で、テキスト入力は禁止しつつドロップダウンからの選択は許可したい場合に使用します。<code>IsEditable=True</code> かつ <code>IsReadOnly=True</code> に設定すると、テキスト部分は読み取り専用（直接入力不可）になりますが、ドロップダウンを開いてリストから選択する操作は引き続き可能です。<code>IsEditable=False</code>（デフォルト）の場合はこのプロパティは効果がありません。はまりポイント: <code>IsReadOnly</code> 単体でドロップダウン全体を無効化することはできません。コントロール全体を無効化したい場合は <code>IsEnabled=False</code> を使ってください。</td>
+          <td><code>IsEditable</code> のときに入力を止めるかどうかです。両方が <code>True</code> のとき、「tue」を入力しても文字は空のままでしたが、<kbd>Down</kbd> キーでは項目（Sunday）が選ばれました。</td>
         </tr>
         <tr>
           <td><code>MaxDropDownHeight</code></td>
           <td><code>double</code></td>
-          <td>アイテム数が多い場合にドロップダウンが画面からはみ出すのを防ぎ、スクロールバーで探せるようにしたい場合に設定します。デフォルトは制限なし（<code>double.PositiveInfinity</code>）で、アイテム数が多いとドロップダウンが画面全体を占領することがあります。設定した高さを超えるとドロップダウン内にスクロールバーが表示されます。はまりポイント: 小さすぎる値（例: アイテム1件分以下）を設定すると、ドロップダウンを開いてもほとんど何も見えない状態になります。アイテムの高さ × 最低表示件数（5〜8件程度）を目安に設定してください。</td>
+          <td>一覧の高さの上限です。既定値は、計測したマシンの画面の高さの 3 分の 1 の 480 で、7 つの曜日は 141.72 でした。デモアプリの 100 では、一覧は 7 つの曜日に必要な高さより低い 100 になりました。</td>
         </tr>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td><code>IsEditable=True</code> のときに現在のテキスト値（選択アイテムの表示文字列またはユーザー入力テキスト）を取得・バインドするために使用します。選択アイテムが変わると <code>SelectedItem.ToString()</code> の代わりに <code>DisplayMemberPath</code> で指定したプロパティの値が <code>Text</code> に反映されます。はまりポイント: <code>IsEditable=False</code>（デフォルト）の状態でプログラムから <code>Text</code> プロパティを設定しても表示に反映されません。表示を変えたい場合は <code>SelectedItem</code> または <code>SelectedIndex</code> を設定してください。</td>
+          <td>欄の文字で、選択した項目なら <code>DisplayMemberPath</code> から、編集可能な ComboBox なら入力のままになります。デモアプリは <code>SelectedValue</code> と並べて表示しています。</td>
         </tr>
         <tr>
           <td><code>StaysOpenOnEdit</code></td>
           <td><code>bool</code></td>
-          <td><code>IsEditable=True</code> のとき、入力に応じて候補リストをリアルタイムで絞り込む UI（オートコンプリート）を実現する場合に <code>True</code> に設定します。<code>True</code> にするとテキスト編集中もドロップダウンが開いたままになります。デフォルト（<code>False</code>）ではテキストを編集するとドロップダウンが閉じます。はまりポイント: <code>True</code> に設定すると、ユーザーが意図せずリストを閉じたいのに閉じられないという操作上の混乱を招くことがあります。リアルタイム候補絞り込みが必要なシナリオ以外では使用しないことを推奨します。</td>
+          <td>利用者が編集欄をクリックしたときに一覧を開いたままにするかどうかで、既定値は <code>False</code> です。開いた編集可能な ComboBox の編集欄を実際のマウスでクリックすると、<code>False</code> では一覧が閉じ、<code>True</code> では開いたままでした。</td>
         </tr>
         <tr>
-          <td><code>SelectedIndex (Selector)</code></td>
-          <td><code>int</code></td>
-          <td>プログラムから特定のアイテムを選択状態にしたい場合に使用します。0始まりのインデックスで選択アイテムを指定し、指定したインデックスのアイテムが選択されハイライト表示されます。<code>-1</code> は未選択状態を意味し、デフォルト値でもあります。はまりポイント: <code>SelectedIndex=-1</code> を設定するとインデックスによる選択がクリアされますが、<code>SelectedItem</code> が必ずしも <code>null</code> にリセットされるわけではありません。選択を完全にクリアしたい場合は <code>SelectedItem=null</code> と合わせて設定してください。</td>
+          <td><code>ShouldPreserveUserEnteredPrefix</code></td>
+          <td><code>bool</code></td>
+          <td>自動補完で、入力した文字をそのまま残すかどうかで、既定値は <code>False</code> です。「tue」を入力すると、<code>False</code> では <code>Tuesday</code>、<code>True</code> では <code>tuesday</code> になりました。<code>SelectedValue</code> はどちらも Tuesday でした。</td>
         </tr>
         <tr>
-          <td><code>SelectedItem (Selector)</code></td>
-          <td><code>object</code></td>
-          <td>オブジェクトコレクションにバインドしている場合に、選択されたオブジェクト全体を ViewModel で受け取りたいときに使用します。<code>Mode=TwoWay</code> でバインドすると ViewModel から選択アイテムをプログラムで変更することもできます。はまりポイント: WPF は <code>SelectedItem</code> の比較に参照等価性（同じオブジェクトインスタンスかどうか）を使用します。ViewModel で別途作成したオブジェクト（例: データベースから再取得したもの）を設定しても、<code>ItemsSource</code> 内の参照と一致しない場合は選択状態になりません。<code>ItemsSource</code> と同じインスタンスを設定するか、<code>SelectedValue</code> + <code>SelectedValuePath</code> の使用を検討してください。</td>
+          <td><code>SelectedIndex / SelectedItem / SelectedValue / SelectedValuePath / DisplayMemberPath (Selector, ItemsControl)</code></td>
+          <td><code>int / object / object / string / string</code></td>
+          <td>選択と、項目のどのプロパティを値と表示の文字にするかです（上を参照）。</td>
         </tr>
         <tr>
-          <td><code>SelectedValue / SelectedValuePath / DisplayMemberPath</code></td>
-          <td><code>object / string / string</code></td>
-          <td>オブジェクトのコレクション（例: 製品リスト）から特定のプロパティ値（例: ID）だけを ViewModel にバインドしたい場合の典型的なパターンで使用します。<code>SelectedValuePath="ProductId"</code> と設定すると選択された製品オブジェクトの <code>ProductId</code> プロパティ値が <code>SelectedValue</code> として取得でき、<code>DisplayMemberPath="Name"</code> でドロップダウンに <code>Name</code> プロパティが表示されます。はまりポイント: <code>SelectedValuePath</code> の値はプロパティ名の大文字・小文字を区別します（例: <code>"productId"</code> と <code>"ProductId"</code> は別物）。一致しない場合は <code>SelectedValue</code> が常に <code>null</code> になるため、プロパティ名のスペルを必ず確認してください。</td>
+          <td><code>IsSynchronizedWithCurrentItem (ItemsControl)</code></td>
+          <td><code>bool?</code></td>
+          <td>選択を一覧のビューの現在の項目に合わせるかどうかです。同じリストの 2 つの ComboBox を <code>True</code> にすると、どちらもインデックス 0 で始まり、一緒に動きました。1 つ目を 3 にすると 2 つ目も 3 になりました。未設定では、どちらも -1 で始まり、互いに独立でした。デモアプリは 3 つの ComboBox を <code>True</code> で始めるので、すべて Sunday で始まります。</td>
         </tr>
       </tbody>
     </table>
@@ -111,59 +93,62 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <pre><code class="language-xml">&lt;!-- シンプルなデータバインド --&gt;
-&lt;ComboBox ItemsSource="{Binding Countries}"
-          SelectedItem="{Binding SelectedCountry, Mode=TwoWay}"
-          DisplayMemberPath="Name" /&gt;
+    <p>デモアプリ（<code>ComboBoxUsageControl.xaml</code>）の <code>ShouldPreserveUserEnteredPrefix</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
+    <pre><code class="language-xml">&lt;CheckBox x:Name="ShouldPreserveUserEnteredPrefix" Content="ShouldPreserveUserEnteredPrefix" /&gt;
 
-&lt;!-- SelectedValuePath を使用した ID 取得 --&gt;
-&lt;ComboBox ItemsSource="{Binding Products}"
+&lt;ComboBox x:Name="ShouldPreserveUserEnteredPrefixComboBox"
           DisplayMemberPath="Name"
-          SelectedValuePath="ProductId"
-          SelectedValue="{Binding SelectedProductId, Mode=TwoWay}" /&gt;
+          IsEditable="True"
+          ItemsSource="{markupextensions:EnumBindingSource EnumType=sys:DayOfWeek}"
+          SelectedValuePath="Value"
+          ShouldPreserveUserEnteredPrefix="{Binding IsChecked, ElementName=ShouldPreserveUserEnteredPrefix}" /&gt;
 
-&lt;!-- 編集可能 ComboBox --&gt;
-&lt;ComboBox IsEditable="True" StaysOpenOnEdit="True"
-          MaxDropDownHeight="200"
-          Text="{Binding SearchText, Mode=TwoWay}"
-          ItemsSource="{Binding Suggestions}" /&gt;</code></pre>
+&lt;TextBlock Text="{Binding Text, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;
+&lt;TextBlock Text="{Binding SelectedValue, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>主な使用例</h2>
     <ul>
-      <li><strong>国・地域の選択</strong> — 固定リストから国や地域を選択する標準的なドロップダウンセレクターとして使用します。</li>
-      <li><strong>カテゴリ・分類の選択</strong> — 製品カテゴリや優先度（高/中/低）など、有限の選択肢から1つを選ぶ UI に使用します。</li>
-      <li><strong>オートコンプリート検索</strong> — IsEditable と StaysOpenOnEdit を組み合わせて、入力に応じて候補を絞り込む検索 UI を作成します。</li>
-      <li><strong>フィルター選択</strong> — 日付範囲や状態など、表示フィルターの選択肢をドロップダウンで提供します。</li>
-      <li><strong>設定値の選択</strong> — アプリの設定画面で「テーマ」「言語」「フォントサイズ」などを選択する UI に使用します。</li>
+      <li><strong>多くの中から 1 つを選ぶ</strong> — ラジオボタンでは長くなりすぎる、国や分類の選択です。</li>
+      <li><strong>列挙型</strong> — 列挙型の値を名前で表示し、値でバインドします。</li>
+      <li><strong>候補付きの入力</strong> — 既知の値を補完しつつ、それ以外も受け付ける編集可能な ComboBox です。</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ヒントとベストプラクティス</h2>
     <ul>
-      <li><strong>SelectedItem vs SelectedValue</strong> — オブジェクト全体が必要な場合は <code>SelectedItem</code> を、特定のプロパティ値（ID など）だけ必要な場合は <code>SelectedValue</code> + <code>SelectedValuePath</code> を使います。ただし <code>SelectedItem</code> は参照等価性で比較されるため、同じデータを別のインスタンスとして設定しても選択状態にならない点に注意してください。</li>
-      <li><strong>デフォルト選択を設定する</strong> — アプリ起動時やダイアログ表示時に ViewModel から <code>SelectedItem</code> または <code>SelectedIndex</code> を設定して初期値を表示します。<code>SelectedItem</code> を使う場合は <code>ItemsSource</code> のコレクションと同じオブジェクトインスタンスを参照するように注意してください。</li>
-      <li><strong>空の選択を許可する場合</strong> — コレクションの先頭に「選択してください」という <code>null</code> 値を追加するか、<code>SelectedItem</code> が <code>null</code> の場合の処理を ViewModel に実装します。<code>CompositeCollection</code> を使うと既存のコレクションを変更せずに先頭に固定アイテムを追加できます。</li>
-      <li><strong>大量のアイテム</strong> — アイテム数が多い場合は <code>MaxDropDownHeight</code> でリストの高さを制限し、スクロールで探せるようにします。数百件以上のアイテムを扱う場合は仮想化（<code>VirtualizingStackPanel</code>）が自動的に有効になりますが、<code>ItemTemplate</code> を使う場合は明示的に有効化することを確認してください。</li>
-      <li><strong>ItemTemplate でリッチ表示</strong> — 単純なテキストリストではなく、アイコンや詳細情報を含む複雑なリストアイテムを表示する場合は <code>ItemTemplate</code> を定義します。<code>DisplayMemberPath</code> は <code>ItemTemplate</code> と併用できないため、どちらかを選択してください。</li>
-      <li><strong>IsEditable=True 時の SelectedItem null チェック</strong> — <code>IsEditable=True</code> のとき、ユーザーがリスト外の値を入力すると <code>SelectedItem</code> は <code>null</code> になります。フリー入力を許可する場合は <code>SelectedItem</code> と <code>Text</code> の両方を参照して処理を実装してください。</li>
+      <li><strong><code>SelectedItem</code> を表示するより、<code>SelectedValuePath</code> と <code>SelectedValue</code> をバインドする</strong> — 項目のクラスが <code>ToString</code> を上書きしていなければ、クラス名が出ます。</li>
+      <li><strong>編集可能な ComboBox では <code>Text</code> だけでなく <code>SelectedIndex</code> も確かめる</strong> — 何にも合わない文字では選択がありません。</li>
+      <li><strong><code>IsSynchronizedWithCurrentItem</code> は一覧を連動させたいときだけ設定する</strong> — 最初の項目を選んだ状態でも始まります。</li>
+      <li><strong>長い一覧には <code>MaxDropDownHeight</code> を設定する</strong> — 既定値は画面の高さの 3 分の 1 です。</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ComboBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ComboBoxDemoScene</code></a> を使い、デモアプリと同じ形の項目（各曜日の <code>Name</code> と <code>Value</code>、<code>ToString</code> の上書きなし）で試しました。文字は編集欄へ 1 文字ずつ送り、キーは WPF の入力管理（InputManager）を通して送り、編集欄のクリックは実際のマウスで行いました。高さは、計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="ComboBox の計測結果の表。既定では編集不可・読み取り専用でなく、StaysOpenOnEdit と ShouldPreserveUserEnteredPrefix は False、文字検索は有効、MaxDropDownHeight 480 は画面の 3 分の 1、IsDropDownOpen は TwoWay なので Enter で閉じるとバインドしたチェックボックスも外れ、SelectedItem はクラス名を出し、tue の入力は Tuesday、入力を保つ設定では tuesday に補完され、xyz では選択がなく、IsReadOnly は入力を止めるが Down キーは止めず、一覧の高さは 141.72、デモアプリの値では 100、編集欄の実際のクリックは StaysOpenOnEdit でなければ一覧を閉じ、同期した ComboBox は 0 で始まって一緒に動く" width="975" height="530" loading="lazy">
+      <figcaption>選択、編集、ドロップダウン、同期。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>関連コントロール</h2>
+    <h2>関連コントロール・記事</h2>
     <ul>
-      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — スクロール可能なリストから単一または複数選択する場合に使用します。</li>
-      <li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — 自由テキスト入力のみが必要な場合。</li>
-      <li><a href="/ja/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — 選択肢が少なく（3〜5個程度）、常に表示しておきたい場合に適しています。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — ドロップダウンではなく、すべての項目を同時に表示します。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — すべて見えている、少数の選択肢です。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/popup.html">Popup</a> — ドロップダウンの一覧を入れている要素です。</li>
+      <li><a href="/ja/articles/wpf-combobox-itemssource-patterns/">WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法</a> — ComboBox への項目の与え方と、選択の読み取り方を扱います。</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ComboBoxUsage" target="_blank" rel="noopener noreferrer">GitHub で ComboBox のソースコードを見る &rarr;</a></p>
   </section>
 

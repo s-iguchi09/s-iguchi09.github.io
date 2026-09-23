@@ -90,6 +90,7 @@ internal static class Program
         new TextBlockDemoScene(),
         new ToolTipDemoScene(),
         new TabControlDemoScene(),
+        new ComboBoxDemoScene(),
     ];
 
     [STAThread]
