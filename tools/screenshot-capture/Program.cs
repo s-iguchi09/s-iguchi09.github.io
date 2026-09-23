@@ -80,6 +80,7 @@ internal static class Program
         new PopupDemoScene(),
         new ExpanderDemoScene(),
         new GroupBoxDemoScene(),
+        new StackPanelDemoScene(),
     ];
 
     [STAThread]
