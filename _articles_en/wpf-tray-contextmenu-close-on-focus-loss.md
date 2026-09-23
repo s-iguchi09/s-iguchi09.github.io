@@ -4,7 +4,7 @@ title: "Fixing a WPF Tray ContextMenu That Does Not Close on Focus Loss"
 seo_title: "WPF Tray ContextMenu Not Closing on Focus Loss"
 date: 2026-06-07
 category: WPF
-excerpt: "This article explains how TreePaste resolved a tray ContextMenu that stayed visible until an item was clicked by combining StaysOpen=false with SetForegroundWindow()."
+excerpt: "How TreePaste fixed a tray ContextMenu that stayed open until an item was clicked, by combining StaysOpen=false with SetForegroundWindow() before showing it."
 ---
 
 ## Overview

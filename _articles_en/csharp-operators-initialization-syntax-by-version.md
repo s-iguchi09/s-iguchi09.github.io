@@ -4,7 +4,7 @@ title: "C# Operators and Initialization Syntax by Version"
 date: 2026-06-22
 category: C#
 image: /images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg
-excerpt: "A version-by-version guide to C# operators and initialization syntax, built from actual compilation against net48. Shows which constructs need only LangVersion, which need BCL types, and how to supply the missing ones."
+excerpt: "C# operators and initialization syntax by version, compiled against net48: which need only LangVersion, which need BCL types, and how to supply them."
 ---
 
 ## Overview

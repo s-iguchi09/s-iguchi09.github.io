@@ -3,7 +3,7 @@ layout: article-en
 title: "Why WPF Label Hides Underscores and How to Fix It"
 date: 2026-06-09
 category: WPF
-excerpt: "When a string containing an underscore (_) is set on a WPF Label, the character disappears from the screen. This article explains the underlying ContentPresenter.RecognizesAccessKey behavior, identifies which controls are affected, and covers four workarounds with measured results."
+excerpt: "Why a WPF Label hides underscores: ContentPresenter.RecognizesAccessKey, which other controls are affected, and four measured workarounds with how to choose."
 image: /images/articles/wpf-label-underscore-issue/label-underscore-rendering.png
 ---
 
