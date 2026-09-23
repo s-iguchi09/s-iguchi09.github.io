@@ -145,11 +145,18 @@ internal static class ComboBoxAndDatePickerMeasurements
         var date = new DateTime(2026, 4, 15);
         var rows = new List<IReadOnlyList<string>>();
 
-        foreach (string? language in new string?[] { null, "en-US", "de-DE" })
+        // 親要素だけに指定した場合（継承した Language）も測る。
+        // DatePicker 自身に指定が無くても、値の出どころが Default でなくなるため。
+        var settings = new (string? Own, string? Parent)[]
+        {
+            (null, null), ("en-US", null), ("de-DE", null), (null, "de-DE"),
+        };
+
+        foreach ((string? own, string? parent) in settings)
         {
             foreach (string currentCulture in new[] { "ja-JP", "en-US" })
             {
-                rows.Add(await MeasureDateCultureAsync(date, language, currentCulture));
+                rows.Add(await MeasureDateCultureAsync(date, own, parent, currentCulture));
             }
         }
 
@@ -157,7 +164,7 @@ internal static class ComboBoxAndDatePickerMeasurements
     }
 
     private static async Task<IReadOnlyList<string>> MeasureDateCultureAsync(
-        DateTime date, string? language, string currentCulture)
+        DateTime date, string? language, string? parentLanguage, string currentCulture)
     {
         CultureInfo savedCulture = CultureInfo.CurrentCulture;
         CultureInfo savedUiCulture = CultureInfo.CurrentUICulture;
@@ -176,12 +183,23 @@ internal static class ComboBoxAndDatePickerMeasurements
             picker.SelectedDate = date;
 
             var host = new Grid();
+            if (parentLanguage is not null)
+            {
+                host.Language = XmlLanguage.GetLanguage(parentLanguage);
+            }
             host.Children.Add(picker);
+
+            string label = (language, parentLanguage) switch
+            {
+                (not null, _) => $"xml:lang=\"{language}\"",
+                (null, not null) => $"parent: xml:lang=\"{parentLanguage}\"",
+                _ => "(not set)",
+            };
 
             List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
             [
                 new WpfProbe.Case(
-                    language is null ? "(not set)" : $"xml:lang=\"{language}\"",
+                    label,
                     host,
                     _ =>
                     [

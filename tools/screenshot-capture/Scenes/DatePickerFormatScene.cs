@@ -8,9 +8,11 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class DatePickerFormatScene : IScene
 {
-    // Language（xml:lang）を明示しない既定表示はスレッドの CurrentCulture に従うため、
+    // Language（xml:lang）の値の出どころが Default（自身にも親要素にも指定が無い）の既定表示は
+    // スレッドの CurrentCulture に従うため、
     // 撮影マシン（日本語環境）では 2026/04/15 になり、記事が示す yyyy/MM/dd との差が出ない。
-    // 明示した Language は CurrentCulture より優先される（datepicker-culture-matrix.svg で実測）。
+    // 自身への指定や親要素からの継承がある Language は CurrentCulture より優先される
+    // （datepicker-culture-matrix.svg で実測）。
     // そこで両方に xml:lang="en-US" を与え、ロケールが異なる環境でも表示が固定されることを示す。
     private const string DefaultXaml =
         """<DatePicker xml:lang="en-US" SelectedDate="2026-04-15" Width="190" />""";
@@ -36,7 +38,7 @@ internal sealed class DatePickerFormatScene : IScene
         "SelectedDateFormat を設定しない場合の実効値が Short であり、それが依存関係プロパティのメタデータ既定値（Long）ではなく既定スタイル由来であること",
         "それぞれの設定で実際に表示される文字列",
         "テンプレート内のテキスト部分を書き換えると任意の書式にできること",
-        "既定表示のカルチャが要素の Language（xml:lang）とスレッドの CurrentCulture のどちらに従うか（両者を独立に変えて表示文字列を測る）",
+        "既定表示のカルチャが要素の Language（xml:lang）とスレッドの CurrentCulture のどちらに従うか（自身への指定・親要素からの継承・CurrentCulture を独立に変えて表示文字列を測る）",
     ];
 
     public string Slug => "wpf-datepicker-custom-format";

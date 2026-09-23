@@ -10,7 +10,7 @@ verifies:
   - "SelectedDateFormat を設定しない場合の実効値が Short であり、それが依存関係プロパティのメタデータ既定値（Long）ではなく既定スタイル由来であること"
   - "それぞれの設定で実際に表示される文字列"
   - "テンプレート内のテキスト部分を書き換えると任意の書式にできること"
-  - "既定表示のカルチャが要素の Language（xml:lang）とスレッドの CurrentCulture のどちらに従うか（両者を独立に変えて表示文字列を測る）"
+  - "既定表示のカルチャが要素の Language（xml:lang）とスレッドの CurrentCulture のどちらに従うか（自身への指定・親要素からの継承・CurrentCulture を独立に変えて表示文字列を測る）"
 images:
   - "images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png"
   - "images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg"
