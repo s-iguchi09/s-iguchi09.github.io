@@ -5,15 +5,18 @@ using System.Windows.Markup;
 namespace ScreenshotCapture;
 
 /// <summary>
-/// 1 つの記事（slug）に対応するキャプチャ手順。
+/// 1 つのページ（記事、またはコントロール別のデモページ）に対応するキャプチャ手順。
 /// </summary>
 internal interface IScene
 {
-    /// <summary>対応する記事の slug。出力先 <c>images/articles/&lt;slug&gt;/</c> になる。</summary>
+    /// <summary>
+    /// 対応するページの slug。検証記録 <c>docs/verification/&lt;slug&gt;.yml</c> の名前と、
+    /// 既定の <see cref="ImageDirectory"/> に使う。
+    /// </summary>
     string Slug { get; }
 
     /// <summary>
-    /// 図の出力先。リポジトリルートからの相対パス。
+    /// 図の出力先。リポジトリルートからの相対パス。既定は <c>images/articles/&lt;slug&gt;/</c>。
     /// 記事以外のページ（コントロール別のデモページなど）を検証するシーンは上書きする。
     /// </summary>
     string ImageDirectory => Path.Combine("images", "articles", Slug);

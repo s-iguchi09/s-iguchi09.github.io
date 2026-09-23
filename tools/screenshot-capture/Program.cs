@@ -7,7 +7,7 @@ namespace ScreenshotCapture;
 
 /// <summary>
 /// 記事に載せるスクリーンショットを、実際に WPF アプリを起動して取得するツール。
-/// 出力先はリポジトリ内の <c>images/articles/&lt;slug&gt;/</c> である。
+/// 出力先は各シーンの <see cref="IScene.ImageDirectory"/>（既定は <c>images/articles/&lt;slug&gt;/</c>）である。
 ///
 /// 使い方:
 ///   dotnet run --project tools/screenshot-capture              … 全シーンを取得する

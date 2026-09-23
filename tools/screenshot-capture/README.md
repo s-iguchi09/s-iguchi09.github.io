@@ -3,7 +3,8 @@
 技術記事に載せるスクリーンショットを、実際に WPF アプリケーションを起動して取得するツール。
 モックアップではなく本物のウィンドウをキャプチャすることで、記事が実際の動作確認に基づくことを示す。
 
-出力先はリポジトリ内の `images/articles/<slug>/` である。
+出力先は、シーンの `ImageDirectory` が示すリポジトリ内のディレクトリである。既定は `images/articles/<slug>/` で、
+コントロール別デモページを検証するシーンは `images/wpf-standard-control-demo/verification/<control>/` に出力する。
 
 ## 実行環境
 
@@ -86,7 +87,7 @@ comm -23 \
      ウィンドウを作らないため `ShootAsync` の手順は当てはまらない。ディスプレイの電源状態にも影響されない。
    - 実行結果で記事の主張を確かめている場合は、`Verifies` にその内容を書く。
 2. `Program.cs` の `AllScenes` に登録する。
-3. 実行して `images/articles/<slug>/` に出力されることを確認する。
+3. 実行して、`ImageDirectory`（既定は `images/articles/<slug>/`）に出力されることを確認する。
 
 記事に載せる XAML と図の内容が食い違わないよう、UI は可能な範囲で `SceneContext.LoadXaml<T>` に
 記事と同じ XAML 文字列を渡して組み立てる。既定の名前空間は補われるため、`xmlns` は書かなくてよい。

@@ -15,8 +15,9 @@ verifies:
   - "つまみをドラッグしたときの IsSnapToTickEnabled・TickFrequency・Ticks による値の丸めと、プログラムから設定した Value が丸められるか"
   - "TickFrequency が範囲を割り切れない場合に描かれる目盛りの数と位置、Ticks の目盛りが IsDirectionReversed で反転するか"
   - "TickPlacement による高さの変化と、IsSelectionRangeEnabled による選択範囲の表示、選択範囲が Value を制限しないこと"
-  - "AutoToolTipPlacement を設定したときにドラッグ中に表示される文字列と AutoToolTipPrecision による丸め、書式を指定するプロパティの有無"
-  - "Delay / Interval がトラックの繰り返しボタンに渡されることと、トラックのクリックで LargeChange だけ動くこと"
+  - "AutoToolTipPlacement を設定したときにドラッグ中に表示される文字列と AutoToolTipPrecision による丸め、書式を指定するプロパティの有無、桁区切りと小数点がスレッドのカルチャ（en-US / de-DE）に従うこと"
+  - "Delay / Interval の既定値と Windows のキーボードの設定（SystemParameters.KeyboardDelay / KeyboardSpeed）の値、Delay の既定値が (KeyboardDelay + 1) x 250 と一致すること"
+  - "Delay / Interval がトラックの繰り返しボタンに渡されることと、トラックのクリック（繰り返しボタンの UI オートメーションの Invoke で、ボタンのクリック処理を実行）で LargeChange だけ動くこと"
 images:
   - "images/wpf-standard-control-demo/verification/slider/slider-defaults.svg"
   - "images/wpf-standard-control-demo/verification/slider/slider-range.svg"

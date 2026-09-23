@@ -37,8 +37,9 @@ internal sealed class SliderDemoScene : IScene
         "つまみをドラッグしたときの IsSnapToTickEnabled・TickFrequency・Ticks による値の丸めと、プログラムから設定した Value が丸められるか",
         "TickFrequency が範囲を割り切れない場合に描かれる目盛りの数と位置、Ticks の目盛りが IsDirectionReversed で反転するか",
         "TickPlacement による高さの変化と、IsSelectionRangeEnabled による選択範囲の表示、選択範囲が Value を制限しないこと",
-        "AutoToolTipPlacement を設定したときにドラッグ中に表示される文字列と AutoToolTipPrecision による丸め、書式を指定するプロパティの有無",
-        "Delay / Interval がトラックの繰り返しボタンに渡されることと、トラックのクリックで LargeChange だけ動くこと",
+        "AutoToolTipPlacement を設定したときにドラッグ中に表示される文字列と AutoToolTipPrecision による丸め、書式を指定するプロパティの有無、桁区切りと小数点がスレッドのカルチャ（en-US / de-DE）に従うこと",
+        "Delay / Interval の既定値と Windows のキーボードの設定（SystemParameters.KeyboardDelay / KeyboardSpeed）の値、Delay の既定値が (KeyboardDelay + 1) x 250 と一致すること",
+        "Delay / Interval がトラックの繰り返しボタンに渡されることと、トラックのクリック（繰り返しボタンの UI オートメーションの Invoke で、ボタンのクリック処理を実行）で LargeChange だけ動くこと",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -164,6 +165,11 @@ internal sealed class SliderDemoScene : IScene
                 $"{slider.IsSelectionRangeEnabled} / {D(slider.SelectionStart)} / {D(slider.SelectionEnd)}"],
             ["AutoToolTipPlacement / AutoToolTipPrecision", $"{slider.AutoToolTipPlacement} / {slider.AutoToolTipPrecision}"],
             ["Delay / Interval (ms)", $"{slider.Delay} / {slider.Interval}"],
+            // 既定値が Windows のキーボードの設定から来ているかを、設定値と並べて確かめる。
+            ["SystemParameters.KeyboardDelay / KeyboardSpeed on this machine",
+                $"{SystemParameters.KeyboardDelay} / {SystemParameters.KeyboardSpeed}"],
+            ["(KeyboardDelay + 1) x 250 / Slider.Delay default",
+                $"{(SystemParameters.KeyboardDelay + 1) * 250} / {slider.Delay}"],
             ["Value: BindsTwoWayByDefault / DefaultUpdateSourceTrigger",
                 $"{metadata.BindsTwoWayByDefault} / {metadata.DefaultUpdateSourceTrigger}"],
             // デモアプリの Value 欄は、TextBox.Text 側のバインドに UpdateSourceTrigger を指定している。比較のため並べる。
@@ -505,6 +511,31 @@ internal sealed class SliderDemoScene : IScene
                 TrackOf(slider).Thumb.RaiseEvent(new DragCompletedEventArgs(0, 0, false));
                 await Task.CompletedTask;
             });
+        }
+
+        // 桁区切りと小数点がスレッドのカルチャに従うかを、カルチャを変えて確かめる。
+        foreach (string culture in new[] { "en-US", "de-DE" })
+        {
+            System.Globalization.CultureInfo saved = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(culture);
+                Slider slider = NewSlider(2000);
+                slider.AutoToolTipPlacement = AutoToolTipPlacement.BottomRight;
+                slider.AutoToolTipPrecision = 1;
+                await ShowAsync(slider, async () =>
+                {
+                    DragThumb(slider, 1234.56);
+                    var toolTip = (ToolTip?)toolTipField.GetValue(slider);
+                    rows.Add([$"CurrentCulture {culture}, Precision=1, Value 1234.56", $"\"{toolTip?.Content}\""]);
+                    TrackOf(slider).Thumb.RaiseEvent(new DragCompletedEventArgs(0, 0, false));
+                    await Task.CompletedTask;
+                });
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentCulture = saved;
+            }
         }
 
         return rows;
