@@ -1,58 +1,133 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"><title>TabControl | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8">
+  <title>TabControl | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の TabControl は複数のページをタブで切り替えるコンテナコントロールです。TabItem を子要素として持ち、選択されたタブのコンテンツのみが表示されます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+
+  <meta name="description" content="WPF の TabControl を .NET 10 で実測して解説。TabStripPlacement ごとのタブの位置、ContentStringFormat の適用のされ方、不正な選択、タブを取り除いたときの選択、キーボードでの操作を確かめます。">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-ja.html %}
+
 <main>
+
   <section class="hero">
-    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TabControl</p>
-    <h1>TabControl <span class="category-badge">Layout</span></h1>
-    <p>TabControl は複数のページをタブで切り替えるコンテナコントロールです。TabItem を子要素として持ち、選択されたタブのコンテンツのみが表示されます。タブの位置（上・下・左・右）、動的なタブコレクションのバインドをサポートします。</p>
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TabControl</p>
+    <h1>TabControl <span class="category-badge">Selectors</span></h1>
+    <p>TabControl は、1 度に 1 つのページを表示し、タブの並びでページを切り替えるコントロールです。各ページは TabItem です。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>TabControl</strong> は <code>Selector</code> を継承したコントロールで、複数の <code>TabItem</code> をタブとして管理し、選択されたタブのコンテンツを表示します。ウィザードの各ステップ、設定ダイアログのカテゴリページ、メインコンテンツエリアなどに使用されます。</p>
-  <p><code>TabStripPlacement</code> プロパティでタブストリップ（タブヘッダーの一覧）の配置を上・下・左・右に変更できます。デフォルトは <code>Top</code>（上部）です。</p>
-  <p>静的なタブには XAML で TabItem を直接追加します。動的なタブコレクションには <code>ItemsSource</code> を使用し、<code>HeaderTemplate</code> で各タブのヘッダー表示、<code>ContentTemplate</code> でコンテンツ表示を定義します。</p>
-  <p>選択されたタブの追跡は <code>SelectedIndex</code> または <code>SelectedItem</code> で行います。ViewModel とバインドすることで、プログラムからタブを切り替えたり、選択変化に応じた処理を実行できます。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/tabcontrol.png" alt="tabcontrol demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>TabControl</strong> は <code>Selector</code> を継承しています。作ったばかりの TabControl の <code>SelectedIndex</code> は表示されるまで -1 で、表示されると最初のタブが選ばれました。タブは <code>Items</code> の <code>TabItem</code> でも <code>ItemsSource</code> からでも作れますが、両方は使えません。<code>Items</code> に TabItem があるときに <code>ItemsSource</code> を設定しても、<code>ItemsSource</code> があるときに <code>Items</code> に追加しても、<code>InvalidOperationException</code> になりました。</p>
+    <p>不正な選択は、拒否されるのではなく無視されます。2 つのタブで <code>SelectedIndex = 5</code> としても例外はなく、0 のままでした。一覧にない TabItem を <code>SelectedItem</code> に設定しても、2 つ目のタブが選ばれたままでした。<code>SelectedIndex = -1</code> ではどのページも表示されませんでした。選択中のタブを取り除くと次のタブが選ばれ、3 つのうち 2 つ目を取り除くと、3 つ目（インデックス 1）が選ばれました。</p>
+    <p>キーボードでは、フォーカスと一緒に選択も移ります。1 つ目のタブの見出しにフォーカスがある状態で右矢印キーを押すと、2 つ目のタブが選ばれ、その見出しにフォーカスが移りました。ページの内容がいつ作られ、どう保たれるかは、TabItem のページで実測しています。</p>
+    <p>デモアプリには、<code>TabStripPlacement</code>、<code>ContentStringFormat</code>、<code>SelectedContent</code> と <code>SelectedContentStringFormat</code> の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/tabcontrol.png" alt="tabcontrol demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>TabStripPlacement</code></td><td><code>Top / Bottom / Left / Right</code></td><td>タブストリップの配置位置を設定します。Outlook 風のサイドナビゲーションや縦に多くのカテゴリを並べるメニューには Left を使い、標準的な設定ダイアログには Top（デフォルト）を使います。Left/Right を設定するとタブストリップが垂直方向になりヘッダーテキストが横書きのまま縦に並びます。Left/Right では多くのタブがある場合に幅が足りずヘッダーが切り詰められることがあるため、ItemContainerStyle で MinWidth を設定して対処します。</td></tr><tr><td><code>SelectedIndex / SelectedItem</code></td><td><code>int / object</code></td><td>選択されているタブのインデックスとアイテムを取得・設定します。ViewModel からタブを切り替えたい場合（ウィザードのステップ制御、ナビゲーションなど）に TwoWay バインドを使います。SelectedIndex=-1 は何も選択されていない状態を意味し、コンテンツ領域が空になります。範囲外のインデックスを設定してもサイレントに無視され、ItemsSource にないオブジェクトを SelectedItem に設定しても同様に無視されます。</td></tr><tr><td><code>ItemsSource</code></td><td><code>IEnumerable</code></td><td>動的なタブコレクションをバインドします。ViewModel のコレクションに基づいてタブを動的に生成する場合に使い、各タブの見た目は HeaderTemplate でヘッダー部分を、ContentTemplate でコンテンツ部分を定義します。ItemsSource を使うと各コレクション要素が TabItem として描画されます。落とし穴として、ItemsSource で動的バインドを使う場合は XAML で TabItem を静的に直接追加する方法と混在させることができず、どちらか一方の方法に統一する必要があります。</td></tr><tr><td><code>Header / IsEnabled (TabItem)</code></td><td><code>object / bool</code></td><td>TabItem のヘッダーテキスト（またはコンテンツ）と有効/無効状態を設定します。権限制御やウィザードフローで特定のタブへのアクセスを制限したい場合に IsEnabled=False を使います。IsEnabled=False にするとタブヘッダーがグレーアウトしてユーザーはクリックできなくなります。落とし穴として、IsEnabled=False でもプログラムから SelectedIndex を変更すれば無効タブのコンテンツが表示されてしまうため、表示制御はコンテンツ側でも行う必要があります。</td></tr></tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>TabStripPlacement</code></td>
+          <td><code>Top / Bottom / Left / Right</code></td>
+          <td>タブを置く辺です。既定値は <code>Top</code> ですが、デモアプリはコンボボックスの <code>Dock</code> の最初の値の <code>Left</code> で始まります。300 &times; 150 の TabControl では、<code>Top</code> と <code>Bottom</code> で 2 つのタブが横に並び、その下か上に幅 294 の内容の領域がありました。<code>Left</code> と <code>Right</code> ではタブが縦に積まれ、それぞれ幅約 37、高さ約 20 で、文字は横書きのままでした。内容の領域の幅は 255.34 に狭まりました。</td>
+        </tr>
+        <tr>
+          <td><code>ContentStringFormat</code></td>
+          <td><code>string</code></td>
+          <td>ページの内容の書式です。デモアプリと同じ <code>"Format: {0}."</code> では、Tab1 のページは「Format: Item1.」と表示されました。TabItem 自身の <code>ContentStringFormat</code> は、そのタブを最初から選んでいれば使われ、<code>"Own {0}"</code> の Tab2 は「Own Item2」と表示されました。ところが Tab1 から切り替えると適用されず、<code>SelectedContentStringFormat</code> はすでに <code>"Own {0}"</code> なのに、ページは「Format: Item2.」と表示されました。</td>
+        </tr>
+        <tr>
+          <td><code>SelectedContent / SelectedContentStringFormat</code></td>
+          <td><code>object / string (ReadOnly)</code></td>
+          <td>選択中のページの内容と書式で、デモアプリは両方を表示しています。最初のタブを選んでいるときは、書式を適用する前の <code>Item1</code> と <code>"Format: {0}."</code> でした。どのタブも選んでいないとき、<code>SelectedContent</code> は <code>null</code> でした。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;TabControl TabStripPlacement="Top"
-            SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"&gt;
-  &lt;TabItem Header="基本情報"&gt;
-    &lt;Grid Margin="8"&gt;
-      &lt;TextBox Text="{Binding Name}" /&gt;
-    &lt;/Grid&gt;
-  &lt;/TabItem&gt;
-  &lt;TabItem Header="連絡先"&gt;
-    &lt;Grid Margin="8"&gt;
-      &lt;TextBox Text="{Binding Email}" /&gt;
-    &lt;/Grid&gt;
-  &lt;/TabItem&gt;
-  &lt;TabItem Header="設定" IsEnabled="{Binding IsAdmin}"&gt;
-    &lt;StackPanel Margin="8"&gt;
-      &lt;CheckBox Content="詳細ログ" IsChecked="{Binding EnableLog}" /&gt;
-    &lt;/StackPanel&gt;
-  &lt;/TabItem&gt;
-&lt;/TabControl&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>設定ダイアログ</strong> — 「一般」「ネットワーク」「セキュリティ」などのカテゴリをタブで分けた設定画面を作成します。</li><li><strong>データ入力ウィザード</strong> — 複数ステップのデータ入力フォームをタブで管理し、SelectedIndex でステップを制御します。</li><li><strong>マルチドキュメントインターフェイス（MDI）</strong> — 複数の開いたファイルをタブで管理する IDE 風インターフェイスを実装します。</li><li><strong>ダッシュボードのビュー切り替え</strong> — 「サマリー」「詳細」「グラフ」のビューをタブで切り替えるダッシュボードに使用します。</li><li><strong>コンテキスト依存タブ</strong> — 選択されたアイテムの種類に応じて異なるタブセットを表示するコンテキスト依存 UI を実装します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>重いタブコンテンツは生成タイミングを意識する</strong> — XAML に TabItem を直書きした場合は、各タブ内の要素インスタンスがロード時に作成されることが多く、未選択タブの分も初期コストになります。一方、ItemsSource と ContentTemplate / DataTemplate を使う構成では、選択時にコンテンツを生成する設計にしやすくなります。重いコンテンツでは、SelectedIndex 変化に合わせた遅延ロードやテンプレートベースの構成を検討してください。</li><li><strong>ContentStringFormat で表示フォーマットを指定</strong> — TabControl の ContentStringFormat プロパティでコンテンツの表示フォーマットを指定できます。</li><li><strong>タブのリサイズ</strong> — TabItem の幅は自動で均等にはなりません。固定幅が必要な場合は ItemContainerStyle で Width を設定します。</li><li><strong>動的タブは ItemsSource を使う</strong> — タブ数が動的に変化する場合は XAML の TabItem 直書きではなく ItemsSource バインドで管理します。</li><li><strong>Ctrl+Tab によるキーボードナビゲーション</strong> — デフォルトで Ctrl+Tab を押すとタブが切り替わります。特定の画面でこの挙動を抑制したい場合は KeyDown ハンドラーで e.Handled=true を設定します。</li><li><strong>カスタムタブヘッダー</strong> — 閉じるボタンや通知バッジを付けたタブヘッダーを実装するには HeaderTemplate に任意の DataTemplate を定義します。HeaderTemplate 内の Button には TabControl のコマンドをバインドするか、RelativeSource で親コントロールのコマンドを参照します。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/tabitem.html">TabItem</a> — TabControl の個々のタブページ。</li><li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — タブよりアコーディオン形式で表示したい場合。</li><li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — 左側ナビゲーション形式のタブに ListBox を使うことがあります。</li></ul></section>
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>TabControlUsageControl.xaml</code>）の <code>SelectedContent</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
+    <pre><code class="language-xml">&lt;TabControl x:Name="SelectedContentTabControl" ContentStringFormat="Format: {0}."&gt;
+  &lt;TabItem Content="Item1" Header="Tab1" /&gt;
+  &lt;TabItem Content="Item2" Header="Tab2" /&gt;
+&lt;/TabControl&gt;
+
+&lt;TextBlock x:Name="SelectedContentTextBlock"
+           Text="{Binding SelectedContent, ElementName=SelectedContentTabControl}" /&gt;
+&lt;TextBlock x:Name="SelectedContentStringFormatTextBlock"
+           Text="{Binding SelectedContentStringFormat, ElementName=SelectedContentTabControl}" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>設定のダイアログ</strong> — 設定のまとまりごとに 1 ページにします。</li>
+      <li><strong>文書</strong> — 開いている文書ごとに 1 つのタブを、<code>ItemsSource</code> でコレクションから作ります。</li>
+      <li><strong>横のナビゲーション</strong> — 分類が多いときは、タブを左に並べます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>インデックスは設定する前に確かめる</strong> — 範囲外のインデックスはエラーにならず無視されます。</li>
+      <li><strong><code>Items</code> と <code>ItemsSource</code> はどちらか一方にする</strong> — 混ぜると例外になります。</li>
+      <li><strong><code>ContentStringFormat</code> は TabItem ごとに変えず、TabControl に 1 つ設定するかテンプレートを使う</strong> — タブ自身の書式は、切り替えたときに適用されませんでした。</li>
+      <li><strong>デモアプリの XAML を写すなら <code>TabStripPlacement</code> を明示する</strong> — コンボボックスは <code>Left</code> で始まります。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TabControlDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TabControlDemoScene</code></a> を使い、デモアプリと同じタブ（<code>Tab1</code> / <code>Item1</code>）で試しました。表示された文字はテンプレートの <code>PART_SelectedContentHost</code> から読み、矢印キーはキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。大きさは、計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg" alt="300 × 150 の TabControl のタブの見出しと内容の位置の表。Top と Bottom では 2 つの見出しが横に並び、その下か上に幅 294 の内容の領域があり、Left と Right では見出しが片側に縦に積まれ、内容の領域の幅は 255.34" width="945" height="200" loading="lazy">
+      <figcaption><code>TabStripPlacement</code> ごとのタブの見出しと内容の領域。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="TabControl の計測結果の表。Selector を継承し既定値は Top だがデモアプリは Left で始まり、表示すると最初のタブが選ばれ、デモアプリの書式で Format: Item1. と表示され、タブ自身の書式は最初から選んだときは使われるが切り替えたときは使われず、範囲外のインデックスと一覧にない SelectedItem は無視され、-1 では何も表示されず、選択中のタブを取り除くと次のタブが選ばれ、Items と ItemsSource を混ぜると例外になり、右矢印キーで次のタブが選ばれる" width="1077" height="410" loading="lazy">
+      <figcaption>書式、選択、項目、キーボード。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/tabitem.html">TabItem</a> — 1 つのタブとそのページで、ページの内容の作られ方と使い回しも扱います。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — すべてを同時に開ける区切りです。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — ページではなく一覧のための、もう 1 つの Selector です。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabControlUsage" target="_blank" rel="noopener noreferrer">GitHub で TabControl のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
+
 {% include footer-ja.html %}
+
 </body>
 </html>

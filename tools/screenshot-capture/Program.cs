@@ -89,6 +89,7 @@ internal static class Program
         new LabelDemoScene(),
         new TextBlockDemoScene(),
         new ToolTipDemoScene(),
+        new TabControlDemoScene(),
     ];
 
     [STAThread]
