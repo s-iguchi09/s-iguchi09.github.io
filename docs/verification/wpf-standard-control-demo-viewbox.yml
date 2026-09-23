@@ -1,0 +1,16 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-viewbox
+slug: "wpf-standard-control-demo-viewbox"
+scene: "ViewboxDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Viewbox の基底クラスと Stretch / StretchDirection の既定値、デモアプリのコンボボックスの初期値（先頭の項目）"
+  - "Viewbox が子を測るときに渡す大きさと、子の本来の大きさ"
+  - "Stretch 4 種類と StretchDirection 3 種類の組み合わせごとの、横長の領域（300 x 100）と小さい領域（40 x 20）での拡大率"
+  - "UniformToFill で領域からはみ出した部分が切れるか（ヒットテスト）"
+  - "大きさを内容に合わせる親（横の StackPanel、高さ 100）の中での拡大率"
+images:
+  - "images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg"
+  - "images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg"

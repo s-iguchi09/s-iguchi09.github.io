@@ -1,54 +1,133 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"><title>Viewbox | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8">
+  <title>Viewbox | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の Viewbox はコンテンツをスケーリングして表示するデコレーターコンテナです。固定サイズのコンテンツ（アイコン、図形、UI パーツ）を任意のサイズに拡大縮小して表示します。ベクターグラフィックスのサイズフリーな表示に使われます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+
+  <meta name="description" content="WPF の Viewbox を .NET 10 で実測して解説。Stretch と StretchDirection のすべての組み合わせの拡大率を横長と小さい領域で比べ、UniformToFill で切れる部分、デモアプリの初期値の意味を確かめます。">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-ja.html %}
+
 <main>
+
   <section class="hero">
-    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Viewbox</p>
-    <h1>Viewbox <span class="category-badge">Graphics</span></h1>
-    <p>Viewbox はコンテンツをスケーリングして表示するデコレーターコンテナです。固定サイズのコンテンツ（アイコン、図形、UI パーツ）を任意のサイズに拡大縮小して表示します。ベクターグラフィックスのサイズフリーな表示に使われます。</p>
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Viewbox</p>
+    <h1>Viewbox <span class="category-badge">Layout</span></h1>
+    <p>Viewbox は、1 つの子を子自身の大きさでレイアウトしてから、Viewbox の持つ領域に合わせて拡大縮小します。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Viewbox</strong> は <code>Decorator</code> を継承したコンテナで、子要素を Stretch と StretchDirection の設定に従ってスケーリングして表示します。固定サイズで設計した UI コンポーネントやアイコンを、任意のサイズのコンテナに収めて表示するために使用します。</p>
-  <p><code>Stretch</code> プロパティは <code>Image</code> と同じ 4 つのモードを持ちます。<code>Uniform</code>（デフォルト）はアスペクト比を保ちながら収まるようスケール、<code>Fill</code> はアスペクト比を無視して引き伸ばし、<code>UniformToFill</code> はアスペクト比を保ちながらコンテナを完全に埋めます。</p>
-  <p>Viewbox は子要素を無限大のサイズで測定してから、コンテナのサイズに合わせてスケールを計算します。これにより、Path や Polygon などのベクター図形をすべてのスケールで滑らかに表示できます（ラスター画像のようにぼけません）。</p>
-  <p>Canvas に描かれた複雑な図形や、固定 Width/Height で設計した UI パーツを Viewbox でラップすることで、どんなサイズの親コンテナにも適切にスケーリングできます。レスポンシブでないレガシー UI コンポーネントを再利用する際にも便利です。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/viewbox.png" alt="viewbox demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>Viewbox</strong> は <code>Decorator</code> を継承しているので、子は 1 つ（<code>Child</code>）です。子は無限の大きさ（Infinity &times; Infinity）で測られるので、自分の本来の大きさになります。デモアプリのラベルは 72.34 &times; 57.96 でした。Viewbox はこの大きさを拡大縮小します。子自身の <code>ActualWidth</code> と <code>ActualHeight</code> は本来の大きさのままで、拡大縮小されるのは描画だけです。</p>
+    <p>既定値は <code>Stretch="Uniform"</code> と <code>StretchDirection="Both"</code> です。デモアプリはここから始まりません。コンボボックスが列挙型の最初の値の <code>None</code> と <code>UpOnly</code> で始まるので、別の値を選ぶまでラベルは拡大縮小されません。</p>
+    <p>Viewbox が拡大縮小するには、大きさが限られている必要があります。幅に制限のない、高さ 100 の横の StackPanel の中では、<code>Uniform</code> の Viewbox はラベルを高さだけに合わせて 1.73 倍にしました。</p>
+    <p>デモアプリには <code>Stretch</code> と <code>StretchDirection</code> の 1 つの欄があります。欄の下の「Show Code」リンクで、その XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/viewbox.png" alt="viewbox demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Stretch</code></td><td><code>None / Fill / Uniform / UniformToFill</code></td><td>コンテンツのスケーリング方法を設定します。<code>Uniform</code>（デフォルト）はアスペクト比を保ちながら収まるようスケールします。<code>Fill</code> はアスペクト比を無視してコンテナいっぱいに引き伸ばします（フルスクリーンオーバーレイなど歪みが許容される場面向き）。<code>UniformToFill</code> はアスペクト比を保ちコンテナを完全に埋めますが、はみ出した部分はクリップされます。はまりやすいポイント：<code>UniformToFill</code> でクリップされた場合でも子要素はクリップ前の完全なサイズでレイアウト計算を行うため、複雑な子レイアウトでは無駄な CPU を消費することがあります。</td></tr><tr><td><code>StretchDirection</code></td><td><code>UpOnly / DownOnly / Both</code></td><td>スケーリングの方向を制限します。<code>UpOnly</code> はコンテナが縮小しても子を縮小せず、コンテナが大きい時だけ拡大します（アイコンを縮小させたくない場合）。<code>DownOnly</code> はコンテナが拡大しても子を拡大せず、コンテナが小さい時だけ縮小します（小さなベースコンテンツを拡大して表示したい場合）。<code>Both</code>（デフォルト）は両方向に適用します。はまりやすいポイント：<code>StretchDirection=Both</code>（デフォルト）の場合、非常に大きなコンテナでは小さなアイコンが巨大に引き伸ばされて不自然な見た目になることがあります。アイコン用途では <code>DownOnly</code> の指定を検討してください。</td></tr></tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>Stretch</code></td>
+          <td><code>None / Fill / Uniform / UniformToFill</code></td>
+          <td>子の拡大縮小の仕方です。300 &times; 100 の領域で、デモアプリのラベルは、<code>Uniform</code> で縦横とも 1.73 倍（高さに合わせる）、<code>UniformToFill</code> で縦横とも 4.15 倍（幅に合わせる）、<code>Fill</code> で横 4.15 倍・縦 1.73 倍になって形が変わりました。<code>None</code> は 1 倍のままでした。<code>UniformToFill</code> では、収まらない部分は切れます。300 &times; 100 の Viewbox で、ラベルは Viewbox の上端から 300 &times; 240.35 になり、Viewbox の 5 下のヒットテストでは何も当たりませんでした。</td>
+        </tr>
+        <tr>
+          <td><code>StretchDirection</code></td>
+          <td><code>UpOnly / DownOnly / Both</code></td>
+          <td>子を拡大してよいか、縮小してよいか、両方かです。ラベルが拡大される 300 &times; 100 の領域では、<code>DownOnly</code> でどの <code>Stretch</code> も 1 倍のままでした。ラベルが縮小される 40 &times; 20 の領域では、<code>UpOnly</code> でどの <code>Stretch</code> も 1 倍のままで、ラベルは領域より大きくなりました。<code>Both</code> は、当てはまる方向と同じ倍率になりました。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;!-- 固定サイズの図形を Viewbox でスケーラブルに --&gt;
-&lt;Viewbox Width="200" Height="200" Stretch="Uniform"&gt;
-  &lt;Canvas Width="100" Height="100"&gt;
-    &lt;Ellipse Canvas.Left="10" Canvas.Top="10"
-             Width="80" Height="80" Fill="Gold" /&gt;
-    &lt;Path Fill="Black"
-          Data="M 50,30 L 55,45 L 70,45 L 60,55 L 65,70 L 50,60 L 35,70 L 40,55 L 30,45 L 45,45 Z" /&gt;
-  &lt;/Canvas&gt;
-&lt;/Viewbox&gt;
 
-&lt;!-- アイコンのスケーリング --&gt;
-&lt;Viewbox Width="{Binding IconSize}" Height="{Binding IconSize}"&gt;
-  &lt;Path Data="M 0,0 L 24,0 L 24,24 L 0,24 Z" Fill="Blue" /&gt;
-&lt;/Viewbox&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>アイコンのスケーリング</strong> — ベクター（Path）で描いたアイコンを Viewbox でラップして、任意のサイズで鮮明に表示します。</li><li><strong>固定 UI のスケーリング</strong> — レガシーな固定サイズ UI コンポーネントを現代的なレスポンシブレイアウトに組み込む際に使用します。</li><li><strong>プレゼンテーションスライド</strong> — 固定解像度で設計したスライドコンテンツを様々なウィンドウサイズに対応させます。</li><li><strong>ゲームの拡大表示</strong> — 固定サイズのゲームエリア（Canvas）を Viewbox でラップして、ウィンドウサイズに合わせて全画面表示します。</li><li><strong>ダッシュボードのゲージ</strong> — ベクター描画のゲージや計器を Viewbox でスケーラブルにして、様々なサイズのダッシュボードタイルに配置します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>ベクター要素に最適</strong> — Viewbox は Path や Canvas のベクター描画と相性が最良です。ビットマップ画像は Viewbox でスケールするとぼけることがあります（Image の Stretch を直接使う方が良い）。</li><li><strong>StretchDirection で縮小のみ許可</strong> — アイコンが小さなコンテナに入れても拡大してほしくない場合は StretchDirection="DownOnly" を設定します。</li><li><strong>テキストレンダリングに注意</strong> — Viewbox はフォントサイズを変えるのではなくトランスフォーム（変形）でスケールするため、非 1x スケールでは ClearType/アンチエイリアスが失われ文字が滲むことがあります。テキストを含む要素には Viewbox でラップするより <code>FontSize</code> を直接調整することを優先してください。</li><li><strong>レイアウトパフォーマンス</strong> — Viewbox は子要素を無限大のサイズで測定してからスケールを計算するため、複雑な子レイアウトではこの二重レイアウトパスがコストになります。パフォーマンスが問題になる場合はシンプルな代替手段を検討してください。</li><li><strong>レイアウト問題に注意</strong> — Viewbox は子要素のサイズを無限大で測定するため、子要素に MaxWidth/MaxHeight が設定されていないと予期しない動作をすることがあります。</li><li><strong>フォントを含む場合はテキスト品質に注意</strong> — Viewbox でテキストを含む要素をスケールすると、フォントのヒンティングが無効になり品質が低下することがあります。テキストには直接 FontSize を変更することを検討します。</li><li><strong>パフォーマンス</strong> — Viewbox は毎フレームのレイアウト計算でスケールを再計算します。アニメーション中のViewbox は重くなる可能性があります。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — Viewbox でラップしてスケーラブルな描画エリアを作成。</li><li><a href="/ja/apps/wpf-standard-control-demo/image.html">Image</a> — ビットマップ画像のスケーリングには Image の Stretch プロパティを直接使います。</li><li><a href="/ja/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — スケーリングではなくスクロールでコンテンツを表示する代替。</li></ul></section>
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>ViewboxUsageControl.xaml</code>）の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
+    <pre><code class="language-xml">&lt;ComboBox x:Name="StretchComboBox"
+          DisplayMemberPath="Name"
+          ItemsSource="{markupextensions:EnumBindingSource EnumType=Stretch}"
+          SelectedIndex="0" SelectedValuePath="Value" /&gt;
+&lt;ComboBox x:Name="StretchDirectionComboBox"
+          DisplayMemberPath="Name"
+          ItemsSource="{markupextensions:EnumBindingSource EnumType=StretchDirection}"
+          SelectedIndex="0" SelectedValuePath="Value" /&gt;
+
+&lt;Viewbox x:Name="StretchViewBox"
+         Stretch="{Binding SelectedValue, ElementName=StretchComboBox}"
+         StretchDirection="{Binding SelectedValue, ElementName=StretchDirectionComboBox}"&gt;
+  &lt;Label Padding="20" BorderBrush="Black" BorderThickness="1" Content="Item1" /&gt;
+&lt;/Viewbox&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>アイコン</strong> — ある大きさで作ったベクターの絵を、任意の大きさで表示します。</li>
+      <li><strong>固定サイズのレイアウト</strong> — 絶対座標の Canvas を、ウィンドウに合わせて拡大縮小します。</li>
+      <li><strong>大きな数字</strong> — 与えられた領域いっぱいに時計やカウンターを表示します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>Viewbox の大きさを限る</strong> — 一方向に制限のない親の中では、もう一方の方向だけで拡大縮小します。</li>
+      <li><strong>縮めても大きくはしないなら <code>DownOnly</code> を使う</strong> — 大きなウィンドウで文字が大きくなりすぎるのを防げます。</li>
+      <li><strong>全体を見せる必要がある内容に <code>UniformToFill</code> を使わない</strong> — 収まらない部分が切れます。</li>
+      <li><strong>子の大きさは描画ではなくレイアウトから読む</strong> — <code>ActualWidth</code> は本来の大きさのままです。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ViewboxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ViewboxDemoScene</code></a> を使い、デモアプリと同じラベル（Padding 20、枠 1）で試しました。倍率は、Viewbox から見たラベルの大きさを、ラベル自身の大きさで割った値です。大きさは、計測したマシンでの値です。</p>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg" alt="300 × 100 と 40 × 20 の領域での、Stretch と StretchDirection ごとのデモアプリのラベルの倍率の表。None は常に 1、Fill は 4.15 と 1.73 または 0.55 と 0.35、Uniform は 1.73 または 0.35、UniformToFill は 4.15 または 0.55 で、UpOnly は小さい領域で、DownOnly は大きい領域で 1 のまま" width="572" height="320" loading="lazy">
+      <figcaption><code>Stretch</code>、領域、<code>StretchDirection</code> ごとの倍率（横, 縦）。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg" alt="Viewbox の計測結果の表。Decorator を継承し既定値は Uniform と Both だがデモアプリは None と UpOnly で始まり、子は無限の大きさで測られてラベルは 72.34 × 57.96、UniformToFill では収まらない部分が切れ、横の StackPanel の中の Viewbox は高さだけに合わせて拡大する" width="1030" height="230" loading="lazy">
+      <figcaption>型、既定値、測り方、切り抜き。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/image.html">Image</a> — 画像のために、自分の <code>Stretch</code> と <code>StretchDirection</code> を持っています。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — Viewbox で拡大縮小できる、固定サイズの絵です。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/grid.html">Grid</a> — 内容を拡大縮小せず、領域を広げることで大きさを変えます。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、欄の下にある「Show Code」リンクでその XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ViewboxUsage" target="_blank" rel="noopener noreferrer">GitHub で Viewbox のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
+
 {% include footer-ja.html %}
+
 </body>
 </html>
