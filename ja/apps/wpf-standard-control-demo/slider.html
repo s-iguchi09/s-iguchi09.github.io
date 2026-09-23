@@ -51,7 +51,7 @@
         <tr>
           <td><code>SmallChange / LargeChange</code></td>
           <td><code>double</code></td>
-          <td>矢印キーで変わる量と、PageUp / PageDown およびトラックのクリックで変わる量です。既定値は 0.1 と 1 です。1 と 10 を設定した値 50 の Slider では、右・上矢印で 51、左矢印で 49、PageUp で 60、PageDown で 40、つまみの右側のトラックのクリックで 60 になりました。Home と End では <code>Minimum</code> と <code>Maximum</code> に移りました。デモアプリの初期値は 0〜10 の Slider に 1 と 10 なので、PageUp 1 回やトラックのクリック 1 回で端から端まで動きます。</td>
+          <td>矢印キーで変わる量と、PageUp / PageDown およびトラックのクリックで変わる量です。既定値は 0.1 と 1 です。1 と 10 を設定した値 50 の Slider では、右・上矢印で 51、左矢印で 49、PageUp で 60、PageDown で 40、実際のマウスでのつまみの右側のトラックのクリックで 60 になりました。これは <code>IsMoveToPointEnabled</code> が既定値の <code>False</code> の場合です。<code>True</code> では、同じクリックでつまみがクリックした位置へ移り、値は 86.84 になりました。Home と End では <code>Minimum</code> と <code>Maximum</code> に移りました。デモアプリの初期値は 0〜10 の Slider に 1 と 10 なので、PageUp 1 回やトラックのクリック 1 回で端から端まで動きます。</td>
         </tr>
         <tr>
           <td><code>IsDirectionReversed</code></td>
@@ -96,7 +96,7 @@
         <tr>
           <td><code>Delay / Interval</code></td>
           <td><code>int（ミリ秒）</code></td>
-          <td>トラック上でマウスボタンを押し続けたときの繰り返しのタイミングで、繰り返しが始まるまでの待ち時間と、繰り返しの間隔です。既定値は Windows のキーボードの設定から決まります。計測した環境（<code>SystemParameters.KeyboardDelay</code> が 1、<code>KeyboardSpeed</code> が 31）では 500 と 33 で、<code>Delay</code> の既定値は（<code>KeyboardDelay</code> + 1）&times; 250 と一致しました。Slider はこの値をトラックの 2 つの <code>RepeatButton</code> に渡します。デモアプリの 1000 と 50 では、どちらのボタンも <code>Delay="1000"</code>・<code>Interval="50"</code> になりました。トラックを 1 回クリックすると、値は <code>LargeChange</code> だけ動きました。</td>
+          <td>トラック上でマウスボタンを押し続けたときの繰り返しのタイミングで、繰り返しが始まるまでの待ち時間と、繰り返しの間隔です。既定値は Windows のキーボードの設定から決まります。計測した環境（<code>SystemParameters.KeyboardDelay</code> が 1、<code>KeyboardSpeed</code> が 31）では 500 と 33 で、<code>Delay</code> の既定値は（<code>KeyboardDelay</code> + 1）&times; 250 と一致しました。Slider はこの値をトラックの 2 つの <code>RepeatButton</code> に渡します。デモアプリの 1000 と 50 では、どちらのボタンも <code>Delay="1000"</code>・<code>Interval="50"</code> になりました。<code>Delay</code> が過ぎる前に離したクリックでは、値は 1 回だけ <code>LargeChange</code> 動きました。</td>
         </tr>
       </tbody>
     </table>
@@ -144,7 +144,7 @@
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a> を使いました。つまみのドラッグは、マウスでドラッグしたときにつまみが発生させるのと同じ <code>DragStarted</code>・<code>DragDelta</code> イベントで、キー操作は表示したウィンドウへキー入力イベントを送って再現しています。トラックのクリックは、トラックの <code>RepeatButton</code> を UI オートメーションで呼び出し、ボタンのクリック処理を実行して再現しました。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a> を使いました。つまみのドラッグは、マウスでドラッグしたときにつまみが発生させるのと同じ <code>DragStarted</code>・<code>DragDelta</code> イベントで、キー操作は表示したウィンドウへキー入力イベントを送って再現しています。トラックのクリックは、計測用のウィンドウの上で実際のマウスを使い、トラックの長さの 85% の位置を押して約 0.1 秒後に離して行いました。</p>
 
     <figure class="article-figure">
       <img src="/images/wpf-standard-control-demo/verification/slider/slider-snap.svg" alt="つまみをドラッグした後の Slider の値を示す表。吸着なしや TickPlacement だけでは 23.4、TickFrequency 10 で 20、1 で 23、TickFrequency 30 では 90 または 100、Ticks 1,3,5,7,9 では 5 と 0、コードから設定した値は吸着せず、バインドしたソースはドラッグ中に更新される" width="700" height="380" loading="lazy">

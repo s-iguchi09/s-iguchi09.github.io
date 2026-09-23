@@ -41,7 +41,7 @@
         <tr>
           <td><code>IsSelected</code></td>
           <td><code>bool</code></td>
-          <td>このタブが選択中かどうかを表し、既定で TwoWay にバインドされます。デモアプリではチェックボックスを <code>Mode</code> を指定せずに <code>IsSelected</code> にバインドしているので、タブをクリックするとチェックボックスも変わります。試しに <code>SelectedIndex</code> を 1 に変えると、1 つ目のソースは <code>False</code>、2 つ目は <code>True</code> になりました。3 つのうち 3 つ目のタブに <code>IsSelected="True"</code> を設定すると、<code>SelectedIndex</code> は 2 になり、他のタブの選択は外れました。選択中にできるのは 1 つだけで、どれが残るかは値の届き方で変わります。コードから 2 つのタブを順に <code>True</code> にすると、後に設定したタブが選ばれました。XAML で 2 つのタブに <code>IsSelected="True"</code> を書くと、先に書いたタブが選ばれました。</td>
+          <td>このタブが選択中かどうかを表し、既定で TwoWay にバインドされます。デモアプリではチェックボックスを <code>Mode</code> を指定せずに <code>IsSelected</code> にバインドしているので、タブをクリックするとチェックボックスも変わります。試しに <code>SelectedIndex</code> を 1 に変えると、1 つ目のソースは <code>False</code>、2 つ目は <code>True</code> になりました。実際のマウスで 2 つ目のタブの見出しをクリックしても同じでした。3 つのうち 3 つ目のタブに <code>IsSelected="True"</code> を設定すると、<code>SelectedIndex</code> は 2 になり、他のタブの選択は外れました。選択中にできるのは 1 つだけで、どれが残るかは値の届き方で変わります。コードから 2 つのタブを順に <code>True</code> にすると、後に設定したタブが選ばれました。XAML で 2 つのタブに <code>IsSelected="True"</code> を書くと、先に書いたタブが選ばれました。</td>
         </tr>
         <tr>
           <td><code>TabStripPlacement (ReadOnly)</code></td>
@@ -57,7 +57,7 @@
     <p>これらはデモアプリの TabItem の画面にはありませんが、ほとんどの TabItem で使うプロパティです。同じ方法で挙動を測りました。</p>
     <ul>
       <li><strong><code>Header</code></strong> — 文字列のヘッダーは <code>AccessText</code> で表示されるため、アンダースコアはアクセスキーの指定になります。<code>Header="File_Name"</code> では <code>N</code> がアクセスキーになり、アンダースコア自体は表示されません。<a href="/ja/articles/wpf-label-underscore-issue/">WPF の Label でアンダーバーが消える理由と回避方法</a>で、TabItem のヘッダーでも消えることを確かめています。同じ記事では、同じく <code>AccessText</code> を使う Label で <code>__</code> と書くとアンダースコアが 1 つ表示されることも確かめています。タブの幅はヘッダーに合わせて変わり、計測した環境では「File_Name」で 65.65、「A」で 19.74 でした（幅はフォントと表示スケールによって変わります）。</li>
-      <li><strong><code>IsEnabled</code></strong> — 無効なタブは UI オートメーションでは選べません。支援技術が使う UI オートメーション（<code>ISelectionItemProvider.Select</code>）で選ぼうとすると <code>ElementNotEnabledException</code> が発生し、選択は動きませんでした。マウスのクリックはこの経路を通らないため、再現していません。一方、コードからは選べます。<code>SelectedIndex = 1</code> で無効なタブが選ばれ、その内容が表示されました。開かせたくないタブがある場合は、選択を変えるコードの側でもそのタブを選ばないようにします。</li>
+      <li><strong><code>IsEnabled</code></strong> — 無効なタブは利用者の操作では選べません。支援技術が使う UI オートメーション（<code>ISelectionItemProvider.Select</code>）で選ぼうとすると <code>ElementNotEnabledException</code> が発生し、選択は動きませんでした。実際のマウスで見出しをクリックしても選ばれませんでした。一方、コードからは選べます。<code>SelectedIndex = 1</code> で無効なタブが選ばれ、その内容が表示されました。開かせたくないタブがある場合は、選択を変えるコードの側でもそのタブを選ばないようにします。</li>
       <li><strong><code>Content</code></strong> — XAML に直接書いた内容はウィンドウと一緒に作られ、選ばれていないタブの分も含めて、起動時にすべての内容に <code>Loaded</code> が発生しました。測られたのは選択中の 1 つだけです。タブ 1 からタブ 2 へ切り替えて戻すと、戻ってきた内容にもう一度 <code>Loaded</code> が発生し、同じインスタンスが再び表示されました。重い処理を遅らせたい場合は、内容のコンストラクターや <code>Loaded</code> ではなく、そのタブが初めて選ばれたときに始めます。</li>
     </ul>
   </section>
@@ -98,10 +98,10 @@
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TabItemDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TabItemDemoScene</code></a> を使いました。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TabItemDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TabItemDemoScene</code></a> を使いました。タブの見出しのクリックは、計測用のウィンドウの上で実際のマウスを使って行いました。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="TabItem の選択に関する計測結果の表。基底クラスは HeaderedContentControl、IsSelected は既定で TwoWay、TabStripPlacement は TabControl に従い、XAML で IsSelected を書いた 2 つのうち先のタブと、コードから順に設定した 2 つのうち後のタブが選ばれ、バインドしたソースは SelectedIndex に追従し、無効なタブはコードからは選べるが UI オートメーションの ISelectionItemProvider.Select では選べない" width="1030" height="410" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="TabItem の選択に関する計測結果の表。基底クラスは HeaderedContentControl、IsSelected は既定で TwoWay、TabStripPlacement は TabControl に従い、XAML で IsSelected を書いた 2 つのうち先のタブと、コードから順に設定した 2 つのうち後のタブが選ばれ、バインドしたソースは SelectedIndex の変更にも実際のマウスでのタブのクリックにも追従し、無効なタブはコードからは選べるが UI オートメーションの ISelectionItemProvider.Select でも実際のマウスのクリックでも選べない" width="1030" height="470" loading="lazy">
       <figcaption>選択、メタデータ、無効なタブ。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
 

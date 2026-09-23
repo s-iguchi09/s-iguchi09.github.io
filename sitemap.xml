@@ -289,7 +289,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/grid.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/grid.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/grid.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/grid/grid-placement.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/grid/grid-unbounded.svg</image:loc></image:image>
+    <lastmod>2026-09-23T13:10:03Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -300,7 +302,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/grid.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/grid.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/grid.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/grid/grid-placement.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/grid/grid-unbounded.svg</image:loc></image:image>
+    <lastmod>2026-09-23T13:10:03Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -311,7 +315,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/gridsplitter.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/gridsplitter.png</image:loc></image:image>
-    <lastmod>2026-09-23T02:07:53Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-23T13:10:03Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -322,7 +327,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/gridsplitter.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/gridsplitter.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-23T13:10:03Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -619,7 +625,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/slider.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/slider.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/slider.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-snap.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg</image:loc></image:image>
+    <lastmod>2026-09-23T14:57:29Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -630,7 +638,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/slider.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/slider.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/slider.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-snap.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg</image:loc></image:image>
+    <lastmod>2026-09-23T14:57:29Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -685,7 +695,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabitem.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabitem.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/tabitem.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg</image:loc></image:image>
+    <lastmod>2026-09-23T14:57:29Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -696,7 +708,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabitem.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabitem.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/tabitem.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg</image:loc></image:image>
+    <lastmod>2026-09-23T14:57:29Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

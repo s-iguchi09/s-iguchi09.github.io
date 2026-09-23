@@ -25,8 +25,8 @@ internal sealed class TabItemDemoScene : IScene
         "TabItem の基底クラスと、IsSelected・TabStripPlacement の依存関係プロパティのメタデータ（既定で TwoWay か、読み取り専用か）",
         "TabItem の TabStripPlacement が親の TabControl の値に従うこと",
         "IsSelected を True にしたときの SelectedIndex と他のタブの IsSelected、XAML で複数のタブに IsSelected=True を書いた場合とコードから順に設定した場合に選ばれるタブ",
-        "IsSelected にバインドしたソースが、SelectedIndex の変更で更新されること",
-        "IsEnabled=False のタブを、コード（SelectedIndex）と、支援技術が使う UI オートメーション（ISelectionItemProvider.Select）で選べるか",
+        "IsSelected にバインドしたソースが、SelectedIndex の変更と、実際のマウスでのタブの見出しのクリックで更新されること",
+        "IsEnabled=False のタブを、コード（SelectedIndex）、支援技術が使う UI オートメーション（ISelectionItemProvider.Select）、実際のマウスでの見出しのクリックで選べるか",
         "文字列の Header がどの要素で表示されるか（AccessText が作られ、アンダースコアの次の文字がアクセスキーになること）",
         "Header の長さによるタブの幅の違い",
         "XAML に直接書いた Content と ItemsSource + ContentTemplate で作った内容の、Loaded の回数と起動時に測られるか、タブを切り替えたときに同じインスタンスが再利用されるか",
@@ -182,7 +182,20 @@ internal sealed class TabItemDemoScene : IScene
                 flag1.Value = true;
                 rows.Add(["  then Tab1's source set to True: SelectedIndex / source values of Tab1 / Tab2",
                     $"{tabs.SelectedIndex} / {flag1.Value} / {flag2.Value}"]);
-                await Task.CompletedTask;
+
+                // 実際のマウスで Tab2 の見出しをクリックする。
+                Window window = Window.GetWindow(tabs)!;
+                window.Topmost = true;
+                await Capture.SettleAsync(window);
+                using (RealMouse.Preserve())
+                {
+                    await RealMouse.MoveToAsync(Item(tabs, 1));
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                }
+
+                rows.Add(["  then Tab2's header clicked with the real mouse: SelectedIndex / sources of Tab1 / Tab2",
+                    $"{tabs.SelectedIndex} / {flag1.Value} / {flag2.Value}"]);
             });
         }
 
@@ -202,7 +215,19 @@ internal sealed class TabItemDemoScene : IScene
                 string thrown = Throws(() => ((ISelectionItemProvider)peer).Select());
                 rows.Add(["Tab2 IsEnabled=False; UI Automation ISelectionItemProvider.Select(): result / SelectedIndex",
                     $"{thrown} / {tabs.SelectedIndex}"]);
-                await Task.CompletedTask;
+
+                // 実際のマウスで、無効な Tab2 の見出しをクリックする。
+                Window window = Window.GetWindow(tabs)!;
+                window.Topmost = true;
+                await Capture.SettleAsync(window);
+                using (RealMouse.Preserve())
+                {
+                    await RealMouse.MoveToAsync(Item(tabs, 1));
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                }
+
+                rows.Add(["Tab2 IsEnabled=False; header clicked with the real mouse: SelectedIndex", tabs.SelectedIndex.ToString()]);
             });
         }
 
