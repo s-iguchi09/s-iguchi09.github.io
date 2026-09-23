@@ -8,7 +8,7 @@
   <title>Canvas | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Canvas panel reference: absolute positioning, attached properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App.">
+  <meta name="description" content="WPF Canvas measured on .NET 10: which of Left and Right wins, where Right and Bottom measure from, why a Canvas is 0 wide yet shows its children, and ZIndex.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,38 +21,27 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Canvas</p>
     <h1>Canvas <span class="category-badge">Graphics</span></h1>
-    <p>Canvas is a layout panel that uses absolute positioning. Child elements are placed at explicit coordinates using Canvas attached properties (Top, Left, Right, Bottom). It is ideal for drawing applications and animations requiring precise control.</p>
+    <p>Canvas places each child at the coordinates given by the attached properties Canvas.Left, Top, Right, and Bottom, at the child's own size.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>Canvas</strong> panel is unique among WPF layout containers because it abandons the
-      automatic flow and relative sizing model used by <code>Grid</code>, <code>StackPanel</code>, and
-      <code>DockPanel</code>. Instead, every child element is positioned using explicit pixel coordinates
-      supplied through four attached properties: <code>Canvas.Left</code>, <code>Canvas.Top</code>,
-      <code>Canvas.Right</code>, and <code>Canvas.Bottom</code>. This makes Canvas the panel of choice
-      whenever you need precise, deterministic placement of visual elements.
+      A <strong>Canvas</strong> measures its children, but with unlimited space: a child was measured with Infinity &times;
+      Infinity. Each child therefore keeps its own size. In a Canvas 300 wide, a TextBlock was 60.23 wide, and a Border with
+      <code>HorizontalAlignment="Stretch"</code> was only as wide as its text, 37.29. A child with no position was placed at
+      (0, 0), and a negative <code>Canvas.Left</code> such as -30 put it partly left of the Canvas.
     </p>
     <p>
-      Because Canvas does not perform any automatic measurement or arrangement of its children, it is
-      extremely lightweight and fast to render. Children retain their natural (desired) size unless you
-      explicitly set <code>Width</code> and <code>Height</code>. The Canvas itself reports a desired size
-      of zero by default, so it should typically be given an explicit size or stretched inside a parent
-      container — otherwise its children may be clipped or invisible.
+      The Canvas itself asks for no space. With a rectangle at (20, 20) inside it, a Canvas in a horizontal StackPanel had a
+      <code>DesiredSize</code> of 0 &times; 0. Its children are still shown, because <code>ClipToBounds</code> is
+      <code>False</code> by default. In a Canvas 200 wide, a rectangle from 150 to 250 was hit at x=230, outside the Canvas.
+      With <code>ClipToBounds="True"</code>, which the demo app sets, nothing was hit there.
     </p>
     <p>
-      Z-ordering — the stacking order when elements overlap — is controlled via the
-      <code>Panel.ZIndex</code> attached property. Elements with higher <code>ZIndex</code> values render
-      on top. Animations work naturally on Canvas children: animating the <code>Canvas.Left</code> or
-      <code>Canvas.Top</code> attached property using a <code>DoubleAnimation</code> smoothly moves an
-      element across the surface, making Canvas the go-to container for game-like or diagram UIs.
-    </p>
-    <p>
-      A practical tip: while Canvas is excellent for drawing surfaces, it is a poor choice for
-      general-purpose application UI because it does not adapt to window resizing or different DPI
-      settings. For resizable layouts, combine Canvas with a <code>ViewBox</code> wrapper to achieve
-      proportional scaling, or switch to a <code>Grid</code>-based layout where adaptive sizing is needed.
+      The demo app has one section with two rectangles 100 &times; 100: rectangle A, whose <code>Top</code>,
+      <code>Left</code>, <code>Right</code>, <code>Bottom</code>, and <code>ZIndex</code> are bound to text boxes, and rectangle
+      B at (50, 50) with its own <code>ZIndex</code>. The "Show Code" link under the section displays its XAML.
     </p>
   </section>
 
@@ -65,7 +54,7 @@
     <h2>Demonstrated Properties</h2>
     <p>
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
     </p>
 
     <table class="prop-table">
@@ -78,29 +67,19 @@
       </thead>
       <tbody>
         <tr>
-          <td><code>Canvas.Left</code></td>
+          <td><code>Canvas.Left / Canvas.Top</code></td>
           <td><code>double</code></td>
-          <td>Use this when you need to place an element at a specific horizontal offset from the Canvas's left edge — for example, positioning a node in a diagram editor or a sprite in a game surface. The element is placed exactly that many device-independent pixels from the left edge. Pitfall: setting both <code>Canvas.Left</code> and <code>Canvas.Right</code> on the same element does not resize it; the element keeps its natural size and <code>Left</code> takes precedence, so the <code>Right</code> value is effectively ignored for positioning.</td>
+          <td>The distance from the left and top edges. With the demo app's initial <code>Top</code> 20 and <code>Left</code> 20, rectangle A was at (20, 20), 100 &times; 100.</td>
         </tr>
         <tr>
-          <td><code>Canvas.Top</code></td>
+          <td><code>Canvas.Right / Canvas.Bottom</code></td>
           <td><code>double</code></td>
-          <td>The vertical counterpart to <code>Canvas.Left</code>. Together, <code>Left</code> and <code>Top</code> form the most common absolute-coordinate pair for placing elements on a Canvas. Setting <code>Canvas.Top="30"</code> places the element 30 device-independent pixels below the Canvas's top edge. Pitfall: if neither <code>Canvas.Top</code> nor <code>Canvas.Bottom</code> is set, the element defaults to the top edge (y = 0), which can cause elements to stack invisibly.</td>
+          <td>The distance from the right and bottom edges. They lose to <code>Left</code> and <code>Top</code>: with all four set to 20, the rectangle stayed at (20, 20) and 100 &times; 100, neither moved nor stretched. They measure from the Canvas's actual size, so the Canvas needs no <code>Width</code>. With only <code>Right</code> 20 and <code>Bottom</code> 20, in a Canvas stretched to 300 &times; 200, the rectangle was at (180, 80). In a Canvas of size 0, the same rectangle was at (-120, -120). The demo app binds them with <code>FallbackValue</code> NaN, so an empty text box leaves them unset (NaN), and "30" sets 30.</td>
         </tr>
         <tr>
-          <td><code>Canvas.Right</code></td>
-          <td><code>double</code></td>
-          <td>Anchors an element to the right edge of the Canvas, useful for watermarks, fixed-position overlays, or elements that should stay in the bottom-right corner regardless of the Canvas's size. The element is placed so its right edge is the specified number of pixels from the Canvas's right edge. Pitfall: <code>Canvas.Right</code> does not work like CSS <code>right</code> in a stretched container — it is always measured from the Canvas's declared right boundary, so the Canvas must have an explicit width for <code>Right</code> to be meaningful.</td>
-        </tr>
-        <tr>
-          <td><code>Canvas.Bottom</code></td>
-          <td><code>double</code></td>
-          <td>Anchors an element to the bottom edge of the Canvas. Combining <code>Canvas.Right</code> and <code>Canvas.Bottom</code> is a common pattern for placing a label or badge in the bottom-right corner of a drawing surface. Like <code>Canvas.Right</code>, this requires the Canvas to have an explicit <code>Height</code> to produce the intended result. Pitfall: setting <code>Canvas.Top</code> and <code>Canvas.Bottom</code> simultaneously does not stretch the element; the element retains its natural height and <code>Top</code> takes precedence.</td>
-        </tr>
-        <tr>
-          <td><code>Panel.ZIndex</code></td>
+          <td><code>ZIndex (Panel attached)</code></td>
           <td><code>int</code></td>
-          <td>Use this when elements overlap and you need explicit control over which element renders on top — for instance, bringing a selected handle or tooltip above the drawing content. Higher values render on top of lower values. Pitfall: the default <code>ZIndex</code> is 0 for all children, so when you don't set it explicitly, the element that appears later in XAML (later in the child collection) is rendered on top. Don't rely on this implicit ordering; set <code>ZIndex</code> explicitly on any element whose stacking matters.</td>
+          <td>Which child is on top where children overlap. The demo app starts with A at 0 and B at 1; at (85, 85), where they overlap, B was on top. With A at 2, A was on top. With both at 0, B, the later child, was on top.</td>
         </tr>
       </tbody>
     </table>
@@ -108,72 +87,72 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates absolute positioning and Z-ordering on a Canvas:</p>
-    <pre><code class="language-xml">&lt;Canvas Width="400" Height="300" Background="WhiteSmoke"&gt;
-
-  &lt;!-- Rectangle anchored to top-left --&gt;
-  &lt;Rectangle Canvas.Left="20" Canvas.Top="20"
-             Width="120" Height="80"
-             Fill="SteelBlue" /&gt;
-
-  &lt;!-- Overlapping rectangle with higher Z-order --&gt;
-  &lt;Rectangle Canvas.Left="80" Canvas.Top="60"
-             Width="120" Height="80"
-             Fill="Tomato"
-             Panel.ZIndex="1" /&gt;
-
-  &lt;!-- Label anchored to the bottom-right corner --&gt;
-  &lt;TextBlock Canvas.Right="8" Canvas.Bottom="4"
-             Text="400 x 300"
-             FontSize="11" Foreground="Gray" /&gt;
-
-  &lt;!-- Animated element (code-behind moves it) --&gt;
-  &lt;Ellipse x:Name="Ball"
-           Canvas.Left="160" Canvas.Top="120"
-           Width="40" Height="40"
-           Fill="Gold" /&gt;
-
+    <p>The following XAML is the result area of the demo app (<code>CanvasUsageControl.xaml</code>), with the <code>TargetNullValue</code> and <code>FallbackValue</code> of the bindings and the surrounding layout left out:</p>
+    <pre><code class="language-xml">&lt;Canvas Background="#F0F0F0" ClipToBounds="True"&gt;
+  &lt;Rectangle x:Name="TargetRect"
+             Canvas.Left="{Binding Text, ElementName=LeftTextBox}"
+             Canvas.Top="{Binding Text, ElementName=TopTextBox}"
+             Canvas.Right="{Binding Text, ElementName=RightTextBox}"
+             Canvas.Bottom="{Binding Text, ElementName=BottomTextBox}"
+             Width="100" Height="100"
+             Panel.ZIndex="{Binding Text, ElementName=ZIndexTextBox}"
+             Fill="SkyBlue" Stroke="DodgerBlue" StrokeThickness="2" /&gt;
+  &lt;Rectangle Canvas.Left="50" Canvas.Top="50"
+             Width="100" Height="100"
+             Panel.ZIndex="{Binding Text, ElementName=ZIndexTextBoxRed}"
+             Fill="LightCoral" Stroke="IndianRed" StrokeThickness="2" /&gt;
 &lt;/Canvas&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Diagram editors:</strong> Network topology, flowchart, or UML diagram tools where nodes and connectors must be placed and moved at arbitrary coordinates.</li>
-      <li><strong>2D game surfaces:</strong> Simple games where sprites are positioned and animated by modifying <code>Canvas.Left</code> / <code>Canvas.Top</code> in a game loop or using WPF animations.</li>
-      <li><strong>Custom drawing overlays:</strong> Annotation layers drawn on top of images or maps, such as bounding boxes in image-labelling tools.</li>
-      <li><strong>Drag-and-drop rearrangement:</strong> UIs where users drag items to arbitrary positions and the layout is persisted (e.g., desktop-icon-style dashboards).</li>
-      <li><strong>Splash and loading screens:</strong> Decorative or animated intro screens where elements fly in from fixed coordinates and do not need adaptive layout.</li>
+      <li><strong>Diagrams:</strong> shapes and connectors at computed coordinates.</li>
+      <li><strong>Drawing surfaces:</strong> shapes the user places or drags.</li>
+      <li><strong>Overlays:</strong> a badge kept at a fixed distance from a corner with <code>Right</code> and <code>Bottom</code>.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Always give the Canvas an explicit size</strong> or stretch it inside a parent container. Its default desired size is (0, 0), which causes children to be clipped unless the canvas has room to render.</li>
-      <li><strong>Use <code>RenderTransform</code> for animations</strong> instead of animating <code>Canvas.Left</code>/<code>Canvas.Top</code> when performance is critical. Transform-based animations can be GPU-accelerated by the WPF composition engine.</li>
-      <li><strong>Combine with <code>Viewbox</code></strong> to achieve resolution-independent scaling of canvas-based drawings without rewriting coordinates for every target resolution or DPI setting.</li>
-      <li><strong>Leverage <code>Panel.ZIndex</code></strong> dynamically in code to bring focused or hovered elements to the front, creating a natural layering interaction without rebuilding the visual tree.</li>
-      <li><strong>Avoid Canvas for data-driven layouts.</strong> If the number of elements changes at runtime via data binding, prefer an <code>ItemsControl</code> with a Canvas <code>ItemsPanel</code> template, which properly recycles containers and supports virtualization.</li>
-      <li><strong>Set <code>Background="Transparent"</code> to capture mouse events.</strong> A Canvas with <code>Background=null</code> (the default) does not participate in hit-testing, so mouse events pass through to underlying elements. Set <code>Background="Transparent"</code> when you need the Canvas itself to handle clicks or pointer events.</li>
+      <li><strong>Give a Canvas a size from its parent or its own <code>Width</code> and <code>Height</code>.</strong> It asks for 0 &times; 0, so an auto-sized parent gives it no space.</li>
+      <li><strong>Set <code>ClipToBounds="True"</code> to keep children inside.</strong> Otherwise they are drawn, and can be clicked, outside the Canvas.</li>
+      <li><strong>Set either <code>Left</code> or <code>Right</code>, not both.</strong> <code>Left</code> wins, and the child is not stretched.</li>
+      <li><strong>Give children an explicit size if they should fill something.</strong> Alignment does not stretch a child in a Canvas.</li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/CanvasDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>CanvasDemoScene</code></a>
+      in this site's screenshot tool, with rectangles 100 &times; 100 like the demo app's. The Canvas was laid out with
+      <code>Measure</code> and <code>Arrange</code>, and the element on top was found by a hit test at the given point. Sizes are
+      the values on the measuring machine.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/canvas/canvas-behavior.svg" alt="Table of Canvas results: children measured with infinite size and not stretched, a Canvas with children asking for 0 by 0 with ClipToBounds False, Left and Top winning over Right and Bottom without stretching, Right and Bottom measured from the Canvas's actual size including size 0, an unplaced child at (0, 0), a child outside the Canvas hit only without clipping, ZIndex ordering the demo's rectangles with the later child on top when equal, and an empty bound text giving NaN" width="1179" height="470" loading="lazy">
+      <figcaption>Sizes, positions, clipping, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — the most versatile layout panel; supports proportional, absolute, and auto-sized rows and columns.</li>
-      <li><a href="/apps/wpf-standard-control-demo/dockpanel.html">DockPanel</a> — docks children to panel edges; ideal for main window chrome layouts.</li>
-      <li><a href="/apps/wpf-standard-control-demo/wrappanel.html">WrapPanel</a> — flows children horizontally or vertically with automatic line-wrapping.</li>
-      <li><a href="/apps/wpf-standard-control-demo/uniformgrid.html">UniformGrid</a> — arranges children in a uniform grid without explicit row/column definitions.</li>
+      <li><a href="/apps/wpf-standard-control-demo/grid.html">Grid</a> — places children in rows and columns that follow the size of the window.</li>
+      <li><a href="/apps/wpf-standard-control-demo/viewbox.html">Viewbox</a> — scales its content, such as a Canvas of fixed size, to fit.</li>
+      <li><a href="/apps/wpf-standard-control-demo/inkcanvas.html">InkCanvas</a> — a surface for drawing with the mouse or a pen.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
     <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under the section displays its XAML.
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/CanvasUsage" target="_blank" rel="noopener noreferrer">

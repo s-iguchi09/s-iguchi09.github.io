@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-canvas
+slug: "wpf-standard-control-demo-canvas"
+scene: "CanvasDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Canvas が子を測るときに渡す大きさと、Width のない子（TextBlock、HorizontalAlignment=Stretch）の配置後の幅"
+  - "子を持つ Canvas の DesiredSize と、ClipToBounds の既定値"
+  - "デモアプリの初期値（Top 20・Left 20）での矩形と、Left と Right、Top と Bottom を両方設定したときに優先される側"
+  - "Right / Bottom だけを設定したときの位置（Canvas が 300 x 200 に広がる場合と、大きさ 0 の場合）"
+  - "位置を設定しない子と、負の Left の位置"
+  - "Canvas の外にはみ出した子のヒットテスト（ClipToBounds が False と True）"
+  - "デモアプリの 2 つの Rectangle の重なりで、ZIndex による上下と、ZIndex が等しいときの上下"
+  - "デモアプリと同じ、空文字の TextBox を FallbackValue=NaN で Canvas.Right にバインドしたときの値"
+images:
+  - "images/wpf-standard-control-demo/verification/canvas/canvas-behavior.svg"
