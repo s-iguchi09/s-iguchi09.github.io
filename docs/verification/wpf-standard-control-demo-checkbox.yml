@@ -11,7 +11,7 @@ verifies:
   - "bool? と bool のプロパティにバインドしたときに、IsChecked が null になった場合のソースの値とバインドエラー"
   - "Space キーで IsChecked が切り替わるか"
   - "ラベル（Content）の位置をヒットテストしたときに当たる要素が CheckBox の中の要素か"
-  - "複数行のラベルで VerticalContentAlignment を Top と Center にしたときの、チェックの記号とラベルの縦位置"
+  - "複数行のラベルで VerticalContentAlignment を Top と Center にしたときの、チェックの記号とラベルの縦位置（CheckBox を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合）"
   - "親要素に置いた Checked のハンドラーが子の CheckBox の変化を受け取ること"
 images:
   - "images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg"

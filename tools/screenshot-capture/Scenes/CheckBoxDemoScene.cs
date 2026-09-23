@@ -30,7 +30,7 @@ internal sealed class CheckBoxDemoScene : IScene
         "bool? と bool のプロパティにバインドしたときに、IsChecked が null になった場合のソースの値とバインドエラー",
         "Space キーで IsChecked が切り替わるか",
         "ラベル（Content）の位置をヒットテストしたときに当たる要素が CheckBox の中の要素か",
-        "複数行のラベルで VerticalContentAlignment を Top と Center にしたときの、チェックの記号とラベルの縦位置",
+        "複数行のラベルで VerticalContentAlignment を Top と Center にしたときの、チェックの記号とラベルの縦位置（CheckBox を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合）",
         "親要素に置いた Checked のハンドラーが子の CheckBox の変化を受け取ること",
     ];
 
@@ -150,11 +150,18 @@ internal sealed class CheckBoxDemoScene : IScene
                 $"{hit?.GetType().Name ?? "(nothing)"} / {inside}"]);
         }
 
-        foreach (VerticalAlignment alignment in new[] { VerticalAlignment.Top, VerticalAlignment.Center })
+        // CheckBox を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合（VerticalAlignment=Top）で比べる。
+        foreach ((VerticalAlignment alignment, bool fitToLabel) in new[]
+        {
+            (VerticalAlignment.Top, false),
+            (VerticalAlignment.Center, false),
+            (VerticalAlignment.Center, true),
+        })
         {
             var box = new CheckBox
             {
                 Width = 120,
+                VerticalAlignment = fitToLabel ? VerticalAlignment.Top : VerticalAlignment.Stretch,
                 VerticalContentAlignment = alignment,
                 Content = new TextBlock { Text = "a label long enough to wrap onto three lines", TextWrapping = TextWrapping.Wrap },
             };
@@ -165,7 +172,7 @@ internal sealed class CheckBoxDemoScene : IScene
             var content = Descendants(box).OfType<ContentPresenter>().First();
             Rect g = Bounds(glyph, box);
             Rect c = Bounds(content, box);
-            rows.Add([$"3-line label, VerticalContentAlignment={alignment}: glyph y / label y",
+            rows.Add([$"3-line label, VerticalContentAlignment={alignment}, CheckBox {D(box.ActualHeight)} high: glyph y / label y",
                 $"{D(g.Y)} (height {D(g.Height)}) / {D(c.Y)} (height {D(c.Height)})"]);
         }
 

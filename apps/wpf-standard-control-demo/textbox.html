@@ -148,7 +148,7 @@
     <ul>
       <li><strong>Treat <code>MaxLength</code> and <code>CharacterCasing</code> as input aids, not rules.</strong> Neither affected text set from code or through a binding.</li>
       <li><strong>Give multiline text boxes a scroll bar.</strong> With the default <code>Hidden</code>, no bar appears even when the content is taller than the TextBox.</li>
-      <li><strong>Set <code>MinLines</code> after loading if it matters on first display.</strong> Set in XAML, it did not apply until the text changed. Setting it after the TextBox is displayed, for example in a <code>Loaded</code> handler, applied it at once.</li>
+      <li><strong>Set <code>MinLines</code> after loading, and not in XAML, if it matters on first display.</strong> Set in XAML, it did not apply until the text changed. Setting it after the TextBox was displayed applied it at once, and so did setting it in a <code>Loaded</code> handler when XAML did not set it. With <code>MinLines="4"</code> also in XAML, setting 4 again in <code>Loaded</code> did not change the value, and the TextBox stayed one line tall.</li>
       <li><strong>Choose <code>WrapWithOverflow</code> for text with long tokens that must not be split,</strong> such as paths or URLs, and <code>Wrap</code> when everything must stay inside the width.</li>
     </ul>
   </section>
@@ -158,7 +158,7 @@
     <p>
       Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBoxDemoScene</code></a>
-      in this site's screenshot tool. Typing was reproduced with <code>TextCompositionManager</code>, which delivers text through
+      in this site's screenshot tool. Typing was reproduced one character at a time with <code>TextCompositionManager</code>, which delivers text through
       the same <code>TextInput</code> path as the keyboard, and the Enter key by sending a key event to a displayed window.
       Heights, widths, and positions on this page are the values on the measuring machine; they depend on the font and
       display scaling.
@@ -170,7 +170,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg" alt="Table of TextBox layout results: line counts and overflow for NoWrap, Wrap, and WrapWithOverflow, heights for MinLines and MaxLines including MinLines having no effect until the text changes after display, scroll bars for a 60-high multiline TextBox, text alignment positions, combined text decorations, and ScrollToEnd from a worker thread throwing InvalidOperationException" width="1116" height="860" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg" alt="Table of TextBox layout results: line counts and overflow for NoWrap, Wrap, and WrapWithOverflow, heights for MinLines and MaxLines including MinLines having no effect until the text changes after display, scroll bars for a 60-high multiline TextBox, text alignment positions, combined text decorations, and ScrollToEnd from a worker thread throwing InvalidOperationException" width="1116" height="920" loading="lazy">
       <figcaption>Wrapping, line limits, scroll bars, alignment, and <code>ScrollToEnd</code>. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

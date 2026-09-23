@@ -46,9 +46,11 @@ internal static class RealKeyboard
     /// <summary>仮想キーを 1 回押して離す。<paramref name="modifiers"/> のキー（Ctrl など）は、その間押したままにする。</summary>
     public static async Task PressAsync(Window window, ushort virtualKey, params ushort[] modifiers)
     {
-        if (GetForegroundWindow() != new WindowInteropHelper(window).Handle)
+        IntPtr foreground = GetForegroundWindow();
+        if (foreground != new WindowInteropHelper(window).Handle)
         {
-            throw new InvalidOperationException("前面のウィンドウが計測用のウィンドウではない。キーを送らない。");
+            throw new InvalidOperationException(
+                $"前面のウィンドウが計測用のウィンドウではない。キーを送らない。前面のウィンドウ: {RealMouse.Describe(foreground)}");
         }
 
         var inputs = new List<Input>();

@@ -27,7 +27,7 @@ internal sealed class TextBoxDemoScene : IScene
         "MaxLength を、キーボードからの入力・コードからの Text・バインドした値のそれぞれに対して効かせたときの結果",
         "CharacterCasing を、キーボードからの入力とコードからの Text に対して効かせたときの結果",
         "MinLines / MaxLines（デモアプリの 2・4・6 行）による高さと、MaxLines を超えたときのスクロールバー",
-        "MinLines が表示前（初期化子・XAML）に設定した場合に効くか、表示後に MinLines を設定した場合・表示後に Text を変えた場合に効くか",
+        "MinLines が表示前（初期化子・XAML）に設定した場合に効くか、表示後に MinLines を設定した場合・表示後に Text を変えた場合・Loaded のハンドラーで設定した場合（XAML の指定なし / 同じ値あり）に効くか",
         "AcceptsReturn による Enter キーの扱いと、行数が多いときの高さ・スクロールバー（VerticalScrollBarVisibility の既定値と Auto）",
         "IsReadOnly で入力が止まり、選択はできること、既定のテンプレートに IsReadOnly のトリガーがあるか",
         "TextAlignment ごとの 1 文字目の横位置",
@@ -58,11 +58,14 @@ internal sealed class TextBoxDemoScene : IScene
             "textbox-layout.svg");
     }
 
-    /// <summary>キーボードから文字を入力したのと同じ経路で、文字列を入力する。</summary>
+    /// <summary>キーボードから 1 文字ずつ入力したのと同じ経路で、文字列を入力する（1 文字ごとに TextComposition を送る）。</summary>
     private static void Type(TextBox box, string text)
     {
         box.Focus();
-        TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, box, text));
+        foreach (char c in text)
+        {
+            TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, box, c.ToString()));
+        }
     }
 
     private sealed class Source : INotifyPropertyChanged
@@ -270,6 +273,26 @@ internal sealed class TextBoxDemoScene : IScene
                 box.UpdateLayout();
                 rows.Add(["MinLines=4 set after showing: height before / after / + MaxLines=10",
                     $"{before} / {after} / {D(box.ActualHeight)}"]);
+                await Task.CompletedTask;
+            });
+        }
+
+        foreach ((string label, string minLinesInXaml) in new[]
+        {
+            ("MinLines=4 set in a Loaded handler, not in XAML: height", ""),
+            ("MinLines=\"4\" in XAML, and 4 set again in a Loaded handler: height", " MinLines=\"4\""),
+        })
+        {
+            // Loaded のハンドラーで MinLines を設定する。XAML に同じ値があると、値が変わらないので効かない可能性がある。
+            var box = SceneContext.LoadXaml<TextBox>(
+                $"""
+                <TextBox Width="150" VerticalAlignment="Top" AcceptsReturn="True"{minLinesInXaml}
+                         VerticalScrollBarVisibility="Auto" />
+                """);
+            box.Loaded += (_, _) => box.MinLines = 4;
+            await ShowAsync(box, async () =>
+            {
+                rows.Add([label, D(box.ActualHeight)]);
                 await Task.CompletedTask;
             });
         }

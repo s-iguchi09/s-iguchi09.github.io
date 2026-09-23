@@ -70,7 +70,7 @@
         <tr>
           <td><code>IsSelected</code></td>
           <td><code>bool</code></td>
-          <td>Whether this tab is the selected one. It binds two-way by default. In the demo app, the check boxes are bound to <code>IsSelected</code> without a <code>Mode</code>, so clicking a tab also updates the check boxes. In a test, changing <code>SelectedIndex</code> to 1 set the first source to <code>False</code> and the second to <code>True</code>. Setting <code>IsSelected="True"</code> on the third of three tabs gave <code>SelectedIndex</code> 2 and cleared the others. Only one tab can stay selected, and which one wins depends on how the values arrive. Setting two tabs to <code>True</code> one after the other from code left the last one selected. Writing <code>IsSelected="True"</code> on two tabs in XAML left the first one selected.</td>
+          <td>Whether this tab is the selected one. It binds two-way by default. In the demo app, the check boxes are bound to <code>IsSelected</code> without a <code>Mode</code>, so clicking a tab also updates the check boxes. In a test, changing <code>SelectedIndex</code> to 1 set the first source to <code>False</code> and the second to <code>True</code>, and so did a click on the second tab's header with the real mouse. Setting <code>IsSelected="True"</code> on the third of three tabs gave <code>SelectedIndex</code> 2 and cleared the others. Only one tab can stay selected, and which one wins depends on how the values arrive. Setting two tabs to <code>True</code> one after the other from code left the last one selected. Writing <code>IsSelected="True"</code> on two tabs in XAML left the first one selected.</td>
         </tr>
         <tr>
           <td><code>TabStripPlacement (ReadOnly)</code></td>
@@ -86,7 +86,7 @@
     <p>These properties are not in the demo app's TabItem screen, but they are used with almost every TabItem. Their behavior was measured in the same way.</p>
     <ul>
       <li><strong><code>Header</code>:</strong> a string header is displayed through an <code>AccessText</code>, so an underscore marks an access key. <code>Header="File_Name"</code> made <code>N</code> the access key, and the underscore itself is not displayed. <a href="/articles/wpf-label-underscore-issue/">Why WPF Label Hides Underscores and How to Fix It</a> confirms that the underscore disappears from TabItem headers as well. It also shows that writing <code>__</code> in a Label, which uses the same <code>AccessText</code>, displays a single underscore. The tab width follows the header: on the measuring machine, "File_Name" gave a tab 65.65 wide and "A" one 19.74 wide (the widths depend on the font and display scaling).</li>
-      <li><strong><code>IsEnabled</code>:</strong> a disabled tab is not selectable through UI Automation. Selecting it with <code>ISelectionItemProvider.Select</code>, the path an assistive tool uses, threw <code>ElementNotEnabledException</code>, and the selection did not move. Mouse clicks do not go through this path and were not reproduced. Code is not blocked: <code>SelectedIndex = 1</code> selected the disabled tab and displayed its content. If a tab must stay closed, keep the code that changes the selection from choosing it.</li>
+      <li><strong><code>IsEnabled</code>:</strong> a disabled tab cannot be selected by the user. Selecting it with <code>ISelectionItemProvider.Select</code>, the path an assistive tool uses, threw <code>ElementNotEnabledException</code>, and the selection did not move. A click on its header with the real mouse did not select it either. Code is not blocked: <code>SelectedIndex = 1</code> selected the disabled tab and displayed its content. If a tab must stay closed, keep the code that changes the selection from choosing it.</li>
       <li><strong><code>Content</code>:</strong> content written directly in XAML is created with the window, and every content element received <code>Loaded</code> at start, including those of unselected tabs. Only the selected one was measured. Switching from tab 1 to tab 2 and back raised <code>Loaded</code> again on the content that came back, and the same instance was shown again. To defer expensive work, start it when the tab is first selected, not in the content's constructor or <code>Loaded</code> handler.</li>
     </ul>
   </section>
@@ -130,11 +130,11 @@
     <p>
       Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TabItemDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TabItemDemoScene</code></a>
-      in this site's screenshot tool.
+      in this site's screenshot tool. Clicks on tab headers were made with the real mouse over the measuring window.
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="Table of TabItem selection results: the base class HeaderedContentControl, IsSelected binding two-way by default, TabStripPlacement following the TabControl, the first of two tabs marked IsSelected in XAML and the last of two set from code being selected, a bound source following SelectedIndex, and a disabled tab selectable from code but not through UI Automation's ISelectionItemProvider.Select" width="1030" height="410" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="Table of TabItem selection results: the base class HeaderedContentControl, IsSelected binding two-way by default, TabStripPlacement following the TabControl, the first of two tabs marked IsSelected in XAML and the last of two set from code being selected, a bound source following SelectedIndex and a real mouse click on a tab, and a disabled tab selectable from code but not through UI Automation's ISelectionItemProvider.Select or a real mouse click" width="1030" height="470" loading="lazy">
       <figcaption>Selection, metadata, and disabled tabs. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
 

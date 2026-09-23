@@ -62,6 +62,12 @@ internal static class RealMouse
     [DllImport("user32.dll")]
     private static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassName(IntPtr hwnd, System.Text.StringBuilder name, int size);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint count, Input[] inputs, int size);
 
@@ -118,10 +124,31 @@ internal static class RealMouse
     /// <summary>画面上の点の下にあるトップレベルのウィンドウが、<paramref name="expected"/> でなければ例外にする。</summary>
     private static void EnsureOver(IntPtr expected, NativePoint point)
     {
-        if (GetAncestor(WindowFromPoint(point), AncestorRoot) != expected)
+        IntPtr actual = GetAncestor(WindowFromPoint(point), AncestorRoot);
+        if (actual != expected)
         {
-            throw new InvalidOperationException("カーソルの位置に計測用のウィンドウが無い（ほかのウィンドウが前面にある）。");
+            throw new InvalidOperationException(
+                $"カーソルの位置 ({point.X}, {point.Y}) に計測用のウィンドウが無い（ほかのウィンドウが前面にある）。前面のウィンドウ: {Describe(actual)}");
         }
+    }
+
+    /// <summary>ウィンドウのクラス名とプロセス名（ガードで止まったときに、何が前面にあったかを示すため）。<see cref="RealKeyboard"/> も使う。</summary>
+    internal static string Describe(IntPtr hwnd)
+    {
+        var name = new System.Text.StringBuilder(256);
+        GetClassName(hwnd, name, name.Capacity);
+        GetWindowThreadProcessId(hwnd, out uint processId);
+        string process;
+        try
+        {
+            process = System.Diagnostics.Process.GetProcessById((int)processId).ProcessName;
+        }
+        catch (ArgumentException)
+        {
+            process = "(終了済み)";
+        }
+
+        return $"クラス {name}、プロセス {process}";
     }
 
     private static void Send(uint flags)

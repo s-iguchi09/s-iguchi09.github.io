@@ -121,14 +121,14 @@
     <ul>
       <li><strong><code>MaxLength</code> と <code>CharacterCasing</code> は入力の補助と考える</strong> — どちらも、コードやバインドで設定した文字列には効きませんでした。</li>
       <li><strong>複数行の TextBox にはスクロールバーを付ける</strong> — 既定の <code>Hidden</code> では、内容が TextBox より高くなってもスクロールバーは出ません。</li>
-      <li><strong>最初の表示で <code>MinLines</code> を効かせたいなら、読み込み後に設定する</strong> — XAML で指定すると、文字列が変わるまで効きませんでした。表示後、たとえば <code>Loaded</code> のハンドラーで設定すると、すぐに効きました。</li>
+      <li><strong>最初の表示で <code>MinLines</code> を効かせたいなら、XAML では指定せず、読み込み後に設定する</strong> — XAML で指定すると、文字列が変わるまで効きませんでした。表示後に設定するとすぐに効き、XAML で指定していなければ <code>Loaded</code> のハンドラーで設定しても効きました。XAML にも <code>MinLines="4"</code> があると、<code>Loaded</code> で 4 を設定し直しても値は変わらず、高さは 1 行分のままでした。</li>
       <li><strong>分けたくない長い文字列には <code>WrapWithOverflow</code></strong> — パスや URL など途中で折り返したくない文字列には <code>WrapWithOverflow</code> を、すべてを幅に収めたい場合は <code>Wrap</code> を選びます。</li>
     </ul>
   </section>
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBoxDemoScene</code></a> を使いました。文字の入力は、キーボードと同じ <code>TextInput</code> の経路で文字を届ける <code>TextCompositionManager</code> で、Enter キーは表示したウィンドウへキーのイベントを送って再現しています。このページの高さ・幅・位置は計測した環境での値で、フォントや表示スケールによって変わります。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBoxDemoScene</code></a> を使いました。文字の入力は、キーボードと同じ <code>TextInput</code> の経路で文字を届ける <code>TextCompositionManager</code> で 1 文字ずつ、Enter キーは表示したウィンドウへキーのイベントを送って再現しています。このページの高さ・幅・位置は計測した環境での値で、フォントや表示スケールによって変わります。</p>
 
     <figure class="article-figure">
       <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="キー入力と、コードやバインドで設定した文字列を比べた表。MaxLength 5 は入力を ABCDE で止めるがコードやバインドの文字列は切らず、CharacterCasing Upper は入力を大文字にするがコードの文字列は変えず、IsReadOnly は入力を無視するが選択はでき、Enter キーは AcceptsReturn のときだけ改行を入れる" width="575" height="350" loading="lazy">
@@ -136,7 +136,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg" alt="TextBox のレイアウトの計測結果の表。NoWrap・Wrap・WrapWithOverflow の行数とはみ出し、MinLines と MaxLines による高さ（MinLines は表示後に文字列が変わるまで効かない）、高さ 60 の複数行 TextBox のスクロールバー、TextAlignment の位置、TextDecorations の組み合わせ、ワーカースレッドからの ScrollToEnd で InvalidOperationException が発生すること" width="1116" height="860" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg" alt="TextBox のレイアウトの計測結果の表。NoWrap・Wrap・WrapWithOverflow の行数とはみ出し、MinLines と MaxLines による高さ（MinLines は表示後に文字列が変わるまで効かない）、高さ 60 の複数行 TextBox のスクロールバー、TextAlignment の位置、TextDecorations の組み合わせ、ワーカースレッドからの ScrollToEnd で InvalidOperationException が発生すること" width="1116" height="920" loading="lazy">
       <figcaption>折り返し、行数の制限、スクロールバー、配置、<code>ScrollToEnd</code>。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

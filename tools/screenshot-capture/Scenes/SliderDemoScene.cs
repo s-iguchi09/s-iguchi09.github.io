@@ -1,8 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Automation.Peers;
-using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
@@ -18,7 +16,7 @@ namespace ScreenshotCapture.Scenes;
 /// つまみのドラッグは、Thumb がマウス操作で発生させる DragStarted / DragDelta イベントを
 /// つまみに発生させて再現する。Slider はこれらのイベントを受けて Value を変える。
 /// キー操作は表示したウィンドウでキー入力イベントを送り、トラックのクリックは
-/// 繰り返しボタンの UI オートメーションの Invoke で行う。
+/// 実際のマウス（<see cref="RealMouse"/>）で行う。
 /// </summary>
 internal sealed class SliderDemoScene : IScene
 {
@@ -33,13 +31,13 @@ internal sealed class SliderDemoScene : IScene
         "範囲外の Value と、Minimum より小さい Maximum を設定したときの補正と例外の有無、Minimum と Maximum を設定する順序による最終値の違い",
         "範囲外の値を TwoWay でバインドしたときにソースへ書き戻されるか",
         "Orientation と IsDirectionReversed の組み合わせごとの、Maximum のときのつまみの位置",
-        "矢印キー・PageUp / PageDown・Home / End とトラックのクリックで変わる量（SmallChange / LargeChange）と、IsDirectionReversed・IsSnapToTickEnabled との組み合わせ",
+        "矢印キー・PageUp / PageDown・Home / End と実際のマウスでのトラックのクリックで変わる量（SmallChange / LargeChange）と、IsDirectionReversed・IsSnapToTickEnabled・IsMoveToPointEnabled との組み合わせ",
         "つまみをドラッグしたときの IsSnapToTickEnabled・TickFrequency・Ticks による値の丸めと、プログラムから設定した Value が丸められるか",
         "TickFrequency が範囲を割り切れない場合に描かれる目盛りの数と位置、Ticks の目盛りが IsDirectionReversed で反転するか",
         "TickPlacement による高さの変化と、IsSelectionRangeEnabled による選択範囲の表示、選択範囲が Value を制限しないこと",
         "AutoToolTipPlacement を設定したときにドラッグ中に表示される文字列と AutoToolTipPrecision による丸め、書式を指定するプロパティの有無、桁区切りと小数点がスレッドのカルチャ（en-US / de-DE）に従うこと",
         "Delay / Interval の既定値と Windows のキーボードの設定（SystemParameters.KeyboardDelay / KeyboardSpeed）の値、Delay の既定値が (KeyboardDelay + 1) x 250 と一致すること",
-        "Delay / Interval がトラックの繰り返しボタンに渡されることと、トラックのクリック（繰り返しボタンの UI オートメーションの Invoke で、ボタンのクリック処理を実行）で LargeChange だけ動くこと",
+        "Delay / Interval がトラックの繰り返しボタンに渡されること",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -302,35 +300,40 @@ internal sealed class SliderDemoScene : IScene
             });
         }
 
-        // トラック（つまみ以外の部分）のクリック。繰り返しボタンを UI オートメーションで押す。
+        // トラック（つまみ以外の部分）のクリック。実際のマウスで、つまみの右側（トラックの 85% の位置）を 1 回クリックする。
+        // 押している時間は Delay（既定 500 ms）より短いので、繰り返しは起きない。
+        foreach ((string label, bool moveToPoint, bool snap) in new[]
+        {
+            ("real mouse click on the track at 85% (right of the thumb)", false, false),
+            ("  same, IsMoveToPointEnabled=True", true, false),
+            ("  same, LargeChange 7, IsSnapToTickEnabled, TickFrequency=10", false, true),
+        })
         {
             Slider slider = NewSlider();
             slider.SmallChange = 1;
-            slider.LargeChange = 10;
+            slider.LargeChange = snap ? 7 : 10;
             slider.Value = 50;
-            await ShowAsync(slider, async () =>
+            slider.IsMoveToPointEnabled = moveToPoint;
+            if (snap)
             {
-                Track track = TrackOf(slider);
-                var peer = new RepeatButtonAutomationPeer(track.IncreaseRepeatButton);
-                ((IInvokeProvider)peer).Invoke();
-                await Capture.SettleAsync(Window.GetWindow(slider)!);
-                rows.Add(["click on the track to the right of the thumb", D(slider.Value)]);
-            });
-        }
+                slider.IsSnapToTickEnabled = true;
+                slider.TickFrequency = 10;
+            }
 
-        // 目盛りへの吸着が有効なときのトラックのクリック。LargeChange を目盛りの間隔とずらしておく。
-        {
-            Slider slider = NewSlider();
-            slider.LargeChange = 7;
-            slider.Value = 50;
-            slider.IsSnapToTickEnabled = true;
-            slider.TickFrequency = 10;
             await ShowAsync(slider, async () =>
             {
+                Window window = Window.GetWindow(slider)!;
+                window.Topmost = true;
+                await Capture.SettleAsync(window);
                 Track track = TrackOf(slider);
-                ((IInvokeProvider)new RepeatButtonAutomationPeer(track.IncreaseRepeatButton)).Invoke();
-                await Capture.SettleAsync(Window.GetWindow(slider)!);
-                rows.Add(["click on the track, LargeChange 7, IsSnapToTickEnabled, TickFrequency=10", D(slider.Value)]);
+                using (RealMouse.Preserve())
+                {
+                    await RealMouse.MoveToAsync(track, new Point(track.ActualWidth * 0.85, track.ActualHeight / 2));
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                }
+
+                rows.Add([label, D(slider.Value)]);
             });
         }
 
