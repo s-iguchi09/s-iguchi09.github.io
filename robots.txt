@@ -13,5 +13,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://s-iguchi09.github.io/sitemap_index.xml
 Sitemap: https://s-iguchi09.github.io/sitemap.xml

@@ -549,71 +549,7 @@ MAX_URLS = 50000
 MAX_BYTES = 50 * 1024 * 1024
 
 SITEMAP_FILENAME = "sitemap.xml"
-SITEMAP_INDEX_FILENAME = "sitemap_index.xml"
 LASTMOD_DATA_FILENAME = "_data/lastmod.yml"
-
-
-def latest_lastmod(sitemap: str) -> str:
-    """Return the newest <lastmod> in the sitemap, or TODAY if there is none.
-
-    Deriving the index <lastmod> from the sitemap contents keeps the index
-    stable: it only moves when a page actually changed, so a rerun that
-    produces the same sitemap produces the same index and creates no diff.
-    """
-    root = ET.fromstring(sitemap)
-    dates = [
-        (node.text or "").strip()
-        for node in root.iter(f"{{{SITEMAP_NS}}}lastmod")
-        if (node.text or "").strip()
-    ]
-    return max(dates) if dates else TODAY
-
-
-def generate_sitemap_index(sitemap: str) -> str:
-    """Build the sitemap index that points at sitemap.xml.
-
-    Search Console keeps the fetch state of a submitted sitemap per URL, so a
-    sitemap stuck on "couldn't fetch" stays stuck even after being removed and
-    resubmitted under the same path. The index gives Google a second, distinct
-    entry point to the same URL set, which can be submitted independently.
-    """
-    return (
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        "  <sitemap>\n"
-        f"    <loc>{BASE_URL}/{SITEMAP_FILENAME}</loc>\n"
-        f"    <lastmod>{latest_lastmod(sitemap)}</lastmod>\n"
-        "  </sitemap>\n"
-        "</sitemapindex>\n"
-    )
-
-
-def validate_sitemap_index(index: str) -> int:
-    """Raise ValueError if the sitemap index would be rejected by a crawler.
-
-    Returns the number of referenced sitemaps on success.
-    """
-    try:
-        root = ET.fromstring(index)
-    except ET.ParseError as exc:
-        raise ValueError(f"{SITEMAP_INDEX_FILENAME} is not well-formed XML: {exc}") from exc
-
-    if root.tag != f"{{{SITEMAP_NS}}}sitemapindex":
-        raise ValueError(f"unexpected root element: {root.tag}")
-
-    entries = root.findall(f"{{{SITEMAP_NS}}}sitemap")
-    if not entries:
-        raise ValueError(f"{SITEMAP_INDEX_FILENAME} contains no <sitemap> entry")
-
-    for entry in entries:
-        loc = entry.find(f"{{{SITEMAP_NS}}}loc")
-        if loc is None or not (loc.text or "").strip():
-            raise ValueError("a <sitemap> entry has no <loc>")
-        # A sitemap may only be referenced from the same site it belongs to.
-        if not loc.text.strip().startswith(BASE_URL + "/"):
-            raise ValueError(f"<loc> points outside the site: {loc.text.strip()}")
-
-    return len(entries)
 
 
 def validate_sitemap(sitemap: str) -> int:
@@ -695,14 +631,11 @@ def main():
     sitemap = generate_sitemap()
     try:
         url_count = validate_sitemap(sitemap)
-        index = generate_sitemap_index(sitemap)
-        validate_sitemap_index(index)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
     print(f"{SITEMAP_FILENAME} written to {write_output(SITEMAP_FILENAME, sitemap)} ({url_count} URLs)")
-    print(f"{SITEMAP_INDEX_FILENAME} written to {write_output(SITEMAP_INDEX_FILENAME, index)}")
 
     lastmod_data = generate_lastmod_data()
     print(f"{LASTMOD_DATA_FILENAME} written to {write_output(LASTMOD_DATA_FILENAME, lastmod_data)}")

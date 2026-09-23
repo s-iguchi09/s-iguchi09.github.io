@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPFのDataGridのソートを初期化する方法"
 date: 2026-06-29
 category: WPF
-excerpt: "WPF DataGrid のソート状態を初期化する代表的な方法を整理し、単一列ソートと複数列ソートの両方で使える実装例を示す。"
+excerpt: "WPF DataGrid のソート状態は SortDescriptions と SortDirection の 2 か所にあり、片方だけ戻すと食い違う。明示クリア・Sorting イベント・ICollectionView・Behavior の 4 つの初期化方法を比較する。"
 image: /images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png
 ---
 

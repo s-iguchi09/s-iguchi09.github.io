@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Binding to a WPF UserControl's Own Dependency Property from Inside the Control"
+seo_title: "Binding to a WPF UserControl's Own Dependency Property"
 date: 2026-08-15
 category: WPF
 excerpt: "A dependency property gets its value, yet the internal {Binding Title} stays blank. RelativeSource, ElementName, and inner-root delegation compared on .NET 10."

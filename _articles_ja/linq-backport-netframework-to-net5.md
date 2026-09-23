@@ -1,6 +1,7 @@
 ---
 layout: article-ja
 title: "遅延評価を壊さない LINQ ポリフィルの設計原則 — Append・Prepend・TakeLast・SkipLast の実装"
+seo_title: "遅延評価を壊さない LINQ ポリフィル — Append・Prepend・TakeLast・SkipLast"
 date: 2026-07-10
 category: C#
 excerpt: "LINQ ポリフィル自作時の 3 つの設計原則（引数検証とイテレータの分離・バッファリングの最小化・条件付きコンパイルによる移行ガード）を、.NET Core 期に追加された Append・Prepend・TakeLast・SkipLast の実装を題材に解説する。"

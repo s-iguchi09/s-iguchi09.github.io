@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Causes of a Stale ICollectionView Filter in WPF and Choosing Between Refresh and Live Filtering"
+seo_title: "Stale WPF ICollectionView Filter: Refresh or Live Filtering"
 date: 2026-08-24
 category: WPF
 excerpt: "The filter is correct right after assignment, yet an item property change leaves the list stale. Refresh and live filtering compared on .NET 10."

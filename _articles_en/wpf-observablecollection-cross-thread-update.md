@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF"
+seo_title: "Fixing Cross-Thread ObservableCollection Updates in WPF"
 date: 2026-07-20
 category: WPF
 excerpt: "Modifying a bound ObservableCollection off the UI thread throws a NotSupportedException from CollectionView affinity. This covers the cause and two fixes."

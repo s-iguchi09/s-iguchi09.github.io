@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF の BitmapImage で表示した画像ファイルが削除・上書きできなくなる問題の解決方法"
 date: 2026-07-25
 category: WPF
-excerpt: "BitmapImage で表示した画像ファイルがロックされ、削除・上書きできなくなる。原因である既定のキャッシュ動作と、BitmapCacheOption.OnLoad・StreamSource による解決方法を整理する。"
+excerpt: "BitmapImage で表示した画像ファイルがロックされ、削除・上書きできなくなる。原因である既定のキャッシュ動作と、BitmapCacheOption.OnLoad・StreamSource による解決方法を、読み込み方ごとの実測結果とともに整理する。"
 ---
 
 ## 概要

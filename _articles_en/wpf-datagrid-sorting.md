@@ -3,7 +3,7 @@ layout: article-en
 title: "How to Implement DataGrid Sorting in WPF"
 date: 2026-04-20
 category: WPF
-excerpt: "Learn the basics of DataGrid sorting and practical implementation patterns for real-world WPF applications."
+excerpt: "Covers built-in column-header sorting in the WPF DataGrid, sorting from code-behind, and custom sort logic with ListCollectionView.CustomSort."
 image: /images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png
 ---
 

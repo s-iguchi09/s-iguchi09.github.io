@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF DataGrid の並び替えを実装する方法"
 date: 2026-04-20
 category: WPF
-excerpt: "DataGrid のソート処理の基本と、実務で使いやすい実装パターンを解説する。"
+excerpt: "WPF DataGrid の列ヘッダーによる標準のソートに加え、コードからのソート制御と ListCollectionView.CustomSort による独自ロジックの並び替えを実装例とともに解説し、用途ごとの推奨アプローチを表で整理する。"
 image: /images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png
 ---
 

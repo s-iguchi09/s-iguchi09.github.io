@@ -1,6 +1,7 @@
 ---
 layout: article-ja
 title: "WPF の DataTemplate 内から親の DataContext にバインドできない原因と RelativeSource の使い分け"
+seo_title: "WPF の DataTemplate 内から親の DataContext にバインドする方法"
 date: 2026-08-06
 category: WPF
 excerpt: "DataTemplate 内でバインドしても親の ViewModel に届かないのは、DataContext がアイテムへ切り替わるためである。RelativeSource・ElementName・x:Reference・PlacementTarget の到達範囲を比較する。"

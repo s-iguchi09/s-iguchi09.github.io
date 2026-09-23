@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPFで編集不可のままテキストを選択・コピー可能に表示する方法"
 date: 2026-05-14
 category: WPF
-excerpt: "WPFでTextBlockの代わりにTextBoxを使い、編集不可のままテキストを選択・コピー可能に表示する方法を解説します。"
+excerpt: "TextBlock は部分選択やコピーを前提としていない。WPF で表示専用のテキストを編集不可のまま選択・コピー可能にするため、TextBox を IsReadOnly で使い、キャレットと枠線を抑えて TextBlock と同じ見た目に整える方法を解説する。"
 image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly-text.png
 ---
 

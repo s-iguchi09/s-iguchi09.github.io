@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox"
+seo_title: "Keeping SelectedItems in a Virtualized WPF ListBox"
 date: 2026-04-24
 category: WPF
 excerpt: "Why ListBox selection appears to vanish under UI virtualization, and how an IsSelected-based MVVM pattern keeps it stable. Includes measured evidence that the ItemContainerStyle binding alone loses selections, and the SelectionChanged pairing that fixes it."

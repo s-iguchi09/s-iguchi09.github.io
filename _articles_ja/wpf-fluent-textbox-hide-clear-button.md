@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF Fluent テーマの TextBox でクリアボタンを非表示にする方法"
 date: 2026-07-19
 category: WPF
-excerpt: "Fluent テーマの TextBox がフォーカス時に表示するクリアボタンを、入力挙動を変えずに非表示化する。名前付きパーツを操作する方法と AcceptsReturn を使う方法を .NET 10・9 対応で整理する。"
+excerpt: "Fluent テーマの TextBox がフォーカス時に表示するクリアボタンを、入力挙動を変えずに非表示化する。名前付きパーツを操作する方法と AcceptsReturn を使う方法を .NET 10・9 対応で整理し、選択の分岐点を比較で示す。"
 image: /images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png
 ---
 

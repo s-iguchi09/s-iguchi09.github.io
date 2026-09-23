@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF DataGrid でセル編集中と表示時でコントロールを切り替える方法"
 date: 2026-06-09
 category: WPF
-excerpt: "DataGridTemplateColumn の CellTemplate と CellEditingTemplate を使い分け、表示時と編集中で最適な UI を構成する方法を解説します。"
+excerpt: "DataGridTemplateColumn の CellTemplate と CellEditingTemplate を分けて定義し、WPF DataGrid のセルで表示時と編集中に異なるコントロールを使う方法を解説する。標準列で足りる場合との判断基準も整理する。"
 image: /images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png
 ---
 
