@@ -11,6 +11,7 @@ namespace ScreenshotCapture.Scenes;
 /// ルーティングイベントを発生させるだけでは再現できない。そのため OS のマウス入力を使う。
 /// カーソルを動かす前と、ボタンを押す直前に、カーソルの下が計測用のウィンドウであることを確かめる（ほかのアプリをクリックしないため）。
 /// 押す直前にも確かめるのは、移動後に待つ間に別のウィンドウ（通知など）が前面に出ることがあるためである。
+/// ポップアップ（サブメニューなど）の中の要素は、その要素を表示している HWND（計測用のウィンドウから開いたポップアップ）を確かめる。
 /// カーソルの位置は <see cref="Preserve"/> で元に戻す。
 /// </summary>
 internal static class RealMouse
@@ -71,23 +72,28 @@ internal static class RealMouse
         return new Restore(original);
     }
 
-    /// <summary>要素の中心（または <paramref name="offset"/> の位置）へカーソルを動かす。</summary>
-    public static async Task MoveToAsync(FrameworkElement element, Point? offset = null)
+    /// <summary>
+    /// 要素の中心（または <paramref name="offset"/> の位置）へカーソルを動かす。
+    /// ポップアップの中の要素は <see cref="Window.GetWindow"/> で窓を得られないため、<paramref name="window"/> に計測用のウィンドウを渡す。
+    /// </summary>
+    public static async Task MoveToAsync(FrameworkElement element, Point? offset = null, Window? window = null)
     {
         Point screen = element.PointToScreen(offset ?? new Point(element.ActualWidth / 2, element.ActualHeight / 2));
         var point = new NativePoint { X = (int)Math.Round(screen.X), Y = (int)Math.Round(screen.Y) };
 
-        Window window = Window.GetWindow(element)!;
-        EnsureOver(window, point);
+        window ??= Window.GetWindow(element)
+            ?? throw new InvalidOperationException("ポップアップの中の要素には、計測用のウィンドウを渡す。");
+        EnsureOver(HandleOf(element), point);
         SetCursorPos(point.X, point.Y);
         Send(MouseEventMove);
         await Capture.SettleAsync(window, 100);
     }
 
-    public static async Task LeftDownAsync(Window window)
+    /// <summary>ボタンを押す。<paramref name="target"/> を渡すと、カーソルの下がその要素を表示している HWND であることを確かめる（既定は計測用のウィンドウ）。</summary>
+    public static async Task LeftDownAsync(Window window, FrameworkElement? target = null)
     {
         GetCursorPos(out NativePoint point);
-        EnsureOver(window, point);
+        EnsureOver(target is null ? new WindowInteropHelper(window).Handle : HandleOf(target), point);
         Send(MouseEventLeftDown);
         s_leftDown = true;
         await Capture.SettleAsync(window, 100);
@@ -104,10 +110,14 @@ internal static class RealMouse
         await Capture.SettleAsync(window, 100);
     }
 
-    /// <summary>画面上の点の下にあるトップレベルのウィンドウが、計測用のウィンドウでなければ例外にする。</summary>
-    private static void EnsureOver(Window window, NativePoint point)
+    /// <summary>要素を表示しているトップレベルの HWND（ポップアップの中ならポップアップの HWND）。</summary>
+    private static IntPtr HandleOf(FrameworkElement element) =>
+        (PresentationSource.FromVisual(element) as HwndSource)?.Handle
+            ?? throw new InvalidOperationException("表示していない要素の上にはカーソルを動かせない。");
+
+    /// <summary>画面上の点の下にあるトップレベルのウィンドウが、<paramref name="expected"/> でなければ例外にする。</summary>
+    private static void EnsureOver(IntPtr expected, NativePoint point)
     {
-        IntPtr expected = new WindowInteropHelper(window).Handle;
         if (GetAncestor(WindowFromPoint(point), AncestorRoot) != expected)
         {
             throw new InvalidOperationException("カーソルの位置に計測用のウィンドウが無い（ほかのウィンドウが前面にある）。");

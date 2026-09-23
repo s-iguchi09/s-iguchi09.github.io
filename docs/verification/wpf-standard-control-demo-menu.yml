@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-menu
+slug: "wpf-standard-control-demo-menu"
+scene: "MenuDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Menu の IsMainMenu と、MenuItem の IsCheckable / IsChecked / StaysOpenOnClick / InputGestureText の既定値"
+  - "デモアプリの Role の節と同じ階層での各 MenuItem の Role と、子のない最上位項目に子を追加したときの Role"
+  - "実際のマウスで項目をクリックしたときの IsChecked と、サブメニューが開いたままか（IsCheckable / StaysOpenOnClick の組み合わせ）"
+  - "IsChecked を TwoWay で結んだ CheckBox がクリックに追従するか、IsCheckable の 2 項目が排他になるか"
+  - "実際の Alt / F10 / Alt+M を押したときにメニューへ入るか（IsMainMenu が True / False、デモアプリの Main Menu(_M)）"
+  - "InputGestureText=\"Ctrl+O\" の項目の表示と、実際の Ctrl+O で Click が起きるか。Command=ApplicationCommands.Copy の項目の InputGestureText"
+  - "Command=ApplicationCommands.Copy の項目の IsEnabled（メニューを閉じたまま / 実際のクリックで開いたとき。TextBox の選択の有無、Button にフォーカスがあるとき）"
+  - "実際のマウスでホバー・押下・解放したときの最上位項目の IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation"
+images:
+  - "images/wpf-standard-control-demo/verification/menu/menu-behavior.svg"

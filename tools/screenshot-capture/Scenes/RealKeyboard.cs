@@ -43,20 +43,20 @@ internal static class RealKeyboard
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint count, Input[] inputs, int size);
 
-    /// <summary>仮想キーを 1 回押して離す。</summary>
-    public static async Task PressAsync(Window window, ushort virtualKey)
+    /// <summary>仮想キーを 1 回押して離す。<paramref name="modifiers"/> のキー（Ctrl など）は、その間押したままにする。</summary>
+    public static async Task PressAsync(Window window, ushort virtualKey, params ushort[] modifiers)
     {
         if (GetForegroundWindow() != new WindowInteropHelper(window).Handle)
         {
             throw new InvalidOperationException("前面のウィンドウが計測用のウィンドウではない。キーを送らない。");
         }
 
-        var inputs = new[]
-        {
-            new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = virtualKey } },
-            new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = virtualKey, Flags = KeyEventKeyUp } },
-        };
-        if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>()) != inputs.Length)
+        var inputs = new List<Input>();
+        inputs.AddRange(modifiers.Select(m => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = m } }));
+        inputs.Add(new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = virtualKey } });
+        inputs.Add(new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = virtualKey, Flags = KeyEventKeyUp } });
+        inputs.AddRange(modifiers.Reverse().Select(m => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = m, Flags = KeyEventKeyUp } }));
+        if (SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<Input>()) != inputs.Count)
         {
             throw new InvalidOperationException(
                 $"SendInput が入力を受け付けなかった（画面のロック中など）。Win32 エラー {Marshal.GetLastWin32Error()}。");

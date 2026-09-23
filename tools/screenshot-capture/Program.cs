@@ -91,6 +91,7 @@ internal static class Program
         new ToolTipDemoScene(),
         new TabControlDemoScene(),
         new ComboBoxDemoScene(),
+        new MenuDemoScene(),
     ];
 
     [STAThread]
