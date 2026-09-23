@@ -92,6 +92,7 @@ internal static class Program
         new TabControlDemoScene(),
         new ComboBoxDemoScene(),
         new MenuDemoScene(),
+        new ImageDemoScene(),
     ];
 
     [STAThread]

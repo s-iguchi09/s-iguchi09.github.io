@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 440" width="1140" height="440" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1140" height="440" />
+  <text class="title" x="12" y="24">Image: type, clipping, DPI, sources from a path, file locks and decoding</text>
+  <rect class="head" x="12" y="38" width="1116" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1114" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">base class, Focusable; defaults Stretch, StretchDirection</text>
+  <text class="cell" x="1114" y="87.5" text-anchor="end">FrameworkElement, False; Uniform, Both</text>
+  <text class="cell" x="26" y="117.5">large image, UniformToFill / Both in 300 x 200: size; top-left; clip</text>
+  <text class="cell" x="1114" y="117.5" text-anchor="end">400 x 200; 0, 0; 300 x 200</text>
+  <text class="cell" x="26" y="147.5">large image, UniformToFill / Both, aligned Center in 300 x 200: size; top-left; clip</text>
+  <text class="cell" x="1114" y="147.5" text-anchor="end">400 x 200; -50, 0; 300 x 200</text>
+  <text class="cell" x="26" y="177.5">large image, None / UpOnly in 300 x 200: size; top-left; clip</text>
+  <text class="cell" x="1114" y="177.5" text-anchor="end">600.08 x 300.04; 0, 0; 300 x 200</text>
+  <text class="cell" x="26" y="207.5">100 x 50 pixels at 72 DPI, Stretch None: size</text>
+  <text class="cell" x="1114" y="207.5" text-anchor="end">133.36 x 66.68</text>
+  <text class="cell" x="26" y="237.5">path bound to Source, PNG file: Source type, size</text>
+  <text class="cell" x="1114" y="237.5" text-anchor="end">BitmapFrameDecode, 100.01 x 50.01</text>
+  <text class="cell" x="26" y="267.5">  delete the file: while shown; Source = null; then GC</text>
+  <text class="cell" x="1114" y="267.5" text-anchor="end">locked (IOException); locked (IOException); deleted</text>
+  <text class="cell" x="26" y="297.5">path bound to Source, missing file: Source type, size</text>
+  <text class="cell" x="1114" y="297.5" text-anchor="end">null, 0 x 0</text>
+  <text class="cell" x="26" y="327.5">path bound to Source, SVG file: Source type, size</text>
+  <text class="cell" x="1114" y="327.5" text-anchor="end">null, 0 x 0</text>
+  <text class="cell" x="26" y="357.5">BitmapImage with CacheOption OnLoad, shown: delete the file</text>
+  <text class="cell" x="1114" y="357.5" text-anchor="end">deleted</text>
+  <text class="cell" x="26" y="387.5">600 x 300 with DecodePixelWidth 100: pixels; size in DIPs; Stretch None size</text>
+  <text class="cell" x="1114" y="387.5" text-anchor="end">100 x 50; 100.01 x 50.01; 100.01 x 50.01</text>
+  <text class="cell" x="26" y="417.5">demo's start path img0.jpg: exists; pixels; DPI</text>
+  <text class="cell" x="1114" y="417.5" text-anchor="end">True; 3840 x 2400; 96</text>
+  <line class="line" x1="12" y1="38" x2="1128" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1128" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1128" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1128" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1128" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1128" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1128" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1128" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1128" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1128" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1128" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1128" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1128" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1128" y2="428" />
+  <line class="line" x1="12" y1="38" x2="12" y2="428" />
+  <line class="line" x1="699" y1="38" x2="699" y2="428" />
+  <line class="line" x1="1128" y1="38" x2="1128" y2="428" />
+</svg>

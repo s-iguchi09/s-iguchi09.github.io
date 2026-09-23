@@ -7,48 +7,42 @@
   <meta charset="UTF-8">
   <title>Image | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF Image control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <meta name="description" content="WPF Image measured on .NET 10: the size for each Stretch and StretchDirection, where UniformToFill crops, DPI, binding a file path, file locks, and decoding.">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-en.html %}
+
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Image</p>
     <h1>Image <span class="category-badge">Graphics</span></h1>
-    <p>Image is a control for displaying images from various sources including files, URIs, and resources. It supports various image formats and provides properties to control how the image is stretched to fit its container.</p>
+    <p>Image displays a picture from an <code>ImageSource</code>, such as a bitmap file, and scales it to the space it is given.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>Image</strong> control is the primary way to display raster and vector images within a
-      layout. It derives directly from <code>FrameworkElement</code> rather than <code>Control</code>, meaning
-      it is a lightweight visual element without the full control template overhead. The image content is
-      provided through the <code>Source</code> property, which accepts any <code>ImageSource</code> — including
-      <code>BitmapImage</code>, <code>BitmapFrame</code>, <code>DrawingImage</code>, and
-      <code>RenderTargetBitmap</code>.
+      <strong>Image</strong> derives from <code>FrameworkElement</code>, not <code>Control</code>, and is not focusable. The demo app
+      binds its <code>Source</code> to the text of a TextBox holding a file path. A path string is converted to an image: the
+      <code>Source</code> became a <code>BitmapFrameDecode</code>. A path to a missing file, or to an SVG file, left
+      <code>Source</code> <code>null</code> and the Image 0 &times; 0, without an exception. WPF does not decode SVG.
     </p>
     <p>
-      WPF's Image control supports all major raster formats natively: BMP, PNG, JPEG, GIF, TIFF, ICO, and
-      WBMP. For vector content, <code>DrawingImage</code> wraps a <code>Drawing</code> object and renders
-      cleanly at any resolution, making it ideal for high-DPI displays. In XAML, you can reference embedded
-      resources using pack URIs (e.g., <code>pack://application:,,,/Images/logo.png</code>), which are
-      compiled into the assembly and do not require external files at deployment.
+      A file shown through a path is locked. While a PNG bound that way was shown, deleting the file failed with an
+      <code>IOException</code>, and it still failed after <code>Source</code> was set to <code>null</code>; it succeeded only after
+      a garbage collection. A <code>BitmapImage</code> with <code>CacheOption</code> set to <code>OnLoad</code> reads the file at once,
+      and its file could be deleted while the image was shown.
     </p>
     <p>
-      The <code>Stretch</code> property is central to how Image behaves inside its allocated layout space.
-      <code>None</code> renders the image at its natural pixel size; <code>Fill</code> distorts the image to
-      fill the container completely; <code>Uniform</code> scales the image proportionally to fit within the
-      container without distortion; and <code>UniformToFill</code> scales proportionally to fill the container,
-      cropping excess pixels. Choosing the right mode prevents unintentional stretching or blank borders.
-    </p>
-    <p>
-      The <code>StretchDirection</code> property further refines scaling behavior by restricting whether the
-      image is scaled up, scaled down, or both. This is useful when you want to prevent a small thumbnail from
-      being blown up to fill a large area (<code>DownOnly</code>), or when you want an image to expand to fill
-      available space but never shrink below its native size (<code>UpOnly</code>).
+      The demo app starts with the path <code>C:\Windows\Web\Wallpaper\Windows\img0.jpg</code>, which existed on the measuring
+      machine (Windows 11) as a picture of 3840 &times; 2400 pixels at 96 DPI. Its combo boxes start at the first values,
+      <code>None</code> and <code>UpOnly</code>, so the picture is shown at full size and only its top-left corner is visible. The
+      "Show Code" link under the section displays its XAML.
     </p>
   </section>
 
@@ -59,24 +53,34 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
+
     <table class="prop-table">
-      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
       <tbody>
         <tr>
           <td><code>Source</code></td>
-          <td><code>ImageSource (URI / file path)</code></td>
-          <td>The image data to display, specified as a URI string pointing to a resource, file, or web URL. WPF automatically creates a <code>BitmapImage</code> from the URI during XAML parsing. For application resources, use the pack URI format (e.g., <code>pack://application:,,,/Images/logo.png</code>). For large image collections, set <code>BitmapCacheOption.OnLoad</code> on the <code>BitmapImage</code> to decode immediately and release the stream. Pitfall: in code-behind, you cannot assign a plain string to <code>Image.Source</code> — the implicit string-to-ImageSource converter only runs during XAML parsing. In code, create a <code>BitmapImage</code> or use an <code>ImageSourceConverter</code> instead.</td>
+          <td><code>ImageSource</code></td>
+          <td>The picture. A bound path string is converted, and the file stays locked (see above). Without scaling, the size is in device-independent units, the pixels &times; 96 / DPI: 100 &times; 50 pixels at 72 DPI were 133.36 &times; 66.68. PNG stores the resolution in pixels per metre, so even the 96 DPI PNGs came back as 100.01 wide.</td>
         </tr>
         <tr>
           <td><code>Stretch</code></td>
           <td><code>None / Fill / Uniform / UniformToFill</code></td>
-          <td>Controls how the image scales to fill its allocated layout bounds. <code>Uniform</code> scales proportionally to fit within the container, potentially leaving letterbox bars. <code>UniformToFill</code> scales proportionally to fill the container completely, cropping edges — ideal for profile photos or cover images. <code>Fill</code> ignores the aspect ratio and stretches the image to fill. Pitfall: with <code>UniformToFill</code>, the full image is still decoded into memory even though only part of it is displayed. For very large images, this wastes memory; use <code>DecodePixelWidth</code>/<code>DecodePixelHeight</code> to decode at the display size.</td>
+          <td>How the picture is scaled to the space; the default is <code>Uniform</code>. In a 300 &times; 200 area, a 600 &times; 300 picture was 600 &times; 300 with <code>None</code>, 300 &times; 200 with <code>Fill</code>, 300 &times; 150 with <code>Uniform</code>, and 400 &times; 200 with <code>UniformToFill</code>. The part outside the area is cut off, and it is cut from the right and bottom: the picture started at the area's top-left corner. With <code>HorizontalAlignment</code> and <code>VerticalAlignment</code> set to <code>Center</code>, it started at -50, so both sides were cut evenly.</td>
         </tr>
         <tr>
           <td><code>StretchDirection</code></td>
           <td><code>UpOnly / DownOnly / Both</code></td>
-          <td>Restricts the direction in which the image is scaled. <code>Both</code> (the default) allows scaling in both directions; <code>DownOnly</code> prevents enlarging a small image beyond its natural size, which avoids blurriness when a small icon is placed in a large container; <code>UpOnly</code> prevents shrinking a large image below its natural size. Pitfall: combining <code>StretchDirection="UpOnly"</code> with <code>Stretch="Uniform"</code> means a small image will not be upscaled in a large container, which is intentional for icons but can cause unexpected small rendering for photos.</td>
+          <td>Whether the picture may be enlarged, reduced, or both; the default is <code>Both</code>. <code>UpOnly</code> kept the 600 &times; 300 picture at 600 &times; 300 in every mode, and <code>DownOnly</code> kept the 100 &times; 50 picture at 100 &times; 50. The demo app starts at <code>UpOnly</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -84,70 +88,93 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates Image usage with different stretch modes and a resource URI:</p>
-    <pre><code class="language-xml">&lt;StackPanel Margin="16" Orientation="Vertical"&gt;
+    <p>The following XAML is the demo app's section (<code>ImageUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
+    <pre><code class="language-xml">&lt;TextBox x:Name="SourceTextBox" Text="C:\Windows\Web\Wallpaper\Windows\img0.jpg" /&gt;
 
-  &lt;!-- Resource image with uniform scaling --&gt;
-  &lt;Image Source="pack://application:,,,/Assets/photo.jpg"
-         Width="300" Height="200"
-         Stretch="Uniform"
-         Margin="4" /&gt;
+&lt;ComboBox x:Name="StretchComboBox"
+          DisplayMemberPath="Name"
+          ItemsSource="{markupextensions:EnumBindingSource EnumType=Stretch}"
+          SelectedIndex="0"
+          SelectedValuePath="Value" /&gt;
+&lt;ComboBox x:Name="StretchDirectionComboBox"
+          DisplayMemberPath="Name"
+          ItemsSource="{markupextensions:EnumBindingSource EnumType=StretchDirection}"
+          SelectedIndex="0"
+          SelectedValuePath="Value" /&gt;
 
-  &lt;!-- Thumbnail that fills its container, cropping if needed --&gt;
-  &lt;Border Width="80" Height="80" CornerRadius="4"
-          ClipToBounds="True"&gt;
-    &lt;Image Source="{Binding ThumbnailUri}"
-           Stretch="UniformToFill"
-           StretchDirection="Both" /&gt;
-  &lt;/Border&gt;
-
-  &lt;!-- Icon at native size, no scaling --&gt;
-  &lt;Image Source="pack://application:,,,/Icons/info.png"
-         Stretch="None"
-         HorizontalAlignment="Left" /&gt;
-
-&lt;/StackPanel&gt;</code></pre>
+&lt;Grid Background="#F0F0F0"&gt;
+  &lt;Image x:Name="DemoImage"
+         Source="{Binding Text, ElementName=SourceTextBox}"
+         Stretch="{Binding SelectedValue, ElementName=StretchComboBox}"
+         StretchDirection="{Binding SelectedValue, ElementName=StretchDirectionComboBox}" /&gt;
+&lt;/Grid&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Application logos and splash screens:</strong> Displaying a branding image at the top of the main window or on a startup screen with controlled scaling to fit various window sizes.</li>
-      <li><strong>Photo galleries and thumbnails:</strong> Rendering grid cells of images with <code>Stretch="UniformToFill"</code> inside a fixed-size <code>Border</code> to create a uniform thumbnail grid.</li>
-      <li><strong>Button and menu icons:</strong> Embedding a small PNG or vector <code>DrawingImage</code> inside a <code>Button</code> content template to create visually rich icon buttons.</li>
-      <li><strong>Product catalog images:</strong> Binding the <code>Source</code> property to a URL in a data-bound <code>DataGrid</code> or <code>ListView</code> to display product photos alongside text data.</li>
-      <li><strong>Backgrounds and watermarks:</strong> Using an <code>Image</code> with low opacity inside a <code>Grid</code> behind other content to create a subtle watermark or branded background.</li>
+      <li><strong>Logos and illustrations:</strong> a picture that keeps its proportions with <code>Uniform</code>.</li>
+      <li><strong>Thumbnails:</strong> equal cells filled with <code>UniformToFill</code>, decoded at a small size.</li>
+      <li><strong>Icons at their own size:</strong> <code>DownOnly</code>, so a small icon is never enlarged.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use pack URIs for embedded resources:</strong> Mark image files as <em>Resource</em> in their Build Action so they are compiled into the assembly, avoiding missing-file deployment issues.</li>
-      <li><strong>Set explicit Width/Height for performance:</strong> When displaying images in a virtualized list, set explicit dimensions to prevent the layout engine from re-measuring during scroll virtualization.</li>
-      <li><strong>Use <code>DecodePixelWidth</code> / <code>DecodePixelHeight</code>:</strong> When loading large images as small thumbnails, set these on the <code>BitmapImage</code> to decode at the display size and dramatically reduce memory usage.</li>
-      <li><strong>Prefer <code>DrawingImage</code> for icons:</strong> Vector-based icons rendered via <code>DrawingImage</code> or <code>Viewbox</code> remain crisp at all DPI settings, unlike raster PNGs that may appear blurry on high-DPI displays.</li>
-      <li><strong>Handle load failures gracefully:</strong> Subscribe to <code>BitmapImage.DownloadFailed</code> and <code>DecodeFailed</code> events or provide a fallback <code>Source</code> using a value converter to show a placeholder when images cannot be loaded.</li>
-      <li><strong>Release large images when no longer needed:</strong> Setting <code>Image.Source</code> to <code>null</code> when an image is no longer displayed helps the garbage collector release the decoded bitmap. Large images held in memory can cause significant memory pressure in image-heavy applications.</li>
-      <li><strong>SVG is not natively supported:</strong> WPF's Image control does not support SVG. To display SVG graphics, use a third-party library or re-implement the drawing using <code>Path</code> and <code>Canvas</code> elements.</li>
+      <li><strong>Load files that may change with <code>BitmapCacheOption.OnLoad</code>.</strong> A path binding keeps the file locked, even after <code>Source</code> is cleared.</li>
+      <li><strong>Center the Image when you use <code>UniformToFill</code>.</strong> Otherwise the crop keeps the top-left of the picture.</li>
+      <li><strong>Set <code>DecodePixelWidth</code> for thumbnails.</strong> With 100, a 600 &times; 300 picture was decoded to 100 &times; 50 pixels. It also changes the picture's own size: without scaling it was shown 100 wide, not 600.</li>
+      <li><strong>Check the file's DPI when you use <code>Stretch="None"</code>.</strong> The same pixels are shown larger at a lower DPI.</li>
+      <li><strong>Convert SVG before showing it.</strong> An SVG path gives no picture and no error.</li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ImageDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ImageDemoScene</code></a>
+      in this site's screenshot tool. The pictures were PNG files written by the tool, of 100 &times; 50 and 600 &times; 300 pixels,
+      laid out in a 300 &times; 200 area. The path was bound from a TextBox as in the demo app, and a lock was detected by trying to
+      delete the file.
+    </p>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/image/image-matrix.svg" alt="Table of Image sizes in a 300 by 200 area: None keeps 100 by 50 and 600 by 300, Fill, Uniform and UniformToFill give 300 by 200, 300 by 150 and 400 by 200 unless UpOnly keeps the large picture or DownOnly keeps the small one" width="690" height="320" loading="lazy">
+      <figcaption>Displayed size for each <code>Stretch</code> and <code>StretchDirection</code>. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/image/image-behavior.svg" alt="Table of Image results: it derives from FrameworkElement and is not focusable with Uniform and Both as defaults, UniformToFill and None cut the picture from the top-left unless centered, 72 DPI enlarges it, a bound path gives BitmapFrameDecode while missing and SVG files give null, the bound file stays locked until a garbage collection, OnLoad does not lock, DecodePixelWidth 100 gives 100 by 50, and the demo's start picture is 3840 by 2400 at 96 DPI" width="1140" height="440" loading="lazy">
+      <figcaption>Type, cropping, DPI, paths, file locks, and decoding. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/inkcanvas.html">InkCanvas</a> — a drawing surface control that can overlay or work alongside image content.</li>
-      <li><a href="/apps/wpf-standard-control-demo/canvas.html">Canvas</a> — an absolute-positioning panel often used to layer multiple Image controls.</li>
+      <li><a href="/apps/wpf-standard-control-demo/viewbox.html">Viewbox</a> — the same <code>Stretch</code> and <code>StretchDirection</code>, for any element.</li>
+      <li><a href="/apps/wpf-standard-control-demo/inkcanvas.html">InkCanvas</a> — a surface to draw on with the mouse or a pen.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ImageUsage" target="_blank" rel="noopener noreferrer">View Image source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under the section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ImageUsage" target="_blank" rel="noopener noreferrer">
+        View Image source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>
+
 {% include footer-en.html %}
+
 </body>
 </html>
