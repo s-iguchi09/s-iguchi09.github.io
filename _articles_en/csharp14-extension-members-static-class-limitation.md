@@ -4,7 +4,7 @@ title: "C# 14 Extension Members on Static Classes: Static Members Only"
 seo_title: "C# 14 Extension Members on Static Classes"
 date: 2026-06-17
 category: C#
-excerpt: "A C# 14 extension block can target a static class such as Directory, but only static members can be added. Instance members are rejected with CS0721 or CS9303. This article maps the boundary to the receiver form and covers the alternatives for instance-style calls."
+excerpt: "A C# 14 extension block can target a static class like Directory, but only for static members; instance members fail with CS0721 or CS9303. Plus alternatives."
 ---
 
 ## Overview

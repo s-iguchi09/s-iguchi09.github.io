@@ -28,7 +28,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/" />
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -49,7 +49,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/treepaste.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/treepaste.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/attachments/TreePaste.png</image:loc></image:image>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -71,7 +71,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-messagebox-sample-creator.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-messagebox-sample-creator.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/attachments/WPFMessageBoxSampleCreator.png</image:loc></image:image>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -311,7 +311,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/gridsplitter.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/gridsplitter.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/gridsplitter.png</image:loc></image:image>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -904,7 +904,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/xaml-extension-pack.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/xaml-extension-pack.html" />
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -924,7 +924,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/categories/csharp.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/categories/csharp.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/categories/csharp.html" />
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1060,7 +1060,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-comparison.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.svg</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1073,7 +1073,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp-operators-initialization-syntax-by-version/csharp-operator-timeline.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg</image:loc></image:image>
-    <lastmod>2026-08-31</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1110,7 +1110,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/csharp14-extension-members-static-class-limitation/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-form-matrix.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1134,7 +1134,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/linq-backport-netframework-to-net10/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg</image:loc></image:image>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1646,7 +1646,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg</image:loc></image:image>
-    <lastmod>2026-09-20</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1661,7 +1661,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png</image:loc></image:image>
-    <lastmod>2026-08-31</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1728,7 +1728,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png</image:loc></image:image>
-    <lastmod>2026-08-30</lastmod>
+    <lastmod>2026-09-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
