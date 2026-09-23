@@ -1,65 +1,149 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"><title>ToolBar | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8">
+  <title>ToolBar | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の ToolBar はよく使うコマンドボタンやコントロールをツールバーに配置するコンテナコントロールです。表示しきれないアイテムはオーバーフローパネルに自動的に収容されます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+  <meta name="description" content="WPF の ToolBar のオーバーフロー、OverflowMode、ToolBarTray のバンドとロック、向き、ツールバー内のボタンに当たるスタイルを .NET 10 で実測して解説します。トレイがなくてもオーバーフローが働くことも確かめます。">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 {% include header-ja.html %}
 <main>
+
   <section class="hero">
-    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToolBar</p>
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ToolBar</p>
     <h1>ToolBar <span class="category-badge">Menu</span></h1>
-    <p>ToolBar はよく使うコマンドボタンやコントロールをツールバーに配置するコンテナコントロールです。表示しきれないアイテムはオーバーフローパネルに自動的に収容されます。ToolBarTray と組み合わせて複数のツールバーを管理できます。</p>
+    <p>ToolBar はコマンドを帯状に並べ、入りきらない項目をオーバーフローのメニューへ移すコントロールです。複数のツールバーは ToolBarTray の中に並べられます。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>ToolBar</strong> は <code>HeaderedItemsControl</code> を継承したコントロールで、Button・CheckBox・ComboBox・Separator などのコントロールをツールバーとして配置します。<code>ToolBarTray</code> の子として複数の ToolBar を並べたり、重ねたりできます。</p>
-  <p>ToolBar の幅が不足してすべてのアイテムを表示できない場合、超過したアイテムはオーバーフロー（>>) ボタンを通じたドロップダウンパネルに自動的に移動します。<code>ToolBar.OverflowMode</code> 添付プロパティで各アイテムがオーバーフローに移動するかどうかを制御できます（Always/AsNeeded/Never）。</p>
-  <p>ToolBar 内のコントロールには、ToolBar 内にいることを示すスタイルが自動的に適用されます。Button はフラットな外観に、ComboBox は境界なしのコンパクトな外観になります。これは ToolBar リソースディクショナリのテンプレートによるものです。</p>
-  <p>ToolBar は WPF の <code>DockPanel</code> と組み合わせてアプリウィンドウの上部に配置するのが一般的なパターンです。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/toolbar.png" alt="toolbar demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>ToolBar</strong> は <code>HeaderedItemsControl</code> を継承しています。入りきらない項目は、右端のボタンで開くオーバーフローのポップアップへ移ります。これに <code>ToolBarTray</code> は要りません。デモアプリのオーバーフローの欄は、幅 100〜400 の ToolBar を単独で置いており、幅 100 では 5 つのボタンのうち 4 つがオーバーフローへ移りました。トレイが加えるのは、バンド・ドラッグ・ロックです。</p>
+    <p>ToolBar に置いた項目には、ツールバー用のスタイルが当たります。<code>Button</code>・<code>ToggleButton</code>・<code>ComboBox</code>・<code>Separator</code> には、それぞれ <code>ToolBar.ButtonStyleKey</code>・<code>ToggleButtonStyleKey</code>・<code>ComboBoxStyleKey</code>・<code>SeparatorStyleKey</code> のスタイルが適用されていました。横向きのツールバーの Separator は、幅 1 の縦線になりました。ツールバー自体の <code>Background</code> は直接変えられます。<code>LightYellow</code> を設定すると、テンプレートの枠の既定の <code>#FFEEF5FD</code> が置き換わりました。</p>
+    <p>デモアプリには以下の各プロパティの欄があり、各欄の下の「Show Code」リンクでその欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/toolbar.png" alt="toolbar demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>IsOverflowOpen</code></td><td><code>bool</code></td><td>プログラムからオーバーフローパネルを開閉したい場合（例：特定の操作後にオーバーフロー内のアイテムを案内する）に使用します。True にするとオーバーフローパネルが展開し、スペース不足で隠れているアイテムが表示されます。ToolBar の右端に表示される &gt;&gt; ボタンが押された状態と同じ効果があります。ToolBar に十分なスペースがある場合（全アイテムが表示されている場合）はオーバーフローボタン自体が非表示になるため、IsOverflowOpen=True にしても視覚的な変化がありません。</td></tr><tr><td><code>Band / BandIndex (ToolBarTray)</code></td><td><code>int</code></td><td>ToolBarTray 内に複数の ToolBar を複数行に配置したい場合に使用します。Band で行を指定し、BandIndex でその行内の表示順序を制御します。同じ Band の ToolBar は同じ行に並び、Band が異なると別の行として表示されます。ユーザーが ToolBar をドラッグして移動した場合にこれらの値が更新されます。ToolBarTray を使わずに単独で配置した場合は Band/BandIndex は無視され、ドラッグによる移動もできません。</td></tr><tr><td><code>OverflowMode (ToolBar attached)</code></td><td><code>Always / AsNeeded / Never</code></td><td>ToolBar のサイズに関わらず特定のアイテムを常に表示したい（Never）、または常にオーバーフローメニューに表示したい（Always）場合に設定します。保存・削除など重要なボタンには Never を設定して常にアクセスできるようにします。Never を設定したアイテムが多すぎると、ウィンドウを極端に狭めたときにアイテム同士が重なったり切れたりすることがあるため、使用は最小限にとどめてください。</td></tr><tr><td><code>Orientation</code></td><td><code>Horizontal / Vertical</code></td><td>縦置きのサイドバーや専用アプリのパレットツールバーのように垂直方向に並べたい場合に Vertical を使用します。Horizontal（デフォルト）ではアイテムが左から右に並び、Vertical ではアイテムが上から下に並びます。ToolBarTray と組み合わせる場合は ToolBarTray の Orientation と方向を合わせる必要があり、不一致だとレイアウトが崩れることがあります。</td></tr></tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>OverflowMode (ToolBar attached)</code></td>
+          <td><code>AsNeeded / Never / Always</code></td>
+          <td>幅が足りないときに項目をどこへ置くかで、既定値は <code>AsNeeded</code> です。デモアプリと同じく 5 つのボタンの 2 つ目を対象にすると、幅 100 では、<code>AsNeeded</code> でオーバーフローへ移り、<code>Never</code> ではツールバーに残り、<code>Always</code> では幅 400 でも常にオーバーフローにありました。<code>Never</code> はすべてを見せる方法ではありません。幅 100 のツールバーで 5 つのボタンをすべて <code>Never</code> にすると、オーバーフローへは何も移らず、ボタンは 198.15 の幅を取り、大半が切れて見えなくなりました。</td>
+        </tr>
+        <tr>
+          <td><code>HasOverflowItems / IsOverflowItem (ToolBar)</code></td>
+          <td><code>bool（読み取り専用）</code></td>
+          <td><code>HasOverflowItems</code> はツールバーのオーバーフローに項目があるかどうかを、添付プロパティの <code>ToolBar.IsOverflowItem</code> は個々の項目がオーバーフローにあるかどうかを表します。どちらも読み取り専用で、デモアプリではツールバーと対象のボタンについて表示しています。</td>
+        </tr>
+        <tr>
+          <td><code>IsOverflowOpen (ToolBar)</code></td>
+          <td><code>bool</code></td>
+          <td>オーバーフローのポップアップが開いているかどうかで、デモアプリではチェックボックスにバインドしています。オーバーフローに何もないとき（幅 400）も、オーバーフローボタンは表示されたまま無効になっていました。この状態で <code>IsOverflowOpen = true</code> にすると、表示する項目のないポップアップが開きました。</td>
+        </tr>
+        <tr>
+          <td><code>Band / BandIndex (ToolBar)</code></td>
+          <td><code>int</code></td>
+          <td>ToolBarTray の何行目に置くかと、その行の中での順番です。デモアプリのトレイでは、バンドが 0・0・1・1、インデックスが 0・1・0・1 のツールバーが、(0, 0)・(147.79, 0)・(0, 30.96)・(147.79, 30.96) に置かれました。つまみでドラッグすると値が変わり、バンド 1・インデックス 0 のツールバーを右へ 250、上へ 30 ドラッグすると、バンド 0・インデックス 0 に移りました。</td>
+        </tr>
+        <tr>
+          <td><code>Background / IsLocked / Orientation (ToolBarTray)</code></td>
+          <td><code>Brush / bool / Orientation</code></td>
+          <td><code>IsLocked</code> はトレイの中のツールバーに引き継がれ、<code>True</code> では各ツールバーのつまみが非表示（Collapsed）になり、ドラッグできなくなりました。トレイの <code>Orientation</code> がツールバーの向きを決めます。<code>ToolBar.Orientation</code> は読み取り専用で、縦向きのトレイでは <code>Vertical</code>、トレイの外では <code>Horizontal</code> になり、設定しようとすると <code>InvalidOperationException</code> が発生しました。2 つの向きが食い違うことはありません。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;DockPanel&gt;
-  &lt;ToolBarTray DockPanel.Dock="Top"&gt;
-    &lt;ToolBar Band="0" BandIndex="0"&gt;
-      &lt;Button Command="ApplicationCommands.New"
-              ToolTip="新規作成"&gt;
-        &lt;Image Source="/Icons/new.png" Width="16" /&gt;
-      &lt;/Button&gt;
-      &lt;Button Command="ApplicationCommands.Open"
-              ToolTip="開く"&gt;
-        &lt;Image Source="/Icons/open.png" Width="16" /&gt;
-      &lt;/Button&gt;
-      &lt;Separator /&gt;
-      &lt;Button Command="{Binding SaveCommand}" ToolTip="保存"&gt;
-        &lt;Image Source="/Icons/save.png" Width="16" /&gt;
-      &lt;/Button&gt;
-    &lt;/ToolBar&gt;
-    &lt;ToolBar Band="0" BandIndex="1"&gt;
-      &lt;ToggleButton IsChecked="{Binding IsBold}" ToolTip="太字"&gt;
-        &lt;TextBlock Text="B" FontWeight="Bold" /&gt;
-      &lt;/ToggleButton&gt;
-      &lt;ComboBox ItemsSource="{Binding FontSizes}"
-                SelectedItem="{Binding SelectedFontSize}"
-                Width="60" /&gt;
-    &lt;/ToolBar&gt;
-  &lt;/ToolBarTray&gt;
-&lt;/DockPanel&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>アプリのメインツールバー</strong> — 保存・開く・印刷などの頻繁に使うコマンドをアイコンボタンで素早くアクセスできるようにします。</li><li><strong>テキストエディタのフォーマットバー</strong> — 太字・斜体・下線・フォントサイズなどのテキスト書式設定ツールをツールバーに配置します。</li><li><strong>図形描画ツールバー</strong> — 描画ツール（ペン・形状・塗りつぶしなど）の選択ボタンをツールバーに配置します。</li><li><strong>ビューコントロールバー</strong> — ズームイン・アウト・フィット・グリッド表示などのビュー操作コントロールをまとめたツールバーに使用します。</li><li><strong>フィルタリングバー</strong> — ComboBox や TextBox を ToolBar に配置してインラインフィルタリング UI を提供します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>ToolTip を必ず設定する</strong> — ツールバーボタンはアイコンのみが多いため、ToolTip でコマンドの説明を必ず提供してアクセシビリティとユーザビリティを確保します。</li><li><strong>Command バインドを使う</strong> — Click イベントより Command バインドを使い、CanExecute で有効/無効を自動制御します。</li><li><strong>Separator でグループを区切る</strong> — ToolBar 内に Separator を配置すると縦の区切り線としてレンダリングされ、関連するツールボタンのグループを視覚的に整理できます。Menu の Separator と同様に使えます。</li><li><strong>OverflowMode="Never" でオーバーフロー禁止</strong> — ウィンドウが狭くなっても必ず表示しておく重要なボタンは ToolBar.OverflowMode="Never" を設定します。ただし Never の設定が多すぎるとウィンドウを極端に狭めた際にアイテムが重なることがあるため使用は最小限にしてください。</li><li><strong>ToolBarTray でバンドを活用</strong> — Band プロパティで複数行のツールバーを整理します。Band=0 と Band=1 で 2 行のツールバーを配置でき、ユーザーはドラッグで並び替えできます。</li><li><strong>ToolBar の背景色オーバーライドに注意</strong> — ToolBar にはハードコードされたグレー背景スタイルが適用されています。アプリのカラーテーマに合わせて背景色を変更するには、ControlTemplate を上書きするか Background プロパティを設定しても効かない場合があるため、Style で ToolBar の Background を明示的にオーバーライドしてください。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/menu.html">Menu</a> — 階層メニューバー形式でコマンドを提供するコントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/button.html">Button</a> — ToolBar 内に配置するアイコンボタン。</li><li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — ToolBar 内でモード切り替えに使うトグルボタン。</li></ul></section>
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>ToolBarUsageControl.xaml</code>）のオーバーフローの欄から、スタイル、周囲の GroupBox、一部の配置の属性を省いたものです。</p>
+    <pre><code class="language-xml">&lt;CheckBox x:Name="IsOverflowOpenCheckBox" Content="IsOverflowOpen" /&gt;
+&lt;ComboBox x:Name="OverflowModeComboBox"
+          DisplayMemberPath="Name"
+          ItemsSource="{markupextensions:EnumBindingSource EnumType=OverflowMode}"
+          SelectedIndex="0" SelectedValuePath="Value" /&gt;
+&lt;Slider x:Name="WidthSlider" Minimum="100" Maximum="400" Value="200"
+        LargeChange="50" TickFrequency="50" TickPlacement="BottomRight"
+        AutoToolTipPlacement="BottomRight" /&gt;
+
+&lt;ToolBar x:Name="OverflowToolBar" HorizontalAlignment="Left"
+         Width="{Binding Value, ElementName=WidthSlider}"
+         IsOverflowOpen="{Binding IsChecked, ElementName=IsOverflowOpenCheckBox}"&gt;
+  &lt;Button Content="Item 1" /&gt;
+  &lt;Button x:Name="OverflowTargetButton" Content="Target Item"
+          ToolBar.OverflowMode="{Binding SelectedValue, ElementName=OverflowModeComboBox}" /&gt;
+  &lt;Button Content="Item 2" /&gt;
+  &lt;Button Content="Item 3" /&gt;
+  &lt;Button Content="Item 4" /&gt;
+&lt;/ToolBar&gt;
+
+&lt;TextBlock Text="{Binding HasOverflowItems, ElementName=OverflowToolBar}" /&gt;
+&lt;TextBlock Text="{Binding (ToolBar.IsOverflowItem), ElementName=OverflowTargetButton}" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>アプリのコマンド</strong> — 新規・開く・保存のボタンをウィンドウの上部に並べます。</li>
+      <li><strong>書式設定</strong> — 太字・斜体のトグルボタンと、文字サイズのコンボボックスを並べます。</li>
+      <li><strong>複数のツールバー</strong> — コマンドのまとまりごとにツールバーを作り、ToolBarTray のバンドに並べます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>ToolBarTray はバンドとドラッグのために使う</strong> — オーバーフローは、ToolBar 単独でも働きます。</li>
+      <li><strong><code>OverflowMode="Never"</code> は少数の項目に絞る</strong> — <code>Never</code> の項目は、ツールバーが狭すぎるとオーバーフローへ移らずに切れて見えなくなります。</li>
+      <li><strong>レイアウトを復元するなら <code>Band</code> と <code>BandIndex</code> を保存する</strong> — ツールバーをドラッグすると、これらの値が変わります。</li>
+      <li><strong>レイアウトを固定するならトレイに <code>IsLocked="True"</code></strong> — トレイの中のすべてのツールバーのつまみが非表示になります。</li>
+      <li><strong>項目の見た目はツールバー用のスタイルキーで変える</strong> — ToolBar の中のボタンには、アプリ全体の暗黙の <code>Button</code> スタイルではなく、<code>ToolBar.ButtonStyleKey</code> のスタイルが使われます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToolBarDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToolBarDemoScene</code></a> を使いました。ツールバーのドラッグは、マウスでドラッグしたときと同じ <code>DragStarted</code>・<code>DragDelta</code>・<code>DragCompleted</code> イベントをつまみに発生させて再現しました。大きさと位置は計測した環境での値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.svg" alt="ToolBarTray に入れない ToolBar で、デモアプリの対象のボタンがどこへ行くかを示す表。幅 100 では AsNeeded と Always でオーバーフローへ、Never でツールバーに残り、幅 200 と 400 では Always 以外はツールバーに残る" width="882" height="170" loading="lazy">
+      <figcaption>デモアプリのオーバーフローの欄の対象ボタンの行き先（ツールバーの幅と <code>OverflowMode</code> ごと）。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/toolbar/toolbar-tray.svg" alt="ToolBar のスタイルと ToolBarTray の計測結果の表。項目には ToolBar のスタイルキーのスタイルが当たり、ToolBar に設定した Background はテンプレートに反映され、バンドでツールバーが行に分かれ、つまみのドラッグで Band が変わり、IsLocked でつまみが非表示になり、ToolBar.Orientation はトレイに従い設定できない" width="1093" height="380" loading="lazy">
+      <figcaption>項目のスタイル、背景、バンド、ロック、向き。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/menu.html">Menu</a> — コマンドを階層のあるメニュー項目で提供します。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/button.html">Button</a> — ツールバーに最もよく置かれる項目です。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — 太字のようなオン・オフのコマンドに使います。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolBarUsage" target="_blank" rel="noopener noreferrer">GitHub で ToolBar のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
 {% include footer-ja.html %}
 </body>

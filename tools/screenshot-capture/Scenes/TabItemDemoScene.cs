@@ -86,19 +86,6 @@ internal sealed class TabItemDemoScene : IScene
                 return readOnly ? $"{name} (read-only)" : name;
             }));
 
-    private static async Task WithWindowAsync(FrameworkElement content, Func<Task> act)
-    {
-        var window = new Window { Content = content, SizeToContent = SizeToContent.WidthAndHeight, ShowActivated = false };
-        try
-        {
-            await Capture.ShowAndSettleAsync(window);
-            await act();
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
 
     private sealed class Flag : INotifyPropertyChanged
     {
@@ -129,7 +116,7 @@ internal sealed class TabItemDemoScene : IScene
         {
             TabControl tabs = NewTabs(2);
             tabs.TabStripPlacement = Dock.Left;
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 rows.Add(["TabControl.TabStripPlacement=Left: TabItem.TabStripPlacement of both tabs",
                     $"{Item(tabs, 0).TabStripPlacement} / {Item(tabs, 1).TabStripPlacement}"]);
@@ -139,7 +126,7 @@ internal sealed class TabItemDemoScene : IScene
 
         {
             TabControl tabs = NewTabs(3);
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 Item(tabs, 2).IsSelected = true;
                 rows.Add(["Tab3.IsSelected = true: SelectedIndex / IsSelected of Tab1..3",
@@ -158,7 +145,7 @@ internal sealed class TabItemDemoScene : IScene
                   <TabItem Header="Tab3" Content="Item3" IsSelected="True" />
                 </TabControl>
                 """);
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 rows.Add(["XAML: IsSelected=\"True\" on Tab2 and Tab3: SelectedIndex / IsSelected of Tab1..3",
                     $"{tabs.SelectedIndex} / {string.Join(", ", tabs.Items.Cast<TabItem>().Select(t => t.IsSelected))}"]);
@@ -168,7 +155,7 @@ internal sealed class TabItemDemoScene : IScene
 
         {
             TabControl tabs = NewTabs(3);
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 Item(tabs, 1).IsSelected = true;
                 Item(tabs, 2).IsSelected = true;
@@ -185,7 +172,7 @@ internal sealed class TabItemDemoScene : IScene
             TabControl tabs = NewTabs(2);
             Item(tabs, 0).SetBinding(TabItem.IsSelectedProperty, new Binding(nameof(Flag.Value)) { Source = flag1 });
             Item(tabs, 1).SetBinding(TabItem.IsSelectedProperty, new Binding(nameof(Flag.Value)) { Source = flag2 });
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 tabs.SelectedIndex = 1;
                 rows.Add(["IsSelected bound without Mode; SelectedIndex = 1: source values of Tab1 / Tab2",
@@ -214,7 +201,7 @@ internal sealed class TabItemDemoScene : IScene
 
         {
             TabControl tabs = NewTabs(3, (i, item) => item.IsEnabled = i != 1);
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 tabs.SelectedIndex = 1;
                 tabs.UpdateLayout();
@@ -253,7 +240,7 @@ internal sealed class TabItemDemoScene : IScene
 
         {
             TabControl tabs = NewTabs(2, (i, item) => item.Header = i == 0 ? "File_Name" : "A");
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 TabItem first = Item(tabs, 0);
                 var presenter = Descendants(first).OfType<ContentPresenter>()
@@ -281,7 +268,7 @@ internal sealed class TabItemDemoScene : IScene
 
         {
             TabControl tabs = NewTabs(2);
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 TabItem item = Item(tabs, 0);
                 var root = (FrameworkElement)VisualTreeHelper.GetChild(item, 0);
@@ -327,7 +314,7 @@ internal sealed class TabItemDemoScene : IScene
         {
             var counters = new[] { new LoadCounter(), new LoadCounter(), new LoadCounter() };
             TabControl tabs = NewTabs(3, (i, item) => item.Content = counters[i]);
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 string atStart = string.Join(" / ", counters.Select(c => c.Loads));
                 string measuredAtStart = string.Join(" / ", counters.Select(c => c.Measures));
@@ -353,7 +340,7 @@ internal sealed class TabItemDemoScene : IScene
                 ItemsSource = new[] { "A", "B", "C" },
                 ContentTemplate = new DataTemplate { VisualTree = new FrameworkElementFactory(typeof(LoadCounter)) },
             };
-            await WithWindowAsync(tabs, async () =>
+            await ShowAsync(tabs, async () =>
             {
                 var host = (ContentPresenter)tabs.Template.FindName("PART_SelectedContentHost", tabs);
                 LoadCounter? first = Descendants(host).OfType<LoadCounter>().FirstOrDefault();

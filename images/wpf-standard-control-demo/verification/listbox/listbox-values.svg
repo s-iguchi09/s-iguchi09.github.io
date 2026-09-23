@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1077 350" width="1077" height="350" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1077" height="350" />
+  <text class="title" x="12" y="24">ListBox: SelectedIndex, SelectedItem, SelectedValue and DisplayMemberPath</text>
+  <rect class="head" x="12" y="38" width="1053" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1051" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">SelectedIndex = 2</text>
+  <text class="cell" x="1051" y="87.5" text-anchor="end">SelectedIndex 2, SelectedItem Item 3, SelectionChanged 1</text>
+  <text class="cell" x="26" y="117.5">  then SelectedIndex = 10 (4 items)</text>
+  <text class="cell" x="1051" y="117.5" text-anchor="end">no exception; SelectedIndex 2</text>
+  <text class="cell" x="26" y="147.5">  then SelectedIndex = -1</text>
+  <text class="cell" x="1051" y="147.5" text-anchor="end">SelectedIndex -1, SelectedItem null</text>
+  <text class="cell" x="26" y="177.5">class without Equals: SelectedItem = new instance with the same data</text>
+  <text class="cell" x="1051" y="177.5" text-anchor="end">SelectedIndex -1, SelectedItem null</text>
+  <text class="cell" x="26" y="207.5">record (value equality): SelectedItem = new instance with the same data</text>
+  <text class="cell" x="1051" y="207.5" text-anchor="end">SelectedIndex 1, same instance as the item: False</text>
+  <text class="cell" x="26" y="237.5">SelectedValue = 2 before ItemsSource, then ItemsSource set</text>
+  <text class="cell" x="1051" y="237.5" text-anchor="end">SelectedValue 2 -&gt; SelectedIndex 1, SelectedValue 2</text>
+  <text class="cell" x="26" y="267.5">DisplayMemberPath="Name": element showing item 1</text>
+  <text class="cell" x="1051" y="267.5" text-anchor="end">TextBlock, Text "Desktop"</text>
+  <text class="cell" x="26" y="297.5">DisplayMemberPath="Nope": element showing item 1</text>
+  <text class="cell" x="1051" y="297.5" text-anchor="end">TextBlock, Text ""</text>
+  <text class="cell" x="26" y="327.5">DisplayMemberPath and ItemTemplate both set</text>
+  <text class="cell" x="1051" y="327.5" text-anchor="end">InvalidOperationException when set; not shown</text>
+  <line class="line" x1="12" y1="38" x2="1065" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1065" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1065" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1065" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1065" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1065" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1065" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1065" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1065" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1065" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1065" y2="338" />
+  <line class="line" x1="12" y1="38" x2="12" y2="338" />
+  <line class="line" x1="597" y1="38" x2="597" y2="338" />
+  <line class="line" x1="1065" y1="38" x2="1065" y2="338" />
+</svg>

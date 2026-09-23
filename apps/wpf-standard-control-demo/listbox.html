@@ -7,50 +7,39 @@
   <meta charset="UTF-8">
   <title>ListBox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
+
   <meta name="description" content="WPF ListBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-en.html %}
+
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ListBox</p>
     <h1>ListBox <span class="category-badge">List</span></h1>
-    <p>ListBox is a control that displays a list of items from which users can select one or multiple items. It supports single, multiple, and extended selection modes, and can be bound to data collections.</p>
+    <p>ListBox shows a scrollable list from which the user selects one item or, with <code>SelectionMode</code>, several.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>ListBox</strong> control presents a scrollable list of selectable items and inherits from
-      <code>Selector</code>, which itself extends <code>ItemsControl</code>. This means ListBox participates
-      in WPF's full data-binding infrastructure: you can bind its <code>ItemsSource</code> to any
-      <code>IEnumerable</code>, define a <code>DataTemplate</code> for rich visual item rendering, and use
-      <code>DisplayMemberPath</code> for simple string property display without a template.
+      <strong>ListBox</strong> derives from <code>Selector</code>, and <code>ListView</code> derives from ListBox. Items come
+      from <code>Items</code> or <code>ItemsSource</code>, and each item is shown in a <code>ListBoxItem</code> container.
+      The default style arranges them in a <code>VirtualizingStackPanel</code>, so only the visible containers are created.
+      With 1,000 items in a list 100 high, six <code>ListBoxItem</code>s existed.
     </p>
     <p>
-      Selection is one of ListBox's key differentiators from <code>ComboBox</code>. The
-      <code>SelectionMode</code> property offers three options: <code>Single</code> for single-item selection
-      (the default), <code>Multiple</code> for toggling individual items independently with a single click,
-      and <code>Extended</code> for contiguous range selection with <kbd>Shift</kbd>+click and
-      <kbd>Ctrl</kbd>+click for non-contiguous multi-selection. This flexibility makes ListBox suitable for
-      both simple pickers and complex multi-select scenarios.
+      Virtualization is also why a selection made from code can be out of view. Setting <code>SelectedIndex = 500</code> did not
+      scroll the list, and the container for item 500 was not created; <code>ScrollIntoView</code> scrolled to it. It also
+      affects multi-selection: <a href="/articles/wpf-listbox-virtualization-selecteditems/">How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox</a>
+      measures how selection bound through <code>ItemContainerStyle</code> gets out of sync when the list scrolls.
     </p>
     <p>
-      The <code>SelectedIndex</code>, <code>SelectedItem</code>, and <code>SelectedValue</code> properties all
-      provide access to the current selection from different angles. <code>SelectedIndex</code> gives the
-      zero-based position; <code>SelectedItem</code> gives the actual data object; and
-      <code>SelectedValue</code>, combined with <code>SelectedValuePath</code>, extracts a specific property
-      from the selected item — for example, binding only the <code>Id</code> property of a complex object
-      without exposing the entire object to the view model.
-    </p>
-    <p>
-      ListBox wraps its items in a <code>ScrollViewer</code>, and the attached
-      <code>ScrollViewer.HorizontalScrollBarVisibility</code> and <code>ScrollViewer.VerticalScrollBarVisibility</code>
-      properties let you control scroll bar visibility without subclassing. Setting these to
-      <code>Disabled</code> removes the scrollbars entirely, <code>Auto</code> shows them only when needed,
-      and <code>Visible</code> always shows them.
+      The demo app has a section for each property below. The "Show Code" link under each section displays its XAML.
     </p>
   </section>
 
@@ -61,68 +50,49 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
+
     <table class="prop-table">
-      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
       <tbody>
         <tr>
           <td><code>SelectionMode</code></td>
           <td><code>Single / Multiple / Extended</code></td>
-          <td>
-            <strong>When to use:</strong> Use <code>Extended</code> when users need to select a range of items (like files in Explorer) using Shift-click and Ctrl-click. Use <code>Multiple</code> when users should be able to toggle individual items on/off with a single click — suitable for tag or category pickers.<br>
-            <strong>What happens:</strong> <code>Extended</code> supports Shift+click for contiguous range selection and Ctrl+click for non-contiguous multi-selection; all selected items are accumulated in <code>SelectedItems</code>. <code>Multiple</code> toggles each item's selection on every click without requiring any modifier key.<br>
-            <strong>Pitfalls:</strong> Users accustomed to Windows Explorer expect <code>Extended</code> behavior — <code>Multiple</code> mode, where clicking an already-selected item deselects it, can feel surprising and confusing to most users.
-          </td>
+          <td>How clicks select items; the default is <code>Single</code>. Clicking Item 1, Item 2, and Item 1 without modifier keys gave these selections. With <code>Single</code>: Item 1, then Item 2, then Item 1. With <code>Multiple</code>: Item 1, then Items 1 and 2, then Item 2, because each click toggles an item. With <code>Extended</code>: the same as <code>Single</code>, because a plain click replaces the selection (selecting several items in <code>Extended</code> takes Shift or Ctrl, which was not reproduced). <code>SelectAll()</code> selected all four items in <code>Multiple</code> and <code>Extended</code>, and threw <code>NotSupportedException</code> in <code>Single</code>. The demo app shows <code>SelectedItems.Count</code> under the list.</td>
         </tr>
         <tr>
           <td><code>DisplayMemberPath (ItemsControl)</code></td>
           <td><code>string</code></td>
-          <td>
-            <strong>When to use:</strong> Use when items are complex objects but only a single text property needs to be displayed — for example, showing just the <code>Name</code> property of a country object.<br>
-            <strong>What happens:</strong> WPF internally generates a <code>TextBlock</code> bound to the specified property path for each item, eliminating the need to write an <code>ItemTemplate</code> for simple text-only lists.<br>
-            <strong>Pitfalls:</strong> <code>DisplayMemberPath</code> and <code>ItemTemplate</code> are mutually exclusive — setting both throws a runtime exception. As soon as you need icons, multiple fields, or any layout beyond a single text line, switch to an explicit <code>ItemTemplate</code>.
-          </td>
+          <td>The property of each item to show as text. With <code>DisplayMemberPath="Name"</code>, each item was shown by a <code>TextBlock</code> reading "Desktop". A path that does not exist gave an empty <code>TextBlock</code>, with no exception. It cannot be combined with <code>ItemTemplate</code>: setting both threw <code>InvalidOperationException</code>. The demo app binds <code>DisplayMemberPath</code> to a text box over a list of brushes. Typing <code>Name</code> shows the brush names, and any other text leaves the items blank.</td>
         </tr>
         <tr>
-          <td><code>SelectedIndex (Selector)</code></td>
-          <td><code>int</code></td>
-          <td>
-            <strong>When to use:</strong> Use to set an initial selection by position, implement keyboard-driven navigation, or programmatically advance through items (e.g., a "next" button).<br>
-            <strong>What happens:</strong> Setting the value triggers <code>SelectionChanged</code> and automatically updates <code>SelectedItem</code> in sync. Setting it to <code>-1</code> explicitly clears the selection.<br>
-            <strong>Pitfalls:</strong> Setting an out-of-range index is silently ignored — no exception is thrown and no selection change occurs. Always validate the index against the collection size before setting it programmatically.
-          </td>
-        </tr>
-        <tr>
-          <td><code>SelectedItem (Selector)</code></td>
-          <td><code>object</code></td>
-          <td>
-            <strong>When to use:</strong> The standard MVVM binding target for single-selection mode. Bind two-way to a ViewModel property to both read the current selection and set it programmatically (e.g., on navigation or initialization).<br>
-            <strong>What happens:</strong> When the user selects an item, the bound ViewModel property is updated with the actual data object. Setting the property from the ViewModel selects the matching item in the list.<br>
-            <strong>Pitfalls:</strong> Matching is done by reference equality, not by value equality. If the ViewModel creates a <em>new</em> instance of an object with the same data, it will not match any item in the list and the selection will appear to be cleared — even though the data looks identical.
-          </td>
+          <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
+          <td><code>int / object</code></td>
+          <td>The position and the object of the selected item. Setting <code>SelectedIndex = 2</code> selected the third item, updated <code>SelectedItem</code>, and raised <code>SelectionChanged</code> once. An out-of-range index (10 with four items) raised no exception and left the selection unchanged; -1 cleared it. <code>SelectedItem</code> is matched with <code>Equals</code>, not by reference. A new instance of a class that does not override <code>Equals</code> selected nothing. A new instance of a record with the same values selected the matching item. <code>SelectedItem</code> then held the new instance, not the one in the list.</td>
         </tr>
         <tr>
           <td><code>SelectedValuePath / SelectedValue (Selector)</code></td>
           <td><code>string / object</code></td>
-          <td>
-            <strong>When to use:</strong> Use for ID-based selection patterns — for example, binding only an integer <code>Id</code> rather than the full object. This is common when persisting the selection to a database or configuration file.<br>
-            <strong>What happens:</strong> <code>SelectedValuePath</code> (e.g., <code>"Id"</code>) tells WPF which property to extract; <code>SelectedValue</code> then reflects that extracted value for the currently selected item. Setting <code>SelectedValue</code> causes WPF to find and select the matching item in <code>ItemsSource</code>.<br>
-            <strong>Pitfalls:</strong> <code>SelectedValue</code> only works after <code>ItemsSource</code> is populated. If you set <code>SelectedValue</code> before the items are loaded, the selection is silently lost. Always ensure the collection is bound before setting the initial selected value.
-          </td>
+          <td><code>SelectedValuePath</code> names the property of the selected item that <code>SelectedValue</code> returns, for example an <code>Id</code>. The order does not matter: <code>SelectedValue = 2</code> set before <code>ItemsSource</code> selected the item with <code>Id</code> 2 once the items arrived. In the demo app, the path is typed into a text box, and the list holds brushes; <code>Value</code> returns the brush and <code>Name</code> its name.</td>
         </tr>
         <tr>
           <td><code>IsSelected (ListBoxItem)</code></td>
           <td><code>bool</code></td>
-          <td>
-            <strong>When to use:</strong> Use to manage selection state per item in the ViewModel — especially useful in multi-select scenarios where <code>SelectedItems</code> cannot be directly two-way bound. Define a <code>Setter</code> in <code>ItemContainerStyle</code> to bind this property to an <code>IsSelected</code> bool on each item's ViewModel.<br>
-            <strong>What happens:</strong> Setting the ViewModel property to <code>true</code> marks that item as selected in the list. Any change (user click or ViewModel update) flows both ways through the two-way binding.<br>
-            <strong>Pitfalls:</strong> The <code>DataContext</code> of the binding inside <code>ItemContainerStyle</code> is each individual item's ViewModel, not the page-level ViewModel. Binding to a property that doesn't exist on the item type fails silently — verify that each item class actually has the expected property.
-          </td>
+          <td>Whether a container is selected. It binds two-way by default: in the demo app, two <code>ListBoxItem</code>s have <code>IsSelected</code> bound to check boxes, so checking a box selects the item and clicking the item changes the box. In a list created from <code>ItemsSource</code>, the containers are created only while visible. A binding in <code>ItemContainerStyle</code> therefore covers only those items; see the article above.</td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Attached properties from <code>ScrollViewer</code> that control scroll bar display. <code>Auto</code> is the typical choice — scrollbars appear only when content overflows — while <code>Disabled</code> completely prevents scrolling for fixed-height lists.</td>
+          <td>Attached properties for the ListBox's scroll bars. The default style sets both to <code>Auto</code>. With 1,000 items, <code>Auto</code> showed the vertical bar. <code>Disabled</code> hid it but did not stop scrolling: the scrollable range was the same (996 items), and 20 presses of the down arrow scrolled the list as far as with <code>Auto</code>. The demo app has a long first item so you can also try the horizontal bar.</td>
         </tr>
       </tbody>
     </table>
@@ -130,67 +100,86 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates a data-bound ListBox with a custom DataTemplate and extended multi-selection:</p>
-    <pre><code class="language-xml">&lt;ListBox ItemsSource="{Binding Employees}"
-         SelectionMode="Extended"
-         SelectedItem="{Binding SelectedEmployee}"
-         ScrollViewer.VerticalScrollBarVisibility="Auto"
-         Margin="8"&gt;
-  &lt;ListBox.ItemTemplate&gt;
-    &lt;DataTemplate&gt;
-      &lt;StackPanel Orientation="Horizontal" Margin="4"&gt;
-        &lt;TextBlock Text="{Binding Name}"
-                   FontWeight="SemiBold"
-                   Width="140" /&gt;
-        &lt;TextBlock Text="{Binding Department}"
-                   Foreground="#555"
-                   Margin="8,0,0,0" /&gt;
-      &lt;/StackPanel&gt;
-    &lt;/DataTemplate&gt;
-  &lt;/ListBox.ItemTemplate&gt;
-&lt;/ListBox&gt;</code></pre>
+    <p>The following XAML is the <code>IsSelected(ListBoxItem)</code> section of the demo app (<code>ListBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
+    <pre><code class="language-xml">&lt;CheckBox x:Name="IsSelectedItem1CheckBox" Content="Select Item 1" /&gt;
+&lt;CheckBox x:Name="IsSelectedItem2CheckBox" Content="Select Item 2" /&gt;
+
+&lt;ListBox x:Name="IsSelectedListBox" Height="100" SelectionMode="Extended"&gt;
+  &lt;ListBoxItem Content="Item 1 (Bound to CheckBox)"
+               IsSelected="{Binding IsChecked, ElementName=IsSelectedItem1CheckBox}" /&gt;
+  &lt;ListBoxItem Content="Item 2 (Bound to CheckBox)"
+               IsSelected="{Binding IsChecked, ElementName=IsSelectedItem2CheckBox}" /&gt;
+  &lt;ListBoxItem Content="Item 3 (Independent)" /&gt;
+&lt;/ListBox&gt;
+
+&lt;TextBlock Text="{Binding SelectedItems.Count, ElementName=IsSelectedListBox}" /&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Settings option pickers:</strong> Displaying a list of configuration options where the user selects one or more items, such as a list of enabled plugins or export formats.</li>
-      <li><strong>File selection panels:</strong> Showing a list of files or records from which the user selects one or more for a batch operation like delete, export, or process.</li>
-      <li><strong>Navigation panels:</strong> Sidebar lists that show categories, tags, or sections, where selecting an item updates the main content area.</li>
-      <li><strong>Transfer list UIs:</strong> Dual-ListBox patterns where items are moved between "Available" and "Selected" lists using Add/Remove buttons.</li>
-      <li><strong>Filtered data views:</strong> Binding ListBox to a <code>CollectionView</code> with filtering so the list dynamically narrows based on a search term entered in a linked <code>TextBox</code>.</li>
+      <li><strong>Choosing one of a visible set:</strong> options that should stay on screen rather than inside a drop-down.</li>
+      <li><strong>Master-detail:</strong> a list on the left whose <code>SelectedItem</code> drives the details on the right.</li>
+      <li><strong>Picking several items:</strong> files or records for a batch operation, with <code>SelectionMode="Extended"</code>.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use <code>VirtualizingStackPanel</code> for large lists:</strong> By default, ListBox already uses a virtualizing panel, so only visible items are rendered. Avoid replacing it with a non-virtualizing panel for collections with hundreds of items.</li>
-      <li><strong>Bind <code>SelectedItem</code> two-way:</strong> Setting <code>Mode=TwoWay</code> on the <code>SelectedItem</code> binding ensures that programmatic selection from the view model is reflected in the UI without additional event handling.</li>
-      <li><strong>Use <code>ObservableCollection</code> as ItemsSource:</strong> Collections implementing <code>INotifyCollectionChanged</code> automatically keep the ListBox in sync when items are added or removed.</li>
-      <li><strong>Define keyboard shortcuts for selection:</strong> For Extended mode, document <kbd>Ctrl+A</kbd> (select all) in the UI so users know it is available — it works by default but is not obvious.</li>
-      <li><strong>Consider ListView for tabular data:</strong> If items have multiple columns, switch to <code>ListView</code> with <code>GridView</code> for a proper columnar display with resizable headers.</li>
-      <li><strong>Getting multi-selection in MVVM:</strong> <code>SelectedItems</code> is a read-only collection and cannot be two-way bound directly. The standard workaround is to add an <code>IsSelected</code> property to each item's ViewModel and bind it via <code>ItemContainerStyle</code>. Alternatively, handle the <code>SelectionChanged</code> event in code-behind and push changes into the ViewModel manually.</li>
-      <li><strong>Scroll to a programmatically selected item:</strong> Changing <code>SelectedItem</code> from the ViewModel does <em>not</em> automatically scroll the list to that item. You must call <code>listBox.ScrollIntoView(listBox.SelectedItem)</code> explicitly — for example, in a <code>SelectionChanged</code> event handler or after updating the binding.</li>
+      <li><strong>Give item classes a meaningful <code>Equals</code></strong> when the ViewModel restores a selection from saved data, or select through <code>SelectedValue</code> and an ID. Without an <code>Equals</code> override, an equal-looking new instance selects nothing.</li>
+      <li><strong>Call <code>ScrollIntoView</code> after selecting from code.</strong> Selection alone does not scroll a virtualized list.</li>
+      <li><strong>Keep multi-selection in sync without relying on containers.</strong> Handle <code>SelectionChanged</code> and update the ViewModel from <code>SelectedItems</code>, or follow the article above; a binding in <code>ItemContainerStyle</code> only covers created containers.</li>
+      <li><strong>Check <code>SelectionMode</code> before calling <code>SelectAll()</code>.</strong> It throws in <code>Single</code> mode.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ListBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ListBoxDemoScene</code></a>
+      in this site's screenshot tool. Clicks were reproduced by raising the left-button event on the <code>ListBoxItem</code>, which is
+      how a plain click reaches the ListBox. Clicks with Shift or Ctrl were not reproduced, because the ListBox reads the actual
+      keyboard state.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/listbox/listbox-values.svg" alt="Table of ListBox selection values: an out-of-range SelectedIndex is ignored, -1 clears the selection, a new instance of a class without Equals selects nothing while an equal record selects the item, SelectedValue set before ItemsSource is applied later, a missing DisplayMemberPath shows empty text, and DisplayMemberPath with ItemTemplate throws InvalidOperationException" width="1077" height="350" loading="lazy">
+      <figcaption>SelectedIndex, SelectedItem, SelectedValue, and DisplayMemberPath. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/listbox/listbox-scrolling.svg" alt="Table of ListBox scrolling with 1,000 items: six containers are created, selecting item 500 from code does not scroll until ScrollIntoView is called, and a Disabled vertical scroll bar hides the bar but keyboard navigation still scrolls" width="1022" height="230" loading="lazy">
+      <figcaption>Virtualization and scrolling with 1,000 items in a list 100 high. Offsets are in items. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — extends ListBox with a pluggable view model, most commonly used for tabular GridView layouts.</li>
-      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — a compact dropdown list for single-item selection where screen space is limited.</li>
-      <li><a href="/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — a fully featured grid for tabular data with inline editing, sorting, and grouping.</li>
+      <li><a href="/articles/wpf-listbox-virtualization-selecteditems/">How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox</a> — multi-selection with virtualization.</li>
+      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — derives from ListBox and adds views such as <code>GridView</code> columns.</li>
+      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — a <code>Selector</code> whose list opens as a drop-down.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListBoxUsage" target="_blank" rel="noopener noreferrer">View ListBox source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListBoxUsage" target="_blank" rel="noopener noreferrer">
+        View ListBox source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>
+
 {% include footer-en.html %}
+
 </body>
 </html>

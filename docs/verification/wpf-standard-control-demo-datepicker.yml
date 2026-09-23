@@ -1,0 +1,24 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-datepicker
+slug: "wpf-standard-control-demo-datepicker"
+scene: "DatePickerDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "SelectedDate・Text・IsDropDownOpen の依存関係プロパティが既定で TwoWay か、DisplayDate・FirstDayOfWeek の既定値（スレッドのカルチャを変えて比べる）"
+  - "IsTodayHighlighted のメタデータの既定値と、既定のスタイルが適用された後の値とその出どころ（Calendar と比べる）"
+  - "SelectedDate を設定したときの DisplayDate と、DisplayDate を設定したときの SelectedDate"
+  - "DisplayDateStart / DisplayDateEnd の範囲外の日付を、コード・Text プロパティ・テキスト欄への入力と Enter で与えたときの結果と、カレンダーの日付ボタンの状態"
+  - "BlackoutDates に含まれる日付を SelectedDate に設定したときの結果と、カレンダーの日付ボタンの状態"
+  - "SelectedDate より後の日付を DisplayDateStart に設定したときの補正"
+  - "解析できない文字列を入力したときの SelectedDate・Text と DateValidationError イベント、テキスト欄を空にしたときの SelectedDate"
+  - "Text プロパティに文字列を設定したときに SelectedDate へ反映される書式"
+  - "null 非許容の DateTime プロパティへ SelectedDate をバインドし、SelectedDate を null にしたときのソースとバインドの状態"
+  - "表示前に IsDropDownOpen を True にした場合に、表示後にカレンダーが開いているか"
+  - "IsTodayHighlighted の指定なし・True・False での、ポップアップの Calendar への受け渡しと、今日の日付ボタンの IsToday・IsEnabled・表示状態（DayStates）・今日の印の不透明度"
+  - "カレンダーの FirstDayOfWeek が DatePicker の値に従うこと"
+images:
+  - "images/wpf-standard-control-demo/verification/datepicker/datepicker-defaults.svg"
+  - "images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg"
+  - "images/wpf-standard-control-demo/verification/datepicker/datepicker-calendar-binding.svg"

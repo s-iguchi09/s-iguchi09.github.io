@@ -348,7 +348,7 @@ internal sealed class GridSplitterDemoScene : IScene
             var counter = new MeasureCounter();
             grid.Children.Add(counter);
 
-            await WithWindowAsync(grid, async () =>
+            await ShowAsync(grid, async () =>
             {
                 string before = Widths(grid);
                 int measuresBefore = counter.MeasureCount;
@@ -409,7 +409,7 @@ internal sealed class GridSplitterDemoScene : IScene
                 splitter.KeyboardIncrement = increment.Value;
             }
 
-            await WithWindowAsync(grid, async () =>
+            await ShowAsync(grid, async () =>
             {
                 double left = grid.ColumnDefinitions[0].ActualWidth;
                 PressKey(splitter, Key.Right);
@@ -424,7 +424,7 @@ internal sealed class GridSplitterDemoScene : IScene
         {
             (Grid grid, GridSplitter splitter) = ThreeColumns(star, star, GridResizeBehavior.PreviousAndNext);
             splitter.Focusable = focusable;
-            await WithWindowAsync(grid, async () =>
+            await ShowAsync(grid, async () =>
             {
                 bool focused = splitter.Focus();
                 rows.Add([$"Focusable={focusable}: Focus() / IsKeyboardFocused",
@@ -450,7 +450,7 @@ internal sealed class GridSplitterDemoScene : IScene
 
         {
             (Grid grid, GridSplitter splitter) = ThreeColumns(star, star, GridResizeBehavior.PreviousAndNext);
-            await WithWindowAsync(grid, async () =>
+            await ShowAsync(grid, async () =>
             {
                 string before = Widths(grid);
                 Drag(splitter, 40, 0, complete: false);
@@ -502,7 +502,7 @@ internal sealed class GridSplitterDemoScene : IScene
         // IsDragging: 実際にマウスの左ボタンを押したときの Thumb の経路を通す。
         {
             (Grid grid, GridSplitter splitter) = ThreeColumns(star, star, GridResizeBehavior.PreviousAndNext);
-            await WithWindowAsync(grid, async () =>
+            await ShowAsync(grid, async () =>
             {
                 bool before = splitter.IsDragging;
                 splitter.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
@@ -544,36 +544,4 @@ internal sealed class GridSplitterDemoScene : IScene
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     }
 
-    private static void PressKey(UIElement target, Key key)
-    {
-        PresentationSource source = PresentationSource.FromVisual(target)
-            ?? throw new InvalidOperationException("ウィンドウに表示していない要素にはキー入力を送れない。");
-        target.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, key) { RoutedEvent = Keyboard.KeyDownEvent });
-    }
-
-    private static async Task WithWindowAsync(FrameworkElement content, Func<Task> act, bool activate = false)
-    {
-        var window = new Window
-        {
-            Content = content,
-            SizeToContent = SizeToContent.WidthAndHeight,
-            ShowActivated = activate,
-        };
-
-        try
-        {
-            await Capture.ShowAndSettleAsync(window);
-            if (activate)
-            {
-                window.Activate();
-                await Capture.SettleAsync(window);
-            }
-
-            await act();
-        }
-        finally
-        {
-            window.Close();
-        }
-    }
 }

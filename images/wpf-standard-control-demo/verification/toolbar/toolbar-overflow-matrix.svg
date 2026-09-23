@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 882 170" width="882" height="170" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="882" height="170" />
+  <text class="title" x="12" y="24">ToolBar outside a ToolBarTray (the demo app's overflow section): where the target item goes</text>
+  <rect class="head" x="12" y="38" width="858" height="30" />
+  <text class="cell" x="26" y="57.5">ToolBar width</text>
+  <text class="cell" x="384" y="57.5" text-anchor="end">AsNeeded</text>
+  <text class="cell" x="600" y="57.5" text-anchor="end">Never</text>
+  <text class="cell" x="856" y="57.5" text-anchor="end">Always</text>
+  <text class="cell" x="26" y="87.5">100</text>
+  <text class="cell" x="384" y="87.5" text-anchor="end">overflow (4 of 5 in overflow)</text>
+  <text class="cell" x="600" y="87.5" text-anchor="end">bar (4 of 5 in overflow)</text>
+  <text class="cell" x="856" y="87.5" text-anchor="end">overflow (4 of 5 in overflow)</text>
+  <text class="cell" x="26" y="117.5">200</text>
+  <text class="cell" x="384" y="117.5" text-anchor="end">bar (2 of 5 in overflow)</text>
+  <text class="cell" x="600" y="117.5" text-anchor="end">bar (2 of 5 in overflow)</text>
+  <text class="cell" x="856" y="117.5" text-anchor="end">overflow (1 of 5 in overflow)</text>
+  <text class="cell" x="26" y="147.5">400</text>
+  <text class="cell" x="384" y="147.5" text-anchor="end">bar (0 of 5 in overflow)</text>
+  <text class="cell" x="600" y="147.5" text-anchor="end">bar (0 of 5 in overflow)</text>
+  <text class="cell" x="856" y="147.5" text-anchor="end">overflow (1 of 5 in overflow)</text>
+  <line class="line" x1="12" y1="38" x2="870" y2="38" />
+  <line class="line" x1="12" y1="68" x2="870" y2="68" />
+  <line class="line" x1="12" y1="98" x2="870" y2="98" />
+  <line class="line" x1="12" y1="128" x2="870" y2="128" />
+  <line class="line" x1="12" y1="158" x2="870" y2="158" />
+  <line class="line" x1="12" y1="38" x2="12" y2="158" />
+  <line class="line" x1="142" y1="38" x2="142" y2="158" />
+  <line class="line" x1="398" y1="38" x2="398" y2="158" />
+  <line class="line" x1="614" y1="38" x2="614" y2="158" />
+  <line class="line" x1="870" y1="38" x2="870" y2="158" />
+</svg>

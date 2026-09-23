@@ -1,0 +1,23 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-textbox
+slug: "wpf-standard-control-demo-textbox"
+scene: "TextBoxDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TextBox の継承関係と、各プロパティの既定値（Text の既定の UpdateSourceTrigger を含む）、TextTrimming・PlaceholderText プロパティの有無"
+  - "TextWrapping（NoWrap / Wrap / WrapWithOverflow）ごとの、幅より長い単語を含む文字列の行数・1 行目・横にはみ出す幅（デモアプリの TextWrapping 欄と同じ文字列）"
+  - "MaxLength を、キーボードからの入力・コードからの Text・バインドした値のそれぞれに対して効かせたときの結果"
+  - "CharacterCasing を、キーボードからの入力とコードからの Text に対して効かせたときの結果"
+  - "MinLines / MaxLines（デモアプリの 2・4・6 行）による高さと、MaxLines を超えたときのスクロールバー"
+  - "MinLines が表示前（初期化子・XAML）に設定した場合に効くか、表示後に MinLines を設定した場合・表示後に Text を変えた場合・Loaded のハンドラーで設定した場合（XAML の指定なし / 同じ値あり）に効くか"
+  - "AcceptsReturn による Enter キーの扱いと、行数が多いときの高さ・スクロールバー（VerticalScrollBarVisibility の既定値と Auto）"
+  - "IsReadOnly で入力が止まり、選択はできること、既定のテンプレートに IsReadOnly のトリガーがあるか"
+  - "TextAlignment ごとの 1 文字目の横位置"
+  - "TextDecorations に複数の値を与えられるか"
+  - "ScrollToEnd を UI スレッド以外から呼んだときの例外と、UI スレッドから呼んだときのスクロール位置"
+images:
+  - "images/wpf-standard-control-demo/verification/textbox/textbox-defaults.svg"
+  - "images/wpf-standard-control-demo/verification/textbox/textbox-input.svg"
+  - "images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg"

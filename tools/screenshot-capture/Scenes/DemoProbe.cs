@@ -72,6 +72,60 @@ internal static class DemoProbe
         }
     }
 
+    /// <summary>
+    /// 要素をウィンドウに表示し、描画が落ち着いてから <paramref name="act"/> を実行して閉じる。
+    ///
+    /// キー入力・ポップアップ・装飾層など、表示中のウィンドウが要る計測に使う。
+    /// 値を読むだけなので、ディスプレイが消えていても結果は変わらない（撮影はしない）。
+    ///
+    /// <see cref="Capture.ShowAndSettleAsync"/> は表示の後に必ず Activate を呼ぶため、
+    /// <paramref name="activate"/> が false でもウィンドウはアクティブになる（非アクティブな状態を前提にした計測には使えない）。
+    /// true にすると、Activate と描画の待機をもう 1 回行い、それでもアクティブでなければ例外にする
+    /// （Windows が前面化を制限すると Activate は失敗する。フォーカスが前提の計測を誤った状態で記録しないため）。
+    /// フォーカスが要る計測では true にする。
+    /// </summary>
+    public static async Task ShowAsync(FrameworkElement content, Func<Task> act, bool activate = false)
+    {
+        var window = new Window
+        {
+            Content = content,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            ShowActivated = activate,
+        };
+
+        try
+        {
+            await Capture.ShowAndSettleAsync(window);
+            if (activate)
+            {
+                window.Activate();
+                await Capture.SettleAsync(window);
+                if (!window.IsActive)
+                {
+                    throw new InvalidOperationException("計測用のウィンドウをアクティブにできない（ほかのウィンドウが前面を保持している）。");
+                }
+            }
+
+            await act();
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>表示中の要素へキー押下のイベントを送る。</summary>
+    public static void PressKey(UIElement target, System.Windows.Input.Key key)
+    {
+        PresentationSource source = PresentationSource.FromVisual(target)
+            ?? throw new InvalidOperationException("ウィンドウに表示していない要素にはキー入力を送れない。");
+        target.RaiseEvent(new System.Windows.Input.KeyEventArgs(
+            System.Windows.Input.Keyboard.PrimaryDevice, source, 0, key)
+        {
+            RoutedEvent = System.Windows.Input.Keyboard.KeyDownEvent,
+        });
+    }
+
     public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         int count = VisualTreeHelper.GetChildrenCount(root);

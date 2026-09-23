@@ -1,0 +1,17 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-checkbox
+slug: "wpf-standard-control-demo-checkbox"
+scene: "CheckBoxDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "CheckBox と RadioButton の基底クラス、IsChecked が既定で TwoWay か、Checked / Unchecked / Indeterminate がバブルするか、VerticalContentAlignment の既定値とその出どころ"
+  - "IsThreeState が True と False のときに、クリックを繰り返したときの IsChecked の移り変わり（null から始める場合を含む）"
+  - "bool? と bool のプロパティにバインドしたときに、IsChecked が null になった場合のソースの値とバインドエラー"
+  - "Space キーで IsChecked が切り替わるか"
+  - "ラベル（Content）の位置をヒットテストしたときに当たる要素が CheckBox の中の要素か"
+  - "複数行のラベルで VerticalContentAlignment を Top と Center にしたときの、チェックの記号とラベルの縦位置（CheckBox を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合）"
+  - "親要素に置いた Checked のハンドラーが子の CheckBox の変化を受け取ること"
+images:
+  - "images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg"

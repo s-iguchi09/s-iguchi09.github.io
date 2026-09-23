@@ -1,0 +1,21 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-listbox
+slug: "wpf-standard-control-demo-listbox"
+scene: "ListBoxDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ListBox・ListView・ComboBox の継承関係と、SelectionMode・スクロールバーの既定値（値の出どころ）、ListBoxItem.IsSelected が既定で TwoWay か"
+  - "SelectionMode（Single / Multiple / Extended）ごとに、修飾キーなしで項目を順にクリックしたときの SelectedItems"
+  - "SelectAll() を SelectionMode ごとに呼んだときの結果"
+  - "DisplayMemberPath を設定したときに項目を表示する要素と、存在しないパスを指定したときの表示、ItemTemplate と同時に設定したときの例外"
+  - "範囲外・-1 の SelectedIndex を設定したときの結果と、SelectedIndex を変えたときの SelectedItem と SelectionChanged"
+  - "SelectedItem に、同じ内容の別インスタンス（Equals を上書きしないクラスとレコード型）を設定したときに選択されるか"
+  - "ItemsSource を設定する前に SelectedValue を設定した場合に、後から選択されるか"
+  - "縦のスクロールバーを Auto と Disabled にしたときのスクロール可能な範囲と、下矢印キーで選択を動かしたときのスクロール"
+  - "1,000 項目のときに作られる ListBoxItem の数と、コードから SelectedIndex を変えたときにその項目までスクロールするか、ScrollIntoView の効果"
+images:
+  - "images/wpf-standard-control-demo/verification/listbox/listbox-selection.svg"
+  - "images/wpf-standard-control-demo/verification/listbox/listbox-values.svg"
+  - "images/wpf-standard-control-demo/verification/listbox/listbox-scrolling.svg"
