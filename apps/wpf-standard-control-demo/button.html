@@ -8,7 +8,7 @@
   <title>Button | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF Button control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF Button measured on .NET 10: IsCancel and IsDefault in a UserControl and a dialog, ClickMode with a real mouse and keys, and when CanExecute is re-queried.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,37 +21,26 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Button</p>
     <h1>Button <span class="category-badge">Inputs</span></h1>
-    <p>Button is the most commonly used command trigger control in WPF. It fires a Click event when pressed and supports command binding via the ICommand interface. Button inherits from ButtonBase, which provides ClickMode and Command-related properties.</p>
+    <p>Button runs an action when it is clicked, through its Click event or a command bound to Command. ClickMode, IsPressed, and the command properties come from its base class ButtonBase.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>Button</strong> control is the primary mechanism for triggering user actions in desktop
-      applications. It descends from <code>ButtonBase</code>, which itself extends <code>ContentControl</code>,
-      meaning a Button can host any arbitrary content — text, images, icons, or complex panel layouts — not just
-      a simple label. This flexibility makes it easy to create richly styled action buttons that match your
-      application's visual design.
+      <strong>Button</strong> derives from <code>ButtonBase</code>, which derives from <code>ContentControl</code>, so its
+      <code>Content</code> can be text, an image, or a panel. The default template shows the content with a
+      <code>ContentPresenter</code> whose <code>RecognizesAccessKey</code> is <code>True</code>: with <code>Content="_Save"</code>,
+      <code>S</code> became the access key and the UI Automation name was <code>Save</code>.
     </p>
     <p>
-      One of Button's most important features for MVVM (Model-View-ViewModel) architectures is its built-in
-      support for the <code>ICommand</code> interface through the <code>Command</code> property. When a command
-      is bound, WPF automatically disables the button whenever <code>ICommand.CanExecute</code> returns
-      <code>false</code>, and re-enables it when conditions change. This eliminates the need for manual
-      enabled/disabled logic in code-behind and keeps UI state synchronized with application state.
+      The default template has no visual state groups. It changes its look with triggers on <code>IsDefaulted</code>,
+      <code>IsMouseOver</code>, <code>IsPressed</code>, and <code>IsChecked</code> (all <code>true</code>) and on
+      <code>IsEnabled</code> = <code>false</code>.
     </p>
     <p>
-      The <code>ClickMode</code> property inherited from <code>ButtonBase</code> controls exactly when the
-      <code>Click</code> event fires. The default <code>Release</code> mode fires on mouse-button release,
-      matching standard desktop conventions. <code>Press</code> mode fires immediately on mouse-down, useful
-      for rapid-fire scenarios. <code>Hover</code> mode fires when the pointer merely moves over the button,
-      enabling touchless interaction patterns.
-    </p>
-    <p>
-      Two special boolean properties — <code>IsDefault</code> and <code>IsCancel</code> — simplify dialog
-      implementation. Setting <code>IsDefault="True"</code> makes the button respond to the <kbd>Enter</kbd>
-      key when no other element captures it, while <code>IsCancel="True"</code> binds the button to the
-      <kbd>Escape</kbd> key. Together they let developers build keyboard-accessible dialogs with minimal code.
+      The demo app has sections for <code>IsCancel</code> and <code>IsDefault</code>, <code>ClickMode</code>,
+      <code>IsPressed</code>, <code>Command</code>, and <code>CommandParameter</code>. The "Show Code" link under each section
+      displays its XAML.
     </p>
   </section>
 
@@ -64,7 +53,7 @@
     <h2>Demonstrated Properties</h2>
     <p>
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
     </p>
 
     <table class="prop-table">
@@ -79,32 +68,32 @@
         <tr>
           <td><code>IsCancel</code></td>
           <td><code>bool</code></td>
-          <td>Use this on a "Cancel" button in a dialog when you want the <kbd>Escape</kbd> key to dismiss the window without the user needing to click. When <code>True</code>, pressing <kbd>Escape</kbd> triggers this button's Click regardless of where focus is. Combined with <code>Window.DialogResult = false</code>, it implements the standard cancel pattern. <strong>Pitfall:</strong> This property only works within a <code>Window</code> scope — it has no effect inside a <code>UserControl</code> or <code>Page</code>. Also, setting <code>IsCancel="True"</code> on more than one button in the same Window can cause unexpected conflicts; keep it to one per Window.</td>
+          <td>Makes <kbd>Esc</kbd> click the button. The demo app places the button in a <code>UserControl</code>, and it works there: with the focus in a TextBox inside the UserControl, <kbd>Esc</kbd> clicked it. Whether the window closes depends on how it was opened. In a window opened with <code>ShowDialog</code>, <kbd>Esc</kbd> closed the window and <code>ShowDialog</code> returned <code>false</code>. In a window opened with <code>Show</code>, the button was clicked but the window stayed open. With two <code>IsCancel</code> buttons in one window, <kbd>Esc</kbd> clicked neither. It moved the focus to the first one, and pressing it again moved the focus to the second.</td>
         </tr>
         <tr>
           <td><code>IsDefault</code></td>
           <td><code>bool</code></td>
-          <td>Use this on the primary action button (e.g., "OK" or "Search") in a dialog or form so users can confirm with <kbd>Enter</kbd> without tabbing to the button. When <code>True</code>, pressing <kbd>Enter</kbd> triggers this button's Click as long as the focused element does not consume the key itself. <strong>Pitfall:</strong> Only one button per Window should have <code>IsDefault="True"</code>. Also, when a multi-line <code>TextBox</code> with <code>AcceptsReturn="True"</code> has focus, <kbd>Enter</kbd> inserts a new line and the IsDefault button is never fired.</td>
+          <td>Makes <kbd>Enter</kbd> click the button. With the focus in a TextBox, <kbd>Enter</kbd> clicked it, and its <code>IsDefaulted</code> was <code>True</code>. With the focus in a TextBox that has <code>AcceptsReturn="True"</code>, <kbd>Enter</kbd> added a line break and did not click it. With the focus on another button, <kbd>Enter</kbd> clicked that button instead, and <code>IsDefaulted</code> was <code>False</code>.</td>
         </tr>
         <tr>
           <td><code>ClickMode (ButtonBase)</code></td>
           <td><code>Release / Press / Hover</code></td>
-          <td>Controls when the Click event fires relative to the mouse interaction. <code>Release</code> (default) fires when the mouse button is released — it also allows the user to cancel by dragging off the button before releasing. <code>Press</code> fires immediately on mouse-down, making it suitable for game controls or drag-start triggers where instant response is required. <code>Hover</code> fires as soon as the cursor enters the button bounds, which is useful for ribbon-style menus that open on hover. <strong>Pitfall:</strong> <code>Hover</code> mode can fire accidentally when the mouse merely passes over the button. Limit its use to intentional hover-activation patterns and always provide clear visual feedback so users know the button is activated.</td>
+          <td>When a click happens. With a real mouse, <code>Release</code> (the default) clicked when the mouse button was released. If the pointer was moved off the button before the mouse button was released, <code>IsPressed</code> became <code>False</code> and there was no click. <code>Press</code> clicked when the mouse button went down. <code>Hover</code> clicked as soon as the pointer entered the button, without any mouse button. A <code>Hover</code> button cannot be clicked from the keyboard: <kbd>Space</kbd> and <kbd>Enter</kbd> did nothing. With the other two, <kbd>Space</kbd> clicked on key up with <code>Release</code> and on key down with <code>Press</code>, and <kbd>Enter</kbd> clicked on key down with both.</td>
         </tr>
         <tr>
           <td><code>IsPressed (ButtonBase)</code></td>
           <td><code>bool (ReadOnly)</code></td>
-          <td>Use this inside a custom <code>ControlTemplate</code> to drive pressed-state visuals — for example, a scale-down animation or background color change while the button is held. A <code>DataTrigger</code> in the template can watch this value to apply the effect. <strong>Pitfall:</strong> Mouse clicks reliably set <code>IsPressed</code>, but pressing <kbd>Space</kbd> on a focused button may not update it consistently. For keyboard-only visual feedback, rely on <code>FocusVisualStyle</code> or a separate keyboard-focused state rather than <code>IsPressed</code> alone.</td>
+          <td>Whether the button is being pressed; the demo app shows it next to a button. It was <code>True</code> while the mouse button was held down on the button and while <kbd>Space</kbd> was held down, and <code>False</code> after release. A <code>Hover</code> button was pressed while the pointer was over it. The keyboard does not press a <code>Hover</code> button: <code>IsPressed</code> stayed <code>False</code> while <kbd>Space</kbd> was held down.</td>
         </tr>
         <tr>
           <td><code>Command (ButtonBase)</code></td>
           <td><code>ICommand</code></td>
-          <td>Use this in MVVM applications to bind a ViewModel's <code>ICommand</code> to the button, eliminating click-handling code in code-behind. WPF automatically disables the button when <code>CanExecute</code> returns <code>false</code> and re-enables it when conditions change. The re-evaluation is triggered by <code>CommandManager.RequerySuggested</code>, which fires on UI interactions like focus changes. <strong>Pitfall:</strong> If <code>CanExecute</code> performs expensive work (database queries, slow computations), it will block the UI thread every time WPF re-evaluates it. Keep <code>CanExecute</code> fast by checking only a cached flag, and update that flag when state actually changes.</td>
+          <td>The command run on a click. While its <code>CanExecute</code> returned <code>false</code>, the button's <code>IsEnabled</code> was <code>False</code>, even with <code>IsEnabled="True"</code> set on the button. The demo app's <code>RelayCommand</code> passes <code>CanExecuteChanged</code> on to <code>CommandManager.RequerySuggested</code>. With that, the button did not follow a change in <code>CanExecute</code>'s result until <code>CommandManager.InvalidateRequerySuggested</code> was called, or until something such as a focus change made WPF check again. That check asks every button again: with 20 buttons bound to the same command, one focus change called <code>CanExecute</code> 20 times.</td>
         </tr>
         <tr>
           <td><code>CommandParameter (ButtonBase)</code></td>
           <td><code>object</code></td>
-          <td>Use this when multiple buttons share the same command but need to pass different context values — for example, <code>CommandParameter="{Binding SelectedItem}"</code> to pass the currently selected item to a shared Delete command. The parameter is received by both <code>Execute</code> and <code>CanExecute</code>. When set via a normal <code>Binding</code>, the parameter updates automatically as the source changes. <strong>Pitfall:</strong> If you use <code>Mode=OneTime</code> or assign a static value directly, the parameter will not update when the underlying data changes. Always verify that the binding mode matches the dynamic or static nature of the value you intend to pass.</td>
+          <td>The value passed to <code>CanExecute</code> and <code>Execute</code>. The demo app binds it to a TextBox's <code>Text</code>, after <code>Command</code>. With that XAML, both <code>CanExecute</code> calls during loading received <code>ShowMessageText</code>, never <code>null</code>. A change of the parameter is checked at once: when the text was cleared from code, <code>CanExecute</code> ran once and the button became disabled, with no <code>InvalidateRequerySuggested</code>. <code>Execute</code> received the text at the time of the click.</td>
         </tr>
       </tbody>
     </table>
@@ -112,75 +101,85 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates typical Button usage, including command binding and keyboard shortcuts:</p>
-    <pre><code class="language-xml">&lt;StackPanel Margin="16" Spacing="8"&gt;
-
-  &lt;!-- Basic button with Click event handler --&gt;
-  &lt;Button Content="Click Me"
-          Width="120" Height="32"
-          Click="OnButtonClick" /&gt;
-
-  &lt;!-- MVVM command binding with a parameter --&gt;
-  &lt;Button Content="Save"
-          Command="{Binding SaveCommand}"
-          CommandParameter="{Binding CurrentItem}"
-          IsDefault="True" /&gt;
-
-  &lt;!-- Cancel button responding to Escape key --&gt;
-  &lt;Button Content="Cancel"
-          Command="{Binding CancelCommand}"
-          IsCancel="True" /&gt;
-
-  &lt;!-- Button with icon content --&gt;
-  &lt;Button Width="140" Height="36"&gt;
-    &lt;StackPanel Orientation="Horizontal" Spacing="6"&gt;
-      &lt;Image Source="/Icons/save.png" Width="16" Height="16" /&gt;
-      &lt;TextBlock Text="Save File" VerticalAlignment="Center" /&gt;
-    &lt;/StackPanel&gt;
-  &lt;/Button&gt;
-
-&lt;/StackPanel&gt;</code></pre>
+    <p>The following XAML is the <code>CommandParameter</code> section of the demo app (<code>ButtonUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
+    <pre><code class="language-xml">&lt;TextBox x:Name="CommandParameterText" Text="ShowMessageText" /&gt;
+&lt;Button x:Name="ClickWithParameterCommandButton"
+        Command="{Binding ClickWithParameterCommand}"
+        CommandParameter="{Binding Text, ElementName=CommandParameterText}"
+        Content="ShowMessageBox" /&gt;</code></pre>
+    <p>The command is defined in the view model (<code>ButtonUsageViewModel.cs</code>):</p>
+    <pre><code class="language-csharp">public ICommand ClickWithParameterCommand { get; } =
+    new RelayCommand(param =&gt; MessageBox.Show(param?.ToString()), null);</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Dialog actions:</strong> "OK", "Cancel", "Apply", and "Save" buttons in modal dialogs, leveraging <code>IsDefault</code> and <code>IsCancel</code> for keyboard accessibility.</li>
-      <li><strong>Toolbar commands:</strong> Icon-and-label buttons in toolbars that trigger document operations such as New, Open, Save, Print, or Undo/Redo.</li>
-      <li><strong>Form submission:</strong> A primary action button at the bottom of a data-entry form that validates input and submits the record to a backend service.</li>
-      <li><strong>Navigation triggers:</strong> Buttons that switch views or pages inside a navigation host, often bound to relay commands in the main view model.</li>
-      <li><strong>Contextual actions in lists:</strong> Edit or Delete buttons placed inside <code>DataGrid</code> or <code>ListView</code> row templates, passing the row item as <code>CommandParameter</code>.</li>
+      <li><strong>Dialog buttons:</strong> OK with <code>IsDefault</code> and Cancel with <code>IsCancel</code> in a window opened with <code>ShowDialog</code>.</li>
+      <li><strong>Commands in MVVM:</strong> a button bound to a view model's <code>ICommand</code>, enabled and disabled by <code>CanExecute</code>.</li>
+      <li><strong>Buttons in list rows:</strong> a button in an item template that passes its item as <code>CommandParameter</code>.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Prefer ICommand over Click events</strong> in MVVM applications. Use <code>RelayCommand</code> or <code>DelegateCommand</code> implementations to keep logic out of code-behind and improve testability.</li>
-      <li><strong>Set meaningful Content</strong> — avoid generic labels like "Button1". Clear, action-oriented labels such as "Save Document" improve usability and accessibility for screen-reader users.</li>
-      <li><strong>Use <code>IsEnabled</code> sparingly</strong>; instead, rely on <code>ICommand.CanExecute</code> to automatically manage the enabled state, which ensures the UI reacts instantly to state changes without manual wiring.</li>
-      <li><strong>Any WPF element can be Button content</strong> — Button inherits from <code>ContentControl</code>, so you can nest <code>StackPanel</code>, <code>Image</code>, <code>TextBlock</code>, or any other element as the <code>Content</code>. This makes icon-and-label buttons straightforward to build without custom templates.</li>
-      <li><strong>Set <code>AutomationProperties.Name</code> for icon-only buttons</strong> — When the button's <code>Content</code> is an image or icon with no text, screen readers have nothing to announce. Always add <code>AutomationProperties.Name="Save"</code> (or similar) so visually impaired users understand the button's purpose.</li>
-      <li><strong>Avoid deep nesting in Button content</strong>. If the content template grows complex, consider extracting it into a <code>DataTemplate</code> or a custom style resource to keep XAML maintainable.</li>
-      <li><strong>Test keyboard navigation</strong> in every dialog. Verify that <code>IsDefault</code> and <code>IsCancel</code> behave as expected when focus is on text boxes, combo boxes, or other interactive controls within the same dialog.</li>
+      <li><strong>Keep one <code>IsCancel</code> button per window.</strong> With two, <kbd>Esc</kbd> only moves the focus between them.</li>
+      <li><strong>Close a window opened with <code>Show</code> yourself.</strong> <code>IsCancel</code> closes only a dialog opened with <code>ShowDialog</code>.</li>
+      <li><strong>Keep <code>CanExecute</code> cheap.</strong> It runs for every button bound to the command on each focus change.</li>
+      <li><strong>Let <code>CanExecute</code> decide whether the button is enabled.</strong> Setting <code>IsEnabled</code> does not override it.</li>
+      <li><strong>Give buttons that show only an image an <code>AutomationProperties.Name</code>.</strong> Without it, the UI Automation name was empty.</li>
+      <li><strong>Do not use <code>ClickMode="Hover"</code> for buttons that must work from the keyboard.</strong> <kbd>Space</kbd> and <kbd>Enter</kbd> do not click them.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ButtonDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ButtonDemoScene</code></a>
+      in this site's screenshot tool. Keys were sent through WPF's input manager, the same path as keys typed on a keyboard, so
+      that <code>IsCancel</code> and <code>IsDefault</code>, which are handled there, respond to them. <code>ClickMode</code> was
+      measured by moving and clicking the real mouse over the measuring window. The click with a <code>CommandParameter</code>
+      was made through UI Automation's <code>Invoke</code>.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/button/button-keys.svg" alt="Table of IsCancel and IsDefault results: in a UserControl Esc clicks the IsCancel button and the window stays open, Enter clicks the IsDefault button, Enter in a TextBox with AcceptsReturn adds a line break without a click, Enter on another button clicks that button, two IsCancel buttons only move the focus, and a dialog opened with ShowDialog closes and returns false" width="889" height="290" loading="lazy">
+      <figcaption><code>IsCancel</code> and <code>IsDefault</code> by where the focus is and how the window was opened. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/button/button-clickmode.svg" alt="Table of ClickMode results: the default is Release and IsPressed is read-only, Hover clicks when the pointer enters, Press clicks on button down, Release clicks on button up and not when released outside, and from the keyboard Release clicks on Space up, Press on Space down, Enter clicks both on key down, and a Hover button does nothing" width="1046" height="320" loading="lazy">
+      <figcaption><code>ClickMode</code> and <code>IsPressed</code> with a real mouse and with the keyboard. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Table of Command results: CanExecute false disables the button even with IsEnabled True, a RequerySuggested command updates only after InvalidateRequerySuggested, one focus change calls CanExecute 20 times for 20 buttons, the demo XAML passes the text to CanExecute while loading, clearing the text re-queries CanExecute once, and Execute receives the current text" width="857" height="260" loading="lazy">
+      <figcaption><code>Command</code> and <code>CommandParameter</code>. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/button/button-template.svg" alt="Table of Button type and template results: Button derives from ButtonBase and ContentControl, the default template has no visual state groups and triggers on IsDefaulted, IsMouseOver, IsPressed, IsChecked, and IsEnabled, the ContentPresenter recognizes access keys, and the UI Automation name is the text, Save for _Save, empty for an image, and the AutomationProperties.Name when set" width="1140" height="290" loading="lazy">
+      <figcaption>Base classes, the default template, and UI Automation names. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — fires Click repeatedly while held down; useful for increment/decrement spinners.</li>
-      <li><a href="/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — base class for CheckBox and RadioButton; maintains an on/off checked state.</li>
-      <li><a href="/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — a two- or three-state toggle control derived from ToggleButton.</li>
-      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — a mutually exclusive toggle within a group, also derived from ToggleButton.</li>
+      <li><a href="/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — a ButtonBase that keeps clicking while it is held down.</li>
+      <li><a href="/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — a ButtonBase that stays pressed after a click.</li>
+      <li><a href="/articles/wpf-relaycommand-canexecute-not-updating/">Fixing a RelayCommand Whose CanExecute Does Not Update the Button State in WPF</a> — why a button does not follow <code>CanExecute</code> and how to re-query it.</li>
+      <li><a href="/articles/wpf-label-underscore-issue/">Why WPF Label Hides Underscores and How to Fix It</a> — the access-key behavior that also applies to button content.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
     <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ButtonUsage" target="_blank" rel="noopener noreferrer">

@@ -72,6 +72,7 @@ internal static class Program
         new CheckBoxDemoScene(),
         new ToolBarDemoScene(),
         new ToggleButtonDemoScene(),
+        new ButtonDemoScene(),
     ];
 
     [STAThread]
