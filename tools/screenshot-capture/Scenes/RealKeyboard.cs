@@ -58,8 +58,15 @@ internal static class RealKeyboard
         inputs.AddRange(modifiers.Reverse().Select(m => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = m, Flags = KeyEventKeyUp } }));
         if (SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<Input>()) != inputs.Count)
         {
+            int error = Marshal.GetLastWin32Error();
+
+            // 途中までしか受け付けられなかったとき、修飾キーが押されたまま残らないよう、すべてのキーを離しておく。
+            Input[] releases = modifiers.Append(virtualKey)
+                .Select(k => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = k, Flags = KeyEventKeyUp } })
+                .ToArray();
+            SendInput((uint)releases.Length, releases, Marshal.SizeOf<Input>());
             throw new InvalidOperationException(
-                $"SendInput が入力を受け付けなかった（画面のロック中など）。Win32 エラー {Marshal.GetLastWin32Error()}。");
+                $"SendInput が入力を受け付けなかった（画面のロック中など）。Win32 エラー {error}。");
         }
 
         await Capture.SettleAsync(window, 100);
