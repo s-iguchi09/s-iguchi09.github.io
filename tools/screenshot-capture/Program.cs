@@ -69,6 +69,7 @@ internal static class Program
         new PasswordBoxDemoScene(),
         new TreeViewDemoScene(),
         new DataGridDemoScene(),
+        new CheckBoxDemoScene(),
     ];
 
     [STAThread]
