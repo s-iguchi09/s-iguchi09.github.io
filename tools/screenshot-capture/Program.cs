@@ -87,6 +87,7 @@ internal static class Program
         new UniformGridDemoScene(),
         new ViewboxDemoScene(),
         new LabelDemoScene(),
+        new TextBlockDemoScene(),
     ];
 
     [STAThread]
