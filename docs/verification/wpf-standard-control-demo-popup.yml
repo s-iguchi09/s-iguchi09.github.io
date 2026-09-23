@@ -1,0 +1,21 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-popup
+slug: "wpf-standard-control-demo-popup"
+scene: "PopupDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Popup の基底クラスと、IsOpen / StaysOpen / AllowsTransparency / Placement / PopupAnimation の既定値"
+  - "開いた Popup の子が、ウィンドウとは別の PresentationSource（別のウィンドウハンドル）と PopupRoot の下にあること"
+  - "Placement（Bottom / Top / Right / Left / Center）ごとの、基準の要素に対する子の位置と、HorizontalOffset 20 / VerticalOffset 10 を加えたときの位置"
+  - "画面の下端近くで Placement=Bottom にしたときの位置"
+  - "Placement=Absolute で PlacementRectangle を設定しないときの画面上の位置"
+  - "PlacementTarget を設定しないときの基準（親要素）と、デモアプリと同じ PlacementRectangle（0, 0, 100, 50）の位置"
+  - "StaysOpen が False と True のとき、実際のマウスでウィンドウの空き領域をクリックした後の IsOpen と、IsOpen にバインドした CheckBox"
+  - "開いたままウィンドウを動かしたとき、ポップアップが一緒に動くか"
+  - "ComboBox と最上位の MenuItem の既定のテンプレートの中の Popup（PART_Popup）"
+  - "AllowsTransparency が True と False のときのポップアップのウィンドウの WS_EX_LAYERED と、PopupAnimation=Fade で開いた直後の不透明度"
+images:
+  - "images/wpf-standard-control-demo/verification/popup/popup-placement.svg"
+  - "images/wpf-standard-control-demo/verification/popup/popup-behavior.svg"
