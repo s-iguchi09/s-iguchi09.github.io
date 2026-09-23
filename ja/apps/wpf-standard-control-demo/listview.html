@@ -1,62 +1,154 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <title>ListView | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の ListView は ListBox を拡張したリストコントロールです。GridView を使うことで列ヘッダー付きの表形式表示が可能になり、列幅の変更や列の順序の入れ替えもできます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+
+  <meta name="description" content="WPF の ListView を .NET 10 で実測して解説。既定の選択モードが Extended であること、後から広がらない自動幅の列、実際のマウスでの列の並べ替えと見出しのクリック、スクロールバーを無効にしたときのスクロールを確かめます。">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-ja.html %}
+
 <main>
+
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; ListView</p>
     <h1>ListView <span class="category-badge">List</span></h1>
-    <p>ListView は ListBox を拡張したリストコントロールです。GridView を使うことで列ヘッダー付きの表形式表示が可能になります。列のリサイズや並べ替えもサポートしています。</p>
+    <p>ListView は、ビューを通して項目を表示できる ListBox です。GridView を使うと、項目が列見出し付きの行になります。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>ListView</strong> は <code>ListBox</code> を継承したコントロールで、<code>View</code> プロパティに <code>GridView</code> を設定することで列ヘッダー付きの表形式リストを表示できます。DataGrid より軽量で、読み取り専用の表形式表示に適しています。</p>
-  <p><code>GridView</code> は <code>ViewBase</code> を継承したクラスで、<code>Columns</code> プロパティに <code>GridViewColumn</code> の集合を定義します。各列には <code>Header</code>（列ヘッダーテキスト）と <code>DisplayMemberBinding</code>（表示するプロパティへのバインド）または <code>CellTemplate</code>（カスタム表示）を設定します。</p>
-  <p><code>AllowsColumnReorder="True"</code> を GridView に設定すると、ユーザーが列ヘッダーをドラッグして列の順序を変更できます。列幅はドラッグでリサイズ可能です。</p>
-  <p>ListBox と同様に <code>SelectionMode</code> で選択モードを制御でき、<code>SelectedItem</code> や <code>SelectedItems</code> を通じて選択アイテムを取得できます。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/listview.png" alt="listview demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>ListView</strong> は <code>ListBox</code> から派生し、項目は <code>ListViewItem</code> のコンテナに入ります。<code>View</code> の既定値は <code>null</code> で、列見出しのない普通の一覧になります。ListBox との違いの 1 つは選択で、ListView の <code>SelectionMode</code> の既定値は <code>Extended</code>、ListBox は <code>Single</code> です。デモアプリのコンボボックスは先頭の値の <code>Single</code> で始まります。選択モード、<code>SelectedIndex</code>、<code>IsSelected</code> の動きは ListBox のページで計測しています。</p>
+    <p>GridView は並べ替えをしません。実際のマウスで Name の見出しをクリックしても、先頭の項目は <code>AliceBlue</code> のままで、並べ替えの条件（SortDescription）も追加されませんでした。行は仮想化され、高さ 150 の ListView に 1,000 項目を入れると、作られた項目コンテナは 8 個でした。</p>
+    <p>デモアプリには、<code>SelectionMode</code>、<code>View</code> と列・<code>AllowsColumnReorder</code>、列の <code>Width</code>、<code>SelectedIndex</code> と <code>SelectedItem</code>、<code>IsSelected</code>、スクロールバーの欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/listview.png" alt="listview demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>View</code></td><td><code>ViewBase (GridView)</code></td><td>列ヘッダー付きの表形式でデータを表示したい場合（ファイル一覧・従業員リスト・ログビューアーなど）に GridView を設定します。GridView を設定すると各行が水平方向のセルに分割され列ヘッダーが表示されます。DataGrid より軽量で読み取り専用の表形式表示に適しています。View プロパティは ViewBase を継承したオブジェクトのみ受け付け、標準で提供されているのは GridView のみです。複雑なカスタマイズが必要な場合は DataGrid の使用を検討してください。</td></tr><tr><td><code>Columns (GridView)</code></td><td><code>GridViewColumnCollection</code></td><td>各列に表示するデータプロパティ・ヘッダーテキスト・列幅を定義する際に使用します。DisplayMemberBinding でシンプルなテキスト表示、CellTemplate でボタン・画像などカスタム表示が必要な列に使用します。定義した順序で列が表示され、AllowsColumnReorder=True の場合はユーザーがドラッグで列順を変更できます。DisplayMemberBinding と CellTemplate を同じ GridViewColumn に同時に設定すると例外が発生するため、どちらか一方のみを使用してください。また列ヘッダーのクリックによるソートは標準では含まれないため、ICollectionView の SortDescriptions を利用する追加実装が必要です。</td></tr><tr><td><code>AllowsColumnReorder (GridView)</code></td><td><code>bool</code></td><td>ユーザーが自分の作業スタイルに合わせて列の順序を変更できる柔軟な表形式 UI を提供したい場合に True を設定します。True にすると列ヘッダーをドラッグして別の位置にドロップすることで列の並び順が変わります。列の順序変更はあくまで表示のみでデータバインディングは元の順序を維持します。変更後の列順序は自動で保存されないため、アプリ再起動後も保持したい場合は ColumnReordered イベントを利用して設定に保存・復元する実装が必要です。</td></tr><tr><td><code>Width (GridViewColumn)</code></td><td><code>double</code></td><td>重要な列は固定幅、説明テキストなど可変長の列は Auto を使い分けます。指定した幅（ピクセル）で列が表示され、Double.NaN（XAMLでは Width="Auto"）を指定するとコンテンツの最大幅に合わせて自動調整されます。Width="Auto" はコンテンツ読み込み時の最大幅に合わせて固定されるため、データが動的に増減する場合は幅が途中で変わりません。仮想化（VirtualizingStackPanel）が有効な場合、画面外のアイテムのサイズが考慮されないため Width=Auto が期待通り動作しないことがあります。</td></tr><tr><td><code>SelectedIndex / SelectedItem (Selector)</code></td><td><code>int / object</code></td><td>ListView で選択されたアイテムを ViewModel に伝えたり、プログラムからアイテムを選択状態にしたりする場合に使用します。詳細ペインに選択アイテムの情報を表示するマスター・詳細パターンで頻繁に使用されます。SelectedItem は選択されたデータオブジェクト、SelectedIndex は 0 始まりのインデックスを返し、SelectionMode=Multiple の場合は SelectedItems コレクションを使用します。SelectedItem を TwoWay バインドしている場合、ObservableCollection の再構築などによりデータソースが更新されると SelectedItem が null になることがあるため、データ更新後に選択状態を復元する処理が必要な場合があります。</td></tr></tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>SelectionMode (ListBox)</code></td>
+          <td><code>Single / Multiple / Extended</code></td>
+          <td>クリックで項目をどう選ぶかです。ListView の既定値は <code>Extended</code> です（上を参照）。デモアプリは一覧の下に <code>SelectedItems.Count</code> を表示しています。</td>
+        </tr>
+        <tr>
+          <td><code>View</code></td>
+          <td><code>ViewBase</code></td>
+          <td>項目の表示の仕方で、既定値は <code>null</code>（普通の一覧）です。デモアプリは、ブラシの一覧に Name と Value の列を持つ <code>GridView</code> を設定しています。</td>
+        </tr>
+        <tr>
+          <td><code>Columns (GridView)</code></td>
+          <td><code>GridViewColumnCollection</code></td>
+          <td>列です。各列は <code>DisplayMemberBinding</code> か <code>CellTemplate</code> で値を表示します。両方を設定しても例外は起きず、<code>DisplayMemberBinding</code> が使われ、1 行目にはテンプレートの文字ではなく <code>AliceBlue</code> が表示されました。</td>
+        </tr>
+        <tr>
+          <td><code>AllowsColumnReorder (GridView)</code></td>
+          <td><code>bool</code></td>
+          <td>見出しをドラッグして列を動かせるかどうかで、既定値は <code>True</code>、デモアプリもチェックを付けた状態で始めます。実際のマウスで Name の見出しを Value の見出しの先までドラッグすると、<code>True</code> では順序が Value, Name になり、<code>False</code> では Name, Value のままでした。変わるのは <code>Columns</code> コレクション自体の順序です。</td>
+        </tr>
+        <tr>
+          <td><code>Width (GridViewColumn)</code></td>
+          <td><code>double</code></td>
+          <td>列の幅です。<code>Auto</code>（<code>NaN</code>）では、Name の列は最初に表示された行に合わせて幅 84.89 になり、その後は広がりませんでした。いちばん長い名前の <code>LightGoldenrodYellow</code> までスクロールしても、先頭にもっと長い名前を挿入しても 84.89 のままでした。デモアプリは Value の列の幅を 150 で始まるスライダーにバインドしており、スライダーを 300 にすると列の幅は 300 になりました。</td>
+        </tr>
+        <tr>
+          <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
+          <td><code>int / object</code></td>
+          <td>選択している項目の位置とオブジェクトです。デモアプリは <code>SelectedIndex="0"</code>（Item A）で始まり、テキストボックスをインデックスに TwoWay でバインドしています。範囲外のインデックスについては ListBox のページを参照してください。</td>
+        </tr>
+        <tr>
+          <td><code>IsSelected (ListBoxItem)</code></td>
+          <td><code>bool</code></td>
+          <td>コンテナが選択されているかどうかです。デモアプリは 1 つ目の項目の <code>IsSelected</code> をチェックボックスにバインドしており、その動きは ListBox のページで計測しています。</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
+          <td><code>Disabled / Auto / Hidden / Visible</code></td>
+          <td>スクロールバーです。デモアプリの一覧には幅 500 の列が 1 つあり、コンボボックスは <code>Disabled</code> で始まります。幅 300・高さ 100 の一覧では、<code>Disabled</code> では横にスクロールできず、列の右側には届きませんでしたが、縦には 2 行分スクロールできました。<code>Auto</code> では、横に 227、縦に 3 スクロールできました。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;ListView ItemsSource="{Binding Employees}"
-          SelectedItem="{Binding SelectedEmployee, Mode=TwoWay}"&gt;
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>ListViewUsageControl.xaml</code>）の <code>View</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
+    <pre><code class="language-xml">&lt;CheckBox x:Name="AllowsColumnReorderCheckBox" Content="AllowsColumnReorder" IsChecked="True" /&gt;
+
+&lt;ListView x:Name="ViewColumnsListView"
+          Height="150"
+          ItemsSource="{markupextensions:StaticBindingSource TargetType=Brushes}"&gt;
   &lt;ListView.View&gt;
-    &lt;GridView AllowsColumnReorder="True"&gt;
-      &lt;GridViewColumn Header="ID" Width="60"
-                      DisplayMemberBinding="{Binding Id}" /&gt;
-      &lt;GridViewColumn Header="名前" Width="150"
-                      DisplayMemberBinding="{Binding Name}" /&gt;
-      &lt;GridViewColumn Header="部署" Width="120"
-                      DisplayMemberBinding="{Binding Department}" /&gt;
-      &lt;!-- カスタム列 --&gt;
-      &lt;GridViewColumn Header="操作" Width="80"&gt;
-        &lt;GridViewColumn.CellTemplate&gt;
-          &lt;DataTemplate&gt;
-            &lt;Button Content="詳細" Command="{Binding ViewDetailCommand}" /&gt;
-          &lt;/DataTemplate&gt;
-        &lt;/GridViewColumn.CellTemplate&gt;
-      &lt;/GridViewColumn&gt;
+    &lt;GridView AllowsColumnReorder="{Binding IsChecked, ElementName=AllowsColumnReorderCheckBox}"&gt;
+      &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Name}" Header="Name" /&gt;
+      &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Value}" Header="Value" /&gt;
     &lt;/GridView&gt;
   &lt;/ListView.View&gt;
-&lt;/ListView&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>ファイル一覧（エクスプローラー形式）</strong> — ファイル名・サイズ・更新日時を列ヘッダー付きリストで表示します。</li><li><strong>検索結果の表示</strong> — 検索結果を複数のプロパティ列で見やすく表示します。</li><li><strong>ユーザー/従業員リスト</strong> — ID・名前・部署など複数の属性を列で表示するマスターデータ一覧に使用します。</li><li><strong>ログビューアー</strong> — 日時・レベル・メッセージなどを列で表示するログ表示 UI に使用します。</li><li><strong>設定アイテム一覧</strong> — 設定名と現在の値を列で並べた設定概要画面に使用します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>DataGrid との使い分け</strong> — 読み取り専用の表形式表示には ListView が軽量です。編集が必要な場合や高度な機能（フリーズ列、グルーピングなど）が必要な場合は DataGrid を使います。</li><li><strong>列ソートの実装</strong> — 列ヘッダークリックでソートするには、GridViewColumnHeader の Click イベントで対象プロパティ名を取得し、CollectionViewSource.GetDefaultView(ItemsSource) から ICollectionView を取得して SortDescriptions をクリア後に新しい SortDescription を追加します。ソート方向を ListSortDirection.Ascending/Descending で切り替えることで昇順/降順トグルを実現できます。</li><li><strong>列の並び替えを永続化する</strong> — AllowsColumnReorder=True を GridView に設定すると列ヘッダーのドラッグで列順を変更できます。列順をアプリ設定に保存・復元したい場合は GridView.ColumnReordered イベントで変更を検知して設定に書き込む実装が必要です。</li><li><strong>ColumnHeaderContainerStyle でヘッダーを非表示に</strong> — ヘッダーが不要なリストでは GridView.ColumnHeaderContainerStyle で Height=0 や Visibility=Collapsed を設定してヘッダー行を非表示にできます。</li><li><strong>ItemContainerStyle で行を装飾する</strong> — 特定の行を色分けするには ItemContainerStyle に DataTrigger を設定します。交互行カラー（ストライプ）には AlternationCount と AlternationIndex トリガーを使います。ホバーハイライトはトリガーの IsMouseOver で実現できます。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — 単純なリスト表示（列なし）。</li><li><a href="/ja/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — 編集機能や高度な表機能が必要な場合。</li></ul></section>
+&lt;/ListView&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>ファイルの一覧</strong> — 名前・サイズ・日付の列を、利用者が並べ替えられます。</li>
+      <li><strong>読み取り専用の表</strong> — 編集しない記録を行で表示します。</li>
+      <li><strong>詳細を並べた一覧</strong> — 各項目の複数のプロパティを表示する一覧です。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>1 項目だけ選ばせるなら <code>SelectionMode="Single"</code> を設定する</strong> — ListView は <code>Extended</code> で始まります。</li>
+      <li><strong>いちばん長い値が最初の行にないなら、列の幅を固定する</strong> — 自動の幅は後から更新されません。</li>
+      <li><strong>並べ替えはコードで行う</strong> — 見出しのクリックだけでは何も起きません。項目のビューに <code>SortDescription</code> を追加します。</li>
+      <li><strong>列が広いときは横のスクロールバーを <code>Auto</code> にしておく</strong> — <code>Disabled</code> では列の右側が切れます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ListViewDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ListViewDemoScene</code></a> を使い、デモアプリと同じブラシの一覧（各ブラシの <code>Name</code> と <code>Value</code>）で試しました。見出しのドラッグとクリックは実際のマウスで行いました。幅は、計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/listview/listview-behavior.svg" alt="ListView の計測結果の表。ListBox から派生し、既定では選択モードが Extended でビューがなく、自動幅の列はいちばん長い名前までスクロールしても長い名前を挿入しても 84.89 のまま、バインドした幅はスライダーに従い、実際の見出しのドラッグは AllowsColumnReorder のときだけ列を並べ替え、見出しのクリックでは並べ替わらず、DisplayMemberBinding は例外なく CellTemplate より優先され、Disabled のスクロールバーでは横にスクロールできないが縦には 2 行スクロールでき、1,000 項目で作られるコンテナは 8 個" width="1132" height="410" loading="lazy">
+      <figcaption>既定値、GridView の列、並べ替え、見出しのクリック、スクロール。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — ListView の基底クラスで、選択を詳しく計測しています。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — 編集と並べ替えができる表です。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListViewUsage" target="_blank" rel="noopener noreferrer">GitHub で ListView のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
+
 {% include footer-ja.html %}
+
 </body>
 </html>

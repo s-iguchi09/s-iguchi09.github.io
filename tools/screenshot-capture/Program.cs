@@ -94,6 +94,7 @@ internal static class Program
         new MenuDemoScene(),
         new ImageDemoScene(),
         new InkCanvasDemoScene(),
+        new ListViewDemoScene(),
     ];
 
     [STAThread]
