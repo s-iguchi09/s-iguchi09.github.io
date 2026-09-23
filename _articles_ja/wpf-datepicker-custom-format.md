@@ -9,7 +9,7 @@ image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custo
 
 ## 概要
 
-WPF の `DatePicker` は、選択された日付をシステムのロケール形式(例: en-US では `4/15/2026`)で表示する。
+WPF の `DatePicker` は、`Language`(XAML では `xml:lang`)を明示しない限り、選択された日付をスレッドの `CurrentCulture`(既定ではシステムの地域設定)の形式で表示する(例: en-US では `4/15/2026`)。
 この挙動は、マシンの地域設定に依存せず固定のレイアウトで日付を見せたい場合に不都合となる。
 ログ向けの `yyyy/MM/dd` やレポート向けの `dd MMM yyyy` などが典型例である。
 本記事では、コントロールが常にアプリの要求する形式で日付を表示するようカスタマイズする方法を、XAML スタイル・コードビハインド・バリューコンバーターの 3 通りで比較する。
@@ -70,8 +70,17 @@ WPF の `DatePicker` は、選択された日付をシステムのロケール�
 エスケープしない `/` は日付区切りのプレースホルダーであり、バインドのカルチャによって別の文字に置き換えられ、固定レイアウトが崩れる。
 なお、シングルクォートで囲む `'/'`(例: `yyyy'/'MM'/'dd`)でも同じ効果が得られ、記事の後半ではこの記法を用いている。
 
+既定表示のカルチャは、`Language`(XAML では `xml:lang`)を明示したかどうかで出どころが変わる。
+明示しない場合はスレッドの `CurrentCulture` に従い、`Language` の既定値である `en-US` は使われない。
+明示した場合は、`CurrentCulture` に関係なくその言語の形式になる。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-culture-matrix.svg" alt="xml:lang の指定と CurrentCulture を独立に変えて、DatePicker の既定表示を測った表。xml:lang を指定しない場合は CurrentCulture に従い、ja-JP では 2026/04/15、en-US では 4/15/2026 になる。xml:lang を指定した場合は CurrentCulture に関係なく、en-US では 4/15/2026、de-DE では 15.04.2026 になる。" width="662" height="260" loading="lazy">
+  <figcaption><code>SelectedDate</code> を 2026-04-15 とした <code>DatePicker</code> の既定表示（.NET 10 / Windows 11 で実測）。<code>xml:lang</code> を指定しない行では <code>Language</code> の値の出どころが <code>Default</code> であり、表示は <code>CurrentCulture</code> に従う。指定した行（<code>Local</code>）では <code>CurrentCulture</code> を変えても表示が変わらない。</figcaption>
+</figure>
+
 適用前後を並べると次のようになる。
-既定表示はターゲット要素の `Language`(XAML では `xml:lang`)に従うため、実行マシンのロケールに左右されないよう両方に `en-US` を指定している。
+実行マシンの地域設定に左右されないよう、両方に `xml:lang="en-US"` を指定している。
 
 ```xml
 <!-- 既定の表示 -->
@@ -177,7 +186,9 @@ public class DateFormatConverter : IValueConverter
 | `yyyy年MM月dd日`   | `2026年04月15日`   | 日本語向け。年月日はリテラル             |
 | `yyyy/MM/dd HH:mm` | `2026/04/15 09:30` | 日付と時刻を 1 つの文字列に結合          |
 
-ここで `/` と `:` はリテラルではなく、それぞれ日付区切り・時刻区切りのプレースホルダーであり、ランタイムが現在のカルチャの区切り文字に置き換える(区切りが `.` のカルチャでは `2026.04.15` となる)。
+ここで `/` と `:` はリテラルではなく、それぞれ日付区切り・時刻区切りのプレースホルダーであり、書式化に使うカルチャの区切り文字に置き換えられる(区切りが `.` のカルチャでは `2026.04.15` となる)。
+そのカルチャは、`ToString` ではスレッドの `CurrentCulture`、バインドの `StringFormat` では対象要素の `Language` である。
+後者は、`Language` が既定値のままなら OS の地域設定ではなく `en-US` になる([Binding.StringFormat の記事](/ja/articles/wpf-binding-stringformat-number-currency-date/)で実測している)。
 `年` `月` `日` や `-`、`,` などはリテラルとしてそのまま保持される。
 マシンの地域設定に関わらず固定レイアウトを保つには、上記のコンバーターのように `ToString` へ `CultureInfo.InvariantCulture` を渡すか、`yyyy'/'MM'/'dd` のように区切りをエスケープする。
 

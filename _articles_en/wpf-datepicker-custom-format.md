@@ -9,7 +9,7 @@ image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custo
 
 ## Overview
 
-By default, the WPF `DatePicker` renders selected dates using the system locale format (e.g. `4/15/2026` on en-US).  
+Unless `Language` (`xml:lang` in XAML) is set explicitly, the WPF `DatePicker` renders selected dates in the format of the thread's `CurrentCulture`, which defaults to the system's regional settings (e.g. `4/15/2026` on en-US).  
 This behavior is inconvenient when an application must present dates in a fixed layout regardless of the machine's regional settings, such as `yyyy/MM/dd` for logs or `dd MMM yyyy` for reports.  
 This article shows how to customise that format so the control always renders dates in the format the application requires, and compares the trade-offs of each approach.  
 
@@ -67,8 +67,17 @@ For full control, the control template's `DatePickerTextBox` must be targeted th
 
 The separators are escaped as `\/` so they render literally. Left unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, which would break the fixed layout the article aims for. The same effect can be achieved by quoting the separators as `'/'` (for example `yyyy'/'MM'/'dd`), the form used later in this article.  
 
+Where the default display takes its culture from depends on whether `Language` (`xml:lang` in XAML) is set explicitly.  
+When it is not, the display follows the thread's `CurrentCulture`, and the default `Language` value of `en-US` is not used.  
+When it is, the display uses that language regardless of `CurrentCulture`.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-culture-matrix.svg" alt="A table of the default DatePicker display measured while varying xml:lang and CurrentCulture independently. Without xml:lang the display follows CurrentCulture: 2026/04/15 for ja-JP and 4/15/2026 for en-US. With xml:lang the display ignores CurrentCulture: 4/15/2026 for en-US and 15.04.2026 for de-DE." width="662" height="260" loading="lazy">
+  <figcaption>Default display of a <code>DatePicker</code> whose <code>SelectedDate</code> is 2026-04-15, measured on .NET 10 / Windows 11. In rows without <code>xml:lang</code> the value source of <code>Language</code> is <code>Default</code> and the display follows <code>CurrentCulture</code>. In rows that set it (<code>Local</code>) changing <code>CurrentCulture</code> does not change the display.</figcaption>
+</figure>
+
 Placing the two side by side gives the following.  
-The default display follows the target element's `Language` property (`xml:lang` in XAML), so both carry `en-US` to keep the comparison independent of the machine locale.  
+Both carry `xml:lang="en-US"` so that the comparison does not depend on the machine's regional settings.  
 
 ```xml
 <!-- Default display -->
@@ -171,8 +180,9 @@ The format string passed to `ToString` or `StringFormat` follows the standard .N
 | `MMMM d, yyyy`     | `April 15, 2026`   | `MMMM` uses the full month name              |
 | `yyyy/MM/dd HH:mm` | `2026/04/15 09:30` | Combines date and time in one string         |
 
-Note that `/` and `:` are not literals: they are the date-separator and time-separator placeholders, which the runtime replaces with the current culture's separators (a culture whose separator is `.` renders `2026.04.15`). Characters such as `-` and `,` are literals and are preserved verbatim.  
-To keep a fixed layout regardless of the machine's regional settings, pass `CultureInfo.InvariantCulture` to `ToString` (as the converter above does), or escape the separators as `yyyy'/'MM'/'dd`. Without an explicit culture, `ToString` and `StringFormat` use the current culture, which may differ between machines.  
+Note that `/` and `:` are not literals: they are the date-separator and time-separator placeholders, which are replaced with the separators of the culture used for formatting (a culture whose separator is `.` renders `2026.04.15`). Characters such as `-` and `,` are literals and are preserved verbatim.  
+That culture is the thread's `CurrentCulture` for `ToString`, and the target element's `Language` for a binding's `StringFormat`. While `Language` is left at its default, the latter is `en-US` rather than the OS regional settings (measured in [the Binding.StringFormat article](/articles/wpf-binding-stringformat-number-currency-date/)).  
+To keep a fixed layout regardless of the machine's regional settings, pass `CultureInfo.InvariantCulture` to `ToString` (as the converter above does), or escape the separators as `yyyy'/'MM'/'dd`.  
 
 ## Notes
 
