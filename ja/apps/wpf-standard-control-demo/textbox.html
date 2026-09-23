@@ -128,7 +128,7 @@
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBoxDemoScene</code></a> を使いました。文字の入力は、キーボードと同じ <code>TextInput</code> の経路で文字を届ける <code>TextCompositionManager</code> で、Enter キーは表示したウィンドウへキーのイベントを送って再現しています。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBoxDemoScene</code></a> を使いました。文字の入力は、キーボードと同じ <code>TextInput</code> の経路で文字を届ける <code>TextCompositionManager</code> で、Enter キーは表示したウィンドウへキーのイベントを送って再現しています。このページの高さ・幅・位置は計測した環境での値で、フォントや表示スケールによって変わります。</p>
 
     <figure class="article-figure">
       <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="キー入力と、コードやバインドで設定した文字列を比べた表。MaxLength 5 は入力を ABCDE で止めるがコードやバインドの文字列は切らず、CharacterCasing Upper は入力を大文字にするがコードの文字列は変えず、IsReadOnly は入力を無視するが選択はでき、Enter キーは AcceptsReturn のときだけ改行を入れる" width="575" height="350" loading="lazy">
