@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 936 380" width="936" height="380" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="936" height="380" />
+  <text class="title" x="12" y="24">ScrollViewer: CanContentScroll, deferred scrolling and ScrollViewers inside controls</text>
+  <rect class="head" x="12" y="38" width="912" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="910" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">defaults: VerticalScrollBarVisibility / HorizontalScrollBarVisibility</text>
+  <text class="cell" x="910" y="87.5" text-anchor="end">Visible / Disabled</text>
+  <text class="cell" x="26" y="117.5">demo items, CanContentScroll=False: sizes / offset after LineDown</text>
+  <text class="cell" x="910" y="117.5" text-anchor="end">extent 251.64, viewport 100 / 16</text>
+  <text class="cell" x="26" y="147.5">demo items, CanContentScroll=True: sizes / offset after LineDown</text>
+  <text class="cell" x="910" y="147.5" text-anchor="end">extent 9, viewport 3 / 1</text>
+  <text class="cell" x="26" y="177.5">ListBox, 1000 items, CanContentScroll=True: items created</text>
+  <text class="cell" x="910" y="177.5" text-anchor="end">10</text>
+  <text class="cell" x="26" y="207.5">ListBox, 1000 items, CanContentScroll=False: items created</text>
+  <text class="cell" x="910" y="207.5" text-anchor="end">1000</text>
+  <text class="cell" x="26" y="237.5">IsDeferredScrollingEnabled=False: offset / content offset, dragging; released</text>
+  <text class="cell" x="910" y="237.5" text-anchor="end">114.38 / 114.38; 114.38 / 114.38</text>
+  <text class="cell" x="26" y="267.5">IsDeferredScrollingEnabled=True: offset / content offset, dragging; released</text>
+  <text class="cell" x="910" y="267.5" text-anchor="end">0 / 0; 114.38 / 114.38</text>
+  <text class="cell" x="26" y="297.5">HorizontalScrollBarVisibility inside ListBox / TextBox / TreeView / DataGrid</text>
+  <text class="cell" x="910" y="297.5" text-anchor="end">Auto / Hidden / Auto / Auto</text>
+  <text class="cell" x="26" y="327.5">inside ListBox: attached Disabled / outer ScrollViewer Disabled</text>
+  <text class="cell" x="910" y="327.5" text-anchor="end">Disabled / Auto</text>
+  <text class="cell" x="26" y="357.5">ExtentHeight / ViewportHeight before layout; after layout</text>
+  <text class="cell" x="910" y="357.5" text-anchor="end">0 / 0; 251.64 / 100</text>
+  <line class="line" x1="12" y1="38" x2="924" y2="38" />
+  <line class="line" x1="12" y1="68" x2="924" y2="68" />
+  <line class="line" x1="12" y1="98" x2="924" y2="98" />
+  <line class="line" x1="12" y1="128" x2="924" y2="128" />
+  <line class="line" x1="12" y1="158" x2="924" y2="158" />
+  <line class="line" x1="12" y1="188" x2="924" y2="188" />
+  <line class="line" x1="12" y1="218" x2="924" y2="218" />
+  <line class="line" x1="12" y1="248" x2="924" y2="248" />
+  <line class="line" x1="12" y1="278" x2="924" y2="278" />
+  <line class="line" x1="12" y1="308" x2="924" y2="308" />
+  <line class="line" x1="12" y1="338" x2="924" y2="338" />
+  <line class="line" x1="12" y1="368" x2="924" y2="368" />
+  <line class="line" x1="12" y1="38" x2="12" y2="368" />
+  <line class="line" x1="644" y1="38" x2="644" y2="368" />
+  <line class="line" x1="924" y1="38" x2="924" y2="368" />
+</svg>
