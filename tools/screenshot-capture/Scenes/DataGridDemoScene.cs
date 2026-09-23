@@ -35,9 +35,9 @@ internal sealed class DataGridDemoScene : IScene
         "CanUserAddRows の新規行が、List・配列・引数なしのコンストラクターを持たない型でどうなるかと、Delete キーでの行の削除",
         "F2・Esc・Enter によるセルの編集の開始・取り消し・確定と、列の種類ごとの編集用の要素",
         "列見出しを 3 回クリックしたときの並べ替えの向きの移り変わり",
-        "セルの編集中に並べ替えを加えたときの例外",
+        "セルの編集中に並べ替えを加えたときの例外と、CommitEdit() / CancelEdit() / 行単位の CommitEdit・CancelEdit の後に並べ替えられるか",
         "AlternatingRowBackground だけを設定したときの AlternationCount と行の背景",
-        "1,000 行のときに作られる DataGridRow の数と、グループ化したときの数・GroupStyle がないときのグループの見出し",
+        "1,000 行のときに作られる DataGridRow の数と、グループ化したときの数（IsVirtualizingWhenGrouping が既定 / True）・GroupStyle がないときのグループの見出し",
         "FrozenColumnCount を設定して横にスクロールしたときの列の位置",
     ];
 
@@ -389,6 +389,15 @@ internal sealed class DataGridDemoScene : IScene
             });
         }
 
+        // セルの編集中に並べ替えを加える。編集を終えるメソッドごとに、並べ替えられるかを確かめる。
+        foreach ((string label, Action<DataGrid>? finish) in new (string, Action<DataGrid>?)[]
+        {
+            ("editing a cell, Items.SortDescriptions.Add(...)", null),
+            ("  after CommitEdit()", g => g.CommitEdit()),
+            ("  after CancelEdit()", g => g.CancelEdit()),
+            ("  after CommitEdit(DataGridEditingUnit.Row, true)", g => g.CommitEdit(DataGridEditingUnit.Row, true)),
+            ("  after CancelEdit(DataGridEditingUnit.Row)", g => g.CancelEdit(DataGridEditingUnit.Row)),
+        })
         {
             ObservableCollection<Person> people = People();
             DataGrid grid = NewGrid(people);
@@ -396,9 +405,11 @@ internal sealed class DataGridDemoScene : IScene
             {
                 BeginEditOn(grid);
                 await Settle(grid);
+                finish?.Invoke(grid);
+                await Settle(grid);
                 string thrown = Throws(() => grid.Items.SortDescriptions.Add(new SortDescription(nameof(Person.Age), ListSortDirection.Descending)));
-                grid.CancelEdit();
-                rows.Add(["editing a cell, Items.SortDescriptions.Add(...)", thrown]);
+                grid.CancelEdit(DataGridEditingUnit.Row);
+                rows.Add([label, thrown]);
             });
         }
 
@@ -415,11 +426,12 @@ internal sealed class DataGridDemoScene : IScene
             });
         }
 
-        foreach ((string label, bool grouped, bool groupStyle) in new[]
+        foreach ((string label, bool grouped, bool groupStyle, bool virtualizeGroups) in new[]
         {
-            ("1,000 rows", false, false),
-            ("1,000 rows grouped, with GroupStyle", true, true),
-            ("1,000 rows grouped, no GroupStyle", true, false),
+            ("1,000 rows", false, false, false),
+            ("1,000 rows grouped, with GroupStyle", true, true, false),
+            ("1,000 rows grouped, no GroupStyle", true, false, false),
+            ("1,000 rows grouped, GroupStyle, IsVirtualizingWhenGrouping=True", true, true, true),
         })
         {
             var people = new ObservableCollection<Person>(Enumerable.Range(1, 1000).Select(i => new Person { Id = i, Name = $"N{i}", Age = i % 10 }));
@@ -434,6 +446,11 @@ internal sealed class DataGridDemoScene : IScene
             if (groupStyle)
             {
                 grid.GroupStyle.Add(new GroupStyle());
+            }
+
+            if (virtualizeGroups)
+            {
+                VirtualizingPanel.SetIsVirtualizingWhenGrouping(grid, true);
             }
 
             await ShowAsync(grid, async () =>

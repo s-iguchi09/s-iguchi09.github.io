@@ -14,9 +14,9 @@ verifies:
   - "CanUserAddRows の新規行が、List・配列・引数なしのコンストラクターを持たない型でどうなるかと、Delete キーでの行の削除"
   - "F2・Esc・Enter によるセルの編集の開始・取り消し・確定と、列の種類ごとの編集用の要素"
   - "列見出しを 3 回クリックしたときの並べ替えの向きの移り変わり"
-  - "セルの編集中に並べ替えを加えたときの例外"
+  - "セルの編集中に並べ替えを加えたときの例外と、CommitEdit() / CancelEdit() / 行単位の CommitEdit・CancelEdit の後に並べ替えられるか"
   - "AlternatingRowBackground だけを設定したときの AlternationCount と行の背景"
-  - "1,000 行のときに作られる DataGridRow の数と、グループ化したときの数・GroupStyle がないときのグループの見出し"
+  - "1,000 行のときに作られる DataGridRow の数と、グループ化したときの数（IsVirtualizingWhenGrouping が既定 / True）・GroupStyle がないときのグループの見出し"
   - "FrozenColumnCount を設定して横にスクロールしたときの列の位置"
 images:
   - "images/wpf-standard-control-demo/verification/datagrid/datagrid-defaults.svg"

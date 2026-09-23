@@ -47,10 +47,14 @@ internal sealed class PasswordBoxDemoScene : IScene
             "passwordbox-behavior.svg");
     }
 
+    /// <summary>キーボードから 1 文字ずつ入力したのと同じ経路で、文字列を入力する（1 文字ごとに TextComposition を送る）。</summary>
     private static void Type(PasswordBox box, string text)
     {
         box.Focus();
-        TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, box, text));
+        foreach (char c in text)
+        {
+            TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, box, c.ToString()));
+        }
     }
 
     private static List<IReadOnlyList<string>> Defaults()
@@ -138,7 +142,7 @@ internal sealed class PasswordBoxDemoScene : IScene
                 int set = changed - typed;
                 box.Clear();
                 int cleared = changed - typed - set;
-                rows.Add(["PasswordChanged count: typing \"abc\" / Password = \"xyz\" / Clear()", $"{typed} / {set} / {cleared}"]);
+                rows.Add(["PasswordChanged count: typing \"abc\" one character at a time / Password = \"xyz\" / Clear()", $"{typed} / {set} / {cleared}"]);
                 rows.Add(["  Password after Clear()", $"\"{box.Password}\""]);
             }, activate: true);
         }

@@ -81,7 +81,7 @@
         <tr>
           <td><code>SmallChange / LargeChange</code></td>
           <td><code>double</code></td>
-          <td>The step for the arrow keys and the step for Page Up / Page Down and for clicks on the track. The defaults are 0.1 and 1. With 1 and 10 on a Slider at 50, the right and up arrows gave 51, the left arrow 49, Page Up 60, Page Down 40, and a click on the track right of the thumb 60. Home and End jumped to <code>Minimum</code> and <code>Maximum</code>. The demo app starts with 1 and 10 on a 0&ndash;10 Slider, so one Page Up or one click on the track already moves the thumb across the whole range.</td>
+          <td>The step for the arrow keys and the step for Page Up / Page Down and for clicks on the track. The defaults are 0.1 and 1. With 1 and 10 on a Slider at 50, the right and up arrows gave 51, the left arrow 49, Page Up 60, Page Down 40, and a real mouse click on the track right of the thumb 60. That is with <code>IsMoveToPointEnabled</code> at its default, <code>False</code>. With <code>True</code>, the same click moved the thumb to the point clicked instead, and the value became 86.84. Home and End jumped to <code>Minimum</code> and <code>Maximum</code>. The demo app starts with 1 and 10 on a 0&ndash;10 Slider, so one Page Up or one click on the track already moves the thumb across the whole range.</td>
         </tr>
         <tr>
           <td><code>IsDirectionReversed</code></td>
@@ -126,7 +126,7 @@
         <tr>
           <td><code>Delay / Interval</code></td>
           <td><code>int (ms)</code></td>
-          <td>The repeat timing when the mouse button is held down on the track: the wait before repeating and the time between repeats. The defaults come from the Windows keyboard settings: on the measuring machine, where <code>SystemParameters.KeyboardDelay</code> was 1 and <code>KeyboardSpeed</code> 31, they were 500 and 33, and the <code>Delay</code> default matched (<code>KeyboardDelay</code> + 1) &times; 250. The Slider passes them to the two <code>RepeatButton</code>s of its track: with the demo app's 1000 and 50, both buttons had <code>Delay="1000"</code> and <code>Interval="50"</code>. One click on the track moved the value by <code>LargeChange</code>.</td>
+          <td>The repeat timing when the mouse button is held down on the track: the wait before repeating and the time between repeats. The defaults come from the Windows keyboard settings: on the measuring machine, where <code>SystemParameters.KeyboardDelay</code> was 1 and <code>KeyboardSpeed</code> 31, they were 500 and 33, and the <code>Delay</code> default matched (<code>KeyboardDelay</code> + 1) &times; 250. The Slider passes them to the two <code>RepeatButton</code>s of its track: with the demo app's 1000 and 50, both buttons had <code>Delay="1000"</code> and <code>Interval="50"</code>. A click released before <code>Delay</code> ran out moved the value once, by <code>LargeChange</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -183,8 +183,8 @@
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a>
       in this site's screenshot tool. Thumb drags were reproduced by raising the same <code>DragStarted</code> and
       <code>DragDelta</code> events that the thumb raises for a mouse drag, and keys by sending key events to a displayed window.
-      Clicks on the track were reproduced by invoking the track's <code>RepeatButton</code> through UI Automation, which runs
-      the button's click handling.
+      Clicks on the track were made with the real mouse over the measuring window, at 85% of the track's length, with the
+      button released after about 0.1 s.
     </p>
 
     <figure class="article-figure">
