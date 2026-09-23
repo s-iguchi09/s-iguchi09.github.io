@@ -116,6 +116,12 @@ internal static class DemoProbe
         window.Topmost = true;
         window.Activate();
         await Capture.SettleAsync(window);
+        if (!window.IsActive)
+        {
+            // Windows が前面化を制限すると Activate は失敗する。前面にない状態で実際の入力を送らないため。
+            throw new InvalidOperationException("計測用のウィンドウを前面に出せない（ほかのウィンドウが前面を保持している）。");
+        }
+
         return window;
     }
 
