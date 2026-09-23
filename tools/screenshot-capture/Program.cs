@@ -82,6 +82,7 @@ internal static class Program
         new GroupBoxDemoScene(),
         new StackPanelDemoScene(),
         new WrapPanelDemoScene(),
+        new DockPanelDemoScene(),
     ];
 
     [STAThread]
