@@ -7,47 +7,45 @@
   <meta charset="UTF-8">
   <title>ProgressBar | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF ProgressBar control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <meta name="description" content="WPF ProgressBar measured on .NET 10: the fill length, an empty or reversed range, when the indeterminate animation runs, and updates from other threads.">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-en.html %}
+
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ProgressBar</p>
     <h1>ProgressBar <span class="category-badge">Display</span></h1>
-    <p>ProgressBar displays the progress of an operation. It supports both determinate mode (showing a specific percentage) and indeterminate mode (showing an animation when progress cannot be measured).</p>
+    <p>ProgressBar shows how far an operation has gone, as a bar filled in proportion to Value. When the amount of work is unknown, the indeterminate mode shows a moving bar instead.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>ProgressBar</strong> control provides visual feedback for long-running operations,
-      communicating to the user that work is in progress and preventing the perception of an unresponsive
-      application. It descends from <code>RangeBase</code>, the same abstract class used by <code>Slider</code>
-      and <code>ScrollBar</code>, providing a consistent model of <code>Minimum</code>, <code>Maximum</code>,
-      and <code>Value</code> properties that define the range and current progress position.
+      <strong>ProgressBar</strong> derives from <code>RangeBase</code>, the same base class as Slider and ScrollBar. By
+      default <code>Minimum</code> is 0, <code>Maximum</code> is 100, and <code>Value</code> is 0. The fill (the template's
+      <code>PART_Indicator</code>) is proportional to (<code>Value</code> - <code>Minimum</code>) / (<code>Maximum</code> -
+      <code>Minimum</code>). In a bar 200 wide, <code>Value</code> 30 of 0 to 100 gave a fill 60 wide, and <code>Value</code> 70
+      of 20 to 120 gave 100.
     </p>
     <p>
-      In <em>determinate mode</em> (the default, <code>IsIndeterminate="False"</code>), the filled portion of
-      the bar is proportional to <code>(Value - Minimum) / (Maximum - Minimum)</code>, giving users a concrete
-      percentage indication. Binding <code>Value</code> to an observable property in the view model and
-      updating it from a background task via <code>IProgress&lt;T&gt;</code> or a <code>Task</code>'s
-      progress callback produces smooth real-time updates without blocking the UI thread.
+      A ProgressBar created on the UI thread cannot be updated from another thread: setting <code>Value</code> from a worker
+      thread threw <code>InvalidOperationException</code>. A <code>Progress&lt;double&gt;</code> created on the UI thread solves
+      this. When a worker called <code>Report(40)</code>, the callback ran on the UI thread and set <code>Value</code> to 40.
     </p>
     <p>
-      In <em>indeterminate mode</em> (<code>IsIndeterminate="True"</code>), the bar displays a looping animation
-      rather than a filled segment. This mode is appropriate when the total duration or number of steps is
-      unknown — for example, during an initial data load, a network request, or a file system enumeration.
-      The animation is driven by the control template and consumes minimal CPU, making it safe to leave
-      running while background work completes.
+      To UI Automation, the bar is a read-only range. The <code>RangeValue</code> pattern reported the value 30 with
+      <code>IsReadOnly</code> <code>True</code>. In the indeterminate mode, the pattern was not supported, so assistive technology
+      gets no value.
     </p>
     <p>
-      The <code>Orientation</code> property allows the ProgressBar to be rendered vertically, filling from
-      bottom to top, which suits certain dashboard gauge and level-meter designs. Both orientations respect
-      the same <code>Minimum</code>, <code>Maximum</code>, and <code>Value</code> properties, so switching
-      orientation is purely cosmetic and requires no logic changes.
+      The demo app has sections for the range, <code>IsIndeterminate</code>, and <code>Orientation</code>. The "Show Code" link
+      under each section displays its XAML.
     </p>
   </section>
 
@@ -58,34 +56,34 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
+
     <table class="prop-table">
-      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
       <tbody>
+        <tr>
+          <td><code>Minimum / Maximum / Value (RangeBase)</code></td>
+          <td><code>double</code></td>
+          <td>The range and the current position; the demo app binds all three to text boxes. An empty range does not break the bar. With <code>Minimum</code> and <code>Maximum</code> both 50, the bar was drawn full, with no exception. Setting <code>Maximum</code> below <code>Minimum</code> is corrected: with <code>Minimum</code> 50, <code>Maximum = 10</code> became 50, and the bar was again full. A <code>Value</code> above <code>Maximum</code> is shown as <code>Maximum</code>, but the value that was set is kept. <code>Value = 150</code> with <code>Maximum</code> 100 read as 100, and raising <code>Maximum</code> to 200 brought it back to 150.</td>
+        </tr>
         <tr>
           <td><code>IsIndeterminate</code></td>
           <td><code>bool</code></td>
-          <td>Switches between determinate (filled bar showing percentage) and indeterminate (looping animation) modes. Use <code>true</code> for operations where the total work cannot be measured — network requests, file-system enumeration, or initial data loads. Setting back to <code>false</code> and updating <code>Maximum</code>/<code>Value</code> once the scope is known is the recommended pattern. Pitfall: the indeterminate animation continues consuming CPU as long as the control is visible. Always set <code>IsIndeterminate="False"</code> and/or set <code>Visibility="Collapsed"</code> after the operation finishes to release rendering resources.</td>
+          <td>Shows that work is going on without showing how much. With <code>True</code>, the fill covered the whole bar whatever <code>Value</code> was, and the template went to its <code>Indeterminate</code> visual state. Its animation ran while the bar was shown. It stopped when the bar was <code>Collapsed</code>, and there was none in the normal mode. The demo app switches it with a check box, on a bar whose <code>Value</code> is 50.</td>
         </tr>
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Controls whether the progress bar fills horizontally (left to right) or vertically (bottom to top). Use <code>Vertical</code> for dashboard gauges, audio level meters, and bar-chart visualizations where upward growth is the expected mental model. Pitfall: in vertical mode the value increases from the bottom edge up, which is correct for most level-meter designs. If you need the bar to grow from top to bottom, apply a custom <code>ControlTemplate</code> or use a <code>ScaleTransform</code> to flip the rendering.</td>
-        </tr>
-        <tr>
-          <td><code>Minimum (RangeBase)</code></td>
-          <td><code>double</code></td>
-          <td>The value at which the progress bar displays as completely empty. Defaults to 0. For operations that start at a non-zero baseline (e.g., resuming a partially complete download), setting a non-zero minimum lets the visual accurately represent the remaining work. Pitfall: setting <code>Maximum</code> equal to <code>Minimum</code> causes a divide-by-zero in the internal fill calculation and the bar will not display correctly. Always ensure <code>Maximum &gt; Minimum</code> before binding <code>Value</code>.</td>
-        </tr>
-        <tr>
-          <td><code>Maximum (RangeBase)</code></td>
-          <td><code>double</code></td>
-          <td>The value at which the progress bar displays as completely full. Defaults to 100. Setting this to the total item count (e.g., the number of files in a batch job) and incrementing <code>Value</code> by 1 per processed item produces an accurate percentage without manual math. Pitfall: if <code>Maximum</code> is set to 0 or if <code>Maximum == Minimum</code>, the bar will not render correctly. Validate these values before starting any progress reporting loop.</td>
-        </tr>
-        <tr>
-          <td><code>Value (RangeBase)</code></td>
-          <td><code>double</code></td>
-          <td>The current progress value, clamped between <code>Minimum</code> and <code>Maximum</code>. In MVVM applications, this is the primary binding target, updated from a background operation. Use <code>IProgress&lt;T&gt;</code> (which captures the UI thread's synchronization context) or <code>Dispatcher.InvokeAsync</code> to push updates safely. Pitfall: updating <code>Value</code> directly from a <code>Task</code> or background thread without marshaling to the UI thread throws an <code>InvalidOperationException</code>. Always use <code>IProgress&lt;T&gt;</code> or <code>Dispatcher</code> for cross-thread updates.</td>
+          <td>The direction of the bar. With <code>Vertical</code>, the fill grows from the bottom: in a bar 20 wide and 200 high, <code>Value</code> 75 gave a fill from y=50 to the bottom, 150 high. The demo app binds the bar's <code>Width</code> to the width of the surrounding Grid, so the vertical bar there is as wide as the whole area.</td>
         </tr>
       </tbody>
     </table>
@@ -93,69 +91,82 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates both determinate and indeterminate ProgressBars with MVVM bindings:</p>
-    <pre><code class="language-xml">&lt;StackPanel Margin="16" Width="400"&gt;
+    <p>The following XAML is the range section of the demo app (<code>ProgressBarUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, and the input behavior of the text boxes left out:</p>
+    <pre><code class="language-xml">&lt;TextBox x:Name="MinTextBox" Text="0" /&gt;
+&lt;TextBox x:Name="MaxTextBox" Text="100" /&gt;
+&lt;TextBox x:Name="ValueTextBox" Text="30" /&gt;
 
-  &lt;!-- Determinate progress bar bound to a view model property --&gt;
-  &lt;TextBlock Text="{Binding ProgressPercent, StringFormat='Processing: {0:0}%'}"
-             Margin="0,0,0,4" /&gt;
-  &lt;ProgressBar Minimum="0" Maximum="100"
-               Value="{Binding ProgressPercent}"
-               Height="20" Margin="0,0,0,16" /&gt;
-
-  &lt;!-- Indeterminate mode for operations of unknown length --&gt;
-  &lt;TextBlock Text="Loading data..."
-             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
-             Margin="0,0,0,4" /&gt;
-  &lt;ProgressBar IsIndeterminate="{Binding IsLoading}"
-               Height="8" Margin="0,0,0,16" /&gt;
-
-  &lt;!-- Vertical progress bar --&gt;
-  &lt;ProgressBar Orientation="Vertical"
-               Minimum="0" Maximum="100"
-               Value="{Binding Level}"
-               Width="24" Height="120"
-               HorizontalAlignment="Left" /&gt;
-
-&lt;/StackPanel&gt;</code></pre>
+&lt;ProgressBar x:Name="BasicProgressBar"
+             Height="20"
+             Maximum="{Binding Text, ElementName=MaxTextBox}"
+             Minimum="{Binding Text, ElementName=MinTextBox}"
+             Value="{Binding Text, ElementName=ValueTextBox}" /&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>File operations:</strong> Showing copy, move, or download progress during bulk file operations, with the <code>Value</code> bound to bytes transferred or files processed.</li>
-      <li><strong>Data loading indicators:</strong> Indeterminate bars displayed while fetching data from a database or REST API, switching to determinate mode once the total record count is known.</li>
-      <li><strong>Installation wizards:</strong> Step-by-step installation progress using a determinate bar with <code>Maximum</code> set to the total installation step count.</li>
-      <li><strong>Media playback:</strong> A horizontal ProgressBar as a read-only playback position indicator in a media player, styled to match the application's media controls.</li>
-      <li><strong>Dashboard gauges and level meters:</strong> Vertical ProgressBars styled with custom colors and tick marks to represent audio levels, battery charge, or resource utilization in monitoring dashboards.</li>
+      <li><strong>File operations:</strong> copying or downloading, with <code>Maximum</code> set to the number of files or bytes.</li>
+      <li><strong>Loading of unknown length:</strong> the indeterminate mode while waiting for a server, switched to a normal bar once the total is known.</li>
+      <li><strong>Levels:</strong> a vertical bar for a level that goes up and down, such as a volume meter.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use <code>IProgress&lt;T&gt;</code> for thread-safe updates:</strong> Construct a <code>Progress&lt;int&gt;</code> with a callback that updates your ViewModel property. The <code>Progress&lt;T&gt;</code> class captures the synchronization context so the callback runs on the UI thread, eliminating the need for explicit <code>Dispatcher.Invoke</code> calls.</li>
-      <li><strong>Pair with a Cancel button:</strong> Long operations with a progress bar should always offer a cancellation path. Use <code>CancellationTokenSource</code> and <code>CancellationToken</code> in your async task, and reset <code>IsIndeterminate</code> and <code>Visibility</code> in the cancellation handling code.</li>
-      <li><strong>Add a percentage label alongside the bar:</strong> A <code>TextBlock</code> showing the numeric percentage (e.g., "47%") in addition to the bar provides accessibility for users with color vision deficiency. Place it inside a <code>Grid</code> centered over the ProgressBar using <code>HorizontalAlignment="Center"</code> and <code>VerticalAlignment="Center"</code>.</li>
-      <li><strong>Set <code>Maximum</code> to item count, not 100:</strong> Using the actual item count (e.g., 500 files) and incrementing by 1 avoids floating-point percentage calculations in the view model and keeps the binding logic simple.</li>
-      <li><strong>Hide the bar when idle:</strong> Set <code>Visibility="Collapsed"</code> on the ProgressBar when no operation is in progress to avoid the indeterminate animation consuming CPU and distracting users.</li>
+      <li><strong>Report progress with <code>Progress&lt;T&gt;</code>.</strong> Create it on the UI thread; its callback then runs there and can set the bar.</li>
+      <li><strong>Set <code>Maximum</code> to the number of items.</strong> Adding 1 to <code>Value</code> per item then fills the bar without computing percentages.</li>
+      <li><strong>Collapse the bar when nothing is running.</strong> The indeterminate animation runs as long as the bar is shown.</li>
+      <li><strong>Show the numbers in text as well.</strong> In the indeterminate mode, UI Automation has no value to report.</li>
+      <li><strong>Do not rely on an empty range to show an empty bar.</strong> <code>Minimum</code> = <code>Maximum</code> draws a full bar.</li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ProgressBarDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ProgressBarDemoScene</code></a>
+      in this site's screenshot tool. The fill was read from the bounds of the template's <code>PART_Indicator</code>. Whether the
+      indeterminate animation was running was judged by reading the template's elements twice, 300 ms apart, and checking
+      whether anything had changed.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/progressbar/progressbar-range.svg" alt="Table of ProgressBar ranges: it derives from RangeBase with defaults 0, 100, and 0, the fill is 60 for 30 of 0 to 100 and 100 for 70 of 20 to 120 in a bar 200 wide, an empty range and a Maximum below Minimum draw a full bar, a Value of 150 reads 100 and returns to 150 when Maximum becomes 200, and a vertical bar fills from the bottom" width="1022" height="320" loading="lazy">
+      <figcaption>The range, the fill, and the orientation. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/progressbar/progressbar-modes.svg" alt="Table of ProgressBar modes: the indeterminate mode fills the whole bar and enters the Indeterminate state, its animation runs while shown and stops when collapsed, setting Value from a worker thread throws InvalidOperationException, Progress of double calls back on the UI thread, and UI Automation reports a read-only range that is not supported in the indeterminate mode" width="1179" height="230" loading="lazy">
+      <figcaption>The indeterminate mode, threads, and UI Automation. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/slider.html">Slider</a> — also inherits from <code>RangeBase</code> and shares <code>Minimum</code>, <code>Maximum</code>, and <code>Value</code>, but allows interactive user input.</li>
+      <li><a href="/apps/wpf-standard-control-demo/slider.html">Slider</a> — a RangeBase the user can drag.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ProgressBarUsage" target="_blank" rel="noopener noreferrer">View ProgressBar source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ProgressBarUsage" target="_blank" rel="noopener noreferrer">
+        View ProgressBar source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>
+
 {% include footer-en.html %}
+
 </body>
 </html>
