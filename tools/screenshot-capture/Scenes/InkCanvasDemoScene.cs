@@ -17,9 +17,6 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class InkCanvasDemoScene : IScene
 {
-    /// <summary>ドラッグ中に読んだ値（<see cref="DragAsync"/> の whileDown の結果）。</summary>
-    private static string s_during = "";
-
     public string Slug => "wpf-standard-control-demo-inkcanvas";
 
     public string ImageDirectory => DemoProbe.ImageDirectory("inkcanvas");
@@ -54,8 +51,11 @@ internal sealed class InkCanvasDemoScene : IScene
         EditingMode = mode,
     };
 
-    /// <summary>InkCanvas の上の点を順にたどって、実際のマウスでドラッグする。</summary>
-    private static async Task DragAsync(Window window, InkCanvas canvas, IReadOnlyList<Point> points, Func<string>? whileDown = null)
+    /// <summary>
+    /// InkCanvas の上の点を順にたどって、実際のマウスでドラッグする。
+    /// <paramref name="whileDown"/> を渡すと、ボタンを押したまま最初に動かした後に呼び、その結果を返す。
+    /// </summary>
+    private static async Task<string> DragAsync(Window window, InkCanvas canvas, IReadOnlyList<Point> points, Func<string>? whileDown = null)
     {
         string during = "";
         using (RealMouse.Preserve())
@@ -74,7 +74,7 @@ internal sealed class InkCanvasDemoScene : IScene
             await RealMouse.LeftUpAsync(window);
         }
 
-        s_during = during;
+        return during;
     }
 
     private static Point[] Horizontal(double y) =>
@@ -144,10 +144,10 @@ internal sealed class InkCanvasDemoScene : IScene
             await ShowAsync(canvas, async () =>
             {
                 Window window = await FrontAsync(canvas);
-                await DragAsync(window, canvas, Horizontal(60), () => canvas.ActiveEditingMode.ToString());
+                string during = await DragAsync(window, canvas, Horizontal(60), () => canvas.ActiveEditingMode.ToString());
                 DrawingAttributes first = canvas.Strokes[0].DrawingAttributes;
                 rows.Add(["Ink, real drag: strokes; ActiveEditingMode while dragging; stroke color, width",
-                    $"{canvas.Strokes.Count}; {s_during}; {Name(first.Color)}, {D(first.Width)}"]);
+                    $"{canvas.Strokes.Count}; {during}; {Name(first.Color)}, {D(first.Width)}"]);
 
                 canvas.DefaultDrawingAttributes.Color = Colors.Red;
                 canvas.DefaultDrawingAttributes.Width = 10;
