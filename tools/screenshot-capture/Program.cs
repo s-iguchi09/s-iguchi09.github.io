@@ -70,6 +70,7 @@ internal static class Program
         new TreeViewDemoScene(),
         new DataGridDemoScene(),
         new CheckBoxDemoScene(),
+        new ToolBarDemoScene(),
     ];
 
     [STAThread]

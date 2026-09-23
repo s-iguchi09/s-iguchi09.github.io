@@ -1,0 +1,20 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-toolbar
+slug: "wpf-standard-control-demo-toolbar"
+scene: "ToolBarDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ToolBar の基底クラス、HasOverflowItems・IsOverflowItem・ToolBar の Orientation が読み取り専用か、OverflowMode の既定値"
+  - "ToolBarTray に入れない ToolBar で、幅（デモアプリの 100・200・400）と OverflowMode ごとに、対象の項目がオーバーフローに移るか"
+  - "すべての項目を Never にして幅を狭めたときの、項目の幅の合計と表示される幅"
+  - "はみ出す項目がないときに IsOverflowOpen を True にしたときの、オーバーフローボタンの状態とポップアップ"
+  - "ToolBar の中の Button・ToggleButton・ComboBox・Separator に、ToolBar 用のスタイルが適用されるか"
+  - "ToolBar に Background を設定したときに、テンプレートの背景に反映されるか"
+  - "ToolBarTray の中の Band / BandIndex と実際の位置、つまみのドラッグで Band / BandIndex が変わるか、IsLocked のときのつまみ"
+  - "ToolBarTray の Orientation を Vertical にしたときの ToolBar の Orientation"
+images:
+  - "images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.svg"
+  - "images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow.svg"
+  - "images/wpf-standard-control-demo/verification/toolbar/toolbar-tray.svg"
