@@ -7,48 +7,40 @@
   <meta charset="UTF-8">
   <title>Label | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF Label control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <meta name="description" content="WPF Label measured on .NET 10: where its access key moves the focus, with or without Target and into a ToolBar, and what Target does not give screen readers.">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-en.html %}
+
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Label</p>
     <h1>Label <span class="category-badge">Display</span></h1>
-    <p>Label is a content control that displays text and supports access keys (mnemonics). Unlike TextBlock, it can receive focus and is designed to be paired with other controls using the Target property for keyboard navigation.</p>
+    <p>Label shows a caption, usually for an input field, and can move the keyboard focus to that field with an access key.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>Label</strong> control extends <code>ContentControl</code> and adds two critical features
-      over a plain <code>TextBlock</code>: access key (mnemonic) support and focus delegation via the
-      <code>Target</code> property. Access keys are defined by prefixing an underscore before a character in
-      the <code>Content</code> string — for example, <code>_Name:</code> makes <kbd>Alt+N</kbd> the keyboard
-      shortcut for this label. When pressed, focus automatically transfers to the control specified by
-      <code>Target</code>.
+      <strong>Label</strong> derives from <code>ContentControl</code>. It does not take the focus itself: <code>Focusable</code>
+      and <code>IsTabStop</code> were both <code>False</code>, and <kbd>Tab</kbd> from a TextBox before a Label went straight to
+      the TextBox after it. Its default <code>Padding</code> is 5 on every side, and its content is aligned
+      <code>Left</code> and <code>Top</code>.
     </p>
     <p>
-      This focus delegation makes Label the preferred choice over <code>TextBlock</code> when labeling form
-      fields. By setting <code>Target="{Binding ElementName=firstNameTextBox}"</code>, pressing the label's
-      access key moves keyboard focus directly to the associated <code>TextBox</code>. This is a fundamental
-      accessibility requirement for desktop applications and allows users who rely on keyboard navigation to
-      quickly jump between form fields without using the mouse.
+      A string content is shown with access keys recognized: the character after an underscore becomes the access key, and
+      the underscore itself is hidden. The article linked below covers this, and how to show an underscore. A string with a
+      line break is shown on two lines: the Label was 25.96 high with one line and 41.92 with two.
     </p>
     <p>
-      Like all <code>ContentControl</code> descendants, Label's <code>Content</code> property accepts any
-      object, not just strings. You can embed images, icons, or complex layouts within a Label. The control's
-      typography properties — <code>FontFamily</code>, <code>FontSize</code>, <code>FontWeight</code>,
-      <code>FontStyle</code>, and <code>FontStretch</code> — cascade to child text elements and provide
-      consistent styling options.
-    </p>
-    <p>
-      The <code>HorizontalContentAlignment</code> and <code>VerticalContentAlignment</code> properties control
-      how the content is positioned within the Label's bounds. For simple text labels in form layouts, the
-      default <code>Left</code>/<code>Top</code> alignment is typical, but <code>Right</code> alignment is
-      common for labels in a two-column form grid where the label column is right-aligned next to input fields.
+      The demo app has sections for <code>Target</code>, the content, and the <code>Control</code> properties
+      <code>Padding</code>, the font properties, <code>Background</code>, <code>Foreground</code>, the border, and the content
+      alignment. The "Show Code" link under each section displays its XAML.
     </p>
   </section>
 
@@ -59,44 +51,49 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
+
     <table class="prop-table">
-      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
       <tbody>
         <tr>
           <td><code>Target</code></td>
           <td><code>UIElement</code></td>
-          <td>Use this whenever you place a Label next to an input control so that keyboard users can press <kbd>Alt</kbd>+the access key to jump directly to that field without touching the mouse. When the access key is pressed, WPF moves keyboard focus to the element specified here. Prefer <code>{x:Reference nameBox}</code> over <code>{Binding ElementName=nameBox}</code> because <code>x:Reference</code> is validated at compile time and will catch typos in the element name immediately. Pitfall: <code>Target</code> only works when the Label and the target control share the same <code>FocusScope</code>. Controls inside a <code>ToolBar</code> or <code>Menu</code> maintain their own focus scope, so a Label outside those containers cannot target an element inside them.</td>
+          <td>The element that receives the focus when the Label's access key is pressed. In the demo app's two pairs, <code>_Name(Press Alt+N)</code> and <code>_Age(Press Alt+A)</code>, the access keys <code>N</code> and <code>A</code> moved the focus to the Name and Age text boxes. Without <code>Target</code>, the access key of <code>_Plain</code> left the focus where it was. A different focus scope is not a problem: a Label whose <code>Target</code> was a TextBox inside a ToolBar moved the focus into it. <code>Target</code> does not name the field for screen readers: the Name TextBox had an empty UI Automation name and no <code>LabeledBy</code>.</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>Use this to display field description text and optionally define a keyboard shortcut character for the field. Prefix any character in the string with <code>_</code> to make it an access key — for example <code>_Email:</code> registers <kbd>Alt+E</kbd> as the shortcut. When the user presses <kbd>Alt</kbd>, the underscore prefix character is revealed as an underline beneath the access key character. To display a literal underscore character, use a double underscore <code>__</code>. Note: the <code>Target</code> property only controls where focus moves on key press; the access key underline and Alt-key behavior are visible even without a <code>Target</code> set.</td>
+          <td>The caption. The demo app binds it to a multi-line text box, so a line break in the text gives a Label of two lines.</td>
         </tr>
         <tr>
           <td><code>Padding (Control)</code></td>
           <td><code>Thickness</code></td>
-          <td>Adds internal spacing between the Label's border and its content. The WPF default padding for Label is <code>5,0,0,0</code> (5px left, 0 on other sides). Adjust this when building compact form layouts or when using a larger font size where the default spacing feels too tight or too loose. Pitfall: setting Padding to <code>0</code> on all sides pushes the text flush against the border, which looks cramped. If you change the font size, review the Padding as well to keep the visual proportions correct.</td>
+          <td>The space around the content; the default is 5 on every side.</td>
         </tr>
         <tr>
           <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
-          <td><code>various</code></td>
-          <td>These typography properties control the visual appearance of the label text and are all inherited from ancestor elements. Setting them on a shared parent panel or in an application-level <code>Style</code> keeps the form consistent without repeating the same values on every Label. Bold labels are common for required fields; italic for optional or hint labels; larger sizes for section headers. Pitfall: not all fonts support all <code>FontWeight</code> values. If you request <code>Light</code> or <code>ExtraBold</code> and the font doesn't include that weight, WPF substitutes the nearest available weight silently. Always verify the font and weight combination renders as intended.</td>
+          <td>font values</td>
+          <td>The font of the caption. The demo app has a section for each.</td>
         </tr>
         <tr>
-          <td><code>Background / Foreground (Control)</code></td>
-          <td><code>Brush</code></td>
-          <td><code>Foreground</code> sets the text color and is the most commonly customized brush property for Label. Use a dimmed gray foreground for disabled or hint labels, and red for required-field indicators. For theme-aware apps, use <code>{DynamicResource ControlTextBrush}</code> or your own theme brush rather than a hard-coded color, so the label automatically adapts to light and dark themes. Pitfall: hard-coding colors such as <code>Black</code> or <code>White</code> will make labels unreadable when the OS theme changes or when the user enables high-contrast mode.</td>
-        </tr>
-        <tr>
-          <td><code>BorderBrush / BorderThickness (Control)</code></td>
+          <td><code>Background / Foreground / BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Optional border properties seldom used by default but available when a Label needs a visible frame. Adding a bottom-only border can create an underline-style label that doubles as a visual section separator in a form. Keep border usage minimal to avoid visual noise in dense form layouts.</td>
+          <td>The colors and the border of the Label. The demo app has a section for each.</td>
         </tr>
         <tr>
           <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
-          <td><code>Left/Center/Right/Stretch / Top/Center/Bottom/Stretch</code></td>
-          <td>Controls where the content is placed within the Label's allocated space. Right-aligning labels in the first column of a two-column form grid aligns the label text flush against the adjacent input control, producing a clean professional form appearance. The default is <code>Left</code> / <code>Top</code>.</td>
+          <td><code>HorizontalAlignment / VerticalAlignment</code></td>
+          <td>Where the content sits inside the Label; the defaults are <code>Left</code> and <code>Top</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -104,83 +101,87 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates Label usage with access keys and Target bindings in a form layout:</p>
-    <pre><code class="language-xml">&lt;Grid Margin="16"&gt;
+    <p>The following XAML is the <code>Target</code> section of the demo app (<code>LabelUsageControl.xaml</code>), with the styles and the surrounding GroupBox left out:</p>
+    <pre><code class="language-xml">&lt;Grid&gt;
   &lt;Grid.ColumnDefinitions&gt;
-    &lt;ColumnDefinition Width="120" /&gt;
+    &lt;ColumnDefinition Width="auto" /&gt;
     &lt;ColumnDefinition Width="*" /&gt;
   &lt;/Grid.ColumnDefinitions&gt;
   &lt;Grid.RowDefinitions&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
+    &lt;RowDefinition /&gt;
+    &lt;RowDefinition /&gt;
   &lt;/Grid.RowDefinitions&gt;
-
-  &lt;!-- Label with access key _N targeting the TextBox --&gt;
-  &lt;Label Grid.Row="0" Grid.Column="0"
-         Content="_Name:"
-         Target="{Binding ElementName=nameBox}"
-         HorizontalContentAlignment="Right" /&gt;
-  &lt;TextBox Grid.Row="0" Grid.Column="1"
-           x:Name="nameBox" Margin="4" /&gt;
-
-  &lt;Label Grid.Row="1" Grid.Column="0"
-         Content="_Email:"
-         Target="{Binding ElementName=emailBox}"
-         HorizontalContentAlignment="Right" /&gt;
-  &lt;TextBox Grid.Row="1" Grid.Column="1"
-           x:Name="emailBox" Margin="4" /&gt;
-
-  &lt;Label Grid.Row="2" Grid.Column="0"
-         Content="_Role:"
-         Target="{Binding ElementName=roleCombo}"
-         HorizontalContentAlignment="Right" /&gt;
-  &lt;ComboBox Grid.Row="2" Grid.Column="1"
-            x:Name="roleCombo" Margin="4" /&gt;
-
+  &lt;Label x:Name="TargetNameLabel" Grid.Row="0" Grid.Column="0"
+         Content="_Name(Press Alt+N)"
+         Target="{Binding ElementName=TargetNameTextBox}" /&gt;
+  &lt;TextBox x:Name="TargetNameTextBox" Grid.Row="0" Grid.Column="1" /&gt;
+  &lt;Label x:Name="TargetAgeLabel" Grid.Row="1" Grid.Column="0"
+         Content="_Age(Press Alt+A)"
+         Target="{Binding ElementName=TargetAgeTextBox}" /&gt;
+  &lt;TextBox x:Name="TargetAgeTextBox" Grid.Row="1" Grid.Column="1" /&gt;
 &lt;/Grid&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Form field labels:</strong> Paired with <code>TextBox</code>, <code>ComboBox</code>, or <code>DatePicker</code> controls in data-entry forms, providing accessible keyboard shortcuts to jump to each field.</li>
-      <li><strong>Required field indicators:</strong> Displaying an asterisk or using a red foreground to visually mark mandatory fields in registration or configuration forms.</li>
-      <li><strong>Section headings within GroupBox:</strong> Used inside <code>GroupBox</code> headers or as sub-section titles within larger form panels.</li>
-      <li><strong>Status and descriptor text:</strong> Displaying read-only descriptive text next to values in property panels or detail views where the label provides context for the adjacent value.</li>
-      <li><strong>Toolbar and panel labels:</strong> Labeling icon buttons or sliders in tool panels with short descriptive names that also serve as access-key shortcuts.</li>
+      <li><strong>Form captions:</strong> a caption next to each field, with an access key that jumps to it.</li>
+      <li><strong>Captions for other controls:</strong> a ComboBox or a DatePicker as the <code>Target</code>.</li>
+      <li><strong>Captions with content:</strong> an icon and text together, since the content can be any element.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Always set <code>Target</code> in forms:</strong> Without a <code>Target</code>, access keys have no effect on focus. Every Label next to an input control should have its <code>Target</code> set for proper keyboard accessibility.</li>
-      <li><strong>Use <code>x:Reference</code> instead of <code>ElementName</code>:</strong> Prefer <code>Target="{x:Reference nameBox}"</code> over <code>Target="{Binding ElementName=nameBox}"</code>. <code>x:Reference</code> is validated at compile time, so a typo in the element name becomes a build error rather than a silent runtime failure.</li>
-      <li><strong>Use <code>TextBlock</code> for non-interactive text:</strong> If you do not need access keys or focus delegation, <code>TextBlock</code> is lighter and more flexible. Label inherits the full <code>ContentControl</code> stack, which adds overhead not needed for simple read-only text.</li>
-      <li><strong>Escape literal underscores with double underscore:</strong> To display an actual underscore character in a Label's content, write <code>__</code> (two underscores). A single underscore is always interpreted as the access-key prefix.</li>
-      <li><strong>Right-align labels in two-column forms:</strong> Setting <code>HorizontalContentAlignment="Right"</code> on all labels in the first column produces a cleaner layout where label text aligns flush against the input field column.</li>
-      <li><strong>Be aware of FocusScope boundaries:</strong> The <code>Target</code> property only works when the Label and the target control are in the same focus scope. Controls inside a <code>ToolBar</code> or <code>Menu</code> have their own isolated focus scope, so a Label defined outside cannot move focus to a control inside them.</li>
-      <li><strong>Ensure sufficient color contrast:</strong> Label foreground colors must meet WCAG AA contrast ratio requirements (at least 4.5:1 against the background) to satisfy accessibility guidelines for desktop applications.</li>
+      <li><strong>Set <code>Target</code> on every caption with an access key.</strong> Without it, the key does nothing.</li>
+      <li><strong>Name the field for screen readers separately.</strong> <code>Target</code> did not give the TextBox a name; set <code>AutomationProperties.Name</code> or <code>AutomationProperties.LabeledBy</code> on the field.</li>
+      <li><strong>Use a TextBlock for text that needs no access key.</strong> The article linked below measures what many Labels cost.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>LabelDemoScene</code></a>
+      in this site's screenshot tool. Access keys were sent through <code>AccessKeyManager.ProcessKey</code>, which handles a
+      key pressed with <kbd>Alt</kbd>, and <kbd>Tab</kbd> through WPF's input manager, the same path as keys typed on a
+      keyboard. Sizes are the values on the measuring machine.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Table of Label results: it derives from ContentControl, is not focusable or a tab stop, has padding 5 and Left and Top content alignment, Tab skips it, the demo's access keys N and A move the focus to the Name and Age text boxes, a Label without Target moves nothing, a Target inside a ToolBar receives the focus, the target TextBox gets no UI Automation name or LabeledBy, and a line break makes the Label two lines high" width="1108" height="320" loading="lazy">
+      <figcaption>Defaults, access keys, <code>Target</code>, and UI Automation. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — uses a header that functions similarly to a label for a group of controls.</li>
-      <li><a href="/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — the most common target control paired with Label in form layouts.</li>
-      <li><a href="/apps/wpf-standard-control-demo/combobox.html">ComboBox</a> — another frequent target control paired with Label for dropdown selection fields.</li>
+      <li><a href="/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — lighter text without access keys or a template.</li>
+      <li><a href="/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — the most common <code>Target</code> of a Label.</li>
+      <li><a href="/articles/wpf-label-underscore-issue/">Why WPF Label Hides Underscores and How to Fix It</a> — access keys in a Label's text, and showing an underscore.</li>
+      <li><a href="/articles/wpf-label-vs-textblock-performance/">Why WPF Slows Down with Many Labels and When to Switch to TextBlock</a> — the cost of many Labels compared with TextBlocks.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/LabelUsage" target="_blank" rel="noopener noreferrer">View Label source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/LabelUsage" target="_blank" rel="noopener noreferrer">
+        View Label source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>
+
 {% include footer-en.html %}
+
 </body>
 </html>
