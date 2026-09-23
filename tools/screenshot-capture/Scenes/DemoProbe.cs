@@ -77,7 +77,10 @@ internal static class DemoProbe
     ///
     /// キー入力・ポップアップ・装飾層など、表示中のウィンドウが要る計測に使う。
     /// 値を読むだけなので、ディスプレイが消えていても結果は変わらない（撮影はしない）。
-    /// フォーカスを確かめる計測だけ <paramref name="activate"/> を true にする。
+    ///
+    /// <see cref="Capture.ShowAndSettleAsync"/> は表示の後に必ず Activate を呼ぶため、
+    /// <paramref name="activate"/> が false でもウィンドウはアクティブになる（非アクティブな状態を前提にした計測には使えない）。
+    /// true にすると、Activate と描画の待機をもう 1 回行う。フォーカスが要る計測では true にして、アクティブになったことを確実にする。
     /// </summary>
     public static async Task ShowAsync(FrameworkElement content, Func<Task> act, bool activate = false)
     {

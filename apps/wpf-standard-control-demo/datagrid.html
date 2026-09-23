@@ -130,7 +130,7 @@
         <tr>
           <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
           <td><code>bool</code></td>
-          <td>Whether rows and columns outside the view are created. The defaults are <code>True</code> for rows and <code>False</code> for columns. With 1,000 rows, 11 <code>DataGridRow</code>s existed. Grouping turns row virtualization off: grouped with a <code>GroupStyle</code>, all 1,000 rows were created.</td>
+          <td>Whether rows and columns outside the view are created. The defaults are <code>True</code> for rows and <code>False</code> for columns. With 1,000 rows, 11 <code>DataGridRow</code>s existed. By default, grouping turns row virtualization off, because <code>VirtualizingPanel.IsVirtualizingWhenGrouping</code> is <code>False</code>: grouped with a <code>GroupStyle</code>, all 1,000 rows were created. With it set to <code>True</code>, 18 rows were created.</td>
         </tr>
       </tbody>
     </table>
@@ -161,7 +161,7 @@
       <li>Typing "Changed" and pressing Esc ended editing and left the source unchanged.</li>
       <li>Pressing F2 again, typing "Committed", and pressing Enter wrote "Committed" to the source.</li>
     </ul>
-    <p>While a cell was being edited, adding a <code>SortDescription</code> to the items threw <code>InvalidOperationException</code>. Call <code>CommitEdit()</code> or <code>CancelEdit()</code> before sorting, filtering, or grouping from code.</p>
+    <p>While a cell was being edited, adding a <code>SortDescription</code> to the items threw <code>InvalidOperationException</code>. <code>CommitEdit()</code> and <code>CancelEdit()</code> without arguments did not prevent it: sorting still threw after either. After <code>CommitEdit(DataGridEditingUnit.Row, true)</code> or <code>CancelEdit(DataGridEditingUnit.Row)</code>, sorting worked. End the row edit this way before sorting, filtering, or grouping from code.</p>
   </section>
 
   <section class="content-section">
@@ -170,7 +170,7 @@
       <li><strong>Declare columns when the item type has members that should not be shown.</strong> Automatic columns include every public property, such as <code>IDataErrorInfo.Error</code>.</li>
       <li><strong>Add a validation rule if rows should show errors.</strong> <code>RowValidationErrorTemplate</code> has no effect while <code>RowValidationRules</code> is empty.</li>
       <li><strong>Check the new-item row.</strong> If users cannot add rows, check the source: an array or an item type without a parameterless constructor quietly turns <code>CanUserAddRows</code> off.</li>
-      <li><strong>Expect grouped grids to be heavier.</strong> Grouping creates every row.</li>
+      <li><strong>Set <code>VirtualizingPanel.IsVirtualizingWhenGrouping="True"</code> on grouped grids.</strong> By default, grouping creates every row.</li>
     </ul>
   </section>
 
@@ -190,7 +190,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg" alt="Table of DataGrid behavior: F2, Esc, and Enter start, cancel, and commit editing, each column type uses its own editor, three header clicks give Ascending, Descending, Ascending, sorting during an edit throws InvalidOperationException, AlternatingRowBackground alone sets AlternationCount to 2, grouping with a GroupStyle creates all 1,000 rows, and a frozen first column keeps its position while scrolling" width="1014" height="440" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg" alt="Table of DataGrid behavior: F2, Esc, and Enter start, cancel, and commit editing, each column type uses its own editor, three header clicks give Ascending, Descending, Ascending, sorting during an edit throws InvalidOperationException even after CommitEdit() or CancelEdit() but not after ending the row edit, AlternatingRowBackground alone sets AlternationCount to 2, grouping with a GroupStyle creates all 1,000 rows by default and 18 with IsVirtualizingWhenGrouping, and a frozen first column keeps its position while scrolling" width="1203" height="590" loading="lazy">
       <figcaption>Editing, sorting, alternating rows, virtualization, and frozen columns. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

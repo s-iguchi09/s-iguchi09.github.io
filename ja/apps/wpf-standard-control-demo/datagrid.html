@@ -101,7 +101,7 @@
         <tr>
           <td><code>EnableRowVirtualization / EnableColumnVirtualization</code></td>
           <td><code>bool</code></td>
-          <td>表示範囲外の行・列を作らないかどうかです。既定値は行が <code>True</code>、列が <code>False</code> です。1,000 行では、<code>DataGridRow</code> は 11 個でした。グループ化すると行の仮想化は止まり、<code>GroupStyle</code> を付けてグループ化すると 1,000 行すべてが作られました。</td>
+          <td>表示範囲外の行・列を作らないかどうかです。既定値は行が <code>True</code>、列が <code>False</code> です。1,000 行では、<code>DataGridRow</code> は 11 個でした。既定では <code>VirtualizingPanel.IsVirtualizingWhenGrouping</code> が <code>False</code> なので、グループ化すると行の仮想化は止まり、<code>GroupStyle</code> を付けてグループ化すると 1,000 行すべてが作られました。これを <code>True</code> にすると、作られた行は 18 個でした。</td>
         </tr>
       </tbody>
     </table>
@@ -132,7 +132,7 @@
       <li>"Changed" と入力して Esc キーを押すと、編集が終わり、ソースは変わりませんでした。</li>
       <li>もう一度 F2 キーを押して "Committed" と入力し、Enter キーを押すと、ソースに "Committed" が書き込まれました。</li>
     </ul>
-    <p>セルの編集中に項目へ <code>SortDescription</code> を加えると、<code>InvalidOperationException</code> が発生しました。コードから並べ替え・絞り込み・グループ化をする前に、<code>CommitEdit()</code> か <code>CancelEdit()</code> を呼びます。</p>
+    <p>セルの編集中に項目へ <code>SortDescription</code> を加えると、<code>InvalidOperationException</code> が発生しました。引数なしの <code>CommitEdit()</code> や <code>CancelEdit()</code> を呼んでも防げず、どちらの後でも並べ替えで例外が発生しました。<code>CommitEdit(DataGridEditingUnit.Row, true)</code> か <code>CancelEdit(DataGridEditingUnit.Row)</code> の後は並べ替えられました。コードから並べ替え・絞り込み・グループ化をする前に、このように行の編集を終えます。</p>
   </section>
 
   <section class="content-section">
@@ -141,7 +141,7 @@
       <li><strong>見せたくないメンバーがある型では列を宣言する</strong> — 自動で作られる列には、<code>IDataErrorInfo.Error</code> のような公開プロパティもすべて含まれます。</li>
       <li><strong>行にエラーを表示するなら検証の規則を加える</strong> — <code>RowValidationRules</code> が空のあいだは、<code>RowValidationErrorTemplate</code> は効きません。</li>
       <li><strong>新規行を確かめる</strong> — ユーザーが行を追加できない場合はソースを確認します。配列や、引数なしのコンストラクターを持たない型では、<code>CanUserAddRows</code> が何も知らせずに無効になります。</li>
-      <li><strong>グループ化した表は重くなると考える</strong> — グループ化すると、すべての行が作られます。</li>
+      <li><strong>グループ化する表には <code>VirtualizingPanel.IsVirtualizingWhenGrouping="True"</code> を設定する</strong> — 既定では、グループ化するとすべての行が作られます。</li>
     </ul>
   </section>
 
@@ -155,7 +155,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg" alt="DataGrid の挙動の表。F2・Esc・Enter で編集の開始・取り消し・確定ができ、列の種類ごとに編集用の要素が変わり、見出しの 3 回のクリックで昇順・降順・昇順になり、編集中の並べ替えは InvalidOperationException になり、AlternatingRowBackground だけで AlternationCount が 2 になり、GroupStyle 付きのグループ化では 1,000 行すべてが作られ、固定した 1 列目はスクロールしても動かない" width="1014" height="440" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg" alt="DataGrid の挙動の表。F2・Esc・Enter で編集の開始・取り消し・確定ができ、列の種類ごとに編集用の要素が変わり、見出しの 3 回のクリックで昇順・降順・昇順になり、編集中の並べ替えは CommitEdit() や CancelEdit() の後でも InvalidOperationException になるが行の編集を終えた後はならず、AlternatingRowBackground だけで AlternationCount が 2 になり、GroupStyle 付きのグループ化では既定で 1,000 行すべて、IsVirtualizingWhenGrouping では 18 行が作られ、固定した 1 列目はスクロールしても動かない" width="1203" height="590" loading="lazy">
       <figcaption>編集、並べ替え、1 行おきの背景、仮想化、列の固定。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

@@ -11,7 +11,7 @@ verifies:
   - "MaxLength を、キーボードからの入力・コードからの Text・バインドした値のそれぞれに対して効かせたときの結果"
   - "CharacterCasing を、キーボードからの入力とコードからの Text に対して効かせたときの結果"
   - "MinLines / MaxLines（デモアプリの 2・4・6 行）による高さと、MaxLines を超えたときのスクロールバー"
-  - "MinLines が表示前（初期化子・XAML）に設定した場合に効くか、表示後に MinLines を設定した場合・表示後に Text を変えた場合に効くか"
+  - "MinLines が表示前（初期化子・XAML）に設定した場合に効くか、表示後に MinLines を設定した場合・表示後に Text を変えた場合・Loaded のハンドラーで設定した場合（XAML の指定なし / 同じ値あり）に効くか"
   - "AcceptsReturn による Enter キーの扱いと、行数が多いときの高さ・スクロールバー（VerticalScrollBarVisibility の既定値と Auto）"
   - "IsReadOnly で入力が止まり、選択はできること、既定のテンプレートに IsReadOnly のトリガーがあるか"
   - "TextAlignment ごとの 1 文字目の横位置"
