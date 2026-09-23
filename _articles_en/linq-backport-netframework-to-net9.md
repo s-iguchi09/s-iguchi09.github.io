@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Key-Based Aggregation Without GroupBy — Dictionary-Backed CountBy, AggregateBy and Index"
+seo_title: "CountBy, AggregateBy and Index Polyfills Without GroupBy"
 date: 2026-07-16
 category: C#
 excerpt: "Implementing CountBy, AggregateBy and Index with direct dictionary accumulation, avoiding the intermediate-grouping allocations of GroupBy."

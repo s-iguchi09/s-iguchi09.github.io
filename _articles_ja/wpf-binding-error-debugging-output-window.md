@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF バインディングエラーの読み方と出力ウィンドウを使った原因特定"
 date: 2026-07-15
 category: WPF
-excerpt: "WPF の Binding が動かないとき、Visual Studio の出力ウィンドウにはバインディングエラーが記録される。エラーメッセージの構造の読み方、トレースの詳細化、パターン別の対処を整理する。"
+excerpt: "WPF の Binding が動かないとき、Visual Studio の出力ウィンドウにはバインディングエラーが記録される。エラーメッセージの構造の読み方、PresentationTraceSources によるトレースの詳細化、エラーパターン別の対処を整理する。"
 ---
 
 ## 概要

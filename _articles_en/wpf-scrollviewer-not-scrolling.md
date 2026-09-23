@@ -3,7 +3,7 @@ layout: article-en
 title: "Why a WPF ScrollViewer Does Not Scroll and How to Fix It"
 date: 2026-07-17
 category: WPF
-excerpt: "A ScrollViewer inside a StackPanel does not scroll because the StackPanel never constrains its height. This covers the cause and the Grid and DockPanel fixes."
+excerpt: "A ScrollViewer in a vertical StackPanel does not scroll because the StackPanel never constrains its height. Covers the cause and the Grid and DockPanel fixes."
 image: /images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png
 ---
 

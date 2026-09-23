@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Formatting Numbers, Currency, and Dates with Binding.StringFormat in WPF"
+seo_title: "WPF StringFormat for Numbers, Currency and Dates"
 date: 2026-07-17
 category: WPF
 excerpt: "A practical guide to formatting numbers, currency, and dates with Binding.StringFormat without a converter, including culture and ContentControl constraints."

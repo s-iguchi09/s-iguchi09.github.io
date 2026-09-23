@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Reading WPF Binding Errors and Diagnosing Them with the Output Window"
+seo_title: "Diagnosing WPF Binding Errors in the Output Window"
 date: 2026-07-15
 category: WPF
 excerpt: "When a WPF Binding fails silently, Visual Studio logs it as a trace. This article covers reading the message, raising the trace level, and common patterns."

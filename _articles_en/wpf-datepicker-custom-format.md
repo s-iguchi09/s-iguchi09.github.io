@@ -3,7 +3,7 @@ layout: article-en
 title: "Customising the DatePicker Display Format in WPF"
 date: 2026-04-15
 category: WPF
-excerpt: "A practical guide to changing the date display format of WPF DatePicker from XAML, code-behind, and a value converter."
+excerpt: "A practical guide to changing the WPF DatePicker date format from XAML, code-behind, and a value converter, with common format strings."
 image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 

@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Switching Controls Between Display and Edit Modes in WPF DataGrid Cells"
+seo_title: "Display and Edit Mode Controls in WPF DataGrid Cells"
 date: 2026-06-09
 category: WPF
 excerpt: "Use DataGridTemplateColumn with CellTemplate and CellEditingTemplate to separate display UI from editing UI in WPF DataGrid."

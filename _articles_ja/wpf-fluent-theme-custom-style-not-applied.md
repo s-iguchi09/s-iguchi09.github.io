@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF Fluent テーマでカスタム Style を持つコントロールだけ旧外観に戻る問題"
 date: 2026-08-27
 category: WPF
-excerpt: "Fluent テーマを適用しても、独自の Style を当てたコントロールだけが旧外観に戻る原因を解説する。BasedOn による解決と、それでも効かない配置パターンを実測の対応表で整理する。"
+excerpt: "WPF の Fluent テーマを適用しても、独自の Style を当てたコントロールだけが旧外観に戻る。原因を Fluent テーマの供給方式から説明し、BasedOn による解決と、それでも効かない配置パターンを実測の対応表で整理する。"
 image: /images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-shadows-fluent.png
 ---
 

@@ -1,9 +1,10 @@
 ---
 layout: article-ja
 title: "WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け"
+seo_title: "WPF の入力検証エラーが表示されない原因とインターフェースの使い分け"
 date: 2026-08-13
 category: WPF
-excerpt: "検証コードは動いているのにエラーが画面に出ない。ValidatesOnDataErrors の既定値、AdornerLayer の不在、ソース更新のタイミングといった原因を .NET 10 の実測で切り分け、検証方式を比較する。"
+excerpt: "検証コードは動いているのにエラーが画面に出ない。ValidatesOnDataErrors の既定値、AdornerLayer の不在、ソース更新のタイミングといった原因を .NET 10 の実測で切り分け、IDataErrorInfo を含む検証方式を比較する。"
 image: /images/articles/wpf-validation-error-not-displayed/validation-error-display.png
 ---
 

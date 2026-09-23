@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF タスクトレイの ContextMenu がフォーカス移動で閉じない問題の解消方法"
 date: 2026-06-07
 category: WPF
-excerpt: "TreePaste で発生したタスクトレイから表示した ContextMenu が閉じない問題に対し、StaysOpen=False と SetForegroundWindow の併用で解消する方法を整理します。"
+excerpt: "TreePaste の開発で発生した、タスクトレイから表示した WPF の ContextMenu がフォーカス移動後も閉じない問題について、StaysOpen=False と表示直前の SetForegroundWindow の併用で解消する方法と、その原因を整理する。"
 ---
 
 ## 概要

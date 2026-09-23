@@ -24,7 +24,7 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 - 日本語記事: `_articles_ja/<slug>.md`(`layout: article-ja`)
 - 英語記事: `_articles_en/<slug>.md`(`layout: article-en`)
 - 既存記事はすべて日英で対になっている。**原則、日本語版と英語版を両方作成する**。
-- フロントマターは `title` / `date`(UTC) / `category` / `excerpt`(160字以内) / `layout` を設定する。
+- フロントマターは `title` / `date`(UTC) / `category` / `excerpt`(日本語 120〜140 字・英語 120〜160 字) / `layout` を設定する。`title` が日本語 63 字・英語 59 字を超える場合は `seo_title` も設定する(`docs/rules/article/guidelines.md` §8.1)。
 - 日英の対応記事間には相互リンクを **張らない**(`guidelines.md` §7)。
 
 ---

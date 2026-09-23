@@ -3,7 +3,7 @@ layout: article-ja
 title: "DatePicker の表示形式をカスタマイズする方法"
 date: 2026-04-15
 category: WPF
-excerpt: "XAML とコードビハインドの両面から、WPF DatePicker の日付表示形式を変更する方法をまとめる。"
+excerpt: "WPF の DatePicker の SelectedDateFormat は Short と Long の 2 つしか持たない。yyyy/MM/dd などの固定形式で表示するため、XAML スタイル・コードビハインド・コンバーターの 3 通りの方法を比較し、使い分けを示す。"
 image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 

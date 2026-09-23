@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Binding to the Parent DataContext from Inside a WPF DataTemplate"
+seo_title: "Binding to the Parent DataContext in a WPF DataTemplate"
 date: 2026-08-06
 category: WPF
 excerpt: "Bindings inside a DataTemplate resolve against the item, not the parent view model. Comparing RelativeSource, ElementName, x:Reference, and PlacementTarget."

@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Releasing the Image File Locked by BitmapImage in WPF with BitmapCacheOption.OnLoad"
+seo_title: "Releasing a File Locked by BitmapImage in WPF"
 date: 2026-07-25
 category: WPF
 excerpt: "An image file shown through BitmapImage cannot be deleted or overwritten. This covers the default caching behavior behind it and the OnLoad fix."

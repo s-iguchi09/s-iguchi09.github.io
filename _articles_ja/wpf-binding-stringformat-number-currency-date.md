@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF Binding.StringFormat で数値・通貨・日付を書式化する方法と制約"
 date: 2026-07-17
 category: WPF
-excerpt: "コンバーターを書かずに Binding.StringFormat で数値・通貨・日付を書式化する手法を整理し、カルチャ依存や ContentControl での制約までまとめる。"
+excerpt: "コンバーターを書かずに Binding.StringFormat で数値・通貨・日付を書式化する方法を整理する。既定のカルチャが en-US になる問題、ContentControl での制約、MultiBinding による複数値の結合までを扱う。"
 image: /images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png
 ---
 

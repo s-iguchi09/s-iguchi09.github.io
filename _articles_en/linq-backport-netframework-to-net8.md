@@ -1,6 +1,7 @@
 ---
 layout: article-en
 title: "Selector-Free ToDictionary — Designing for Overload Resolution and the notnull Constraint"
+seo_title: "Selector-Free ToDictionary and Overload Resolution"
 date: 2026-07-15
 category: C#
 excerpt: "Recreating the .NET 8 selector-free ToDictionary overloads on .NET Framework as an exercise in overload resolution and notnull constraint design."

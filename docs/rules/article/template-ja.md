@@ -3,9 +3,11 @@
 # 記事へコピーするときは、この 2 行を含めない。
 layout: article-ja
 title: "（タイトル）"
+# タイトルが 63 字を超える場合のみ、次の行のコメントを外して 63 字以内の短縮版を書く（guidelines.md §8.1）。
+# seo_title: "（検索結果用の短縮タイトル）"
 date: YYYY-MM-DD
 category: （カテゴリ）
-excerpt: "（記事の要約。160字以内。）"
+excerpt: "（記事の要約。120〜140 字。）"
 # 代表となるスクリーンショットがある場合のみ、次の行のコメントを外して設定する（SVG は指定しない）。
 # image: /images/articles/（slug）/（ファイル名）.png
 ---
