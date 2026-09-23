@@ -1,0 +1,25 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-gridsplitter
+slug: "wpf-standard-control-demo-gridsplitter"
+scene: "GridSplitterDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "GridSplitter の継承関係（Thumb・Control）と、各プロパティの既定値（既定のスタイルが適用された後の PreviewStyle・HorizontalAlignment とその出どころを含む）"
+  - "ResizeBehavior（BasedOnAlignment / CurrentAndNext / PreviousAndCurrent / PreviousAndNext）ごとに、両隣の列が *・Auto・固定値の 9 通りでドラッグしたときに変わる列と幅（デモアプリの ResizeBehavior 欄と同じ構成）"
+  - "ResizeDirection（Auto / Columns / Rows）ごとの、デモアプリの ResizeDirection 欄と同じ縦横 2 本のスプリッターの動き"
+  - "スプリッターの HorizontalAlignment（Stretch / Center / Left / Right）と置き方（専用の列か、内容と同じ列か）による、変わる列の違い"
+  - "ShowsPreview が True と False のときの、ドラッグ中の列幅と、ドラッグ中に隣の列の内容が測り直される回数"
+  - "ShowsPreview が True のときに装飾層へ置かれるプレビュー要素の型と、PreviewStyle を設定しない場合の中身（塗りの色）"
+  - "DragIncrement によるドラッグ量の丸めと、KeyboardIncrement による矢印キー 1 回の移動量"
+  - "Focusable を False にするとキーボードフォーカスを受け取らなくなること"
+  - "MinWidth による最小幅の制限、Esc キーとドラッグの中止で元の幅に戻ること、Grid の外や前の列が無い位置では幅が変わらないこと"
+  - "ドラッグ後の ColumnDefinition.Width の単位と、TwoWay バインドしたソースへの反映"
+  - "マウスの左ボタンを押すと IsDragging が True になり、ドラッグを中止すると False に戻ること"
+images:
+  - "images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-defaults.svg"
+  - "images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.svg"
+  - "images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-placement.svg"
+  - "images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-direction.svg"
+  - "images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-behaviors.svg"

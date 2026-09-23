@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 810 380" width="810" height="380" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="810" height="380" />
+  <text class="title" x="12" y="24">Grid: placement (Grid 300 x 200)</text>
+  <rect class="head" x="12" y="38" width="786" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="784" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">default of Grid.Row / Grid.Column (metadata)</text>
+  <text class="cell" x="784" y="87.5" text-anchor="end">0 / 0</text>
+  <text class="cell" x="26" y="117.5">2x2, two children without Grid.Row/Column</text>
+  <text class="cell" x="784" y="117.5" text-anchor="end">x=0 y=0 w=150 h=100 | x=0 y=0 w=150 h=100</text>
+  <text class="cell" x="26" y="147.5">2x2, Grid.Column=2 (out of range)</text>
+  <text class="cell" x="784" y="147.5" text-anchor="end">x=150 y=0 w=150 h=100</text>
+  <text class="cell" x="26" y="177.5">2x2, Grid.Column=5, Grid.Row=5</text>
+  <text class="cell" x="784" y="177.5" text-anchor="end">x=150 y=100 w=150 h=100</text>
+  <text class="cell" x="26" y="207.5">3x2, Grid.ColumnSpan=5</text>
+  <text class="cell" x="784" y="207.5" text-anchor="end">x=0 y=0 w=300 h=100</text>
+  <text class="cell" x="26" y="237.5">3x2, Grid.Column=1, ColumnSpan=5</text>
+  <text class="cell" x="784" y="237.5" text-anchor="end">x=100 y=0 w=200 h=100</text>
+  <text class="cell" x="26" y="267.5">3x2, Grid.RowSpan=5</text>
+  <text class="cell" x="784" y="267.5" text-anchor="end">x=0 y=0 w=100 h=200</text>
+  <text class="cell" x="26" y="297.5">Grid.SetColumn(child, -1)</text>
+  <text class="cell" x="784" y="297.5" text-anchor="end">ArgumentException</text>
+  <text class="cell" x="26" y="327.5">Grid.SetColumnSpan(child, 0)</text>
+  <text class="cell" x="784" y="327.5" text-anchor="end">ArgumentException</text>
+  <text class="cell" x="26" y="357.5">no definitions, child A + child B (Column=1, 50x30)</text>
+  <text class="cell" x="784" y="357.5" text-anchor="end">x=0 y=0 w=300 h=200 | x=125 y=85 w=50 h=30</text>
+  <line class="line" x1="12" y1="38" x2="798" y2="38" />
+  <line class="line" x1="12" y1="68" x2="798" y2="68" />
+  <line class="line" x1="12" y1="98" x2="798" y2="98" />
+  <line class="line" x1="12" y1="128" x2="798" y2="128" />
+  <line class="line" x1="12" y1="158" x2="798" y2="158" />
+  <line class="line" x1="12" y1="188" x2="798" y2="188" />
+  <line class="line" x1="12" y1="218" x2="798" y2="218" />
+  <line class="line" x1="12" y1="248" x2="798" y2="248" />
+  <line class="line" x1="12" y1="278" x2="798" y2="278" />
+  <line class="line" x1="12" y1="308" x2="798" y2="308" />
+  <line class="line" x1="12" y1="338" x2="798" y2="338" />
+  <line class="line" x1="12" y1="368" x2="798" y2="368" />
+  <line class="line" x1="12" y1="38" x2="12" y2="368" />
+  <line class="line" x1="440" y1="38" x2="440" y2="368" />
+  <line class="line" x1="798" y1="38" x2="798" y2="368" />
+</svg>

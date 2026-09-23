@@ -7,7 +7,7 @@ namespace ScreenshotCapture;
 
 /// <summary>
 /// 記事に載せるスクリーンショットを、実際に WPF アプリを起動して取得するツール。
-/// 出力先はリポジトリ内の <c>images/articles/&lt;slug&gt;/</c> である。
+/// 出力先は各シーンの <see cref="IScene.ImageDirectory"/>（既定は <c>images/articles/&lt;slug&gt;/</c>）である。
 ///
 /// 使い方:
 ///   dotnet run --project tools/screenshot-capture              … 全シーンを取得する
@@ -57,6 +57,12 @@ internal static class Program
         new UpdateSourcePitfallScene(),
         new ExtensionReceiverMatrixScene(),
         new FluentThemeModeSwitchScene(),
+
+        // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
+        new GridDemoScene(),
+        new GridSplitterDemoScene(),
+        new SliderDemoScene(),
+        new TabItemDemoScene(),
     ];
 
     [STAThread]
@@ -102,7 +108,7 @@ internal static class Program
 
         foreach (IScene scene in targets)
         {
-            string outputDirectory = Path.Combine(repositoryRoot, "images", "articles", scene.Slug);
+            string outputDirectory = Path.Combine(repositoryRoot, scene.ImageDirectory);
             Directory.CreateDirectory(outputDirectory);
 
             var context = new SceneContext(scene.Slug, outputDirectory);

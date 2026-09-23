@@ -21,40 +21,28 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Grid</p>
     <h1>Grid <span class="category-badge">Layout</span></h1>
-    <p>Grid is the most powerful and commonly used layout panel in WPF. It arranges child elements in rows and columns, making it ideal for creating complex, structured layouts. It supports proportional, absolute, and auto-sized rows and columns.</p>
+    <p>Grid arranges its children in rows and columns. Each row and column is sized by a fixed value, by <code>Auto</code> (the size of its content), or by a star (<code>*</code>) share of the space that remains.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>Grid</strong> panel is the cornerstone of WPF layout design. By defining explicit rows
-      through <code>RowDefinition</code> elements and columns through <code>ColumnDefinition</code> elements,
-      you create a flexible coordinate system in which every child element can be precisely placed using the
-      attached properties <code>Grid.Row</code> and <code>Grid.Column</code>. Three sizing modes give you full
-      control over how space is distributed: <code>Auto</code> shrinks a row or column to fit its largest
-      child; a fixed pixel value gives an absolute size; and the star (<code>*</code>) unit distributes
-      remaining space proportionally, similar to CSS <code>flex-grow</code>.
+      A <strong>Grid</strong> defines its rows with <code>RowDefinition</code> and its columns with
+      <code>ColumnDefinition</code>, and each child picks a cell with the attached properties
+      <code>Grid.Row</code> and <code>Grid.Column</code> (zero-based). The three sizing modes work
+      together: in a Grid 440 wide with the columns <code>Auto</code> | <code>80</code> | <code>1*</code> | <code>2*</code>
+      and 60-wide content in each column, the columns measured 60 / 80 / 100 / 200. The star columns split the
+      remaining 300 in a 1:2 ratio. Widening the same Grid to 740 changed only the star columns, to 200 / 400.
     </p>
     <p>
-      Star sizing is Grid's most powerful feature. A column defined as <code>2*</code> receives twice the
-      remaining space as a column defined as <code>1*</code>. Combining star columns with auto-sized columns
-      and fixed-width spacers makes it straightforward to build forms where labels are auto-sized and input
-      fields grow to fill available width. When the window is resized, star-sized cells adapt
-      proportionally without any code changes.
+      <code>Grid.RowSpan</code> and <code>Grid.ColumnSpan</code> let a child cover several cells. Several children
+      can also share one cell; they overlap, and <code>Panel.ZIndex</code> decides which one is in front.
+      <code>SharedSizeGroup</code> aligns columns (or rows) across separate Grids, which is how form rows built
+      as individual Grids keep their label columns the same width.
     </p>
     <p>
-      Children can span multiple rows or columns using <code>Grid.RowSpan</code> and
-      <code>Grid.ColumnSpan</code>. This enables complex compositional layouts — a banner spanning all
-      columns, a navigation tree spanning all rows on the left, and a grid of content cells filling the
-      remaining area. Multiple children can also occupy the same cell, layering like a <code>Canvas</code>
-      within that cell's bounds, with <code>Panel.ZIndex</code> controlling their visual stacking order.
-    </p>
-    <p>
-      The <code>SharedSizeGroup</code> mechanism on <code>ColumnDefinition</code> lets columns in
-      different Grids (within a common <code>IsSharedSizeScope</code> parent) synchronise their widths.
-      This is the standard technique for aligning label columns in a vertically stacked list of form rows,
-      where each row is its own Grid — without it, labels in different rows would be independently sized
-      and misaligned.
+      In the demo app, every property below has its own section with input controls that change the value
+      while the result is displayed, and a "Show Code" link that shows the XAML of that section.
     </p>
   </section>
 
@@ -67,7 +55,7 @@
     <h2>Demonstrated Properties</h2>
     <p>
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
     </p>
 
     <table class="prop-table">
@@ -82,52 +70,52 @@
         <tr>
           <td><code>Grid.Column (attached)</code></td>
           <td><code>int</code></td>
-          <td>Use this when you have a Grid with multiple columns and need to place a child in a specific column. The element is rendered in the cell at the given zero-based column index. <strong>Pitfall:</strong> the default is 0, so every child that omits <code>Grid.Column</code> is placed in column 0. When a Grid has multiple children without explicit column assignments, they all pile up in the first cell and render on top of each other. Always double-check that no element is missing its column assignment.</td>
+          <td>Places a child in the column with this zero-based index. The default is 0, so children that omit it all land in column 0 and overlap. An index beyond the defined columns does not raise an error: the child goes to the last column. The demo app shows this, because its 2 &times; 2 Grid lets you choose column 2, and the text then stays in the right-hand column. A negative value throws <code>ArgumentException</code>.</td>
         </tr>
         <tr>
           <td><code>Grid.Row (attached)</code></td>
           <td><code>int</code></td>
-          <td>Use this to place a child in a specific row of a multi-row Grid. Combined with <code>Grid.Column</code>, it gives cell-precise placement without absolute pixel coordinates. <strong>Pitfall:</strong> the default is also 0, so omitting <code>Grid.Row</code> causes the element to overlap with other row-0 elements. When adding children to a Grid, always set both <code>Grid.Row</code> and <code>Grid.Column</code> explicitly to avoid silent overlapping.</td>
+          <td>The vertical counterpart of <code>Grid.Column</code>, with the same rules: the default is 0, and an index beyond the defined rows places the child in the last row. In a 2 &times; 2 Grid, <code>Grid.Column="5" Grid.Row="5"</code> put the child in the bottom-right cell.</td>
         </tr>
         <tr>
           <td><code>Grid.ColumnSpan (attached)</code></td>
           <td><code>int</code></td>
-          <td>Use this when a header banner, footer button bar, or large content block should stretch across multiple columns. The element occupies the specified number of consecutive columns starting from its <code>Grid.Column</code> position. <strong>Pitfall:</strong> if the span value exceeds the number of defined columns, the Grid silently clamps it to the maximum available columns rather than throwing an error. The element may appear narrower than expected — always verify that the span does not exceed the column count.</td>
+          <td>Lets a child cover this many consecutive columns, starting at its <code>Grid.Column</code>. A span longer than the remaining columns is cut short without an error: in a three-column Grid, <code>Grid.Column="1" Grid.ColumnSpan="5"</code> covered columns 1 and 2. A span of 0 throws <code>ArgumentException</code>.</td>
         </tr>
         <tr>
           <td><code>Grid.RowSpan (attached)</code></td>
           <td><code>int</code></td>
-          <td>Use this to let a single element occupy a rectangular block of cells spanning multiple rows, such as a tall image or preview panel alongside a narrow column of metadata fields. The element stretches over the specified number of consecutive rows. <strong>Pitfall:</strong> like <code>ColumnSpan</code>, a value that exceeds the defined row count is silently clamped. Check that the span value is consistent with the actual number of <code>RowDefinition</code> entries.</td>
+          <td>Lets a child cover several consecutive rows, for example a preview panel beside a column of fields. As with <code>ColumnSpan</code>, a span longer than the defined rows is cut short: <code>RowSpan="5"</code> in a two-row Grid covered both rows.</td>
         </tr>
         <tr>
           <td><code>ShowGridLines</code></td>
           <td><code>bool</code></td>
-          <td>Use this during development and debugging to make cell boundaries visible. Setting it to <code>True</code> draws dashed lines along all row and column dividers, making it easy to verify that cells are sized as intended. <strong>Pitfall:</strong> <code>ShowGridLines</code> uses a special internal rendering mechanism that looks different from a real <code>Border</code> control. Do not use it as a substitute for actual grid-line borders in a production UI — always set it back to <code>False</code> before shipping.</td>
+          <td>Draws lines along the row and column boundaries, which helps you check how cells are sized. The lines are drawn by an extra internal visual (<code>GridLinesRenderer</code>), and <code>ShowGridLines</code> is the only public property of Grid that concerns them. Their color, thickness, and style cannot be set, so use <code>Border</code> elements for lines that are part of the design.</td>
         </tr>
         <tr>
           <td><code>Grid.IsSharedSizeScope (attached) / SharedSizeGroup (ColumnDefinition)</code></td>
           <td><code>bool / string</code></td>
-          <td>Use this when you have multiple Grid instances stacked vertically (e.g., each form row is its own Grid inside an <code>ItemsControl</code>) and want their label columns to align with each other. Set <code>Grid.IsSharedSizeScope="True"</code> on a common ancestor element, then assign the same <code>SharedSizeGroup</code> string name to corresponding <code>ColumnDefinition</code> elements. All columns sharing the same group name within the scope synchronise their widths automatically, keeping labels perfectly aligned across rows without any code-behind logic.</td>
+          <td>Keeps columns that share a group name at the same width across separate Grids. Set <code>Grid.IsSharedSizeScope="True"</code> on a common ancestor. With 50-wide and 120-wide content, the two <code>Auto</code> columns measured 50 / 120 without the scope and 120 / 120 with it. A star column in a shared group behaves like <code>Auto</code>: it also measured 120 / 120 instead of filling the remaining space. In the demo app, the check box switches the scope on and off, and the text boxes change the content of each Grid.</td>
         </tr>
         <tr>
           <td><code>Width / MinWidth / MaxWidth (ColumnDefinition)</code></td>
           <td><code>GridLength / double / double</code></td>
-          <td>Use these when defining column sizing strategy — for example, <code>Auto</code> for a label column and <code>*</code> for an input column. <code>Auto</code> sizes to the widest content; a pixel value sets an absolute width; <code>*</code> distributes remaining space proportionally (<code>2*</code> gets twice the share of <code>1*</code>). <code>MinWidth</code> and <code>MaxWidth</code> cap how far the column can shrink or grow. <strong>Pitfall:</strong> when a Grid is placed inside a <code>ScrollViewer</code> (horizontal scroll enabled) or a <code>StackPanel</code>, the container gives the Grid infinite width, causing <code>*</code>-sized columns to collapse to zero. If your star columns appear invisible, check whether the Grid is inside an unbounded-width container.</td>
+          <td><code>Auto</code> fits the widest content, a number sets a fixed width, and <code>*</code> takes a share of the remaining width. <code>MinWidth</code> and <code>MaxWidth</code> also limit <code>Auto</code> columns: <code>MaxWidth="30"</code> on an <code>Auto</code> column with 60-wide content kept the column at 30. When the values conflict, <code>MinWidth</code> wins. The demo app starts with <code>Width="25" MinWidth="30" MaxWidth="100"</code>, and the column is 30 wide. <code>MinWidth="100" MaxWidth="50"</code> gave 100. Star columns keep their ratio only when the Grid has a finite width to divide; see the tips below.</td>
         </tr>
         <tr>
           <td><code>Height / MinHeight / MaxHeight (RowDefinition)</code></td>
           <td><code>GridLength / double / double</code></td>
-          <td>The vertical counterpart to the ColumnDefinition width properties. Use <code>Height="Auto"</code> for rows that contain variable-height content such as wrapped text or expandable controls, and <code>Height="*"</code> for the main content row that should fill remaining vertical space. <strong>Pitfall:</strong> placing a Grid with <code>Auto</code> rows inside a <code>ScrollViewer</code> can produce unexpected behaviour — the Auto rows grow without bound as content expands, and the scroll bar may not appear because the Grid reports its full desired height to the ScrollViewer. If you need vertical scrolling, ensure the ScrollViewer has a bounded height available.</td>
+          <td>The same rules apply to rows. With the demo app's starting values (<code>Height="20" MinHeight="10" MaxHeight="100"</code>), the row is 20 high. <code>Height="5" MinHeight="10"</code> gave 10, and an <code>Auto</code> row with <code>MaxHeight="15"</code> and 40-high content was 15 high. Placing <code>Auto</code> rows inside a <code>ScrollViewer</code> is not a problem: three 100-high <code>Auto</code> rows in a 120-high ScrollViewer made the Grid 300 high and the vertical scroll bar appeared.</td>
         </tr>
         <tr>
           <td><code>Background (Panel)</code></td>
           <td><code>Brush</code></td>
-          <td>Use this when you want the entire Grid area — including empty space between cells — to respond to mouse events such as clicks or hover. Setting <code>Background="Transparent"</code> makes the whole panel hit-testable without painting any visible colour. <strong>Pitfall:</strong> leaving <code>Background</code> as <code>null</code> (the default) disables hit-testing on the panel background; clicks and <code>MouseEnter</code> events pass straight through to whatever is behind the Grid. If your Grid does not react to mouse events in empty areas, the missing <code>Background</code> is almost always the cause — set it to <code>Transparent</code>, not just a visible colour.</td>
+          <td>Determines whether the empty parts of the Grid receive the mouse. With the default <code>null</code>, a hit test on an empty area of the Grid went through to the element behind it. With <code>Transparent</code>, the same hit test found the Grid. Set <code>Transparent</code> when the whole area should react to clicks or <code>MouseEnter</code> without painting a color.</td>
         </tr>
         <tr>
           <td><code>Panel.ZIndex (attached)</code></td>
           <td><code>int</code></td>
-          <td>Use this when multiple children share the same Grid cell and you need to control which one appears on top. Higher values render in front of lower values. A typical use case is a loading spinner or modal overlay placed in the same cell as the main content, with a high <code>ZIndex</code> so it covers the content when visible. <strong>Pitfall:</strong> <code>ZIndex</code> only affects draw order among siblings within the same parent panel. Setting a high <code>ZIndex</code> on a child inside a nested Grid will not make it appear above elements in an outer Grid.</td>
+          <td>Sets the front-to-back order of children that overlap. Without it, the child added later is in front; with <code>ZIndex="1"</code>, the earlier child came to the front. It only compares children of the same panel: an element with <code>ZIndex="100"</code> inside a nested Grid stayed behind a later sibling of that nested Grid. It came to the front only after the nested Grid itself was given a higher <code>ZIndex</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -135,84 +123,94 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates a form layout with auto-sized labels, star-sized inputs, and a spanning footer button:</p>
-    <pre><code class="language-xml">&lt;Grid Margin="16"&gt;
+    <p>The following XAML is the <code>ColumnSpan</code> / <code>RowSpan</code> section of the demo app (<code>GridUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out. The combo boxes are bound to the spans of the first and second text blocks:</p>
+    <pre><code class="language-xml">&lt;ComboBox x:Name="ColumnSpanComboBox" SelectedIndex="0" SelectedValuePath="Content"&gt;
+  &lt;ComboBoxItem Content="1" /&gt;
+  &lt;ComboBoxItem Content="2" /&gt;
+&lt;/ComboBox&gt;
+&lt;ComboBox x:Name="RowSpanComboBox" SelectedIndex="0" SelectedValuePath="Content"&gt;
+  &lt;ComboBoxItem Content="1" /&gt;
+  &lt;ComboBoxItem Content="2" /&gt;
+&lt;/ComboBox&gt;
+
+&lt;Grid x:Name="ColumnSpanRowSpanResultGrid"&gt;
   &lt;Grid.ColumnDefinitions&gt;
-    &lt;ColumnDefinition Width="Auto" MinWidth="80" /&gt;
-    &lt;ColumnDefinition Width="8" /&gt;   &lt;!-- spacer --&gt;
-    &lt;ColumnDefinition Width="*" /&gt;
+    &lt;ColumnDefinition /&gt;
+    &lt;ColumnDefinition /&gt;
+    &lt;ColumnDefinition /&gt;
   &lt;/Grid.ColumnDefinitions&gt;
   &lt;Grid.RowDefinitions&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
-    &lt;RowDefinition Height="8" /&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
-    &lt;RowDefinition Height="8" /&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
-    &lt;RowDefinition Height="16" /&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
+    &lt;RowDefinition /&gt;
+    &lt;RowDefinition /&gt;
   &lt;/Grid.RowDefinitions&gt;
-
-  &lt;TextBlock Grid.Row="0" Grid.Column="0" Text="First Name"
-             VerticalAlignment="Center" /&gt;
-  &lt;TextBox   Grid.Row="0" Grid.Column="2"
-             Text="{Binding FirstName}" /&gt;
-
-  &lt;TextBlock Grid.Row="2" Grid.Column="0" Text="Last Name"
-             VerticalAlignment="Center" /&gt;
-  &lt;TextBox   Grid.Row="2" Grid.Column="2"
-             Text="{Binding LastName}" /&gt;
-
-  &lt;TextBlock Grid.Row="4" Grid.Column="0" Text="Email"
-             VerticalAlignment="Center" /&gt;
-  &lt;TextBox   Grid.Row="4" Grid.Column="2"
-             Text="{Binding Email}" /&gt;
-
-  &lt;!-- Full-width submit button spanning all columns --&gt;
-  &lt;Button Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3"
-          Content="Submit" HorizontalAlignment="Right"
-          Width="100"
-          Command="{Binding SubmitCommand}" /&gt;
+  &lt;TextBlock Grid.Row="0" Grid.Column="0"
+             Grid.ColumnSpan="{Binding SelectedValue, ElementName=ColumnSpanComboBox}"
+             Background="CadetBlue" Text="1x1,ColumnSpanSetting" /&gt;
+  &lt;TextBlock Grid.Row="0" Grid.Column="2"
+             Grid.RowSpan="{Binding SelectedValue, ElementName=RowSpanComboBox}"
+             Background="SteelBlue" Text="1x3,RowSpanSetting" /&gt;
+  &lt;TextBlock Grid.Row="1" Grid.Column="0" Background="CornflowerBlue" Text="2x1" /&gt;
+  &lt;TextBlock Grid.Row="1" Grid.Column="1" Background="LightBlue" Text="2x2" /&gt;
 &lt;/Grid&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Data-entry forms:</strong> Two-column form layouts with auto-sized label columns and star-sized input columns, ensuring labels stay compact while inputs fill the available width.</li>
-      <li><strong>Application shells:</strong> Multi-region layouts combining a header row, a content row with sidebar and main area, and a footer row — replacing nested DockPanels with a single flat Grid.</li>
-      <li><strong>Dashboard tiles:</strong> A Grid with equal star-sized columns and rows creating a uniform tile grid for KPI cards, charts, or widget panels in reporting screens.</li>
-      <li><strong>Overlapping overlays:</strong> Placing a loading spinner or modal overlay in the same cell as the main content, using <code>Panel.ZIndex</code> and <code>Visibility</code> binding to show it on demand.</li>
-      <li><strong>Responsive image + metadata layouts:</strong> A two-column Grid where the left cell holds a fixed-width thumbnail and the right star-sized cell holds multi-line text, growing with the available space.</li>
+      <li><strong>Data-entry forms:</strong> an <code>Auto</code> label column and a <code>*</code> input column, so the labels stay compact and the inputs take the rest of the width.</li>
+      <li><strong>Application shells:</strong> a header row, a content row with a sidebar and a main area, and a footer row in one Grid.</li>
+      <li><strong>Overlays:</strong> a loading indicator or message placed in the same cell as the content, brought to the front with <code>Panel.ZIndex</code> and shown with a <code>Visibility</code> binding.</li>
+      <li><strong>Aligned rows built from templates:</strong> each item of an <code>ItemsControl</code> is its own Grid, and <code>SharedSizeGroup</code> keeps the columns aligned.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use spacer rows/columns</strong> (fixed-pixel empty definitions) instead of <code>Margin</code> on every child to create consistent spacing. This keeps individual element XAML clean and makes spacing adjustments a single-edit operation.</li>
-      <li><strong>Prefer <code>Auto</code> rows for variable-height content</strong> like wrapped text or dynamic lists. Using a fixed height can cause content to be clipped or leave empty space as the window is resized.</li>
-      <li><strong>Leverage <code>SharedSizeGroup</code></strong> when building repeating form rows as separate item templates. Set <code>Grid.IsSharedSizeScope="True"</code> on the common ancestor and assign the same group name to corresponding <code>ColumnDefinition</code> elements. Without it, label columns in each row size independently, producing misaligned, jagged-looking forms.</li>
-      <li><strong>Avoid deeply nested Grids.</strong> Nesting Grids inside other Grids increases the number of layout measure and arrange passes, which can degrade UI responsiveness. Before adding a nested Grid, consider whether <code>ColumnSpan</code> and <code>RowSpan</code> can achieve the same result within a single flat Grid.</li>
-      <li><strong>Use <code>ShowGridLines="True"</code> temporarily</strong> during development to verify that row and column boundaries align with your intentions. Remove it before shipping — it is for debugging only and affects visual appearance in all themes.</li>
-      <li><strong>Be aware of <code>ColumnDefinition</code> / <code>RowDefinition</code> omission.</strong> A Grid with no row/column definitions acts as a single 1×1 cell. All children overlap each other. This is useful for intentional layered layouts, but is a common source of accidental overlap bugs when definitions are forgotten.</li>
+      <li><strong>Star columns need a finite width.</strong> Star columns do not collapse to zero inside a <code>StackPanel</code> or <code>ScrollViewer</code>, but they can lose their ratio. In a horizontal <code>StackPanel</code>, <code>1*</code> | <code>2*</code> columns holding 60-wide and 30-wide content became 60 / 30, their content widths. A vertical <code>StackPanel</code> passes its width down, and the ratio held (133.33 / 266.67). In a <code>ScrollViewer</code> narrower than the content, the result depends on horizontal scrolling. With it enabled, the columns took their content widths and a scroll bar appeared. With it disabled, the columns kept the 1:2 ratio (20 / 40), which cut off the 60-wide content.</li>
+      <li><strong>Out-of-range indices fail silently.</strong> <code>Grid.Column</code>, <code>Grid.Row</code>, and the spans are clamped to the defined rows and columns rather than rejected. After removing a <code>ColumnDefinition</code>, check the children that referred to it; they move into the last column without any warning.</li>
+      <li><strong>A Grid without definitions is one cell.</strong> Every child fills it and overlaps the others. A child with <code>Grid.Column="1"</code> was still placed in that single cell.</li>
+      <li><strong>Nesting Grids costs little by itself.</strong> For 500 TextBlocks, putting each row in its own nested Grid kept the first layout within about 10% of a flat Grid over repeated runs. Wrapping every TextBlock in three extra Grids, 1,500 in all, cost roughly 10&ndash;25% more. <code>Auto</code> columns instead of <code>*</code> made no measurable difference. Choose the structure that is easiest to read.</li>
+      <li><strong>Auto and star can make Grid measure a child twice.</strong> In a 2 &times; 2 Grid whose columns are <code>Auto</code>, <code>*</code> and rows are <code>*</code>, <code>Auto</code>, the child in the <code>Auto</code>-column/star-row cell was measured twice on the first layout; with only fixed, only <code>Auto</code>, or only star definitions, every child was measured once. This matters for children whose measurement is expensive.</li>
+      <li><strong>Use <code>Background="Transparent"</code> for hit testing</strong> on a Grid that should react to the mouse in its empty areas.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GridDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>GridDemoScene</code></a>
+      in this site's screenshot tool. The two tables below show placement and star sizing.
+    </p>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/grid/grid-placement.svg" alt="Table of where children are placed in a 300 by 200 Grid: children without Grid.Row and Grid.Column overlap in the first cell, out-of-range indices and spans are clamped to the last column and row, negative values and a span of 0 throw ArgumentException, and a Grid without definitions places every child in one cell" width="810" height="380" loading="lazy">
+      <figcaption>Where children end up in a 300 &times; 200 Grid (x, y, width, height). Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/grid/grid-unbounded.svg" alt="Table of the widths of 1-star and 2-star columns holding 60-wide and 30-wide content in different containers: content widths 60 and 30 in a horizontal StackPanel, a 1 to 2 ratio in a vertical StackPanel and in a wide ScrollViewer, and in a 60-wide ScrollViewer either content widths with a scroll bar or a 20 to 40 ratio without one" width="964" height="320" loading="lazy">
+      <figcaption>Star columns and rows by container. None of them collapse to zero. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/dockpanel.html">DockPanel</a> — simpler edge-based layout; ideal for main window chrome with fewer regions.</li>
-      <li><a href="/apps/wpf-standard-control-demo/gridsplitter.html">GridSplitter</a> — adds user-resizable dividers between Grid rows or columns.</li>
-      <li><a href="/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — single-axis linear stacking; use for simple lists of uniform-height items inside a Grid cell.</li>
-      <li><a href="/apps/wpf-standard-control-demo/uniformgrid.html">UniformGrid</a> — auto-calculates equal-sized cells; useful for icon grids or button palettes without explicit row/column definitions.</li>
+      <li><a href="/apps/wpf-standard-control-demo/gridsplitter.html">GridSplitter</a> — lets the user resize Grid rows or columns by dragging.</li>
+      <li><a href="/apps/wpf-standard-control-demo/dockpanel.html">DockPanel</a> — docks children to the edges; enough for a window frame with few regions.</li>
+      <li><a href="/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — stacks children in one direction.</li>
+      <li><a href="/apps/wpf-standard-control-demo/uniformgrid.html">UniformGrid</a> — makes every cell the same size without row or column definitions.</li>
+      <li><a href="/articles/wpf-scrollviewer-not-scrolling/">Why a WPF ScrollViewer does not scroll</a> — a ScrollViewer inside a vertical StackPanel never gets a finite height, so it cannot scroll; replacing the StackPanel with a Grid fixes it.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
     <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridUsage" target="_blank" rel="noopener noreferrer">

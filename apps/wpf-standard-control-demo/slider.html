@@ -21,38 +21,29 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; Slider</p>
     <h1>Slider <span class="category-badge">Inputs</span></h1>
-    <p>Slider is a control that allows users to select a value from a continuous or stepped range by dragging a thumb along a track. It is commonly used for volume controls, zoom levels, opacity settings, and other range-based inputs where visual feedback is important.</p>
+    <p>Slider lets the user pick a value in a range by dragging a thumb along a track, by clicking the track, or with the keyboard. Tick marks, snapping to them, a highlighted sub-range, and a tooltip with the current value are built in.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>Slider</strong> control inherits from <code>RangeBase</code>, sharing its
-      <code>Minimum</code>, <code>Maximum</code>, and <code>Value</code> properties with
-      <code>ProgressBar</code>. The thumb — the draggable element — moves proportionally between the
-      minimum and maximum bounds, and the <code>Value</code> property reflects the current position as a
-      <code>double</code>. Data-binding <code>Value</code> two-way to a ViewModel property is the standard
-      approach for integrating Slider into MVVM applications.
+      <strong>Slider</strong> derives from <code>RangeBase</code>, as do <code>ProgressBar</code> and <code>ScrollBar</code>.
+      <code>Minimum</code>, <code>Maximum</code>, <code>Value</code>, <code>SmallChange</code>, and <code>LargeChange</code>
+      come from <code>RangeBase</code>. A new Slider runs from 0 to 10, and <code>Value</code> is a <code>double</code>.
+      <code>Value</code> binds two-way by default, and its default <code>UpdateSourceTrigger</code> is
+      <code>PropertyChanged</code>. A bound source property therefore receives every change while the thumb is being dragged,
+      not only when the drag ends or the Slider loses focus.
     </p>
     <p>
-      Slider supports both continuous and discrete (snapped) value selection. Setting
-      <code>IsSnapToTickEnabled="True"</code> combined with <code>TickFrequency</code> restricts the value
-      to multiples of the tick interval, turning the slider into a stepped selector. You can also provide
-      a custom <code>Ticks</code> collection (<code>DoubleCollection</code>) for irregular snap points
-      rather than evenly spaced ones.
+      <code>Value</code> always stays inside the range. Setting 150 on a 0&ndash;100 Slider gave 100. When
+      <code>Maximum</code> was later raised to 200, <code>Value</code> went back to 150, because the value that was set is
+      remembered. A <code>Maximum</code> below <code>Minimum</code> does not raise an error: it is treated as equal to
+      <code>Minimum</code>.
     </p>
     <p>
-      Tick marks are rendered on the slider track when <code>TickPlacement</code> is set to
-      <code>TopLeft</code>, <code>BottomRight</code>, or <code>Both</code>. The spacing between rendered
-      ticks is controlled by <code>TickFrequency</code>, while the optional selection range indicator
-      (a highlighted section of the track between <code>SelectionStart</code> and <code>SelectionEnd</code>)
-      visualizes a sub-range within the overall scale — useful for showing valid ranges or target zones.
-    </p>
-    <p>
-      An auto-tooltip can be enabled via <code>AutoToolTipPlacement</code>, which shows the current numeric
-      value in a tooltip while the user drags the thumb. The number of decimal places displayed is controlled
-      by <code>AutoToolTipPrecision</code>. This provides immediate numeric feedback without requiring a
-      separate <code>TextBlock</code> bound to <code>Value</code>.
+      Snapping applies only to what the user does. With <code>IsSnapToTickEnabled="True"</code>, dragging the thumb, pressing
+      the arrow keys, and clicking the track all snapped the value to a tick. A <code>Value</code> set from code was not snapped. In the demo app, each property below has its own section, and the "Show Code" link under
+      each section displays its XAML.
     </p>
   </section>
 
@@ -65,7 +56,7 @@
     <h2>Demonstrated Properties</h2>
     <p>
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
     </p>
 
     <table class="prop-table">
@@ -80,62 +71,62 @@
         <tr>
           <td><code>Minimum / Maximum / Value (RangeBase)</code></td>
           <td><code>double</code></td>
-          <td>Defines the range of selectable values and the current position. Use this for continuous inputs such as volume (0–100), zoom (10–400%), or opacity (0.0–1.0). <code>Value</code> is always clamped between <code>Minimum</code> and <code>Maximum</code>. Bind <code>Value</code> two-way to a ViewModel property to read or set the slider position programmatically. Pitfall: setting <code>Maximum &lt; Minimum</code> raises a validation error. When binding both properties dynamically, set <code>Minimum</code> before (or simultaneously with) <code>Maximum</code> to avoid a transient invalid state.</td>
+          <td>The range and the current value; the defaults are 0, 10, and 0. <code>Value</code> is kept inside the range, and <code>Maximum</code> is kept at or above <code>Minimum</code>, without exceptions. Setting <code>Minimum="50"</code> and then <code>Maximum="10"</code> gave an effective <code>Maximum</code> of 50. Because of this, the order in which you change the two does not matter: moving the range from 0&ndash;10 to 100&ndash;200 ended in the same state whichever was set first. The correction is not written back to a source: a source value of 150, bound two-way to a 0&ndash;100 Slider, stayed 150 while the Slider showed 100.</td>
         </tr>
         <tr>
           <td><code>Orientation</code></td>
           <td><code>Horizontal / Vertical</code></td>
-          <td>Sets the slider's layout direction. Horizontal (default) increases value left-to-right; Vertical increases value bottom-to-top by default. Use <code>IsDirectionReversed</code> to flip the direction if needed. Pitfall: for a vertical slider where large values should be at the top (e.g., audio fader), set <code>IsDirectionReversed="True"</code> — without this, the maximum is at the bottom, which is counterintuitive for most designs.</td>
+          <td>The direction of the track; the default is <code>Horizontal</code>. At <code>Value = Maximum</code>, the thumb was at the right end of a horizontal Slider and at the top of a vertical one. A vertical Slider therefore already puts large values at the top.</td>
         </tr>
         <tr>
           <td><code>SmallChange / LargeChange</code></td>
           <td><code>double</code></td>
-          <td><code>SmallChange</code> is the value increment for arrow-key navigation; <code>LargeChange</code> is the increment for Page Up/Down. Set these to meaningful domain units (e.g., 1 for integer steps, 0.1 for fine-grained floats) for keyboard accessibility. Pitfall: values too close to the full range make keyboard fine-tuning impossible. For a 0–100 volume slider, <code>SmallChange=1</code> and <code>LargeChange=10</code> is appropriate; overly large values lock users into coarse steps.</td>
+          <td>The step for the arrow keys and the step for Page Up / Page Down and for clicks on the track. The defaults are 0.1 and 1. With 1 and 10 on a Slider at 50, the right and up arrows gave 51, the left arrow 49, Page Up 60, Page Down 40, and a real mouse click on the track right of the thumb 60. That is with <code>IsMoveToPointEnabled</code> at its default, <code>False</code>. With <code>True</code>, the same click moved the thumb to the point clicked instead, and the value became 86.84. Home and End jumped to <code>Minimum</code> and <code>Maximum</code>. The demo app starts with 1 and 10 on a 0&ndash;10 Slider, so one Page Up or one click on the track already moves the thumb across the whole range.</td>
         </tr>
         <tr>
           <td><code>IsDirectionReversed</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, reverses the value direction so the maximum is at the left (horizontal) or top (vertical). Useful for scenarios like a thermometer where higher values are visually at the top, or an audio balance control. Pitfall: reversing the direction does not automatically flip custom tick labels — if you have a <code>Ticks</code>-based label overlay, the labels must be manually reordered to match the reversed direction.</td>
+          <td>Reverses the track. At <code>Value = Maximum</code>, the thumb moved to the left end of a horizontal Slider and to the bottom of a vertical one. The keys follow the track: the right arrow decreased the value (50 to 49). The tick marks are reversed as well: with <code>Ticks="1,2"</code> on 0&ndash;10, the marks moved to the right end of the track. Only labels you draw yourself next to the Slider have to be reordered by hand.</td>
         </tr>
         <tr>
           <td><code>TickPlacement</code></td>
           <td><code>None / TopLeft / BottomRight / Both</code></td>
-          <td>Controls where tick marks are rendered relative to the track. Use this when visual step indicators improve usability — for example, showing 0/25/50/75/100 marks on a volume slider. Pitfall: <code>TickPlacement</code> only controls rendering; it does not enable snap-to-tick behavior. Set <code>IsSnapToTickEnabled="True"</code> separately to make the thumb snap to tick positions.</td>
+          <td>Where tick marks are drawn; the default is <code>None</code>. Tick marks take space: a horizontal Slider was 18 high with <code>None</code>, 24 with <code>BottomRight</code>, and 30 with <code>Both</code>. Drawing ticks does not snap to them: with only <code>TickPlacement="BottomRight"</code>, a drag to 23.4 left the value at 23.4.</td>
         </tr>
         <tr>
           <td><code>TickFrequency</code></td>
           <td><code>double</code></td>
-          <td>The interval between rendered tick marks and snap positions (when <code>IsSnapToTickEnabled</code> is true). A value of 10 on a 0–100 slider creates ticks at 0, 10, 20, …, 100. Pitfall: if <code>TickFrequency</code> does not evenly divide the range, the last tick will not coincide with <code>Maximum</code> (e.g., <code>Minimum=0</code>, <code>Maximum=100</code>, <code>TickFrequency=30</code> gives ticks at 0, 30, 60, 90 — the 100 mark is missing).</td>
+          <td>The spacing of the tick marks, and of the snap positions when snapping is on; the default is 1. Tick marks are always drawn at <code>Minimum</code> and <code>Maximum</code>, even when the frequency does not divide the range. With <code>TickFrequency="30"</code> on 0&ndash;100, marks were drawn at 0, 30, 60, 90, and 100. <code>Maximum</code> was also a snap position: a drag to 94 snapped to 90, and a drag to 97 snapped to 100.</td>
         </tr>
         <tr>
           <td><code>IsSnapToTickEnabled</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, restricts <code>Value</code> to positions defined by tick marks (from <code>TickFrequency</code> or the custom <code>Ticks</code> collection). The thumb snaps to the nearest valid position on drag release. Pitfall: with <code>TickFrequency=1</code> on a 0–100 slider, only integers can be selected. If your scenario requires float precision (e.g., 0.5), keep <code>IsSnapToTickEnabled="False"</code>.</td>
+          <td>Makes user input snap to the nearest tick; the default is <code>False</code>. A drag to 23.4 gave 20 with <code>TickFrequency="10"</code> and 23 with <code>TickFrequency="1"</code>. The value snaps while the thumb is being dragged, not only when it is released. It also changes the keys and the track: with <code>TickFrequency="10"</code>, the right arrow moved 50 to 60 instead of 51, and a click on the track with <code>LargeChange="7"</code> moved 50 to 60 instead of 57. A value of 23.4 set from code stayed 23.4.</td>
         </tr>
         <tr>
           <td><code>Ticks</code></td>
           <td><code>DoubleCollection</code></td>
-          <td>An explicit list of tick positions. When provided, ticks are drawn only at these values rather than at uniform <code>TickFrequency</code> intervals. Useful for non-linear scales or labeled breakpoints such as font sizes (8, 9, 10, 11, 12, 14, 16).</td>
+          <td>Tick positions listed explicitly; when set, they replace <code>TickFrequency</code>. The demo app uses <code>1,3,5,7,9</code> on a 0&ndash;10 Slider, and the marks are drawn at 0, 1, 3, 5, 7, 9, and 10: <code>Minimum</code> and <code>Maximum</code> are added. With snapping on, they are also snap positions: a drag to 5.8 gave 5, and a drag to 0.2 gave 0.</td>
         </tr>
         <tr>
           <td><code>SelectionStart / SelectionEnd / IsSelectionRangeEnabled</code></td>
           <td><code>double / double / bool</code></td>
-          <td>Highlights a sub-range on the track between <code>SelectionStart</code> and <code>SelectionEnd</code> when <code>IsSelectionRangeEnabled</code> is <code>true</code>. Useful for showing valid or recommended value zones on the slider track.</td>
+          <td>Highlights a part of the track. With the demo app's values (2 to 8 on 0&ndash;10), the highlight was hidden while <code>IsSelectionRangeEnabled</code> was <code>False</code>, its default. With <code>True</code>, it covered the track from 2 to 8. The selection does not limit <code>Value</code>: a value of 9.5 could still be set.</td>
         </tr>
         <tr>
           <td><code>AutoToolTipPlacement</code></td>
           <td><code>None / TopLeft / BottomRight</code></td>
-          <td>Enables a tooltip showing the current numeric value while dragging — useful when exact values matter, such as zoom percentage or volume level. <code>TopLeft</code> positions the tooltip above (horizontal) or to the left (vertical) of the thumb. Pitfall: the tooltip only shows the raw number with decimal precision controlled by <code>AutoToolTipPrecision</code>. Custom formats (e.g., "50%" or "120 bpm") are not supported. Use a separate <code>TextBlock</code> bound to <code>Value</code> with a <code>StringFormat</code> for custom displays.</td>
+          <td>Shows a tooltip with the current value while the thumb is dragged; the default <code>None</code> shows none. The text is a plain number. Slider has no property for its format, as the only related properties are <code>AutoToolTipPlacement</code> and <code>AutoToolTipPrecision</code>. The number follows the current culture: 1234.56 with one decimal was shown as <code>1,234.6</code> with en-US and as <code>1.234,6</code> with de-DE. For units such as "%", show the value in a separate <code>TextBlock</code> with a <code>StringFormat</code>.</td>
         </tr>
         <tr>
           <td><code>AutoToolTipPrecision</code></td>
           <td><code>int</code></td>
-          <td>The number of decimal places displayed in the auto-tooltip. Set to 0 for integer display, or higher for floating-point precision feedback. Pitfall: setting <code>AutoToolTipPrecision=0</code> truncates the display to integers even when the actual <code>Value</code> is a float. The displayed value may differ from the stored value if <code>IsSnapToTickEnabled</code> is <code>false</code>.</td>
+          <td>The number of decimal places in the tooltip; the default is 0. The number is rounded, not truncated: with 0, a value of 33.6 was shown as <code>34</code> and 33.4 as <code>33</code>. With 2, 33.456 was shown as <code>33.46</code>. Only the tooltip is rounded; <code>Value</code> keeps its full precision.</td>
         </tr>
         <tr>
           <td><code>Delay / Interval</code></td>
           <td><code>int (ms)</code></td>
-          <td>Controls the repeat behavior when the user clicks on the track (not the thumb) to move the slider by <code>LargeChange</code> increments. <code>Delay</code> is the initial pause before repeating; <code>Interval</code> is the time between repeat steps.</td>
+          <td>The repeat timing when the mouse button is held down on the track: the wait before repeating and the time between repeats. The defaults come from the Windows keyboard settings: on the measuring machine, where <code>SystemParameters.KeyboardDelay</code> was 1 and <code>KeyboardSpeed</code> 31, they were 500 and 33, and the <code>Delay</code> default matched (<code>KeyboardDelay</code> + 1) &times; 250. The Slider passes them to the two <code>RepeatButton</code>s of its track: with the demo app's 1000 and 50, both buttons had <code>Delay="1000"</code> and <code>Interval="50"</code>. A click released before <code>Delay</code> ran out moved the value once, by <code>LargeChange</code>.</td>
         </tr>
       </tbody>
     </table>
@@ -143,58 +134,83 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>A volume-style slider from 0 to 100 with tick marks, snap-to-tick, and an auto-tooltip:</p>
-    <pre><code class="language-xml">&lt;Slider Minimum="0" Maximum="100" Value="{Binding Volume, Mode=TwoWay}"
-        Orientation="Horizontal"
-        TickPlacement="BottomRight" TickFrequency="10"
-        IsSnapToTickEnabled="True"
-        AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0"
-        SmallChange="1" LargeChange="10"
-        Width="300" /&gt;
+    <p>The following XAML is the <code>Minimum</code> / <code>Maximum</code> / <code>Value</code> section of the demo app (<code>SliderUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
+    <pre><code class="language-xml">&lt;TextBox x:Name="MinTextBox"
+         behaviors:TextBoxDoubleInputBehavior.IsEnabled="True"
+         Text="0" /&gt;
+&lt;TextBox x:Name="MaxTextBox"
+         behaviors:TextBoxDoubleInputBehavior.IsEnabled="True"
+         Text="100" /&gt;
+&lt;TextBox x:Name="ValueTextBox"
+         behaviors:TextBoxDoubleInputBehavior.IsEnabled="True"
+         Text="{Binding Value, ElementName=MinMaxSlider, UpdateSourceTrigger=PropertyChanged}" /&gt;
 
-&lt;!-- Vertical slider with reversed direction (max at top) --&gt;
-&lt;Slider Orientation="Vertical" Minimum="0" Maximum="1"
-        Value="{Binding Opacity, Mode=TwoWay}"
-        IsDirectionReversed="True"
-        Height="200" /&gt;</code></pre>
+&lt;Slider x:Name="MinMaxSlider"
+        Maximum="{Binding Text, ElementName=MaxTextBox}"
+        Minimum="{Binding Text, ElementName=MinTextBox}" /&gt;</code></pre>
+    <p>
+      The <code>UpdateSourceTrigger=PropertyChanged</code> here belongs to the binding on <code>TextBox.Text</code>, whose default
+      is <code>LostFocus</code>. It makes typing in the text box move the Slider at once. A binding on <code>Slider.Value</code>
+      needs no such setting, because its default is already <code>PropertyChanged</code>.
+    </p>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Volume and audio controls</strong> — Drag to set speaker volume, balance, or equalizer bands with immediate visual feedback.</li>
-      <li><strong>Zoom and scale controls</strong> — Let users zoom into a map, image, or document by dragging a slider rather than typing a percentage.</li>
-      <li><strong>Color picker components</strong> — Use three vertical sliders for R, G, B channels in a custom color selection panel.</li>
-      <li><strong>Video/media timeline</strong> — Display playback position on a horizontal slider that updates as the media plays and allows seek-by-drag.</li>
-      <li><strong>Opacity and transparency</strong> — Bind a slider's Value to an element's <code>Opacity</code> for a live preview effect.</li>
+      <li><strong>Volume and balance:</strong> a 0&ndash;100 Slider with <code>SmallChange="1"</code> and <code>LargeChange="10"</code>.</li>
+      <li><strong>Zoom:</strong> a Slider bound to the scale of an image or document.</li>
+      <li><strong>Opacity:</strong> a 0&ndash;1 Slider bound to <code>Opacity</code> for a live preview, without snapping.</li>
+      <li><strong>Discrete choices:</strong> sizes or levels listed in <code>Ticks</code> with <code>IsSnapToTickEnabled="True"</code>.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use UpdateSourceTrigger=PropertyChanged for live preview</strong> — By default, two-way bindings update on focus loss. Set <code>UpdateSourceTrigger=PropertyChanged</code> to push every drag movement to the ViewModel for real-time feedback. Be aware that if the ViewModel setter does heavy work, dragging performance will suffer; consider throttling updates in that case.</li>
-      <li><strong>Show a numeric readout</strong> — Pair the slider with a <code>TextBlock</code> or <code>TextBox</code> bound to the same Value so users know the exact number. Use <code>StringFormat</code> or an <code>IValueConverter</code> to display custom units such as "50%" or "120 bpm".</li>
-      <li><strong>Disable snap for continuous values</strong> — For opacity (0.0–1.0) or other continuous ranges, keep <code>IsSnapToTickEnabled="False"</code> and <code>TickPlacement="None"</code> for a cleaner, unconstrained look.</li>
-      <li><strong>Set meaningful SmallChange/LargeChange</strong> — These drive keyboard navigation, which is critical for accessibility. Match the step sizes to the domain units (e.g., 1 volume unit, 5% zoom). Overly large values prevent fine-grained keyboard control.</li>
-      <li><strong>Validate input bounds</strong> — If users can also type a value in an adjacent TextBox, clamp the ViewModel property to [Minimum, Maximum] to prevent the thumb from going out of range.</li>
+      <li><strong>No <code>UpdateSourceTrigger</code> is needed on <code>Value</code>.</strong> With default binding settings, the source received the value in the middle of a drag, before the mouse button was released. If the source's setter does heavy work, that work runs on every drag step.</li>
+      <li><strong>Keep the source inside the range yourself.</strong> Slider limits its own <code>Value</code> but does not write the corrected value back to a two-way source. The source then holds a value the Slider does not show.</li>
+      <li><strong>Choose <code>SmallChange</code> and <code>LargeChange</code> for the range.</strong> The defaults (0.1 and 1) suit the default 0&ndash;10 range, not a 0&ndash;100 one. With snapping on, the arrow keys move by ticks instead.</li>
+      <li><strong>Remember that ticks at the ends are always there.</strong> <code>Minimum</code> and <code>Maximum</code> get tick marks and are snap positions even when they are not in <code>Ticks</code> or on the <code>TickFrequency</code> grid.</li>
+      <li><strong>Use a separate readout for formatted values.</strong> The automatic tooltip shows a plain number rounded to <code>AutoToolTipPrecision</code>.</li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/SliderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>SliderDemoScene</code></a>
+      in this site's screenshot tool. Thumb drags were reproduced by raising the same <code>DragStarted</code> and
+      <code>DragDelta</code> events that the thumb raises for a mouse drag, and keys by sending key events to a displayed window.
+      Clicks on the track were made with the real mouse over the measuring window, at 85% of the track's length, with the
+      button released after about 0.1 s.
+    </p>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/slider/slider-snap.svg" alt="Table of Slider values after dragging the thumb: 23.4 without snapping or with only TickPlacement, 20 with TickFrequency 10 and 23 with TickFrequency 1, 90 or 100 with TickFrequency 30, 5 and 0 with Ticks 1,3,5,7,9, a value set from code that is not snapped, and a bound source updated during the drag" width="700" height="380" loading="lazy">
+      <figcaption>Values after dragging the thumb, with and without snapping. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="Table of tick marks, selection range, and automatic tooltip: tick marks are always drawn at Minimum and Maximum and are mirrored by IsDirectionReversed, tick placement changes the height, the selection range is shown only when enabled, and the tooltip rounds the value to AutoToolTipPrecision" width="1046" height="590" loading="lazy">
+      <figcaption>Tick marks (as values, left to right), heights, the selection range, and the automatic tooltip text. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/progressbar.html">ProgressBar</a> — Shares the RangeBase base class; read-only display of a value within a range.</li>
-      <li><a href="/apps/wpf-standard-control-demo/scrollviewer.html">ScrollViewer</a> — Uses Slider-like scroll bars internally for content navigation.</li>
-      <li><a href="/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — An alternative for step-by-step increments without a draggable thumb.</li>
+      <li><a href="/apps/wpf-standard-control-demo/progressbar.html">ProgressBar</a> — also derives from <code>RangeBase</code>; it displays a value in a range.</li>
+      <li><a href="/apps/wpf-standard-control-demo/repeatbutton.html">RepeatButton</a> — the button type that the Slider's track uses for clicks and repeats.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
     <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/SliderUsage" target="_blank" rel="noopener noreferrer">

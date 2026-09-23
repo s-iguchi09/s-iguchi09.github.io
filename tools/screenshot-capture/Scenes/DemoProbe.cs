@@ -1,0 +1,147 @@
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Media;
+
+namespace ScreenshotCapture.Scenes;
+
+/// <summary>
+/// コントロール別デモページ（<c>apps/wpf-standard-control-demo/</c>）の記述を実測する共通部品。
+///
+/// デモページは 2026-03 に一括生成され、本文の主張が実測されていなかった。
+/// ページごとにシーンを作り、本文に残す主張をすべてここで確かめる。
+/// レイアウトの計測はウィンドウを作らずに Measure / Arrange で行う。
+/// 描画結果ではなく配置と寸法を読むだけなので、ディスプレイの状態に左右されない。
+/// </summary>
+internal static class DemoProbe
+{
+    /// <summary>デモページの検証シーンが図を書き出す場所。</summary>
+    public static string ImageDirectory(string control) =>
+        Path.Combine("images", "wpf-standard-control-demo", "verification", control);
+
+    /// <summary>要素を指定の大きさでレイアウトする。</summary>
+    public static T Layout<T>(T element, double width, double height) where T : UIElement
+    {
+        element.Measure(new Size(width, height));
+        element.Arrange(new Rect(0, 0,
+            double.IsInfinity(width) ? element.DesiredSize.Width : width,
+            double.IsInfinity(height) ? element.DesiredSize.Height : height));
+        element.UpdateLayout();
+        return element;
+    }
+
+    /// <summary><paramref name="ancestor"/> から見た要素の矩形。</summary>
+    public static Rect Bounds(UIElement element, Visual ancestor) =>
+        element.TransformToAncestor(ancestor).TransformBounds(new Rect(element.RenderSize));
+
+    public static string Format(Rect rect) =>
+        $"x={D(rect.X)} y={D(rect.Y)} w={D(rect.Width)} h={D(rect.Height)}";
+
+    public static string D(double value) => WpfProbe.Describe(value);
+
+    /// <summary>
+    /// 指定位置をヒットテストし、最初に当たった名前付き要素の名前を返す。
+    /// 何にも当たらなければ <c>(nothing)</c>。
+    /// </summary>
+    public static string HitName(Visual root, Point point)
+    {
+        DependencyObject? hit = VisualTreeHelper.HitTest(root, point)?.VisualHit;
+        while (hit is not null)
+        {
+            if (hit is FrameworkElement { Name.Length: > 0 } named)
+            {
+                return named.Name;
+            }
+
+            hit = VisualTreeHelper.GetParent(hit);
+        }
+
+        return "(nothing)";
+    }
+
+    /// <summary>例外の型名。投げなければ <c>no exception</c>。</summary>
+    public static string Throws(Action action)
+    {
+        try
+        {
+            action();
+            return "no exception";
+        }
+        catch (Exception ex)
+        {
+            return ex.GetType().Name;
+        }
+    }
+
+    public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        int count = VisualTreeHelper.GetChildrenCount(root);
+        for (int i = 0; i < count; i++)
+        {
+            DependencyObject child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+
+            foreach (DependencyObject descendant in Descendants(child))
+            {
+                yield return descendant;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 2 つの構築方法について、初回レイアウトにかかる時間の中央値を交互に測る。
+    ///
+    /// 暖機で JIT の影響を外し、条件を交互に試行して実行順の影響を避ける。
+    /// 時間は環境に依存するため、本文には比率だけを書き、絶対値は図に持たせる。
+    /// </summary>
+    public static (double A, double B) CompareLayoutTime(
+        Func<UIElement> buildA, Func<UIElement> buildB, double width, double height, int trials = 15)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            Layout(buildA(), width, height);
+            Layout(buildB(), width, height);
+        }
+
+        var a = new List<double>();
+        var b = new List<double>();
+        for (int i = 0; i < trials; i++)
+        {
+            a.Add(Time(buildA));
+            b.Add(Time(buildB));
+        }
+
+        return (Median(a), Median(b));
+
+        double Time(Func<UIElement> build)
+        {
+            UIElement element = build();
+            var watch = Stopwatch.StartNew();
+            Layout(element, width, height);
+            watch.Stop();
+            return watch.Elapsed.TotalMilliseconds;
+        }
+    }
+
+    private static double Median(List<double> values)
+    {
+        values.Sort();
+        return values[values.Count / 2];
+    }
+}
+
+/// <summary>
+/// <see cref="MeasureOverride"/> が呼ばれた回数を数える子要素。
+/// パネルが子をいくつ測り直すかを読むために使う。
+/// </summary>
+internal sealed class MeasureCounter : FrameworkElement
+{
+    public int MeasureCount { get; private set; }
+
+    public Size Content { get; init; } = new(40, 20);
+
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        MeasureCount++;
+        return Content;
+    }
+}
