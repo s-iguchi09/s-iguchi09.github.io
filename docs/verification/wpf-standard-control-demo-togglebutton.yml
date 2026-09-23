@@ -1,0 +1,17 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-togglebutton
+slug: "wpf-standard-control-demo-togglebutton"
+scene: "ToggleButtonDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ToggleButton の基底クラスと、ToggleButton を継承するコントロール、IsChecked が既定で TwoWay か、GroupName プロパティの有無"
+  - "IsThreeState が True と False のときのクリックによる IsChecked の移り変わり（デモアプリと同じく null・false・true から始める）"
+  - "既定のテンプレートが IsChecked の値（true / null）ごとに見た目を切り替えるトリガーと、VisualStateGroup の有無"
+  - "UI オートメーションの TogglePattern が報告する状態（ToggleState）"
+  - "ClickMode が Press のときに、マウスの左ボタンを押した時点と離した時点の IsChecked"
+  - "クリック処理（OnClick）で Command の Execute が呼ばれた時点の IsChecked と、CommandParameter を自身の IsChecked にバインドしたときに渡る値、UI オートメーションの Toggle では Command が実行されないこと"
+  - "Popup.IsOpen を IsChecked に結んだとき、Popup を閉じると IsChecked も戻ることと、Popup.IsOpen が既定で TwoWay か"
+images:
+  - "images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg"

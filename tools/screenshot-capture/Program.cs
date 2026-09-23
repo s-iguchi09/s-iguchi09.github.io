@@ -71,6 +71,7 @@ internal static class Program
         new DataGridDemoScene(),
         new CheckBoxDemoScene(),
         new ToolBarDemoScene(),
+        new ToggleButtonDemoScene(),
     ];
 
     [STAThread]
