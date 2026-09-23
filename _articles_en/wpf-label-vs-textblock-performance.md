@@ -4,7 +4,7 @@ title: "Why WPF Slows Down with Many Labels and When to Switch to TextBlock"
 seo_title: "Why Many Labels Slow Down WPF and When to Use TextBlock"
 date: 2026-06-10
 category: WPF
-excerpt: "Why rendering slows down when many WPF Labels are used, explained through measured visual tree data. Covers the gap against TextBlock, the extra cost imposed by underscores, and whether the difference survives UI virtualization."
+excerpt: "Why many WPF Labels slow rendering, from measured visual trees: the gap against TextBlock, underscore costs, and whether it survives virtualization."
 image: /images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png
 ---
 

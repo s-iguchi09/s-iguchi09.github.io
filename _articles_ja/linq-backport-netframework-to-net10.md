@@ -3,7 +3,7 @@ layout: article-ja
 title: "SQL の外部結合を LINQ で表現する — LeftJoin・RightJoin・Shuffle の実装"
 date: 2026-07-16
 category: C#
-excerpt: "SQL の LEFT JOIN / RIGHT JOIN に対応する .NET 10 の LeftJoin・RightJoin と Shuffle を .NET Framework へ実装し、GroupJoin イディオムとの対応関係、擬似シャッフルとの違い、IQueryable に適用した場合の落とし穴を解説する。"
+excerpt: "SQL の外部結合に当たる .NET 10 の LeftJoin・RightJoin と Shuffle を .NET Framework に実装し、GroupJoin との対応、擬似シャッフルとの違い、IQueryable での落とし穴を解説する。"
 image: /images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png
 ---
 

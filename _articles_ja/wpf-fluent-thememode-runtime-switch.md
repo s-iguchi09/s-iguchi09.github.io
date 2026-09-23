@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF の ThemeMode を実行時に切り替えても一部だけ Light のまま残る原因の切り分け"
 date: 2026-09-19
 category: WPF
-excerpt: "Application.ThemeMode を Dark に切り替えても、特定のウィンドウや文字色だけが Light のまま残る。原因はウィンドウ側の Fluent 辞書、ネストした辞書、StaticResource の 3 系統に分かれる。実測した対応表から切り分け手順と対処を整理する。"
+excerpt: "Application.ThemeMode を Dark に切り替えても、一部のウィンドウや文字色が Light のまま残る。原因はウィンドウ側の Fluent 辞書、ネストした辞書、StaticResource の 3 系統に分かれる。実測の対応表から切り分け手順と対処を示す。"
 image: /images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png
 ---
 
