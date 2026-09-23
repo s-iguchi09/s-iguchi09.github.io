@@ -73,6 +73,7 @@ internal static class Program
         new ToolBarDemoScene(),
         new ToggleButtonDemoScene(),
         new ButtonDemoScene(),
+        new RepeatButtonDemoScene(),
     ];
 
     [STAThread]

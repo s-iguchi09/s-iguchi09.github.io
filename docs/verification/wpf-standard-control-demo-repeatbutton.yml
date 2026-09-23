@@ -1,0 +1,17 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-repeatbutton
+slug: "wpf-standard-control-demo-repeatbutton"
+scene: "RepeatButtonDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Delay と Interval の既定値と、それを決める SystemParameters.KeyboardDelay / KeyboardSpeed、ClickMode の既定値"
+  - "実際のマウスで押し続けたときのクリックの時刻（押した時点、Delay 後、以後の間隔）と、離したときのクリック、コマンドの実行回数"
+  - "押したままボタンの外へ出たときと戻ったときの繰り返し"
+  - "Space を押し続けたとき（OS のキーリピートなし）のクリックの回数"
+  - "Delay に負の値、Interval に 0 を設定したときの例外と、TextBox からのバインドで不正な値や空文字を渡したときの値"
+  - "ScrollBar と Slider の既定のテンプレートの中の RepeatButton"
+images:
+  - "images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg"
+  - "images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg"
