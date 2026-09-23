@@ -1,58 +1,144 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"><title>TreeView | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8">
+  <title>TreeView | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の TreeView は階層的なデータを木構造で表示するコントロールです。TreeViewItem をネストして静的な木構造を作るか、HierarchicalDataTemplate を使って動的な階層データをバインドできます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+  <meta name="description" content="WPF の TreeView を .NET 10 で実測して解説します。既定では仮想化されないこと、IsExpanded は既定で TwoWay にならず展開ボタンでバインドが外れること、HierarchicalDataTemplate とキー操作の挙動を確かめます。">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 {% include header-ja.html %}
 <main>
+
   <section class="hero">
-    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TreeView</p>
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TreeView</p>
     <h1>TreeView <span class="category-badge">List</span></h1>
-    <p>TreeView は階層的なデータを木構造で表示するコントロールです。TreeViewItem をネストして静的な木構造を作るか、HierarchicalDataTemplate を使って動的な階層データをバインドできます。ファイルエクスプローラーや組織図の表示に使われます。</p>
+    <p>TreeView は階層的なデータを、展開・折りたたみのできるノードとして表示するコントロールです。ノードは入れ子にした <code>TreeViewItem</code> か、データと <code>HierarchicalDataTemplate</code> から作ります。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>TreeView</strong> は <code>ItemsControl</code> を継承したコントロールで、階層的なデータを木構造として表示します。各ノードは <code>TreeViewItem</code> で表現され、ノードを展開・折りたたみして子ノードを表示・非表示にできます。</p>
-  <p>静的な木構造は XAML で <code>TreeViewItem</code> を直接ネストして作成します。動的な階層データには <code>ItemsSource</code> と <code>HierarchicalDataTemplate</code> を組み合わせます。<code>HierarchicalDataTemplate</code> は各ノードの表示方法と子ノードのコレクションプロパティを指定します。</p>
-  <p>選択されたノードは <code>SelectedItem</code> で取得できます（読み取り専用）。双方向バインドはサポートされていないため、<code>SelectedItemChanged</code> イベントをコードビハインドで処理するか、ビヘイビアを使って ViewModel に通知します。</p>
-  <p>TreeView は VirtualizingStackPanel を ItemsPanel として使うことで、大量のノードでもパフォーマンスを維持できます。また、TreeViewItem の <code>IsExpanded</code> と <code>IsSelected</code> プロパティを ItemContainerStyle でバインドすることで、展開・選択状態を ViewModel で管理できます。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/treeview.png" alt="treeview demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>TreeView</strong> は <code>ItemsControl</code> を継承しています。各ノードは <code>HeaderedItemsControl</code> を継承した <code>TreeViewItem</code> で、自分の子ノードを持ちます。選択できるノードは一度に 1 つです。<code>SelectedItem</code> と <code>SelectedValue</code> は読み取り専用で、<code>SelectedItem</code> にバインドを設定しようとすると <code>ArgumentException</code> が発生しました。選択は、各ノードの <code>IsSelected</code> で変えます。詳しくは<a href="/ja/articles/wpf-treeview-select-item-programmatically/">WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由</a>で扱っています。<code>SelectedItem</code> は、XAML に書いたノードでは <code>TreeViewItem</code> を、<code>ItemsSource</code> から作ったノードではデータのオブジェクトを返しました。</p>
+    <p>ListBox と違い、TreeView は既定では仮想化されません。高さ 100 の TreeView に最上位のノードを 1,000 個入れると、<code>VirtualizingPanel.IsVirtualizing</code> は <code>False</code> で、項目は <code>StackPanel</code> に並び、<code>TreeViewItem</code> が 1,000 個すべて作られました。<code>VirtualizingPanel.IsVirtualizing="True"</code> にすると、パネルは <code>VirtualizingStackPanel</code> になり、作られたのは 12 個でした。</p>
+    <p>デモアプリには以下の各プロパティの欄があり、各欄の下の「Show Code」リンクでその欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/treeview.png" alt="treeview demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>ItemsSource (ItemsControl)</code></td><td><code>IEnumerable</code></td><td>ルートノードのコレクションをバインドします。動的な階層データを表示する場合は常に HierarchicalDataTemplate と組み合わせて使い、各ノードの表示と子ノードのコレクションプロパティを定義します。HierarchicalDataTemplate を設定すると、どの深さのノードにも同じテンプレートが再帰的に適用されます。落とし穴として、HierarchicalDataTemplate の DataType にはルートノードの ViewModel の型を正確に指定する必要があり、型が一致しないとノードが正しく描画されません。</td></tr><tr><td><code>SelectedItem (ReadOnly)</code></td><td><code>object</code></td><td>現在選択されているノードのオブジェクトを取得します。WPF の設計上、SelectedItem は読み取り専用であり、プログラムから直接設定できません。SelectedItem を TwoWay バインドしようとすると実行時例外がスローされます。代わりに ItemContainerStyle で各 TreeViewItem の IsSelected プロパティを ViewModel の対応するプロパティに TwoWay バインドすることで、ViewModel から選択を制御できます。</td></tr><tr><td><code>IsExpanded (TreeViewItem)</code></td><td><code>bool</code></td><td>TreeViewItem の展開状態を取得・設定します。アプリセッション間で展開状態を保存・復元したい場合や、プログラムで特定のノードまでパスを展開したい場合に ItemContainerStyle で ViewModel のプロパティに TwoWay バインドして管理します。True に設定するとそのノードが展開されて子アイテムが表示されます。落とし穴として、仮想化が有効な TreeView では、まだ描画されていない折りたたまれたノードに IsExpanded を設定しても反映されないことがあります。</td></tr><tr><td><code>IsSelected (TreeViewItem)</code></td><td><code>bool</code></td><td>TreeViewItem の選択状態を取得・設定します。ItemContainerStyle に Setter を定義して ViewModel のプロパティに TwoWay バインドすることで、ViewModel からノードを選択状態にできます。TreeView では複数選択がサポートされていないため、IsSelected=True にするノードは常に 1 つだけになります。すべてのノードの IsSelected バインドを ViewModel で一元管理して競合しないように注意する必要があります。</td></tr></tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>IsExpanded (TreeViewItem)</code></td>
+          <td><code>bool</code></td>
+          <td>ノードが子を表示しているかどうかです。<code>IsSelected</code> と違い、既定では TwoWay にバインドされません。デモアプリでは、チェックボックスを <code>Mode</code> を指定せずに Node 1 の <code>IsExpanded</code> にバインドしているため、これが問題になります。Node 1 をその展開ボタンで折りたたむと、このバインドが外れました。ノードは折りたたまれましたが、チェックボックスはオンのままで、その後チェックを外して付け直してもノードは展開されませんでした。このようなバインドには <code>Mode=TwoWay</code> を指定します。<code>ItemContainerStyle</code> で TwoWay にバインドすると、状態はデータ側に保たれます。折りたたまれた親の下で、ソースの <code>IsExpanded</code> を <code>true</code> にした子は、まだコンテナーがありませんでしたが、親を展開した時点で展開されました。</td>
+        </tr>
+        <tr>
+          <td><code>IsSelected / IsSelectionActive (TreeViewItem)</code></td>
+          <td><code>bool / bool（読み取り専用）</code></td>
+          <td><code>IsSelected</code> は選択中のノードを表し、既定で TwoWay にバインドされます。ノードを選ぶと前のノードの選択が外れ、そのソースに <code>False</code> が書き戻されます。<code>ItemContainerStyle</code> で <code>IsSelected</code> をバインドし、データで Desktop、Mobile の順に <code>True</code> にすると、Mobile が選ばれ、Desktop のソースは <code>False</code> になりました。<code>IsSelectionActive</code>（添付プロパティ <code>Selector.IsSelectionActive</code>）は、選択がキーボードフォーカスを持っているかどうかを表します。フォーカスのない状態でコードから Node 2 を選ぶと <code>IsSelectionActive</code> は <code>False</code>、フォーカスを得ると <code>True</code> でした。フォーカスが TextBox へ移ると、<code>IsSelected</code> は <code>True</code> のまま、<code>IsSelectionActive</code> は <code>False</code> に戻りました。</td>
+        </tr>
+        <tr>
+          <td><code>SelectedValuePath / SelectedValue (TreeView)</code></td>
+          <td><code>string / object（読み取り専用）</code></td>
+          <td><code>SelectedValuePath</code> には、<code>SelectedValue</code> として返す選択中のノードのプロパティを指定します。デモアプリでは、XAML に書いたノードに対し、テキストボックスでパスを入力します。<code>Header</code> で "Gaming PC" を選ぶと、<code>SelectedValue</code> は "Gaming PC" になりました。<code>SelectedItem</code> と同じく、<code>SelectedValue</code> も読み取り専用です。</td>
+        </tr>
+        <tr>
+          <td><code>ItemTemplate (ItemsControl) / HierarchicalDataTemplate</code></td>
+          <td><code>DataTemplate</code></td>
+          <td><code>HierarchicalDataTemplate</code> は、ノードの見た目と、<code>ItemsSource</code> で子ノードの取得先を表します。デモアプリのように TreeView の <code>ItemTemplate</code> に指定すると、すべての階層に適用され、2 階層目のノードもテンプレートを通して "Workstation PC" と表示されました。リソースに置いた暗黙のテンプレートとして使う場合は、<code>DataType</code> の型の項目にだけ適用されます。<code>DataType</code> が合わないとき、ノードは空にはならず、項目の <code>ToString()</code> が表示され、展開もできませんでした。</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
+          <td><code>Disabled / Auto / Hidden / Visible</code></td>
+          <td>TreeView のスクロールバーを決める添付プロパティで、既定のスタイルがどちらも <code>Auto</code> に設定しています。デモアプリでは、縦横どちらのスクロールバーも試せるよう、長い最初のノードに 5 つの子を置いています。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;TreeView ItemsSource="{Binding RootNodes}"&gt;
-  &lt;TreeView.Resources&gt;
-    &lt;HierarchicalDataTemplate DataType="{x:Type vm:FolderNode}"
-                              ItemsSource="{Binding Children}"&gt;
-      &lt;StackPanel Orientation="Horizontal"&gt;
-        &lt;Image Source="/Icons/folder.png" Width="16" Margin="0,0,4,0" /&gt;
-        &lt;TextBlock Text="{Binding Name}" /&gt;
-      &lt;/StackPanel&gt;
-    &lt;/HierarchicalDataTemplate&gt;
-  &lt;/TreeView.Resources&gt;
-  &lt;TreeView.ItemContainerStyle&gt;
-    &lt;Style TargetType="TreeViewItem"&gt;
-      &lt;Setter Property="IsExpanded"
-              Value="{Binding IsExpanded, Mode=TwoWay}" /&gt;
-      &lt;Setter Property="IsSelected"
-              Value="{Binding IsSelected, Mode=TwoWay}" /&gt;
-    &lt;/Style&gt;
-  &lt;/TreeView.ItemContainerStyle&gt;
-&lt;/TreeView&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>ファイルエクスプローラー</strong> — フォルダとファイルの階層構造をツリー表示するファイルナビゲーションに使用します。</li><li><strong>組織図・ナビゲーション</strong> — 会社の組織図や製品カテゴリの階層をツリーで表示します。</li><li><strong>XML/JSON ビューアー</strong> — XML や JSON の木構造をツリービューで可視化するデータビューアーに使用します。</li><li><strong>設定ツリー</strong> — 設定カテゴリの階層をツリー表示して、選択したカテゴリの設定を右ペインに表示する 2 ペイン設定画面に使用します。</li><li><strong>プロジェクト構造ビュー</strong> — IDE 風のプロジェクトツリー（ソリューション・プロジェクト・ファイル）を表示します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>HierarchicalDataTemplate を活用する</strong> — 再帰的な階層データには HierarchicalDataTemplate を使うと、どの深さのノードにも同じテンプレートが適用されます。</li><li><strong>SelectedItem を ViewModel にバインドする方法</strong> — SelectedItem は読み取り専用のため、ItemContainerStyle で各 TreeViewItem の IsSelected を ViewModel のプロパティに TwoWay バインドします。</li><li><strong>展開状態の永続化</strong> — IsExpanded を ViewModel のノードクラスに TwoWay バインドして、アプリ終了時に展開状態を保存・復元できます。</li><li><strong>遅延ロード（Lazy Loading）</strong> — 初期ロードを高速にするため、子ノードをダミーアイテムで初期化し、ノード展開時（IsExpanded 変化）に実際の子ノードをロードする遅延ロードを実装します。</li><li><strong>仮想化でパフォーマンス向上</strong> — ノード数が多い場合は VirtualizingStackPanel をItemsPanel に設定して描画コストを削減します。</li><li><strong>検索・フィルタリングの実装</strong> — ツリーのフィルタリングは、ViewModel 側で各ノードの IsVisible フラグを更新し、一致したノードからルートまでの親ノードを IsExpanded=True にプログラムで展開することで実現します。</li><li><strong>TreeViewItem へのコンテキストメニュー</strong> — 右クリックメニューを追加するには ItemContainerStyle 内で ContextMenu を定義します。ContextMenu の DataContext はそのノードの ViewModel になるため、コマンドのバインドも自然に機能します。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/listview.html">ListView</a> — フラットなリスト形式の表示（階層なし）。</li><li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — 単純な 1 レベルの展開/折りたたみが必要な場合に使用します。</li></ul></section>
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>TreeViewUsageControl.xaml</code>）の <code>ItemTemplate</code> / <code>HierarchicalDataTemplate</code> の欄から、スタイルと周囲の GroupBox を省いたものです。<code>DeviceTree</code> は、<code>Name</code> と <code>Children</code> を持つ項目のコレクションです。</p>
+    <pre><code class="language-xml">&lt;HierarchicalDataTemplate x:Key="MyTreeViewTemplate" x:Name="MyTreeViewTemplate"
+                          ItemsSource="{Binding Children}"&gt;
+  &lt;StackPanel Orientation="Horizontal"&gt;
+    &lt;Path Margin="0,0,5,0" VerticalAlignment="Center"
+          Data="M0,0 L8,4 L0,8 Z" Fill="Orange" /&gt;
+    &lt;TextBlock VerticalAlignment="Center" Text="{Binding Name}" /&gt;
+  &lt;/StackPanel&gt;
+&lt;/HierarchicalDataTemplate&gt;
+
+&lt;TreeView x:Name="ItemTemplateTreeView" Height="150"
+          ItemTemplate="{StaticResource MyTreeViewTemplate}"
+          ItemsSource="{Binding DeviceTree}" /&gt;</code></pre>
+  </section>
+
+  <section class="content-section">
+    <h2>キー操作</h2>
+    <p>ノード A（子を持ち、最初の子にもさらに子がある）を選び、フォーカスを置いた状態で試しました。</p>
+    <ul>
+      <li>下矢印キーで次のノードが選ばれました。</li>
+      <li>右矢印キーで A が展開され、左矢印キーで再び折りたたまれました。</li>
+      <li>テンキーの <code>*</code> で、A とその下のすべてのノードが展開されました。</li>
+      <li>Space キーと Enter キーでは、選択も展開も変わりませんでした。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>フォルダーとファイル</strong> — 展開したときに子を読み込むフォルダーのツリーです。</li>
+      <li><strong>設定の分類</strong> — 左のツリーで選んだノードに応じて、右のページを切り替えます。</li>
+      <li><strong>入れ子のデータ</strong> — XML・JSON・組織などのデータを <code>HierarchicalDataTemplate</code> で表示します。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>大きなツリーでは仮想化を有効にする</strong> — <code>VirtualizingPanel.IsVirtualizing="True"</code> を設定します。既定では、すべてのノードのコンテナーが作られます。</li>
+      <li><strong><code>IsExpanded</code> は <code>Mode=TwoWay</code> でバインドする</strong> — Mode を指定しないバインドは、ユーザーが初めて展開ボタンを使った時点で外れます。</li>
+      <li><strong>展開と選択の状態はデータに持たせる</strong> — <code>ItemContainerStyle</code> でバインドすると、子の展開状態は親が展開された時点で反映され、ノードを選ぶと前のノードのフラグも外れました。</li>
+      <li><strong><code>ItemContainerStyle</code> の ContextMenu はノードのデータを受け取る</strong> — そこに設定した <code>ContextMenu</code> は、開く前は <code>DataContext</code> が空でしたが、開いている間はノードのデータオブジェクトが <code>DataContext</code> になりました。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TreeViewDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TreeViewDemoScene</code></a> を使いました。キー操作は表示したウィンドウへキーのイベントを送り、展開ボタンは、クリックと同じ切り替え処理を実行する UI オートメーションで切り替えて再現しました。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="TreeView の計測結果の表。デモアプリの IsExpanded のバインドは展開ボタンで折りたたむと外れ、データで展開した子は親を開くと展開され、HierarchicalDataTemplate はすべての階層に適用され、DataType が合わないと ToString が表示され、既定では仮想化されず、矢印キーとテンキーの * で展開・折りたたみが変わり Space と Enter では何も起きず、ContextMenu は開いている間ノードを DataContext にする" width="1210" height="560" loading="lazy">
+      <figcaption>展開、テンプレート、仮想化、キー操作、コンテキストメニュー。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール・記事</h2>
+    <ul>
+      <li><a href="/ja/articles/wpf-treeview-select-item-programmatically/">WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由</a> — コードからの選択と、コンテナーが作られるタイミングを扱います。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — 階層のない一覧で、既定で仮想化されます。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/expander.html">Expander</a> — 1 つだけの折りたたみ可能な領域です。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TreeViewUsage" target="_blank" rel="noopener noreferrer">GitHub で TreeView のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
 {% include footer-ja.html %}
 </body>

@@ -1,0 +1,23 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-treeview
+slug: "wpf-standard-control-demo-treeview"
+scene: "TreeViewDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TreeView・TreeViewItem の基底クラス、SelectedItem・SelectedValue が読み取り専用か、IsExpanded・IsSelected が既定で TwoWay か"
+  - "SelectedItem にバインドを設定しようとしたときの例外"
+  - "SelectedItem が返すもの（XAML の TreeViewItem のとき、ItemsSource のデータのとき）と、SelectedValuePath=\"Header\" のときの SelectedValue"
+  - "IsSelected を ItemContainerStyle で TwoWay にバインドした 2 つのノードを両方 True にしたときに選ばれるノードとソースの値"
+  - "IsSelectionActive が、フォーカスの有無と選択の有無でどう変わるか"
+  - "親が折りたたまれている子ノードの IsExpanded をソースで True にしておき、親を展開したときに子が展開されるか"
+  - "デモアプリの IsExpanded 欄と同じく Mode 指定なしで IsExpanded にバインドしたノードを、展開ボタン（ToggleButton の UI オートメーション）で折りたたんだときのバインドの状態と、その後の CheckBox の操作が効くか"
+  - "HierarchicalDataTemplate を ItemTemplate に指定したときにすべての階層に適用されること、暗黙のテンプレートの DataType が型と一致しないときの表示"
+  - "既定の仮想化の設定（VirtualizingPanel.IsVirtualizing）と、1,000 ノードのときに作られる TreeViewItem の数"
+  - "キー操作（下矢印・右矢印・左矢印・Space・Enter・テンキーの *）による選択と展開の変化"
+  - "ItemContainerStyle で設定した ContextMenu の DataContext"
+  - "スクロールバーの既定値とその出どころ"
+images:
+  - "images/wpf-standard-control-demo/verification/treeview/treeview-selection.svg"
+  - "images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg"

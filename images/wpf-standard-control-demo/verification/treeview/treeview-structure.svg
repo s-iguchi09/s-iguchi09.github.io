@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1210 560" width="1210" height="560" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1210" height="560" />
+  <text class="title" x="12" y="24">TreeView: expansion, templates, virtualization, keys and context menu</text>
+  <rect class="head" x="12" y="38" width="1186" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1184" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">demo IsExpanded section, node collapsed by its expander: IsExpanded / CheckBox / binding</text>
+  <text class="cell" x="1184" y="87.5" text-anchor="end">False / True / removed</text>
+  <text class="cell" x="26" y="117.5">  then the CheckBox unchecked and checked again: IsExpanded</text>
+  <text class="cell" x="1184" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="26" y="147.5">child IsExpanded=true (source) under a collapsed parent: container before / after expanding</text>
+  <text class="cell" x="1184" y="147.5" text-anchor="end">not created / created, IsExpanded True, leaf created</text>
+  <text class="cell" x="26" y="177.5">explicit HierarchicalDataTemplate: text of a second-level node</text>
+  <text class="cell" x="1184" y="177.5" text-anchor="end">"Workstation PC"</text>
+  <text class="cell" x="26" y="207.5">implicit HierarchicalDataTemplate, DataType=Node (items are Node)</text>
+  <text class="cell" x="1184" y="207.5" text-anchor="end">first node shows "Desktop", expandable True</text>
+  <text class="cell" x="26" y="237.5">implicit HierarchicalDataTemplate, DataType=String (items are Node)</text>
+  <text class="cell" x="1184" y="237.5" text-anchor="end">first node shows "ToString:Desktop", expandable False</text>
+  <text class="cell" x="26" y="267.5">1,000 root nodes, IsVirtualizing not set: value, panel, TreeViewItems</text>
+  <text class="cell" x="1184" y="267.5" text-anchor="end">False, StackPanel, 1000</text>
+  <text class="cell" x="26" y="297.5">1,000 root nodes, IsVirtualizing True: value, panel, TreeViewItems</text>
+  <text class="cell" x="1184" y="297.5" text-anchor="end">True, VirtualizingStackPanel, 12</text>
+  <text class="cell" x="26" y="327.5">key Down on A (selected, focused)</text>
+  <text class="cell" x="1184" y="327.5" text-anchor="end">selected B; A closed, A1 closed</text>
+  <text class="cell" x="26" y="357.5">key Right on A (selected, focused)</text>
+  <text class="cell" x="1184" y="357.5" text-anchor="end">selected A; A open, A1 closed</text>
+  <text class="cell" x="26" y="387.5">key Left (after Right) on A (selected, focused)</text>
+  <text class="cell" x="1184" y="387.5" text-anchor="end">selected A; A closed, A1 closed</text>
+  <text class="cell" x="26" y="417.5">key Space on A (selected, focused)</text>
+  <text class="cell" x="1184" y="417.5" text-anchor="end">selected A; A closed, A1 closed</text>
+  <text class="cell" x="26" y="447.5">key Enter on A (selected, focused)</text>
+  <text class="cell" x="1184" y="447.5" text-anchor="end">selected A; A closed, A1 closed</text>
+  <text class="cell" x="26" y="477.5">key numpad * on A (selected, focused)</text>
+  <text class="cell" x="1184" y="477.5" text-anchor="end">selected A; A open, A1 open</text>
+  <text class="cell" x="26" y="507.5">ContextMenu from ItemContainerStyle (Mobile): DataContext before / while open</text>
+  <text class="cell" x="1184" y="507.5" text-anchor="end">null / ToString:Mobile</text>
+  <text class="cell" x="26" y="537.5">ScrollViewer.HorizontalScrollBarVisibility / VerticalScrollBarVisibility (value source)</text>
+  <text class="cell" x="1184" y="537.5" text-anchor="end">Auto (DefaultStyle) / Auto (DefaultStyle)</text>
+  <line class="line" x1="12" y1="38" x2="1198" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1198" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1198" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1198" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1198" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1198" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1198" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1198" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1198" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1198" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1198" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1198" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1198" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1198" y2="428" />
+  <line class="line" x1="12" y1="458" x2="1198" y2="458" />
+  <line class="line" x1="12" y1="488" x2="1198" y2="488" />
+  <line class="line" x1="12" y1="518" x2="1198" y2="518" />
+  <line class="line" x1="12" y1="548" x2="1198" y2="548" />
+  <line class="line" x1="12" y1="38" x2="12" y2="548" />
+  <line class="line" x1="754" y1="38" x2="754" y2="548" />
+  <line class="line" x1="1198" y1="38" x2="1198" y2="548" />
+</svg>
