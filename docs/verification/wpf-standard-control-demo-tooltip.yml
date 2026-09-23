@@ -1,0 +1,17 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-tooltip
+slug: "wpf-standard-control-demo-tooltip"
+scene: "ToolTipDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ToolTipService の InitialShowDelay / ShowDuration / BetweenShowDelay / Placement / ShowsToolTipOnKeyboardFocus / ShowOnDisabled / HasDropShadow の既定値"
+  - "実際のマウスでボタンに乗せてからツールチップが開くまでの時間（InitialShowDelay 500 と 2000）"
+  - "ShowDuration=1000 で、乗せたまま 2.5 秒待ったときにツールチップが開いているか"
+  - "文字列の ToolTip を 2 回開いたとき、同じ ToolTip のインスタンスが使われるか"
+  - "実際のキーボードの Tab でフォーカスを移したとき、ShowsToolTipOnKeyboardFocus が True / False / 未設定のボタンでツールチップが開くか"
+  - "無効なボタンに乗せたとき、ShowOnDisabled が False / True でツールチップが開くか"
+  - "Placement=Bottom と Mouse で、ボタンとカーソルに対するツールチップの位置、HorizontalOffset 50 を加えたときの位置"
+images:
+  - "images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg"
