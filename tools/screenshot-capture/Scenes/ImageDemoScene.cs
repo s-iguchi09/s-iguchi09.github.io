@@ -65,7 +65,7 @@ internal sealed class ImageDemoScene : IScene
             {
                 Directory.Delete(folder, true);
             }
-            catch (IOException)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 // 一時フォルダーなので、ロックが残って消せなくても計測は続ける。
             }

@@ -73,16 +73,6 @@ internal sealed class MenuDemoScene : IScene
         return menu;
     }
 
-    /// <summary>計測用のウィンドウを前面・最前面にする（実際のマウスとキーがほかのアプリに行かないため）。</summary>
-    private static async Task<Window> FrontAsync(FrameworkElement content)
-    {
-        Window window = Window.GetWindow(content)!;
-        window.Topmost = true;
-        window.Activate();
-        await Capture.SettleAsync(window);
-        return window;
-    }
-
     private static async Task ClickAsync(Window window, FrameworkElement target)
     {
         await RealMouse.MoveToAsync(target, null, window);

@@ -83,15 +83,6 @@ internal sealed class ListViewDemoScene : IScene
     private static GridViewColumnHeader Header(ListView list, GridViewColumn column) =>
         Descendants<GridViewColumnHeader>(list).First(h => h.Column == column);
 
-    private static async Task<Window> FrontAsync(FrameworkElement content)
-    {
-        Window window = Window.GetWindow(content)!;
-        window.Topmost = true;
-        window.Activate();
-        await Capture.SettleAsync(window);
-        return window;
-    }
-
     private static string Order(GridView view) => string.Join(", ", view.Columns.Select(c => c.Header));
 
     private static async Task<List<IReadOnlyList<string>>> MeasureAsync()

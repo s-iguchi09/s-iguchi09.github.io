@@ -87,15 +87,6 @@ internal sealed class InkCanvasDemoScene : IScene
     private static Stroke Line() =>
         new(new StylusPointCollection(Enumerable.Range(0, 11).Select(i => new StylusPoint(50 + i * 20, 100))));
 
-    private static async Task<Window> FrontAsync(FrameworkElement content)
-    {
-        Window window = Window.GetWindow(content)!;
-        window.Topmost = true;
-        window.Activate();
-        await Capture.SettleAsync(window);
-        return window;
-    }
-
     private static string Name(Color color) =>
         typeof(Colors).GetProperties(BindingFlags.Public | BindingFlags.Static)
             .FirstOrDefault(p => (Color)p.GetValue(null)! == color)?.Name ?? color.ToString();
