@@ -8,7 +8,7 @@
   <title>TabItem | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF TabItem control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF TabItem measured on .NET 10: selection with IsSelected, TabStripPlacement, disabled tabs, access keys in headers, and when tab content is loaded or reused.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,34 +21,28 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; TabItem</p>
     <h1>TabItem <span class="category-badge">Selectors</span></h1>
-    <p>TabItem is an individual page within a TabControl. It consists of a header (always visible as the tab strip entry) and a content area (shown only when the tab is selected). TabItem gives each page its own header label, icon, and content.</p>
+    <p>TabItem is one page of a TabControl: a header shown in the tab strip, and content shown while the tab is selected.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>TabItem</strong> control inherits from <code>HeaderedContentControl</code>, which
-      provides two key areas: the <code>Header</code> (the visible tab label or custom header content)
-      and the <code>Content</code> (the panel or view shown when this tab is selected). Both areas accept
-      any WPF <code>UIElement</code>, allowing rich headers with icons and badges and complex content areas.
+      <strong>TabItem</strong> derives from <code>HeaderedContentControl</code>, so it has a <code>Header</code> (the label in the
+      tab strip) and a <code>Content</code> (the page). The parent <code>TabControl</code> keeps exactly one tab selected:
+      setting <code>IsSelected</code> on one TabItem moves <code>SelectedIndex</code> to it and clears
+      <code>IsSelected</code> on the others.
     </p>
     <p>
-      The <code>IsSelected</code> property indicates whether this tab is the currently active one. When
-      set to <code>true</code> programmatically, the parent <code>TabControl</code> switches to this tab
-      and deselects the previously active one. This property can be two-way bound to a ViewModel boolean
-      if per-tab activation state tracking is needed, though binding <code>TabControl.SelectedIndex</code>
-      or <code>SelectedItem</code> at the container level is usually simpler.
+      Only the selected tab's content is shown and laid out, but that does not mean the other tabs' content is idle. Content
+      written directly in XAML is created when the XAML is loaded. In a test with three tabs, all three content elements
+      raised <code>Loaded</code> when the window opened, and only the selected one was measured. With
+      <code>ItemsSource</code> and a <code>ContentTemplate</code>, the TabControl created one content element and reused it
+      for every tab, changing only its data.
     </p>
     <p>
-      The read-only <code>TabStripPlacement</code> property reflects the placement inherited from the
-      parent <code>TabControl</code>, allowing individual tab items or their templates to adapt their
-      visual layout based on whether the strip is on the top, bottom, left, or right edge.
-    </p>
-    <p>
-      TabItem's visual state system includes states for <code>Normal</code>, <code>MouseOver</code>,
-      <code>Selected</code>, <code>Unselected</code>, <code>Disabled</code>, and <code>Focused</code>,
-      all of which can be targeted in a custom <code>ControlTemplate</code> to produce fully branded
-      tab appearances.
+      The demo app has two sections. In the <code>IsSelected</code> section, a check box is bound to each tab's
+      <code>IsSelected</code>. In the <code>TabStripPlacement</code> section, a combo box moves the tab strip, and each
+      TabItem shows its own read-only <code>TabStripPlacement</code>. The "Show Code" link under each section displays its XAML.
     </p>
   </section>
 
@@ -59,119 +53,116 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
 
     <table class="prop-table">
       <thead>
-        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>Header (HeaderedContentControl)</code></td>
-          <td><code>object</code></td>
-          <td>
-            <strong>When to use:</strong> Use a plain string for simple tabs. Use a <code>StackPanel</code> or other UIElement when you need icons, close buttons, or notification badges in the tab strip.<br>
-            <strong>What happens:</strong> A string value is automatically wrapped in a <code>TextBlock</code>. Any <code>UIElement</code> is rendered directly inside the tab header area, giving you full layout control.<br>
-            <strong>Pitfalls:</strong> Long or dynamically changing header content causes the tab's width to vary, which can shift the positions of adjacent tabs and make the tab strip feel jumpy. Set a fixed <code>Width</code> or <code>MinWidth</code> on the <code>TabItem</code> via <code>ItemContainerStyle</code> to prevent this.
-          </td>
-        </tr>
-        <tr>
           <td><code>IsSelected</code></td>
           <td><code>bool</code></td>
-          <td>
-            <strong>When to use:</strong> Use when you need per-tab activation tracking from the ViewModel — for example, in wizard-style flows where a specific step must be activated on navigation, or for deep-link scenarios where a URL parameter indicates which tab to open.<br>
-            <strong>What happens:</strong> Setting <code>true</code> activates this tab: the content area switches to this tab's content and the previously active tab is deselected. Bind two-way to a ViewModel bool to keep the ViewModel in sync with user clicks.<br>
-            <strong>Pitfalls:</strong> The parent <code>TabControl</code> enforces exclusive selection internally. If you set multiple TabItems' <code>IsSelected</code> to <code>true</code> simultaneously, only the last one to be processed wins. Prefer managing selection via <code>TabControl.SelectedIndex</code> or <code>SelectedItem</code> at the container level to avoid coordination issues.
-          </td>
-        </tr>
-        <tr>
-          <td><code>IsEnabled (Control)</code></td>
-          <td><code>bool</code></td>
-          <td>
-            <strong>When to use:</strong> Use to enforce access rules — disable a tab until a prerequisite is met (e.g., a wizard step is completed) or based on user role/permissions.<br>
-            <strong>What happens:</strong> Setting <code>False</code> grays out the tab header; clicks on it are ignored. Bind to a ViewModel boolean to enable or disable the tab dynamically as conditions change.<br>
-            <strong>Pitfalls:</strong> <code>IsEnabled="False"</code> only blocks user interaction — code can still navigate to a disabled tab by setting <code>TabControl.SelectedIndex</code>. If access control is security-sensitive, also guard the content itself (e.g., show a "Not authorized" message or collapse the content).
-          </td>
-        </tr>
-        <tr>
-          <td><code>Content (ContentControl)</code></td>
-          <td><code>object</code></td>
-          <td>
-            <strong>When to use:</strong> Set to a <code>Grid</code>, <code>StackPanel</code>, or any layout panel containing the tab page's controls. For heavy content (data grids, charts, large forms) consider deferring initialization.<br>
-            <strong>What happens:</strong> The content is displayed in the main content area of the <code>TabControl</code> when this tab is selected and hidden when another tab is selected. Once created, the content remains in memory for the lifetime of the <code>TabControl</code>.<br>
-            <strong>Pitfalls:</strong> All tab content is initialized when the <code>TabControl</code> loads, not lazily on first selection. If initialization performs expensive work (database queries, file I/O), it will slow down application startup even for tabs the user never opens. Implement lazy loading by triggering data fetch in the ViewModel when <code>IsSelected</code> first becomes <code>true</code>.
-          </td>
+          <td>Whether this tab is the selected one. It binds two-way by default. In the demo app, the check boxes are bound to <code>IsSelected</code> without a <code>Mode</code>, so clicking a tab also updates the check boxes. In a test, changing <code>SelectedIndex</code> to 1 set the first source to <code>False</code> and the second to <code>True</code>. Setting <code>IsSelected="True"</code> on the third of three tabs gave <code>SelectedIndex</code> 2 and cleared the others. Only one tab can stay selected, and which one wins depends on how the values arrive. Setting two tabs to <code>True</code> one after the other from code left the last one selected. Writing <code>IsSelected="True"</code> on two tabs in XAML left the first one selected.</td>
         </tr>
         <tr>
           <td><code>TabStripPlacement (ReadOnly)</code></td>
           <td><code>Dock</code></td>
-          <td>Read-only property that reflects the parent TabControl's <code>TabStripPlacement</code> setting. Templates can bind to this to rotate tab content or headers based on the strip's edge placement.</td>
+          <td>A read-only property of TabItem that follows the parent TabControl. With <code>TabControl.TabStripPlacement="Left"</code>, both TabItems reported <code>Left</code>. Setting it is done on the TabControl; on the TabItem it is for templates and triggers that need to know which edge the strip is on.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>Header, IsEnabled, and Content</h2>
+    <p>These properties are not in the demo app's TabItem screen, but they are used with almost every TabItem. Their behavior was measured in the same way.</p>
+    <ul>
+      <li><strong><code>Header</code>:</strong> a string header is displayed through an <code>AccessText</code>, so an underscore marks an access key. <code>Header="File_Name"</code> made <code>N</code> the access key, and the underscore itself is not displayed. <a href="/articles/wpf-label-underscore-issue/">Why WPF Label Hides Underscores and How to Fix It</a> confirms that the underscore disappears from TabItem headers as well. It also shows that writing <code>__</code> in a Label, which uses the same <code>AccessText</code>, displays a single underscore. The tab width follows the header: "File_Name" gave a tab 65.65 wide and "A" one 19.74 wide.</li>
+      <li><strong><code>IsEnabled</code>:</strong> a disabled tab cannot be selected by the user. Selecting it through UI Automation, as an assistive tool or a user would, threw <code>ElementNotEnabledException</code>, and the selection did not move. Code is not blocked: <code>SelectedIndex = 1</code> selected the disabled tab and displayed its content. If a tab must stay closed, keep the code that changes the selection from choosing it.</li>
+      <li><strong><code>Content</code>:</strong> content written directly in XAML is created with the window, and every content element received <code>Loaded</code> at start, including those of unselected tabs. Only the selected one was measured. Switching from tab 1 to tab 2 and back raised <code>Loaded</code> again on the content that came back, and the same instance was shown again. To defer expensive work, start it when the tab is first selected, not in the content's constructor or <code>Loaded</code> handler.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>XAML Example</h2>
-    <p>TabItem with a custom header including an icon and a close button:</p>
-    <pre><code class="language-xml">&lt;TabControl&gt;
-  &lt;TabItem IsSelected="{Binding IsFirstTabActive, Mode=TwoWay}"&gt;
-    &lt;TabItem.Header&gt;
-      &lt;StackPanel Orientation="Horizontal"&gt;
-        &lt;Image Source="/Icons/document.png" Width="16" Height="16" Margin="0,0,4,0" /&gt;
-        &lt;TextBlock Text="Document" /&gt;
-        &lt;Button Content="&#x2715;" Width="16" Height="16"
-                Command="{Binding CloseTabCommand}"
-                Margin="4,0,0,0" /&gt;
-      &lt;/StackPanel&gt;
-    &lt;/TabItem.Header&gt;
-    &lt;Grid Margin="16"&gt;
-      &lt;TextBlock Text="Document content here." /&gt;
-    &lt;/Grid&gt;
-  &lt;/TabItem&gt;
-  &lt;TabItem Header="Settings"&gt;
-    &lt;StackPanel Margin="16"&gt;
-      &lt;CheckBox Content="Option 1" /&gt;
-    &lt;/StackPanel&gt;
-  &lt;/TabItem&gt;
+    <p>The following XAML is the <code>IsSelected</code> section of the demo app (<code>TabItemUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
+    <pre><code class="language-xml">&lt;CheckBox x:Name="IsSelectedTab1" VerticalContentAlignment="Center" Content="Tab1" /&gt;
+&lt;CheckBox x:Name="IsSelectedTab2" VerticalContentAlignment="Center" Content="Tab2" /&gt;
+
+&lt;TabControl x:Name="IsSelectedTabControl"&gt;
+  &lt;TabItem Content="Item1" Header="Tab1"
+           IsSelected="{Binding IsChecked, ElementName=IsSelectedTab1}" /&gt;
+  &lt;TabItem Content="Item2" Header="Tab2"
+           IsSelected="{Binding IsChecked, ElementName=IsSelectedTab2}" /&gt;
 &lt;/TabControl&gt;</code></pre>
+    <p>Because <code>IsSelected</code> binds two-way by default, the check boxes follow the tabs as well as control them. With Tab2 selected, setting Tab1's source to <code>True</code> (what checking its box does) selected Tab1 and set Tab2's source to <code>False</code>.</p>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Simple labeled pages</strong> — Set <code>Header</code> to a string for a standard text tab label.</li>
-      <li><strong>Icon tabs</strong> — Use a <code>StackPanel</code> in the Header with an Image and TextBlock for icon-plus-label headers.</li>
-      <li><strong>Closeable tabs</strong> — Add a small close button to the Header template for document-style closeable tabs.</li>
-      <li><strong>Badge notifications</strong> — Overlay a count badge on the Header to show unread items or pending actions in that tab.</li>
-      <li><strong>Conditional tab access</strong> — Bind <code>IsEnabled</code> to a ViewModel property to prevent users from accessing a tab until prerequisite steps are completed.</li>
+      <li><strong>Settings pages:</strong> one TabItem per group of settings, with a string header.</li>
+      <li><strong>Document tabs:</strong> tabs generated from a collection with <code>ItemsSource</code>, the header from <code>ItemTemplate</code> and the page from <code>ContentTemplate</code>.</li>
+      <li><strong>Step-by-step input:</strong> later tabs disabled until earlier steps are complete, with the selection changed from code.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use the Header property for labels, not Content</strong> — Content is the page body; Header is the tab strip label. Confusing the two is a common mistake for WPF beginners.</li>
-      <li><strong>Lazy content initialization</strong> — Although TabItem content appears not to load until the tab is selected, the default behavior actually initializes all tab content when the TabControl is first rendered. For tabs with heavy initialization work, explicitly defer loading by watching <code>IsSelected</code> become <code>true</code> for the first time and triggering the actual data fetch from the ViewModel at that point.</li>
-      <li><strong>Avoid binding IsSelected on all tabs simultaneously</strong> — Managing multiple IsSelected bindings can cause conflicts; prefer binding SelectedIndex or SelectedItem at the TabControl level.</li>
-      <li><strong>Use HeaderTemplate for uniform styling across all tabs</strong> — When using <code>ItemsSource</code> to generate tabs dynamically, define a <code>HeaderTemplate</code> on the <code>TabControl</code> so all tab headers share the same structure (e.g., icon + label + optional badge). This is more maintainable than setting individual <code>Header</code> content on each <code>TabItem</code>.</li>
-      <li><strong>Test keyboard navigation</strong> — Users navigate between tabs with Ctrl+Tab (forward) and Ctrl+Shift+Tab (backward); verify the tab order is logical.</li>
+      <li><strong>Select with one source of truth.</strong> Because the result depends on the order in which <code>IsSelected</code> values arrive, bind <code>SelectedIndex</code> or <code>SelectedItem</code> on the TabControl instead of <code>IsSelected</code> on every tab.</li>
+      <li><strong>Headers of generated tabs come from <code>ItemTemplate</code>.</strong> TabControl has no <code>HeaderTemplate</code> property; its templates are <code>ItemTemplate</code> (headers), <code>ContentTemplate</code> and <code>SelectedContentTemplate</code> (pages), and <code>Template</code>. <code>HeaderTemplate</code> exists on TabItem.</li>
+      <li><strong>Expect shared content with <code>ItemsSource</code>.</strong> The content element is reused across tabs. State that is not bound to the item, such as a scroll position or a text box that is not bound, carries over when the user switches tabs.</li>
+      <li><strong>Customize the look with triggers.</strong> The default TabItem template has no visual state groups; it changes its look with 16 triggers. A copied default template is edited through those triggers.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TabItemDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TabItemDemoScene</code></a>
+      in this site's screenshot tool.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="Table of TabItem selection results: the base class HeaderedContentControl, IsSelected binding two-way by default, TabStripPlacement following the TabControl, the first of two tabs marked IsSelected in XAML and the last of two set from code being selected, a bound source following SelectedIndex, and a disabled tab selectable from code but not through UI Automation" width="991" height="410" loading="lazy">
+      <figcaption>Selection, metadata, and disabled tabs. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg" alt="Table of tab content lifetime: content written as elements receives Loaded for all three tabs at start while only the selected one is measured, and ItemsSource with a ContentTemplate creates a single content instance that is reused for every tab" width="1128" height="170" loading="lazy">
+      <figcaption>When tab content is loaded and whether it is reused, for three tabs switched 1 &rarr; 2 &rarr; 1. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — The parent container that manages TabItem selection and layout.</li>
-      <li><a href="/apps/wpf-standard-control-demo/expander.html">Expander</a> — An alternative for collapsible sections within a single view.</li>
-      <li><a href="/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — A bordered container for grouping related controls, similar to a tab page but without tabs.</li>
+      <li><a href="/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — the parent that keeps one TabItem selected and shows its content.</li>
+      <li><a href="/articles/wpf-label-underscore-issue/">Why WPF Label Hides Underscores and How to Fix It</a> — the access-key behavior that also applies to TabItem headers.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabItemUsage" target="_blank" rel="noopener noreferrer">View TabItem source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TabItemUsage" target="_blank" rel="noopener noreferrer">
+        View TabItem source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>

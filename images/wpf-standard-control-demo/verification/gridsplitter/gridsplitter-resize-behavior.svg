@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 977 350" width="977" height="350" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="977" height="350" />
+  <text class="title" x="12" y="24">GridSplitter in a 400-wide Auto column, dragged 30 to the right (widths: left / splitter / right)</text>
+  <rect class="head" x="12" y="38" width="953" height="30" />
+  <text class="cell" x="26" y="57.5">left | right</text>
+  <text class="cell" x="282" y="57.5" text-anchor="end">before</text>
+  <text class="cell" x="451" y="57.5" text-anchor="end">BasedOnAlignment</text>
+  <text class="cell" x="620" y="57.5" text-anchor="end">CurrentAndNext</text>
+  <text class="cell" x="790" y="57.5" text-anchor="end">PreviousAndCurrent</text>
+  <text class="cell" x="951" y="57.5" text-anchor="end">PreviousAndNext</text>
+  <text class="cell" x="26" y="87.5">* | *</text>
+  <text class="cell" x="282" y="87.5" text-anchor="end">197.5 / 5 / 197.5</text>
+  <text class="cell" x="451" y="87.5" text-anchor="end">182.5 / 35 / 182.5</text>
+  <text class="cell" x="620" y="87.5" text-anchor="end">182.5 / 35 / 182.5</text>
+  <text class="cell" x="790" y="87.5" text-anchor="end">no change</text>
+  <text class="cell" x="951" y="87.5" text-anchor="end">227.5 / 5 / 167.5</text>
+  <text class="cell" x="26" y="117.5">* | Auto</text>
+  <text class="cell" x="282" y="117.5" text-anchor="end">335 / 5 / 60</text>
+  <text class="cell" x="451" y="117.5" text-anchor="end">305 / 35 / 60</text>
+  <text class="cell" x="620" y="117.5" text-anchor="end">305 / 35 / 60</text>
+  <text class="cell" x="790" y="117.5" text-anchor="end">no change</text>
+  <text class="cell" x="951" y="117.5" text-anchor="end">365 / 5 / 30</text>
+  <text class="cell" x="26" y="147.5">* | 200</text>
+  <text class="cell" x="282" y="147.5" text-anchor="end">195 / 5 / 200</text>
+  <text class="cell" x="451" y="147.5" text-anchor="end">165 / 35 / 200</text>
+  <text class="cell" x="620" y="147.5" text-anchor="end">165 / 35 / 200</text>
+  <text class="cell" x="790" y="147.5" text-anchor="end">no change</text>
+  <text class="cell" x="951" y="147.5" text-anchor="end">225 / 5 / 170</text>
+  <text class="cell" x="26" y="177.5">Auto | *</text>
+  <text class="cell" x="282" y="177.5" text-anchor="end">60 / 5 / 335</text>
+  <text class="cell" x="451" y="177.5" text-anchor="end">60 / 35 / 305</text>
+  <text class="cell" x="620" y="177.5" text-anchor="end">60 / 35 / 305</text>
+  <text class="cell" x="790" y="177.5" text-anchor="end">90 / 5 / 305</text>
+  <text class="cell" x="951" y="177.5" text-anchor="end">90 / 5 / 305</text>
+  <text class="cell" x="26" y="207.5">Auto | Auto</text>
+  <text class="cell" x="282" y="207.5" text-anchor="end">60 / 5 / 60</text>
+  <text class="cell" x="451" y="207.5" text-anchor="end">60 / 35 / 60</text>
+  <text class="cell" x="620" y="207.5" text-anchor="end">60 / 35 / 60</text>
+  <text class="cell" x="790" y="207.5" text-anchor="end">90 / 5 / 60</text>
+  <text class="cell" x="951" y="207.5" text-anchor="end">90 / 5 / 60</text>
+  <text class="cell" x="26" y="237.5">Auto | 200</text>
+  <text class="cell" x="282" y="237.5" text-anchor="end">60 / 5 / 200</text>
+  <text class="cell" x="451" y="237.5" text-anchor="end">60 / 35 / 200</text>
+  <text class="cell" x="620" y="237.5" text-anchor="end">60 / 35 / 200</text>
+  <text class="cell" x="790" y="237.5" text-anchor="end">90 / 5 / 200</text>
+  <text class="cell" x="951" y="237.5" text-anchor="end">90 / 5 / 200</text>
+  <text class="cell" x="26" y="267.5">200 | *</text>
+  <text class="cell" x="282" y="267.5" text-anchor="end">200 / 5 / 195</text>
+  <text class="cell" x="451" y="267.5" text-anchor="end">200 / 35 / 165</text>
+  <text class="cell" x="620" y="267.5" text-anchor="end">200 / 35 / 165</text>
+  <text class="cell" x="790" y="267.5" text-anchor="end">230 / 5 / 165</text>
+  <text class="cell" x="951" y="267.5" text-anchor="end">230 / 5 / 165</text>
+  <text class="cell" x="26" y="297.5">200 | Auto</text>
+  <text class="cell" x="282" y="297.5" text-anchor="end">200 / 5 / 60</text>
+  <text class="cell" x="451" y="297.5" text-anchor="end">200 / 35 / 60</text>
+  <text class="cell" x="620" y="297.5" text-anchor="end">200 / 35 / 60</text>
+  <text class="cell" x="790" y="297.5" text-anchor="end">230 / 5 / 60</text>
+  <text class="cell" x="951" y="297.5" text-anchor="end">230 / 5 / 60</text>
+  <text class="cell" x="26" y="327.5">200 | 200</text>
+  <text class="cell" x="282" y="327.5" text-anchor="end">200 / 5 / 200</text>
+  <text class="cell" x="451" y="327.5" text-anchor="end">200 / 35 / 200</text>
+  <text class="cell" x="620" y="327.5" text-anchor="end">200 / 35 / 200</text>
+  <text class="cell" x="790" y="327.5" text-anchor="end">230 / 5 / 200</text>
+  <text class="cell" x="951" y="327.5" text-anchor="end">230 / 5 / 200</text>
+  <line class="line" x1="12" y1="38" x2="965" y2="38" />
+  <line class="line" x1="12" y1="68" x2="965" y2="68" />
+  <line class="line" x1="12" y1="98" x2="965" y2="98" />
+  <line class="line" x1="12" y1="128" x2="965" y2="128" />
+  <line class="line" x1="12" y1="158" x2="965" y2="158" />
+  <line class="line" x1="12" y1="188" x2="965" y2="188" />
+  <line class="line" x1="12" y1="218" x2="965" y2="218" />
+  <line class="line" x1="12" y1="248" x2="965" y2="248" />
+  <line class="line" x1="12" y1="278" x2="965" y2="278" />
+  <line class="line" x1="12" y1="308" x2="965" y2="308" />
+  <line class="line" x1="12" y1="338" x2="965" y2="338" />
+  <line class="line" x1="12" y1="38" x2="12" y2="338" />
+  <line class="line" x1="134" y1="38" x2="134" y2="338" />
+  <line class="line" x1="296" y1="38" x2="296" y2="338" />
+  <line class="line" x1="465" y1="38" x2="465" y2="338" />
+  <line class="line" x1="634" y1="38" x2="634" y2="338" />
+  <line class="line" x1="804" y1="38" x2="804" y2="338" />
+  <line class="line" x1="965" y1="38" x2="965" y2="338" />
+</svg>

@@ -1,0 +1,22 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-tabitem
+slug: "wpf-standard-control-demo-tabitem"
+scene: "TabItemDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TabItem の基底クラスと、IsSelected・TabStripPlacement の依存関係プロパティのメタデータ（既定で TwoWay か、読み取り専用か）"
+  - "TabItem の TabStripPlacement が親の TabControl の値に従うこと"
+  - "IsSelected を True にしたときの SelectedIndex と他のタブの IsSelected、XAML で複数のタブに IsSelected=True を書いた場合とコードから順に設定した場合に選ばれるタブ"
+  - "IsSelected にバインドしたソースが、SelectedIndex の変更で更新されること"
+  - "IsEnabled=False のタブを、コード（SelectedIndex）と UI オートメーション（ユーザー操作の代わり）で選べるか"
+  - "文字列の Header がどの要素で表示されるか（AccessText が作られ、アンダースコアの次の文字がアクセスキーになること）"
+  - "Header の長さによるタブの幅の違い"
+  - "XAML に直接書いた Content と ItemsSource + ContentTemplate で作った内容の、Loaded の回数と起動時に測られるか、タブを切り替えたときに同じインスタンスが再利用されるか"
+  - "TabControl に HeaderTemplate プロパティがあるか（ItemTemplate との対応）"
+  - "既定の TabItem テンプレートが VisualStateManager の状態を持つか、Trigger で見た目を切り替えているか"
+images:
+  - "images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg"
+  - "images/wpf-standard-control-demo/verification/tabitem/tabitem-header.svg"
+  - "images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg"

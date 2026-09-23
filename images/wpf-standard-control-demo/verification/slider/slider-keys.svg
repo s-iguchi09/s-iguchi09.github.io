@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 802 440" width="802" height="440" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="802" height="440" />
+  <text class="title" x="12" y="24">Slider (0 to 100, SmallChange 1, LargeChange 10, Value 50): keys and track</text>
+  <rect class="head" x="12" y="38" width="778" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="776" y="57.5" text-anchor="end">Value after</text>
+  <text class="cell" x="26" y="87.5">Right arrow</text>
+  <text class="cell" x="776" y="87.5" text-anchor="end">51</text>
+  <text class="cell" x="26" y="117.5">Left arrow</text>
+  <text class="cell" x="776" y="117.5" text-anchor="end">49</text>
+  <text class="cell" x="26" y="147.5">Up arrow</text>
+  <text class="cell" x="776" y="147.5" text-anchor="end">51</text>
+  <text class="cell" x="26" y="177.5">PageUp</text>
+  <text class="cell" x="776" y="177.5" text-anchor="end">60</text>
+  <text class="cell" x="26" y="207.5">PageDown</text>
+  <text class="cell" x="776" y="207.5" text-anchor="end">40</text>
+  <text class="cell" x="26" y="237.5">Home</text>
+  <text class="cell" x="776" y="237.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="267.5">End</text>
+  <text class="cell" x="776" y="267.5" text-anchor="end">100</text>
+  <text class="cell" x="26" y="297.5">Right arrow, IsDirectionReversed=True</text>
+  <text class="cell" x="776" y="297.5" text-anchor="end">49</text>
+  <text class="cell" x="26" y="327.5">Right arrow, IsSnapToTickEnabled=True, TickFrequency=10</text>
+  <text class="cell" x="776" y="327.5" text-anchor="end">60</text>
+  <text class="cell" x="26" y="357.5">click on the track to the right of the thumb</text>
+  <text class="cell" x="776" y="357.5" text-anchor="end">60</text>
+  <text class="cell" x="26" y="387.5">click on the track, LargeChange 7, IsSnapToTickEnabled, TickFrequency=10</text>
+  <text class="cell" x="776" y="387.5" text-anchor="end">60</text>
+  <text class="cell" x="26" y="417.5">Delay 1000 / Interval 50: values on the track's two RepeatButtons</text>
+  <text class="cell" x="776" y="417.5" text-anchor="end">1000 / 50, 1000 / 50</text>
+  <line class="line" x1="12" y1="38" x2="790" y2="38" />
+  <line class="line" x1="12" y1="68" x2="790" y2="68" />
+  <line class="line" x1="12" y1="98" x2="790" y2="98" />
+  <line class="line" x1="12" y1="128" x2="790" y2="128" />
+  <line class="line" x1="12" y1="158" x2="790" y2="158" />
+  <line class="line" x1="12" y1="188" x2="790" y2="188" />
+  <line class="line" x1="12" y1="218" x2="790" y2="218" />
+  <line class="line" x1="12" y1="248" x2="790" y2="248" />
+  <line class="line" x1="12" y1="278" x2="790" y2="278" />
+  <line class="line" x1="12" y1="308" x2="790" y2="308" />
+  <line class="line" x1="12" y1="338" x2="790" y2="338" />
+  <line class="line" x1="12" y1="368" x2="790" y2="368" />
+  <line class="line" x1="12" y1="398" x2="790" y2="398" />
+  <line class="line" x1="12" y1="428" x2="790" y2="428" />
+  <line class="line" x1="12" y1="38" x2="12" y2="428" />
+  <line class="line" x1="605" y1="38" x2="605" y2="428" />
+  <line class="line" x1="790" y1="38" x2="790" y2="428" />
+</svg>

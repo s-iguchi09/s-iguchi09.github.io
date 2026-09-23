@@ -1,0 +1,26 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-slider
+slug: "wpf-standard-control-demo-slider"
+scene: "SliderDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Slider・ProgressBar・ScrollBar の基底クラスと、Slider の各プロパティの既定値"
+  - "Value の依存関係プロパティのメタデータ（既定で TwoWay か、既定の UpdateSourceTrigger）と TextBox.Text の既定の UpdateSourceTrigger、バインドしたソースがドラッグ中に更新されるか"
+  - "範囲外の Value と、Minimum より小さい Maximum を設定したときの補正と例外の有無、Minimum と Maximum を設定する順序による最終値の違い"
+  - "範囲外の値を TwoWay でバインドしたときにソースへ書き戻されるか"
+  - "Orientation と IsDirectionReversed の組み合わせごとの、Maximum のときのつまみの位置"
+  - "矢印キー・PageUp / PageDown・Home / End とトラックのクリックで変わる量（SmallChange / LargeChange）と、IsDirectionReversed・IsSnapToTickEnabled との組み合わせ"
+  - "つまみをドラッグしたときの IsSnapToTickEnabled・TickFrequency・Ticks による値の丸めと、プログラムから設定した Value が丸められるか"
+  - "TickFrequency が範囲を割り切れない場合に描かれる目盛りの数と位置、Ticks の目盛りが IsDirectionReversed で反転するか"
+  - "TickPlacement による高さの変化と、IsSelectionRangeEnabled による選択範囲の表示、選択範囲が Value を制限しないこと"
+  - "AutoToolTipPlacement を設定したときにドラッグ中に表示される文字列と AutoToolTipPrecision による丸め、書式を指定するプロパティの有無"
+  - "Delay / Interval がトラックの繰り返しボタンに渡されることと、トラックのクリックで LargeChange だけ動くこと"
+images:
+  - "images/wpf-standard-control-demo/verification/slider/slider-defaults.svg"
+  - "images/wpf-standard-control-demo/verification/slider/slider-range.svg"
+  - "images/wpf-standard-control-demo/verification/slider/slider-direction.svg"
+  - "images/wpf-standard-control-demo/verification/slider/slider-keys.svg"
+  - "images/wpf-standard-control-demo/verification/slider/slider-snap.svg"
+  - "images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg"

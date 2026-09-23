@@ -13,6 +13,12 @@ internal interface IScene
     string Slug { get; }
 
     /// <summary>
+    /// 図の出力先。リポジトリルートからの相対パス。
+    /// 記事以外のページ（コントロール別のデモページなど）を検証するシーンは上書きする。
+    /// </summary>
+    string ImageDirectory => Path.Combine("images", "articles", Slug);
+
+    /// <summary>
     /// このシーンが「実際に動かして」確かめている主張。
     ///
     /// 図を描くだけのシーンは空のままでよい。値を返すシーンは、実行結果が

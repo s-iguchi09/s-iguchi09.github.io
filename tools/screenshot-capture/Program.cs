@@ -57,6 +57,12 @@ internal static class Program
         new UpdateSourcePitfallScene(),
         new ExtensionReceiverMatrixScene(),
         new FluentThemeModeSwitchScene(),
+
+        // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
+        new GridDemoScene(),
+        new GridSplitterDemoScene(),
+        new SliderDemoScene(),
+        new TabItemDemoScene(),
     ];
 
     [STAThread]
@@ -102,7 +108,7 @@ internal static class Program
 
         foreach (IScene scene in targets)
         {
-            string outputDirectory = Path.Combine(repositoryRoot, "images", "articles", scene.Slug);
+            string outputDirectory = Path.Combine(repositoryRoot, scene.ImageDirectory);
             Directory.CreateDirectory(outputDirectory);
 
             var context = new SceneContext(scene.Slug, outputDirectory);

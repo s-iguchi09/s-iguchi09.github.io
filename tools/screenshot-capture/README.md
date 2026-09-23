@@ -76,6 +76,9 @@ comm -23 \
 
 1. `Scenes/` に `IScene` を実装したクラスを追加する。
    - `Slug` に対応する記事の slug を返す。
+   - 記事以外のページ（`apps/wpf-standard-control-demo/` のコントロール別デモページなど）を検証するシーンは、
+     `ImageDirectory` を上書きして図の出力先を変える。デモページの検証は `DemoProbe.ImageDirectory(control)`
+     （`images/wpf-standard-control-demo/verification/<control>/`）に出力し、slug は `wpf-standard-control-demo-<control>` とする。
    - `CaptureAsync` で図を保存する。実行中のウィンドウを見せる図は
      `SceneContext.ShootAsync(window, fileName)` で PNG として保存する。
    - フォーカスやテンプレートパーツの操作など、表示後に行う処理は `ShootAsync` の `beforeCapture` に渡す。

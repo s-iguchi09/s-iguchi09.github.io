@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1046 530" width="1046" height="530" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1046" height="530" />
+  <text class="title" x="12" y="24">Slider: tick marks, selection range and auto tooltip</text>
+  <rect class="head" x="12" y="38" width="1022" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1020" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">0..100, TickFrequency=30: tick marks, left to right (as values of a non-reversed track)</text>
+  <text class="cell" x="1020" y="87.5" text-anchor="end">5: 0, 30, 60, 90, 100</text>
+  <text class="cell" x="26" y="117.5">0..10, Ticks=1,3,5,7,9: tick marks, left to right (as values of a non-reversed track)</text>
+  <text class="cell" x="1020" y="117.5" text-anchor="end">7: 0, 1, 3, 5, 7, 9, 10</text>
+  <text class="cell" x="26" y="147.5">0..10, Ticks=1,2: tick marks, left to right (as values of a non-reversed track)</text>
+  <text class="cell" x="1020" y="147.5" text-anchor="end">4: 0, 1, 2, 10</text>
+  <text class="cell" x="26" y="177.5">0..10, Ticks=1,2, IsDirectionReversed: tick marks, left to right (as values of a non-reversed track)</text>
+  <text class="cell" x="1020" y="177.5" text-anchor="end">4: 0, 8, 9, 10</text>
+  <text class="cell" x="26" y="207.5">TickPlacement=None: height</text>
+  <text class="cell" x="1020" y="207.5" text-anchor="end">18</text>
+  <text class="cell" x="26" y="237.5">TickPlacement=BottomRight: height</text>
+  <text class="cell" x="1020" y="237.5" text-anchor="end">24</text>
+  <text class="cell" x="26" y="267.5">TickPlacement=Both: height</text>
+  <text class="cell" x="1020" y="267.5" text-anchor="end">30</text>
+  <text class="cell" x="26" y="297.5">0..10, Selection 2..8, IsSelectionRangeEnabled=False</text>
+  <text class="cell" x="1020" y="297.5" text-anchor="end">Hidden</text>
+  <text class="cell" x="26" y="327.5">0..10, Selection 2..8, IsSelectionRangeEnabled=True</text>
+  <text class="cell" x="1020" y="327.5" text-anchor="end">Visible, spans 2 to 8</text>
+  <text class="cell" x="26" y="357.5">  Value = 9.5 outside the selection</text>
+  <text class="cell" x="1020" y="357.5" text-anchor="end">9.5</text>
+  <text class="cell" x="26" y="387.5">AutoToolTipPlacement=None, Precision=0, Value 33.6</text>
+  <text class="cell" x="1020" y="387.5" text-anchor="end">no tooltip</text>
+  <text class="cell" x="26" y="417.5">AutoToolTipPlacement=TopLeft, Precision=0, Value 33.6</text>
+  <text class="cell" x="1020" y="417.5" text-anchor="end">"34", IsOpen=True</text>
+  <text class="cell" x="26" y="447.5">AutoToolTipPlacement=TopLeft, Precision=0, Value 33.4</text>
+  <text class="cell" x="1020" y="447.5" text-anchor="end">"33", IsOpen=True</text>
+  <text class="cell" x="26" y="477.5">AutoToolTipPlacement=TopLeft, Precision=2, Value 33.456</text>
+  <text class="cell" x="1020" y="477.5" text-anchor="end">"33.46", IsOpen=True</text>
+  <text class="cell" x="26" y="507.5">AutoToolTipPlacement=BottomRight, Precision=1, Value 1234.56</text>
+  <text class="cell" x="1020" y="507.5" text-anchor="end">"1,234.6", IsOpen=True</text>
+  <line class="line" x1="12" y1="38" x2="1034" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1034" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1034" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1034" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1034" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1034" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1034" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1034" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1034" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1034" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1034" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1034" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1034" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1034" y2="428" />
+  <line class="line" x1="12" y1="458" x2="1034" y2="458" />
+  <line class="line" x1="12" y1="488" x2="1034" y2="488" />
+  <line class="line" x1="12" y1="518" x2="1034" y2="518" />
+  <line class="line" x1="12" y1="38" x2="12" y2="518" />
+  <line class="line" x1="825" y1="38" x2="825" y2="518" />
+  <line class="line" x1="1034" y1="38" x2="1034" y2="518" />
+</svg>
