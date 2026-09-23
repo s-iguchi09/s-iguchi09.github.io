@@ -326,6 +326,11 @@ CodeRabbit 等の自動レビューボットの再レビュー完了・未解決
 そのため、Phase 5 の完了報告に続けて、**6.0 で保留中と判定されない限り次の 2 つを提示する**。
 提示までがこのワークフローの範囲であり、Search Console への登録と dev.to への投稿はユーザーが行う。
 
+なお Bing・Yandex などへは、マージ後に `Update sitemap.xml` ワークフローが sitemap の差分を
+IndexNow へ自動送信する(`.github/scripts/submit-indexnow.mjs`。GitHub Pages のデプロイ完了を待ってから送る)。
+**Google は IndexNow に対応していないため、この自動送信は上記の手順の代わりにならない。**
+送信結果は Actions のログの「Submit changed URLs to IndexNow」ステップで確認でき、失敗は警告として残る。
+
 ### 6.0 導線を保留している記事には、何も提示しない
 
 **このサイトでは「手動登録をやめてよいか」の判定が未決である。** 判定は、手動登録も dev.to

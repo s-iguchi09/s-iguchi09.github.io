@@ -11,6 +11,7 @@ on:
       - "images/**"
       - "_config.yml"
       - ".github/scripts/generate_sitemap.py"
+      - ".github/scripts/submit-indexnow.mjs"
       - ".github/workflows/update-sitemap.yml"
   # 上記のパスに触れない変更のあとで sitemap を取り直したい場合や、
   # 過去に生成が失敗して sitemap が古いままの場合に手動で実行する。
@@ -47,6 +48,7 @@ jobs:
           python-version: "3.x"
 
       - name: Generate and push sitemap.xml
+        id: sitemap
         env:
           DEPLOY_KEY: ${{ secrets.SITEMAP_DEPLOY_KEY }}
         run: |
@@ -73,6 +75,8 @@ jobs:
             # 載せ替えるだけだと、main 側の変更が sitemap に反映されないため。
             git fetch origin main
             git reset --hard origin/main
+            # IndexNow へ送る差分を求めるため、生成前の sitemap を控える。
+            cp sitemap.xml "$RUNNER_TEMP/sitemap.before.xml"
 
             # 生成物が不正なら非ゼロ終了する。set -e により、壊れた
             # サイトマップが main へ push されることはない。
@@ -87,6 +91,8 @@ jobs:
             # sitemap.xml と _data/lastmod.yml は上記 paths に含まれないうえ、二重に抑止する。
             git commit -m "chore: update sitemap.xml and feed lastmod data [skip ci]"
             if git push origin HEAD:main; then
+              cp sitemap.xml "$RUNNER_TEMP/sitemap.after.xml"
+              echo "pushed=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "push が競合した（${attempt} 回目）。生成からやり直す。"
@@ -94,3 +100,13 @@ jobs:
 
           echo "::error::sitemap.xml の push に 3 回失敗した。"
           exit 1
+
+      # sitemap に反映された追加・更新・削除を IndexNow（Bing・Yandex など）へ知らせる。
+      # Google は IndexNow に対応していない。送信の失敗は警告に留め、ジョブは失敗させない。
+      # スクリプトは GitHub Pages のデプロイ完了を待つため、最大 10 分ほどかかる。
+      - name: Submit changed URLs to IndexNow
+        if: steps.sitemap.outputs.pushed == 'true'
+        timeout-minutes: 15
+        env:
+          INDEXNOW_KEY_FILE: 298febdd2531ec0b72b2d24824afa3fe.txt
+        run: node .github/scripts/submit-indexnow.mjs "$RUNNER_TEMP/sitemap.before.xml" "$RUNNER_TEMP/sitemap.after.xml"
