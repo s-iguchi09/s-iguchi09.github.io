@@ -63,8 +63,10 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>CanvasUsageControl.xaml</code>）の結果の部分から、バインドの <code>TargetNullValue</code> と <code>FallbackValue</code>、周囲のレイアウトを省いたものです。</p>
-    <pre><code class="language-xml">&lt;Canvas Background="#F0F0F0" ClipToBounds="True"&gt;
+    <p>デモアプリ（<code>CanvasUsageControl.xaml</code>）の結果の部分から、バインドの <code>TargetNullValue</code> と <code>FallbackValue</code>、周囲のレイアウトを省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Background="#F0F0F0" ClipToBounds="True"&gt;
   &lt;Rectangle x:Name="TargetRect"
              Canvas.Left="{Binding Text, ElementName=LeftTextBox}"
              Canvas.Top="{Binding Text, ElementName=TopTextBox}"

@@ -98,19 +98,24 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>ItemTemplate</code> / <code>HierarchicalDataTemplate</code> section of the demo app (<code>TreeViewUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out. <code>DeviceTree</code> is a collection of items with <code>Name</code> and <code>Children</code>:</p>
-    <pre><code class="language-xml">&lt;HierarchicalDataTemplate x:Key="MyTreeViewTemplate" x:Name="MyTreeViewTemplate"
-                          ItemsSource="{Binding Children}"&gt;
-  &lt;StackPanel Orientation="Horizontal"&gt;
-    &lt;Path Margin="0,0,5,0" VerticalAlignment="Center"
-          Data="M0,0 L8,4 L0,8 Z" Fill="Orange" /&gt;
-    &lt;TextBlock VerticalAlignment="Center" Text="{Binding Name}" /&gt;
-  &lt;/StackPanel&gt;
-&lt;/HierarchicalDataTemplate&gt;
+    <p>The following XAML is the <code>ItemTemplate</code> / <code>HierarchicalDataTemplate</code> section of the demo app (<code>TreeViewUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. The template, which the demo app keeps in the GroupBox's resources, is in the StackPanel's resources here. <code>DeviceTree</code> is a collection of items with <code>Name</code> and <code>Children</code>:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;StackPanel.Resources&gt;
+    &lt;HierarchicalDataTemplate x:Key="MyTreeViewTemplate" x:Name="MyTreeViewTemplate"
+                              ItemsSource="{Binding Children}"&gt;
+      &lt;StackPanel Orientation="Horizontal"&gt;
+        &lt;Path Margin="0,0,5,0" VerticalAlignment="Center"
+              Data="M0,0 L8,4 L0,8 Z" Fill="Orange" /&gt;
+        &lt;TextBlock VerticalAlignment="Center" Text="{Binding Name}" /&gt;
+      &lt;/StackPanel&gt;
+    &lt;/HierarchicalDataTemplate&gt;
+  &lt;/StackPanel.Resources&gt;
 
-&lt;TreeView x:Name="ItemTemplateTreeView" Height="150"
-          ItemTemplate="{StaticResource MyTreeViewTemplate}"
-          ItemsSource="{Binding DeviceTree}" /&gt;</code></pre>
+  &lt;TreeView x:Name="ItemTemplateTreeView" Height="150"
+            ItemTemplate="{StaticResource MyTreeViewTemplate}"
+            ItemsSource="{Binding DeviceTree}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

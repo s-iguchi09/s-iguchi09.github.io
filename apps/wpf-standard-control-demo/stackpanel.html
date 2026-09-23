@@ -87,19 +87,22 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>ZIndex</code> section of the demo app (<code>StackPanelUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="ZIndexItem1Text" Text="1" /&gt;
-&lt;TextBox x:Name="ZIndexItem2Text" Text="2" /&gt;
+    <p>The following XAML is the <code>ZIndex</code> section of the demo app (<code>StackPanelUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="ZIndexItem1Text" Text="1" /&gt;
+  &lt;TextBox x:Name="ZIndexItem2Text" Text="2" /&gt;
 
-&lt;StackPanel x:Name="ZIndexStackPanel"&gt;
-  &lt;Label VerticalAlignment="Top"
-         Panel.ZIndex="{Binding Text, ElementName=ZIndexItem1Text}"
-         Background="LightBlue" BorderBrush="Black" BorderThickness="1"
-         Content="Item1" /&gt;
-  &lt;Label Margin="0,-15,0,0" VerticalAlignment="Top"
-         Panel.ZIndex="{Binding Text, ElementName=ZIndexItem2Text}"
-         Background="SkyBlue" BorderBrush="Black" BorderThickness="1"
-         Content="Item2" /&gt;
+  &lt;StackPanel x:Name="ZIndexStackPanel"&gt;
+    &lt;Label VerticalAlignment="Top"
+           Panel.ZIndex="{Binding Text, ElementName=ZIndexItem1Text}"
+           Background="LightBlue" BorderBrush="Black" BorderThickness="1"
+           Content="Item1" /&gt;
+    &lt;Label Margin="0,-15,0,0" VerticalAlignment="Top"
+           Panel.ZIndex="{Binding Text, ElementName=ZIndexItem2Text}"
+           Background="SkyBlue" BorderBrush="Black" BorderThickness="1"
+           Content="Item2" /&gt;
+  &lt;/StackPanel&gt;
 &lt;/StackPanel&gt;</code></pre>
   </section>
 

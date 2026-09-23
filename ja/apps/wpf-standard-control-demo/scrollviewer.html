@@ -46,7 +46,7 @@
         <tr>
           <td><code>VerticalScrollBarVisibility / HorizontalScrollBarVisibility</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>バーを表示するかと、内容をスクロールできるかです。デモアプリと同じく、幅 200、高さ 100 の ScrollViewer に、収まる 2 つのラベルと、はみ出す 9 つのラベルを入れて比べました。<code>Disabled</code> ではスクロールできません。内容には ScrollViewer の高さしか与えられず（9 つのラベルで <code>ExtentHeight</code> 100）、残りは切れて、50 までスクロールしても位置は 0 のままでした。<code>Auto</code> はラベルが 9 つのときだけバーを表示しました。<code>Hidden</code> はバーを表示しませんが、50 までのスクロールはできました。<code>Visible</code> はラベルが 2 つでもバーを表示しました。バーは幅を取り、<code>ViewportWidth</code> はバーがあると 183、ないと 200 でした。計測したのは縦のバーで、横のバーも同じ値を取ります。</td>
+          <td>バーを表示するかと、内容をスクロールできるかです。デモアプリと同じく、幅 200、高さ 100 の ScrollViewer に、収まる 2 つのラベルと、はみ出す 9 つのラベルを入れて比べました。<code>Disabled</code> ではスクロールできません。内容には ScrollViewer の高さしか与えられず（9 つのラベルで <code>ExtentHeight</code> 100）、残りは切れて、50 までスクロールしても位置は 0 のままでした。<code>Auto</code> はラベルが 9 つのときだけバーを表示しました。<code>Hidden</code> はバーを表示しませんが、50 までのスクロールはできました。<code>Visible</code> はラベルが 2 つでもバーを表示しました。バーは幅を取り、<code>ViewportWidth</code> はバーがあると 183、ないと 200 でした。計測したのは縦のバーです。<code>HorizontalScrollBarVisibility</code> にも同じ 4 つの値を設定できますが、横方向は計測していません。</td>
         </tr>
         <tr>
           <td><code>CanContentScroll</code></td>
@@ -74,18 +74,21 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ScrollViewerUsageControl.xaml</code>）の <code>CanContentScroll</code> の欄から、スタイル、周囲の GroupBox、9 つのうち 6 つのラベルを省いたものです。スタイルは、ScrollViewer の <code>Height</code> を 100 にし、各ラベルに幅 1 の黒い枠を付けています。</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="CanContentScrollCheckBox" Content="CanContentScroll" /&gt;
+    <p>デモアプリ（<code>ScrollViewerUsageControl.xaml</code>）の <code>CanContentScroll</code> の欄から、スタイル、周囲の GroupBox、9 つのうち 6 つのラベルを省き、名前空間の宣言を加えたものです。スタイルは、ScrollViewer の <code>Height</code> を 100 にし、各ラベルに幅 1 の黒い枠を付けています。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="CanContentScrollCheckBox" Content="CanContentScroll" /&gt;
 
-&lt;ScrollViewer x:Name="CanContentScrollScrollViewer"
-              CanContentScroll="{Binding IsChecked, ElementName=CanContentScrollCheckBox}"
-              Height="100"&gt;
-  &lt;StackPanel Orientation="Vertical"&gt;
-    &lt;Label Content="Item1" /&gt;
-    &lt;Label Content="Item2" /&gt;
-    &lt;Label Content="Item3" /&gt;
-  &lt;/StackPanel&gt;
-&lt;/ScrollViewer&gt;</code></pre>
+  &lt;ScrollViewer x:Name="CanContentScrollScrollViewer"
+                CanContentScroll="{Binding IsChecked, ElementName=CanContentScrollCheckBox}"
+                Height="100"&gt;
+    &lt;StackPanel Orientation="Vertical"&gt;
+      &lt;Label Content="Item1" /&gt;
+      &lt;Label Content="Item2" /&gt;
+      &lt;Label Content="Item3" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/ScrollViewer&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

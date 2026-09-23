@@ -126,8 +126,8 @@ internal sealed class WrapPanelDemoScene : IScene
             Layout(new Grid { Children = { panel } }, 150, 300);
             var label = (FrameworkElement)panel.Children[0];
             var fourth = (FrameworkElement)panel.Children[3];
-            rows.Add(["ItemHeight=100, 5 labels, 150 wide: label height / y of the second row",
-                $"{D(label.RenderSize.Height)} / {D(Bounds(fourth, panel).Y)}"]);
+            rows.Add(["ItemHeight=100, 5 labels, 150 wide: label height / second row starts at y / its first label at y",
+                $"{D(label.RenderSize.Height)} / {D(LayoutInformation.GetLayoutSlot(fourth).Y)} / {D(Bounds(fourth, panel).Y)}"]);
         }
 
         foreach ((string label, ScrollBarVisibility horizontal) in new[] { ("ScrollViewer, horizontal Disabled (default)", ScrollBarVisibility.Disabled), ("ScrollViewer, horizontal Auto", ScrollBarVisibility.Auto) })

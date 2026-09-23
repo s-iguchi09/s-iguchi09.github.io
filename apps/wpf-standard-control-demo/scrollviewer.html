@@ -73,7 +73,7 @@
         <tr>
           <td><code>VerticalScrollBarVisibility / HorizontalScrollBarVisibility</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Whether the bar is shown and whether the content can scroll. Like the demo app, a viewer 200 wide and 100 high was given 2 labels, which fit, and 9, which do not. <code>Disabled</code> turns scrolling off. The content was given only the viewer's height (<code>ExtentHeight</code> 100 for 9 labels), so the rest is cut off, and scrolling to 50 left the offset at 0. <code>Auto</code> showed the bar only for 9 labels. <code>Hidden</code> never showed it, but scrolling to 50 worked. <code>Visible</code> showed it even for 2 labels. The bar takes width: <code>ViewportWidth</code> was 183 with the bar and 200 without. These values were measured for the vertical bar; the horizontal one takes the same values.</td>
+          <td>Whether the bar is shown and whether the content can scroll. Like the demo app, a viewer 200 wide and 100 high was given 2 labels, which fit, and 9, which do not. <code>Disabled</code> turns scrolling off. The content was given only the viewer's height (<code>ExtentHeight</code> 100 for 9 labels), so the rest is cut off, and scrolling to 50 left the offset at 0. <code>Auto</code> showed the bar only for 9 labels. <code>Hidden</code> never showed it, but scrolling to 50 worked. <code>Visible</code> showed it even for 2 labels. The bar takes width: <code>ViewportWidth</code> was 183 with the bar and 200 without. These values were measured for the vertical bar. <code>HorizontalScrollBarVisibility</code> accepts the same four values; the horizontal direction was not measured.</td>
         </tr>
         <tr>
           <td><code>CanContentScroll</code></td>
@@ -101,18 +101,21 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>CanContentScroll</code> section of the demo app (<code>ScrollViewerUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, and six of the nine labels left out. The styles set the ScrollViewer's <code>Height</code> to 100 and give each label a black border 1 wide.</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="CanContentScrollCheckBox" Content="CanContentScroll" /&gt;
+    <p>The following XAML is the <code>CanContentScroll</code> section of the demo app (<code>ScrollViewerUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, and six of the nine labels left out and the namespace declarations added. The styles set the ScrollViewer's <code>Height</code> to 100 and give each label a black border 1 wide.</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="CanContentScrollCheckBox" Content="CanContentScroll" /&gt;
 
-&lt;ScrollViewer x:Name="CanContentScrollScrollViewer"
-              CanContentScroll="{Binding IsChecked, ElementName=CanContentScrollCheckBox}"
-              Height="100"&gt;
-  &lt;StackPanel Orientation="Vertical"&gt;
-    &lt;Label Content="Item1" /&gt;
-    &lt;Label Content="Item2" /&gt;
-    &lt;Label Content="Item3" /&gt;
-  &lt;/StackPanel&gt;
-&lt;/ScrollViewer&gt;</code></pre>
+  &lt;ScrollViewer x:Name="CanContentScrollScrollViewer"
+                CanContentScroll="{Binding IsChecked, ElementName=CanContentScrollCheckBox}"
+                Height="100"&gt;
+    &lt;StackPanel Orientation="Vertical"&gt;
+      &lt;Label Content="Item1" /&gt;
+      &lt;Label Content="Item2" /&gt;
+      &lt;Label Content="Item3" /&gt;
+    &lt;/StackPanel&gt;
+  &lt;/ScrollViewer&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

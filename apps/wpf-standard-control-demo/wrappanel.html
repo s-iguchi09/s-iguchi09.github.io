@@ -76,7 +76,7 @@
         <tr>
           <td><code>ItemHeight</code></td>
           <td><code>double</code></td>
-          <td>A fixed height for every child's slot; the demo app starts at 100. With 100, the labels were stretched to 96 (100 minus their margin), and the second row started at 102.</td>
+          <td>A fixed height for every child's slot; the demo app starts at 100. With 100, the labels were stretched to 96 (100 minus their margin), and the second row started at 100, with its first label at 102 because of the label's margin of 2.</td>
         </tr>
         <tr>
           <td><code>ItemWidth</code></td>
@@ -99,13 +99,16 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>ItemWidth</code> section of the demo app (<code>WrapPanelUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, the input behavior of the text box, and some of the labels left out:</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="ItemWidthText" Text="100" /&gt;
+    <p>The following XAML is the <code>ItemWidth</code> section of the demo app (<code>WrapPanelUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, the input behavior of the text box, and some of the labels left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="ItemWidthText" Text="100" /&gt;
 
-&lt;WrapPanel x:Name="ItemWidthWrapPanel" ItemWidth="{Binding Text, ElementName=ItemWidthText}"&gt;
-  &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item1" /&gt;
-  &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item2" /&gt;
-&lt;/WrapPanel&gt;</code></pre>
+  &lt;WrapPanel x:Name="ItemWidthWrapPanel" ItemWidth="{Binding Text, ElementName=ItemWidthText}"&gt;
+    &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item1" /&gt;
+    &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item2" /&gt;
+  &lt;/WrapPanel&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
@@ -136,8 +139,8 @@
       <code>Measure</code> and <code>Arrange</code>. Sizes are the values on the measuring machine.
     </p>
 
-    <figure class="article-figure">
-      <img src="/images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg" alt="Table of WrapPanel results: Horizontal with NaN item sizes by default, the demo's five labels in two rows of 3 and 2 at 150 wide and five columns at 60 high, a short child stretched to the row height only with Stretch, ItemWidth and ItemHeight 100 stretching labels to 96 and cutting off a 150-wide child at 100, three rows in a ScrollViewer and one row when horizontal scrolling is allowed, gaps hit only with a Background, ZIndex ordering overlapping labels, and all 1000 items created in a ListBox" width="834" height="530" loading="lazy">
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg" alt="Table of WrapPanel results: Horizontal with NaN item sizes by default, the demo's five labels in two rows of 3 and 2 at 150 wide and five columns at 60 high, a short child stretched to the row height only with Stretch, ItemWidth and ItemHeight 100 stretching labels to 96 and cutting off a 150-wide child at 100, three rows in a ScrollViewer and one row when horizontal scrolling is allowed, gaps hit only with a Background, ZIndex ordering overlapping labels, and all 1000 items created in a ListBox" width="1038" height="530" loading="lazy">
       <figcaption>Wrapping, line sizes, <code>ItemWidth</code> and <code>ItemHeight</code>. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

@@ -64,16 +64,19 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>TabItemUsageControl.xaml</code>）の <code>IsSelected</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsSelectedTab1" VerticalContentAlignment="Center" Content="Tab1" /&gt;
-&lt;CheckBox x:Name="IsSelectedTab2" VerticalContentAlignment="Center" Content="Tab2" /&gt;
+    <p>デモアプリ（<code>TabItemUsageControl.xaml</code>）の <code>IsSelected</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsSelectedTab1" VerticalContentAlignment="Center" Content="Tab1" /&gt;
+  &lt;CheckBox x:Name="IsSelectedTab2" VerticalContentAlignment="Center" Content="Tab2" /&gt;
 
-&lt;TabControl x:Name="IsSelectedTabControl"&gt;
-  &lt;TabItem Content="Item1" Header="Tab1"
-           IsSelected="{Binding IsChecked, ElementName=IsSelectedTab1}" /&gt;
-  &lt;TabItem Content="Item2" Header="Tab2"
-           IsSelected="{Binding IsChecked, ElementName=IsSelectedTab2}" /&gt;
-&lt;/TabControl&gt;</code></pre>
+  &lt;TabControl x:Name="IsSelectedTabControl"&gt;
+    &lt;TabItem Content="Item1" Header="Tab1"
+             IsSelected="{Binding IsChecked, ElementName=IsSelectedTab1}" /&gt;
+    &lt;TabItem Content="Item2" Header="Tab2"
+             IsSelected="{Binding IsChecked, ElementName=IsSelectedTab2}" /&gt;
+  &lt;/TabControl&gt;
+&lt;/StackPanel&gt;</code></pre>
     <p><code>IsSelected</code> は既定で TwoWay にバインドされるので、チェックボックスはタブを操作するだけでなく、タブの状態にも追従します。Tab2 を選んでいる状態で Tab1 のソースを <code>True</code> にする（チェックボックスをオンにする操作に当たる）と、Tab1 が選ばれ、Tab2 のソースは <code>False</code> になりました。</p>
   </section>
 

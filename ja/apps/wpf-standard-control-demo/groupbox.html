@@ -70,7 +70,7 @@
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td><code>Foreground</code> は見出しと内容の両方の文字に届きます。<code>Background</code> は、見出しの中ほどから下の、枠の内側を塗ります。見出しが上から 1〜27.6 にある GroupBox で、塗られた範囲は 13.8 から始まりました。内容には引き継がれず、中の Border は背景を持たないままでした。</td>
+          <td><code>Foreground</code> は見出しと内容の両方の文字に届きます。<code>Background</code> は、見出しの中ほどから下の、枠の内側を塗ります。見出しが上から 1〜27.6 にある GroupBox で、塗られた範囲は 13.8 から始まりました。内容はこの範囲の中にあるので、内容の後ろにも背景が見えます。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
@@ -83,12 +83,15 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>GroupBoxUsageControl.xaml</code>）の <code>HeaderStringFormat</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="HeaderForHeaderStringFormatTextBox" Text="HEADER" /&gt;
+    <p>デモアプリ（<code>GroupBoxUsageControl.xaml</code>）の <code>HeaderStringFormat</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="HeaderForHeaderStringFormatTextBox" Text="HEADER" /&gt;
 
-&lt;GroupBox x:Name="HeaderStringFormatGroupBox"
-          Header="{Binding Text, ElementName=HeaderForHeaderStringFormatTextBox}"
-          HeaderStringFormat="Header={0}." /&gt;</code></pre>
+  &lt;GroupBox x:Name="HeaderStringFormatGroupBox"
+            Header="{Binding Text, ElementName=HeaderForHeaderStringFormatTextBox}"
+            HeaderStringFormat="Header={0}." /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
@@ -106,7 +109,7 @@
       <li><strong>見出しにアクセスキーを付ける</strong> — <code>Header="_Name"</code> で、キーボードからグループの中へ移れます。</li>
       <li><strong>意味の分かる見出しにする</strong> — 見出しはスクリーンリーダーにとってのグループの名前になります。</li>
       <li><strong><code>HeaderStringFormat</code> は要素でない見出しにだけ使う</strong> — 見出しが要素のときは無視されます。</li>
-      <li><strong>内容に背景が必要なら内容側に <code>Background</code> を設定する</strong> — GroupBox の背景は子要素に引き継がれません。</li>
+      <li><strong>GroupBox の <code>Background</code> は見出しの中ほどから塗られると考える</strong> — 見出しの上半分は塗られる範囲の外に出ます。</li>
     </ul>
   </section>
 
@@ -115,7 +118,7 @@
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GroupBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>GroupBoxDemoScene</code></a> を使いました。見出しは、テンプレートの見出しの ContentPresenter の中の文字の要素から読みました。アクセスキーは、<kbd>Alt</kbd> と一緒に押したキーを処理する <code>AccessKeyManager.ProcessKey</code> で送りました。位置は GroupBox の左上からのもので、大きさは計測したマシンでの値です。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.svg" alt="GroupBox の計測結果の表。HeaderedContentControl を継承し枠は #FFD5DFE5 の幅 1 で余白はなく、null の見出しは高さを取らず、HeaderStringFormat は文字列の見出しには効くが TextBlock には効かず、改行を含む見出しは 2 行の高さになり、Padding 20 で内容が 20 下がり、FontSize と Foreground は見出しと内容に届き、Background は見出しの中ほどから塗られて子に引き継がれず、UI オートメーションは見出しを名前とする Group を報告し、見出しのアクセスキーで中の最初の TextBox にフォーカスが移る" width="1030" height="470" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.svg" alt="GroupBox の計測結果の表。HeaderedContentControl を継承し枠は #FFD5DFE5 の幅 1 で余白はなく、null の見出しは高さを取らず、HeaderStringFormat は文字列の見出しには効くが TextBlock には効かず、改行を含む見出しは 2 行の高さになり、Padding 20 で内容が 20 下がり、FontSize と Foreground は見出しと内容に届き、Background は見出しの中ほどから塗られて内容の範囲も覆い、UI オートメーションは見出しを名前とする Group を報告し、見出しのアクセスキーで中の最初の TextBox にフォーカスが移る" width="1077" height="470" loading="lazy">
       <figcaption>見出し、余白、引き継がれるプロパティ、アクセスキー。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

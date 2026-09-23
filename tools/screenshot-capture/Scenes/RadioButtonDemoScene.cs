@@ -31,7 +31,7 @@ internal sealed class RadioButtonDemoScene : IScene
         "同じ GroupName が別の親、別のウィンドウ、Popup の中でまとまるか",
         "IsChecked を別々の bool にバインドしたとき、別の RadioButton を選ぶと元のプロパティが false になるか、バインドが残るか、ソースから true にしたときに他が外れるか",
         "矢印キーと Tab キーでのフォーカスと選択の移動",
-        "VerticalContentAlignment の既定値と、複数行のラベルで Top と Center にしたときの記号とラベルの縦位置",
+        "VerticalContentAlignment の既定値（既定のスタイルの適用後）と、複数行のラベルで Top と Center にしたときの記号とラベルの縦位置（RadioButton を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合）",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -288,15 +288,26 @@ internal sealed class RadioButtonDemoScene : IScene
         }
 
         {
-            var box = new RadioButton();
+            // 既定のスタイルが適用された後の値と出どころを読む（Grid に置いてレイアウトする）。
+            var box = new RadioButton { Content = "RadioButton" };
+            var host = new Grid();
+            host.Children.Add(box);
+            Layout(host, 200, 50);
             rows.Add(["VerticalContentAlignment (value source)", WpfProbe.ValueAndSource(box, Control.VerticalContentAlignmentProperty)]);
         }
 
-        foreach (VerticalAlignment alignment in new[] { VerticalAlignment.Top, VerticalAlignment.Center })
+        // RadioButton を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合（VerticalAlignment=Top）で比べる。
+        foreach ((VerticalAlignment alignment, bool fitToLabel) in new[]
+        {
+            (VerticalAlignment.Top, false),
+            (VerticalAlignment.Center, false),
+            (VerticalAlignment.Center, true),
+        })
         {
             var box = new RadioButton
             {
                 Width = 120,
+                VerticalAlignment = fitToLabel ? VerticalAlignment.Top : VerticalAlignment.Stretch,
                 VerticalContentAlignment = alignment,
                 Content = new TextBlock { Text = "a label long enough to wrap onto three lines", TextWrapping = TextWrapping.Wrap },
             };
@@ -307,7 +318,7 @@ internal sealed class RadioButtonDemoScene : IScene
             var content = Descendants(box).OfType<ContentPresenter>().First();
             Rect g = Bounds(glyph, box);
             Rect c = Bounds(content, box);
-            rows.Add([$"3-line label, VerticalContentAlignment={alignment}: glyph y / label y",
+            rows.Add([$"3-line label, VerticalContentAlignment={alignment}, RadioButton {D(box.ActualHeight)} high: glyph y / label y",
                 $"{D(g.Y)} (height {D(g.Height)}) / {D(c.Y)} (height {D(c.Height)})"]);
         }
 

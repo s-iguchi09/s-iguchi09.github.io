@@ -32,6 +32,7 @@ internal sealed class ToggleButtonDemoScene : IScene
         "ClickMode が Press のときに、マウスの左ボタンを押した時点と離した時点の IsChecked",
         "クリック処理（OnClick）で Command の Execute が呼ばれた時点の IsChecked と、CommandParameter を自身の IsChecked にバインドしたときに渡る値、UI オートメーションの Toggle では Command が実行されないこと",
         "Popup.IsOpen を IsChecked に結んだとき、Popup を閉じると IsChecked も戻ることと、Popup.IsOpen が既定で TwoWay か",
+        "StaysOpen=False の Popup を、実際のマウスでウィンドウの空いた領域をクリックして閉じたとき・開いたままボタンを再クリックしたときの IsOpen と IsChecked",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -170,6 +171,48 @@ internal sealed class ToggleButtonDemoScene : IScene
                     $"{opened} / IsChecked {State(button.IsChecked)}"]);
                 rows.Add(["  Popup.IsOpen: BindsTwoWayByDefault",
                     ((FrameworkPropertyMetadata)Popup.IsOpenProperty.GetMetadata(typeof(Popup))).BindsTwoWayByDefault.ToString()]);
+            });
+        }
+
+        {
+            // 利用者の操作で閉じる経路を、実際のマウスで確かめる。
+            // 「外側」はこのウィンドウの中の空いた領域にする（ウィンドウの外をクリックすると、ほかのアプリを操作してしまうため）。
+            var button = new ToggleButton { Content = "Open", Width = 120, Height = 30 };
+            var blank = new Border { Width = 200, Height = 120, Background = Brushes.White };
+            var popup = new Popup { StaysOpen = false, PlacementTarget = button, Placement = PlacementMode.Right, Child = new Border { Width = 80, Height = 40, Background = Brushes.LightGray } };
+            popup.SetBinding(Popup.IsOpenProperty, new Binding(nameof(ToggleButton.IsChecked)) { Source = button });
+            var panel = new StackPanel { Children = { button, blank, popup } };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = Window.GetWindow(panel)!;
+                window.Topmost = true;
+                window.Activate();
+                await Capture.SettleAsync(window);
+
+                async Task ClickAsync(FrameworkElement target)
+                {
+                    await RealMouse.MoveToAsync(target);
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                    await Capture.SettleAsync(window, 100);
+                }
+
+                string Now() => $"IsOpen {popup.IsOpen}, IsChecked {State(button.IsChecked)}";
+                using (RealMouse.Preserve())
+                {
+                    await ClickAsync(button);
+                    string opened = Now();
+                    await ClickAsync(blank);
+                    rows.Add(["StaysOpen=False, real clicks: the button / then an empty area of the window", $"{opened} / {Now()}"]);
+
+                    await ClickAsync(button);
+                    string reopened = Now();
+                    await ClickAsync(button);
+                    rows.Add(["  opened by the button again / then the button clicked while open", $"{reopened} / {Now()}"]);
+                }
+
+                popup.IsOpen = false;
+                await Capture.SettleAsync(window);
             });
         }
 

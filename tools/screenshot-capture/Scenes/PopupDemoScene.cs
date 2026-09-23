@@ -239,17 +239,19 @@ internal sealed class PopupDemoScene : IScene
             var panel = new StackPanel { Children = { target, popup } };
             await ShowAsync(panel, async () =>
             {
+                // アニメーションの途中を読むので、読んだ時点は開いてからの実際の経過時間で示す（毎回わずかに変わる）。
+                var clock = System.Diagnostics.Stopwatch.StartNew();
                 popup.IsOpen = true;
                 var source = (HwndSource)PresentationSource.FromVisual(popup.Child)!;
                 var root = (UIElement)source.RootVisual;
-                string atOpen = D(root.Opacity);
+                string atOpen = $"{D(root.Opacity)} at {clock.ElapsedMilliseconds} ms";
                 await Task.Delay(50);
-                string at50 = D(root.Opacity);
+                string early = $"{D(root.Opacity)} at {clock.ElapsedMilliseconds} ms";
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 400);
-                string later = D(root.Opacity);
+                string later = $"{D(root.Opacity)} at {clock.ElapsedMilliseconds} ms";
                 bool layered = (GetWindowLongPtr(source.Handle, GwlExStyle).ToInt64() & WsExLayered) != 0;
-                rows.Add([$"AllowsTransparency={transparent}, Fade: layered window / opacity at 0, 50, 650 ms",
-                    $"{layered} / {atOpen}, {at50}, {later}"]);
+                rows.Add([$"AllowsTransparency={transparent}, Fade: layered window / opacity after opening",
+                    $"{layered} / {atOpen}, {early}, {later}"]);
                 popup.IsOpen = false;
             });
         }

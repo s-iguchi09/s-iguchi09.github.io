@@ -27,8 +27,8 @@ internal sealed class ExpanderDemoScene : IScene
         "折りたたんだ Expander の中の要素が Loaded になるか、測られるか、中の ListBox（1000 項目）のコンテナーが作られるか、展開したときの変化",
         "ExpandDirection ごとの見出しと内容の位置と、変形を含めた見出しの文字の矩形（横書きのままか）",
         "Header が null のときの HasHeader と、見出しの ToggleButton の表示",
-        "FontWeight・Foreground を Expander に設定したときの見出しと内容の文字、Background が内容の子要素に引き継がれるか",
-        "Padding を設定したときの見出しと内容の位置、BorderThickness がどこに描かれるか",
+        "FontWeight・Foreground を Expander に設定したときの見出しと内容の文字、Background を塗る範囲が見出しと内容を含むか",
+        "Padding と BorderThickness を別々に設定したときの見出しと内容の位置",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -184,19 +184,25 @@ internal sealed class ExpanderDemoScene : IScene
             {
                 rows.Add(["FontWeight=Bold, Foreground=Red: header text / content text",
                     $"{headerText.FontWeight}, {headerText.Foreground} / {contentText.FontWeight}, {contentText.Foreground}"]);
-                rows.Add(["Background=LightYellow: a Border inside the content, its Background",
-                    WpfProbe.Describe(inner.Background)]);
+                // Background を描いている要素の範囲が、見出しと内容を含むか。Background は継承しないプロパティなので、子の値は読まない。
+                var painted = Descendants(expander).OfType<Border>().First(b => ReferenceEquals(b.Background, expander.Background));
+                Rect area = Bounds(painted, expander);
+                Rect header = Bounds(HeaderSite(expander), expander);
+                Rect body = Bounds(inner, expander);
+                rows.Add(["Background=LightYellow: painted area / header / content (inside the painted area)",
+                    $"{Format(area)} / {Format(header)} / {Format(body)} ({area.Contains(header) && area.Contains(body)})"]);
                 await Task.CompletedTask;
             });
         }
 
-        foreach (double padding in new[] { 0d, 20d })
+        // Padding と BorderThickness の効果を分けて測る。
+        foreach ((double padding, double border) in new[] { (0d, 0d), (20d, 0d), (0d, 5d) })
         {
             var content = new Border { Width = 80, Height = 40 };
-            var expander = new Expander { Header = "Expander", Content = content, IsExpanded = true, Width = 200, Padding = new Thickness(padding), BorderThickness = new Thickness(padding / 4), BorderBrush = Brushes.Black };
+            var expander = new Expander { Header = "Expander", Content = content, IsExpanded = true, Width = 200, Padding = new Thickness(padding), BorderThickness = new Thickness(border), BorderBrush = Brushes.Black };
             await ShowAsync(expander, async () =>
             {
-                rows.Add([$"Padding={D(padding)}, BorderThickness={D(padding / 4)}: header / content",
+                rows.Add([$"Padding={D(padding)}, BorderThickness={D(border)}: header / content",
                     $"{Format(Bounds(HeaderSite(expander), expander))} / {Format(Bounds(content, expander))}"]);
                 await Task.CompletedTask;
             });

@@ -90,18 +90,22 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>Dock</code> section of the demo app (<code>DockPanelUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
-    <pre><code class="language-xml">&lt;ComboBox x:Name="DockComboBox"
-          DisplayMemberPath="Name"
-          ItemsSource="{markupextensions:EnumBindingSource EnumType=Dock}"
-          SelectedIndex="0"
-          SelectedValuePath="Value" /&gt;
+    <p>The following XAML is the <code>Dock</code> section of the demo app (<code>DockPanelUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>markupextensions</code> is the prefix for the demo app's own markup extensions:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;ComboBox x:Name="DockComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=Dock}"
+            SelectedIndex="0"
+            SelectedValuePath="Value" /&gt;
 
-&lt;DockPanel x:Name="DockUsageDockPanel" Height="100" LastChildFill="False"&gt;
-  &lt;Label Background="LightBlue" BorderBrush="Black" BorderThickness="1"
-         Content="Item1"
-         DockPanel.Dock="{Binding SelectedValue, ElementName=DockComboBox}" /&gt;
-&lt;/DockPanel&gt;</code></pre>
+  &lt;DockPanel x:Name="DockUsageDockPanel" Height="100" LastChildFill="False"&gt;
+    &lt;Label Background="LightBlue" BorderBrush="Black" BorderThickness="1"
+           Content="Item1"
+           DockPanel.Dock="{Binding SelectedValue, ElementName=DockComboBox}" /&gt;
+  &lt;/DockPanel&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

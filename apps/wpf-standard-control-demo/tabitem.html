@@ -93,16 +93,19 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>IsSelected</code> section of the demo app (<code>TabItemUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsSelectedTab1" VerticalContentAlignment="Center" Content="Tab1" /&gt;
-&lt;CheckBox x:Name="IsSelectedTab2" VerticalContentAlignment="Center" Content="Tab2" /&gt;
+    <p>The following XAML is the <code>IsSelected</code> section of the demo app (<code>TabItemUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsSelectedTab1" VerticalContentAlignment="Center" Content="Tab1" /&gt;
+  &lt;CheckBox x:Name="IsSelectedTab2" VerticalContentAlignment="Center" Content="Tab2" /&gt;
 
-&lt;TabControl x:Name="IsSelectedTabControl"&gt;
-  &lt;TabItem Content="Item1" Header="Tab1"
-           IsSelected="{Binding IsChecked, ElementName=IsSelectedTab1}" /&gt;
-  &lt;TabItem Content="Item2" Header="Tab2"
-           IsSelected="{Binding IsChecked, ElementName=IsSelectedTab2}" /&gt;
-&lt;/TabControl&gt;</code></pre>
+  &lt;TabControl x:Name="IsSelectedTabControl"&gt;
+    &lt;TabItem Content="Item1" Header="Tab1"
+             IsSelected="{Binding IsChecked, ElementName=IsSelectedTab1}" /&gt;
+    &lt;TabItem Content="Item2" Header="Tab2"
+             IsSelected="{Binding IsChecked, ElementName=IsSelectedTab2}" /&gt;
+  &lt;/TabControl&gt;
+&lt;/StackPanel&gt;</code></pre>
     <p>Because <code>IsSelected</code> binds two-way by default, the check boxes follow the tabs as well as control them. With Tab2 selected, setting Tab1's source to <code>True</code> (what checking its box does) selected Tab1 and set Tab2's source to <code>False</code>.</p>
   </section>
 

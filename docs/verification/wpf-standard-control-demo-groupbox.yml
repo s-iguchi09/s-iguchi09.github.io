@@ -11,7 +11,7 @@ verifies:
   - "HeaderStringFormat が文字列の Header と要素の Header に効くか（デモアプリと同じ \"Header={0}.\"）"
   - "改行を含む文字列の Header が何行で表示されるか"
   - "Padding 0 と 20 での内容の位置"
-  - "FontSize・Foreground を GroupBox に設定したときの見出しと内容の文字、Background がどこに塗られ、内容の子要素に引き継がれるか"
+  - "FontSize・Foreground を GroupBox に設定したときの見出しと内容の文字、Background がどこに塗られ、内容がその範囲に入るか"
   - "UI オートメーションでのコントロールの種類と名前"
   - "アンダースコア付きの Header のアクセスキーを押したときのフォーカスの移動先"
 images:
