@@ -74,6 +74,7 @@ internal static class Program
         new ToggleButtonDemoScene(),
         new ButtonDemoScene(),
         new RepeatButtonDemoScene(),
+        new RadioButtonDemoScene(),
     ];
 
     [STAThread]
