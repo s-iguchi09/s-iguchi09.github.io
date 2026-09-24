@@ -118,18 +118,23 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>ShouldPreserveUserEnteredPrefix</code> section of the demo app (<code>ComboBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="ShouldPreserveUserEnteredPrefix" Content="ShouldPreserveUserEnteredPrefix" /&gt;
+    <p>The following XAML is the <code>ShouldPreserveUserEnteredPrefix</code> section of the demo app (<code>ComboBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>markupextensions</code> is the prefix for the demo app's own markup extensions:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:sys="clr-namespace:System;assembly=mscorlib"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;CheckBox x:Name="ShouldPreserveUserEnteredPrefix" Content="ShouldPreserveUserEnteredPrefix" /&gt;
 
-&lt;ComboBox x:Name="ShouldPreserveUserEnteredPrefixComboBox"
-          DisplayMemberPath="Name"
-          IsEditable="True"
-          ItemsSource="{markupextensions:EnumBindingSource EnumType=sys:DayOfWeek}"
-          SelectedValuePath="Value"
-          ShouldPreserveUserEnteredPrefix="{Binding IsChecked, ElementName=ShouldPreserveUserEnteredPrefix}" /&gt;
+  &lt;ComboBox x:Name="ShouldPreserveUserEnteredPrefixComboBox"
+            DisplayMemberPath="Name"
+            IsEditable="True"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=sys:DayOfWeek}"
+            SelectedValuePath="Value"
+            ShouldPreserveUserEnteredPrefix="{Binding IsChecked, ElementName=ShouldPreserveUserEnteredPrefix}" /&gt;
 
-&lt;TextBlock Text="{Binding Text, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;
-&lt;TextBlock Text="{Binding SelectedValue, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;</code></pre>
+  &lt;TextBlock Text="{Binding Text, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;
+  &lt;TextBlock Text="{Binding SelectedValue, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

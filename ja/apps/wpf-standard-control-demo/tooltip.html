@@ -99,13 +99,16 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ToolTipUsageControl.xaml</code>）の <code>InitialShowDelay</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;Slider x:Name="ValueInitialShowDelaySlider" Maximum="5000" Minimum="0" Value="500" /&gt;
+    <p>デモアプリ（<code>ToolTipUsageControl.xaml</code>）の <code>InitialShowDelay</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;Slider x:Name="ValueInitialShowDelaySlider" Maximum="5000" Minimum="0" Value="500" /&gt;
 
-&lt;Button x:Name="InitialShowDelayToolTipButton"
-        Content="Show ToolTip on hover."
-        ToolTip="Delayed ToolTip"
-        ToolTipService.InitialShowDelay="{Binding Value, ElementName=ValueInitialShowDelaySlider}" /&gt;</code></pre>
+  &lt;Button x:Name="InitialShowDelayToolTipButton"
+          Content="Show ToolTip on hover."
+          ToolTip="Delayed ToolTip"
+          ToolTipService.InitialShowDelay="{Binding Value, ElementName=ValueInitialShowDelaySlider}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

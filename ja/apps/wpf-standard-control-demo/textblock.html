@@ -88,19 +88,23 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>TextBlockUsageControl.xaml</code>）の <code>LineHeight</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="LineHeightTextTextBox" AcceptsReturn="True"
-         Text="TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK" /&gt;
-&lt;TextBox x:Name="LineHeightTextBox" Text="5" /&gt;
-&lt;ComboBox x:Name="LineStackingStrategyComboBox"
-          DisplayMemberPath="Name"
-          ItemsSource="{markupextensions:EnumBindingSource EnumType=LineStackingStrategy}"
-          SelectedIndex="0" SelectedValuePath="Value" /&gt;
+    <p>デモアプリ（<code>TextBlockUsageControl.xaml</code>）の <code>LineHeight</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;TextBox x:Name="LineHeightTextTextBox" AcceptsReturn="True"
+           Text="TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK" /&gt;
+  &lt;TextBox x:Name="LineHeightTextBox" Text="5" /&gt;
+  &lt;ComboBox x:Name="LineStackingStrategyComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=LineStackingStrategy}"
+            SelectedIndex="0" SelectedValuePath="Value" /&gt;
 
-&lt;TextBlock x:Name="LineHeightResultTextBlock"
-           LineHeight="{Binding Text, ElementName=LineHeightTextBox}"
-           LineStackingStrategy="{Binding SelectedValue, ElementName=LineStackingStrategyComboBox}"
-           Text="{Binding Text, ElementName=LineHeightTextTextBox}" /&gt;</code></pre>
+  &lt;TextBlock x:Name="LineHeightResultTextBlock"
+             LineHeight="{Binding Text, ElementName=LineHeightTextBox}"
+             LineStackingStrategy="{Binding SelectedValue, ElementName=LineStackingStrategyComboBox}"
+             Text="{Binding Text, ElementName=LineHeightTextTextBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

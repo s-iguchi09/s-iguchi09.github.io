@@ -64,16 +64,19 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>TabControlUsageControl.xaml</code>）の <code>SelectedContent</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;TabControl x:Name="SelectedContentTabControl" ContentStringFormat="Format: {0}."&gt;
-  &lt;TabItem Content="Item1" Header="Tab1" /&gt;
-  &lt;TabItem Content="Item2" Header="Tab2" /&gt;
-&lt;/TabControl&gt;
+    <p>デモアプリ（<code>TabControlUsageControl.xaml</code>）の <code>SelectedContent</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TabControl x:Name="SelectedContentTabControl" ContentStringFormat="Format: {0}."&gt;
+    &lt;TabItem Content="Item1" Header="Tab1" /&gt;
+    &lt;TabItem Content="Item2" Header="Tab2" /&gt;
+  &lt;/TabControl&gt;
 
-&lt;TextBlock x:Name="SelectedContentTextBlock"
-           Text="{Binding SelectedContent, ElementName=SelectedContentTabControl}" /&gt;
-&lt;TextBlock x:Name="SelectedContentStringFormatTextBlock"
-           Text="{Binding SelectedContentStringFormat, ElementName=SelectedContentTabControl}" /&gt;</code></pre>
+  &lt;TextBlock x:Name="SelectedContentTextBlock"
+             Text="{Binding SelectedContent, ElementName=SelectedContentTabControl}" /&gt;
+  &lt;TextBlock x:Name="SelectedContentStringFormatTextBlock"
+             Text="{Binding SelectedContentStringFormat, ElementName=SelectedContentTabControl}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

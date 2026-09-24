@@ -88,19 +88,23 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ListViewUsageControl.xaml</code>）の <code>View</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="AllowsColumnReorderCheckBox" Content="AllowsColumnReorder" IsChecked="True" /&gt;
+    <p>デモアプリ（<code>ListViewUsageControl.xaml</code>）の <code>View</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;CheckBox x:Name="AllowsColumnReorderCheckBox" Content="AllowsColumnReorder" IsChecked="True" /&gt;
 
-&lt;ListView x:Name="ViewColumnsListView"
-          Height="150"
-          ItemsSource="{markupextensions:StaticBindingSource TargetType=Brushes}"&gt;
-  &lt;ListView.View&gt;
-    &lt;GridView AllowsColumnReorder="{Binding IsChecked, ElementName=AllowsColumnReorderCheckBox}"&gt;
-      &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Name}" Header="Name" /&gt;
-      &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Value}" Header="Value" /&gt;
-    &lt;/GridView&gt;
-  &lt;/ListView.View&gt;
-&lt;/ListView&gt;</code></pre>
+  &lt;ListView x:Name="ViewColumnsListView"
+            Height="150"
+            ItemsSource="{markupextensions:StaticBindingSource TargetType=Brushes}"&gt;
+    &lt;ListView.View&gt;
+      &lt;GridView AllowsColumnReorder="{Binding IsChecked, ElementName=AllowsColumnReorderCheckBox}"&gt;
+        &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Name}" Header="Name" /&gt;
+        &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Value}" Header="Value" /&gt;
+      &lt;/GridView&gt;
+    &lt;/ListView.View&gt;
+  &lt;/ListView&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

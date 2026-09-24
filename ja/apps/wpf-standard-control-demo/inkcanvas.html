@@ -79,25 +79,29 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>InkCanvasUsageControl.xaml</code>）の欄の一部から、スタイル、ペンの設定、周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;ComboBox x:Name="EditingModeComboBox"
-          DisplayMemberPath="Name"
-          ItemsSource="{markupextensions:EnumBindingSource EnumType=InkCanvasEditingMode}"
-          SelectedIndex="1"
-          SelectedValuePath="Value" /&gt;
+    <p>デモアプリ（<code>InkCanvasUsageControl.xaml</code>）の欄の一部から、スタイル、ペンの設定、周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;ComboBox x:Name="EditingModeComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=InkCanvasEditingMode}"
+            SelectedIndex="1"
+            SelectedValuePath="Value" /&gt;
 
-&lt;Button Command="ApplicationCommands.SelectAll"
-        CommandTarget="{Binding ElementName=DemoInkCanvas}"
-        Content="Select All" /&gt;
+  &lt;Button Command="ApplicationCommands.SelectAll"
+          CommandTarget="{Binding ElementName=DemoInkCanvas}"
+          Content="Select All" /&gt;
 
-&lt;InkCanvas x:Name="DemoInkCanvas"
-           Background="{Binding SelectedValue, ElementName=BackgroundBrushComboBox}"
-           EditingMode="{Binding SelectedValue, ElementName=EditingModeComboBox}"
-           EditingModeInverted="{Binding SelectedValue, ElementName=EditingModeInvertedComboBox}"&gt;
-  &lt;InkCanvas.DefaultDrawingAttributes&gt;
-    &lt;DrawingAttributes Color="Black" /&gt;
-  &lt;/InkCanvas.DefaultDrawingAttributes&gt;
-&lt;/InkCanvas&gt;</code></pre>
+  &lt;InkCanvas x:Name="DemoInkCanvas"
+             Background="{Binding SelectedValue, ElementName=BackgroundBrushComboBox}"
+             EditingMode="{Binding SelectedValue, ElementName=EditingModeComboBox}"
+             EditingModeInverted="{Binding SelectedValue, ElementName=EditingModeInvertedComboBox}"&gt;
+    &lt;InkCanvas.DefaultDrawingAttributes&gt;
+      &lt;DrawingAttributes Color="Black" /&gt;
+    &lt;/InkCanvas.DefaultDrawingAttributes&gt;
+  &lt;/InkCanvas&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

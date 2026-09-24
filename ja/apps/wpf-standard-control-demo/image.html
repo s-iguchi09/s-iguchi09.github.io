@@ -63,26 +63,30 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ImageUsageControl.xaml</code>）の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="SourceTextBox" Text="C:\Windows\Web\Wallpaper\Windows\img0.jpg" /&gt;
+    <p>デモアプリ（<code>ImageUsageControl.xaml</code>）の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;TextBox x:Name="SourceTextBox" Text="C:\Windows\Web\Wallpaper\Windows\img0.jpg" /&gt;
 
-&lt;ComboBox x:Name="StretchComboBox"
-          DisplayMemberPath="Name"
-          ItemsSource="{markupextensions:EnumBindingSource EnumType=Stretch}"
-          SelectedIndex="0"
-          SelectedValuePath="Value" /&gt;
-&lt;ComboBox x:Name="StretchDirectionComboBox"
-          DisplayMemberPath="Name"
-          ItemsSource="{markupextensions:EnumBindingSource EnumType=StretchDirection}"
-          SelectedIndex="0"
-          SelectedValuePath="Value" /&gt;
+  &lt;ComboBox x:Name="StretchComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=Stretch}"
+            SelectedIndex="0"
+            SelectedValuePath="Value" /&gt;
+  &lt;ComboBox x:Name="StretchDirectionComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=StretchDirection}"
+            SelectedIndex="0"
+            SelectedValuePath="Value" /&gt;
 
-&lt;Grid Background="#F0F0F0"&gt;
-  &lt;Image x:Name="DemoImage"
-         Source="{Binding Text, ElementName=SourceTextBox}"
-         Stretch="{Binding SelectedValue, ElementName=StretchComboBox}"
-         StretchDirection="{Binding SelectedValue, ElementName=StretchDirectionComboBox}" /&gt;
-&lt;/Grid&gt;</code></pre>
+  &lt;Grid Background="#F0F0F0"&gt;
+    &lt;Image x:Name="DemoImage"
+           Source="{Binding Text, ElementName=SourceTextBox}"
+           Stretch="{Binding SelectedValue, ElementName=StretchComboBox}"
+           StretchDirection="{Binding SelectedValue, ElementName=StretchDirectionComboBox}" /&gt;
+  &lt;/Grid&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

@@ -112,22 +112,25 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>IsCheckable</code> section of the demo app (<code>MenuUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out:</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsCheckableCheckBox" Content="IsCheckable" IsChecked="True" /&gt;
-&lt;CheckBox x:Name="StaysOpenOnClickCheckBox" Content="StaysOpenOnClick" IsChecked="True" /&gt;
+    <p>The following XAML is the <code>IsCheckable</code> section of the demo app (<code>MenuUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsCheckableCheckBox" Content="IsCheckable" IsChecked="True" /&gt;
+  &lt;CheckBox x:Name="StaysOpenOnClickCheckBox" Content="StaysOpenOnClick" IsChecked="True" /&gt;
 
-&lt;Menu IsMainMenu="False"&gt;
-  &lt;MenuItem Header="Options"&gt;
-    &lt;MenuItem x:Name="InteractiveMenuItem"
-              Header="Interactive Item"
-              IsCheckable="{Binding IsChecked, ElementName=IsCheckableCheckBox}"
-              StaysOpenOnClick="{Binding IsChecked, ElementName=StaysOpenOnClickCheckBox}" /&gt;
-  &lt;/MenuItem&gt;
-&lt;/Menu&gt;
+  &lt;Menu IsMainMenu="False"&gt;
+    &lt;MenuItem Header="Options"&gt;
+      &lt;MenuItem x:Name="InteractiveMenuItem"
+                Header="Interactive Item"
+                IsCheckable="{Binding IsChecked, ElementName=IsCheckableCheckBox}"
+                StaysOpenOnClick="{Binding IsChecked, ElementName=StaysOpenOnClickCheckBox}" /&gt;
+    &lt;/MenuItem&gt;
+  &lt;/Menu&gt;
 
-&lt;CheckBox x:Name="IsCheckedSyncCheckBox"
-          Content="IsChecked"
-          IsChecked="{Binding IsChecked, ElementName=InteractiveMenuItem, Mode=TwoWay}" /&gt;</code></pre>
+  &lt;CheckBox x:Name="IsCheckedSyncCheckBox"
+            Content="IsChecked"
+            IsChecked="{Binding IsChecked, ElementName=InteractiveMenuItem, Mode=TwoWay}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
