@@ -12,8 +12,8 @@ verifies:
   - "折りたたんだ Expander の中の要素が Loaded になるか、測られるか、中の ListBox（1000 項目）のコンテナーが作られるか、展開したときの変化"
   - "ExpandDirection ごとの見出しと内容の位置と、変形を含めた見出しの文字の矩形（横書きのままか）"
   - "Header が null のときの HasHeader と、見出しの ToggleButton の表示"
-  - "FontWeight・Foreground を Expander に設定したときの見出しと内容の文字、Background が内容の子要素に引き継がれるか"
-  - "Padding を設定したときの見出しと内容の位置、BorderThickness がどこに描かれるか"
+  - "FontWeight・Foreground を Expander に設定したときの見出しと内容の文字、Background を塗る範囲が見出しと内容を含むか"
+  - "Padding と BorderThickness を別々に設定したときの見出しと内容の位置"
 images:
   - "images/wpf-standard-control-demo/verification/expander/expander-behavior.svg"
   - "images/wpf-standard-control-demo/verification/expander/expander-layout.svg"

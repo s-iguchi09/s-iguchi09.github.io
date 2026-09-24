@@ -58,7 +58,7 @@
     <ul>
       <li><strong><code>ClickMode="Press"</code></strong> — マウスボタンを押した時点で切り替わり、離してもその状態のままでした。<code>IsChecked</code> はボタンを押した時点で <code>true</code> になり、離した後も <code>true</code> でした。押している間だけ有効なボタンにはなりません。</li>
       <li><strong><code>Command</code></strong> — 状態が変わった後に実行されます。<code>CommandParameter</code> をボタン自身の <code>IsChecked</code> にバインドすると、<code>false</code> からのクリックで <code>Execute</code> に <code>True</code> が渡り、その時点で <code>IsChecked</code> はすでに <code>true</code> でした。支援技術と同じく UI オートメーションの <code>Toggle</code> で切り替えると、<code>IsChecked</code> は変わりましたが、コマンドは実行されませんでした。どの方法で切り替えられても処理したい場合は、状態をバインドしたプロパティで受け取ります。</li>
-      <li><strong><code>IsOpen</code> を <code>IsChecked</code> にバインドした <code>Popup</code></strong> — ボタンをクリックすると開きました。ポップアップが閉じると <code>IsChecked</code> も <code>false</code> に戻りました。<code>Popup.IsOpen</code> が既定で TwoWay にバインドされるためです。</li>
+      <li><strong><code>IsOpen</code> を <code>IsChecked</code> にバインドした <code>Popup</code></strong> — ボタンをクリックすると開きました。ポップアップが閉じると <code>IsChecked</code> も <code>false</code> に戻りました。<code>Popup.IsOpen</code> が既定で TwoWay にバインドされるためです。<code>StaysOpen="False"</code> で実際にクリックすると、ウィンドウの空いた領域のクリックではポップアップが閉じてボタンのチェックも外れました。ポップアップが開いている間にボタン自体をクリックしても閉じず、その後も <code>IsOpen</code> と <code>IsChecked</code> はどちらも <code>true</code> のままでした。</li>
     </ul>
   </section>
 
@@ -103,7 +103,7 @@
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToggleButtonDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToggleButtonDemoScene</code></a> を使いました。状態の切り替えは UI オートメーションの <code>Toggle</code> で行い、コマンドはボタンのクリック処理（<code>OnClick</code>）を呼んで実行し、<code>ClickMode</code> はマウスの左ボタンのイベントを発生させて確かめました。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="ToggleButton の計測結果の表。ButtonBase を継承し CheckBox と RadioButton の基底であり、IsThreeState のときだけ false・true・null と巡回し、既定のテンプレートには表示状態がなく IsChecked true のトリガーだけがあり、UI オートメーションは Off・On・Indeterminate を報告し、ClickMode Press は押した時点で切り替わってそのまま残り、IsChecked にバインドした CommandParameter には新しい値が渡り、UI オートメーションの Toggle ではコマンドが実行されず、バインドした Popup が閉じると IsChecked も戻る" width="1187" height="470" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="ToggleButton の計測結果の表。ButtonBase を継承し CheckBox と RadioButton の基底であり、IsThreeState のときだけ false・true・null と巡回し、既定のテンプレートには表示状態がなく IsChecked true のトリガーだけがあり、UI オートメーションは Off・On・Indeterminate を報告し、ClickMode Press は押した時点で切り替わってそのまま残り、IsChecked にバインドした CommandParameter には新しい値が渡り、UI オートメーションの Toggle ではコマンドが実行されず、バインドした Popup が閉じると IsChecked も戻り、空いた領域の実際のクリックでは閉じるが、開いている間のボタンのクリックでは開いたまま" width="1187" height="530" loading="lazy">
       <figcaption>状態、テンプレート、<code>ClickMode</code>、<code>Command</code>、バインドした <code>Popup</code>。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

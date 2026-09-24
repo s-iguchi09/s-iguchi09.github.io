@@ -197,18 +197,18 @@ internal sealed class ToggleButtonDemoScene : IScene
                     await Capture.SettleAsync(window, 100);
                 }
 
-                string Now() => $"IsOpen {popup.IsOpen}, IsChecked {State(button.IsChecked)}";
+                string Now() => $"{popup.IsOpen}, {State(button.IsChecked)}";
                 using (RealMouse.Preserve())
                 {
                     await ClickAsync(button);
                     string opened = Now();
                     await ClickAsync(blank);
-                    rows.Add(["StaysOpen=False, real clicks: the button / then an empty area of the window", $"{opened} / {Now()}"]);
+                    rows.Add(["StaysOpen=False, real clicks (IsOpen, IsChecked): button / empty area", $"{opened} / {Now()}"]);
 
                     await ClickAsync(button);
                     string reopened = Now();
                     await ClickAsync(button);
-                    rows.Add(["  opened by the button again / then the button clicked while open", $"{reopened} / {Now()}"]);
+                    rows.Add(["  button again / button while open", $"{reopened} / {Now()}"]);
                 }
 
                 popup.IsOpen = false;

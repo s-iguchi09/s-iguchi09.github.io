@@ -85,7 +85,7 @@
     <ul>
       <li><strong><code>ClickMode="Press"</code></strong> toggles when the mouse button goes down, and the new state stays after it is released: <code>IsChecked</code> was <code>true</code> after the button went down and still <code>true</code> after it came up. It does not make a button that is active only while held.</li>
       <li><strong><code>Command</code></strong> runs after the state has changed. With <code>CommandParameter</code> bound to the button's own <code>IsChecked</code>, a click from <code>false</code> passed <code>True</code> to <code>Execute</code>, and <code>IsChecked</code> was already <code>true</code> there. Toggling the button through UI Automation's <code>Toggle</code>, as an assistive technology does, changed <code>IsChecked</code> but did not run the command. Keep the state in a bound property if it must be handled for every way the button can be toggled.</li>
-      <li><strong>A <code>Popup</code> whose <code>IsOpen</code> is bound to <code>IsChecked</code></strong> opened when the button was clicked. When the popup closed, <code>IsChecked</code> returned to <code>false</code>, because <code>Popup.IsOpen</code> binds two-way by default.</li>
+      <li><strong>A <code>Popup</code> whose <code>IsOpen</code> is bound to <code>IsChecked</code></strong> opened when the button was clicked. When the popup closed, <code>IsChecked</code> returned to <code>false</code>, because <code>Popup.IsOpen</code> binds two-way by default. With <code>StaysOpen="False"</code> and real clicks, clicking an empty area of the window closed the popup and cleared the button. Clicking the button itself while the popup was open did not close it: afterwards <code>IsOpen</code> and <code>IsChecked</code> were both still <code>true</code>.</li>
     </ul>
   </section>
 
@@ -136,7 +136,7 @@
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="Table of ToggleButton results: it derives from ButtonBase and is the base of CheckBox and RadioButton, clicks cycle false, true, null only with IsThreeState, the default template has no visual states and only an IsChecked true trigger, UI Automation reports Off, On, Indeterminate, ClickMode Press toggles on button down and stays, a CommandParameter bound to IsChecked receives the new value, a UI Automation toggle does not run the command, and a bound Popup resets IsChecked when it closes" width="1187" height="470" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="Table of ToggleButton results: it derives from ButtonBase and is the base of CheckBox and RadioButton, clicks cycle false, true, null only with IsThreeState, the default template has no visual states and only an IsChecked true trigger, UI Automation reports Off, On, Indeterminate, ClickMode Press toggles on button down and stays, a CommandParameter bound to IsChecked receives the new value, a UI Automation toggle does not run the command, and a bound Popup resets IsChecked when it closes, which a real click on an empty area does, while a click on the button while open leaves it open" width="1187" height="530" loading="lazy">
       <figcaption>States, template, <code>ClickMode</code>, <code>Command</code>, and a bound <code>Popup</code>. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

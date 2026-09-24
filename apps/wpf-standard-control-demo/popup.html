@@ -98,7 +98,7 @@
         <tr>
           <td><code>PopupAnimation</code></td>
           <td><code>None / Fade / Slide / Scroll</code></td>
-          <td>The animation when the popup opens. It needs <code>AllowsTransparency="True"</code>. With <code>Fade</code> and <code>True</code>, the opacity of the popup's root was 0.51 50 ms after opening and 1 later. With <code>False</code>, it was 1 from the start, so there was no fade. The demo app sets <code>AllowsTransparency="True"</code> on this popup.</td>
+          <td>The animation when the popup opens. It needs <code>AllowsTransparency="True"</code>. With <code>Fade</code> and <code>True</code>, the opacity of the popup's root was still partway shortly after opening (0.48 about 100 ms after opening in the measured run; the value varies from run to run) and 1 about half a second later. With <code>False</code>, it was 1 from the start, so there was no fade. The demo app sets <code>AllowsTransparency="True"</code> on this popup.</td>
         </tr>
         <tr>
           <td><code>Child / PlacementRectangle</code></td>

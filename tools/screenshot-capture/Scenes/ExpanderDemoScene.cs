@@ -189,7 +189,7 @@ internal sealed class ExpanderDemoScene : IScene
                 Rect area = Bounds(painted, expander);
                 Rect header = Bounds(HeaderSite(expander), expander);
                 Rect body = Bounds(inner, expander);
-                rows.Add(["Background=LightYellow: painted area / header / content (inside the painted area)",
+                rows.Add(["Background: painted area / header / content (inside it)",
                     $"{Format(area)} / {Format(header)} / {Format(body)} ({area.Contains(header) && area.Contains(body)})"]);
                 await Task.CompletedTask;
             });

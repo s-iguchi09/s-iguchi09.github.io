@@ -11,7 +11,7 @@ verifies:
   - "押したままボタンの外へ出たときと戻ったときの繰り返し"
   - "Space を押し続けたとき（OS のキーリピートなし）のクリックの回数"
   - "Delay に負の値、Interval に 0 を設定したときの例外と、TextBox からのバインドで不正な値や空文字を渡したときの値"
-  - "ScrollBar と Slider の既定のテンプレートの中の RepeatButton"
+  - "縦・横の ScrollBar と Slider の既定のテンプレートの中の RepeatButton（とそのコマンド）"
 images:
   - "images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg"
   - "images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg"

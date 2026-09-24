@@ -75,12 +75,12 @@
         <tr>
           <td><code>Background / Foreground (Control)</code></td>
           <td><code>Brush</code></td>
-          <td><code>Foreground</code> は見出しと内容の両方の文字に届き、<code>Red</code> では両方が赤になりました。<code>Background</code> は引き継がれず、内容の中の Border は背景を持たないままでした。</td>
+          <td><code>Foreground</code> は見出しと内容の両方の文字に届き、<code>Red</code> では両方が赤になりました。<code>Background</code> は見出しと内容の両方の後ろに塗られ、幅 200 の Expander で、塗られた範囲は 200 &times; 38.96 で見出しと内容を含んでいました。<code>Background</code> 自体は継承されるプロパティではないので、色が付くのは内容の後ろの領域です。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>見出しを含めた Expander 全体を囲む枠です。<code>BorderThickness="5"</code> では、見出しが各辺から 5 内側へ移りました。</td>
+          <td>見出しを含めた Expander 全体を囲む枠です。<code>Padding</code> を付けずに単独で測ると、<code>BorderThickness="5"</code> では見出しが各辺から 5 内側へ移って (1, 1) から (6, 6) になり、内容も 5 下がりました。</td>
         </tr>
       </tbody>
     </table>
@@ -116,7 +116,7 @@
       <li><strong>折りたたんだ Expander の中の一覧は軽い</strong> — 展開するまで項目は作られません。</li>
       <li><strong>状態を保つなら <code>IsExpanded</code> をバインドする</strong> — 既定で TwoWay なので、ビューモデルのプロパティが利用者のクリックに追従します。</li>
       <li><strong>見出しを消したり、アニメーションを付けたりするなら独自のテンプレートにする</strong> — 既定のテンプレートは、見出しがなくても矢印を表示し、切り替えは一瞬です。</li>
-      <li><strong>内容に背景が必要なら内容側に <code>Background</code> を設定する</strong> — Expander の背景は子要素に引き継がれません。</li>
+      <li><strong>見出しと内容をまとめて色付けするなら Expander に <code>Background</code> を設定する</strong> — 両方の後ろに塗られます。</li>
     </ul>
   </section>
 
@@ -130,7 +130,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/expander/expander-layout.svg" alt="Expander の配置の計測結果の表。Down・Up・Left・Right での見出しと内容の位置と、見出しの文字が横書きのままであること、見出しが null でも ToggleButton が残ること、FontWeight と Foreground が見出しと内容に届き、Background は子要素に引き継がれず、Padding と BorderThickness は見出しの周りにも効くこと" width="1210" height="350" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/expander/expander-layout.svg" alt="Expander の配置の計測結果の表。Down・Up・Left・Right での見出しと内容の位置と、見出しの文字が横書きのままであること、見出しが null でも ToggleButton が残ること、FontWeight と Foreground が見出しと内容に届き、Background は見出しと内容の両方の後ろに塗られ、別々に測った Padding と BorderThickness は見出しの周りにも効くこと" width="1163" height="380" loading="lazy">
       <figcaption><code>ExpandDirection</code>、見出し、<code>Control</code> のプロパティ。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

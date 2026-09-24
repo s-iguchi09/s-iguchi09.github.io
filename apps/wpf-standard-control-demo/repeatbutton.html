@@ -40,8 +40,9 @@
       second. UI Automation's <code>Invoke</code> gave one click.
     </p>
     <p>
-      WPF's own templates use it. A <code>ScrollBar</code> has four RepeatButtons, with the <code>LineUp</code>,
-      <code>PageUp</code>, <code>PageDown</code>, and <code>LineDown</code> commands. These are the two arrows and the track on
+      WPF's own templates use it. A vertical <code>ScrollBar</code> has four RepeatButtons, with the <code>LineUp</code>,
+      <code>PageUp</code>, <code>PageDown</code>, and <code>LineDown</code> commands; a horizontal one has <code>LineLeft</code>,
+      <code>PageLeft</code>, <code>PageRight</code>, and <code>LineRight</code>. These are the two arrows and the track on
       each side of the thumb. A <code>Slider</code> has two, <code>DecreaseLarge</code> and <code>IncreaseLarge</code>, on each
       side of its thumb; it has no arrow buttons.
     </p>
@@ -139,7 +140,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg" alt="Table of RepeatButton values: Delay -1 and Interval 0 throw ArgumentException from code, invalid text bound from a TextBox resets Delay to 500 and Interval to 33, the ScrollBar template has RepeatButtons for LineUp, PageUp, PageDown, and LineDown, and the Slider template has DecreaseLarge and IncreaseLarge" width="912" height="260" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg" alt="Table of RepeatButton values: Delay -1 and Interval 0 throw ArgumentException from code, invalid text bound from a TextBox resets Delay to 500 and Interval to 33, the ScrollBar template has RepeatButtons for LineUp, PageUp, PageDown, and LineDown, and the Slider template has DecreaseLarge and IncreaseLarge" width="983" height="290" loading="lazy">
       <figcaption>Invalid values, and the RepeatButtons in WPF's own templates. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>
