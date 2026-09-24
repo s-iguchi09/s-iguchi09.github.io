@@ -79,7 +79,7 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>InkCanvasUsageControl.xaml</code>）の欄の一部から、スタイル、ペンの設定、周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <p>デモアプリ（<code>InkCanvasUsageControl.xaml</code>）の欄の一部から、スタイル、ペンの設定、ほかのボタン、周囲の GroupBox を省き、名前空間の宣言を加えたものです。InkCanvas には、デモアプリのレイアウトの代わりに高さ 200 を指定しています。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
     <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
@@ -88,12 +88,23 @@
             ItemsSource="{markupextensions:EnumBindingSource EnumType=InkCanvasEditingMode}"
             SelectedIndex="1"
             SelectedValuePath="Value" /&gt;
+  &lt;ComboBox x:Name="EditingModeInvertedComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=InkCanvasEditingMode}"
+            SelectedIndex="3"
+            SelectedValuePath="Value" /&gt;
+  &lt;ComboBox x:Name="BackgroundBrushComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:StaticBindingSource TargetType=Brushes}"
+            SelectedIndex="0"
+            SelectedValuePath="Value" /&gt;
 
   &lt;Button Command="ApplicationCommands.SelectAll"
           CommandTarget="{Binding ElementName=DemoInkCanvas}"
           Content="Select All" /&gt;
 
   &lt;InkCanvas x:Name="DemoInkCanvas"
+             Height="200"
              Background="{Binding SelectedValue, ElementName=BackgroundBrushComboBox}"
              EditingMode="{Binding SelectedValue, ElementName=EditingModeComboBox}"
              EditingModeInverted="{Binding SelectedValue, ElementName=EditingModeInvertedComboBox}"&gt;
