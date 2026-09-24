@@ -51,7 +51,7 @@
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>丸い記号と内容を、RadioButton の中で縦方向のどこに置くかです。既定値は <code>Top</code> で、プロパティの既定値から来ており、既定のスタイルが適用された後も <code>Top</code> でした。3 行に折り返すラベルでは、<code>Top</code> で記号がラベルの上端に来ました。<code>Center</code> では両方が RadioButton の中央に置かれ、高さ 200 の RadioButton で、記号とラベルの中心はどちらも約 100 でした。記号がラベルの中央に揃うのは RadioButton がラベルと同じ高さのときだけで、高さ 46.88 のとき、中心は 23.44 と 22.94 でした。デモアプリはコンボボックスで値を選びます。</td>
+          <td>丸い記号と内容を、RadioButton の中で縦方向のどこに置くかです。既定値は <code>Top</code> で、プロパティの既定値から来ており、既定のスタイルが適用された後も <code>Top</code> でした。3 行に折り返すラベルでは、<code>Top</code> で記号がラベルの上端に来ました。<code>Center</code> では両方が RadioButton の中央に置かれるので、RadioButton の高さによらず、記号はラベルの中央に揃いました。高さ 200 の RadioButton では中心がどちらも約 100、ラベルと同じ高さ 46.88 では 23.44 と 22.94 でした。デモアプリはコンボボックスで値を選びます。</td>
         </tr>
       </tbody>
     </table>
@@ -93,7 +93,7 @@
       <li><strong>名前はウィンドウの中で重ならないようにする</strong> — 1 つのウィンドウの 2 か所で同じ名前を使うと、1 つのグループになります。</li>
       <li><strong>同じ名前でウィンドウやポップアップをまたいでつなげようとしない</strong> — それぞれが別のグループを持ちます。</li>
       <li><strong>最初に 1 つをチェックしておく</strong> — <code>IsChecked</code> の既定値は <code>False</code> なので、<code>IsChecked="True"</code> を設定しないと何も選ばれていない状態で始まります。</li>
-      <li><strong>複数行のラベルには <code>VerticalContentAlignment="Center"</code> を設定し、RadioButton の高さをラベルに合わせる</strong> — たとえば <code>VerticalAlignment="Top"</code> にします。既定値の <code>Top</code> では記号が 1 行目の位置に残ります。</li>
+      <li><strong>複数行のラベルには <code>VerticalContentAlignment="Center"</code> を設定する</strong> — 既定値の <code>Top</code> では記号が 1 行目の位置に残ります。</li>
     </ul>
   </section>
 
@@ -107,7 +107,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg" alt="RadioButton のバインドとキーの計測結果の表。IsChecked を 3 つの bool にバインドして B をクリックすると A と C は false になりバインドは残り、ソースで C を true にすると B が外れ、下矢印キーはフォーカスだけを移してチェックは移さず、Tab は次のボタンへ移り、VerticalContentAlignment の既定値は Top で、Center では記号とラベルが RadioButton の中央に置かれ、RadioButton がラベルと同じ高さなら記号が 3 行のラベルの中央に揃う" width="1061" height="320" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg" alt="RadioButton のバインドとキーの計測結果の表。IsChecked を 3 つの bool にバインドして B をクリックすると A と C は false になりバインドは残り、ソースで C を true にすると B が外れ、下矢印キーはフォーカスだけを移してチェックは移さず、Tab は次のボタンへ移り、VerticalContentAlignment の既定値は Top で、Center では記号とラベルが RadioButton の中央に置かれ、記号が 3 行のラベルの中央に揃う" width="1061" height="320" loading="lazy">
       <figcaption>バインドした <code>IsChecked</code>、キーボード、<code>VerticalContentAlignment</code>。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

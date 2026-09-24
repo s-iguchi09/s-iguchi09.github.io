@@ -51,7 +51,7 @@
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>四角い部分とラベルを、CheckBox の中で縦方向のどこに置くかです。既定値はプロパティの既定値から来る <code>Top</code> です。3 行に折り返すラベルでは、<code>Top</code> のとき四角い部分は 1 行目の横に並びました（四角い部分は y = 1、ラベルは y = -1）。<code>Center</code> のときは両方が CheckBox の中央に置かれ、高さ 200 の CheckBox で、四角い部分とラベルの中心はどちらも約 100 でした。四角い部分がラベルの中央に揃うのは CheckBox がラベルと同じ高さのときだけで、高さ 46.88 のとき、中心は 23.44 と 22.94 でした。デモアプリでは一覧から値を選べます。</td>
+          <td>四角い部分とラベルを、CheckBox の中で縦方向のどこに置くかです。既定値はプロパティの既定値から来る <code>Top</code> です。3 行に折り返すラベルでは、<code>Top</code> のとき四角い部分は 1 行目の横に並びました（四角い部分は y = 1、ラベルは y = -1）。<code>Center</code> のときは両方が CheckBox の中央に置かれるので、CheckBox の高さによらず、四角い部分はラベルの中央に揃いました。高さ 200 の CheckBox では中心がどちらも約 100、ラベルと同じ高さ 46.88 では 23.44 と 22.94 でした。デモアプリでは一覧から値を選べます。</td>
         </tr>
       </tbody>
     </table>
@@ -90,7 +90,7 @@
       <li><strong><code>null</code> になりうるなら <code>bool?</code> を使う</strong> — <code>bool</code> 型のソースは、<code>null</code> を <code>false</code> に変換せず、バインドエラーにします。</li>
       <li><strong>「すべて選択」では、未確定のときのクリックの意味を決めておく</strong> — 3 状態の CheckBox は、<code>null</code> の次のクリックで <code>false</code> になります。ViewModel で別の扱いにしない限り、「一部選択」の状態でクリックするとすべてが外れます。</li>
       <li><strong>一覧で作る CheckBox は親で <code>Checked</code> を処理する</strong> — イベントはバブルします。</li>
-      <li><strong>折り返すラベルには <code>VerticalContentAlignment="Center"</code></strong> — 四角い部分をラベルの中央に並べたい場合に指定し、CheckBox の高さはラベルに合わせます（たとえば <code>VerticalAlignment="Top"</code>）。</li>
+      <li><strong>折り返すラベルには <code>VerticalContentAlignment="Center"</code></strong> — 四角い部分をラベルの中央に並べたい場合に指定します。</li>
     </ul>
   </section>
 
@@ -99,7 +99,7 @@
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/CheckBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>CheckBoxDemoScene</code></a> を使いました。クリックはクリックと同じ切り替え処理を実行する UI オートメーションの <code>Toggle</code> で、Space キーは表示したウィンドウへキーを押す・離すイベントを送って再現しました。位置は計測した環境での値です。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="CheckBox の計測結果の表。ToggleButton を継承し、IsChecked は既定で TwoWay、イベントはバブルし、VerticalContentAlignment の既定値は Top、3 状態のクリックは false・true・null と巡回し、bool 型のソースは null をバインドエラーにし、Space キーで切り替わり、ラベルもクリックできる範囲に含まれ、Center では四角い部分とラベルが CheckBox の中央に置かれ、CheckBox がラベルと同じ高さなら四角い部分が折り返したラベルの中央に揃う" width="1093" height="560" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="CheckBox の計測結果の表。ToggleButton を継承し、IsChecked は既定で TwoWay、イベントはバブルし、VerticalContentAlignment の既定値は Top、3 状態のクリックは false・true・null と巡回し、bool 型のソースは null をバインドエラーにし、Space キーで切り替わり、ラベルもクリックできる範囲に含まれ、Center では四角い部分とラベルが CheckBox の中央に置かれ、四角い部分が折り返したラベルの中央に揃う" width="1093" height="560" loading="lazy">
       <figcaption>状態、バインド、キー操作、ヒットテスト、配置。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>
