@@ -138,19 +138,22 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>FrozenColumnCount</code> section of the demo app (<code>DataGridUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out. <code>Items</code> holds items with <code>Name</code> and <code>Value</code>:</p>
-    <pre><code class="language-xml">&lt;Slider x:Name="PropertyFrozenColumnCount"
-        IsSnapToTickEnabled="True" Maximum="3" Minimum="0" /&gt;
+    <p>The following XAML is the <code>FrozenColumnCount</code> section of the demo app (<code>DataGridUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>Items</code> holds items with <code>Name</code> and <code>Value</code>:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;Slider x:Name="PropertyFrozenColumnCount"
+          IsSnapToTickEnabled="True" Maximum="3" Minimum="0" /&gt;
 
-&lt;DataGrid x:Name="ResultFrozen" Height="150"
-          AutoGenerateColumns="False"
-          FrozenColumnCount="{Binding Value, ElementName=PropertyFrozenColumnCount}"
-          ItemsSource="{Binding Items}"&gt;
-  &lt;DataGrid.Columns&gt;
-    &lt;DataGridTextColumn Width="150" Binding="{Binding Name}" Header="Frozen" /&gt;
-    &lt;DataGridTextColumn Width="600" Binding="{Binding Value}" Header="Scrollable" /&gt;
-  &lt;/DataGrid.Columns&gt;
-&lt;/DataGrid&gt;</code></pre>
+  &lt;DataGrid x:Name="ResultFrozen" Height="150"
+            AutoGenerateColumns="False"
+            FrozenColumnCount="{Binding Value, ElementName=PropertyFrozenColumnCount}"
+            ItemsSource="{Binding Items}"&gt;
+    &lt;DataGrid.Columns&gt;
+      &lt;DataGridTextColumn Width="150" Binding="{Binding Name}" Header="Frozen" /&gt;
+      &lt;DataGridTextColumn Width="600" Binding="{Binding Value}" Header="Scrollable" /&gt;
+    &lt;/DataGrid.Columns&gt;
+  &lt;/DataGrid&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

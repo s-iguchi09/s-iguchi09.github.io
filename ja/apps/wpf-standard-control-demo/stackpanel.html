@@ -63,19 +63,22 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>StackPanelUsageControl.xaml</code>）の <code>ZIndex</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="ZIndexItem1Text" Text="1" /&gt;
-&lt;TextBox x:Name="ZIndexItem2Text" Text="2" /&gt;
+    <p>デモアプリ（<code>StackPanelUsageControl.xaml</code>）の <code>ZIndex</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="ZIndexItem1Text" Text="1" /&gt;
+  &lt;TextBox x:Name="ZIndexItem2Text" Text="2" /&gt;
 
-&lt;StackPanel x:Name="ZIndexStackPanel"&gt;
-  &lt;Label VerticalAlignment="Top"
-         Panel.ZIndex="{Binding Text, ElementName=ZIndexItem1Text}"
-         Background="LightBlue" BorderBrush="Black" BorderThickness="1"
-         Content="Item1" /&gt;
-  &lt;Label Margin="0,-15,0,0" VerticalAlignment="Top"
-         Panel.ZIndex="{Binding Text, ElementName=ZIndexItem2Text}"
-         Background="SkyBlue" BorderBrush="Black" BorderThickness="1"
-         Content="Item2" /&gt;
+  &lt;StackPanel x:Name="ZIndexStackPanel"&gt;
+    &lt;Label VerticalAlignment="Top"
+           Panel.ZIndex="{Binding Text, ElementName=ZIndexItem1Text}"
+           Background="LightBlue" BorderBrush="Black" BorderThickness="1"
+           Content="Item1" /&gt;
+    &lt;Label Margin="0,-15,0,0" VerticalAlignment="Top"
+           Panel.ZIndex="{Binding Text, ElementName=ZIndexItem2Text}"
+           Background="SkyBlue" BorderBrush="Black" BorderThickness="1"
+           Content="Item2" /&gt;
+  &lt;/StackPanel&gt;
 &lt;/StackPanel&gt;</code></pre>
   </section>
 

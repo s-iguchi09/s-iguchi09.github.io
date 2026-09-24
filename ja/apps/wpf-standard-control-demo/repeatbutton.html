@@ -59,17 +59,20 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>RepeatButtonUsageControl.xaml</code>）の欄から、スタイル、周囲の GroupBox、テキストボックスの入力制限のビヘイビアを省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="DelayTextBox" Text="100" /&gt;
-&lt;TextBox x:Name="IntervalTextBox" Text="100" /&gt;
+    <p>デモアプリ（<code>RepeatButtonUsageControl.xaml</code>）の欄から、スタイル、周囲の GroupBox、テキストボックスの入力制限のビヘイビアを省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="DelayTextBox" Text="100" /&gt;
+  &lt;TextBox x:Name="IntervalTextBox" Text="100" /&gt;
 
-&lt;RepeatButton x:Name="RepeatButtonResult"
-              Command="{Binding ClickCommand}"
-              Content="Hold down"
-              Delay="{Binding Text, ElementName=DelayTextBox}"
-              Interval="{Binding Text, ElementName=IntervalTextBox}" /&gt;
+  &lt;RepeatButton x:Name="RepeatButtonResult"
+                Command="{Binding ClickCommand}"
+                Content="Hold down"
+                Delay="{Binding Text, ElementName=DelayTextBox}"
+                Interval="{Binding Text, ElementName=IntervalTextBox}" /&gt;
 
-&lt;TextBlock x:Name="ClickDateTimeTextBlock" Text="{Binding ClickDateTimeText}" /&gt;</code></pre>
+  &lt;TextBlock x:Name="ClickDateTimeTextBlock" Text="{Binding ClickDateTimeText}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

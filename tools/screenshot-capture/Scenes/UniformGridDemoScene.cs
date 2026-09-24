@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Media;
 using static ScreenshotCapture.Scenes.DemoProbe;
 
@@ -23,7 +24,7 @@ internal sealed class UniformGridDemoScene : IScene
         "UniformGrid の名前空間と、Rows / Columns / FirstColumn の既定値",
         "デモアプリの 5 つの Label で、Columns だけ、Rows だけ、どちらも設定しない場合の行数・列数とセルの大きさ",
         "Rows と Columns の積より子が多いときの、はみ出した子の位置",
-        "デモアプリの FirstColumn の欄（FirstColumn=1、Columns=3、9 項目）での子の位置と行数、FirstColumn が Columns 以上のとき",
+        "デモアプリの FirstColumn の欄（FirstColumn=1、Columns=3、9 項目）での子の位置と行数、FirstColumn が Columns 以上のときの配置とレイアウト後の FirstColumn の値、テキストボックスにバインドしたときにバインドが残るか",
         "Collapsed の子がセルを使うか",
         "幅 150 の子があるときのセルの幅（幅 300 に広げた場合と、大きさを子に合わせる場合）",
         "Background が null / Transparent のときの、空いたセルのヒットテスト",
@@ -114,8 +115,22 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 3;
             grid.FirstColumn = first;
             Laid(grid);
-            rows.Add([$"FirstColumn={first}, Columns=3, 9 labels: Item1 at, shape",
-                $"{Cell(grid, 0)}, {Shape(grid).Split(',')[0]}"]);
+            rows.Add([$"FirstColumn={first}, Columns=3: Item1 at, shape; FirstColumn after layout",
+                $"{Cell(grid, 0)}, {Shape(grid).Split(',')[0]}; {grid.FirstColumn}"]);
+        }
+
+        {
+            // デモアプリと同じく、FirstColumn をテキストボックスにバインドする。レイアウトで 0 に戻されたとき、バインドが残るか。
+            var box = new TextBox { Text = "4" };
+            UniformGrid grid = DemoGrid(9);
+            grid.Columns = 3;
+            grid.SetBinding(UniformGrid.FirstColumnProperty, new Binding(nameof(TextBox.Text)) { Source = box });
+            Laid(grid);
+            string after = $"{grid.FirstColumn}, binding {(BindingOperations.GetBindingExpression(grid, UniformGrid.FirstColumnProperty) is null ? "removed" : "kept")}";
+            box.Text = "1";
+            grid.UpdateLayout();
+            rows.Add(["bound to text \"4\" (demo): FirstColumn, binding; text then \"1\": FirstColumn, Item1 at",
+                $"{after}; {grid.FirstColumn}, {Cell(grid, 0)}"]);
         }
 
         {

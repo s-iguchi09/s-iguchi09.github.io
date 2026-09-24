@@ -164,21 +164,41 @@ internal sealed class ButtonDemoScene : IScene
                 SizeToContent = SizeToContent.WidthAndHeight,
             };
             bool closedByKey = true;
+
+            // ContentRendered のハンドラーは async void なので、完了と例外を TaskCompletionSource で受け取る。
+            // Esc でダイアログが閉じると ShowDialog はハンドラーの続きを待たずに戻るため、戻った後にこれを待つ。
+            var handled = new TaskCompletionSource();
             dialog.ContentRendered += async (_, _) =>
             {
-                await Capture.SettleAsync(dialog);
-                dialog.Activate();
-                await FocusAsync(text);
-                SendKey(Key.Escape);
-                await Capture.SettleAsync(dialog, 50);
-                if (dialog.IsVisible)
+                try
                 {
-                    closedByKey = false;
-                    dialog.Close();
+                    await Capture.SettleAsync(dialog);
+                    dialog.Activate();
+                    await FocusAsync(text);
+                    SendKey(Key.Escape);
+                    await Capture.SettleAsync(dialog, 50);
+                    if (dialog.IsVisible)
+                    {
+                        closedByKey = false;
+                        dialog.Close();
+                    }
+
+                    handled.TrySetResult();
+                }
+                catch (Exception ex)
+                {
+                    // ダイアログを閉じないと ShowDialog が戻らないので、閉じてから例外を渡す。
+                    if (dialog.IsVisible)
+                    {
+                        dialog.Close();
+                    }
+
+                    handled.TrySetException(ex);
                 }
             };
 
             bool? result = dialog.ShowDialog();
+            await handled.Task;
             rows.Add(["IsCancel in a window shown with ShowDialog: Esc -> window closed / ShowDialog returned",
                 $"{closedByKey} / {WpfProbe.Describe(result)}"]);
         }

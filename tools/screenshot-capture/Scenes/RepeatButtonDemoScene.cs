@@ -30,7 +30,7 @@ internal sealed class RepeatButtonDemoScene : IScene
         "押したままボタンの外へ出たときと戻ったときの繰り返し",
         "Space を押し続けたとき（OS のキーリピートなし）のクリックの回数",
         "Delay に負の値、Interval に 0 を設定したときの例外と、TextBox からのバインドで不正な値や空文字を渡したときの値",
-        "ScrollBar と Slider の既定のテンプレートの中の RepeatButton",
+        "縦・横の ScrollBar と Slider の既定のテンプレートの中の RepeatButton（とそのコマンド）",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -199,13 +199,15 @@ internal sealed class RepeatButtonDemoScene : IScene
 
         {
             var scrollBar = new ScrollBar { Orientation = Orientation.Vertical, Height = 200 };
+            var horizontal = new ScrollBar { Orientation = Orientation.Horizontal, Width = 200 };
             var slider = new Slider { Width = 200 };
-            var panel = new StackPanel { Orientation = Orientation.Horizontal, Children = { scrollBar, slider } };
+            var panel = new StackPanel { Orientation = Orientation.Horizontal, Children = { scrollBar, new StackPanel { Children = { horizontal, slider } } } };
             await ShowAsync(panel, async () =>
             {
                 string Commands(Control control) => string.Join(", ", Descendants(control).OfType<RepeatButton>()
                     .Select(r => r.Command is RoutedCommand routed ? routed.Name : WpfProbe.Describe(r.Command)));
-                rows.Add(["RepeatButtons in the ScrollBar template (their commands)", Commands(scrollBar)]);
+                rows.Add(["RepeatButtons in a vertical ScrollBar template (their commands)", Commands(scrollBar)]);
+                rows.Add(["RepeatButtons in a horizontal ScrollBar template (their commands)", Commands(horizontal)]);
                 rows.Add(["RepeatButtons in the Slider template (their commands)", Commands(slider)]);
                 await Task.CompletedTask;
             });

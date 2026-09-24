@@ -26,7 +26,7 @@ internal sealed class GroupBoxDemoScene : IScene
         "HeaderStringFormat が文字列の Header と要素の Header に効くか（デモアプリと同じ \"Header={0}.\"）",
         "改行を含む文字列の Header が何行で表示されるか",
         "Padding 0 と 20 での内容の位置",
-        "FontSize・Foreground を GroupBox に設定したときの見出しと内容の文字、Background がどこに塗られ、内容の子要素に引き継がれるか",
+        "FontSize・Foreground を GroupBox に設定したときの見出しと内容の文字、Background がどこに塗られ、内容がその範囲に入るか",
         "UI オートメーションでのコントロールの種類と名前",
         "アンダースコア付きの Header のアクセスキーを押したときのフォーカスの移動先",
     ];
@@ -134,8 +134,9 @@ internal sealed class GroupBoxDemoScene : IScene
                 var painted = Descendants(box).OfType<Border>().First(b => ReferenceEquals(b.Background, box.Background));
                 Rect area = Bounds(painted, box);
                 Rect header = Bounds(HeaderPresenter(box), box);
-                rows.Add(["Background: painted area / header area / child Border's Background",
-                    $"{Format(area)} / {Format(header)} / {WpfProbe.Describe(inner.Background)}"]);
+                Rect body = Bounds(inner, box);
+                rows.Add(["Background: painted area / header area / content inside the painted area",
+                    $"{Format(area)} / {Format(header)} / {area.Contains(body)}"]);
                 await Task.CompletedTask;
             });
         }

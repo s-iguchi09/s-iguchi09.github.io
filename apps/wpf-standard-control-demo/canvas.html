@@ -87,8 +87,10 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the result area of the demo app (<code>CanvasUsageControl.xaml</code>), with the <code>TargetNullValue</code> and <code>FallbackValue</code> of the bindings and the surrounding layout left out:</p>
-    <pre><code class="language-xml">&lt;Canvas Background="#F0F0F0" ClipToBounds="True"&gt;
+    <p>The following XAML is the result area of the demo app (<code>CanvasUsageControl.xaml</code>), with the <code>TargetNullValue</code> and <code>FallbackValue</code> of the bindings and the surrounding layout left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Background="#F0F0F0" ClipToBounds="True"&gt;
   &lt;Rectangle x:Name="TargetRect"
              Canvas.Left="{Binding Text, ElementName=LeftTextBox}"
              Canvas.Top="{Binding Text, ElementName=TopTextBox}"

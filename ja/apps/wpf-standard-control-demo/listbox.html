@@ -74,19 +74,22 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ListBoxUsageControl.xaml</code>）の <code>IsSelected(ListBoxItem)</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsSelectedItem1CheckBox" Content="Select Item 1" /&gt;
-&lt;CheckBox x:Name="IsSelectedItem2CheckBox" Content="Select Item 2" /&gt;
+    <p>デモアプリ（<code>ListBoxUsageControl.xaml</code>）の <code>IsSelected(ListBoxItem)</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsSelectedItem1CheckBox" Content="Select Item 1" /&gt;
+  &lt;CheckBox x:Name="IsSelectedItem2CheckBox" Content="Select Item 2" /&gt;
 
-&lt;ListBox x:Name="IsSelectedListBox" Height="100" SelectionMode="Extended"&gt;
-  &lt;ListBoxItem Content="Item 1 (Bound to CheckBox)"
-               IsSelected="{Binding IsChecked, ElementName=IsSelectedItem1CheckBox}" /&gt;
-  &lt;ListBoxItem Content="Item 2 (Bound to CheckBox)"
-               IsSelected="{Binding IsChecked, ElementName=IsSelectedItem2CheckBox}" /&gt;
-  &lt;ListBoxItem Content="Item 3 (Independent)" /&gt;
-&lt;/ListBox&gt;
+  &lt;ListBox x:Name="IsSelectedListBox" Height="100" SelectionMode="Extended"&gt;
+    &lt;ListBoxItem Content="Item 1 (Bound to CheckBox)"
+                 IsSelected="{Binding IsChecked, ElementName=IsSelectedItem1CheckBox}" /&gt;
+    &lt;ListBoxItem Content="Item 2 (Bound to CheckBox)"
+                 IsSelected="{Binding IsChecked, ElementName=IsSelectedItem2CheckBox}" /&gt;
+    &lt;ListBoxItem Content="Item 3 (Independent)" /&gt;
+  &lt;/ListBox&gt;
 
-&lt;TextBlock Text="{Binding SelectedItems.Count, ElementName=IsSelectedListBox}" /&gt;</code></pre>
+  &lt;TextBlock Text="{Binding SelectedItems.Count, ElementName=IsSelectedListBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

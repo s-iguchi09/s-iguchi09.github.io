@@ -84,24 +84,27 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>PopupUsageControl.xaml</code>）の最初の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsOpenCheckBox" Content="IsOpen" /&gt;
-&lt;CheckBox x:Name="StaysOpenCheckBox" Content="StaysOpen" IsChecked="True" /&gt;
-&lt;CheckBox x:Name="AllowsTransparencyCheckBox" Content="AllowsTransparency" IsChecked="True" /&gt;
+    <p>デモアプリ（<code>PopupUsageControl.xaml</code>）の最初の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsOpenCheckBox" Content="IsOpen" /&gt;
+  &lt;CheckBox x:Name="StaysOpenCheckBox" Content="StaysOpen" IsChecked="True" /&gt;
+  &lt;CheckBox x:Name="AllowsTransparencyCheckBox" Content="AllowsTransparency" IsChecked="True" /&gt;
 
-&lt;Grid&gt;
-  &lt;Button x:Name="BasicPlacementTarget" Content="Placement Target" /&gt;
-  &lt;Popup x:Name="BasicPopup"
-         AllowsTransparency="{Binding IsChecked, ElementName=AllowsTransparencyCheckBox}"
-         IsOpen="{Binding IsChecked, ElementName=IsOpenCheckBox}"
-         Placement="Bottom"
-         PlacementTarget="{Binding ElementName=BasicPlacementTarget}"
-         StaysOpen="{Binding IsChecked, ElementName=StaysOpenCheckBox}"&gt;
-    &lt;Border Background="White" BorderBrush="Gray" BorderThickness="1"&gt;
-      &lt;TextBlock Text="Basic Popup Content" /&gt;
-    &lt;/Border&gt;
-  &lt;/Popup&gt;
-&lt;/Grid&gt;</code></pre>
+  &lt;Grid&gt;
+    &lt;Button x:Name="BasicPlacementTarget" Content="Placement Target" /&gt;
+    &lt;Popup x:Name="BasicPopup"
+           AllowsTransparency="{Binding IsChecked, ElementName=AllowsTransparencyCheckBox}"
+           IsOpen="{Binding IsChecked, ElementName=IsOpenCheckBox}"
+           Placement="Bottom"
+           PlacementTarget="{Binding ElementName=BasicPlacementTarget}"
+           StaysOpen="{Binding IsChecked, ElementName=StaysOpenCheckBox}"&gt;
+      &lt;Border Background="White" BorderBrush="Gray" BorderThickness="1"&gt;
+        &lt;TextBlock Text="Basic Popup Content" /&gt;
+      &lt;/Border&gt;
+    &lt;/Popup&gt;
+  &lt;/Grid&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

@@ -91,16 +91,19 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the range section of the demo app (<code>ProgressBarUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, and the input behavior of the text boxes left out:</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="MinTextBox" Text="0" /&gt;
-&lt;TextBox x:Name="MaxTextBox" Text="100" /&gt;
-&lt;TextBox x:Name="ValueTextBox" Text="30" /&gt;
+    <p>The following XAML is the range section of the demo app (<code>ProgressBarUsageControl.xaml</code>), with the styles, the surrounding GroupBoxes, and the input behavior of the text boxes left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="MinTextBox" Text="0" /&gt;
+  &lt;TextBox x:Name="MaxTextBox" Text="100" /&gt;
+  &lt;TextBox x:Name="ValueTextBox" Text="30" /&gt;
 
-&lt;ProgressBar x:Name="BasicProgressBar"
-             Height="20"
-             Maximum="{Binding Text, ElementName=MaxTextBox}"
-             Minimum="{Binding Text, ElementName=MinTextBox}"
-             Value="{Binding Text, ElementName=ValueTextBox}" /&gt;</code></pre>
+  &lt;ProgressBar x:Name="BasicProgressBar"
+               Height="20"
+               Maximum="{Binding Text, ElementName=MaxTextBox}"
+               Minimum="{Binding Text, ElementName=MinTextBox}"
+               Value="{Binding Text, ElementName=ValueTextBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

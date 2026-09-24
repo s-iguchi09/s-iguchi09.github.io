@@ -64,16 +64,19 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ToggleButtonUsageControl.xaml</code>）の <code>IsThreeState</code> の欄から、スタイルと周囲のレイアウトを省いたものです。</p>
-    <pre><code class="language-xml">&lt;ToggleButton x:Name="IsThreeStateTrueButton" HorizontalAlignment="Stretch"
-              Content="ToggleButton" IsThreeState="True" /&gt;
-&lt;TextBlock HorizontalAlignment="Center"
-           Text="{Binding IsChecked, ElementName=IsThreeStateTrueButton, TargetNullValue=(Null)}" /&gt;
+    <p>デモアプリ（<code>ToggleButtonUsageControl.xaml</code>）の <code>IsThreeState</code> の欄から、スタイルと周囲のレイアウトを省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;ToggleButton x:Name="IsThreeStateTrueButton" HorizontalAlignment="Stretch"
+                Content="ToggleButton" IsThreeState="True" /&gt;
+  &lt;TextBlock HorizontalAlignment="Center"
+             Text="{Binding IsChecked, ElementName=IsThreeStateTrueButton, TargetNullValue=(Null)}" /&gt;
 
-&lt;ToggleButton x:Name="IsThreeStateFalseButton" HorizontalAlignment="Stretch"
-              Content="ToggleButton" IsThreeState="False" /&gt;
-&lt;TextBlock HorizontalAlignment="Center"
-           Text="{Binding IsChecked, ElementName=IsThreeStateFalseButton}" /&gt;</code></pre>
+  &lt;ToggleButton x:Name="IsThreeStateFalseButton" HorizontalAlignment="Stretch"
+                Content="ToggleButton" IsThreeState="False" /&gt;
+  &lt;TextBlock HorizontalAlignment="Center"
+             Text="{Binding IsChecked, ElementName=IsThreeStateFalseButton}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

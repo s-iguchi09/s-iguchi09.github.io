@@ -51,7 +51,7 @@
         <tr>
           <td><code>ItemHeight</code></td>
           <td><code>double</code></td>
-          <td>すべての子の枠の高さを固定します。デモアプリの初期値は 100 です。100 ではラベルが 96（100 から余白を引いた値）に引き伸ばされ、2 行目は 102 から始まりました。</td>
+          <td>すべての子の枠の高さを固定します。デモアプリの初期値は 100 です。100 ではラベルが 96（100 から余白を引いた値）に引き伸ばされ、2 行目は 100 から始まり、その先頭のラベルは余白 2 の分だけ下の 102 に置かれました。</td>
         </tr>
         <tr>
           <td><code>ItemWidth</code></td>
@@ -74,13 +74,16 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>WrapPanelUsageControl.xaml</code>）の <code>ItemWidth</code> の欄から、スタイル、周囲の GroupBox、テキストボックスの入力制限のビヘイビア、一部のラベルを省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="ItemWidthText" Text="100" /&gt;
+    <p>デモアプリ（<code>WrapPanelUsageControl.xaml</code>）の <code>ItemWidth</code> の欄から、スタイル、周囲の GroupBox、テキストボックスの入力制限のビヘイビア、一部のラベルを省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="ItemWidthText" Text="100" /&gt;
 
-&lt;WrapPanel x:Name="ItemWidthWrapPanel" ItemWidth="{Binding Text, ElementName=ItemWidthText}"&gt;
-  &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item1" /&gt;
-  &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item2" /&gt;
-&lt;/WrapPanel&gt;</code></pre>
+  &lt;WrapPanel x:Name="ItemWidthWrapPanel" ItemWidth="{Binding Text, ElementName=ItemWidthText}"&gt;
+    &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item1" /&gt;
+    &lt;Label Margin="2" BorderBrush="Black" BorderThickness="1" Content="Item2" /&gt;
+  &lt;/WrapPanel&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
@@ -106,8 +109,8 @@
     <h2>実測した挙動</h2>
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/WrapPanelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>WrapPanelDemoScene</code></a> を使い、デモアプリと同じラベル（余白 2、枠 1）で試しました。パネルは <code>Measure</code> と <code>Arrange</code> でレイアウトしました。大きさは、計測したマシンでの値です。</p>
 
-    <figure class="article-figure">
-      <img src="/images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg" alt="WrapPanel の計測結果の表。既定値は Horizontal で項目の大きさは NaN、デモアプリの 5 つのラベルは幅 150 で 3 つと 2 つの 2 行、高さ 60 で 5 列になり、低い子は Stretch のときだけ行の高さまで伸び、ItemWidth と ItemHeight を 100 にするとラベルは 96 に伸びて幅 150 の子は 100 で切れ、ScrollViewer の中では 3 行、横スクロールできると 1 行になり、子の間は Background があるときだけ当たり、ZIndex が重なったラベルの順序を決め、ListBox では 1000 項目すべてが作られる" width="834" height="530" loading="lazy">
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg" alt="WrapPanel の計測結果の表。既定値は Horizontal で項目の大きさは NaN、デモアプリの 5 つのラベルは幅 150 で 3 つと 2 つの 2 行、高さ 60 で 5 列になり、低い子は Stretch のときだけ行の高さまで伸び、ItemWidth と ItemHeight を 100 にするとラベルは 96 に伸びて幅 150 の子は 100 で切れ、ScrollViewer の中では 3 行、横スクロールできると 1 行になり、子の間は Background があるときだけ当たり、ZIndex が重なったラベルの順序を決め、ListBox では 1000 項目すべてが作られる" width="1038" height="530" loading="lazy">
       <figcaption>折り返し、行の大きさ、<code>ItemWidth</code> と <code>ItemHeight</code>。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

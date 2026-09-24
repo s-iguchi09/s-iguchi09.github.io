@@ -88,13 +88,16 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ExpanderUsageControl.xaml</code>）の <code>IsExpanded</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsExpandedCheckBox" VerticalContentAlignment="Center" Content="IsExpanded" /&gt;
+    <p>デモアプリ（<code>ExpanderUsageControl.xaml</code>）の <code>IsExpanded</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsExpandedCheckBox" VerticalContentAlignment="Center" Content="IsExpanded" /&gt;
 
-&lt;Expander x:Name="IsExpandedExpander"
-          Content="CONTENT"
-          Header="Expander"
-          IsExpanded="{Binding IsChecked, ElementName=IsExpandedCheckBox}" /&gt;</code></pre>
+  &lt;Expander x:Name="IsExpandedExpander"
+            Content="CONTENT"
+            Header="Expander"
+            IsExpanded="{Binding IsChecked, ElementName=IsExpandedCheckBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">

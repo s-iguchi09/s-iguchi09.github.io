@@ -78,12 +78,15 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ButtonUsageControl.xaml</code>）の <code>CommandParameter</code> の欄から、スタイルと周囲の GroupBox を省いたものです。</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="CommandParameterText" Text="ShowMessageText" /&gt;
-&lt;Button x:Name="ClickWithParameterCommandButton"
-        Command="{Binding ClickWithParameterCommand}"
-        CommandParameter="{Binding Text, ElementName=CommandParameterText}"
-        Content="ShowMessageBox" /&gt;</code></pre>
+    <p>デモアプリ（<code>ButtonUsageControl.xaml</code>）の <code>CommandParameter</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="CommandParameterText" Text="ShowMessageText" /&gt;
+  &lt;Button x:Name="ClickWithParameterCommandButton"
+          Command="{Binding ClickWithParameterCommand}"
+          CommandParameter="{Binding Text, ElementName=CommandParameterText}"
+          Content="ShowMessageBox" /&gt;
+&lt;/StackPanel&gt;</code></pre>
     <p>コマンドはビューモデル（<code>ButtonUsageViewModel.cs</code>）で定義しています。</p>
     <pre><code class="language-csharp">public ICommand ClickWithParameterCommand { get; } =
     new RelayCommand(param =&gt; MessageBox.Show(param?.ToString()), null);</code></pre>

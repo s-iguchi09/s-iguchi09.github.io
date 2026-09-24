@@ -122,15 +122,18 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>Text</code> section of the demo app (<code>TextBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out. The three text boxes write to the same <code>TextBlock</code> at different times:</p>
-    <pre><code class="language-xml">&lt;TextBox x:Name="UpdateSourceTriggerDefaultTextBox"
-         Text="{Binding Text, ElementName=UpdateSourceTrigger, UpdateSourceTrigger=Default}" /&gt;
-&lt;TextBox x:Name="UpdateSourceTriggerLostFocusTextBox"
-         Text="{Binding Text, ElementName=UpdateSourceTrigger, UpdateSourceTrigger=LostFocus}" /&gt;
-&lt;TextBox x:Name="UpdateSourceTriggerPropertyChangedTextBox"
-         Text="{Binding Text, ElementName=UpdateSourceTrigger, UpdateSourceTrigger=PropertyChanged}" /&gt;
+    <p>The following XAML is the <code>Text</code> section of the demo app (<code>TextBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. The three text boxes write to the same <code>TextBlock</code> at different times:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;TextBox x:Name="UpdateSourceTriggerDefaultTextBox"
+           Text="{Binding Text, ElementName=UpdateSourceTrigger, UpdateSourceTrigger=Default}" /&gt;
+  &lt;TextBox x:Name="UpdateSourceTriggerLostFocusTextBox"
+           Text="{Binding Text, ElementName=UpdateSourceTrigger, UpdateSourceTrigger=LostFocus}" /&gt;
+  &lt;TextBox x:Name="UpdateSourceTriggerPropertyChangedTextBox"
+           Text="{Binding Text, ElementName=UpdateSourceTrigger, UpdateSourceTrigger=PropertyChanged}" /&gt;
 
-&lt;TextBlock x:Name="UpdateSourceTrigger" /&gt;</code></pre>
+  &lt;TextBlock x:Name="UpdateSourceTrigger" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
