@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-progressbar
+slug: "wpf-standard-control-demo-progressbar"
+scene: "ProgressBarDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ProgressBar の基底クラスと、Minimum / Maximum / Value / IsIndeterminate / Orientation の既定値"
+  - "塗りの長さ（PART_Indicator）が (Value - Minimum) / (Maximum - Minimum) に比例すること（Minimum が 0 以外の場合も）"
+  - "Maximum と Minimum が等しいとき、Maximum を Minimum より小さくしたとき、Value が範囲外のときの塗りと値"
+  - "範囲外の Value が、後で Maximum を広げたときに元の値へ戻るか"
+  - "Orientation が Vertical のときの塗りの位置（下から上か）"
+  - "IsIndeterminate が True のときの塗りと表示状態、アニメーションが動いているか（表示中と Collapsed）"
+  - "別スレッドから Value を設定したときの例外と、Progress<T> のコールバックが UI スレッドで動くこと"
+  - "UI オートメーションの RangeValue パターン（通常時と不定モード）と IsReadOnly"
+images:
+  - "images/wpf-standard-control-demo/verification/progressbar/progressbar-range.svg"
+  - "images/wpf-standard-control-demo/verification/progressbar/progressbar-modes.svg"

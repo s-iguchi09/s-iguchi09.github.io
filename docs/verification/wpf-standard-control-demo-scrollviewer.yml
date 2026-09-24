@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-scrollviewer
+slug: "wpf-standard-control-demo-scrollviewer"
+scene: "ScrollViewerDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "VerticalScrollBarVisibility / HorizontalScrollBarVisibility の既定値"
+  - "VerticalScrollBarVisibility の 4 つの値ごとに、内容が収まる場合とはみ出す場合の ComputedVerticalScrollBarVisibility、ViewportWidth、ExtentHeight、ScrollToVerticalOffset(50) 後の VerticalOffset"
+  - "CanContentScroll が True と False のときの ExtentHeight / ViewportHeight の単位と、LineDown 1 回の移動量"
+  - "ListBox（1000 項目）で CanContentScroll を False にしたときに生成されるコンテナーの数"
+  - "IsDeferredScrollingEnabled が True と False のとき、つまみのドラッグ中とドラッグ後の VerticalOffset と ContentVerticalOffset"
+  - "ListBox・TextBox・TreeView・DataGrid の中の ScrollViewer と、その HorizontalScrollBarVisibility の値、ListBox に付けた添付プロパティと外側の ScrollViewer の設定が届くか"
+  - "レイアウト前に読んだ ExtentHeight / ViewportHeight"
+images:
+  - "images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.svg"
+  - "images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg"

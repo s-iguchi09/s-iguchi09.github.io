@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1022 320" width="1022" height="320" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1022" height="320" />
+  <text class="title" x="12" y="24">ProgressBar: range, fill and orientation</text>
+  <rect class="head" x="12" y="38" width="998" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="996" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">base class / defaults: Minimum, Maximum, Value, IsIndeterminate, Orientation</text>
+  <text class="cell" x="996" y="87.5" text-anchor="end">RangeBase / 0, 100, 0, False, Horizontal</text>
+  <text class="cell" x="26" y="117.5">width 200, Minimum 0, Maximum 100, Value 30: indicator width</text>
+  <text class="cell" x="996" y="117.5" text-anchor="end">60</text>
+  <text class="cell" x="26" y="147.5">width 200, Minimum 20, Maximum 120, Value 70: indicator width</text>
+  <text class="cell" x="996" y="147.5" text-anchor="end">100</text>
+  <text class="cell" x="26" y="177.5">width 200, Minimum 0, Maximum 100, Value 0: indicator width</text>
+  <text class="cell" x="996" y="177.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="207.5">Minimum = Maximum = 50: indicator width (exception)</text>
+  <text class="cell" x="996" y="207.5" text-anchor="end">200 (none)</text>
+  <text class="cell" x="26" y="237.5">Minimum 50, then Maximum = 10: Maximum / Value / indicator width</text>
+  <text class="cell" x="996" y="237.5" text-anchor="end">50 / 50 / 200</text>
+  <text class="cell" x="26" y="267.5">Value = 150 with Maximum 100: Value / indicator width; then Maximum = 200: Value</text>
+  <text class="cell" x="996" y="267.5" text-anchor="end">100 / 200; 150</text>
+  <text class="cell" x="26" y="297.5">Orientation=Vertical, 20 x 200, Value 75: indicator bounds</text>
+  <text class="cell" x="996" y="297.5" text-anchor="end">x=0 y=50 w=20 h=150</text>
+  <line class="line" x1="12" y1="38" x2="1010" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1010" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1010" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1010" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1010" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1010" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1010" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1010" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1010" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1010" y2="308" />
+  <line class="line" x1="12" y1="38" x2="12" y2="308" />
+  <line class="line" x1="668" y1="38" x2="668" y2="308" />
+  <line class="line" x1="1010" y1="38" x2="1010" y2="308" />
+</svg>

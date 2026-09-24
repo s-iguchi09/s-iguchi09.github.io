@@ -84,20 +84,25 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>DatePickerUsageControl.xaml</code>）の <code>DisplayDate Range (Start/End)</code> の欄から、スタイルと周囲の GroupBox を省いたものです。<code>DateTimeAdvancedConverter</code> はデモアプリのコンバーターで、今日から直前の月曜日と次の金曜日を求めます。</p>
-    <pre><code class="language-xml">&lt;DatePicker x:Name="DisplayDateStartSourceDatePicker"
-            SelectedDate="{Binding Source={x:Static sys:DateTime.Now},
-                                   Converter={converters:DateTimeAdvancedConverter Operation=Previous, TargetDay=Monday},
-                                   Mode=OneTime}" /&gt;
-&lt;DatePicker x:Name="DisplayDateEndSourceDatePicker"
-            SelectedDate="{Binding Source={x:Static sys:DateTime.Now},
-                                   Converter={converters:DateTimeAdvancedConverter Operation=Next, TargetDay=Friday},
-                                   Mode=OneTime}" /&gt;
+    <p>デモアプリ（<code>DatePickerUsageControl.xaml</code>）の <code>DisplayDate Range (Start/End)</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>DateTimeAdvancedConverter</code> はデモアプリのコンバーターで、今日から直前の月曜日と次の金曜日を求めます。<code>converters</code> はデモアプリ独自のコンバーターの接頭辞です。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:sys="clr-namespace:System;assembly=mscorlib"
+            xmlns:converters="clr-namespace:WPFStandardControlDemoApp.Common.Converters"&gt;
+  &lt;DatePicker x:Name="DisplayDateStartSourceDatePicker"
+              SelectedDate="{Binding Source={x:Static sys:DateTime.Now},
+                                     Converter={converters:DateTimeAdvancedConverter Operation=Previous, TargetDay=Monday},
+                                     Mode=OneTime}" /&gt;
+  &lt;DatePicker x:Name="DisplayDateEndSourceDatePicker"
+              SelectedDate="{Binding Source={x:Static sys:DateTime.Now},
+                                     Converter={converters:DateTimeAdvancedConverter Operation=Next, TargetDay=Friday},
+                                     Mode=OneTime}" /&gt;
 
-&lt;DatePicker x:Name="DisplayDateRangeDatePicker"
-            DisplayDateEnd="{Binding SelectedDate, ElementName=DisplayDateEndSourceDatePicker}"
-            DisplayDateStart="{Binding SelectedDate, ElementName=DisplayDateStartSourceDatePicker}"
-            SelectedDate="{x:Static sys:DateTime.Now}" /&gt;</code></pre>
+  &lt;DatePicker x:Name="DisplayDateRangeDatePicker"
+              DisplayDateEnd="{Binding SelectedDate, ElementName=DisplayDateEndSourceDatePicker}"
+              DisplayDateStart="{Binding SelectedDate, ElementName=DisplayDateStartSourceDatePicker}"
+              SelectedDate="{x:Static sys:DateTime.Now}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
     <p>3 つ目の DatePicker には最初から今日が選ばれています。そのため、1 つ目の DatePicker で開始日を今日より後にしても、<code>DisplayDateStart</code> の説明のとおり、範囲は今日より後には狭まりません。</p>
   </section>
 

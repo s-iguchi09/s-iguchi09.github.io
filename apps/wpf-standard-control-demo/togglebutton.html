@@ -8,7 +8,7 @@
   <title>ToggleButton | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF ToggleButton control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF ToggleButton measured on .NET 10: IsChecked, IsThreeState, the default template, ClickMode, Command, a bound Popup, and why null looks just like unchecked.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,38 +21,26 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ToggleButton</p>
     <h1>ToggleButton <span class="category-badge">Inputs</span></h1>
-    <p>ToggleButton is a button that maintains its pressed state between clicks, toggling between checked and unchecked. It is the direct base class for CheckBox and RadioButton, and is commonly used to build on/off switches, bold/italic toolbar buttons, and custom toggle selectors.</p>
+    <p>ToggleButton is a button that stays pressed after a click and is released by the next one. CheckBox and RadioButton derive from it.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>ToggleButton</strong> control extends <code>ButtonBase</code> by adding a persistent
-      state — <code>IsChecked</code> — that alternates between <code>true</code> and <code>false</code> on
-      each click. This makes it fundamentally different from a regular <code>Button</code>, which fires an
-      action but retains no state. ToggleButton is the super-class shared by <code>CheckBox</code> and
-      <code>RadioButton</code>, meaning all three share the same state-management infrastructure.
+      <strong>ToggleButton</strong> derives from <code>ButtonBase</code>, and both <code>CheckBox</code> and
+      <code>RadioButton</code> derive from ToggleButton. Its state is <code>IsChecked</code>, a <code>bool?</code> that binds
+      two-way by default. ToggleButton has no <code>GroupName</code>; for one-of-many choices, use RadioButton.
     </p>
     <p>
-      The <code>IsChecked</code> property is nullable (<code>bool?</code>). When <code>IsThreeState</code>
-      is <code>true</code>, clicking cycles through <code>false</code> → <code>true</code> →
-      <code>null</code> (indeterminate) → <code>false</code>. The indeterminate state is useful for
-      representing mixed states, such as a "Select all" toggle when only some items in a list are
-      checked. When <code>IsThreeState</code> is <code>false</code> (default), <code>null</code> can
-      only be set programmatically and clicking toggles between <code>false</code> and <code>true</code>.
+      The default template has no visual state groups. It changes its look with a trigger on <code>IsChecked</code> =
+      <code>true</code> only, so a button whose <code>IsChecked</code> is <code>null</code> looks the same as an unchecked one.
+      If the undetermined state must be visible, the template has to show it. UI Automation does report all three states:
+      <code>ToggleState</code> was <code>Off</code>, <code>On</code>, and <code>Indeterminate</code> for <code>false</code>,
+      <code>true</code>, and <code>null</code>.
     </p>
     <p>
-      ToggleButton fires three events in addition to the standard <code>Click</code>: <code>Checked</code>
-      (when transitioning to <code>true</code>), <code>Unchecked</code> (when transitioning to
-      <code>false</code>), and <code>Indeterminate</code> (when transitioning to <code>null</code>).
-      In MVVM, you typically ignore these events and bind <code>IsChecked</code> two-way to a
-      <code>bool?</code> ViewModel property instead.
-    </p>
-    <p>
-      Because ToggleButton is a <code>ContentControl</code>, you can place any content inside it —
-      text, icons, images, or complex panels. This makes it ideal for building icon toggle buttons in
-      toolbars (bold, italic, underline formatting), theme switchers (dark/light mode), and custom
-      switch controls by replacing the default control template.
+      The demo app has two sections, <code>IsChecked</code> and <code>IsThreeState</code>, each showing the value next to the
+      button. The "Show Code" link under each section displays its XAML.
     </p>
   </section>
 
@@ -63,96 +51,116 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
 
     <table class="prop-table">
       <thead>
-        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>IsChecked</code></td>
           <td><code>bool? (Null / False / True)</code></td>
-          <td>Use this with a two-way binding to synchronize the button's on/off state with a ViewModel property. <code>true</code> renders the pressed/active visual, <code>false</code> the normal visual, and <code>null</code> renders an indeterminate appearance (a partially-pressed look in the default template). <strong>Pitfall:</strong> If the ViewModel property is a plain <code>bool</code> (non-nullable) and <code>IsThreeState</code> is enabled, binding will fail with a ConvertBack error when the user cycles to the null state. Always use <code>bool?</code> when three-state mode is active.</td>
+          <td>Whether the button is pressed. The demo app shows three buttons starting at <code>null</code>, <code>false</code>, and <code>true</code>. None of them is three-state, so clicks alternate between <code>false</code> and <code>true</code>. The one that starts at <code>null</code> goes to <code>false</code> on the first click and cannot return to <code>null</code>.</td>
         </tr>
         <tr>
           <td><code>IsThreeState</code></td>
           <td><code>bool</code></td>
-          <td>Use this for rare scenarios where three distinct states — such as "Auto / On / Off" — need to be expressed through a single button. When <code>True</code>, each click cycles through <code>false → true → null → false</code>. <strong>Pitfall:</strong> For the vast majority of toggle use cases (on/off switching), two states are sufficient and clearer to users. If you do enable three-state mode, you must define distinct visuals for each state in the <code>ControlTemplate</code>; without clear visual differentiation, users cannot tell what the null state means.</td>
-        </tr>
-        <tr>
-          <td><code>ClickMode (ButtonBase)</code></td>
-          <td><code>Release / Press / Hover</code></td>
-          <td>ToggleButton inherits <code>ClickMode</code> from <code>ButtonBase</code>. The default <code>Release</code> is appropriate for almost all toggle scenarios. <code>Press</code> toggles the state immediately on mouse-down, which can be useful for "hold to preview" interactions where the toggled state is only active while the button is physically depressed. <code>Hover</code> toggles on mouse-enter and is rarely suitable for ToggleButton since accidental hover would flip the state unexpectedly.</td>
-        </tr>
-        <tr>
-          <td><code>Command / CommandParameter (ButtonBase)</code></td>
-          <td><code>ICommand / object</code></td>
-          <td>Use this to execute a ViewModel command on each click. <code>CommandParameter</code> can pass any context value to <code>Execute</code> and <code>CanExecute</code>. <strong>Pitfall:</strong> The <code>CommandParameter</code> does not automatically include the new <code>IsChecked</code> value after the click. If the command handler needs to know the resulting state, bind <code>IsChecked</code> directly to the ViewModel and read it there, or use <code>Interaction.Triggers</code> with an <code>EventTrigger</code> on the <code>Checked</code>/<code>Unchecked</code> events to pass the state through a separate mechanism.</td>
+          <td>Whether clicks include the undetermined state. With <code>True</code>, clicks went <code>false</code> &rarr; <code>true</code> &rarr; <code>null</code> &rarr; <code>false</code>; with the default <code>False</code>, <code>false</code> &rarr; <code>true</code> &rarr; <code>false</code>. Because the default template draws <code>null</code> like <code>false</code>, the demo app's three-state button looks unpressed in both states; the text next to it shows the difference.</td>
         </tr>
       </tbody>
     </table>
   </section>
 
   <section class="content-section">
+    <h2>ClickMode, Command, and Popup</h2>
+    <p>These are not in the demo app's ToggleButton screen but are common with toggle buttons. They were measured in the same way.</p>
+    <ul>
+      <li><strong><code>ClickMode="Press"</code></strong> toggles when the mouse button goes down, and the new state stays after it is released: <code>IsChecked</code> was <code>true</code> after the button went down and still <code>true</code> after it came up. It does not make a button that is active only while held.</li>
+      <li><strong><code>Command</code></strong> runs after the state has changed. With <code>CommandParameter</code> bound to the button's own <code>IsChecked</code>, a click from <code>false</code> passed <code>True</code> to <code>Execute</code>, and <code>IsChecked</code> was already <code>true</code> there. Toggling the button through UI Automation's <code>Toggle</code>, as an assistive technology does, changed <code>IsChecked</code> but did not run the command. Keep the state in a bound property if it must be handled for every way the button can be toggled.</li>
+      <li><strong>A <code>Popup</code> whose <code>IsOpen</code> is bound to <code>IsChecked</code></strong> opened when the button was clicked. When the popup closed, <code>IsChecked</code> returned to <code>false</code>, because <code>Popup.IsOpen</code> binds two-way by default. With <code>StaysOpen="False"</code> and real clicks, clicking an empty area of the window closed the popup and cleared the button. Clicking the button itself while the popup was open did not close it: afterwards <code>IsOpen</code> and <code>IsChecked</code> were both still <code>true</code>.</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
     <h2>XAML Example</h2>
-    <p>ToggleButton used as a dark-mode switch and as formatting toolbar buttons:</p>
-    <pre><code class="language-xml">&lt;!-- On/off switch style toggle --&gt;
-&lt;ToggleButton Content="Dark Mode"
-              IsChecked="{Binding IsDarkMode, Mode=TwoWay}" /&gt;
+    <p>The following XAML is the <code>IsThreeState</code> section of the demo app (<code>ToggleButtonUsageControl.xaml</code>), with the styles and the surrounding layout left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;ToggleButton x:Name="IsThreeStateTrueButton" HorizontalAlignment="Stretch"
+                Content="ToggleButton" IsThreeState="True" /&gt;
+  &lt;TextBlock HorizontalAlignment="Center"
+             Text="{Binding IsChecked, ElementName=IsThreeStateTrueButton, TargetNullValue=(Null)}" /&gt;
 
-&lt;!-- Toolbar formatting buttons --&gt;
-&lt;ToolBar&gt;
-  &lt;ToggleButton IsChecked="{Binding IsBold, Mode=TwoWay}" ToolTip="Bold"&gt;
-    &lt;TextBlock Text="B" FontWeight="Bold" /&gt;
-  &lt;/ToggleButton&gt;
-  &lt;ToggleButton IsChecked="{Binding IsItalic, Mode=TwoWay}" ToolTip="Italic"&gt;
-    &lt;TextBlock Text="I" FontStyle="Italic" /&gt;
-  &lt;/ToggleButton&gt;
-&lt;/ToolBar&gt;
-
-&lt;!-- Three-state select-all --&gt;
-&lt;ToggleButton Content="Select All" IsThreeState="True"
-              IsChecked="{Binding AllItemsSelected, Mode=TwoWay}" /&gt;</code></pre>
+  &lt;ToggleButton x:Name="IsThreeStateFalseButton" HorizontalAlignment="Stretch"
+                Content="ToggleButton" IsThreeState="False" /&gt;
+  &lt;TextBlock HorizontalAlignment="Center"
+             Text="{Binding IsChecked, ElementName=IsThreeStateFalseButton}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Toolbar formatting buttons</strong> — Bold, Italic, Underline buttons in text editors that stay pressed while formatting is active.</li>
-      <li><strong>Feature toggles</strong> — Enable/disable features or modes (dark mode, auto-save, grid snap) with a single persistent button.</li>
-      <li><strong>Select-all controls</strong> — Use three-state mode to show checked/unchecked/indeterminate based on whether all, some, or no items in a list are selected.</li>
-      <li><strong>On/Off switches</strong> — Replace the default template with a custom pill-shaped switch for a modern toggle appearance.</li>
-      <li><strong>Filter toggles</strong> — Toggle category filters in a search/filter panel, where the active filters remain visually pressed.</li>
+      <li><strong>Toolbar toggles:</strong> bold, italic, or a drawing mode that stays on until turned off.</li>
+      <li><strong>Showing panels and popups:</strong> a button whose <code>IsChecked</code> drives a panel's visibility or a popup's <code>IsOpen</code>.</li>
+      <li><strong>Custom switches:</strong> a ToggleButton with its own template drawn as an on/off switch.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Bind IsChecked two-way</strong> — Always use Mode=TwoWay for the IsChecked binding so the ViewModel can programmatically set the initial state.</li>
-      <li><strong>Checked/Unchecked events vs Command</strong> — When you need to react to state transitions, prefer binding <code>IsChecked</code> two-way and detecting the change in the ViewModel's property setter rather than handling <code>Checked</code>/<code>Unchecked</code> events in code-behind. If a Command is required, use <code>Interaction.Triggers</code> with an <code>EventTrigger</code> on those events to forward them to a Command without code-behind.</li>
-      <li><strong>Use DataTrigger in ControlTemplate for custom visuals</strong> — When replacing the ControlTemplate, add a <code>DataTrigger</code> that binds to <code>IsChecked</code> and applies distinct background color, transform, or content for each state. This keeps the visual logic self-contained in XAML rather than scattered across event handlers.</li>
-      <li><strong>Use visual states for custom styling</strong> — ToggleButton's control template includes Checked, Unchecked, and Indeterminate visual states; target these in your template to show distinct visuals for each state.</li>
-      <li><strong>Prefer CheckBox for standard on/off options</strong> — ToggleButton looks like a button; CheckBox visually communicates "optional setting." Use ToggleButton where the button metaphor fits, such as toolbars and toggles.</li>
-      <li><strong>GroupName does not apply to ToggleButton directly</strong> — GroupName is a RadioButton-level property. If you need mutual exclusion between ToggleButtons, use RadioButton with a custom template instead.</li>
-      <li><strong>Test accessibility</strong> — Screen readers announce ToggleButton state as "pressed" or "not pressed"; ensure the label clearly conveys what is being toggled.</li>
+      <li><strong>Give the template a look for <code>null</code></strong> if you use <code>IsThreeState</code>; the default template does not have one.</li>
+      <li><strong>Pass the new state with a binding.</strong> <code>CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"</code> delivers the state after the click.</li>
+      <li><strong>Do not rely on <code>Command</code> alone.</strong> A toggle through UI Automation changes <code>IsChecked</code> without running the command.</li>
+      <li><strong>Use RadioButton for mutually exclusive toggles.</strong> ToggleButton has no <code>GroupName</code>.</li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToggleButtonDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToggleButtonDemoScene</code></a>
+      in this site's screenshot tool. State changes were made with UI Automation's <code>Toggle</code>. The command was run
+      through the button's click handling (<code>OnClick</code>), and <code>ClickMode</code> was checked by raising the
+      left-button events.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="Table of ToggleButton results: it derives from ButtonBase and is the base of CheckBox and RadioButton, clicks cycle false, true, null only with IsThreeState, the default template has no visual states and only an IsChecked true trigger, UI Automation reports Off, On, Indeterminate, ClickMode Press toggles on button down and stays, a CommandParameter bound to IsChecked receives the new value, a UI Automation toggle does not run the command, and a bound Popup resets IsChecked when it closes, which a real click on an empty area does, while a click on the button while open leaves it open" width="1187" height="530" loading="lazy">
+      <figcaption>States, template, <code>ClickMode</code>, <code>Command</code>, and a bound <code>Popup</code>. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — ToggleButton subclass styled as a traditional checkbox; better for settings and option lists.</li>
-      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — ToggleButton subclass with mutual exclusion within a GroupName.</li>
-      <li><a href="/apps/wpf-standard-control-demo/button.html">Button</a> — Stateless click trigger; use when no persistent state is needed.</li>
+      <li><a href="/apps/wpf-standard-control-demo/checkbox.html">CheckBox</a> — a ToggleButton drawn as a check box.</li>
+      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — a ToggleButton for one choice out of several.</li>
+      <li><a href="/apps/wpf-standard-control-demo/popup.html">Popup</a> — often opened and closed by a ToggleButton.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToggleButtonUsage" target="_blank" rel="noopener noreferrer">View ToggleButton source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToggleButtonUsage" target="_blank" rel="noopener noreferrer">
+        View ToggleButton source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>

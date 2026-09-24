@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-stackpanel
+slug: "wpf-standard-control-demo-stackpanel"
+scene: "StackPanelDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Orientation の既定値と、Spacing プロパティの有無"
+  - "縦と横の StackPanel が子を測るときに渡す大きさ（積む方向が無限大か）と、交差する方向で子が引き伸ばされるか"
+  - "幅が足りない横の StackPanel で、子が折り返すか、はみ出した子の位置、ClipToBounds とレイアウトの切り抜き、はみ出した部分のヒットテスト"
+  - "ScrollViewer の中の StackPanel に 1000 個の子を置いたとき、測られる子の数"
+  - "高さ 200 の領域で、1000 項目の ListBox を直接置いた場合と縦の StackPanel に入れた場合の、高さ・スクロールできる量・作られた項目の数"
+  - "Background が null / Transparent / 色のとき、子のない位置のヒットテスト（デモアプリの高さ 30 の空の StackPanel）"
+  - "デモアプリと同じ重なった 2 つの Label（-15 の余白）で、ZIndex を入れ替えたときに上になる要素"
+  - "内側のパネルの子に大きな ZIndex を付けても、外側のパネルの兄弟より上にならないこと"
+images:
+  - "images/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.svg"

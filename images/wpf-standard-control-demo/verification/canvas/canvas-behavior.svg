@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1179 470" width="1179" height="470" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1179" height="470" />
+  <text class="title" x="12" y="24">Canvas: sizes, positions, clipping and ZIndex (rectangles 100 x 100)</text>
+  <rect class="head" x="12" y="38" width="1155" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1153" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">size given to a child / width of a TextBlock / width of a Stretch Border (Canvas 300 wide)</text>
+  <text class="cell" x="1153" y="87.5" text-anchor="end">Infinity x Infinity / 60.23 / 37.29</text>
+  <text class="cell" x="26" y="117.5">Canvas with a child at (20, 20), in a horizontal StackPanel: DesiredSize / ClipToBounds default</text>
+  <text class="cell" x="1153" y="117.5" text-anchor="end">0 x 0 / False</text>
+  <text class="cell" x="26" y="147.5">demo's initial values Top 20, Left 20</text>
+  <text class="cell" x="1153" y="147.5" text-anchor="end">x=20 y=20 w=100 h=100</text>
+  <text class="cell" x="26" y="177.5">Left 20 and Right 20, Top 20 and Bottom 20 (Canvas 300 x 200)</text>
+  <text class="cell" x="1153" y="177.5" text-anchor="end">x=20 y=20 w=100 h=100</text>
+  <text class="cell" x="26" y="207.5">only Right 20, Bottom 20, Canvas stretched to 300 x 200 (no Width set)</text>
+  <text class="cell" x="1153" y="207.5" text-anchor="end">x=180 y=80 w=100 h=100</text>
+  <text class="cell" x="26" y="237.5">  same in a Canvas of size 0 (inside StackPanels)</text>
+  <text class="cell" x="1153" y="237.5" text-anchor="end">x=-120 y=-120 w=100 h=100</text>
+  <text class="cell" x="26" y="267.5">no position set / Left -30</text>
+  <text class="cell" x="1153" y="267.5" text-anchor="end">x=0 y=0 w=100 h=100 / x=-30 y=150 w=100 h=100</text>
+  <text class="cell" x="26" y="297.5">Canvas 200 wide, child at Left 150 (to 250), ClipToBounds=False: hit test at x=230</text>
+  <text class="cell" x="1153" y="297.5" text-anchor="end">A</text>
+  <text class="cell" x="26" y="327.5">Canvas 200 wide, child at Left 150 (to 250), ClipToBounds=True: hit test at x=230</text>
+  <text class="cell" x="1153" y="327.5" text-anchor="end">(nothing)</text>
+  <text class="cell" x="26" y="357.5">demo's rectangles A (20, 20) and B (50, 50), ZIndex A=0, B=1: on top at (85, 85)</text>
+  <text class="cell" x="1153" y="357.5" text-anchor="end">B</text>
+  <text class="cell" x="26" y="387.5">demo's rectangles A (20, 20) and B (50, 50), ZIndex A=2, B=1: on top at (85, 85)</text>
+  <text class="cell" x="1153" y="387.5" text-anchor="end">A</text>
+  <text class="cell" x="26" y="417.5">demo's rectangles A (20, 20) and B (50, 50), ZIndex A=0, B=0: on top at (85, 85)</text>
+  <text class="cell" x="1153" y="417.5" text-anchor="end">B</text>
+  <text class="cell" x="26" y="447.5">demo binding with FallbackValue=NaN: Canvas.Right for text "" / "30"</text>
+  <text class="cell" x="1153" y="447.5" text-anchor="end">NaN / 30</text>
+  <line class="line" x1="12" y1="38" x2="1167" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1167" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1167" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1167" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1167" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1167" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1167" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1167" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1167" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1167" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1167" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1167" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1167" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1167" y2="428" />
+  <line class="line" x1="12" y1="458" x2="1167" y2="458" />
+  <line class="line" x1="12" y1="38" x2="12" y2="458" />
+  <line class="line" x1="786" y1="38" x2="786" y2="458" />
+  <line class="line" x1="1167" y1="38" x2="1167" y2="458" />
+</svg>

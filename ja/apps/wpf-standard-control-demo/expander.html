@@ -8,7 +8,7 @@
   <title>Expander | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF の Expander はユーザーが展開・折りたたみを切り替えられるコンテナコントロールです。ヘッダーは常に表示され、コンテンツエリアはトグルボタンのクリックで表示・非表示が切り替わります。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+  <meta name="description" content="WPF の Expander を .NET 10 で実測して解説。折りたたんだ内容にかかる負担、展開にアニメーションがあるか、ExpandDirection ごとの配置、見出しと内容にどのプロパティが届くかを確かめます。見出しのクリックは実際のマウスで試しました。">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,16 +21,14 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Expander</p>
     <h1>Expander <span class="category-badge">Display</span></h1>
-    <p>Expander はユーザーが展開・折りたたみを切り替えられるコンテナコントロールです。ヘッダーは常に表示され、コンテンツエリアはトグルボタンのクリックで表示・非表示が切り替わります。</p>
+    <p>Expander は、見出しを常に表示し、見出しのクリックで内容を表示したり隠したりするコントロールです。</p>
   </section>
 
   <section class="content-section">
     <h2>概要</h2>
-    <p>WPF の <strong>Expander</strong> は <code>HeaderedContentControl</code> を継承したコントロールで、ヘッダー部分とコンテンツ部分から構成されます。ヘッダーには矢印（トグルボタン）が表示され、クリックすると <code>IsExpanded</code> が切り替わってコンテンツの表示・非表示が変わります。</p>
-    <p><code>ExpandDirection</code> プロパティでコンテンツが展開される方向を設定できます。デフォルトは <code>Down</code>（下方向）で、ヘッダーの下にコンテンツが現れます。<code>Up</code>、<code>Left</code>、<code>Right</code> も指定可能です。</p>
-    <p>MVVM では <code>IsExpanded</code> を ViewModel の bool プロパティに TwoWay バインドすることで、プログラムから展開・折りたたみを制御できます。アプリの状態として展開状態を保存・復元する場合にも使用します。</p>
-    <p>スタイルをカスタマイズすることで、アコーディオン UI（複数の Expander を縦に並べて一つだけ展開できるようにしたもの）を実装できます。WPF にはアコーディオンコントロールは標準では含まれていませんが、Expander の組み合わせで実現できます。</p>
-    
+    <p><strong>Expander</strong> は <code>HeaderedContentControl</code> を継承しています。既定のテンプレートの見出しは、<code>HeaderSite</code> という名前の <code>ToggleButton</code> です。テンプレートには表示状態のグループ（VisualStateGroup）もアニメーションもなく、<code>IsExpanded</code>・<code>ExpandDirection</code>・<code>IsEnabled</code> のトリガーで切り替えています。<code>IsExpanded</code> を <code>False</code> にすると、内容はその場で <code>Collapsed</code> になりました。</p>
+    <p>折りたたんだ内容の負担は、思われているより小さいものです。最初から折りたたんだ Expander では、内容の要素は作られて <code>Loaded</code> も発生しましたが、測られませんでした。中に置いた 1000 項目の ListBox は、<code>ListBoxItem</code> を 1 つも作りませんでした。展開すると内容が測られ、ListBox は 11 個の項目を作り、内容にはもう一度 <code>Loaded</code> が発生しました。</p>
+    <p>デモアプリには、<code>ExpandDirection</code>、<code>IsExpanded</code>、見出し、内容と、<code>Control</code> のプロパティ（<code>Padding</code>、フォントの各プロパティ、<code>Background</code>、<code>Foreground</code>、枠）の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
   </section>
 
   <section class="content-section">
@@ -40,34 +38,49 @@
 
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。アプリ上でリアルタイムに各プロパティを変更してその動作を確認できます。</p>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
     <table class="prop-table">
       <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
       <tbody>
         <tr>
-          <td><code>IsExpanded</code></td>
-          <td><code>bool</code></td>
-          <td>True のときコンテンツが表示（展開）されます。False のときは折りたたまれ、ヘッダーのみ表示されます。TwoWay バインドで ViewModel から展開状態を制御でき、変更時には Expanded / Collapsed ルーティングイベントが発生するためイベントハンドラでの追加処理も可能です。展開状態をアプリ設定として保存・復元したい場合にも TwoWay バインドが有効です。注意点として、コンテンツは折りたたまれていても視覚ツリー上に存在し続けるため、データバインドされたグリッドや重い UI はユーザーが開く前から描画リソースを消費します。</td>
-        </tr>
-        <tr>
           <td><code>ExpandDirection</code></td>
           <td><code>Down / Up / Left / Right</code></td>
-          <td>コンテンツが展開される方向を設定します。Down（デフォルト）はヘッダーの下にコンテンツが現れ、Up はヘッダーの上方向、Left は左、Right は右に展開します。Up は画面下部にある固定ツールバーからコンテンツが上方向に展開する場合に便利です。Left や Right を指定するとヘッダーの向きも変わり、矢印インジケーターやテキストの配置がデフォルトスタイルでは意図どおりにならない場合があります。Left/Right で見た目を整えるにはカスタムスタイルが必要になることを念頭に置いてください。</td>
+          <td>見出しに対して内容をどちらに出すかで、既定値は <code>Down</code> です。80 &times; 40 の内容で試すと、<code>Down</code> では見出しが上、内容がその下に、<code>Up</code> では内容が見出しの上に来ました。<code>Left</code> と <code>Right</code> では、見出しは内容の横の幅 49、高さ 39 の列になり、文字は横書きのまま列の下の方に置かれました。内容は <code>Left</code> で左、<code>Right</code> で右でした。</td>
+        </tr>
+        <tr>
+          <td><code>IsExpanded</code></td>
+          <td><code>bool</code></td>
+          <td>内容を表示するかどうかで、既定値は <code>False</code>、既定で TwoWay にバインドされます。デモアプリは <code>Mode</code> を指定せずにチェックボックスにバインドしているので、両者は連動します。実際のマウスで見出しをクリックすると、Expander が開き、チェックボックスにチェックが付き、<code>Expanded</code> が発生しました。チェックを外すと閉じて、<code>Collapsed</code> が発生しました。</td>
         </tr>
         <tr>
           <td><code>Header / HasHeader (HeaderedContentControl)</code></td>
           <td><code>object / bool (ReadOnly)</code></td>
-          <td>ヘッダー部分に表示するコンテンツを設定します。文字列だけでなく、アイコン＋テキストのパネルや件数バッジなど任意の WPF 要素を配置したリッチなヘッダーも作成できます。HasHeader は Header が設定されているかどうかを示す読み取り専用プロパティで、Header が設定されると自動的に True になります。ただし Header に null を設定してもヘッダー領域（矢印トグルボタンのエリア）は完全には消えません。ヘッダー自体を非表示にするにはカスタム ControlTemplate が必要です。</td>
+          <td>見出しの内容と、それがあるかどうかです。デモアプリは空のテキストボックスを <code>null</code> に変換します。<code>Header</code> が <code>null</code> のとき <code>HasHeader</code> は <code>False</code> でしたが、見出しの ToggleButton は高さ 19 で表示されたままでした。消すには独自のテンプレートが必要です。</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
           <td><code>object</code></td>
-          <td>展開時に表示するコンテンツを設定します。任意の WPF 要素を配置できます。コンテンツは折りたたみ時でも論理ツリー上は存在していますが、視覚的に非表示になります。重要な点として、コンテンツは Expander が初期化された時点で生成され、ユーザーが初めて展開するまで遅延されません。コンテンツにデータベースクエリを起動するデータバインドコントロールや重い初期化コードがある場合、ユーザーがパネルを開く前から実行されます。重い処理が必要な場合は遅延初期化パターン（IsExpanded のトリガーで DataTemplate を切り替えるなど）を検討してください。</td>
+          <td>表示したり隠したりする内容です。折りたたんでいる間も作られて読み込まれますが、レイアウトはされません（上を参照）。</td>
+        </tr>
+        <tr>
+          <td><code>Padding (Control)</code></td>
+          <td><code>Thickness</code></td>
+          <td>Expander の内側の余白で、内容だけでなく見出しにも効きます。<code>Padding="20"</code> では、見出しの高さが 19 から 59 になり、内容もその分下へ移りました。</td>
+        </tr>
+        <tr>
+          <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
+          <td>フォントの値</td>
+          <td>見出しと内容のフォントです。Expander に <code>FontWeight="Bold"</code> を設定すると、見出しの文字も内容の TextBlock も太字になりました。</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground (Control)</code></td>
+          <td><code>Brush</code></td>
+          <td><code>Foreground</code> は見出しと内容の両方の文字に届き、<code>Red</code> では両方が赤になりました。<code>Background</code> は見出しと内容の両方の後ろに塗られ、幅 200 の Expander で、塗られた範囲は 200 &times; 38.96 で見出しと内容を含んでいました。<code>Background</code> 自体は継承されるプロパティではないので、色が付くのは内容の後ろの領域です。</td>
         </tr>
         <tr>
           <td><code>BorderBrush / BorderThickness (Control)</code></td>
           <td><code>Brush / Thickness</code></td>
-          <td>Expander の枠線の色と太さを設定します。デフォルトではテーマカラーの細い枠線が表示されます。カード型 UI やテーマに合わせた Expander を実装する際に BorderBrush と BorderThickness をカスタマイズすることで、デザインの統一感を高められます。アプリ全体に統一したスタイルを適用するにはリソースに Style を定義し、各 Expander に個別設定するのではなくスタイルで一括管理することを推奨します。</td>
+          <td>見出しを含めた Expander 全体を囲む枠です。<code>Padding</code> を付けずに単独で測ると、<code>BorderThickness="5"</code> では見出しが各辺から 5 内側へ移って (1, 1) から (6, 6) になり、内容も 5 下がりました。</td>
         </tr>
       </tbody>
     </table>
@@ -75,53 +88,65 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <pre><code class="language-xml">&lt;Expander Header="詳細設定" IsExpanded="{Binding IsAdvancedExpanded, Mode=TwoWay}"
-           ExpandDirection="Down"&gt;
-  &lt;StackPanel Margin="16,8"&gt;
-    &lt;CheckBox Content="デバッグログを有効にする"
-              IsChecked="{Binding EnableDebugLog}" /&gt;
-    &lt;CheckBox Content="詳細なエラー情報を表示する"
-              IsChecked="{Binding ShowDetailedErrors}" /&gt;
-    &lt;TextBox Text="{Binding LogPath}" /&gt;
-  &lt;/StackPanel&gt;
-&lt;/Expander&gt;</code></pre>
+    <p>デモアプリ（<code>ExpanderUsageControl.xaml</code>）の <code>IsExpanded</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsExpandedCheckBox" VerticalContentAlignment="Center" Content="IsExpanded" /&gt;
+
+  &lt;Expander x:Name="IsExpandedExpander"
+            Content="CONTENT"
+            Header="Expander"
+            IsExpanded="{Binding IsChecked, ElementName=IsExpandedCheckBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>主な使用例</h2>
     <ul>
-      <li><strong>詳細設定の折りたたみ</strong> — 基本設定は常に表示し、上級者向けの詳細設定を Expander で折りたたんで初期非表示にします。</li>
-      <li><strong>アコーディオン UI</strong> — FAQ や設定カテゴリを複数の Expander で表現し、必要な項目だけ展開して見る UI を実装します。</li>
-      <li><strong>フォームのセクション分け</strong> — 長いフォームを複数のセクションに分けて Expander で管理し、必要なセクションのみ展開して入力します。</li>
-      <li><strong>サイドバーのパネル</strong> — サイドバーに複数のカテゴリパネルを Expander で折りたたみ可能にし、必要なパネルだけ展開して使います。</li>
-      <li><strong>コードサンプルの表示</strong> — ドキュメント UI でコードサンプルを折りたたみ可能にして、画面の占有スペースを最小化します。</li>
+      <li><strong>詳細な設定</strong> — 必要になるまで畳んでおく上級者向けの設定です。</li>
+      <li><strong>長いフォーム</strong> — 入力を終えた部分を畳めるフォームの区切りです。</li>
+      <li><strong>詳細の表示</strong> — エラーメッセージの下にスタックトレースを畳んで置くような、要約と詳細の組み合わせです。</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ヒントとベストプラクティス</h2>
     <ul>
-      <li><strong>初期状態を適切に設定する</strong> — IsExpanded の初期値を ViewModel で設定し、ユーザーが最初に見るべきセクションが開いた状態で表示されるようにします。</li>
-      <li><strong>展開状態を永続化する</strong> — IsExpanded を設定ファイルに保存・復元することで、前回のセッションで開いていたパネルを次回も同じ状態で表示できます。</li>
-      <li><strong>アニメーション</strong> — Expander は標準でアニメーションなしですが、ControlTemplate をカスタマイズしてアコーディオンアニメーションを追加できます。</li>
-      <li><strong>コンテンツの遅延初期化</strong> — コンテンツは折りたたまれていても論理ツリー上に存在するため、重い処理が必要な場合は IsExpanded の変化をトリガーに遅延初期化します。</li>
-      <li><strong>Header にもリッチコンテンツを</strong> — Header プロパティには文字列だけでなく、アイコン＋テキストのパネルや件数バッジなどを配置してリッチなヘッダーを実現できます。</li>
-      <li><strong>コンテンツの遅延ロード</strong> — IsExpanded が True になったときに初めてコンテンツを生成するには、bool フラグを ViewModel に持ち DataTemplate を切り替えるパターンが有効です。展開前は軽量なプレースホルダーを表示し、初回展開時のみ重い UI を生成することでアプリ起動時のパフォーマンスを改善できます。</li>
-      <li><strong>展開・折りたたみアニメーション</strong> — 実装時は、Height を 0 から Auto へ直接アニメーションできない点に注意します。Storyboard の対象には Grid の RowDefinition の Height や ScaleTransform など、数値で補間できるプロパティを選ぶと安定して実装できます。</li></ul>
+      <li><strong>内容の <code>Loaded</code> で重い処理を始めない</strong> — 折りたたんでいる間にも動き、展開したときにもう一度動きます。</li>
+      <li><strong>折りたたんだ Expander の中の一覧は軽い</strong> — 展開するまで項目は作られません。</li>
+      <li><strong>状態を保つなら <code>IsExpanded</code> をバインドする</strong> — 既定で TwoWay なので、ビューモデルのプロパティが利用者のクリックに追従します。</li>
+      <li><strong>見出しを消したり、アニメーションを付けたりするなら独自のテンプレートにする</strong> — 既定のテンプレートは、見出しがなくても矢印を表示し、切り替えは一瞬です。</li>
+      <li><strong>見出しと内容をまとめて色付けするなら Expander に <code>Background</code> を設定する</strong> — 両方の後ろに塗られます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ExpanderDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ExpanderDemoScene</code></a> を使いました。見出しのクリックは、計測用のウィンドウの上で実際のマウスを使って行いました。位置は Expander の左上からのもので、大きさは計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/expander/expander-behavior.svg" alt="Expander の動作の計測結果の表。HeaderedContentControl を継承し IsExpanded の既定値は False で既定で TwoWay、見出しは HeaderSite という ToggleButton、テンプレートには表示状態がなくトリガーだけで、折りたたみは即座に行われ、見出しを実際にクリックすると開いてバインドしたチェックボックスにチェックが付き、折りたたんだ内容は読み込まれるが測られず、展開するまで ListBox の項目は作られない" width="1132" height="320" loading="lazy">
+      <figcaption>テンプレート、クリック、折りたたんだ内容。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/expander/expander-layout.svg" alt="Expander の配置の計測結果の表。Down・Up・Left・Right での見出しと内容の位置と、見出しの文字が横書きのままであること、見出しが null でも ToggleButton が残ること、FontWeight と Foreground が見出しと内容に届き、Background は見出しと内容の両方の後ろに塗られ、別々に測った Padding と BorderThickness は見出しの周りにも効くこと" width="1163" height="380" loading="lazy">
+      <figcaption><code>ExpandDirection</code>、見出し、<code>Control</code> のプロパティ。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>関連コントロール</h2>
     <ul>
-      <li><a href="/ja/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — 折りたたみ機能のないグループ化コンテナ。</li>
-      <li><a href="/ja/apps/wpf-standard-control-demo/tabcontrol.html">TabControl</a> — 複数のページを切り替えるタブ型コンテナ。</li>
-      <li><a href="/ja/apps/wpf-standard-control-demo/stackpanel.html">StackPanel</a> — 複数の Expander を縦に並べてアコーディオンを構成する際のコンテナとして使用します。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/groupbox.html">GroupBox</a> — 常に表示する内容を、見出しと枠で囲みます。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/togglebutton.html">ToggleButton</a> — 見出しを構成している要素です。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/treeview.html">TreeView</a> — 少数の区切りではなく、階層になった項目を畳みます。</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ExpanderUsage" target="_blank" rel="noopener noreferrer">GitHub で Expander のソースコードを見る &rarr;</a></p>
   </section>
 

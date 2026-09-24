@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-expander
+slug: "wpf-standard-control-demo-expander"
+scene: "ExpanderDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Expander の基底クラス、IsExpanded の既定値と既定で TwoWay か、ExpandDirection の既定値"
+  - "既定のテンプレートの見出しの要素（ToggleButton）と、VisualStateGroup・トリガーの有無、折りたたんだ直後の内容の Visibility（アニメーションの有無）"
+  - "実際のマウスで見出しをクリックしたときの IsExpanded と、Mode 指定なしで IsExpanded にバインドした CheckBox、Expanded / Collapsed イベント"
+  - "折りたたんだ Expander の中の要素が Loaded になるか、測られるか、中の ListBox（1000 項目）のコンテナーが作られるか、展開したときの変化"
+  - "ExpandDirection ごとの見出しと内容の位置と、変形を含めた見出しの文字の矩形（横書きのままか）"
+  - "Header が null のときの HasHeader と、見出しの ToggleButton の表示"
+  - "FontWeight・Foreground を Expander に設定したときの見出しと内容の文字、Background を塗る範囲が見出しと内容を含むか"
+  - "Padding と BorderThickness を別々に設定したときの見出しと内容の位置"
+images:
+  - "images/wpf-standard-control-demo/verification/expander/expander-behavior.svg"
+  - "images/wpf-standard-control-demo/verification/expander/expander-layout.svg"

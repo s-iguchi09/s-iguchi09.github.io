@@ -76,7 +76,7 @@
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>Where the box and the label are placed vertically inside the CheckBox. The default is <code>Top</code>, from the property's default value. With a label that wrapped to three lines, <code>Top</code> put the box next to the first line (y = 1, the label at y = -1). <code>Center</code> centered both in the CheckBox: in a CheckBox 200 high, the box's center and the label's center were both at about 100. The box lines up with the middle of the label only when the CheckBox is as high as its label: at 46.88 high, the centers were at 23.44 and 22.94. The demo app lets you pick the value from a list.</td>
+          <td>Where the box and the label are placed vertically inside the CheckBox. The default is <code>Top</code>, from the property's default value. With a label that wrapped to three lines, <code>Top</code> put the box next to the first line (y = 1, the label at y = -1). <code>Center</code> centered both in the CheckBox, so the box lined up with the middle of the label whatever the CheckBox's height: the centers were both at about 100 in a CheckBox 200 high, and at 23.44 and 22.94 in one 46.88 high, as high as the label. The demo app lets you pick the value from a list.</td>
         </tr>
       </tbody>
     </table>
@@ -84,16 +84,19 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML is the <code>IsThreeState</code> section of the demo app (<code>CheckBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out. <code>TargetNullValue</code> shows "(Null)" for the undetermined state:</p>
-    <pre><code class="language-xml">&lt;CheckBox x:Name="IsThreeStateTrueCheckBox" HorizontalAlignment="Center"
-          VerticalContentAlignment="Center" Content="CheckBox" IsThreeState="True" /&gt;
-&lt;TextBlock HorizontalAlignment="Center"
-           Text="{Binding IsChecked, ElementName=IsThreeStateTrueCheckBox, TargetNullValue=(Null)}" /&gt;
+    <p>The following XAML is the <code>IsThreeState</code> section of the demo app (<code>CheckBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>TargetNullValue</code> shows "(Null)" for the undetermined state:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;CheckBox x:Name="IsThreeStateTrueCheckBox" HorizontalAlignment="Center"
+            VerticalContentAlignment="Center" Content="CheckBox" IsThreeState="True" /&gt;
+  &lt;TextBlock HorizontalAlignment="Center"
+             Text="{Binding IsChecked, ElementName=IsThreeStateTrueCheckBox, TargetNullValue=(Null)}" /&gt;
 
-&lt;CheckBox x:Name="IsThreeStateFalseCheckBox" HorizontalAlignment="Center"
-          VerticalContentAlignment="Center" Content="CheckBox" IsThreeState="False" /&gt;
-&lt;TextBlock HorizontalAlignment="Center"
-           Text="{Binding IsChecked, ElementName=IsThreeStateFalseCheckBox}" /&gt;</code></pre>
+  &lt;CheckBox x:Name="IsThreeStateFalseCheckBox" HorizontalAlignment="Center"
+            VerticalContentAlignment="Center" Content="CheckBox" IsThreeState="False" /&gt;
+  &lt;TextBlock HorizontalAlignment="Center"
+             Text="{Binding IsChecked, ElementName=IsThreeStateFalseCheckBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
@@ -112,7 +115,7 @@
       <li><strong>Use <code>bool?</code> whenever <code>null</code> can occur.</strong> A <code>bool</code> source rejects it with a binding error instead of turning it into <code>false</code>.</li>
       <li><strong>For a "select all" box, decide what a click on the mixed state means.</strong> A three-state CheckBox moves from <code>null</code> to <code>false</code> on the next click, so a click on "some selected" clears everything unless the ViewModel handles it differently.</li>
       <li><strong>Handle <code>Checked</code> on a parent</strong> when check boxes are generated in a list; the events bubble.</li>
-      <li><strong>Use <code>VerticalContentAlignment="Center"</code> for labels that wrap</strong> if the box should sit beside the middle of the label, and let the CheckBox take the label's height, for example with <code>VerticalAlignment="Top"</code>.</li>
+      <li><strong>Use <code>VerticalContentAlignment="Center"</code> for labels that wrap</strong> if the box should sit beside the middle of the label.</li>
     </ul>
   </section>
 
@@ -127,7 +130,7 @@
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="Table of CheckBox results: it derives from ToggleButton, IsChecked binds two-way by default, the events bubble, VerticalContentAlignment defaults to Top, three-state clicks cycle false, true, null, a bool source rejects null with a binding error, Space toggles the box, the label is part of the clickable area, and Center centers the box and the label in the CheckBox, which lines the box up with the middle of a wrapped label when the CheckBox is as high as the label" width="1093" height="560" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="Table of CheckBox results: it derives from ToggleButton, IsChecked binds two-way by default, the events bubble, VerticalContentAlignment defaults to Top, three-state clicks cycle false, true, null, a bool source rejects null with a binding error, Space toggles the box, the label is part of the clickable area, and Center centers the box and the label in the CheckBox, lining the box up with the middle of a wrapped label" width="1093" height="560" loading="lazy">
       <figcaption>States, bindings, keyboard, hit testing, and layout. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

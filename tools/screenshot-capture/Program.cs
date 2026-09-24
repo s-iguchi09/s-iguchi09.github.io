@@ -71,6 +71,20 @@ internal static class Program
         new DataGridDemoScene(),
         new CheckBoxDemoScene(),
         new ToolBarDemoScene(),
+        new ToggleButtonDemoScene(),
+        new ButtonDemoScene(),
+        new RepeatButtonDemoScene(),
+        new RadioButtonDemoScene(),
+        new ProgressBarDemoScene(),
+        new ScrollViewerDemoScene(),
+        new PopupDemoScene(),
+        new ExpanderDemoScene(),
+        new GroupBoxDemoScene(),
+        new StackPanelDemoScene(),
+        new WrapPanelDemoScene(),
+        new DockPanelDemoScene(),
+        new CanvasDemoScene(),
+        new UniformGridDemoScene(),
     ];
 
     [STAThread]

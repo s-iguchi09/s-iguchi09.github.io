@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-wrappanel
+slug: "wpf-standard-control-demo-wrappanel"
+scene: "WrapPanelDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Orientation / ItemWidth / ItemHeight の既定値"
+  - "デモアプリの 5 つの Label を、幅 150 の横と高さ 60 の縦の WrapPanel に置いたときの行（列）の数と位置"
+  - "高さ 20 と 40 の子が同じ行にあるときの行の高さと、低い子の配置（VerticalAlignment が Stretch と Top）"
+  - "ItemWidth=100（デモアプリの初期値）で、デモアプリの Label と幅 150 の子に割り当てられる幅と、はみ出した部分の切り抜き"
+  - "ItemHeight=100（デモアプリの初期値）での Label の高さと 2 行目の位置"
+  - "横スクロールのできる ScrollViewer と、既定の ScrollViewer の中での折り返し"
+  - "Background が null / Transparent のときの、子と子の間のヒットテスト"
+  - "重なった 2 つの子の ZIndex による上下"
+  - "ListBox の ItemsPanel を WrapPanel にしたときに作られる項目の数（1000 項目）"
+images:
+  - "images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg"

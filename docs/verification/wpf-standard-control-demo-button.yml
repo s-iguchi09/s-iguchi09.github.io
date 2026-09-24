@@ -1,0 +1,24 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-button
+slug: "wpf-standard-control-demo-button"
+scene: "ButtonDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "UserControl の中に置いた IsCancel / IsDefault のボタンが、Esc / Enter で押されること（フォーカスは TextBox）"
+  - "AcceptsReturn の TextBox と、別のボタンにフォーカスがあるときの Enter と、そのときの IsDefaulted"
+  - "IsCancel のボタンが 2 つあるときの Esc の結果"
+  - "IsCancel のボタンを Esc で押したとき、ShowDialog のウィンドウは DialogResult false で閉じ、Show のウィンドウは閉じないこと"
+  - "ClickMode の既定値と、実際のマウスでの Hover / Press / Release のクリックの時点と IsPressed、Release で押したままボタンの外へ出て離したときの結果"
+  - "Space と Enter のキーでのクリックの時点と IsPressed（ClickMode ごと）、IsPressed が読み取り専用であること"
+  - "CanExecute が false のときの IsEnabled（IsEnabled を True に設定した場合も）、RequerySuggested に委譲したコマンドの再評価の時点"
+  - "フォーカスの移動 1 回で CanExecute が呼ばれる回数（同じコマンドを持つボタン 20 個）"
+  - "デモアプリと同じ XAML（Command の後に CommandParameter をバインド）で読み込んだときに CanExecute へ渡る値、CommandParameter の変化で CanExecute が呼ばれるか、Execute に渡る値"
+  - "Button の基底クラス、既定のテンプレートの VisualStateGroup とトリガー、ContentPresenter の RecognizesAccessKey"
+  - "UI オートメーションの名前（文字列の内容、アンダースコア付きの内容、画像だけの内容、AutomationProperties.Name）"
+images:
+  - "images/wpf-standard-control-demo/verification/button/button-keys.svg"
+  - "images/wpf-standard-control-demo/verification/button/button-clickmode.svg"
+  - "images/wpf-standard-control-demo/verification/button/button-command.svg"
+  - "images/wpf-standard-control-demo/verification/button/button-template.svg"

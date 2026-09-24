@@ -126,6 +126,42 @@ internal static class DemoProbe
         });
     }
 
+    /// <summary>
+    /// キーボードフォーカスを移し、移ったことを確かめる。
+    /// 移らなければ（ウィンドウが前面に出られないなど）例外にする。フォーカスが前提の計測を誤った値で残さないためである。
+    /// </summary>
+    public static async Task FocusAsync(UIElement element)
+    {
+        System.Windows.Input.Keyboard.Focus(element);
+        await Capture.SettleAsync(Window.GetWindow(element)!, 50);
+        if (!element.IsKeyboardFocusWithin)
+        {
+            throw new InvalidOperationException($"{element.GetType().Name} にキーボードフォーカスを移せない。");
+        }
+    }
+
+    /// <summary>
+    /// フォーカスのある要素へ、実際のキー入力と同じ経路（InputManager）でキーを送る。
+    ///
+    /// <see cref="PressKey"/> は要素のイベントを直接発生させるだけなので、
+    /// InputManager の後処理で動くもの（アクセスキー、IsDefault / IsCancel のボタン）には届かない。
+    /// こちらは PreviewKeyDown / PreviewKeyUp から入れるため、KeyDown / KeyUp への昇格と後処理まで通る。
+    /// </summary>
+    public static void SendKey(System.Windows.Input.Key key, bool down = true)
+    {
+        var target = System.Windows.Input.Keyboard.FocusedElement as DependencyObject
+            ?? throw new InvalidOperationException("キーボードフォーカスのある要素が無い。");
+        PresentationSource source = PresentationSource.FromDependencyObject(target)
+            ?? throw new InvalidOperationException("フォーカスのある要素がウィンドウに表示されていない。");
+        System.Windows.Input.InputManager.Current.ProcessInput(new System.Windows.Input.KeyEventArgs(
+            System.Windows.Input.Keyboard.PrimaryDevice, source, Environment.TickCount, key)
+        {
+            RoutedEvent = down
+                ? System.Windows.Input.Keyboard.PreviewKeyDownEvent
+                : System.Windows.Input.Keyboard.PreviewKeyUpEvent,
+        });
+    }
+
     public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         int count = VisualTreeHelper.GetChildrenCount(root);

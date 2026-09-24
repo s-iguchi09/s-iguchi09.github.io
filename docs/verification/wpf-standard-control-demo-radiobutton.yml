@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-radiobutton
+slug: "wpf-standard-control-demo-radiobutton"
+scene: "RadioButtonDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "RadioButton の基底クラスと IsChecked の既定値、チェック済みの RadioButton をクリックしたときの IsChecked"
+  - "GroupName を設定しない RadioButton が、どの範囲でまとまるか（同じ親、別の親、Border で包んだ場合、ItemsControl の項目テンプレート）"
+  - "同じ親の中の GroupName なしと GroupName ありの RadioButton が互いに影響するか"
+  - "同じ GroupName が別の親、別のウィンドウ、Popup の中でまとまるか"
+  - "IsChecked を別々の bool にバインドしたとき、別の RadioButton を選ぶと元のプロパティが false になるか、バインドが残るか、ソースから true にしたときに他が外れるか"
+  - "矢印キーと Tab キーでのフォーカスと選択の移動"
+  - "VerticalContentAlignment の既定値（既定のスタイルの適用後）と、複数行のラベルで Top と Center にしたときの記号とラベルの縦位置（RadioButton を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合）"
+images:
+  - "images/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.svg"
+  - "images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg"

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1038 530" width="1038" height="530" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1038" height="530" />
+  <text class="title" x="12" y="24">WrapPanel: wrapping, line size, ItemWidth and ItemHeight</text>
+  <rect class="head" x="12" y="38" width="1014" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1012" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">defaults: Orientation / ItemWidth / ItemHeight</text>
+  <text class="cell" x="1012" y="87.5" text-anchor="end">Horizontal / NaN / NaN</text>
+  <text class="cell" x="26" y="117.5">the demo's 5 labels, Horizontal, 150 wide</text>
+  <text class="cell" x="1012" y="117.5" text-anchor="end">2 rows of 3, 2</text>
+  <text class="cell" x="26" y="147.5">the demo's 5 labels, Vertical, 60 high</text>
+  <text class="cell" x="1012" y="147.5" text-anchor="end">5 columns of 1, 1, 1, 1, 1</text>
+  <text class="cell" x="26" y="177.5">children 20 and 40 high in a row, lower one Stretch: its height</text>
+  <text class="cell" x="1012" y="177.5" text-anchor="end">40</text>
+  <text class="cell" x="26" y="207.5">children 20 and 40 high in a row, lower one Top: its height</text>
+  <text class="cell" x="1012" y="207.5" text-anchor="end">20</text>
+  <text class="cell" x="26" y="237.5">ItemWidth=100: demo label width / 150-wide child: x, layout clip</text>
+  <text class="cell" x="1012" y="237.5" text-anchor="end">96 / 300, 100</text>
+  <text class="cell" x="26" y="267.5">  hit test on the 150-wide child, 20 past its 100</text>
+  <text class="cell" x="1012" y="267.5" text-anchor="end">(nothing)</text>
+  <text class="cell" x="26" y="297.5">ItemHeight=100, 5 labels, 150 wide: label height / second row starts at y / its first label at y</text>
+  <text class="cell" x="1012" y="297.5" text-anchor="end">96 / 100 / 102</text>
+  <text class="cell" x="26" y="327.5">5 labels in a ScrollViewer, horizontal Disabled (default), 150 wide</text>
+  <text class="cell" x="1012" y="327.5" text-anchor="end">3 rows of 2, 2, 1</text>
+  <text class="cell" x="26" y="357.5">5 labels in a ScrollViewer, horizontal Auto, 150 wide</text>
+  <text class="cell" x="1012" y="357.5" text-anchor="end">1 rows of 5</text>
+  <text class="cell" x="26" y="387.5">Background=null: hit test in the gap between two labels</text>
+  <text class="cell" x="1012" y="387.5" text-anchor="end">(nothing)</text>
+  <text class="cell" x="26" y="417.5">Background=Transparent: hit test in the gap between two labels</text>
+  <text class="cell" x="1012" y="417.5" text-anchor="end">Panel</text>
+  <text class="cell" x="26" y="447.5">two labels overlapping by 15, ZIndex 1 and 2: on top</text>
+  <text class="cell" x="1012" y="447.5" text-anchor="end">Item2</text>
+  <text class="cell" x="26" y="477.5">two labels overlapping by 15, ZIndex 3 and 2: on top</text>
+  <text class="cell" x="1012" y="477.5" text-anchor="end">Item1</text>
+  <text class="cell" x="26" y="507.5">ListBox 300 x 200, WrapPanel as ItemsPanel, 1000 items: items created</text>
+  <text class="cell" x="1012" y="507.5" text-anchor="end">1000</text>
+  <line class="line" x1="12" y1="38" x2="1026" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1026" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1026" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1026" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1026" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1026" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1026" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1026" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1026" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1026" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1026" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1026" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1026" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1026" y2="428" />
+  <line class="line" x1="12" y1="458" x2="1026" y2="458" />
+  <line class="line" x1="12" y1="488" x2="1026" y2="488" />
+  <line class="line" x1="12" y1="518" x2="1026" y2="518" />
+  <line class="line" x1="12" y1="38" x2="12" y2="518" />
+  <line class="line" x1="794" y1="38" x2="794" y2="518" />
+  <line class="line" x1="1026" y1="38" x2="1026" y2="518" />
+</svg>

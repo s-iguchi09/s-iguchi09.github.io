@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 959 350" width="959" height="350" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="959" height="350" />
+  <text class="title" x="12" y="24">RadioButton: which buttons form a group</text>
+  <rect class="head" x="12" y="38" width="935" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="933" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">base class / default IsChecked</text>
+  <text class="cell" x="933" y="87.5" text-anchor="end">ToggleButton / False</text>
+  <text class="cell" x="26" y="117.5">checked RadioButton clicked again: IsChecked</text>
+  <text class="cell" x="933" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="26" y="147.5">no GroupName, A-C in one StackPanel: all clicked in turn -&gt; checked</text>
+  <text class="cell" x="933" y="147.5" text-anchor="end">C</text>
+  <text class="cell" x="26" y="177.5">  D-E in another StackPanel, clicked after A-C -&gt; checked in A-E</text>
+  <text class="cell" x="933" y="177.5" text-anchor="end">E; A-C: C</text>
+  <text class="cell" x="26" y="207.5">  F and G each wrapped in a Border in one StackPanel: both clicked -&gt; checked</text>
+  <text class="cell" x="933" y="207.5" text-anchor="end">F, G</text>
+  <text class="cell" x="26" y="237.5">no GroupName, RadioButton in an ItemsControl's ItemTemplate: all clicked -&gt; checked (Parent)</text>
+  <text class="cell" x="933" y="237.5" text-anchor="end">H, I, J (null)</text>
+  <text class="cell" x="26" y="267.5">same parent: A, B without GroupName and X with GroupName="1"; X, A, B clicked -&gt; checked</text>
+  <text class="cell" x="933" y="267.5" text-anchor="end">B, X</text>
+  <text class="cell" x="26" y="297.5">GroupName="shared" in two different GroupBoxes: both clicked -&gt; checked</text>
+  <text class="cell" x="933" y="297.5" text-anchor="end">L</text>
+  <text class="cell" x="26" y="327.5">GroupName="shared" in the window, another window and a Popup: all clicked -&gt; checked</text>
+  <text class="cell" x="933" y="327.5" text-anchor="end">M, N, P</text>
+  <line class="line" x1="12" y1="38" x2="947" y2="38" />
+  <line class="line" x1="12" y1="68" x2="947" y2="68" />
+  <line class="line" x1="12" y1="98" x2="947" y2="98" />
+  <line class="line" x1="12" y1="128" x2="947" y2="128" />
+  <line class="line" x1="12" y1="158" x2="947" y2="158" />
+  <line class="line" x1="12" y1="188" x2="947" y2="188" />
+  <line class="line" x1="12" y1="218" x2="947" y2="218" />
+  <line class="line" x1="12" y1="248" x2="947" y2="248" />
+  <line class="line" x1="12" y1="278" x2="947" y2="278" />
+  <line class="line" x1="12" y1="308" x2="947" y2="308" />
+  <line class="line" x1="12" y1="338" x2="947" y2="338" />
+  <line class="line" x1="12" y1="38" x2="12" y2="338" />
+  <line class="line" x1="762" y1="38" x2="762" y2="338" />
+  <line class="line" x1="947" y1="38" x2="947" y2="338" />
+</svg>
