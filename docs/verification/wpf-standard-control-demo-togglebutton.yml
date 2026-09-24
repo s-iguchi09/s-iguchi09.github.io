@@ -13,5 +13,6 @@ verifies:
   - "ClickMode が Press のときに、マウスの左ボタンを押した時点と離した時点の IsChecked"
   - "クリック処理（OnClick）で Command の Execute が呼ばれた時点の IsChecked と、CommandParameter を自身の IsChecked にバインドしたときに渡る値、UI オートメーションの Toggle では Command が実行されないこと"
   - "Popup.IsOpen を IsChecked に結んだとき、Popup を閉じると IsChecked も戻ることと、Popup.IsOpen が既定で TwoWay か"
+  - "StaysOpen=False の Popup を、実際のマウスでウィンドウの空いた領域をクリックして閉じたとき・開いたままボタンを再クリックしたときの IsOpen と IsChecked"
 images:
   - "images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg"

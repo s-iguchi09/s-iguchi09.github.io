@@ -71,7 +71,7 @@
         <tr>
           <td><code>PopupAnimation</code></td>
           <td><code>None / Fade / Slide / Scroll</code></td>
-          <td>開くときのアニメーションで、<code>AllowsTransparency="True"</code> が必要です。<code>Fade</code> で <code>True</code> のとき、ポップアップのルートの不透明度は開いて 50 ms 後に 0.51、その後 1 になりました。<code>False</code> では最初から 1 で、フェードしませんでした。デモアプリはこのポップアップに <code>AllowsTransparency="True"</code> を設定しています。</td>
+          <td>開くときのアニメーションで、<code>AllowsTransparency="True"</code> が必要です。<code>Fade</code> で <code>True</code> のとき、ポップアップのルートの不透明度は、開いた直後にはまだ途中で（計測した回では開いて約 100 ms 後に 0.48。値は回ごとに変わります）、約 0.5 秒後に 1 になりました。<code>False</code> では最初から 1 で、フェードしませんでした。デモアプリはこのポップアップに <code>AllowsTransparency="True"</code> を設定しています。</td>
         </tr>
         <tr>
           <td><code>Child / PlacementRectangle</code></td>

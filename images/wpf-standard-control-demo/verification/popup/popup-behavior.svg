@@ -25,10 +25,10 @@
   <text class="cell" x="1059" y="207.5" text-anchor="end">True / True</text>
   <text class="cell" x="26" y="237.5">open, window moved by (40, 40): child moved by</text>
   <text class="cell" x="1059" y="237.5" text-anchor="end">(0, 0)</text>
-  <text class="cell" x="26" y="267.5">AllowsTransparency=False, Fade: layered window / opacity at 0, 50, 650 ms</text>
-  <text class="cell" x="1059" y="267.5" text-anchor="end">False / 1, 1, 1</text>
-  <text class="cell" x="26" y="297.5">AllowsTransparency=True, Fade: layered window / opacity at 0, 50, 650 ms</text>
-  <text class="cell" x="1059" y="297.5" text-anchor="end">True / 1, 0.5, 1</text>
+  <text class="cell" x="26" y="267.5">AllowsTransparency=False, Fade: layered window / opacity after opening</text>
+  <text class="cell" x="1059" y="267.5" text-anchor="end">False / 1 at 18 ms, 1 at 76 ms, 1 at 480 ms</text>
+  <text class="cell" x="26" y="297.5">AllowsTransparency=True, Fade: layered window / opacity after opening</text>
+  <text class="cell" x="1059" y="297.5" text-anchor="end">True / 1 at 43 ms, 0.48 at 97 ms, 1 at 500 ms</text>
   <line class="line" x1="12" y1="38" x2="1073" y2="38" />
   <line class="line" x1="12" y1="68" x2="1073" y2="68" />
   <line class="line" x1="12" y1="98" x2="1073" y2="98" />

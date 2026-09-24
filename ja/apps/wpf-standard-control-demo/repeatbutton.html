@@ -28,7 +28,7 @@
     <h2>概要</h2>
     <p><strong>RepeatButton</strong> は <code>ButtonBase</code> を継承しています。<code>ClickMode</code> の既定値は <code>Press</code> で、マウスボタンを押した時点で最初のクリックになります。<code>Delay="300"</code>・<code>Interval="100"</code> で約 1 秒押し続けると、最初のクリックはすぐに、2 回目はおよそ <code>Delay</code> 後に、それ以降はおよそ <code>Interval</code> ごと（計測したマシンでは 110 ms）に来ました。離したときに追加のクリックはありませんでした。バインドした <code>Command</code> は、クリックのたびに 1 回実行されました。</p>
     <p>ポインターがボタンの外へ出ると繰り返しは止まります。マウスボタンを押したまま外にいる間はクリックがなく、<code>IsPressed</code> は <code>False</code> でした。ポインターが戻るとクリックが再開しました。<kbd>Space</kbd> を押し続けても繰り返します。Windows のキーリピートなしで、キーを押したイベント 1 回だけでも、1 秒で 8 回クリックになりました。UI オートメーションの <code>Invoke</code> では 1 回のクリックでした。</p>
-    <p>WPF 自身のテンプレートも RepeatButton を使っています。<code>ScrollBar</code> には <code>LineUp</code>・<code>PageUp</code>・<code>PageDown</code>・<code>LineDown</code> のコマンドを持つ RepeatButton が 4 つあり、両端の矢印とつまみの両側のトラックに当たります。<code>Slider</code> にはつまみの両側の <code>DecreaseLarge</code> と <code>IncreaseLarge</code> の 2 つがあり、矢印のボタンはありません。</p>
+    <p>WPF 自身のテンプレートも RepeatButton を使っています。縦方向の <code>ScrollBar</code> には <code>LineUp</code>・<code>PageUp</code>・<code>PageDown</code>・<code>LineDown</code> のコマンドを持つ RepeatButton が 4 つあり（横方向では <code>LineLeft</code>・<code>PageLeft</code>・<code>PageRight</code>・<code>LineRight</code>）、両端の矢印とつまみの両側のトラックに当たります。<code>Slider</code> にはつまみの両側の <code>DecreaseLarge</code> と <code>IncreaseLarge</code> の 2 つがあり、矢印のボタンはありません。</p>
     <p>デモアプリは、<code>Delay</code> と <code>Interval</code> を 2 つのテキストボックスにバインドし、最後にクリックした時刻を表示しています。欄の下の「Show Code」リンクで、その XAML を表示できます。</p>
   </section>
 
@@ -104,7 +104,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg" alt="RepeatButton の値の計測結果の表。コードから Delay に -1、Interval に 0 を設定すると ArgumentException になり、テキストボックスからバインドした不正な値では Delay は 500、Interval は 33 に戻り、ScrollBar のテンプレートには LineUp・PageUp・PageDown・LineDown の、Slider のテンプレートには DecreaseLarge・IncreaseLarge の RepeatButton がある" width="912" height="260" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg" alt="RepeatButton の値の計測結果の表。コードから Delay に -1、Interval に 0 を設定すると ArgumentException になり、テキストボックスからバインドした不正な値では Delay は 500、Interval は 33 に戻り、ScrollBar のテンプレートには LineUp・PageUp・PageDown・LineDown の、Slider のテンプレートには DecreaseLarge・IncreaseLarge の RepeatButton がある" width="983" height="290" loading="lazy">
       <figcaption>不正な値と、WPF 自身のテンプレートの中の RepeatButton。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>
