@@ -26,7 +26,7 @@
 
   <section class="content-section">
     <h2>概要</h2>
-    <p>デモアプリの <strong>ComboBox</strong> はどれも、<code>Name</code> と <code>Value</code> を持つ曜日の項目を <code>DisplayMemberPath="Name"</code>・<code>SelectedValuePath="Value"</code> で表示しています。このような項目では、2 つ目の曜日を選ぶと <code>Text</code> も <code>SelectedValue</code> も <code>Monday</code> になりますが、<code>SelectedItem</code> は項目のオブジェクトそのものです。項目のクラスが <code>ToString</code> を上書きしていないので、その文字はクラス名になり、デモアプリの <code>SelectedItem</code> の表示もそうなります。</p>
+    <p>デモアプリの <strong>ComboBox</strong> はどれも、<code>Name</code> と <code>Value</code> を持つ曜日の項目を <code>DisplayMemberPath="Name"</code>・<code>SelectedValuePath="Value"</code> で表示しています。このような項目では、2 つ目の曜日を選ぶと <code>Text</code> も <code>SelectedValue</code> も <code>Monday</code> になりますが、<code>SelectedItem</code> は項目のオブジェクトそのものです。項目のクラスが <code>ToString</code> を上書きしていないので、その文字は名前空間を含む完全な型名になります。計測した項目では <code>ScreenshotCapture.Scenes.ComboBoxDemoScene+EnumItem</code>、デモアプリの項目では <code>WPFStandardControlDemoApp.Common.MarkupExtensions.EnumBindingSourceExtension+EnumItem</code> で、デモアプリの <code>SelectedItem</code> の表示もこれになります。</p>
     <p><code>IsDropDownOpen</code> は既定で TwoWay にバインドされます。デモアプリは <code>Mode</code> を指定せずにチェックボックスにバインドしています。チェックボックスで一覧を開いたあと、<kbd>Down</kbd>・<kbd>Down</kbd>・<kbd>Enter</kbd> を押すと、Monday が選ばれて一覧が閉じ、チェックボックスのチェックも外れました。</p>
     <p>デモアプリには、<code>IsDropDownOpen</code>、<code>IsEditable</code>、<code>IsReadOnly</code>、<code>MaxDropDownHeight</code>、<code>Text</code>、<code>StaysOpenOnEdit</code>、<code>ShouldPreserveUserEnteredPrefix</code>、選択のプロパティ、<code>IsSynchronizedWithCurrentItem</code> の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。<code>ItemsSource</code> のバインドと選択の読み取り方は、下にリンクした記事で扱っています。</p>
   </section>
@@ -124,7 +124,7 @@
   <section class="content-section">
     <h2>ヒントとベストプラクティス</h2>
     <ul>
-      <li><strong><code>SelectedItem</code> を表示するより、<code>SelectedValuePath</code> と <code>SelectedValue</code> をバインドする</strong> — 項目のクラスが <code>ToString</code> を上書きしていなければ、クラス名が出ます。</li>
+      <li><strong><code>SelectedItem</code> を表示するより、<code>SelectedValuePath</code> と <code>SelectedValue</code> をバインドする</strong> — 項目のクラスが <code>ToString</code> を上書きしていなければ、完全な型名が出ます。</li>
       <li><strong>編集可能な ComboBox では <code>Text</code> だけでなく <code>SelectedIndex</code> も確かめる</strong> — 何にも合わない文字では選択がありません。</li>
       <li><strong><code>IsSynchronizedWithCurrentItem</code> は一覧を連動させたいときだけ設定する</strong> — 最初の項目を選んだ状態でも始まります。</li>
       <li><strong>長い一覧には <code>MaxDropDownHeight</code> を設定する</strong> — 既定値は画面の高さの 3 分の 1 です。</li>
@@ -136,7 +136,7 @@
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ComboBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ComboBoxDemoScene</code></a> を使い、デモアプリと同じ形の項目（各曜日の <code>Name</code> と <code>Value</code>、<code>ToString</code> の上書きなし）で試しました。文字は編集欄へ 1 文字ずつ送り、キーは WPF の入力管理（InputManager）を通して送り、編集欄のクリックは実際のマウスで行いました。高さは、計測したマシンでの値です。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="ComboBox の計測結果の表。既定では編集不可・読み取り専用でなく、StaysOpenOnEdit と ShouldPreserveUserEnteredPrefix は False、文字検索は有効、MaxDropDownHeight 480 は画面の 3 分の 1、IsDropDownOpen は TwoWay なので Enter で閉じるとバインドしたチェックボックスも外れ、SelectedItem はクラス名を出し、tue の入力は Tuesday、入力を保つ設定では tuesday に補完され、xyz では選択がなく、IsReadOnly は入力を止めるが Down キーは止めず、一覧の高さは 141.72、デモアプリの値では 100、編集欄の実際のクリックは StaysOpenOnEdit でなければ一覧を閉じ、同期した ComboBox は 0 で始まって一緒に動く" width="975" height="530" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="ComboBox の計測結果の表。既定では編集不可・読み取り専用でなく、StaysOpenOnEdit と ShouldPreserveUserEnteredPrefix は False、文字検索は有効、MaxDropDownHeight 480 は画面の 3 分の 1、IsDropDownOpen は TwoWay なので Enter で閉じるとバインドしたチェックボックスも外れ、SelectedItem は項目のクラスの完全な型名を出し、tue の入力は Tuesday、入力を保つ設定では tuesday に補完され、xyz では選択がなく、IsReadOnly は入力を止めるが Down キーは止めず、一覧の高さは 141.72、デモアプリの値では 100、編集欄の実際のクリックは StaysOpenOnEdit でなければ一覧を閉じ、同期した ComboBox は 0 で始まって一緒に動く" width="1171" height="530" loading="lazy">
       <figcaption>選択、編集、ドロップダウン、同期。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

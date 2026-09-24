@@ -27,8 +27,8 @@
   <section class="content-section">
     <h2>概要</h2>
     <p>要素に <code>ToolTip="文字"</code> を設定するだけで表示されます。WPF は開くときに文字列を <strong>ToolTip</strong> で包みますが、その都度包みます。同じ文字列のツールチップを 2 回開くと、別々の 2 つの ToolTip のインスタンスになりました。</p>
-    <p>時間の既定値は、よく書かれている数値とは違います。<code>InitialShowDelay</code> は 1000 ms、<code>BetweenShowDelay</code> は 100 ms、<code>ShowDuration</code> は <code>Int32.MaxValue</code> で、ポインターがとどまっている間、ツールチップは自分では閉じません。<code>ShowDuration="1000"</code> では 2.5 秒後には閉じていました。実際のマウスで試すと、<code>InitialShowDelay</code> 500 のツールチップは約 650 ms 後、2000 では約 2050 ms 後に開きました。</p>
-    <p>キーボードの利用者にもツールチップは表示されます。実際の <kbd>Tab</kbd> キーでボタンにフォーカスを移すと、<code>ShowsToolTipOnKeyboardFocus</code> が未設定（既定値の <code>null</code>）か <code>True</code> ではツールチップが開き、<code>False</code> では開きませんでした。無効な要素では、<code>ShowOnDisabled</code> が <code>True</code> でない限り表示されません。無効なボタンの上ではツールチップは開かず、<code>ShowOnDisabled="True"</code> では約 350 ms 後に開きました（この計測のボタンは、待ち時間を短くするため <code>InitialShowDelay</code> を 300 にしていました）。</p>
+    <p>時間の既定値は、よく書かれている数値とは違います。<code>InitialShowDelay</code> は 1000 ms、<code>BetweenShowDelay</code> は 100 ms、<code>ShowDuration</code> は <code>Int32.MaxValue</code> で、ポインターがとどまっている間、ツールチップは自分では閉じません。<code>ShowDuration="1000"</code> では 2.5 秒後には閉じていました。実際のマウスで試すと、<code>InitialShowDelay</code> 500 のツールチップは回によって約 600〜700 ms 後（下の表の回では 700 ms 後）、2000 では約 2050 ms 後に開きました。</p>
+    <p>キーボードの利用者にもツールチップは表示されます。マウスポインターを別のボタンの上に置いたまま、実際の <kbd>Tab</kbd> キーでボタンにフォーカスを移すと、<code>ShowsToolTipOnKeyboardFocus</code> が未設定（既定値の <code>null</code>）か <code>True</code> ではツールチップが開き、<code>False</code> では開きませんでした。無効な要素では、<code>ShowOnDisabled</code> が <code>True</code> でない限り表示されません。無効なボタンの上ではツールチップは開かず、<code>ShowOnDisabled="True"</code> では約 350 ms 後に開きました（この計測のボタンは、待ち時間を短くするため <code>InitialShowDelay</code> を 300 にしていました）。</p>
     <p>デモアプリには、位置とそのずらし量と基準、キーボード、影、3 つの時間、ツールチップの大きさ・色・枠・余白・内容の配置の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
   </section>
 
@@ -71,7 +71,7 @@
         <tr>
           <td><code>InitialShowDelay (ToolTipService)</code></td>
           <td><code>int (ms)</code></td>
-          <td>ツールチップが開くまでの待ち時間です。既定値は 1000 で、デモアプリのスライダーは 500 から始まります。実際のマウスで、500 では約 650 ms 後、2000 では約 2050 ms 後に開きました。</td>
+          <td>ツールチップが開くまでの待ち時間です。既定値は 1000 で、デモアプリのスライダーは 500 から始まります。実際のマウスで、500 では回によって約 600〜700 ms 後、2000 では約 2050 ms 後に開きました。</td>
         </tr>
         <tr>
           <td><code>ShowDuration (ToolTipService)</code></td>
@@ -135,7 +135,7 @@
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToolTipDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToolTipDemoScene</code></a> を使いました。ツールチップは、計測用のウィンドウのボタンの上に実際のマウスを置いて開き、<kbd>Tab</kbd> は実際のキーボード入力として押しました。時間は 50 ms 単位に丸め、位置はデバイスに依存しないピクセルで表しています。どちらも計測したマシンでの値です。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="ToolTip の計測結果の表。既定値は開くまで 1000 ms、表示時間 Int32.MaxValue、間隔 100 ms、位置は Mouse、キーボードの設定は null、ShowOnDisabled と HasDropShadow はどちらも False、待ち時間 500 と 2000 でそれぞれ約 650 と 2050 ms 後に開き、ShowDuration 1000 で閉じ、開くたびに新しい ToolTip のインスタンスになり、無効なボタンでは ShowOnDisabled のときだけ開き、Bottom と Mouse の位置と 50 のずらし、キーボードフォーカスでは False 以外で開く" width="1077" height="440" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="ToolTip の計測結果の表。既定値は開くまで 1000 ms、表示時間 Int32.MaxValue、間隔 100 ms、位置は Mouse、キーボードの設定は null、ShowOnDisabled と HasDropShadow はどちらも False、待ち時間 500 と 2000 でそれぞれ約 700 と 2050 ms 後に開き、ShowDuration 1000 で閉じ、開くたびに新しい ToolTip のインスタンスになり、無効なボタンでは ShowOnDisabled のときだけ開き、Bottom と Mouse の位置と 50 のずらし、キーボードフォーカスでは False 以外で開く" width="1116" height="440" loading="lazy">
       <figcaption>既定値、時間、再利用、無効な要素、位置、キーボードフォーカス。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

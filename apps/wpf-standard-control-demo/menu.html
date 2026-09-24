@@ -69,7 +69,7 @@
         <tr>
           <td><code>IsMainMenu (Menu)</code></td>
           <td><code>bool</code></td>
-          <td>Whether pressing <kbd>Alt</kbd> moves into the menu; the default is <code>True</code>. With a TextBox focused, a real <kbd>Alt</kbd> highlighted the first header and took the focus with <code>True</code>, and did nothing with <code>False</code>. <kbd>F10</kbd> did nothing in either case. The access key worked either way: <kbd>Alt</kbd>+<kbd>M</kbd> opened the demo app's "Main Menu(_M)" even with <code>False</code>.</td>
+          <td>Whether pressing <kbd>Alt</kbd> moves into the menu; the default is <code>True</code>. With a TextBox focused, a real <kbd>Alt</kbd> highlighted the first header and took the focus with <code>True</code>, and did nothing with <code>False</code>. The documentation says <code>IsMainMenu</code> controls both the <kbd>Alt</kbd> and the <kbd>F10</kbd> notifications. On the measuring machine, which uses a Japanese input method, a real <kbd>F10</kbd> with the TextBox focused did nothing in either case. With <code>True</code>, a real <kbd>F10</kbd> with a Button focused, and <kbd>F10</kbd> sent to the TextBox through WPF's input manager, both moved into the menu, so the difference came from the real key reaching the TextBox. The access key worked either way: <kbd>Alt</kbd>+<kbd>M</kbd> opened the demo app's "Main Menu(_M)" even with <code>False</code>.</td>
         </tr>
         <tr>
           <td><code>IsCheckable</code></td>
@@ -158,12 +158,12 @@
       Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/MenuDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>MenuDemoScene</code></a>
       in this site's screenshot tool, with menus like the demo app's sections. Clicks and hovering were made with the real mouse,
-      and <kbd>Alt</kbd>, <kbd>F10</kbd>, and the shortcuts were pressed as real key input. The <code>Copy</code> item was not
+      and <kbd>Alt</kbd>, <kbd>F10</kbd>, and the shortcuts were pressed as real key input; to narrow down <kbd>F10</kbd>, it was also sent through WPF's input manager. The <code>Copy</code> item was not
       clicked, so that the measuring machine's clipboard was left alone; only whether it was enabled was read.
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Table of Menu results: IsMainMenu defaults to True, the four items of the Role section have the four roles and a TopLevelItem with a child becomes a TopLevelHeader, a real click checks a checkable item and closes the submenu unless StaysOpenOnClick, two checkable items are both checked, Alt enters only a main menu, F10 enters neither, Alt+M opens both, Ctrl+O text is shown but Ctrl+O does not click, the Copy item gets Ctrl+C, the Copy item reads enabled while closed and follows the TextBox selection once opened, and hover, press and release set the header states" width="1242" height="710" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Table of Menu results: IsMainMenu defaults to True, the four items of the Role section have the four roles and a TopLevelItem with a child becomes a TopLevelHeader, a real click checks a checkable item and closes the submenu unless StaysOpenOnClick, two checkable items are both checked, Alt enters only a main menu, a real F10 with a TextBox focused enters neither while F10 with a Button focused or through the input manager enters a main menu, Alt+M opens both, Ctrl+O text is shown but Ctrl+O does not click, the Copy item gets Ctrl+C, the Copy item reads enabled while closed and follows the TextBox selection once opened, and hover, press and release set the header states" width="1242" height="770" loading="lazy">
       <figcaption>Roles, checkable items, the main menu, gestures, commands, and header states. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

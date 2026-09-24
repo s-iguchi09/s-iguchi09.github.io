@@ -12,7 +12,7 @@ verifies:
   - "実際のマウスで列見出しをドラッグしたときの列の順序（AllowsColumnReorder が True / False）"
   - "実際のマウスで列見出しをクリックしたときに項目が並べ替わるか"
   - "DisplayMemberBinding と CellTemplate を両方設定したときに、例外が起きるか、どちらが表示されるか"
-  - "幅 500 の列を持つ ListView（デモアプリの構成）で、ScrollBarVisibility が Disabled（デモアプリの初期値）/ Auto のときにスクロールできる範囲"
+  - "幅 500 の列を持つ ListView（デモアプリの構成）で、ScrollBarVisibility が Disabled（デモアプリの初期値）/ Auto のときにスクロールできる範囲と、コードで末尾まで動かしたとき・下矢印キーで最後の項目へ移ったときの実際の位置"
   - "1,000 項目の GridView で作られた項目コンテナの数"
 images:
   - "images/wpf-standard-control-demo/verification/listview/listview-behavior.svg"

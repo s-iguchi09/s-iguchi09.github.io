@@ -131,7 +131,7 @@ internal sealed class MenuDemoScene : IScene
         var rows = new List<IReadOnlyList<string>>();
 
         var defaultItem = new MenuItem();
-        rows.Add(["defaults: Menu.IsMainMenu; MenuItem IsCheckable, IsChecked, StaysOpenOnClick, InputGestureText",
+        rows.Add(["defaults: IsMainMenu; IsCheckable, IsChecked, StaysOpenOnClick, InputGestureText",
             $"{new Menu().IsMainMenu}; {defaultItem.IsCheckable}, {defaultItem.IsChecked}, {defaultItem.StaysOpenOnClick}, {WpfProbe.Describe(defaultItem.InputGestureText)}"]);
 
         {
@@ -246,8 +246,8 @@ internal sealed class MenuDemoScene : IScene
         // 公式ドキュメントは IsMainMenu を「ALT と F10 の通知を受けるか」と説明している。F10 が効かなかった条件を切り分ける。
         foreach ((string name, bool onButton, bool throughInputManager) in new[]
                  {
-                     ("real F10, a Button focused", true, false),
-                     ("F10 through WPF's InputManager, TextBox focused", false, true),
+                     ("real F10, Button", true, false),
+                     ("F10 via InputManager, TextBox", false, true),
                  })
         {
             MenuItem main = Item("Main Menu(_M)", Item("Item 1"));
@@ -270,7 +270,7 @@ internal sealed class MenuDemoScene : IScene
                     await RealKeyboard.PressAsync(window, VkF10);
                 }
 
-                rows.Add([$"IsMainMenu True, {name}: highlighted / submenu open / focus moved to the menu",
+                rows.Add([$"IsMainMenu True, {name}: highlighted / open / focus in menu",
                     $"{main.IsHighlighted} / {main.IsSubmenuOpen} / {main.IsKeyboardFocusWithin}"]);
                 if (main.IsHighlighted || main.IsKeyboardFocusWithin)
                 {

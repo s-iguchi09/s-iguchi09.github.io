@@ -28,7 +28,7 @@
     <h2>Overview</h2>
     <p>
       An <strong>InkCanvas</strong> collects what is drawn in <code>Strokes</code>, a <code>StrokeCollection</code>. A drag with the
-      real mouse added one stroke. The default <code>Background</code> is white, not transparent, and even with
+      real mouse added one stroke. The <code>Background</code> property's own default is <code>null</code>, but the default style sets it to the system window color (<code>SystemColors.WindowBrush</code>), white on the measuring machine, so the InkCanvas is not transparent. Even with
       <code>Background</code> set to <code>null</code> a drag still drew a stroke: the InkCanvas takes input over its whole area.
     </p>
     <p>
@@ -83,7 +83,7 @@
         <tr>
           <td><code>DefaultDrawingAttributes</code></td>
           <td><code>DrawingAttributes</code></td>
-          <td>The pen for new strokes: by default black, 2 &times; 2, with an ellipse tip, and not a highlighter. Each stroke gets its own copy. After the pen's <code>Color</code> and <code>Width</code> were changed in place, as the demo app does, the first stroke stayed black and 2 wide, and the next one was red and 10 wide.</td>
+          <td>The pen for new strokes: by default black, about 2 &times; 2 (exactly 2.0031496062992127 in both directions), with an ellipse tip, and not a highlighter. Each stroke gets its own copy. After the pen's <code>Color</code> and <code>Width</code> were changed in place, as the demo app does, the first stroke stayed black and about 2 wide, and the next one was red and 10 wide.</td>
         </tr>
         <tr>
           <td><code>Strokes</code></td>
@@ -93,7 +93,7 @@
         <tr>
           <td><code>Background</code></td>
           <td><code>Brush</code></td>
-          <td>The fill behind the strokes; the default is white. A <code>null</code> background still takes input (see above).</td>
+          <td>The fill behind the strokes; the default style sets it to the system window color, white on the measuring machine. A <code>null</code> background still takes input (see above).</td>
         </tr>
       </tbody>
     </table>
@@ -157,7 +157,7 @@
     <ul>
       <li><strong>Check the pen color against the background.</strong> The demo app's starting colors have a contrast ratio of only 1.09 : 1.</li>
       <li><strong>Switch to <code>Select</code> before running <code>SelectAll</code>.</strong> In the <code>Ink</code> mode the command was disabled.</li>
-      <li><strong>Avoid the gesture modes if every stroke must be kept.</strong> A straight drag was taken as a gesture and not kept as ink.</li>
+      <li><strong>Keep strokes that are not meant as gestures.</strong> A straight drag was taken as a gesture and not kept as ink. Setting <code>Cancel</code> to <code>True</code> in the <code>Gesture</code> handler kept it as a stroke, and so did limiting the recognized gestures with <code>SetEnabledGestures</code> to a circle only.</li>
       <li><strong>Change a stroke's own <code>DrawingAttributes</code> to recolor it.</strong> Changing the default pen affects only later strokes.</li>
       <li><strong>Keep your own history for undo.</strong> <code>ApplicationCommands.Undo</code> is not handled.</li>
     </ul>
@@ -175,7 +175,7 @@
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg" alt="Table of InkCanvas results: defaults are Ink, EraseByStroke and a white background with a black pen 2 wide, the demo starts with Ink, InkAndGesture, AntiqueWhite on AliceBlue at a contrast of 1.09 to 1, a real drag draws one stroke even with a null background, each stroke keeps a copy of the pen, None and the gesture modes keep no stroke, the gesture modes recognizing Right, EraseByStroke removes the line and EraseByPoint splits it, a click selects it, SelectAll cannot execute in Ink mode and needs a stroke in Select mode, Undo cannot execute, and two strokes saved as ISF take 66 bytes" width="1203" height="620" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg" alt="Table of InkCanvas results: defaults are Ink, EraseByStroke and the system window color (white) from the default style with a black pen about 2 wide, the demo starts with Ink, InkAndGesture, AntiqueWhite on AliceBlue at a contrast of 1.09 to 1, a real drag draws one stroke even with a null background, each stroke keeps a copy of the pen, None and the gesture modes keep no stroke, the gesture modes recognizing Right, EraseByStroke removes the line and EraseByPoint splits it, a click selects it, SelectAll cannot execute in Ink mode and needs a stroke in Select mode, Undo cannot execute, and two strokes saved as ISF take 66 bytes" width="1242" height="710" loading="lazy">
       <figcaption>Defaults, the demo's start, drawing, modes, and commands. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

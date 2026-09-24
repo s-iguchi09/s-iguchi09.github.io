@@ -26,7 +26,7 @@
 
   <section class="content-section">
     <h2>概要</h2>
-    <p><strong>InkCanvas</strong> は、描かれたものを <code>StrokeCollection</code> 型の <code>Strokes</code> に集めます。実際のマウスで 1 回ドラッグすると、ストロークが 1 本増えました。<code>Background</code> の既定値は透明ではなく白で、<code>Background</code> を <code>null</code> にしてもドラッグでストロークが描けました。InkCanvas は領域全体で入力を受け取ります。</p>
+    <p><strong>InkCanvas</strong> は、描かれたものを <code>StrokeCollection</code> 型の <code>Strokes</code> に集めます。実際のマウスで 1 回ドラッグすると、ストロークが 1 本増えました。<code>Background</code> プロパティ自体の既定値は <code>null</code> ですが、既定のスタイルがシステムのウィンドウ色（<code>SystemColors.WindowBrush</code>）を設定するので、InkCanvas は透明ではありません。計測したマシンでは白でした。また、<code>Background</code> を <code>null</code> にしてもドラッグでストロークが描けました。InkCanvas は領域全体で入力を受け取ります。</p>
     <p>デモアプリは、ペンの色 <code>AntiqueWhite</code> と背景 <code>AliceBlue</code> で始まります。コンボボックスの <code>Colors</code> の 2 番目と <code>Brushes</code> の 1 番目の項目です。この 2 色のコントラスト比は 1.09 : 1 なので、描く前に濃いペンの色を選んでください。デモアプリは <code>EditingModeInverted</code> も、既定値ではなく列挙型の 4 番目の値の <code>InkAndGesture</code> で始めます。</p>
     <p>デモアプリには、<code>EditingMode</code>、<code>EditingModeInverted</code>、<code>ActiveEditingMode</code>、ペンの色と太さ、<code>Background</code> と、Copy・Cut・Paste・Select All・Clear All のボタンをまとめた欄が 1 つあります。欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
   </section>
@@ -60,7 +60,7 @@
         <tr>
           <td><code>DefaultDrawingAttributes</code></td>
           <td><code>DrawingAttributes</code></td>
-          <td>新しいストロークのペンで、既定では黒・2 &times; 2・楕円の先端・蛍光ペンではない設定です。各ストロークは自分用のコピーを持ちます。デモアプリと同じようにペンの <code>Color</code> と <code>Width</code> をその場で書き換えると、1 本目のストロークは黒・幅 2 のままで、次のストロークが赤・幅 10 になりました。</td>
+          <td>新しいストロークのペンで、既定では黒・約 2 &times; 2（縦横とも正確には 2.0031496062992127）・楕円の先端・蛍光ペンではない設定です。各ストロークは自分用のコピーを持ちます。デモアプリと同じようにペンの <code>Color</code> と <code>Width</code> をその場で書き換えると、1 本目のストロークは黒・幅約 2 のままで、次のストロークが赤・幅 10 になりました。</td>
         </tr>
         <tr>
           <td><code>Strokes</code></td>
@@ -70,7 +70,7 @@
         <tr>
           <td><code>Background</code></td>
           <td><code>Brush</code></td>
-          <td>ストロークの後ろの塗りつぶしで、既定値は白です。<code>null</code> でも入力を受け取ります（上を参照）。</td>
+          <td>ストロークの後ろの塗りつぶしで、既定のスタイルがシステムのウィンドウ色を設定します。計測したマシンでは白でした。<code>null</code> でも入力を受け取ります（上を参照）。</td>
         </tr>
       </tbody>
     </table>
@@ -129,7 +129,7 @@
     <ul>
       <li><strong>ペンの色を背景と比べて選ぶ</strong> — デモアプリの初期の色どうしのコントラスト比は 1.09 : 1 しかありません。</li>
       <li><strong><code>SelectAll</code> の前に <code>Select</code> モードにする</strong> — <code>Ink</code> モードでは、このコマンドは無効でした。</li>
-      <li><strong>すべてのストロークを残したいならジェスチャーのモードを避ける</strong> — まっすぐなドラッグはジェスチャーとみなされ、インクとして残りませんでした。</li>
+      <li><strong>ジェスチャーのつもりでないストロークを残す</strong> — まっすぐなドラッグはジェスチャーとみなされ、インクとして残りませんでした。<code>Gesture</code> のハンドラーで <code>Cancel</code> を <code>True</code> にするとストロークとして残り、<code>SetEnabledGestures</code> で認識するジェスチャーを円だけに限った場合も残りました。</li>
       <li><strong>描いたストロークの色を変えるには、そのストロークの <code>DrawingAttributes</code> を変える</strong> — 既定のペンを変えても、影響するのはその後のストロークだけです。</li>
       <li><strong>元に戻す機能は自分で履歴を持つ</strong> — <code>ApplicationCommands.Undo</code> は処理されません。</li>
     </ul>
@@ -140,7 +140,7 @@
     <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/InkCanvasDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>InkCanvasDemoScene</code></a> を使い、300 &times; 200 の InkCanvas で試しました。ストロークは実際のマウスのドラッグとクリックで描き・消し・選び、ペンは使っていません。計測したマシンのクリップボードを書き換えないよう、Copy・Cut・Paste は実行せず、実行できるかどうかだけを読みました。デモアプリの初期値は、デモアプリのマークアップ拡張と同じ方法で項目を並べて求めました。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg" alt="InkCanvas の計測結果の表。既定値は Ink・EraseByStroke・白い背景・幅 2 の黒いペン、デモアプリは Ink・InkAndGesture・AliceBlue の上の AntiqueWhite で始まりコントラスト比は 1.09 : 1、実際のドラッグは背景が null でもストロークを 1 本描き、各ストロークはペンのコピーを持ち、None とジェスチャーのモードではストロークが残らず、ジェスチャーのモードでは Right と認識され、EraseByStroke は線を消し EraseByPoint は線を分け、クリックで選択でき、SelectAll は Ink モードでは実行できず Select モードではストロークが要り、Undo は実行できず、2 本のストロークの ISF は 66 バイト" width="1203" height="620" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg" alt="InkCanvas の計測結果の表。既定値は Ink・EraseByStroke・既定のスタイルによるシステムのウィンドウ色（白）の背景・幅約 2 の黒いペン、デモアプリは Ink・InkAndGesture・AliceBlue の上の AntiqueWhite で始まりコントラスト比は 1.09 : 1、実際のドラッグは背景が null でもストロークを 1 本描き、各ストロークはペンのコピーを持ち、None とジェスチャーのモードではストロークが残らず、ジェスチャーのモードでは Right と認識され、EraseByStroke は線を消し EraseByPoint は線を分け、クリックで選択でき、SelectAll は Ink モードでは実行できず Select モードではストロークが要り、Undo は実行できず、2 本のストロークの ISF は 66 バイト" width="1242" height="710" loading="lazy">
       <figcaption>既定値、デモアプリの初期値、描画、モード、コマンド。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

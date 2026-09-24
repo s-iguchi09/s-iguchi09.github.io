@@ -111,13 +111,13 @@ internal sealed class InkCanvasDemoScene : IScene
             DrawingAttributes a = plain.DefaultDrawingAttributes;
             rows.Add(["defaults: EditingMode, EditingModeInverted, ActiveEditingMode, Background",
                 $"{plain.EditingMode}, {plain.EditingModeInverted}, {plain.ActiveEditingMode}, {WpfProbe.Describe(plain.Background)}"]);
-            rows.Add(["  pen: Color, Width x Height (exact), StylusTip, IsHighlighter; gesture recognizer available",
-                $"{Name(a.Color)}, {a.Width:R} x {a.Height:R}, {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}"]);
+            rows.Add(["  pen: Color; Width, Height; StylusTip, IsHighlighter; recognizer",
+                $"{Name(a.Color)}; {a.Width:R}, {(a.Height == a.Width ? "same" : a.Height.ToString("R"))}; {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}"]);
 
             // 既定のスタイルが適用された後の Background と、その出どころ。システムのウィンドウ色と同じか。
             var styled = new InkCanvas();
             Layout(new Grid { Children = { styled } }, 100, 100);
-            rows.Add(["  Background after the default style (value source) / SystemColors.WindowBrush; metadata default",
+            rows.Add(["  Background after style (source) / SystemColors.WindowBrush; metadata",
                 $"{WpfProbe.ValueAndSource(styled, InkCanvas.BackgroundProperty)} / {SystemColors.WindowBrush}; {WpfProbe.Describe(InkCanvas.BackgroundProperty.GetMetadata(typeof(InkCanvas)).DefaultValue)}"]);
         }
 

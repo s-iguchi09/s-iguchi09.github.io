@@ -30,8 +30,10 @@
       The demo app fills every <strong>ComboBox</strong> with the days of the week as items that have a <code>Name</code> and a
       <code>Value</code>, with <code>DisplayMemberPath="Name"</code> and <code>SelectedValuePath="Value"</code>. With such items,
       <code>Text</code> and <code>SelectedValue</code> both read <code>Monday</code> for the second day, but <code>SelectedItem</code> is
-      the item object itself. Its text is the class name, because the item class does not override <code>ToString</code>; the
-      demo app's <code>SelectedItem</code> display shows exactly that.
+      the item object itself. Its text is the full type name, because the item class does not override <code>ToString</code>:
+      <code>ScreenshotCapture.Scenes.ComboBoxDemoScene+EnumItem</code> for the measured items, and
+      <code>WPFStandardControlDemoApp.Common.MarkupExtensions.EnumBindingSourceExtension+EnumItem</code> for the demo app's items,
+      which is what its <code>SelectedItem</code> display shows.
     </p>
     <p>
       <code>IsDropDownOpen</code> binds two-way by default. The demo app binds it to a check box without a <code>Mode</code>. After
@@ -149,7 +151,7 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Bind <code>SelectedValue</code> with <code>SelectedValuePath</code></strong> rather than showing <code>SelectedItem</code>, unless the item class overrides <code>ToString</code>.</li>
+      <li><strong>Bind <code>SelectedValue</code> with <code>SelectedValuePath</code></strong> rather than showing <code>SelectedItem</code>, unless the item class overrides <code>ToString</code>; otherwise the full type name is shown.</li>
       <li><strong>In an editable ComboBox, check <code>SelectedIndex</code> as well as <code>Text</code>.</strong> Text that matches nothing leaves no selection.</li>
       <li><strong>Set <code>IsSynchronizedWithCurrentItem</code> only when lists should move together.</strong> It also selects the first item at the start.</li>
       <li><strong>Set <code>MaxDropDownHeight</code> for long lists.</strong> The default is a third of the screen height.</li>
@@ -167,7 +169,7 @@
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="Table of ComboBox results: defaults are not editable, not read-only, StaysOpenOnEdit and ShouldPreserveUserEnteredPrefix False and text search on, MaxDropDownHeight 480 is a third of the screen, IsDropDownOpen is two-way so a bound check box clears when Enter closes the list, SelectedItem prints its class name, typing tue completes Tuesday or tuesday with the prefix preserved, xyz leaves no selection, IsReadOnly blocks typing but not the Down key, the list is 141.72 high or 100 with the demo value, a real click into the edit box closes the list unless StaysOpenOnEdit, and synchronized ComboBoxes start at 0 and move together" width="975" height="530" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="Table of ComboBox results: defaults are not editable, not read-only, StaysOpenOnEdit and ShouldPreserveUserEnteredPrefix False and text search on, MaxDropDownHeight 480 is a third of the screen, IsDropDownOpen is two-way so a bound check box clears when Enter closes the list, SelectedItem prints the full type name of the item class, typing tue completes Tuesday or tuesday with the prefix preserved, xyz leaves no selection, IsReadOnly blocks typing but not the Down key, the list is 141.72 high or 100 with the demo value, a real click into the edit box closes the list unless StaysOpenOnEdit, and synchronized ComboBoxes start at 0 and move together" width="1171" height="530" loading="lazy">
       <figcaption>Selection, editing, the drop-down, and synchronization. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

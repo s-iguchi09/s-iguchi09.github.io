@@ -201,7 +201,7 @@ internal sealed class ToolTipDemoScene : IScene
                     await RealKeyboard.PressAsync(window, 0x09);
                     await Capture.SettleAsync(window, 1500);
                     bool focused = target.IsKeyboardFocused;
-                    rows.Add([$"real Tab key to a button (mouse over the other button), ShowsToolTipOnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: focused / mouse over target / tooltip opened",
+                    rows.Add([$"real Tab (mouse on the other button), OnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: focused / mouse over / opened",
                         $"{focused} / {target.IsMouseOver} / {s_lastOpened is { IsOpen: true }}"]);
                     if (s_lastOpened is { } open)
                     {
