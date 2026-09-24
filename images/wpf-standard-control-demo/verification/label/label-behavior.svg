@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1108 350" width="1108" height="350" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1108" height="350" />
+  <text class="title" x="12" y="24">Label: defaults, access keys, Target and UI Automation</text>
+  <rect class="head" x="12" y="38" width="1084" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="1082" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">base class / Focusable, IsTabStop / Padding / content alignment</text>
+  <text class="cell" x="1082" y="87.5" text-anchor="end">ContentControl / False, False / 5,5,5,5 / Left, Top</text>
+  <text class="cell" x="26" y="117.5">TextBox, Label, TextBox: Tab from the first TextBox goes to</text>
+  <text class="cell" x="1082" y="117.5" text-anchor="end">the second TextBox</text>
+  <text class="cell" x="26" y="147.5">demo Target labels: focus after access key N / A</text>
+  <text class="cell" x="1082" y="147.5" text-anchor="end">Name TextBox / Age TextBox</text>
+  <text class="cell" x="26" y="177.5">  Name TextBox, read by a UI Automation client: name / LabeledBy</text>
+  <text class="cell" x="1082" y="177.5" text-anchor="end">(empty) / none</text>
+  <text class="cell" x="26" y="207.5">  Age TextBox, AutomationProperties.LabeledBy set by hand: name / LabeledBy</text>
+  <text class="cell" x="1082" y="207.5" text-anchor="end">Age(Press Alt+A) / Age(Press Alt+A)</text>
+  <text class="cell" x="26" y="237.5">Label "_Plain" without Target: focus after access key P</text>
+  <text class="cell" x="1082" y="237.5" text-anchor="end">Other (unchanged)</text>
+  <text class="cell" x="26" y="267.5">Target is a TextBox inside a ToolBar (own focus scope): focus after access key S</text>
+  <text class="cell" x="1082" y="267.5" text-anchor="end">the TextBox in the ToolBar</text>
+  <text class="cell" x="26" y="297.5">string Content on one line: height</text>
+  <text class="cell" x="1082" y="297.5" text-anchor="end">25.96</text>
+  <text class="cell" x="26" y="327.5">string Content with a line break: height</text>
+  <text class="cell" x="1082" y="327.5" text-anchor="end">41.92</text>
+  <line class="line" x1="12" y1="38" x2="1096" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1096" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1096" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1096" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1096" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1096" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1096" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1096" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1096" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1096" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1096" y2="338" />
+  <line class="line" x1="12" y1="38" x2="12" y2="338" />
+  <line class="line" x1="668" y1="38" x2="668" y2="338" />
+  <line class="line" x1="1096" y1="38" x2="1096" y2="338" />
+</svg>

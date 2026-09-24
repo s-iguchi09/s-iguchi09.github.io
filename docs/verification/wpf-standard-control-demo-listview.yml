@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-listview
+slug: "wpf-standard-control-demo-listview"
+scene: "ListViewDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ListView の基底クラスと SelectionMode / View の既定値、View が null のときの見出しの有無"
+  - "GridViewColumn の Width が自動（NaN）のときの幅と、読み込み後に長い項目が見える位置に来たとき・追加されたときの幅"
+  - "GridViewColumn の Width を Slider にバインドしたときの列の幅"
+  - "実際のマウスで列見出しをドラッグしたときの列の順序（AllowsColumnReorder が True / False）"
+  - "実際のマウスで列見出しをクリックしたときに項目が並べ替わるか"
+  - "DisplayMemberBinding と CellTemplate を両方設定したときに、例外が起きるか、どちらが表示されるか"
+  - "幅 500 の列を持つ ListView（デモアプリの構成）で、ScrollBarVisibility が Disabled（デモアプリの初期値）/ Auto のときにスクロールできる範囲と、コードで末尾まで動かしたとき・下矢印キーで最後の項目へ移ったときの実際の位置"
+  - "1,000 項目の GridView で作られた項目コンテナの数"
+images:
+  - "images/wpf-standard-control-demo/verification/listview/listview-behavior.svg"

@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-tabcontrol
+slug: "wpf-standard-control-demo-tabcontrol"
+scene: "TabControlDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TabControl の基底クラスと TabStripPlacement の既定値、デモアプリのコンボボックスの初期値（Dock の先頭の値）"
+  - "TabStripPlacement ごとの、2 つのタブの見出しと内容の領域の位置"
+  - "デモアプリと同じ ContentStringFormat=\"Format: {0}.\" で表示される内容の文字、SelectedContent と SelectedContentStringFormat、TabItem 自身の ContentStringFormat との優先"
+  - "表示の前と後の SelectedIndex（最初のタブが自動で選ばれるか）"
+  - "項目数以上の SelectedIndex（5）、-1、-1 未満（-2）、含まれない SelectedItem を設定したときの例外の有無と選択"
+  - "選択中のタブを取り除いたときに選ばれるタブ"
+  - "Items に TabItem があるときに ItemsSource を設定した場合と、その逆の例外"
+  - "タブの見出しにフォーカスがあるときの右矢印キーでの選択の移動"
+images:
+  - "images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg"
+  - "images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg"

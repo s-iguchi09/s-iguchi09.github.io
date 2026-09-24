@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-textblock
+slug: "wpf-standard-control-demo-textblock"
+scene: "TextBlockDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TextBlock の基底クラスと、Focusable・Padding・TextWrapping・TextTrimming・LineStackingStrategy・LineHeight の既定値"
+  - "Inlines（Run と Bold）を持つ TextBlock の Text の値（レイアウトの前と後）と、そのあと Text を設定したときの例外の有無と Inlines の数"
+  - "Inlines の中の Run の Text をバインドしたときの値と、ソースの変更への追従"
+  - "1 語で幅 100 を超える語を含む文を幅 100 で NoWrap / Wrap / WrapWithOverflow にしたときの高さ（行数）と、幅 100 を超えてレイアウトで切り抜かれるか"
+  - "TextTrimming を設定した TextBlock の幅が、幅 100 の Grid と横の StackPanel（幅の制限なし）でどうなるか"
+  - "Padding 10 で TextBlock の大きさが増える量"
+  - "デモアプリと同じ 4 行の文字で、LineHeight（未設定・5・30）と LineStackingStrategy（BlockLineHeight・MaxHeight）ごとの高さ"
+images:
+  - "images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg"
+  - "images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg"

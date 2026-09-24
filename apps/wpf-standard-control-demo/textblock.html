@@ -8,7 +8,7 @@
   <title>TextBlock | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF TextBlock control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF TextBlock measured on .NET 10: Text versus Inlines, how each TextWrapping treats a long word, when trimming works, and why the demo overlaps its lines.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,40 +21,27 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; TextBlock</p>
     <h1>TextBlock <span class="category-badge">Display</span></h1>
-    <p>TextBlock is a lightweight, non-interactive control for displaying text. It is the primary read-only text element in WPF, supporting rich inline formatting, text trimming, wrapping, and flow document elements. Unlike Label, it does not participate in tab focus and has no border or padding by default.</p>
+    <p>TextBlock displays read-only text, either a plain string or formatted runs. It is the lightest way to put text on the screen.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>TextBlock</strong> is the go-to control for displaying static or data-bound text
-      in the UI. It derives from <code>FrameworkElement</code> directly (not from <code>Control</code>),
-      which gives it a smaller visual footprint than label-based controls. This makes it the recommended
-      choice for high-density UIs such as list item templates and data grids where thousands of text
-      elements may be created.
+      <strong>TextBlock</strong> derives from <code>FrameworkElement</code>, not from <code>Control</code>, so it has no template.
+      It does not take the focus (<code>Focusable</code> was <code>False</code>), and its <code>Padding</code> is 0 by default.
+      Its text cannot be selected; the article linked below shows how to display selectable read-only text.
     </p>
     <p>
-      TextBlock supports rich inline text formatting through the <code>Inlines</code> collection. By
-      mixing <code>Run</code>, <code>Bold</code>, <code>Italic</code>, <code>Underline</code>,
-      <code>Hyperlink</code>, and <code>LineBreak</code> inline elements, you can produce formatted
-      paragraphs in a single TextBlock without using a full <code>FlowDocument</code>. Inline content
-      and the <code>Text</code> property are mutually exclusive — when you add inline elements, the
-      <code>Text</code> property reflects the concatenated plain text.
+      Text can be given in two ways, and they do not mix as one might expect. A TextBlock whose content was built from
+      <code>Inlines</code> (a <code>Run</code> and a <code>Bold</code>) returned an empty <code>Text</code>, before and after layout. Setting
+      <code>Text</code> on it afterwards threw no exception; it replaced the formatted runs with a single one. To combine binding
+      and formatting, bind the <code>Text</code> of a <code>Run</code> instead: a bound <code>Run</code> after a bold "Name: " showed
+      the bound text and followed the source when it changed.
     </p>
     <p>
-      The <code>TextTrimming</code> property adds ellipsis characters when text overflows its bounds,
-      giving users a visual cue that content has been cut. <code>CharacterEllipsis</code> trims mid-word,
-      while <code>WordEllipsis</code> trims at a word boundary for a cleaner result. Combined with a
-      fixed width and a <code>ToolTip</code> showing the full text, this pattern is ubiquitous in list
-      and grid cells.
-    </p>
-    <p>
-      The <code>LineHeight</code> and <code>LineStackingStrategy</code> properties give fine-grained
-      control over the vertical spacing of lines in a multi-line TextBlock. Setting a custom
-      <code>LineHeight</code> overrides the font's natural leading; <code>LineStackingStrategy</code>
-      determines whether the height is applied to the block's lines uniformly
-      (<code>BlockLineHeight</code>) or based on each line's maximum glyph height
-      (<code>MaxHeight</code>).
+      The demo app has sections for <code>Text</code>, <code>TextWrapping</code>, <code>TextTrimming</code>,
+      <code>TextAlignment</code>, <code>Padding</code>, the font properties, <code>Background</code>, <code>Foreground</code>, and
+      <code>LineHeight</code> with <code>LineStackingStrategy</code>. The "Show Code" link under each section displays its XAML.
     </p>
   </section>
 
@@ -65,77 +52,59 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
 
     <table class="prop-table">
       <thead>
-        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
       </thead>
       <tbody>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>Use this property for plain data-bound text — the standard pattern is a <code>OneWay</code> binding to a ViewModel string property so the display updates automatically when the property changes. It is the simplest way to show dynamic text. Pitfall: the <code>Text</code> property and inline child elements (such as <code>&lt;Bold&gt;</code> or <code>&lt;Run&gt;</code>) are mutually exclusive. If you add inline elements in XAML, setting <code>Text</code> simultaneously will throw an exception. When you need both dynamic binding and rich formatting, use <code>&lt;Run Text="{Binding ...}" /&gt;</code> inside the <code>Inlines</code> collection instead.</td>
+          <td>The text as one string. The demo app binds it to a text box. It is empty for a TextBlock whose content is given as <code>Inlines</code> (see above).</td>
         </tr>
         <tr>
           <td><code>TextWrapping</code></td>
           <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
-          <td>Use <code>Wrap</code> for description text, tooltips, and paragraphs that must stay within a fixed column width. <code>WrapWithOverflow</code> wraps at word boundaries but lets individual long tokens — such as URLs or file paths — overflow rather than be clipped. <code>NoWrap</code> (the default) keeps all text on one line. Pitfall: using <code>NoWrap</code> without constraining the width causes the TextBlock to grow beyond its parent container and break the layout. If you use <code>NoWrap</code>, always set <code>MaxWidth</code> on the TextBlock or place it inside a width-constrained column, and pair it with <code>TextTrimming</code> to handle overflow gracefully.</td>
+          <td>Whether and how lines are broken; the default is <code>NoWrap</code>. With "Say Supercalifragilisticexpialidocious now" in a width of 100, whose long word alone is wider than 100, <code>NoWrap</code> gave one line cut off at 100. <code>Wrap</code> gave 4 lines, breaking the long word itself. <code>WrapWithOverflow</code> gave 3 lines and kept the word whole, so it ran past 100 and was cut off there.</td>
         </tr>
         <tr>
           <td><code>TextTrimming</code></td>
           <td><code>None / CharacterEllipsis / WordEllipsis</code></td>
-          <td>Use this for list cells and grid columns where the available width is fixed and long text must be shortened to fit. <code>CharacterEllipsis</code> cuts at the character level and appends "…"; <code>WordEllipsis</code> preserves whole words for a cleaner result. Pitfall: <code>TextTrimming</code> does nothing unless the TextBlock has a width constraint — either an explicit <code>Width</code> / <code>MaxWidth</code>, or placement in a container that limits the available width (such as a Grid column). Always pair trimming with a <code>ToolTip</code> binding to the full text so users can read the complete content on hover.</td>
+          <td>Whether text that does not fit ends with an ellipsis; the default is <code>None</code>. It only works when the width is limited. With <code>CharacterEllipsis</code>, a long text was 100 wide in a Grid 100 wide. In a horizontal StackPanel, which gives unlimited width, it took its full width of 220.43, so nothing was trimmed.</td>
         </tr>
         <tr>
           <td><code>TextAlignment</code></td>
           <td><code>Left / Right / Center / Justify</code></td>
-          <td>Use <code>Center</code> for dialog titles and instruction text, <code>Right</code> for currency and numeric values in table cells, and <code>Justify</code> for long prose paragraphs that should span the full column width. The default <code>Left</code> is appropriate for most body text. Pitfall: <code>Justify</code> on short lines or single-word text can produce large, unnatural gaps between words because WPF distributes all whitespace to fill the line — limit <code>Justify</code> to multi-line paragraphs with enough content per line.</td>
+          <td>The horizontal alignment of the lines inside the TextBlock. The demo app shows the four values side by side with wrapping on.</td>
         </tr>
         <tr>
           <td><code>Padding</code></td>
           <td><code>Thickness</code></td>
-          <td>Adds internal spacing between the TextBlock's boundary and its text content, and also expands the hit-test area for mouse events. Useful when you set a <code>Background</code> to create a badge or chip appearance without wrapping in a <code>Border</code>. Pitfall: do not confuse <code>Padding</code> (inner spacing, between text and the control edge) with <code>Margin</code> (outer spacing, between the control and neighboring elements). Use <code>Padding</code> for internal breathing room and <code>Margin</code> for layout spacing.</td>
+          <td>Space around the text inside the TextBlock. With <code>Padding="10"</code>, the TextBlock grew by 20 in each direction, from 61.57 &times; 15.96 to 81.57 &times; 35.96.</td>
         </tr>
         <tr>
-          <td><code>FontWeight</code></td>
-          <td><code>Thin / ExtraLight / Light / Normal / Medium / SemiBold / Bold / ExtraBold / Black</code></td>
-          <td>Sets the stroke weight (thickness) of the rendered font. <code>Bold</code> is the most common alternative to <code>Normal</code> for headings and emphasis. Font properties are inherited from ancestor elements, so setting <code>FontWeight</code> on a parent panel applies it to all TextBlocks inside. Pitfall: not all fonts include every weight variant. If a requested weight is unavailable, WPF silently substitutes the nearest available weight, which may not match the intended design. Always verify the font and weight combination renders as expected.</td>
+          <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily</code></td>
+          <td>font values</td>
+          <td>The font of the text. The demo app has a section for each.</td>
         </tr>
         <tr>
-          <td><code>FontStyle</code></td>
-          <td><code>Normal / Italic / Oblique</code></td>
-          <td><code>Italic</code> uses the font's dedicated italic face when one is available; <code>Oblique</code> algorithmically slants the regular face when no italic face exists. Most fonts only provide Normal and Italic. Use italic for supplementary or descriptive text that needs visual distinction from the surrounding body text.</td>
-        </tr>
-        <tr>
-          <td><code>FontStretch</code></td>
-          <td><code>Normal / Condensed / Expanded / etc.</code></td>
-          <td>Controls the horizontal stretch factor of the font glyphs, ranging from <code>UltraCondensed</code> to <code>UltraExpanded</code>. Condensed variants are useful for fitting labels into narrow columns. As with <code>FontWeight</code>, the font must contain the specific stretch variant or WPF will scale the nearest available face, which may look blurry.</td>
-        </tr>
-        <tr>
-          <td><code>FontSize</code></td>
-          <td><code>double</code></td>
-          <td>The text size in WPF device-independent units (1/96 inch per unit). A value of 12 is approximately 9 points. <code>FontSize</code> is also inherited from parent elements, so setting it once on a window or resource style propagates throughout the tree. Bind to a user-configurable resource when supporting dynamic font scaling for accessibility.</td>
-        </tr>
-        <tr>
-          <td><code>FontFamily</code></td>
-          <td><code>string</code></td>
-          <td>Specifies the typeface to use — a font family name such as <code>"Segoe UI"</code>, a comma-separated fallback list, or a URI to a font file embedded in the application. Define shared font families in application-level resources for consistency. Pitfall: hard-coding a font that is not installed on the user's machine causes WPF to fall back to a generic font (typically Times New Roman or Arial), which can break your layout's spacing assumptions.</td>
-        </tr>
-        <tr>
-          <td><code>Background</code></td>
+          <td><code>Background / Foreground</code></td>
           <td><code>Brush</code></td>
-          <td>Fills the TextBlock's entire bounding area including padding. Use this to create highlighted badges, colored labels, or emphasis spans. A non-transparent Background also makes the TextBlock intercept mouse events (hit-testing), which is required for hover effects. Note that Background is transparent by default, meaning the TextBlock is click-through to elements beneath it.</td>
-        </tr>
-        <tr>
-          <td><code>Foreground</code></td>
-          <td><code>Brush</code></td>
-          <td>Sets the text color. Any WPF brush is valid — use <code>SolidColorBrush</code> for flat colors or <code>LinearGradientBrush</code> for gradient effects. <code>Foreground</code> is inherited from parent elements, so setting it on a panel propagates to all child TextBlocks. Pitfall: hard-coding a color such as <code>Black</code> or <code>White</code> will make text unreadable when the user switches between light and dark themes. Use system theme brushes (<code>{DynamicResource ControlTextBrush}</code>) or your application's theme brushes so the color adapts automatically.</td>
+          <td>The fill behind the text and the color of the text. The demo app has a section for each.</td>
         </tr>
         <tr>
           <td><code>LineHeight / LineStackingStrategy</code></td>
           <td><code>double / BlockLineHeight / MaxHeight</code></td>
-          <td>Use these when you need uniform row heights in a data grid or when mixing multiple font sizes in one TextBlock. <code>LineHeight</code> specifies the exact pixel height of each line, overriding the font's natural leading. <code>BlockLineHeight</code> applies that fixed height uniformly to every line; <code>MaxHeight</code> uses the tallest glyph in each individual line, which behaves more naturally for mixed-size text. Pitfall: setting <code>LineHeight</code> smaller than the font size causes lines to overlap, making text unreadable. Always set <code>LineHeight</code> to at least 1.2× the font size.</td>
+          <td>The height of each line, and how it is applied. The demo app starts at <code>LineHeight</code> 5 with <code>BlockLineHeight</code>, the first value of the combo box. With its four lines, that gave a height of 20 instead of 63.84, so the lines overlap. <code>MaxHeight</code> does not let a line be lower than its text: with 5, the height stayed 63.84. With 30, both gave 120.</td>
         </tr>
       </tbody>
     </table>
@@ -143,64 +112,86 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>TextBlock with rich inline formatting and text trimming with tooltip fallback:</p>
-    <pre><code class="language-xml">&lt;!-- Plain bound text with wrapping --&gt;
-&lt;TextBlock Text="{Binding Description}"
-           TextWrapping="Wrap"
-           FontSize="14"
-           Foreground="#333333"
-           LineHeight="22" /&gt;
+    <p>The following XAML is the <code>LineHeight</code> section of the demo app (<code>TextBlockUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>markupextensions</code> is the prefix for the demo app's own markup extensions:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;TextBox x:Name="LineHeightTextTextBox" AcceptsReturn="True"
+           Text="TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK" /&gt;
+  &lt;TextBox x:Name="LineHeightTextBox" Text="5" /&gt;
+  &lt;ComboBox x:Name="LineStackingStrategyComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=LineStackingStrategy}"
+            SelectedValuePath="Value" SelectedIndex="0" /&gt;
 
-&lt;!-- Trimmed text with tooltip showing full content --&gt;
-&lt;TextBlock Text="{Binding LongTitle}"
-           TextTrimming="WordEllipsis"
-           ToolTip="{Binding LongTitle}"
-           Width="200" /&gt;
-
-&lt;!-- Inline formatting --&gt;
-&lt;TextBlock&gt;
-  &lt;Run Text="Status: " /&gt;
-  &lt;Bold&gt;&lt;Run Text="Active" Foreground="Green" /&gt;&lt;/Bold&gt;
-  &lt;Run Text=" (last checked 5 min ago)" Foreground="Gray" /&gt;
-&lt;/TextBlock&gt;</code></pre>
+  &lt;TextBlock x:Name="LineHeightResultTextBlock"
+             LineHeight="{Binding Text, ElementName=LineHeightTextBox}"
+             LineStackingStrategy="{Binding SelectedValue, ElementName=LineStackingStrategyComboBox}"
+             Text="{Binding Text, ElementName=LineHeightTextTextBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>List item labels</strong> — Display item names, descriptions, or metadata in DataTemplate cells with controlled wrapping and trimming.</li>
-      <li><strong>Status bars and notifications</strong> — Show short status messages at the bottom of the window, dynamically bound to a ViewModel property.</li>
-      <li><strong>Formatted paragraphs</strong> — Use inline elements to mix bold, italic, hyperlinks, and colored spans in a single text block.</li>
-      <li><strong>Headings and titles</strong> — Apply larger FontSize and FontWeight="Bold" for section headers and window titles.</li>
-      <li><strong>Tooltips with formatted content</strong> — Nest a TextBlock inside a ToolTip for multi-line, formatted tooltip text beyond a plain string.</li>
+      <li><strong>Captions and values:</strong> text in forms and item templates that needs no access key.</li>
+      <li><strong>Cells of a list:</strong> a name trimmed with an ellipsis in a column of fixed width.</li>
+      <li><strong>Formatted sentences:</strong> <code>Run</code>, <code>Bold</code>, and <code>Hyperlink</code> in one TextBlock.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Prefer TextBlock over Label for read-only text</strong> — TextBlock derives from <code>FrameworkElement</code> and is significantly lighter than <code>Label</code>, which inherits the full <code>ContentControl</code> stack. Use Label only when you need access-key (mnemonic) support with a <code>Target</code> binding.</li>
-      <li><strong>TextTrimming requires a width constraint</strong> — <code>TextTrimming</code> only activates when the TextBlock has a bounded width — either via an explicit <code>Width</code> / <code>MaxWidth</code>, or by being inside a width-constrained layout container such as a Grid column. Without a constraint, the TextBlock grows to fit its content and trimming never fires.</li>
-      <li><strong>Always pair TextTrimming with a ToolTip</strong> — When trimming text with <code>CharacterEllipsis</code> or <code>WordEllipsis</code>, bind the ToolTip to the same source as the text — for example <code>ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"</code> — so users can always hover to read the full content regardless of whether trimming is active.</li>
-      <li><strong>Use Run elements for partial text coloring</strong> — Set individual <code>Foreground</code> colors on <code>Run</code> elements within the <code>Inlines</code> collection to highlight specific words or segments in different colors. Note that once you use inline elements the <code>Text</code> property becomes read-only; the entire text must be composed from <code>Run</code> and other inline elements.</li>
-      <li><strong>Centralize font settings in parent elements or resources</strong> — When multiple TextBlocks share the same font configuration, set <code>FontFamily</code>, <code>FontSize</code>, and <code>Foreground</code> on a common parent panel or in a <code>Style</code> resource in <code>App.xaml</code>. This way, you can update the whole application's typography from a single location.</li>
-      <li><strong>Use LineHeight for consistent row heights in tables</strong> — Setting a uniform <code>LineHeight</code> across all TextBlocks in a data grid or list ensures rows align precisely even when their text content varies in glyph height.</li>
+      <li><strong>Do not read <code>Text</code> from a TextBlock built with <code>Inlines</code>.</strong> It was empty.</li>
+      <li><strong>Use <code>Wrap</code> when nothing may run past the edge.</strong> <code>WrapWithOverflow</code> lets a long word overflow.</li>
+      <li><strong>Limit the width when using <code>TextTrimming</code>.</strong> In a horizontal StackPanel the text is never trimmed.</li>
+      <li><strong>Use <code>MaxHeight</code> or a <code>LineHeight</code> larger than the text</strong> to avoid overlapping lines.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBlockDemoScene</code></a>
+      in this site's screenshot tool. The TextBlocks were laid out with <code>Measure</code> and <code>Arrange</code>. Line counts
+      are the height divided by the height of one line, and "clipped" means WPF's layout clip cut the TextBlock at the width
+      it was given. Sizes depend on the font and display scaling; they are the values on the measuring machine.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="Table of TextBlock results: it derives from FrameworkElement, is not focusable, and has no padding by default, Text is empty for content built from Inlines and setting it replaces them without an exception, a long word gives one clipped line with NoWrap, 4 lines with Wrap, and 3 clipped lines with WrapWithOverflow, trimming limits the width to 100 in a Grid but not in a StackPanel, and Padding 10 adds 20 in each direction" width="1022" height="290" loading="lazy">
+      <figcaption>Text and inlines, wrapping, trimming, and padding. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg" alt="Table of the height of the demo's four lines: 63.84 without LineHeight, 20 with LineHeight 5 and BlockLineHeight but 63.84 with MaxHeight, and 120 with LineHeight 30 for both strategies" width="406" height="170" loading="lazy">
+      <figcaption>Height of the demo's four lines by <code>LineHeight</code> and <code>LineStackingStrategy</code>. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/label.html">Label</a> — Adds access-key (underscore mnemonic) support and a Target property; heavier than TextBlock.</li>
-      <li><a href="/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — The editable counterpart for user input.</li>
-      <li><a href="/apps/wpf-standard-control-demo/tooltip.html">ToolTip</a> — Commonly paired with trimmed TextBlocks to show full content on hover.</li>
+      <li><a href="/apps/wpf-standard-control-demo/label.html">Label</a> — a caption with an access key that moves the focus.</li>
+      <li><a href="/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — text the user can edit, or select when read-only.</li>
+      <li><a href="/articles/wpf-selectable-readonly-text-display/">How to Display Selectable, Copyable Read-Only Text in WPF</a> — what to use when the text must be selectable.</li>
+      <li><a href="/articles/wpf-label-vs-textblock-performance/">Why WPF Slows Down with Many Labels and When to Switch to TextBlock</a> — the cost of Labels compared with TextBlocks.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage" target="_blank" rel="noopener noreferrer">View TextBlock source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage" target="_blank" rel="noopener noreferrer">
+        View TextBlock source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>

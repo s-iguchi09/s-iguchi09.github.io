@@ -85,6 +85,16 @@ internal static class Program
         new DockPanelDemoScene(),
         new CanvasDemoScene(),
         new UniformGridDemoScene(),
+        new ViewboxDemoScene(),
+        new LabelDemoScene(),
+        new TextBlockDemoScene(),
+        new ToolTipDemoScene(),
+        new TabControlDemoScene(),
+        new ComboBoxDemoScene(),
+        new MenuDemoScene(),
+        new ImageDemoScene(),
+        new InkCanvasDemoScene(),
+        new ListViewDemoScene(),
     ];
 
     [STAThread]

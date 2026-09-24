@@ -7,62 +7,146 @@
   <meta charset="UTF-8">
   <title>Label | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の Label はテキストを表示するコンテンツコントロールで、アクセスキー（ニーモニック）をサポートします。TextBlock と異なり、Target プロパティで別のコントロールとリンクしてキーボードナビゲーションを有効にできます。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+
+  <meta name="description" content="WPF の Label を .NET 10 で実測して解説。アクセスキーでフォーカスがどこへ移るかを Target の有無や ToolBar の中で実際に確かめ、既定値と、Target がスクリーンリーダー向けの名前にはならないことも示します。">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-ja.html %}
+
 <main>
+
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; Label</p>
     <h1>Label <span class="category-badge">Display</span></h1>
-    <p>Label はテキストを表示するコンテンツコントロールで、アクセスキー（ニーモニック）をサポートします。TextBlock と異なり、Target プロパティで別のコントロールとリンクしてキーボードナビゲーションを有効にできます。</p>
+    <p>Label は、主に入力欄の見出しを表示し、アクセスキーでその入力欄へキーボードフォーカスを移せるコントロールです。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>Label</strong> は <code>ContentControl</code> を継承したコントロールで、主にフォームの入力フィールドの隣にラベルを表示するために使用されます。TextBlock との最大の違いは、ラベルテキストに <code>_</code>（アンダースコア）を使ってアクセスキー（ニーモニック）を定義できる点です。</p>
-  <p><code>Target</code> プロパティに別のコントロール（TextBox など）を指定すると、アクセスキー（Alt+文字）を押したときにそのコントロールにフォーカスが移動します。例えば <code>Content="_名前:"</code> と設定した Label に <code>Target="{x:Reference nameTextBox}"</code> を指定すると、Alt+N で名前 TextBox にフォーカスが移動します。</p>
-  <p>Label は <code>ContentControl</code> なので、Content には文字列だけでなく任意の WPF 要素を配置できます。アイコン付きラベルや複合コンテンツのラベルも作成できます。</p>
-  <p>単純なテキスト表示にはより軽量な <code>TextBlock</code> を使うことを推奨します。Label はアクセスキーや Target が必要な場合、または ContentControl の特性が必要な場合に選択します。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/label.png" alt="label demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>Label</strong> は <code>ContentControl</code> を継承しています。Label 自身はフォーカスを受け取りません。<code>Focusable</code> も <code>IsTabStop</code> も <code>False</code> で、Label の前の TextBox から <kbd>Tab</kbd> を押すと、Label の後の TextBox へ直接移りました。<code>Padding</code> の既定値は 4 辺とも 5 で、内容は <code>Left</code>・<code>Top</code> に配置されます。</p>
+    <p>文字列の内容はアクセスキーを認識して表示されます。アンダースコアの次の文字がアクセスキーになり、アンダースコア自体は表示されません。この点とアンダースコアの表示のしかたは、下にリンクした記事で扱っています。改行を含む文字列は 2 行で表示され、Label の高さは 1 行で 25.96、2 行で 41.92 でした。</p>
+    <p>デモアプリには、<code>Target</code>、内容と、<code>Control</code> のプロパティ（<code>Padding</code>、フォントの各プロパティ、<code>Background</code>、<code>Foreground</code>、枠、内容の配置）の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/label.png" alt="label demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody><tr><td><code>Target</code></td><td><code>UIElement</code></td><td>Alt+アクセスキーが押されたときにキーボードフォーカスを移動させたいコントロール（TextBox など）を設定します。設定したコントロールにフォーカスが移動し、ユーザーがマウスを使わずにフォームを操作できるようになります。参照には <code>{Binding ElementName=xxx}</code> より <code>{x:Reference xxx}</code> が推奨されます（コンパイル時に検証されるため安全）。はまりポイント: <code>Target</code> は同じ <code>FocusScope</code> 内のコントロールにのみ機能します。<code>ToolBar</code> や <code>Menu</code> など独自の FocusScope を持つコントロール内のターゲットには意図通りに動作しないことがあります。</td></tr>
-<tr><td><code>Content (ContentControl)</code></td><td><code>object</code></td><td>フォームのフィールド説明テキストを表示したり、Alt キーによるキーボードショートカットを提供したい場合に設定します。<code>_</code> で始まる文字がアクセスキーとして機能し、Alt を押したときにその文字にアンダーラインが表示されます。<code>__</code>（アンダースコア2つ）を使うとリテラルのアンダースコア文字として表示できます。文字列以外にも任意の WPF 要素を設定できます。はまりポイント: <code>Target</code> はアクセスキーの解釈や下線表示そのものではなく、主にアクセスキー押下時のフォーカス移動先を決めるためのプロパティです。<code>Target</code> を設定しなくても <code>_</code> によるアクセスキー表記や下線表示は行われますが、フォーカスを移動させたい場合は適切なターゲットを設定してください。</td></tr>
-<tr><td><code>Padding (Control)</code></td><td><code>Thickness</code></td><td>コンテンツとコントロール境界線の間の内側余白を設定します。デフォルトは <code>5,0,0,0</code>（左5px）です。コンパクトなフォームレイアウトや大きなフォントを使用する場合に上下の余白を調整するために使用します。はまりポイント: <code>Padding</code> を 0 に設定するとテキストがボーダーに密着して読みにくくなります。フォントサイズを変更した場合は Padding も合わせて調整してください。</td></tr>
-<tr><td><code>FontSize / FontWeight / FontFamily (Control)</code></td><td><code>various</code></td><td>フォントサイズ・太さ・フォントファミリーを設定します。これらは親要素から継承されるため、<code>Window</code> や共通の親パネルに設定するとフォーム全体のスタイルを一括管理できます。アプリ全体でスタイルを統一する場合は <code>App.xaml</code> のリソースで定義するのがベストプラクティスです。はまりポイント: すべてのフォントがすべての <code>FontWeight</code> をサポートしているわけではありません。<code>Bold</code> や <code>Light</code> を指定しても対応フォントがない場合は最も近いウェイトが使われます。</td></tr>
-<tr><td><code>Background / Foreground (Control)</code></td><td><code>Brush</code></td><td>ラベルの背景色とテキストの前景色を設定します。有効/無効状態に応じた視覚フィードバックを提供したい場合に、<code>IsEnabled</code> のトリガーと組み合わせて色を変更するのが典型的な使用例です。テーマ対応のアプリでは <code>DynamicResource</code> でシステムカラーを参照すると自動的にライト/ダークテーマに追従します。はまりポイント: <code>Foreground</code> をハードコードした色に設定するとダークテーマ時に背景と同化する可能性があります。テーマブラシ（<code>{DynamicResource ControlTextBrush}</code> など）の使用を推奨します。</td></tr>
-</tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>Target</code></td>
+          <td><code>UIElement</code></td>
+          <td>Label のアクセスキーを押したときにフォーカスを受け取る要素です。デモアプリの 2 組、<code>_Name(Press Alt+N)</code> と <code>_Age(Press Alt+A)</code> では、アクセスキー <code>N</code> と <code>A</code> でフォーカスが Name と Age のテキストボックスへ移りました。<code>Target</code> のない <code>_Plain</code> のアクセスキーでは、フォーカスは動きませんでした。フォーカススコープが違っても問題はなく、ToolBar の中の TextBox を <code>Target</code> にした Label でも、フォーカスがその中へ移りました。<code>Label</code> クラスのドキュメントには、Target を設定すると UI オートメーションがラベルの文字を対象の名前に使うと書かれていますが、<code>Target</code> はスクリーンリーダー向けの名前になりませんでした。スクリーンリーダーも使う UI オートメーションのクライアント API で読むと、Name のテキストボックスの名前は空で、<code>LabeledBy</code> もありませんでした。これは未解決の報告 <a href="https://github.com/dotnet/wpf/issues/9185" target="_blank" rel="noopener noreferrer">dotnet/wpf#9185</a> と一致します。<code>AutomationProperties.LabeledBy</code> を手動で設定すると効き、Age のテキストボックスの名前は「Age(Press Alt+A)」になりました。</td>
+        </tr>
+        <tr>
+          <td><code>Content (ContentControl)</code></td>
+          <td><code>object</code></td>
+          <td>見出しです。デモアプリは複数行のテキストボックスにバインドしているので、文字に改行を入れると 2 行の Label になります。</td>
+        </tr>
+        <tr>
+          <td><code>Padding (Control)</code></td>
+          <td><code>Thickness</code></td>
+          <td>内容の周りの余白で、既定値は 4 辺とも 5 です。</td>
+        </tr>
+        <tr>
+          <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily (Control)</code></td>
+          <td>フォントの値</td>
+          <td>見出しのフォントです。デモアプリにはそれぞれの欄があります。</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground / BorderBrush / BorderThickness (Control)</code></td>
+          <td><code>Brush / Thickness</code></td>
+          <td>Label の色と枠です。デモアプリにはそれぞれの欄があります。</td>
+        </tr>
+        <tr>
+          <td><code>HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
+          <td><code>HorizontalAlignment / VerticalAlignment</code></td>
+          <td>Label の中での内容の位置で、既定値は <code>Left</code> と <code>Top</code> です。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;Grid&gt;
+
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>LabelUsageControl.xaml</code>）の <code>Target</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。</p>
+    <pre><code class="language-xml">&lt;Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
   &lt;Grid.ColumnDefinitions&gt;
-    &lt;ColumnDefinition Width="Auto" /&gt;
+    &lt;ColumnDefinition Width="auto" /&gt;
     &lt;ColumnDefinition Width="*" /&gt;
   &lt;/Grid.ColumnDefinitions&gt;
   &lt;Grid.RowDefinitions&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
-    &lt;RowDefinition Height="Auto" /&gt;
+    &lt;RowDefinition /&gt;
+    &lt;RowDefinition /&gt;
   &lt;/Grid.RowDefinitions&gt;
+  &lt;Label x:Name="TargetNameLabel" Grid.Row="0" Grid.Column="0"
+         Content="_Name(Press Alt+N)"
+         Target="{Binding ElementName=TargetNameTextBox}" /&gt;
+  &lt;TextBox x:Name="TargetNameTextBox" Grid.Row="0" Grid.Column="1" /&gt;
+  &lt;Label x:Name="TargetAgeLabel" Grid.Row="1" Grid.Column="0"
+         Content="_Age(Press Alt+A)"
+         Target="{Binding ElementName=TargetAgeTextBox}" /&gt;
+  &lt;TextBox x:Name="TargetAgeTextBox" Grid.Row="1" Grid.Column="1" /&gt;
+&lt;/Grid&gt;</code></pre>
+  </section>
 
-  &lt;!-- _名 でアクセスキー設定 (Alt+N でフォーカス移動) --&gt;
-  &lt;Label Grid.Row="0" Grid.Column="0"
-         Content="_名前:" Target="{Binding ElementName=nameBox}" /&gt;
-  &lt;TextBox x:Name="nameBox" Grid.Row="0" Grid.Column="1"
-           Text="{Binding Name}" /&gt;
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>フォームの見出し</strong> — 各入力欄の横に見出しを置き、アクセスキーでその欄へ移れるようにします。</li>
+      <li><strong>ほかのコントロールの見出し</strong> — ComboBox や DatePicker を <code>Target</code> にします。</li>
+      <li><strong>内容のある見出し</strong> — 内容には任意の要素を置けるので、アイコンと文字を並べられます。</li>
+    </ul>
+  </section>
 
-  &lt;Label Grid.Row="1" Grid.Column="0"
-         Content="_メール:" Target="{Binding ElementName=emailBox}" /&gt;
-  &lt;TextBox x:Name="emailBox" Grid.Row="1" Grid.Column="1"
-           Text="{Binding Email}" /&gt;
-&lt;/Grid&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>フォームフィールドのラベル</strong> — 入力フィールドの左側に配置し、Alt+キーでフォーカス移動できるアクセスキー付きラベルとして使用します。</li><li><strong>アクセシビリティ対応フォーム</strong> — スクリーンリーダー利用者のためにすべての入力フィールドに対応するラベルを配置します。</li><li><strong>ステータス表示</strong> — 読み取り専用のステータス情報を表示するラベルとして使用します。</li><li><strong>ウィザードのステップ説明</strong> — ウィザードの各ステップで必要な入力内容の説明をラベルで表示します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>単純なテキスト表示には TextBlock を使う</strong> — アクセスキーや Target が不要な場合は、より軽量な TextBlock を使います。Label は <code>ContentControl</code> を継承するため TextBlock よりリソースを消費します。</li><li><strong>_ でアクセスキーを定義する</strong> — <code>Content</code> の文字列中に <code>_</code> を置くと次の文字がアクセスキーになります（例: <code>_名前:</code> → Alt+N でフォーカス移動）。実際の <code>_</code> を表示したい場合は <code>__</code> と書きます。</li><li><strong>x:Reference でターゲットを参照する</strong> — <code>{Binding ElementName=xxx}</code> より <code>{x:Reference xxx}</code> の方が推奨されます。<code>x:Reference</code> はコンパイル時に検証されるため、名前のタイポを早期に検出できます。</li><li><strong>HorizontalContentAlignment で整列</strong> — ラベルのテキストを右揃えにする場合は <code>HorizontalContentAlignment="Right"</code> を設定します。Grid フォームで複数ラベルの幅を揃えてテキストを右揃えにすることで整然としたフォームレイアウトになります。</li><li><strong>FocusScope に注意する</strong> — <code>Target</code> で指定するコントロールは Label と同じ FocusScope 内にある必要があります。<code>ToolBar</code> や <code>Menu</code> などは独自の FocusScope を持つため、その外部の Label の <code>Target</code> に指定しても機能しないことがあります。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — アクセスキーが不要なシンプルなテキスト表示には TextBlock が軽量で適しています。</li><li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — ラベルと対になる入力フィールド。</li></ul></section>
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong>アクセスキーを付けた見出しには必ず <code>Target</code> を設定する</strong> — ないとキーを押しても何も起きません。</li>
+      <li><strong>スクリーンリーダー向けの名前は別に付ける</strong> — ドキュメントの説明に反して、<code>Target</code> では TextBox に名前が付きませんでした。入力欄の <code>AutomationProperties.LabeledBy</code> に Label を設定すると、ラベルの文字が名前になりました。</li>
+      <li><strong>アクセスキーの要らない文字には TextBlock を使う</strong> — 下にリンクした記事で、Label を大量に置いたときの負担を実測しています。</li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>LabelDemoScene</code></a> を使いました。アクセスキーは <kbd>Alt</kbd> と一緒に押したキーを処理する <code>AccessKeyManager.ProcessKey</code> で、<kbd>Tab</kbd> はキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。UI オートメーションの名前は、スクリーンリーダーも使う UI オートメーションのクライアント API で、同じプロセスの中の、ウィンドウの UI スレッドとは別のスレッドから読みました。大きさは、計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Label の計測結果の表。ContentControl を継承しフォーカスもタブ移動も受けず、余白は 5 で内容は Left と Top、Tab は Label を飛ばし、デモアプリのアクセスキー N と A で Name と Age のテキストボックスへフォーカスが移り、Target のない Label では動かず、ToolBar の中の Target にも移り、対象の TextBox には UI オートメーションの名前も LabeledBy も付かず、手動で設定した AutomationProperties.LabeledBy では名前が付き、改行で 2 行の高さになる" width="1108" height="350" loading="lazy">
+      <figcaption>既定値、アクセスキー、<code>Target</code>、UI オートメーション。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール・記事</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — アクセスキーもテンプレートもない、軽い文字表示です。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — Label の <code>Target</code> として最もよく使われます。</li>
+      <li><a href="/ja/articles/wpf-label-underscore-issue/">WPF の Label でアンダーバーが消える理由と回避方法</a> — Label の文字のアクセスキーと、アンダースコアの表示を扱います。</li>
+      <li><a href="/ja/articles/wpf-label-vs-textblock-performance/">WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針</a> — Label を大量に置いたときの負担を TextBlock と比べます。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。アプリ内の「コード表示」ボタンから各プロパティの実際の XAML を確認できます。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/LabelUsage" target="_blank" rel="noopener noreferrer">GitHub で Label のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
+
 {% include footer-ja.html %}
+
 </body>
 </html>

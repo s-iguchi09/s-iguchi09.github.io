@@ -7,51 +7,40 @@
   <meta charset="UTF-8">
   <title>ListView | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF ListView control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+
+  <meta name="description" content="WPF ListView measured on .NET 10: Extended selection by default, auto-width columns that do not grow, column reordering and header clicks, and scrolling.">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-en.html %}
+
 <main>
 
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ListView</p>
     <h1>ListView <span class="category-badge">List</span></h1>
-    <p>ListView is an advanced list control that extends ListBox with a pluggable view model. The most common view is GridView, which displays items in a tabular format with column headers that support resizing and reordering.</p>
+    <p>ListView is a ListBox that can show its items through a view. With a GridView, the items become rows with column headers.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>ListView</strong> control builds upon <code>ListBox</code> by introducing the
-      <code>View</code> property, which accepts a <code>ViewBase</code> object that defines how items are
-      rendered. The built-in <code>GridView</code> view renders items as a table with named column headers,
-      making ListView the go-to control for read-only data grids or simple file-explorer-style lists.
-      Custom views can also be implemented by subclassing <code>ViewBase</code>, enabling tile views,
-      card views, or any other presentation format.
+      <strong>ListView</strong> derives from <code>ListBox</code>, and its items are wrapped in <code>ListViewItem</code>
+      containers. Its <code>View</code> is <code>null</code> by default, which shows a plain list without column headers. One
+      difference from ListBox is the selection: the default <code>SelectionMode</code> of a ListView is <code>Extended</code>, while a
+      ListBox's is <code>Single</code>. The demo app's combo box starts at <code>Single</code>, its first value. How the selection
+      modes, <code>SelectedIndex</code>, and <code>IsSelected</code> behave is measured on the ListBox page.
     </p>
     <p>
-      When using <code>GridView</code>, columns are defined through the <code>Columns</code> property as a
-      collection of <code>GridViewColumn</code> objects. Each column specifies a <code>Header</code> for the
-      column title, a <code>Width</code>, and either a <code>DisplayMemberBinding</code> pointing to a data
-      property or a <code>CellTemplate</code> for custom cell rendering. The
-      <code>AllowsColumnReorder</code> property enables drag-and-drop column reordering, and columns can be
-      resized at runtime by dragging column dividers.
+      A GridView does not sort. A real click on the Name header left the first item as <code>AliceBlue</code>, and no sort
+      description was added. It keeps rows virtualized: with 1,000 items in a ListView 150 high, 8 item containers were created.
     </p>
     <p>
-      ListView inherits all selection features from <code>ListBox</code>, including the <code>SelectionMode</code>
-      property with <code>Single</code>, <code>Multiple</code>, and <code>Extended</code> options. The
-      <code>SelectedItem</code> and <code>SelectedIndex</code> bindings work identically to ListBox,
-      making it straightforward to migrate between the two controls as requirements evolve. The
-      <code>IsSelected</code> property on <code>ListViewItem</code> containers supports selection-aware
-      styling in item templates.
-    </p>
-    <p>
-      For large datasets, ListView combined with <code>VirtualizingStackPanel</code> and
-      <code>ScrollViewer</code> provides the performance characteristics needed to display thousands of rows
-      without excessive memory consumption. The <code>ScrollViewer.HorizontalScrollBarVisibility</code> and
-      <code>ScrollViewer.VerticalScrollBarVisibility</code> attached properties fine-tune scroll bar behavior
-      to match the target layout requirements.
+      The demo app has sections for <code>SelectionMode</code>, <code>View</code> with the columns and
+      <code>AllowsColumnReorder</code>, a column's <code>Width</code>, <code>SelectedIndex</code> and <code>SelectedItem</code>,
+      <code>IsSelected</code>, and the scroll bars. The "Show Code" link under each section displays its XAML.
     </p>
   </section>
 
@@ -62,49 +51,59 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
+
     <table class="prop-table">
-      <thead><tr><th>Property</th><th>Values</th><th>Description</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
       <tbody>
         <tr>
           <td><code>SelectionMode (ListBox)</code></td>
           <td><code>Single / Multiple / Extended</code></td>
-          <td>Inherited from <code>ListBox</code>, this controls how many items can be selected simultaneously. <code>Extended</code> mode with Shift- and Ctrl-click is commonly used in file-manager-style ListViews where multi-file operations are needed. Pitfall: in <code>Multiple</code> and <code>Extended</code> modes, use the <code>SelectedItems</code> collection (not <code>SelectedItem</code>) to retrieve all selected items. <code>SelectedItem</code> only returns the last selected item in multi-select modes.</td>
+          <td>How clicks select items. The default is <code>Extended</code> for a ListView (see above). The demo app shows <code>SelectedItems.Count</code> under the list.</td>
         </tr>
         <tr>
           <td><code>View</code></td>
           <td><code>ViewBase</code></td>
-          <td>The pluggable view object that defines how list items are rendered. Setting this to a <code>GridView</code> instance activates tabular column display with column headers — suitable for read-only data tables such as file lists, employee rosters, and log viewers. Setting it to <code>null</code> falls back to a plain vertical list similar to <code>ListBox</code>. The <code>View</code> property accepts any <code>ViewBase</code> subclass; only <code>GridView</code> is provided by default, so complex custom layouts require a <code>DataGrid</code> instead.</td>
+          <td>How the items are shown; the default is <code>null</code>, a plain list. The demo app sets a <code>GridView</code> with a Name column and a Value column over the list of brushes.</td>
         </tr>
         <tr>
           <td><code>Columns (GridView)</code></td>
           <td><code>GridViewColumnCollection</code></td>
-          <td>The collection of <code>GridViewColumn</code> objects that define each column's header, width, and cell binding or template. Use <code>DisplayMemberBinding</code> for plain-text columns and <code>CellTemplate</code> for columns that display buttons, images, or custom-formatted content. Pitfall: you cannot set both <code>DisplayMemberBinding</code> and <code>CellTemplate</code> on the same column — doing so throws an exception. Also, column-header click sorting is not built in; you must handle <code>GridViewColumnHeader.Click</code> and apply <code>SortDescription</code> to the <code>ICollectionView</code> manually.</td>
+          <td>The columns. Each shows a value with <code>DisplayMemberBinding</code> or a <code>CellTemplate</code>. Setting both threw no exception, and <code>DisplayMemberBinding</code> was used: the first row showed <code>AliceBlue</code>, not the template's text.</td>
         </tr>
         <tr>
           <td><code>AllowsColumnReorder (GridView)</code></td>
           <td><code>bool</code></td>
-          <td>When <code>true</code>, users can drag column headers to reorder the columns — an expected behavior in file-manager and data-grid UIs. The reordering affects display only; the underlying data bindings are unchanged. Pitfall: the column order is not automatically saved. To persist the layout across sessions, handle the <code>ColumnReordered</code> event and save the new column order to user settings.</td>
+          <td>Whether the user can drag a header to move its column; the default is <code>True</code>, and the demo app starts with it checked. A real drag of the Name header past the Value header changed the order to Value, Name with <code>True</code> and left Name, Value with <code>False</code>. The order is that of the <code>Columns</code> collection itself.</td>
         </tr>
         <tr>
           <td><code>Width (GridViewColumn)</code></td>
           <td><code>double</code></td>
-          <td>The width of an individual column in device-independent pixels. Setting <code>Width="NaN"</code> (the default when omitted, or <code>Width="Auto"</code> in XAML) auto-sizes the column to its content on load. Pitfall: <code>Auto</code> width is calculated once from the initially loaded content and then fixed. If data updates or virtualization is active, the column width does not re-expand automatically. For dynamically changing content, use a fixed pixel width or re-measure explicitly.</td>
+          <td>The column's width. <code>Auto</code> (<code>NaN</code>) sized the Name column to the rows shown at the start, 84.89 wide, and it did not grow later: scrolling <code>LightGoldenrodYellow</code>, the longest name, into view and inserting a longer name at the top both left it at 84.89. The demo app binds the Value column's width to a slider starting at 150; moving the slider to 300 made the column 300 wide.</td>
         </tr>
         <tr>
           <td><code>SelectedIndex / SelectedItem (Selector)</code></td>
           <td><code>int / object</code></td>
-          <td>Zero-based index and data object of the currently selected item. Two-way binding on <code>SelectedItem</code> is the recommended MVVM pattern for master-detail scenarios. Pitfall: if the backing <code>ObservableCollection</code> is rebuilt (e.g., re-assigned from the ViewModel), <code>SelectedItem</code> may become <code>null</code> even if an equivalent item exists in the new collection. Restore selection after collection updates by re-setting <code>SelectedItem</code> explicitly.</td>
+          <td>The position and the object of the selected item. The demo app starts at <code>SelectedIndex="0"</code> (Item A) and binds a text box to the index two-way. See the ListBox page for invalid indexes.</td>
         </tr>
         <tr>
           <td><code>IsSelected (ListBoxItem)</code></td>
           <td><code>bool</code></td>
-          <td>An item container property that can be used in <code>DataTrigger</code> or <code>Style</code> setters to apply row-level visual changes (e.g., bold text, highlight color) to selected rows within the ListView.</td>
+          <td>Whether a container is selected. The demo app binds the first item's <code>IsSelected</code> to a check box, as measured on the ListBox page.</td>
         </tr>
         <tr>
           <td><code>HorizontalScrollBarVisibility / VerticalScrollBarVisibility (ScrollViewer)</code></td>
           <td><code>Disabled / Auto / Hidden / Visible</code></td>
-          <td>Attached properties that control the ListView's built-in scroll bars. For a table with many columns, enable <code>HorizontalScrollBarVisibility="Auto"</code> so columns remain accessible when the window is narrow. Pitfall: setting <code>VerticalScrollBarVisibility="Disabled"</code> inside a parent <code>ScrollViewer</code> disables virtualization in the ListView's internal panel, loading all rows into memory at once.</td>
+          <td>The scroll bars. The demo app's list has one column 500 wide, and its combo boxes start at <code>Disabled</code>. In a list 300 wide and 100 high, <code>Disabled</code> left no horizontal scrolling, so the right part of the column could not be reached, but the rows still scrolled vertically: <code>ScrollToBottom</code> and the Down key to the last row both moved the vertical offset to 2 rows (the horizontal offset stayed at 0). With <code>Auto</code>, the offsets went to 227 DIPs horizontally and 3 rows vertically.</td>
         </tr>
       </tbody>
     </table>
@@ -112,78 +111,83 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates a ListView with GridView columns, column reordering enabled, and selection binding:</p>
-    <pre><code class="language-xml">&lt;ListView ItemsSource="{Binding Orders}"
-          SelectedItem="{Binding SelectedOrder}"
-          SelectionMode="Single"
-          ScrollViewer.HorizontalScrollBarVisibility="Auto"
-          Margin="8"&gt;
-  &lt;ListView.View&gt;
-    &lt;GridView AllowsColumnReorder="True"&gt;
-      &lt;GridViewColumn Header="Order ID"
-                      DisplayMemberBinding="{Binding OrderId}"
-                      Width="80" /&gt;
-      &lt;GridViewColumn Header="Customer"
-                      DisplayMemberBinding="{Binding CustomerName}"
-                      Width="160" /&gt;
-      &lt;GridViewColumn Header="Date"
-                      DisplayMemberBinding="{Binding OrderDate, StringFormat=d}"
-                      Width="100" /&gt;
-      &lt;GridViewColumn Header="Total"
-                      DisplayMemberBinding="{Binding Total, StringFormat=C}"
-                      Width="90" /&gt;
-      &lt;GridViewColumn Header="Status" Width="100"&gt;
-        &lt;GridViewColumn.CellTemplate&gt;
-          &lt;DataTemplate&gt;
-            &lt;TextBlock Text="{Binding Status}"
-                       Foreground="{Binding Status,
-                         Converter={StaticResource StatusColorConverter}}" /&gt;
-          &lt;/DataTemplate&gt;
-        &lt;/GridViewColumn.CellTemplate&gt;
-      &lt;/GridViewColumn&gt;
-    &lt;/GridView&gt;
-  &lt;/ListView.View&gt;
-&lt;/ListView&gt;</code></pre>
+    <p>The following XAML is the <code>View</code> section of the demo app (<code>ListViewUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>markupextensions</code> is the prefix for the demo app's own markup extensions:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;CheckBox x:Name="AllowsColumnReorderCheckBox" Content="AllowsColumnReorder" IsChecked="True" /&gt;
+
+  &lt;ListView x:Name="ViewColumnsListView"
+            Height="150"
+            ItemsSource="{markupextensions:StaticBindingSource TargetType=Brushes}"&gt;
+    &lt;ListView.View&gt;
+      &lt;GridView AllowsColumnReorder="{Binding IsChecked, ElementName=AllowsColumnReorderCheckBox}"&gt;
+        &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Name}" Header="Name" /&gt;
+        &lt;GridViewColumn Width="auto" DisplayMemberBinding="{Binding Value}" Header="Value" /&gt;
+      &lt;/GridView&gt;
+    &lt;/ListView.View&gt;
+  &lt;/ListView&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>File and folder browsers:</strong> Displaying files with Name, Size, Type, and Modified Date columns, with column reordering and resizing for user customization.</li>
-      <li><strong>Order and invoice lists:</strong> Business applications listing transactional records with sortable columns for date, amount, status, and customer information.</li>
-      <li><strong>Log viewers:</strong> Presenting application log entries in timestamped columns, often with color coding based on severity level using cell templates.</li>
-      <li><strong>Search results panels:</strong> Showing search hits in a list with columns for relevance score, title, source, and date, allowing users to sort and select results.</li>
-      <li><strong>Report tables:</strong> Lightweight read-only data tables in dashboard panels where full DataGrid editing features are not needed.</li>
+      <li><strong>File lists:</strong> name, size, and date in columns the user can reorder.</li>
+      <li><strong>Read-only tables:</strong> records shown in rows, without editing.</li>
+      <li><strong>Lists with several details:</strong> a list that shows more than one property of each item.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Use <code>GridViewColumn.CellTemplate</code> for rich cells:</strong> For columns requiring icons, badges, or formatted content beyond plain text, define a <code>DataTemplate</code> in <code>CellTemplate</code> instead of relying on <code>DisplayMemberBinding</code>.</li>
-      <li><strong>Implement column sorting manually:</strong> Unlike <code>DataGrid</code>, ListView/GridView does not sort automatically on header click. Handle the <code>GridViewColumnHeader.Click</code> event, determine the target property name, and apply a <code>SortDescription</code> to the <code>ICollectionView</code> obtained via <code>CollectionViewSource.GetDefaultView(ItemsSource)</code>. Toggle <code>ListSortDirection.Ascending/Descending</code> to support two-way sort.</li>
-      <li><strong>Persist column order when <code>AllowsColumnReorder</code> is enabled:</strong> Subscribe to the <code>GridView.ColumnReordered</code> event and save the new column order to user settings so the layout is restored on the next session.</li>
-      <li><strong>Hide column headers with <code>ColumnHeaderContainerStyle</code>:</strong> If you want a columnar layout without visible headers, set <code>GridView.ColumnHeaderContainerStyle</code> to a style that sets <code>Height="0"</code> or <code>Visibility="Collapsed"</code>.</li>
-      <li><strong>Use <code>VirtualizingPanel.IsVirtualizing="True"</code>:</strong> This is on by default but can be accidentally disabled. Verify virtualization is active when binding to large collections to maintain scrolling performance.</li>
-      <li><strong>Prefer ListView over DataGrid for read-only tables:</strong> If you don't need inline editing, sorting indicators, or row grouping, ListView is lighter and easier to style than the full <code>DataGrid</code>.</li>
+      <li><strong>Set <code>SelectionMode="Single"</code> if only one item may be selected.</strong> A ListView starts at <code>Extended</code>.</li>
+      <li><strong>Give columns a fixed width when the longest value is not in the first rows.</strong> An auto width is not updated later.</li>
+      <li><strong>Sort in code.</strong> A header click does nothing by itself; add a <code>SortDescription</code> to the items' view.</li>
+      <li><strong>Leave the horizontal bar on <code>Auto</code> when columns are wide.</strong> <code>Disabled</code> cuts off the right part of the columns.</li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ListViewDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ListViewDemoScene</code></a>
+      in this site's screenshot tool, with the demo app's list of brushes (<code>Name</code> and <code>Value</code> of each). Headers
+      were dragged and clicked with the real mouse. Widths are the values on the measuring machine.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/listview/listview-behavior.svg" alt="Table of ListView results: it derives from ListBox with Extended selection and no view by default, an auto-width column stays 84.89 wide after the longest name is scrolled in or a longer one is inserted, a bound width follows the slider, a real header drag reorders the columns only with AllowsColumnReorder, a header click does not sort, DisplayMemberBinding wins over CellTemplate without an exception, Disabled scroll bars leave no horizontal scrolling but still 2 rows vertically, and 1,000 items create 8 containers" width="1132" height="470" loading="lazy">
+      <figcaption>Defaults, GridView columns, reordering, sorting, and scrolling. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — ListView's base class; use when a simple single-column list without headers is sufficient.</li>
-      <li><a href="/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — a full-featured grid with built-in sorting, filtering, grouping, and inline editing.</li>
+      <li><a href="/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — ListView's base class, with the selection measured in detail.</li>
+      <li><a href="/apps/wpf-standard-control-demo/datagrid.html">DataGrid</a> — a table with editing and sorting.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListViewUsage" target="_blank" rel="noopener noreferrer">View ListView source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ListViewUsage" target="_blank" rel="noopener noreferrer">
+        View ListView source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>
+
 {% include footer-en.html %}
+
 </body>
 </html>

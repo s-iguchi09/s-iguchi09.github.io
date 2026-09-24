@@ -1,0 +1,18 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-combobox
+slug: "wpf-standard-control-demo-combobox"
+scene: "ComboBoxDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ComboBox の IsEditable / IsReadOnly / StaysOpenOnEdit / ShouldPreserveUserEnteredPrefix / IsTextSearchEnabled / MaxDropDownHeight の既定値と、IsDropDownOpen が既定で TwoWay か"
+  - "Mode 指定なしで IsDropDownOpen に結んだ CheckBox で開き、下矢印と Enter で選んだときの選択・IsDropDownOpen・CheckBox"
+  - "DisplayMemberPath=Name のときの Text と、ToString を上書きしない項目の SelectedItem の文字列"
+  - "編集可能なときに \"tue\" を入力したときの Text と SelectedValue（ShouldPreserveUserEnteredPrefix が False / True）と、どの項目にも合わない文字"
+  - "IsEditable と IsReadOnly が True のときに入力した文字と、下矢印キーでの選択"
+  - "MaxDropDownHeight 100（デモアプリの初期値）と既定値のときのドロップダウンの高さ"
+  - "ドロップダウンを開いたまま実際のマウスで編集欄をクリックしたときの IsDropDownOpen（StaysOpenOnEdit が False / True）"
+  - "同じリストを ItemsSource にした 2 つの ComboBox の、IsSynchronizedWithCurrentItem が True / 未設定のときの初期選択と連動"
+images:
+  - "images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg"

@@ -8,7 +8,7 @@
   <title>ComboBox | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF ComboBox control reference: editable dropdowns, data binding, XAML examples, and best practices. Part of the WPF Standard Control Demo App.">
+  <meta name="description" content="WPF ComboBox measured on .NET 10: editable autocomplete and typed prefixes, IsReadOnly, drop-down height, StaysOpenOnEdit with a real click, and synced lists.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,39 +21,30 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ComboBox</p>
     <h1>ComboBox <span class="category-badge">Inputs</span></h1>
-    <p>ComboBox is a dropdown list control that allows users to select an item from a list. It can also be made editable to allow users to type custom values. It supports both simple item lists and complex data-bound collections.</p>
+    <p>ComboBox shows the selected item and opens a drop-down list to choose another. It can also be made editable, so the user can type.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>ComboBox</strong> combines a selection display area with a collapsible dropdown list,
-      making it the standard control for choosing one value from a discrete set while conserving screen space.
-      In its default (non-editable) form, it behaves like a traditional drop-down: the user clicks the
-      control to reveal the list, selects an item, and the list closes. The selected item is then displayed
-      in the collapsed state.
+      The demo app fills every <strong>ComboBox</strong> with the days of the week as items that have a <code>Name</code> and a
+      <code>Value</code>, with <code>DisplayMemberPath="Name"</code> and <code>SelectedValuePath="Value"</code>. With such items,
+      <code>Text</code> and <code>SelectedValue</code> both read <code>Monday</code> for the second day, but <code>SelectedItem</code> is
+      the item object itself. Its text is the full type name, because the item class does not override <code>ToString</code>:
+      <code>ScreenshotCapture.Scenes.ComboBoxDemoScene+EnumItem</code> for the measured items, and
+      <code>WPFStandardControlDemoApp.Common.MarkupExtensions.EnumBindingSourceExtension+EnumItem</code> for the demo app's items,
+      which is what its <code>SelectedItem</code> display shows.
     </p>
     <p>
-      Setting <code>IsEditable="True"</code> transforms the ComboBox into an editable text field backed by
-      the dropdown list. This enables auto-complete behaviour — as the user types, WPF filters or scrolls to
-      the closest matching item. <code>IsReadOnly</code> can further restrict text input while still showing
-      the dropdown, useful for cases where you want the visual appearance of a text box but only allow
-      pre-defined choices.
+      <code>IsDropDownOpen</code> binds two-way by default. The demo app binds it to a check box without a <code>Mode</code>. After
+      the check box opened the list, <kbd>Down</kbd>, <kbd>Down</kbd>, and <kbd>Enter</kbd> selected Monday, closed the list, and
+      cleared the check box.
     </p>
     <p>
-      For data-driven scenarios, ComboBox inherits from <code>ItemsControl</code>, which means its items
-      can be populated via <code>ItemsSource</code> binding to any collection. The
-      <code>DisplayMemberPath</code> property selects which property of a complex object is displayed as
-      the item label, while <code>SelectedValuePath</code> determines which property is exposed through
-      <code>SelectedValue</code>. This pattern is essential for database-backed foreign-key selectors such
-      as country pickers or category selectors.
-    </p>
-    <p>
-      The <code>IsSynchronizedWithCurrentItem</code> property integrates the ComboBox with WPF's
-      <code>CollectionView</code> currency mechanism. When enabled, selecting an item in the ComboBox also
-      advances the current item in a shared <code>CollectionViewSource</code>, which allows multiple
-      bound controls — such as a ComboBox and a detail form — to stay automatically synchronized without
-      extra event wiring.
+      The demo app has sections for <code>IsDropDownOpen</code>, <code>IsEditable</code>, <code>IsReadOnly</code>,
+      <code>MaxDropDownHeight</code>, <code>Text</code>, <code>StaysOpenOnEdit</code>, <code>ShouldPreserveUserEnteredPrefix</code>, the
+      selection properties, and <code>IsSynchronizedWithCurrentItem</code>. The "Show Code" link under each section displays its
+      XAML. How to bind <code>ItemsSource</code> and read the selection is covered in the article linked below.
     </p>
   </section>
 
@@ -66,7 +57,7 @@
     <h2>Demonstrated Properties</h2>
     <p>
       The following properties are demonstrated interactively in the WPF Standard Control Demo App.
-      Each property can be configured in real time within the app to observe its behavior.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
     </p>
 
     <table class="prop-table">
@@ -81,57 +72,47 @@
         <tr>
           <td><code>IsDropDownOpen</code></td>
           <td><code>bool</code></td>
-          <td>Use this to programmatically open or close the dropdown — for example, to auto-open the list when a dialog appears, or to close it from code after a selection is processed. Setting it to <code>True</code> opens the list; <code>False</code> closes it. Pitfall: if you use a two-way binding on this property, be careful about timing. When the user closes the dropdown, the binding updates the ViewModel property to <code>False</code>. If your code then immediately sets it back to <code>True</code>, the dropdown reopens involuntarily. Always guard against unintentional re-opens by checking the current state before programmatically opening.</td>
+          <td>Whether the list is open. It binds two-way by default, so a bound check box follows the list closing (see above).</td>
         </tr>
         <tr>
           <td><code>IsEditable</code></td>
           <td><code>bool</code></td>
-          <td>Set to <code>True</code> when you want the ComboBox to act as both a dropdown selector and a free-text input — typical for auto-complete search boxes or fields where users may type a value not in the list. When enabled, the <code>Text</code> property becomes active and can be two-way bound to receive typed input. Pitfall: when <code>IsEditable="True"</code> and the user types a value that does not match any item in the list, <code>SelectedItem</code> becomes <code>null</code>. If your ViewModel only observes <code>SelectedItem</code>, the typed text will be silently lost. Always also bind <code>Text</code> to capture free-form input alongside list selections.</td>
+          <td>Whether the user can type; the default is <code>False</code>. Typing completes a matching item: "tue" became <code>Tuesday</code>, and <code>SelectedValue</code> became Tuesday. Text that matches no item stays as typed: "xyz" left <code>SelectedIndex</code> -1 and <code>SelectedValue</code> <code>null</code>.</td>
         </tr>
         <tr>
           <td><code>IsReadOnly</code></td>
           <td><code>bool</code></td>
-          <td>Only effective when <code>IsEditable="True"</code>. Use it when you want the visual appearance of an editable text field but you only want to allow selections from the dropdown list — preventing the user from typing arbitrary values. With <code>IsEditable="True"</code> and <code>IsReadOnly="True"</code>, the text portion is non-editable but the dropdown still opens for list selection. Pitfall: setting <code>IsReadOnly="True"</code> without also setting <code>IsEditable="True"</code> has no effect. To disable the entire control including the dropdown, use <code>IsEnabled="False"</code> instead.</td>
+          <td>With <code>IsEditable</code>, whether typing is blocked. With both <code>True</code>, typing "tue" left the text empty, but the <kbd>Down</kbd> key still selected an item (Sunday).</td>
         </tr>
         <tr>
           <td><code>MaxDropDownHeight</code></td>
           <td><code>double</code></td>
-          <td>Use this when the dropdown list contains many items and could extend off-screen or obscure important UI elements. Setting a maximum height caps the dropdown and adds a scrollbar automatically when the content overflows. The default value is <code>double.PositiveInfinity</code> (no limit), meaning a very long list can cover the entire screen. Pitfall: setting an extremely small value — smaller than a single item's height — will make the dropdown nearly unusable. As a rule of thumb, set this to approximately the item height multiplied by 5–8 to show a comfortable number of choices.</td>
+          <td>The largest height of the list. The default was 480, a third of the screen height on the measuring machine; the seven days took 141.72. With the demo app's 100, the list was 100 high, less than the seven days need.</td>
         </tr>
         <tr>
           <td><code>Text</code></td>
           <td><code>string</code></td>
-          <td>Represents the current text shown in the editable portion of the ComboBox. This property is active only when <code>IsEditable="True"</code>. Two-way binding it allows the ViewModel to both read the user's typed input and programmatically set the displayed text. When the selected item changes, <code>Text</code> automatically reflects the item's display string (based on <code>DisplayMemberPath</code> or <code>ToString()</code>). Pitfall: setting <code>Text</code> programmatically has no visual effect when <code>IsEditable="False"</code> (the default). To change the displayed value in a non-editable ComboBox, set <code>SelectedItem</code> or <code>SelectedIndex</code> instead.</td>
+          <td>The text in the box, from <code>DisplayMemberPath</code> for a selected item or as typed in an editable ComboBox. The demo app shows it next to <code>SelectedValue</code>.</td>
         </tr>
         <tr>
           <td><code>StaysOpenOnEdit</code></td>
           <td><code>bool</code></td>
-          <td>Controls whether the dropdown list stays open while the user is typing (requires <code>IsEditable="True"</code>). When <code>True</code>, the list remains visible during text entry, which is the foundation of inline filtering — as the user types, you update the <code>ItemsSource</code> to match the input and the updated suggestions appear immediately. Pitfall: keeping the dropdown open continuously while typing can feel intrusive and disrupt the user's flow in contexts where free-form input is the primary goal. Only enable this when the inline suggestion list genuinely adds value.</td>
+          <td>Whether the list stays open when the user clicks into the edit box; the default is <code>False</code>. With a real mouse click into the edit box of an open, editable ComboBox, the list closed with <code>False</code> and stayed open with <code>True</code>.</td>
         </tr>
         <tr>
           <td><code>ShouldPreserveUserEnteredPrefix</code></td>
           <td><code>bool</code></td>
-          <td>Determines whether the text typed by the user is preserved as they navigate the dropdown with the keyboard. When <code>True</code>, the typed prefix is maintained as the user arrows through the list, so the auto-complete highlight is applied on top of the original input. This aids auto-complete scenarios where partial input guides navigation without overwriting what the user typed.</td>
+          <td>Whether autocomplete keeps the letters as typed; the default is <code>False</code>. After typing "tue", the text was <code>Tuesday</code> with <code>False</code> and <code>tuesday</code> with <code>True</code>. <code>SelectedValue</code> was Tuesday either way.</td>
         </tr>
         <tr>
-          <td><code>SelectedIndex (Selector)</code></td>
-          <td><code>int</code></td>
-          <td>Gets or sets the zero-based index of the currently selected item. A value of <code>-1</code> means nothing is selected. Useful for programmatically selecting the first item on load or resetting the selection to empty. Pitfall: setting <code>SelectedIndex=-1</code> clears the index-based selection, but <code>SelectedItem</code> may not automatically update to <code>null</code> in all scenarios. To guarantee a full selection clear, set both <code>SelectedIndex=-1</code> and <code>SelectedItem=null</code>.</td>
-        </tr>
-        <tr>
-          <td><code>SelectedItem (Selector)</code></td>
-          <td><code>object</code></td>
-          <td>Gets or sets the currently selected item object directly. When <code>ItemsSource</code> contains complex objects, two-way binding <code>SelectedItem</code> to a ViewModel property gives you the full selected object on every selection change. Pitfall: WPF compares <code>SelectedItem</code> using reference equality — it checks whether the set value is the exact same object instance as one in the <code>ItemsSource</code> collection. If you set it to a freshly loaded object from a database (different instance, same data), the selection will not match. Either ensure you use the same instance from the existing collection, or use <code>SelectedValue</code> + <code>SelectedValuePath</code> to match by a key property instead.</td>
-        </tr>
-        <tr>
-          <td><code>SelectedValue / SelectedValuePath / DisplayMemberPath (ItemsControl)</code></td>
-          <td><code>object / string / string</code></td>
-          <td>Use <code>SelectedValuePath</code> to name the property of your data objects whose value should be exposed as <code>SelectedValue</code>. This is the standard pattern for foreign-key selection: set <code>SelectedValuePath="Id"</code> and bind <code>SelectedValue</code> to an integer ID in the ViewModel, while <code>DisplayMemberPath="Name"</code> shows the friendly name in the list. Pitfall: <code>SelectedValuePath</code> is case-sensitive — if the property name is <code>ProductId</code> but you write <code>productId</code>, <code>SelectedValue</code> will always be <code>null</code>. Also note that <code>DisplayMemberPath</code> and <code>ItemTemplate</code> are mutually exclusive: setting both causes <code>DisplayMemberPath</code> to be ignored.</td>
+          <td><code>SelectedIndex / SelectedItem / SelectedValue / SelectedValuePath / DisplayMemberPath (Selector, ItemsControl)</code></td>
+          <td><code>int / object / object / string / string</code></td>
+          <td>The selection, and which property of an item is its value and its display text (see above).</td>
         </tr>
         <tr>
           <td><code>IsSynchronizedWithCurrentItem (ItemsControl)</code></td>
           <td><code>bool?</code></td>
-          <td>When <code>True</code>, the ComboBox selection is kept in sync with the current item of the underlying <code>CollectionView</code>. This is the standard way to create master-detail views where selecting a ComboBox item automatically updates a bound details panel without extra event wiring.</td>
+          <td>Whether the selection follows the current item of the list's view. Two ComboBoxes on one list with <code>True</code> both started at index 0 and moved together: setting the first to 3 set the second to 3. Unset, both started at -1 and were independent. The demo app starts its three ComboBoxes at <code>True</code>, so they all start on Sunday.</td>
         </tr>
       </tbody>
     </table>
@@ -139,72 +120,75 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>The following XAML demonstrates data binding patterns and an editable ComboBox configuration:</p>
-    <pre><code class="language-xml">&lt;StackPanel Margin="16" Spacing="12"&gt;
+    <p>The following XAML is the <code>ShouldPreserveUserEnteredPrefix</code> section of the demo app (<code>ComboBoxUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. <code>markupextensions</code> is the prefix for the demo app's own markup extensions:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:sys="clr-namespace:System;assembly=mscorlib"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;CheckBox x:Name="ShouldPreserveUserEnteredPrefix" Content="ShouldPreserveUserEnteredPrefix" /&gt;
 
-  &lt;!-- Simple string list --&gt;
-  &lt;ComboBox Width="200" SelectedIndex="0"&gt;
-    &lt;ComboBoxItem&gt;Option A&lt;/ComboBoxItem&gt;
-    &lt;ComboBoxItem&gt;Option B&lt;/ComboBoxItem&gt;
-    &lt;ComboBoxItem&gt;Option C&lt;/ComboBoxItem&gt;
-  &lt;/ComboBox&gt;
-
-  &lt;!-- Data-bound with display and value paths --&gt;
-  &lt;ComboBox Width="220"
-            ItemsSource="{Binding Countries}"
+  &lt;ComboBox x:Name="ShouldPreserveUserEnteredPrefixComboBox"
             DisplayMemberPath="Name"
-            SelectedValuePath="Id"
-            SelectedValue="{Binding SelectedCountryId}" /&gt;
-
-  &lt;!-- Editable with type-ahead and capped dropdown height --&gt;
-  &lt;ComboBox Width="220"
             IsEditable="True"
-            StaysOpenOnEdit="True"
-            MaxDropDownHeight="160"
-            ItemsSource="{Binding Cities}"
-            Text="{Binding CityText, UpdateSourceTrigger=PropertyChanged}" /&gt;
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=sys:DayOfWeek}"
+            SelectedValuePath="Value"
+            ShouldPreserveUserEnteredPrefix="{Binding IsChecked, ElementName=ShouldPreserveUserEnteredPrefix}" /&gt;
 
+  &lt;TextBlock Text="{Binding Text, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;
+  &lt;TextBlock Text="{Binding SelectedValue, ElementName=ShouldPreserveUserEnteredPrefixComboBox}" /&gt;
 &lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Country / region pickers:</strong> Binding a ComboBox to a lookup collection with <code>DisplayMemberPath="Name"</code> and <code>SelectedValuePath="Code"</code> to select and store ISO country codes.</li>
-      <li><strong>Enumeration selectors:</strong> Exposing a set of enum values (priority levels, status codes, sort orders) in a dropdown, optionally using a value converter for display-friendly strings.</li>
-      <li><strong>Search-and-select:</strong> Editable ComboBox with server-side suggestions loaded dynamically as the user types, simulating an auto-complete search box.</li>
-      <li><strong>Unit and currency selectors:</strong> Compact dropdowns in data-entry forms where the user picks the unit (kg, lb, cm) alongside a numeric input field.</li>
-      <li><strong>Theme / language pickers:</strong> Application-level settings dropdowns that immediately apply a new resource dictionary or locale when the selection changes.</li>
+      <li><strong>Choosing one of many:</strong> a country or a category, where a list of radio buttons would be too long.</li>
+      <li><strong>Enumerations:</strong> the values of an enum shown by name and bound by value.</li>
+      <li><strong>Input with suggestions:</strong> an editable ComboBox that completes known values but accepts others.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Choose between <code>SelectedItem</code> and <code>SelectedValue</code> deliberately</strong> — Use <code>SelectedItem</code> when the ViewModel needs the whole object; use <code>SelectedValue</code> + <code>SelectedValuePath</code> when you only need a key property (such as an ID). Remember that <code>SelectedItem</code> uses reference equality — setting it to a freshly loaded object with the same data as an item in <code>ItemsSource</code> will not produce a match unless it is the exact same instance.</li>
-      <li><strong>Set an initial selection explicitly</strong> — On dialog open, set <code>SelectedItem</code> or <code>SelectedIndex</code> from the ViewModel to show a meaningful default. When using <code>SelectedItem</code>, make sure you reference the same object instance that is in the <code>ItemsSource</code> collection.</li>
-      <li><strong>Add an empty placeholder item for required fields</strong> — Rather than leaving the ComboBox blank at startup, add a "— Select —" entry at the top of the collection (using <code>CompositeCollection</code> to avoid modifying the source data), so users clearly understand a selection is required.</li>
-      <li><strong>Always set <code>MaxDropDownHeight</code> for large collections</strong> — Without a height limit, a dropdown with hundreds of items will extend off-screen on small monitors. Set it to a value that shows 5–8 items comfortably.</li>
-      <li><strong>Handle <code>IsEditable=True</code> null SelectedItem gracefully</strong> — When <code>IsEditable="True"</code> and the user types a value not in the list, <code>SelectedItem</code> is <code>null</code>. Always check both <code>SelectedItem</code> and <code>Text</code> in your ViewModel logic to handle free-form input correctly.</li>
-      <li><strong>Use <code>ItemTemplate</code> for rich item appearance, but not with <code>DisplayMemberPath</code></strong> — If list items need icons or multi-line content, define a <code>DataTemplate</code> as <code>ItemTemplate</code>. Note that <code>DisplayMemberPath</code> and <code>ItemTemplate</code> are mutually exclusive — setting both will cause <code>DisplayMemberPath</code> to be silently ignored.</li>
+      <li><strong>Bind <code>SelectedValue</code> with <code>SelectedValuePath</code></strong> rather than showing <code>SelectedItem</code>, unless the item class overrides <code>ToString</code>; otherwise the full type name is shown.</li>
+      <li><strong>In an editable ComboBox, check <code>SelectedIndex</code> as well as <code>Text</code>.</strong> Text that matches nothing leaves no selection.</li>
+      <li><strong>Set <code>IsSynchronizedWithCurrentItem</code> only when lists should move together.</strong> It also selects the first item at the start.</li>
+      <li><strong>Set <code>MaxDropDownHeight</code> for long lists.</strong> The default is a third of the screen height.</li>
     </ul>
   </section>
 
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ComboBoxDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ComboBoxDemoScene</code></a>
+      in this site's screenshot tool, with items like the demo app's (<code>Name</code> and <code>Value</code> of each day, no
+      <code>ToString</code>). Typing was sent one character at a time to the edit box, the keys through WPF's input manager, and
+      the click into the edit box was made with the real mouse. Heights are the values on the measuring machine.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="Table of ComboBox results: defaults are not editable, not read-only, StaysOpenOnEdit and ShouldPreserveUserEnteredPrefix False and text search on, MaxDropDownHeight 480 is a third of the screen, IsDropDownOpen is two-way so a bound check box clears when Enter closes the list, SelectedItem prints the full type name of the item class, typing tue completes Tuesday or tuesday with the prefix preserved, xyz leaves no selection, IsReadOnly blocks typing but not the Down key, the list is 141.72 high or 100 with the demo value, a real click into the edit box closes the list unless StaysOpenOnEdit, and synchronized ComboBoxes start at 0 and move together" width="1171" height="530" loading="lazy">
+      <figcaption>Selection, editing, the drop-down, and synchronization. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
+  </section>
+
   <section class="content-section">
-    <h2>Related Controls</h2>
+    <h2>Related Controls and Articles</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/listview.html">ListView</a> — shows all items at once without collapsing; suited for longer lists that benefit from always-visible selection.</li>
-      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — mutually exclusive selection directly visible in the UI; prefer for small option sets (2–5 items).</li>
-      <li><a href="/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — free-text input without a predefined list; use when no suggestion set exists.</li>
-      <li><a href="/apps/wpf-standard-control-demo/treeview.html">TreeView</a> — hierarchical selection; use when choices have a parent-child structure.</li>
+      <li><a href="/apps/wpf-standard-control-demo/listbox.html">ListBox</a> — shows all items at once instead of in a drop-down.</li>
+      <li><a href="/apps/wpf-standard-control-demo/radiobutton.html">RadioButton</a> — a few choices that are all visible.</li>
+      <li><a href="/apps/wpf-standard-control-demo/popup.html">Popup</a> — the element that holds the drop-down list.</li>
+      <li><a href="/articles/wpf-combobox-itemssource-patterns/">WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval</a> — ways to fill a ComboBox and read its selection.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
     <p>
-      The source code for this demo screen is available on GitHub. Use the built-in code view buttons
-      in the app to see the exact XAML for each property.
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
     </p>
     <p>
       <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ComboBoxUsage" target="_blank" rel="noopener noreferrer">

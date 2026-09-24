@@ -1,0 +1,19 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-standard-control-demo-image
+slug: "wpf-standard-control-demo-image"
+scene: "ImageDemoScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Image の基底クラス・Focusable と、Stretch / StretchDirection の既定値"
+  - "Stretch 4 種類と StretchDirection 3 種類の組み合わせごとの、300 x 200 の領域での小さい画像（100 x 50）と大きい画像（600 x 300）の表示の大きさ"
+  - "大きい画像を UniformToFill と、デモアプリの初期値（None / UpOnly）で表示したときの位置と、はみ出した部分が切れるか（レイアウトのクリップ）"
+  - "72 DPI の画像を Stretch=None で表示したときの大きさ"
+  - "TextBox の文字（パス）を Source にバインドしたときの Source の型と、存在しないパス・SVG ファイルのとき"
+  - "パスのバインドで表示したファイル・BitmapCacheOption.OnLoad で読んだファイル・Source を null にした後のファイルを削除できるか"
+  - "BitmapImage の DecodePixelWidth を設定したときのピクセル数と表示の大きさ"
+  - "デモアプリの初期のパス（img0.jpg）が計測したマシンにあるか、その大きさ"
+images:
+  - "images/wpf-standard-control-demo/verification/image/image-matrix.svg"
+  - "images/wpf-standard-control-demo/verification/image/image-behavior.svg"

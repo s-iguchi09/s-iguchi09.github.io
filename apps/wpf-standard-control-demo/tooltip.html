@@ -8,7 +8,7 @@
   <title>ToolTip | WPF Standard Control Demo App (.NET 10)</title>
   {% include head.html %}
 
-  <meta name="description" content="WPF ToolTip control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10.">
+  <meta name="description" content="WPF ToolTip measured on .NET 10 with a real mouse and keyboard: timing defaults, placement, keyboard focus, disabled elements, and when a tooltip closes.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,38 +21,31 @@
   <section class="hero">
     <p style="font-size:0.9rem; color:#555;"><a href="/apps/wpf-standard-control-demo.html">WPF Standard Control Demo App</a> &rsaquo; ToolTip</p>
     <h1>ToolTip <span class="category-badge">Overlays</span></h1>
-    <p>ToolTip is a small popup that appears when the user hovers over a UI element, providing contextual help or additional information. It supports plain text or rich custom content, and can be extensively customized for positioning, timing, appearance, and accessibility.</p>
+    <p>A ToolTip appears after the pointer rests on an element, or when the element gets the keyboard focus. Its timing and position are set through the ToolTipService attached properties.</p>
   </section>
 
   <section class="content-section">
     <h2>Overview</h2>
     <p>
-      The WPF <strong>ToolTip</strong> control is a floating popup associated with any
-      <code>FrameworkElement</code> via the <code>ToolTip</code> attached property. Setting
-      <code>ToolTip="some text"</code> on any element is the simplest usage; WPF automatically wraps
-      the string in a ToolTip control. For richer content, set <code>ToolTip</code> to a full
-      <code>ToolTip</code> element with custom child content.
+      Setting <code>ToolTip="text"</code> on an element is enough; WPF wraps the string in a <strong>ToolTip</strong> when it
+      opens. It does so each time: opening the same string tooltip twice gave two different ToolTip instances.
     </p>
     <p>
-      ToolTip timing is managed by <code>ToolTipService</code> static properties. The
-      <code>InitialShowDelay</code> controls how long the user must hover before the tip appears
-      (default: 400 ms). <code>ShowDuration</code> limits how long the tip stays visible before
-      auto-dismissing (default: 5000 ms). <code>BetweenShowDelay</code> is the window after a tip
-      closes during which a new tip on a different element shows immediately (default: 100 ms).
+      The timing defaults are not the numbers often quoted. <code>InitialShowDelay</code> was 1000 ms,
+      <code>BetweenShowDelay</code> 100 ms, and <code>ShowDuration</code> <code>Int32.MaxValue</code>, so a tooltip does not close
+      by itself while the pointer stays. With <code>ShowDuration="1000"</code>, it was closed 2.5 seconds later. With a real
+      mouse, a tooltip with <code>InitialShowDelay</code> 500 opened after about 600 to 700 ms across runs (700 ms in the run in the table below) and one with 2000 after about 2050 ms.
     </p>
     <p>
-      The <code>Placement</code> property gives precise control over where the popup appears relative
-      to its target element or the mouse cursor. <code>Mouse</code> (default) positions the tip near
-      the cursor; <code>Bottom</code> and <code>Top</code> position it relative to the target element's
-      bounding box. <code>Absolute</code> and <code>AbsolutePoint</code> use screen coordinates for
-      programmatic placement. <code>HorizontalOffset</code> and <code>VerticalOffset</code> fine-tune
-      the position after the base placement is applied.
+      Keyboard users get tooltips too. When a real <kbd>Tab</kbd> key moved the focus to a button, with the mouse pointer resting on another button, its tooltip opened with
+      <code>ShowsToolTipOnKeyboardFocus</code> unset (the default, <code>null</code>) or <code>True</code>, and not with
+      <code>False</code>. A disabled element shows no tooltip unless <code>ShowOnDisabled</code> is <code>True</code>: over a
+      disabled button, the tooltip did not open, and with <code>ShowOnDisabled="True"</code> it opened after about 350 ms (the buttons measured for this had <code>InitialShowDelay</code> set to 300, to shorten the wait).
     </p>
     <p>
-      Keyboard accessibility is supported through <code>ShowsToolTipOnKeyboardFocus</code>. When
-      <code>true</code>, the tooltip appears when the element receives keyboard focus, not just mouse
-      hover. This is essential for making tooltip-based help available to keyboard-only users and
-      screen-reader users navigating with Tab.
+      The demo app has sections for the placement and its offsets and target, the keyboard, the drop shadow, the three delays,
+      and the size, colors, border, padding, and content alignment of the tooltip. The "Show Code" link under each section
+      displays its XAML.
     </p>
   </section>
 
@@ -63,67 +56,69 @@
 
   <section class="content-section">
     <h2>Demonstrated Properties</h2>
-    <p>The following properties are demonstrated interactively in the WPF Standard Control Demo App. Each property can be configured in real time within the app to observe its behavior.</p>
+    <p>
+      The following properties are demonstrated interactively in the WPF Standard Control Demo App.
+      The behavior described for each one was measured on .NET 10 (see <a href="#measured-behavior">Measured Behavior</a>).
+    </p>
 
     <table class="prop-table">
       <thead>
-        <tr><th>Property</th><th>Values</th><th>Description</th></tr>
+        <tr>
+          <th>Property</th>
+          <th>Values</th>
+          <th>Description</th>
+        </tr>
       </thead>
       <tbody>
         <tr>
-          <td><code>ToolTip</code></td>
-          <td><code>string or ToolTip element</code></td>
-          <td>Sets the tooltip content on any <code>FrameworkElement</code>. Use the string form (<code>ToolTip="Save document"</code>) for simple text — WPF wraps it in a ToolTip control automatically. Use the <code>&lt;ToolTip&gt;</code> element form when you need icons, formatted text, or multiple children. Note that the string form re-creates the ToolTip object on every hover; for complex content shown frequently, declare a <code>ToolTip</code> resource (e.g., via <code>StaticResource</code>) to avoid repeated object allocation.</td>
-        </tr>
-        <tr>
           <td><code>Placement</code></td>
-          <td><code>Mouse / MousePoint / Absolute / AbsolutePoint / Relative / RelativePoint / Bottom / Top / Left / Right / Center / Custom</code></td>
-          <td>Determines where the tooltip popup appears. <code>Mouse</code> (default) follows the cursor; <code>Bottom</code> places it below the target element's bounding box; <code>Absolute</code> uses explicit screen coordinates. <strong>Pitfall:</strong> When using <code>Absolute</code>, you must also set <code>PlacementRectangle</code> — without it, the tooltip appears near screen origin (0, 0) instead of near your control.</td>
+          <td><code>PlacementMode</code></td>
+          <td>Where the tooltip appears; the default is <code>Mouse</code>. The demo app has a button for each of eleven values. With <code>Mouse</code>, the tooltip's top-left was 17 below the pointer. With <code>Bottom</code>, it was at the bottom-left corner of the button, 30 below its top, wherever the pointer was.</td>
         </tr>
         <tr>
           <td><code>HorizontalOffset / VerticalOffset</code></td>
           <td><code>double</code></td>
-          <td>Fine-tune the tooltip position by shifting it horizontally or vertically from the base placement point. Positive values move right/down; negative values move left/up. Use these to nudge the tip away from the cursor or to prevent it from obscuring important UI elements near the control.</td>
+          <td>A shift added to the placement. The demo app sets them from sliders on a button with <code>Placement="Bottom"</code>. With <code>HorizontalOffset</code> 50, the tooltip moved from (0, 30) to (50, 30) from the button's corner.</td>
         </tr>
         <tr>
-          <td><code>PlacementTarget</code></td>
-          <td><code>UIElement</code></td>
-          <td>The element relative to which element-based placement modes (<code>Bottom</code>, <code>Top</code>, <code>Left</code>, <code>Right</code>, <code>Center</code>) are calculated. Defaults to the element that owns the ToolTip. Override when the tooltip should appear relative to a different element — for example, anchoring a field hint to a label rather than the input box itself.</td>
-        </tr>
-        <tr>
-          <td><code>PlacementRectangle</code></td>
-          <td><code>Rect</code></td>
-          <td>An explicit rectangle in the coordinate space of <code>PlacementTarget</code> used as the reference area for placement. Required when using <code>Placement="Absolute"</code> to position the tooltip at specific screen coordinates. Useful when you want the tip to appear relative to a specific region within the target rather than its entire bounds.</td>
+          <td><code>PlacementTarget / PlacementRectangle</code></td>
+          <td><code>UIElement / Rect</code></td>
+          <td>The element, or a rectangle, that the placement is measured from. The demo app has a section for each. The Popup page measures the same properties on a Popup.</td>
         </tr>
         <tr>
           <td><code>ShowsToolTipOnKeyboardFocus</code></td>
-          <td><code>bool</code></td>
-          <td>When <code>true</code>, the tooltip appears when the element receives keyboard focus (Tab navigation), not only on mouse hover. Essential for accessibility — always enable this on toolbar buttons and icon-only controls. Without it, keyboard-only and screen-reader users cannot discover tooltip content.</td>
+          <td><code>bool?</code></td>
+          <td>Whether the tooltip opens when the element gets the keyboard focus. The demo app shows <code>True</code> and <code>False</code>. With a real <kbd>Tab</kbd>, <code>True</code> and the default <code>null</code> opened the tooltip, and <code>False</code> did not.</td>
         </tr>
         <tr>
           <td><code>HasDropShadow</code></td>
           <td><code>bool</code></td>
-          <td>Adds a drop shadow to the tooltip popup window, giving it visual depth and helping it stand out against complex backgrounds. When <code>AllowsTransparency</code> is enabled, the shadow renders with smooth transparency. Default is determined by the system theme.</td>
+          <td>Whether the tooltip is shown with a shadow. The default of this attached property, read on a button, was <code>False</code>. Whether a shadow is actually drawn was not measured. The demo app switches it with a check box.</td>
         </tr>
         <tr>
           <td><code>InitialShowDelay (ToolTipService)</code></td>
-          <td><code>int (ms, default: 400)</code></td>
-          <td>The delay in milliseconds before the tooltip appears after the user starts hovering. The default 400 ms matches Windows system settings and prevents tips from flashing during casual cursor movement. For professional tools where quick lookup is important, 100–200 ms is a good compromise. <strong>Pitfall:</strong> Setting this to <code>0</code> causes tooltips to appear instantly and flash on every mouse movement, which disrupts normal UI interaction and should generally be avoided.</td>
+          <td><code>int (ms)</code></td>
+          <td>The wait before the tooltip opens. The default was 1000; the demo app's slider starts at 500. With a real mouse, 500 opened the tooltip after about 600 to 700 ms, depending on the run, and 2000 after about 2050 ms.</td>
         </tr>
         <tr>
           <td><code>ShowDuration (ToolTipService)</code></td>
-          <td><code>int (ms, default: 5000)</code></td>
-          <td>How long the tooltip remains visible before auto-closing. Default is 5000 ms (5 seconds). Increase this for tooltips with lengthy explanations that users need time to read — a value of 10000 ms or more suits complex help text. Set to <code>Int32.MaxValue</code> to keep the tooltip visible indefinitely, but use this sparingly since users often expect tooltips to auto-dismiss.</td>
+          <td><code>int (ms)</code></td>
+          <td>How long the tooltip stays open while the pointer stays. The default was <code>Int32.MaxValue</code>, so it does not close by itself; the demo app's slider starts at 5000. With 1000, the tooltip was closed 2.5 seconds after it opened, with the pointer still on the button.</td>
         </tr>
         <tr>
           <td><code>BetweenShowDelay (ToolTipService)</code></td>
-          <td><code>int (ms, default: 100)</code></td>
-          <td>The time window after a tooltip closes during which hovering over another element immediately shows its tooltip without waiting for <code>InitialShowDelay</code>. This "hot zone" effect makes scanning adjacent toolbar buttons feel snappy. <strong>Pitfall:</strong> Setting this to <code>0</code> means every hover triggers an immediate tooltip, which becomes overwhelming in dense UIs with many tooltipped controls. Keep the value at 50–100 ms for a comfortable experience.</td>
+          <td><code>int (ms)</code></td>
+          <td>The time after one tooltip closes during which the next opens without the initial delay. The default was 100; the demo app's slider starts at 2000.</td>
         </tr>
         <tr>
-          <td><code>ShowOnDisabled (ToolTipService)</code></td>
-          <td><code>bool</code></td>
-          <td>When <code>true</code>, the tooltip displays even when the control is disabled (<code>IsEnabled="False"</code>). Use this to explain <em>why</em> an action is unavailable — for example, "Select an item before deleting" on a greyed-out Delete button. <strong>Pitfall:</strong> This property must be set directly on the disabled control itself; setting it on a container (<code>StackPanel</code>, <code>Grid</code>) has no effect. To apply it to many controls at once, use a <code>Style</code>.</td>
+          <td><code>Width / MaxWidth / Height / MaxHeight (FrameworkElement)</code></td>
+          <td><code>double</code></td>
+          <td>The size of the tooltip. The demo app has a section for the width and one for the height.</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground / BorderBrush / BorderThickness / Padding / HorizontalContentAlignment / VerticalContentAlignment (Control)</code></td>
+          <td>brushes and layout values</td>
+          <td>The look of the tooltip. The demo app has a section for each.</td>
         </tr>
       </tbody>
     </table>
@@ -131,67 +126,73 @@
 
   <section class="content-section">
     <h2>XAML Example</h2>
-    <p>Simple string tooltip and a rich custom tooltip with an icon and description:</p>
-    <pre><code class="language-xml">&lt;!-- Simple string tooltip --&gt;
-&lt;Button Content="Save" ToolTip="Save the current document (Ctrl+S)"
-        ToolTipService.InitialShowDelay="300" /&gt;
+    <p>The following XAML is the <code>InitialShowDelay</code> section of the demo app (<code>ToolTipUsageControl.xaml</code>), with the styles and the surrounding GroupBoxes left out and the namespace declarations added:</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"&gt;
+  &lt;Slider x:Name="ValueInitialShowDelaySlider" Maximum="5000" Minimum="0" Value="500" /&gt;
 
-&lt;!-- Rich custom tooltip with icon and multi-line text --&gt;
-&lt;Button Content="Analyze"&gt;
-  &lt;Button.ToolTip&gt;
-    &lt;ToolTip Placement="Bottom" HasDropShadow="True"
-             ShowsToolTipOnKeyboardFocus="True"&gt;
-      &lt;StackPanel Orientation="Horizontal"&gt;
-        &lt;Image Source="/Icons/analyze.png" Width="24" Height="24"
-               Margin="0,0,8,0" /&gt;
-        &lt;StackPanel&gt;
-          &lt;TextBlock Text="Analyze Data" FontWeight="Bold" /&gt;
-          &lt;TextBlock Text="Run the analysis pipeline on selected rows."
-                     Foreground="Gray" /&gt;
-        &lt;/StackPanel&gt;
-      &lt;/StackPanel&gt;
-    &lt;/ToolTip&gt;
-  &lt;/Button.ToolTip&gt;
-&lt;/Button&gt;</code></pre>
+  &lt;Button x:Name="InitialShowDelayToolTipButton"
+          Content="Show ToolTip on hover."
+          ToolTip="Delayed ToolTip"
+          ToolTipService.InitialShowDelay="{Binding Value, ElementName=ValueInitialShowDelaySlider}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
   </section>
 
   <section class="content-section">
     <h2>Common Use Cases</h2>
     <ul>
-      <li><strong>Toolbar button labels</strong> — Provide text labels for icon-only toolbar buttons so users can discover actions without hunting through menus.</li>
-      <li><strong>Form field hints</strong> — Show format instructions (e.g., "Enter date as YYYY-MM-DD") when a TextBox receives focus.</li>
-      <li><strong>Truncated text expansion</strong> — Show the full text of a trimmed TextBlock (with TextTrimming="WordEllipsis") when the user hovers over it.</li>
-      <li><strong>Data detail popups</strong> — In charts or data visualizations, show data-point details (value, timestamp, category) in a richly formatted tooltip on hover.</li>
-      <li><strong>Disabled control explanations</strong> — Explain why a control is disabled by showing a tooltip even when <code>IsEnabled="False"</code> (requires <code>ToolTipService.ShowOnDisabled="True"</code>).</li>
+      <li><strong>Buttons with only an icon:</strong> the name of the command.</li>
+      <li><strong>Trimmed text:</strong> the full text of a cell cut off with an ellipsis.</li>
+      <li><strong>Fields:</strong> a short hint about the expected input.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Always set tooltips on icon-only buttons</strong> — Icon meanings are not universally understood; a tooltip makes every icon self-documenting.</li>
-      <li><strong>Enable ShowsToolTipOnKeyboardFocus</strong> — Many users navigate with keyboard only; ensure tooltips are accessible without a mouse.</li>
-      <li><strong>Set ShowOnDisabled for disabled controls</strong> — Add <code>ToolTipService.ShowOnDisabled="True"</code> directly on the disabled control (not its parent) to explain why an action is currently unavailable.</li>
-      <li><strong>Keep content concise</strong> — Tooltips should supplement, not replace, visible UI labels. Long paragraphs in tooltips are often missed or ignored.</li>
-      <li><strong>DataBinding inside ToolTip</strong> — When the <code>ToolTip</code> property is set as a plain string, the ToolTip control does not automatically inherit the parent element's <code>DataContext</code>. If you need data binding inside a tooltip, declare it as a <code>&lt;ToolTip&gt;</code> element and use <code>{Binding RelativeSource=...}</code> or explicitly set <code>DataContext</code> on the ToolTip element.</li>
-      <li><strong>ToolTip in virtualized lists</strong> — Tooltips on items inside a virtualized <code>ListBox</code> or <code>DataGrid</code> work correctly because the item's <code>DataContext</code> is set to the data object. However, avoid triggering heavy operations (image loading, database queries) on hover, as virtualization recycles containers and lightweight tooltip content is essential.</li>
-      <li><strong>Test placement near screen edges</strong> — WPF automatically repositions tooltips to stay on screen, but verify complex custom placements do not clip near monitor edges or with multi-monitor setups.</li>
+      <li><strong>Do not expect tooltips to close by themselves.</strong> The default <code>ShowDuration</code> is <code>Int32.MaxValue</code>.</li>
+      <li><strong>Set <code>ShowOnDisabled="True"</code> to explain why a control is disabled.</strong> Otherwise the tooltip does not open.</li>
+      <li><strong>Leave keyboard tooltips on.</strong> By default, a tooltip also opens when the element is reached with <kbd>Tab</kbd>.</li>
+      <li><strong>Use <code>Placement="Bottom"</code> for a position that does not depend on the pointer.</strong></li>
     </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>Measured Behavior</h2>
+    <p>
+      Every behavior on this page was measured by running it on .NET 10 / Windows 11, using
+      <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToolTipDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToolTipDemoScene</code></a>
+      in this site's screenshot tool. Tooltips were opened by resting the real mouse on buttons in the measuring window, and
+      <kbd>Tab</kbd> was pressed as real keyboard input. Times were taken from the moment the tool moved the cursor onto the button until it saw the tooltip open, checking about every 10 ms, and are rounded to 50 ms; positions are in device-independent
+      pixels; both are the values on the measuring machine.
+    </p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="Table of ToolTip results: defaults of 1000 ms initial delay, Int32.MaxValue duration, 100 ms between delay, Mouse placement, null keyboard setting, ShowOnDisabled and HasDropShadow both False, a tooltip opening after about 700 and 2050 ms for delays of 500 and 2000, a ShowDuration of 1000 closing it, a new ToolTip instance for each opening, a disabled button showing a tooltip only with ShowOnDisabled, Bottom and Mouse positions with a 50 offset, and keyboard focus opening the tooltip except with False" width="1116" height="440" loading="lazy">
+      <figcaption>Defaults, timing, reuse, disabled elements, placement, and keyboard focus. Measured on .NET 10 / Windows 11.</figcaption>
+    </figure>
   </section>
 
   <section class="content-section">
     <h2>Related Controls</h2>
     <ul>
-      <li><a href="/apps/wpf-standard-control-demo/popup.html">Popup</a> — A lower-level popup control that requires manual open/close management; used as the internal mechanism for ToolTip.</li>
-      <li><a href="/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — Often paired with ToolTip for truncated text expansion.</li>
-      <li><a href="/apps/wpf-standard-control-demo/toolbar.html">ToolBar</a> — Icon-only toolbar buttons always benefit from ToolTip labels.</li>
+      <li><a href="/apps/wpf-standard-control-demo/popup.html">Popup</a> — a floating window that the application opens and closes itself.</li>
+      <li><a href="/apps/wpf-standard-control-demo/textblock.html">TextBlock</a> — trimmed text whose full content a tooltip can show.</li>
+      <li><a href="/apps/wpf-standard-control-demo/button.html">Button</a> — a button with only an icon needs a tooltip and a UI Automation name.</li>
     </ul>
   </section>
 
   <section class="content-section">
     <h2>Source Code</h2>
-    <p>The source code for this demo screen is available on GitHub. Use the built-in code view buttons in the app to see the exact XAML for each property.</p>
-    <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolTipUsage" target="_blank" rel="noopener noreferrer">View ToolTip source code on GitHub &rarr;</a></p>
+    <p>
+      The source code for this demo screen is available on GitHub. In the app, the "Show Code" link
+      under each section displays the XAML of that section.
+    </p>
+    <p>
+      <a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/ToolTipUsage" target="_blank" rel="noopener noreferrer">
+        View ToolTip source code on GitHub &rarr;
+      </a>
+    </p>
   </section>
 
 </main>

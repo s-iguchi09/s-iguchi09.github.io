@@ -114,6 +114,26 @@ internal static class DemoProbe
         }
     }
 
+    /// <summary>
+    /// <see cref="ShowAsync"/> で表示した要素のウィンドウを、最前面にして前面に出す。
+    /// 実際のマウスやキー（<see cref="RealMouse"/> / <see cref="RealKeyboard"/>）を使う計測の前に呼ぶ（入力がほかのアプリに行かないため）。
+    /// </summary>
+    public static async Task<Window> FrontAsync(FrameworkElement content)
+    {
+        Window window = Window.GetWindow(content)
+            ?? throw new InvalidOperationException("ウィンドウに表示していない要素は前面に出せない。");
+        window.Topmost = true;
+        window.Activate();
+        await Capture.SettleAsync(window);
+        if (!window.IsActive)
+        {
+            // Windows が前面化を制限すると Activate は失敗する。前面にない状態で実際の入力を送らないため。
+            throw new InvalidOperationException("計測用のウィンドウを前面に出せない（ほかのウィンドウが前面を保持している）。");
+        }
+
+        return window;
+    }
+
     /// <summary>表示中の要素へキー押下のイベントを送る。</summary>
     public static void PressKey(UIElement target, System.Windows.Input.Key key)
     {

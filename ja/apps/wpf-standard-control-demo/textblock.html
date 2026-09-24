@@ -1,70 +1,165 @@
 ---
 ---
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8"><title>TextBlock | WPF 標準コントロールデモアプリ (.NET 10)</title>
+  <meta charset="UTF-8">
+  <title>TextBlock | WPF 標準コントロールデモアプリ (.NET 10)</title>
   {% include head.html %}
-  <meta name="description" content="WPF の TextBlock はテキストを表示するための最も軽量なコントロールです。インライン要素（太字・斜体・ハイパーリンクなど）を含むリッチテキスト、テキストの折り返し・省略・トリミングをサポートします。実行画面と XAML 使用例を .NET 10 のデモアプリで示します。">
+
+  <meta name="description" content="WPF の TextBlock を .NET 10 で実測して解説。Text と Inlines の関係、長い語に対する TextWrapping の違い、TextTrimming が効く条件、デモアプリの LineHeight 5 で行が重なる理由を確かめます。">
+
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
 {% include header-ja.html %}
+
 <main>
+
   <section class="hero">
-    <p style="font-size:0.9rem;color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TextBlock</p>
+    <p style="font-size:0.9rem; color:#555;"><a href="/ja/apps/wpf-standard-control-demo.html">WPF 標準コントロールデモアプリ</a> &rsaquo; TextBlock</p>
     <h1>TextBlock <span class="category-badge">Display</span></h1>
-    <p>TextBlock は WPF でテキストを表示するための最も軽量なコントロールです。インライン要素（太字・斜体・ハイパーリンクなど）を含むリッチテキスト、テキストの折り返し・省略・トリミングをサポートします。</p>
+    <p>TextBlock は、1 つの文字列か書式付きの文字の並びを、読み取り専用で表示します。画面に文字を置く最も軽い方法です。</p>
   </section>
-  <section class="content-section"><h2>概要</h2><p>WPF の <strong>TextBlock</strong> は <code>FrameworkElement</code> を継承したシンプルで軽量なテキスト表示要素です。ラベルや UI のタイトル・説明文など、読み取り専用のテキストを表示するために広く使われます。</p>
-  <p>TextBlock は <code>Inline</code> 要素をコンテンツとして持ち、<code>Run</code>、<code>Bold</code>、<code>Italic</code>、<code>Underline</code>、<code>Hyperlink</code>、<code>LineBreak</code>、<code>Span</code> などを組み合わせてリッチテキストを構成できます。</p>
-  <p><code>TextTrimming</code> プロパティでテキストが長くて表示域に収まらない場合の省略方法を設定します。<code>CharacterEllipsis</code> は文字単位で省略して末尾に「...」を付け、<code>WordEllipsis</code> は単語境界で省略します。<code>TextWrapping</code> では折り返しの方法を設定します。</p>
-  <p>パフォーマンス面では、TextBlock は Label より軽量です（Label は ContentControl を継承）。フォームのラベル以外の用途（リストの各行のテキスト、ステータスバーのテキストなど）には TextBlock が推奨されます。</p></section>
-  <section class="content-section"><h2>画面キャプチャ</h2><img src="/images/wpf-standard-control-demo/textblock.png" alt="textblock demo screen" class="screenshot-img"></section>
+
+  <section class="content-section">
+    <h2>概要</h2>
+    <p><strong>TextBlock</strong> は <code>Control</code> ではなく <code>FrameworkElement</code> を継承しているので、テンプレートを持ちません。フォーカスは受け取らず（<code>Focusable</code> は <code>False</code>）、<code>Padding</code> の既定値は 0 です。文字を選択することはできません。選択できる読み取り専用の文字の表示方法は、下にリンクした記事で扱っています。</p>
+    <p>文字の与え方は 2 通りあり、思われているようには混ざりません。<code>Inlines</code>（<code>Run</code> と <code>Bold</code>）で内容を作った TextBlock の <code>Text</code> は、レイアウトの前も後も空文字でした。そのあと <code>Text</code> を設定しても例外にはならず、書式付きの並びが 1 つの並びに置き換わりました。バインドと書式を組み合わせるなら、<code>Run</code> の <code>Text</code> をバインドします。太字の「Name: 」の後に置いてバインドした <code>Run</code> は、バインドした文字を表示し、ソースの変更にも追従しました。</p>
+    <p>デモアプリには、<code>Text</code>、<code>TextWrapping</code>、<code>TextTrimming</code>、<code>TextAlignment</code>、<code>Padding</code>、フォントの各プロパティ、<code>Background</code>、<code>Foreground</code>、<code>LineHeight</code> と <code>LineStackingStrategy</code> の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
+  </section>
+
+  <section class="content-section">
+    <h2>画面キャプチャ</h2>
+    <img src="/images/wpf-standard-control-demo/textblock.png" alt="textblock demo screen" class="screenshot-img">
+  </section>
+
   <section class="content-section">
     <h2>デモしているプロパティ</h2>
-    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。</p>
-    <table class="prop-table"><thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead><tbody>
-<tr><td><code>Text</code></td><td><code>string</code></td><td>表示するテキスト文字列を設定します。ViewModel のプロパティに <code>OneWay</code> バインドして動的な値を表示するのが一般的です。プロパティが更新されるたびに TextBlock の表示が自動的に更新されます。はまりポイント: <code>Text</code> プロパティを設定した TextBlock に同時に <code>Inlines</code>（<code>&lt;Bold&gt;</code> などのインライン要素）を含めることはできません。テキストとインラインを混在させる場合は <code>Run</code> 要素の中で <code>Text</code> バインドを行ってください。</td></tr>
-<tr><td><code>TextWrapping</code></td><td><code>NoWrap / Wrap / WrapWithOverflow</code></td><td>テキストの折り返し方法を設定します。<code>NoWrap</code>（デフォルト）は折り返しなし、<code>Wrap</code> は単語境界で折り返し、<code>WrapWithOverflow</code> は単語が収まらない場合でもその単語内で折り返します（URL や長いファイルパスを含む場合に適しています）。はまりポイント: <code>NoWrap</code> のまま幅を制限しないと、テキストが親コンテナをはみ出してレイアウトが崩れます。<code>NoWrap</code> を使う場合は必ず <code>MaxWidth</code> を設定するか、<code>TextTrimming</code> を組み合わせてください。</td></tr>
-<tr><td><code>TextTrimming</code></td><td><code>None / CharacterEllipsis / WordEllipsis</code></td><td>テキストが表示域を超えた場合の省略方法を設定します。<code>CharacterEllipsis</code> は文字単位で省略して末尾に「…」を付け、<code>WordEllipsis</code> は単語境界で省略します。設定すると収まらない部分が「…」で省略されて表示されます。はまりポイント: <code>TextTrimming</code> は <code>Width</code> または <code>MaxWidth</code> が設定されていないと機能しません。必ずサイズ制限を設定するか、幅を制限するコンテナ（<code>Grid</code> の列など）に配置してください。<code>TextTrimming</code> 使用時は <code>ToolTip</code> に全テキストをバインドしてホバーで確認できるようにすることを強く推奨します。</td></tr>
-<tr><td><code>TextAlignment</code></td><td><code>Left / Right / Center / Justify</code></td><td>テキストの水平方向の配置を設定します。ダイアログの案内メッセージやタイトルには <code>Center</code>、金額や数値には <code>Right</code>、長い段落テキストには <code>Justify</code>（両端揃え）が適しています。<code>Left</code>（デフォルト）は通常の本文テキストに使用します。はまりポイント: <code>Justify</code> は日本語テキストには見た目が不自然になることがあるため、長い日本語段落では <code>Left</code> を使う方が読みやすい場合がほとんどです。</td></tr>
-<tr><td><code>FontSize / FontWeight / FontFamily / FontStyle</code></td><td><code>various</code></td><td>フォントのサイズ・太さ・ファミリー・スタイルを設定します。これらは親要素から継承されるため、<code>Window</code> や <code>App.xaml</code> のリソースで一度設定するとアプリ全体に適用されます。個別の TextBlock で上書きすることも可能です。はまりポイント: すべてのフォントがすべてのウェイト（<code>FontWeight</code>）をサポートしているわけではありません。対応していないウェイトを指定すると近いウェイトに自動変換されますが、意図した太さにならない場合があります。<code>FontFamily</code> と <code>FontWeight</code> の組み合わせは実際に動作確認してください。</td></tr>
-<tr><td><code>Foreground (Control)</code></td><td><code>Brush</code></td><td>テキストの色を設定します。<code>Foreground</code> も親要素から継承されるため、<code>Window</code> や <code>StackPanel</code> に設定すると配下のすべての TextBlock に適用されます。テーマブラシ（<code>{DynamicResource ControlTextBrush}</code> など）にバインドするとライト/ダークテーマの切り替えに自動対応できます。はまりポイント: ハードコードした色（<code>Black</code> など）を設定するとダークテーマ対応時に背景と同化して読めなくなります。テーマ対応が必要な場合は必ずシステムリソースまたはアプリのテーマブラシを使ってください。</td></tr>
-<tr><td><code>LineHeight / LineStackingStrategy</code></td><td><code>double / LineStackingStrategy</code></td><td>複数のフォントサイズが混在するリッチテキストや、行間を均一にしたい場合に使用します。<code>LineHeight</code> で行の高さをピクセルで指定し、<code>LineStackingStrategy</code> でスタッキング方法（<code>BlockLineHeight</code>: 各行に均等適用、<code>MaxHeight</code>: 行内最大フォントサイズを使用）を設定します。はまりポイント: <code>LineHeight</code> は段落全体ではなく「1行ごと」の高さです。<code>LineHeight</code> をフォントサイズより小さく設定すると行が重なって読めなくなります。最低でもフォントサイズの 1.2 倍程度を目安にしてください。</td></tr>
-<tr><td><code>Padding</code></td><td><code>Thickness</code></td><td>テキストとコントロール境界線の間の内側余白を設定します。ヒットテストの判定領域（クリックやホバーの反応範囲）も Padding の分だけ広がります。はまりポイント: TextBlock 自体の外側の余白には <code>Padding</code> ではなく <code>Margin</code> を使います。<code>Padding</code> は内側（テキストとボーダーの間）、<code>Margin</code> は外側（他の要素との間隔）という違いを混同しないようにしてください。</td></tr>
-</tbody></table>
+    <p>以下のプロパティが WPF 標準コントロールデモアプリでインタラクティブにデモされています。各プロパティの挙動は .NET 10 で実測したものです（<a href="#measured-behavior">実測した挙動</a>を参照）。</p>
+    <table class="prop-table">
+      <thead><tr><th>プロパティ</th><th>設定値</th><th>説明</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>Text</code></td>
+          <td><code>string</code></td>
+          <td>1 つの文字列としての文字です。デモアプリはテキストボックスにバインドしています。内容を <code>Inlines</code> で与えた TextBlock では空になります（上を参照）。</td>
+        </tr>
+        <tr>
+          <td><code>TextWrapping</code></td>
+          <td><code>NoWrap / Wrap / WrapWithOverflow</code></td>
+          <td>行を折り返すかと、その方法です。既定値は <code>NoWrap</code> です。1 語だけで幅 100 を超える語を含む「Say Supercalifragilisticexpialidocious now」を幅 100 に置くと、<code>NoWrap</code> は 1 行で 100 の位置で切れました。<code>Wrap</code> は長い語そのものを折って 4 行になりました。<code>WrapWithOverflow</code> は語を分けずに 3 行になり、その語が 100 を超えてそこで切れました。</td>
+        </tr>
+        <tr>
+          <td><code>TextTrimming</code></td>
+          <td><code>None / CharacterEllipsis / WordEllipsis</code></td>
+          <td>収まらない文字の末尾を省略記号にするかどうかです。既定値は <code>None</code> です。幅が限られているときだけ働きます。<code>CharacterEllipsis</code> の長い文字は、幅 100 の Grid では幅 100 になりました。幅に制限のない横の StackPanel では本来の幅 220.43 になり、省略されませんでした。</td>
+        </tr>
+        <tr>
+          <td><code>TextAlignment</code></td>
+          <td><code>Left / Right / Center / Justify</code></td>
+          <td>TextBlock の中での行の横位置です。デモアプリは折り返しを有効にして 4 つの値を並べています。</td>
+        </tr>
+        <tr>
+          <td><code>Padding</code></td>
+          <td><code>Thickness</code></td>
+          <td>TextBlock の中の文字の周りの余白です。<code>Padding="10"</code> では、TextBlock が縦横それぞれ 20 大きくなり、61.57 &times; 15.96 から 81.57 &times; 35.96 になりました。</td>
+        </tr>
+        <tr>
+          <td><code>FontWeight / FontStyle / FontStretch / FontSize / FontFamily</code></td>
+          <td>フォントの値</td>
+          <td>文字のフォントです。デモアプリにはそれぞれの欄があります。</td>
+        </tr>
+        <tr>
+          <td><code>Background / Foreground</code></td>
+          <td><code>Brush</code></td>
+          <td>文字の背景の塗りと、文字の色です。デモアプリにはそれぞれの欄があります。</td>
+        </tr>
+        <tr>
+          <td><code>LineHeight / LineStackingStrategy</code></td>
+          <td><code>double / BlockLineHeight / MaxHeight</code></td>
+          <td>各行の高さと、その当てはめ方です。デモアプリは <code>LineHeight</code> 5 と、コンボボックスの最初の値の <code>BlockLineHeight</code> で始まります。4 行の文字でこの設定だと、高さは 63.84 ではなく 20 になり、行が重なります。<code>MaxHeight</code> では行が文字より低くならず、5 でも高さは 63.84 のままでした。30 ではどちらも 120 でした。</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
-  <section class="content-section"><h2>XAML 使用例</h2><pre><code class="language-xml">&lt;StackPanel&gt;
-  &lt;!-- シンプルなテキスト --&gt;
-  &lt;TextBlock Text="{Binding Title}"
-             FontSize="20" FontWeight="Bold" /&gt;
 
-  &lt;!-- テキストトリミング --&gt;
-  &lt;TextBlock Text="{Binding Description}"
-             TextTrimming="CharacterEllipsis"
-             MaxWidth="300" /&gt;
+  <section class="content-section">
+    <h2>XAML 使用例</h2>
+    <p>デモアプリ（<code>TextBlockUsageControl.xaml</code>）の <code>LineHeight</code> の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
+  &lt;TextBox x:Name="LineHeightTextTextBox" AcceptsReturn="True"
+           Text="TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK&amp;#10;TEXTBLOCK" /&gt;
+  &lt;TextBox x:Name="LineHeightTextBox" Text="5" /&gt;
+  &lt;ComboBox x:Name="LineStackingStrategyComboBox"
+            DisplayMemberPath="Name"
+            ItemsSource="{markupextensions:EnumBindingSource EnumType=LineStackingStrategy}"
+            SelectedValuePath="Value" SelectedIndex="0" /&gt;
 
-  &lt;!-- テキスト折り返し --&gt;
-  &lt;TextBlock Text="{Binding Notes}"
-             TextWrapping="Wrap" MaxWidth="400" /&gt;
+  &lt;TextBlock x:Name="LineHeightResultTextBlock"
+             LineHeight="{Binding Text, ElementName=LineHeightTextBox}"
+             LineStackingStrategy="{Binding SelectedValue, ElementName=LineStackingStrategyComboBox}"
+             Text="{Binding Text, ElementName=LineHeightTextTextBox}" /&gt;
+&lt;/StackPanel&gt;</code></pre>
+  </section>
 
-  &lt;!-- インライン要素によるリッチテキスト --&gt;
-  &lt;TextBlock&gt;
-    &lt;Bold&gt;重要:&lt;/Bold&gt; このデータは&lt;Italic&gt;削除できません&lt;/Italic&gt;。
-    &lt;LineBreak /&gt;
-    詳細は&lt;Hyperlink NavigateUri="https://example.com"&gt;こちら&lt;/Hyperlink&gt;をご確認ください。
-  &lt;/TextBlock&gt;
-&lt;/StackPanel&gt;</code></pre></section>
-  <section class="content-section"><h2>主な使用例</h2><ul><li><strong>UI ラベル・タイトル</strong> — ウィンドウのタイトル、セクションのヘッダー、説明テキストなど、UI の読み取り専用テキストに使用します。</li><li><strong>リストアイテムのテキスト</strong> — DataTemplate 内でアイテムのプロパティをテキスト表示します。</li><li><strong>ステータスバーメッセージ</strong> — アプリ下部のステータスバーに現在の状態やメッセージを表示します。</li><li><strong>エラーメッセージ</strong> — バリデーションエラーや情報メッセージを Foreground=Red などで強調表示します。</li><li><strong>ツールチップコンテンツ</strong> — ToolTip.Content に TextBlock を使って折り返し・書式付きのツールチップテキストを表示します。</li></ul></section>
-  <section class="content-section"><h2>ヒントとベストプラクティス</h2><ul><li><strong>Label より TextBlock が軽量</strong> — アクセスキーや Target が不要な場合は Label より TextBlock が推奨されます。Label は <code>ContentControl</code> を継承するため TextBlock より多くのリソースを消費します。</li><li><strong>TextTrimming は MaxWidth/Width と組み合わせる</strong> — <code>TextTrimming</code> は幅が制限されていないと機能しません。<code>MaxWidth</code> または <code>Width</code> を設定するか、幅が制限されるコンテナ（Grid の列など）に配置してください。省略が発生した場合に備え、<code>ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"</code> で全テキストをホバー表示するのがベストプラクティスです。</li><li><strong>ToolTipで全テキストを表示</strong> — TextTrimming で省略表示する場合、<code>ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"</code> のように自分自身の <code>Text</code> をバインドすると、省略表示しているかどうかにかかわらず常にフルテキストがツールチップに表示されます。</li><li><strong>Runs を使った色分け</strong> — <code>Run</code> 要素の <code>Foreground</code> を個別に設定して、テキストの一部を異なる色で強調表示できます。ただし <code>Text</code> プロパティとインライン要素は同時に使えないため、テキスト全体を <code>Run</code> で構成する必要があります。</li><li><strong>フォント設定は親要素で一元管理する</strong> — 同じフォント設定を複数の TextBlock で共有する場合は、共通の親要素（<code>StackPanel</code> や <code>Window</code>）に設定するか、<code>App.xaml</code> の <code>Style</code> リソースで定義すると管理が楽になります。</li><li><strong>TextBlock vs RichTextBox</strong> — TextBlock は読み取り専用のシンプルなリッチテキストに使います。ユーザーが編集できるリッチテキストには RichTextBox を使います。</li></ul></section>
-  <section class="content-section"><h2>関連コントロール</h2><ul><li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — ユーザーが編集できるテキスト入力コントロール。</li><li><a href="/ja/apps/wpf-standard-control-demo/label.html">Label</a> — アクセスキーが必要なラベルには Label を使います。</li></ul></section>
+  <section class="content-section">
+    <h2>主な使用例</h2>
+    <ul>
+      <li><strong>見出しと値</strong> — アクセスキーの要らない、フォームや項目テンプレートの文字です。</li>
+      <li><strong>一覧のセル</strong> — 幅の決まった列で、名前を省略記号付きで表示します。</li>
+      <li><strong>書式付きの文</strong> — 1 つの TextBlock に <code>Run</code>・<code>Bold</code>・<code>Hyperlink</code> を並べます。</li>
+    </ul>
+  </section>
+
+  <section class="content-section">
+    <h2>ヒントとベストプラクティス</h2>
+    <ul>
+      <li><strong><code>Inlines</code> で作った TextBlock の <code>Text</code> を読まない</strong> — 空文字でした。</li>
+      <li><strong>端からはみ出させたくないなら <code>Wrap</code> を使う</strong> — <code>WrapWithOverflow</code> は長い語をはみ出させます。</li>
+      <li><strong><code>TextTrimming</code> を使うなら幅を限る</strong> — 横の StackPanel の中では省略されません。</li>
+      <li><strong>行が重ならないよう、<code>MaxHeight</code> か文字より大きい <code>LineHeight</code> を使う</strong></li>
+    </ul>
+  </section>
+
+  <section class="content-section" id="measured-behavior">
+    <h2>実測した挙動</h2>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>TextBlockDemoScene</code></a> を使いました。TextBlock は <code>Measure</code> と <code>Arrange</code> でレイアウトしました。行数は高さを 1 行の高さで割った値で、「clipped」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。</p>
+
+    <figure class="article-figure article-figure--wide">
+      <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="TextBlock の計測結果の表。FrameworkElement を継承しフォーカスを受けず既定の余白はなく、Inlines で作った内容では Text は空で、設定すると例外なく置き換わり、長い語は NoWrap で 1 行で切れ、Wrap で 4 行、WrapWithOverflow で 3 行ではみ出して切れ、省略は幅 100 の Grid では効くが StackPanel では効かず、Padding 10 で縦横 20 大きくなる" width="1022" height="290" loading="lazy">
+      <figcaption>文字と Inlines、折り返し、省略、余白。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+
+    <figure class="article-figure">
+      <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg" alt="デモアプリの 4 行の文字の高さの表。LineHeight なしで 63.84、LineHeight 5 では BlockLineHeight で 20、MaxHeight で 63.84、LineHeight 30 ではどちらも 120" width="406" height="170" loading="lazy">
+      <figcaption><code>LineHeight</code> と <code>LineStackingStrategy</code> ごとの、デモアプリの 4 行の高さ。.NET 10 / Windows 11 で計測。</figcaption>
+    </figure>
+  </section>
+
+  <section class="content-section">
+    <h2>関連コントロール・記事</h2>
+    <ul>
+      <li><a href="/ja/apps/wpf-standard-control-demo/label.html">Label</a> — フォーカスを移すアクセスキーを持つ見出しです。</li>
+      <li><a href="/ja/apps/wpf-standard-control-demo/textbox.html">TextBox</a> — 利用者が編集できる、または読み取り専用で選択できる文字です。</li>
+      <li><a href="/ja/articles/wpf-selectable-readonly-text-display/">WPFで編集不可のままテキストを選択・コピー可能に表示する方法</a> — 文字を選択できる必要があるときに使うものを扱います。</li>
+      <li><a href="/ja/articles/wpf-label-vs-textblock-performance/">WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針</a> — Label と TextBlock の負担の違いを扱います。</li>
+    </ul>
+  </section>
+
   <section class="content-section">
     <h2>ソースコード</h2>
-    <p>このデモ画面のソースコードは GitHub で公開しています。</p>
+    <p>このデモ画面のソースコードは GitHub で公開しています。アプリでは、各欄の下にある「Show Code」リンクでその欄の XAML を表示できます。</p>
     <p><a href="https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage" target="_blank" rel="noopener noreferrer">GitHub で TextBlock のソースコードを見る &rarr;</a></p>
   </section>
+
 </main>
+
 {% include footer-ja.html %}
+
 </body>
 </html>
