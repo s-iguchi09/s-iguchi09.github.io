@@ -68,7 +68,7 @@
         <tr>
           <td><code>Target</code></td>
           <td><code>UIElement</code></td>
-          <td>The element that receives the focus when the Label's access key is pressed. In the demo app's two pairs, <code>_Name(Press Alt+N)</code> and <code>_Age(Press Alt+A)</code>, the access keys <code>N</code> and <code>A</code> moved the focus to the Name and Age text boxes. Without <code>Target</code>, the access key of <code>_Plain</code> left the focus where it was. A different focus scope is not a problem: a Label whose <code>Target</code> was a TextBox inside a ToolBar moved the focus into it. <code>Target</code> does not name the field for screen readers: the Name TextBox had an empty UI Automation name and no <code>LabeledBy</code>.</td>
+          <td>The element that receives the focus when the Label's access key is pressed. In the demo app's two pairs, <code>_Name(Press Alt+N)</code> and <code>_Age(Press Alt+A)</code>, the access keys <code>N</code> and <code>A</code> moved the focus to the Name and Age text boxes. Without <code>Target</code>, the access key of <code>_Plain</code> left the focus where it was. A different focus scope is not a problem: a Label whose <code>Target</code> was a TextBox inside a ToolBar moved the focus into it. <code>Target</code> did not name the field for screen readers, although the documentation of the <code>Label</code> class says that setting the target makes UI Automation use the label's text as the name of the target. Read by a UI Automation client, as a screen reader reads it, the Name TextBox had an empty name and no <code>LabeledBy</code>. This matches an open report, <a href="https://github.com/dotnet/wpf/issues/9185" target="_blank" rel="noopener noreferrer">dotnet/wpf#9185</a>. Setting <code>AutomationProperties.LabeledBy</code> by hand did work: the Age TextBox was then named "Age(Press Alt+A)".</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
@@ -136,7 +136,7 @@
     <h2>Tips and Best Practices</h2>
     <ul>
       <li><strong>Set <code>Target</code> on every caption with an access key.</strong> Without it, the key does nothing.</li>
-      <li><strong>Name the field for screen readers separately.</strong> <code>Target</code> did not give the TextBox a name; set <code>AutomationProperties.Name</code> or <code>AutomationProperties.LabeledBy</code> on the field.</li>
+      <li><strong>Name the field for screen readers separately.</strong> Contrary to the documentation, <code>Target</code> did not give the TextBox a name. Setting <code>AutomationProperties.LabeledBy</code> to the Label on the field gave it the label's text as its name.</li>
       <li><strong>Use a TextBlock for text that needs no access key.</strong> The article linked below measures what many Labels cost.</li>
     </ul>
   </section>
@@ -148,11 +148,11 @@
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>LabelDemoScene</code></a>
       in this site's screenshot tool. Access keys were sent through <code>AccessKeyManager.ProcessKey</code>, which handles a
       key pressed with <kbd>Alt</kbd>, and <kbd>Tab</kbd> through WPF's input manager, the same path as keys typed on a
-      keyboard. Sizes are the values on the measuring machine.
+      keyboard. UI Automation names were read by a UI Automation client from outside the window, as a screen reader reads them. Sizes are the values on the measuring machine.
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Table of Label results: it derives from ContentControl, is not focusable or a tab stop, has padding 5 and Left and Top content alignment, Tab skips it, the demo's access keys N and A move the focus to the Name and Age text boxes, a Label without Target moves nothing, a Target inside a ToolBar receives the focus, the target TextBox gets no UI Automation name or LabeledBy, and a line break makes the Label two lines high" width="1108" height="320" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Table of Label results: it derives from ContentControl, is not focusable or a tab stop, has padding 5 and Left and Top content alignment, Tab skips it, the demo's access keys N and A move the focus to the Name and Age text boxes, a Label without Target moves nothing, a Target inside a ToolBar receives the focus, the target TextBox gets no UI Automation name or LabeledBy while AutomationProperties.LabeledBy set by hand names it, and a line break makes the Label two lines high" width="1108" height="350" loading="lazy">
       <figcaption>Defaults, access keys, <code>Target</code>, and UI Automation. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

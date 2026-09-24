@@ -40,7 +40,7 @@
       Keyboard users get tooltips too. When a real <kbd>Tab</kbd> key moved the focus to a button, its tooltip opened with
       <code>ShowsToolTipOnKeyboardFocus</code> unset (the default, <code>null</code>) or <code>True</code>, and not with
       <code>False</code>. A disabled element shows no tooltip unless <code>ShowOnDisabled</code> is <code>True</code>: over a
-      disabled button, the tooltip did not open, and with <code>ShowOnDisabled="True"</code> it opened after about 350 ms.
+      disabled button, the tooltip did not open, and with <code>ShowOnDisabled="True"</code> it opened after about 350 ms (the buttons measured for this had <code>InitialShowDelay</code> set to 300, to shorten the wait).
     </p>
     <p>
       The demo app has sections for the placement and its offsets and target, the keyboard, the drop shadow, the three delays,
@@ -93,7 +93,7 @@
         <tr>
           <td><code>HasDropShadow</code></td>
           <td><code>bool</code></td>
-          <td>Whether the tooltip has a shadow; the default was <code>False</code>. The demo app switches it with a check box.</td>
+          <td>Whether the tooltip is shown with a shadow. The default of this attached property, read on a button, was <code>False</code>. Whether a shadow is actually drawn was not measured. The demo app switches it with a check box.</td>
         </tr>
         <tr>
           <td><code>InitialShowDelay (ToolTipService)</code></td>
@@ -168,7 +168,7 @@
     </p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="Table of ToolTip results: defaults of 1000 ms initial delay, Int32.MaxValue duration, 100 ms between delay, Mouse placement, null keyboard setting, no ShowOnDisabled and no drop shadow, a tooltip opening after about 650 and 2050 ms for delays of 500 and 2000, a ShowDuration of 1000 closing it, a new ToolTip instance for each opening, a disabled button showing a tooltip only with ShowOnDisabled, Bottom and Mouse positions with a 50 offset, and keyboard focus opening the tooltip except with False" width="1077" height="440" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="Table of ToolTip results: defaults of 1000 ms initial delay, Int32.MaxValue duration, 100 ms between delay, Mouse placement, null keyboard setting, ShowOnDisabled and HasDropShadow both False, a tooltip opening after about 650 and 2050 ms for delays of 500 and 2000, a ShowDuration of 1000 closing it, a new ToolTip instance for each opening, a disabled button showing a tooltip only with ShowOnDisabled, Bottom and Mouse positions with a 50 offset, and keyboard focus opening the tooltip except with False" width="1077" height="440" loading="lazy">
       <figcaption>Defaults, timing, reuse, disabled elements, placement, and keyboard focus. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

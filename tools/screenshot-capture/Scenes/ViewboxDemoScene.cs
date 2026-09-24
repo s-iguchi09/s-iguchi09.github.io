@@ -122,12 +122,16 @@ internal sealed class ViewboxDemoScene : IScene
             var box = new Viewbox { Name = "Box", Stretch = Stretch.UniformToFill, Child = label, Width = 300, Height = 100 };
             var host = new Grid { Width = 600, Height = 300, Children = { box } };
             Layout(host, 600, 300);
-            Rect boxRect = Bounds(box, host);
             Rect labelRect = Bounds(label, host);
-            // 子のうち、Viewbox の下端より外にある部分を突く。
-            var outside = new Point(boxRect.X + boxRect.Width / 2, boxRect.Bottom + 5);
-            rows.Add(["UniformToFill in 300 x 100: label rect (in the host) / hit test 5 below the Viewbox",
-                $"{Format(labelRect)} / {HitName(host, outside)}"]);
+
+            // Viewbox のレイアウト上の枠（幅 300・高さ 100）を基準にする。RenderSize は拡大後の子に合わせて変わりうるため使わない。
+            Point origin = box.TranslatePoint(new Point(0, 0), host);
+            Geometry? clip = LayoutInformation.GetLayoutClip(box);
+
+            // 子のうち、Viewbox のレイアウト上の高さ 100 より 5 下にある部分を突く。
+            var outside = new Point(origin.X + box.Width / 2, origin.Y + box.Height + 5);
+            rows.Add(["UniformToFill 300 x 100: label rect / Viewbox clip / hit 5 below height 100",
+                $"{Format(labelRect)} / {(clip is null ? "none" : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")} / {HitName(host, outside)}"]);
         }
 
         {

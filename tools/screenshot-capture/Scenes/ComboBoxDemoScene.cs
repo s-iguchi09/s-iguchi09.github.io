@@ -101,7 +101,7 @@ internal sealed class ComboBoxDemoScene : IScene
                 rows.Add(["bound CheckBox opens it; Down, Down, Enter: selected / open / CheckBox",
                     $"{opened}; {((EnumItem?)combo.SelectedItem)?.Name ?? "none"} / {combo.IsDropDownOpen} / {WpfProbe.Describe(check.IsChecked)}"]);
                 rows.Add(["  Text / SelectedValue / SelectedItem.ToString()",
-                    $"{WpfProbe.Describe(combo.Text)} / {WpfProbe.Describe(combo.SelectedValue)} / {combo.SelectedItem?.ToString()?.Split('.').Last()}"]);
+                    $"{WpfProbe.Describe(combo.Text)} / {WpfProbe.Describe(combo.SelectedValue)} / {combo.SelectedItem?.ToString()}"]);
             }, activate: true);
         }
 
@@ -188,7 +188,7 @@ internal sealed class ComboBoxDemoScene : IScene
                 rows.Add([$"open, real click in edit box, StaysOpenOnEdit={staysOpen}: still open",
                     combo.IsDropDownOpen.ToString()]);
                 combo.IsDropDownOpen = false;
-            });
+            }, activate: true);
         }
 
         foreach (bool? sync in new bool?[] { true, null })

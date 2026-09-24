@@ -45,7 +45,7 @@
         <tr>
           <td><code>Target</code></td>
           <td><code>UIElement</code></td>
-          <td>Label のアクセスキーを押したときにフォーカスを受け取る要素です。デモアプリの 2 組、<code>_Name(Press Alt+N)</code> と <code>_Age(Press Alt+A)</code> では、アクセスキー <code>N</code> と <code>A</code> でフォーカスが Name と Age のテキストボックスへ移りました。<code>Target</code> のない <code>_Plain</code> のアクセスキーでは、フォーカスは動きませんでした。フォーカススコープが違っても問題はなく、ToolBar の中の TextBox を <code>Target</code> にした Label でも、フォーカスがその中へ移りました。<code>Target</code> はスクリーンリーダー向けの名前にはなりません。Name のテキストボックスの UI オートメーションの名前は空で、<code>LabeledBy</code> もありませんでした。</td>
+          <td>Label のアクセスキーを押したときにフォーカスを受け取る要素です。デモアプリの 2 組、<code>_Name(Press Alt+N)</code> と <code>_Age(Press Alt+A)</code> では、アクセスキー <code>N</code> と <code>A</code> でフォーカスが Name と Age のテキストボックスへ移りました。<code>Target</code> のない <code>_Plain</code> のアクセスキーでは、フォーカスは動きませんでした。フォーカススコープが違っても問題はなく、ToolBar の中の TextBox を <code>Target</code> にした Label でも、フォーカスがその中へ移りました。<code>Label</code> クラスのドキュメントには、Target を設定すると UI オートメーションがラベルの文字を対象の名前に使うと書かれていますが、<code>Target</code> はスクリーンリーダー向けの名前になりませんでした。スクリーンリーダーと同じく UI オートメーションのクライアントから読むと、Name のテキストボックスの名前は空で、<code>LabeledBy</code> もありませんでした。これは未解決の報告 <a href="https://github.com/dotnet/wpf/issues/9185" target="_blank" rel="noopener noreferrer">dotnet/wpf#9185</a> と一致します。<code>AutomationProperties.LabeledBy</code> を手動で設定すると効き、Age のテキストボックスの名前は「Age(Press Alt+A)」になりました。</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
@@ -113,17 +113,17 @@
     <h2>ヒントとベストプラクティス</h2>
     <ul>
       <li><strong>アクセスキーを付けた見出しには必ず <code>Target</code> を設定する</strong> — ないとキーを押しても何も起きません。</li>
-      <li><strong>スクリーンリーダー向けの名前は別に付ける</strong> — <code>Target</code> では TextBox に名前が付きませんでした。入力欄に <code>AutomationProperties.Name</code> か <code>AutomationProperties.LabeledBy</code> を設定します。</li>
+      <li><strong>スクリーンリーダー向けの名前は別に付ける</strong> — ドキュメントの説明に反して、<code>Target</code> では TextBox に名前が付きませんでした。入力欄の <code>AutomationProperties.LabeledBy</code> に Label を設定すると、ラベルの文字が名前になりました。</li>
       <li><strong>アクセスキーの要らない文字には TextBlock を使う</strong> — 下にリンクした記事で、Label を大量に置いたときの負担を実測しています。</li>
     </ul>
   </section>
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>LabelDemoScene</code></a> を使いました。アクセスキーは <kbd>Alt</kbd> と一緒に押したキーを処理する <code>AccessKeyManager.ProcessKey</code> で、<kbd>Tab</kbd> はキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。大きさは、計測したマシンでの値です。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>LabelDemoScene</code></a> を使いました。アクセスキーは <kbd>Alt</kbd> と一緒に押したキーを処理する <code>AccessKeyManager.ProcessKey</code> で、<kbd>Tab</kbd> はキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。UI オートメーションの名前は、スクリーンリーダーと同じく、ウィンドウの外から UI オートメーションのクライアントで読みました。大きさは、計測したマシンでの値です。</p>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Label の計測結果の表。ContentControl を継承しフォーカスもタブ移動も受けず、余白は 5 で内容は Left と Top、Tab は Label を飛ばし、デモアプリのアクセスキー N と A で Name と Age のテキストボックスへフォーカスが移り、Target のない Label では動かず、ToolBar の中の Target にも移り、対象の TextBox には UI オートメーションの名前も LabeledBy も付かず、改行で 2 行の高さになる" width="1108" height="320" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Label の計測結果の表。ContentControl を継承しフォーカスもタブ移動も受けず、余白は 5 で内容は Left と Top、Tab は Label を飛ばし、デモアプリのアクセスキー N と A で Name と Age のテキストボックスへフォーカスが移り、Target のない Label では動かず、ToolBar の中の Target にも移り、対象の TextBox には UI オートメーションの名前も LabeledBy も付かず、手動で設定した AutomationProperties.LabeledBy では名前が付き、改行で 2 行の高さになる" width="1108" height="350" loading="lazy">
       <figcaption>既定値、アクセスキー、<code>Target</code>、UI オートメーション。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

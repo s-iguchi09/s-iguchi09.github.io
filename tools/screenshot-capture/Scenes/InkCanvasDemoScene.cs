@@ -23,14 +23,14 @@ internal sealed class InkCanvasDemoScene : IScene
 
     public IReadOnlyList<string> Verifies =>
     [
-        "InkCanvas の EditingMode / EditingModeInverted / ActiveEditingMode / Background / DefaultDrawingAttributes の既定値と、ジェスチャー認識が使えるか",
+        "InkCanvas の EditingMode / EditingModeInverted / ActiveEditingMode / Background / DefaultDrawingAttributes の既定値（ペンの幅は丸めない値、Background は既定のスタイルの適用後の値と出どころ）と、ジェスチャー認識が使えるか",
         "デモアプリのコンボボックスの初期値（EditingMode は 1 番目、EditingModeInverted は 3 番目、ペンの色は Colors の 1 番目、背景は Brushes の 0 番目）と、ペンの色と背景のコントラスト比",
         "実際のマウスでドラッグしたときのストロークの数、ドラッグ中の ActiveEditingMode、ストロークの色と太さ",
         "DefaultDrawingAttributes をその場で書き換えたとき（デモアプリの方法）に、描いた後のストロークの色が変わるか",
         "Background が null のときにドラッグで描けるか",
         "EditingMode が None / GestureOnly / InkAndGesture / EraseByStroke / EraseByPoint / Select のときにドラッグ・クリックした結果",
         "SelectAll / Copy / Undo コマンドを InkCanvas に対して実行できるか（Ink / Select モード、ストロークの有無）と、SelectAll で選ばれたストローク",
-        "GestureOnly / InkAndGesture で左から右へドラッグしたときに Gesture イベントで認識されたジェスチャー",
+        "GestureOnly / InkAndGesture で左から右へドラッグしたときに Gesture イベントで認識されたジェスチャーと、Cancel を設定したとき・SetEnabledGestures で円だけに限ったときにストロークが残るか",
         "StrokeCollection を ISF で保存して読み込んだときのストロークの数",
     ];
 
@@ -111,8 +111,14 @@ internal sealed class InkCanvasDemoScene : IScene
             DrawingAttributes a = plain.DefaultDrawingAttributes;
             rows.Add(["defaults: EditingMode, EditingModeInverted, ActiveEditingMode, Background",
                 $"{plain.EditingMode}, {plain.EditingModeInverted}, {plain.ActiveEditingMode}, {WpfProbe.Describe(plain.Background)}"]);
-            rows.Add(["  pen: Color, Width x Height, StylusTip, IsHighlighter; gesture recognizer available",
-                $"{Name(a.Color)}, {D(a.Width)} x {D(a.Height)}, {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}"]);
+            rows.Add(["  pen: Color, Width x Height (exact), StylusTip, IsHighlighter; gesture recognizer available",
+                $"{Name(a.Color)}, {a.Width:R} x {a.Height:R}, {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}"]);
+
+            // 既定のスタイルが適用された後の Background と、その出どころ。システムのウィンドウ色と同じか。
+            var styled = new InkCanvas();
+            Layout(new Grid { Children = { styled } }, 100, 100);
+            rows.Add(["  Background after the default style (value source) / SystemColors.WindowBrush; metadata default",
+                $"{WpfProbe.ValueAndSource(styled, InkCanvas.BackgroundProperty)} / {SystemColors.WindowBrush}; {WpfProbe.Describe(InkCanvas.BackgroundProperty.GetMetadata(typeof(InkCanvas)).DefaultValue)}"]);
         }
 
         {
@@ -151,18 +157,34 @@ internal sealed class InkCanvasDemoScene : IScene
             });
         }
 
-        foreach ((string name, InkCanvasEditingMode mode, Brush? background) in new[]
+        foreach ((string name, InkCanvasEditingMode mode, Brush? background, bool cancel, bool onlyCircle) in new[]
                  {
-                     ("Background null", InkCanvasEditingMode.Ink, (Brush?)null),
-                     ("None", InkCanvasEditingMode.None, Brushes.White),
-                     ("GestureOnly", InkCanvasEditingMode.GestureOnly, Brushes.White),
-                     ("InkAndGesture", InkCanvasEditingMode.InkAndGesture, Brushes.White),
+                     ("Background null", InkCanvasEditingMode.Ink, (Brush?)null, false, false),
+                     ("None", InkCanvasEditingMode.None, Brushes.White, false, false),
+                     ("GestureOnly", InkCanvasEditingMode.GestureOnly, Brushes.White, false, false),
+                     ("InkAndGesture", InkCanvasEditingMode.InkAndGesture, Brushes.White, false, false),
+                     ("InkAndGesture, Gesture handler sets Cancel", InkCanvasEditingMode.InkAndGesture, Brushes.White, true, false),
+                     ("InkAndGesture, SetEnabledGestures(Circle)", InkCanvasEditingMode.InkAndGesture, Brushes.White, false, true),
                  })
         {
             InkCanvas canvas = Canvas(mode);
             canvas.Background = background;
+            if (onlyCircle)
+            {
+                // 認識するジェスチャーを円だけに限る。左から右の直線（Right）は認識の対象から外れる。
+                canvas.SetEnabledGestures([ApplicationGesture.Circle]);
+            }
+
             string gesture = "none";
-            canvas.Gesture += (_, e) => gesture = e.GetGestureRecognitionResults()[0].ApplicationGesture.ToString();
+            canvas.Gesture += (_, e) =>
+            {
+                gesture = e.GetGestureRecognitionResults()[0].ApplicationGesture.ToString();
+                if (cancel)
+                {
+                    // ジェスチャーとして扱わず、インクとして残す。
+                    e.Cancel = true;
+                }
+            };
             var host = new Grid { Background = Brushes.White, Children = { canvas } };
             await ShowAsync(host, async () =>
             {

@@ -1,7 +1,8 @@
 using System.Windows;
-using System.Windows.Automation.Peers;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using static ScreenshotCapture.Scenes.DemoProbe;
 
 namespace ScreenshotCapture.Scenes;
@@ -24,9 +25,28 @@ internal sealed class LabelDemoScene : IScene
         "デモアプリの Target の欄（_Name / _Age）で、アクセスキー N と A を押したときのフォーカスの移動先",
         "Target を設定しない Label のアクセスキーを押したときのフォーカス",
         "ToolBar（別のフォーカススコープ）の中の TextBox を Target にしたときのフォーカスの移動先",
-        "Target を設定したときの、TextBox の UI オートメーションの名前と LabeledBy",
+        "Target を設定したときの、TextBox の UI オートメーションの名前と LabeledBy（公式ドキュメントは名前になると説明している）と、AutomationProperties.LabeledBy を手動で設定したとき。スクリーンリーダーと同じく UI オートメーションのクライアントから読む",
         "改行を含む文字列の Content の行数（高さ）",
     ];
+
+    /// <summary>
+    /// スクリーンリーダーと同じく、UI オートメーションのクライアント（プロセス外から読む経路）で、要素の名前と LabeledBy を読む。
+    /// WPF のオートメーションピアを直接呼ぶと、手動で設定した LabeledBy も空になり、実際に読み上げられる内容と食い違うため。
+    /// UI スレッドを止めないよう、呼び出し側は Task.Run（MTA のスレッド）から呼ぶ。
+    /// </summary>
+    private static string ReadThroughClient(IntPtr hwnd, string automationId)
+    {
+        AutomationElement root = AutomationElement.FromHandle(hwnd);
+        AutomationElement? element = root.FindFirst(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.AutomationIdProperty, automationId));
+        if (element is null)
+        {
+            return "not found";
+        }
+
+        var labeledBy = element.GetCurrentPropertyValue(AutomationElement.LabeledByProperty) as AutomationElement;
+        return $"{WpfProbe.Describe(element.Current.Name)} / {(labeledBy is null ? "none" : WpfProbe.Describe(labeledBy.Current.Name))}";
+    }
 
     public async Task CaptureAsync(SceneContext context)
     {
@@ -79,6 +99,8 @@ internal sealed class LabelDemoScene : IScene
             // デモアプリの Target の欄と同じ 2 組。
             var nameBox = new TextBox();
             var ageBox = new TextBox();
+            AutomationProperties.SetAutomationId(nameBox, "NameBox");
+            AutomationProperties.SetAutomationId(ageBox, "AgeBox");
             var nameLabel = new Label { Content = "_Name(Press Alt+N)", Target = nameBox };
             var ageLabel = new Label { Content = "_Age(Press Alt+A)", Target = ageBox };
             var other = new Button { Content = "Other" };
@@ -95,10 +117,14 @@ internal sealed class LabelDemoScene : IScene
                 string afterA = Focused(("Name TextBox", nameBox), ("Age TextBox", ageBox), ("Other", other));
                 rows.Add(["demo Target labels: focus after access key N / A", $"{afterN} / {afterA}"]);
 
-                AutomationPeer peer = UIElementAutomationPeer.CreatePeerForElement(nameBox);
-                AutomationPeer? labeledBy = peer.GetLabeledBy();
-                rows.Add(["  Name TextBox in UI Automation: name / LabeledBy",
-                    $"{WpfProbe.Describe(peer.GetName())} / {(labeledBy is null ? "none" : labeledBy.GetName())}"]);
+                IntPtr hwnd = new WindowInteropHelper(window).Handle;
+                rows.Add(["  Name TextBox, read by a UI Automation client: name / LabeledBy",
+                    await Task.Run(() => ReadThroughClient(hwnd, "NameBox"))]);
+
+                // ヒントで勧める回避策: 入力欄に AutomationProperties.LabeledBy を手動で設定したとき。
+                AutomationProperties.SetLabeledBy(ageBox, ageLabel);
+                rows.Add(["  Age TextBox, AutomationProperties.LabeledBy set by hand: name / LabeledBy",
+                    await Task.Run(() => ReadThroughClient(hwnd, "AgeBox"))]);
             }, activate: true);
         }
 

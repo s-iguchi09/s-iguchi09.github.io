@@ -26,15 +26,38 @@ internal static class RealKeyboard
         public IntPtr ExtraInfo;
     }
 
-    /// <summary>INPUT 構造体。共用体の大きさを MOUSEINPUT（最大のメンバー）に合わせるため、明示的に配置する。</summary>
-    [StructLayout(LayoutKind.Explicit, Size = 40)]
-    private struct Input
+    /// <summary>MOUSEINPUT。共用体の大きさを決める最大のメンバーとして定義する（キーボード入力だけを送るが、大きさを合わせるため）。</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MouseInput
+    {
+        public int Dx;
+        public int Dy;
+        public uint MouseData;
+        public uint Flags;
+        public uint Time;
+        public IntPtr ExtraInfo;
+    }
+
+    /// <summary>INPUT の共用体。各メンバーを先頭に重ねる。</summary>
+    [StructLayout(LayoutKind.Explicit)]
+    private struct InputUnion
     {
         [FieldOffset(0)]
-        public uint Type;
+        public MouseInput Mouse;
 
-        [FieldOffset(8)]
+        [FieldOffset(0)]
         public KeyboardInput Keyboard;
+    }
+
+    /// <summary>
+    /// INPUT 構造体。共用体の位置と全体の大きさはマーシャラーに計算させる
+    /// （x64 では位置 8・40 バイト、x86 では位置 4・28 バイト。固定値にすると x86 で SendInput が失敗する）。
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Input
+    {
+        public uint Type;
+        public InputUnion Data;
     }
 
     [DllImport("user32.dll")]
@@ -54,17 +77,17 @@ internal static class RealKeyboard
         }
 
         var inputs = new List<Input>();
-        inputs.AddRange(modifiers.Select(m => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = m } }));
-        inputs.Add(new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = virtualKey } });
-        inputs.Add(new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = virtualKey, Flags = KeyEventKeyUp } });
-        inputs.AddRange(modifiers.Reverse().Select(m => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = m, Flags = KeyEventKeyUp } }));
+        inputs.AddRange(modifiers.Select(m => new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = m } } }));
+        inputs.Add(new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = virtualKey } } });
+        inputs.Add(new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = virtualKey, Flags = KeyEventKeyUp } } });
+        inputs.AddRange(modifiers.Reverse().Select(m => new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = m, Flags = KeyEventKeyUp } } }));
         if (SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<Input>()) != inputs.Count)
         {
             int error = Marshal.GetLastWin32Error();
 
             // 途中までしか受け付けられなかったとき、修飾キーが押されたまま残らないよう、すべてのキーを離しておく。
             Input[] releases = modifiers.Append(virtualKey)
-                .Select(k => new Input { Type = InputKeyboard, Keyboard = new KeyboardInput { VirtualKey = k, Flags = KeyEventKeyUp } })
+                .Select(k => new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = k, Flags = KeyEventKeyUp } } })
                 .ToArray();
             SendInput((uint)releases.Length, releases, Marshal.SizeOf<Input>());
             throw new InvalidOperationException(

@@ -189,17 +189,24 @@ internal sealed class ToolTipDemoScene : IScene
             var focusPanel = new StackPanel { Width = 160, Children = { before, target } };
             await ShowAsync(focusPanel, async () =>
             {
-                await FocusAsync(before);
-                s_lastOpened = null;
-                // 実際のキーボード入力の Tab（VK_TAB = 0x09）でフォーカスを移す。
-                await RealKeyboard.PressAsync(Window.GetWindow(focusPanel)!, 0x09);
-                await Capture.SettleAsync(Window.GetWindow(focusPanel)!, 1500);
-                bool focused = target.IsKeyboardFocused;
-                rows.Add([$"real Tab key to a button, ShowsToolTipOnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: focused / tooltip opened",
-                    $"{focused} / {s_lastOpened is { IsOpen: true }}"]);
-                if (s_lastOpened is { } open)
+                Window window = await FrontAsync(focusPanel);
+                using (RealMouse.Preserve())
                 {
-                    open.IsOpen = false;
+                    // ホバーでツールチップが開かないよう、カーソルを target ではなく before の上に置いてから Tab を押す。
+                    await RealMouse.MoveToAsync(before);
+                    await FocusAsync(before);
+                    s_lastOpened = null;
+
+                    // 実際のキーボード入力の Tab（VK_TAB = 0x09）でフォーカスを移す。
+                    await RealKeyboard.PressAsync(window, 0x09);
+                    await Capture.SettleAsync(window, 1500);
+                    bool focused = target.IsKeyboardFocused;
+                    rows.Add([$"real Tab key to a button (mouse over the other button), ShowsToolTipOnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: focused / mouse over target / tooltip opened",
+                        $"{focused} / {target.IsMouseOver} / {s_lastOpened is { IsOpen: true }}"]);
+                    if (s_lastOpened is { } open)
+                    {
+                        open.IsOpen = false;
+                    }
                 }
             }, activate: true);
         }

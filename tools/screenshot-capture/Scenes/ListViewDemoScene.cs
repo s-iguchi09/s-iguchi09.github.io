@@ -30,7 +30,7 @@ internal sealed class ListViewDemoScene : IScene
         "実際のマウスで列見出しをドラッグしたときの列の順序（AllowsColumnReorder が True / False）",
         "実際のマウスで列見出しをクリックしたときに項目が並べ替わるか",
         "DisplayMemberBinding と CellTemplate を両方設定したときに、例外が起きるか、どちらが表示されるか",
-        "幅 500 の列を持つ ListView（デモアプリの構成）で、ScrollBarVisibility が Disabled（デモアプリの初期値）/ Auto のときにスクロールできる範囲",
+        "幅 500 の列を持つ ListView（デモアプリの構成）で、ScrollBarVisibility が Disabled（デモアプリの初期値）/ Auto のときにスクロールできる範囲と、コードで末尾まで動かしたとき・下矢印キーで最後の項目へ移ったときの実際の位置",
         "1,000 項目の GridView で作られた項目コンテナの数",
     ];
 
@@ -213,11 +213,33 @@ internal sealed class ListViewDemoScene : IScene
             ScrollViewer.SetVerticalScrollBarVisibility(list, visibility);
             await ShowAsync(list, async () =>
             {
-                await Task.CompletedTask;
+                Window window = Window.GetWindow(list)!;
                 ScrollViewer viewer = Descendants<ScrollViewer>(list).First();
+                string range = $"{D(viewer.ScrollableWidth)} DIP; {D(viewer.ScrollableHeight)} items";
+
+                // コードから末尾まで動かしたときの位置。横は DIP、縦は論理スクロールなので項目単位。
+                viewer.ScrollToRightEnd();
+                viewer.ScrollToBottom();
+                await Capture.SettleAsync(window, 50);
+                string toEnd = $"{D(viewer.HorizontalOffset)} DIP, {D(viewer.VerticalOffset)} items";
+
+                // 利用者の操作に近い経路として、先頭の項目から下矢印キーで最後の項目まで移ったときの縦の位置。
+                viewer.ScrollToHome();
+                viewer.ScrollToLeftEnd();
+                await Capture.SettleAsync(window, 50);
+                var first = (ListViewItem)list.Items[0];
+                await FocusAsync(first);
+                for (int i = 0; i < 4; i++)
+                {
+                    SendKey(System.Windows.Input.Key.Down);
+                    await Capture.SettleAsync(window, 30);
+                }
+
                 rows.Add([$"demo's scroll section (column 500 in a 300 list), both bars {visibility}: scrollable width; height",
-                    $"{D(viewer.ScrollableWidth)}; {D(viewer.ScrollableHeight)}"]);
-            });
+                    range]);
+                rows.Add(["  ScrollToRightEnd + ScrollToBottom: offsets; Down key to the last item: vertical offset",
+                    $"{toEnd}; {D(viewer.VerticalOffset)} items"]);
+            }, activate: true);
         }
 
         {

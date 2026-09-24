@@ -33,8 +33,10 @@
       adding to <code>Items</code> when <code>ItemsSource</code> was set, both threw <code>InvalidOperationException</code>.
     </p>
     <p>
-      Invalid selections are ignored rather than rejected. With two tabs, <code>SelectedIndex = 5</code> threw nothing and left the
-      index at 0, and setting <code>SelectedItem</code> to a TabItem not in the list left the second tab selected. With
+      An index past the last tab and an item not in the list are ignored rather than rejected. With two tabs,
+      <code>SelectedIndex = 5</code> threw nothing and left the index at 0, and setting <code>SelectedItem</code> to a TabItem not in
+      the list left the second tab selected. A value below -1 is rejected: <code>SelectedIndex = -2</code> threw
+      <code>ArgumentException</code>. With
       <code>SelectedIndex = -1</code>, no page was shown. When the selected tab was removed, the next one was selected: removing the
       second of three tabs selected the third, at index 1.
     </p>
@@ -118,7 +120,7 @@
   <section class="content-section">
     <h2>Tips and Best Practices</h2>
     <ul>
-      <li><strong>Check indexes before setting them.</strong> An index out of range is ignored without an error.</li>
+      <li><strong>Check indexes before setting them.</strong> An index past the last tab is ignored without an error, and a value below -1 throws <code>ArgumentException</code>.</li>
       <li><strong>Use either <code>Items</code> or <code>ItemsSource</code>.</strong> Mixing them throws.</li>
       <li><strong>Set one <code>ContentStringFormat</code> on the TabControl,</strong> or use templates, rather than different formats per TabItem. A tab's own format was not applied when switching to it.</li>
       <li><strong>Set <code>TabStripPlacement</code> explicitly</strong> if you copy the demo's XAML; its combo box starts at <code>Left</code>.</li>
@@ -141,7 +143,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="Table of TabControl results: it derives from Selector with Top as the default while the demo starts at Left, the first tab is selected when shown, the demo format shows Format: Item1., a tab's own format applies when selected first but not after switching, an index out of range and a foreign SelectedItem are ignored, -1 shows nothing, removing the selected tab selects the next one, mixing Items and ItemsSource throws, and the right arrow selects the next tab" width="1077" height="410" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="Table of TabControl results: it derives from Selector with Top as the default while the demo starts at Left, the first tab is selected when shown, the demo format shows Format: Item1., a tab's own format applies when selected first but not after switching, an index past the last tab and a foreign SelectedItem are ignored while -2 throws ArgumentException, -1 shows nothing, removing the selected tab selects the next one, mixing Items and ItemsSource throws, and the right arrow selects the next tab" width="1077" height="440" loading="lazy">
       <figcaption>String format, selection, items, and the keyboard. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>

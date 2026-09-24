@@ -27,7 +27,7 @@
   <section class="content-section">
     <h2>概要</h2>
     <p><strong>TabControl</strong> は <code>Selector</code> を継承しています。作ったばかりの TabControl の <code>SelectedIndex</code> は表示されるまで -1 で、表示されると最初のタブが選ばれました。タブは <code>Items</code> の <code>TabItem</code> でも <code>ItemsSource</code> からでも作れますが、両方は使えません。<code>Items</code> に TabItem があるときに <code>ItemsSource</code> を設定しても、<code>ItemsSource</code> があるときに <code>Items</code> に追加しても、<code>InvalidOperationException</code> になりました。</p>
-    <p>不正な選択は、拒否されるのではなく無視されます。2 つのタブで <code>SelectedIndex = 5</code> としても例外はなく、0 のままでした。一覧にない TabItem を <code>SelectedItem</code> に設定しても、2 つ目のタブが選ばれたままでした。<code>SelectedIndex = -1</code> ではどのページも表示されませんでした。選択中のタブを取り除くと次のタブが選ばれ、3 つのうち 2 つ目を取り除くと、3 つ目（インデックス 1）が選ばれました。</p>
+    <p>項目数以上のインデックスと一覧にない項目は、拒否されるのではなく無視されます。2 つのタブで <code>SelectedIndex = 5</code> としても例外はなく、0 のままでした。一覧にない TabItem を <code>SelectedItem</code> に設定しても、2 つ目のタブが選ばれたままでした。-1 未満は拒否され、<code>SelectedIndex = -2</code> では <code>ArgumentException</code> が発生しました。<code>SelectedIndex = -1</code> ではどのページも表示されませんでした。選択中のタブを取り除くと次のタブが選ばれ、3 つのうち 2 つ目を取り除くと、3 つ目（インデックス 1）が選ばれました。</p>
     <p>キーボードでは、フォーカスと一緒に選択も移ります。1 つ目のタブの見出しにフォーカスがある状態で右矢印キーを押すと、2 つ目のタブが選ばれ、その見出しにフォーカスが移りました。ページの内容がいつ作られ、どう保たれるかは、TabItem のページで実測しています。</p>
     <p>デモアプリには、<code>TabStripPlacement</code>、<code>ContentStringFormat</code>、<code>SelectedContent</code> と <code>SelectedContentStringFormat</code> の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。</p>
   </section>
@@ -91,7 +91,7 @@
   <section class="content-section">
     <h2>ヒントとベストプラクティス</h2>
     <ul>
-      <li><strong>インデックスは設定する前に確かめる</strong> — 範囲外のインデックスはエラーにならず無視されます。</li>
+      <li><strong>インデックスは設定する前に確かめる</strong> — 項目数以上のインデックスはエラーにならず無視され、-1 未満は <code>ArgumentException</code> になります。</li>
       <li><strong><code>Items</code> と <code>ItemsSource</code> はどちらか一方にする</strong> — 混ぜると例外になります。</li>
       <li><strong><code>ContentStringFormat</code> は TabItem ごとに変えず、TabControl に 1 つ設定するかテンプレートを使う</strong> — タブ自身の書式は、切り替えたときに適用されませんでした。</li>
       <li><strong>デモアプリの XAML を写すなら <code>TabStripPlacement</code> を明示する</strong> — コンボボックスは <code>Left</code> で始まります。</li>
@@ -108,7 +108,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="TabControl の計測結果の表。Selector を継承し既定値は Top だがデモアプリは Left で始まり、表示すると最初のタブが選ばれ、デモアプリの書式で Format: Item1. と表示され、タブ自身の書式は最初から選んだときは使われるが切り替えたときは使われず、範囲外のインデックスと一覧にない SelectedItem は無視され、-1 では何も表示されず、選択中のタブを取り除くと次のタブが選ばれ、Items と ItemsSource を混ぜると例外になり、右矢印キーで次のタブが選ばれる" width="1077" height="410" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="TabControl の計測結果の表。Selector を継承し既定値は Top だがデモアプリは Left で始まり、表示すると最初のタブが選ばれ、デモアプリの書式で Format: Item1. と表示され、タブ自身の書式は最初から選んだときは使われるが切り替えたときは使われず、項目数以上のインデックスと一覧にない SelectedItem は無視され -2 は ArgumentException になり、-1 では何も表示されず、選択中のタブを取り除くと次のタブが選ばれ、Items と ItemsSource を混ぜると例外になり、右矢印キーで次のタブが選ばれる" width="1077" height="440" loading="lazy">
       <figcaption>書式、選択、項目、キーボード。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

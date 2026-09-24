@@ -27,7 +27,7 @@
   <section class="content-section">
     <h2>概要</h2>
     <p><strong>Viewbox</strong> は <code>Decorator</code> を継承しているので、子は 1 つ（<code>Child</code>）です。子は無限の大きさ（Infinity &times; Infinity）で測られるので、自分の本来の大きさになります。デモアプリのラベルは 72.34 &times; 57.96 でした。Viewbox はこの大きさを拡大縮小します。子自身の <code>ActualWidth</code> と <code>ActualHeight</code> は本来の大きさのままで、拡大縮小されるのは描画だけです。</p>
-    <p>既定値は <code>Stretch="Uniform"</code> と <code>StretchDirection="Both"</code> です。デモアプリはここから始まりません。コンボボックスが列挙型の最初の値の <code>None</code> と <code>UpOnly</code> で始まるので、別の値を選ぶまでラベルは拡大縮小されません。</p>
+    <p>既定値は <code>Stretch="Uniform"</code> と <code>StretchDirection="Both"</code> です。デモアプリはここから始まりません。コンボボックスが列挙型の最初の値の <code>None</code> と <code>UpOnly</code> で始まるので、<code>Stretch</code> を <code>None</code> 以外にするまでラベルは拡大縮小されません。</p>
     <p>Viewbox が拡大縮小するには、大きさが限られている必要があります。幅に制限のない、高さ 100 の横の StackPanel の中では、<code>Uniform</code> の Viewbox はラベルを高さだけに合わせて 1.73 倍にしました。</p>
     <p>デモアプリには <code>Stretch</code> と <code>StretchDirection</code> の 1 つの欄があります。欄の下の「Show Code」リンクで、その XAML を表示できます。</p>
   </section>
@@ -46,7 +46,7 @@
         <tr>
           <td><code>Stretch</code></td>
           <td><code>None / Fill / Uniform / UniformToFill</code></td>
-          <td>子の拡大縮小の仕方です。300 &times; 100 の領域で、デモアプリのラベルは、<code>Uniform</code> で縦横とも 1.73 倍（高さに合わせる）、<code>UniformToFill</code> で縦横とも 4.15 倍（幅に合わせる）、<code>Fill</code> で横 4.15 倍・縦 1.73 倍になって形が変わりました。<code>None</code> は 1 倍のままでした。<code>UniformToFill</code> では、収まらない部分は切れます。300 &times; 100 の Viewbox で、ラベルは Viewbox の上端から 300 &times; 240.35 になり、Viewbox の 5 下のヒットテストでは何も当たりませんでした。</td>
+          <td>子の拡大縮小の仕方です。300 &times; 100 の領域で、デモアプリのラベルは、<code>Uniform</code> で縦横とも 1.73 倍（高さに合わせる）、<code>UniformToFill</code> で縦横とも 4.15 倍（幅に合わせる）、<code>Fill</code> で横 4.15 倍・縦 1.73 倍になって形が変わりました。<code>None</code> は 1 倍のままでした。<code>UniformToFill</code> では、収まらない部分は切れます。300 &times; 100 の Viewbox で、ラベルは Viewbox の上端から 300 &times; 240.35 になり、Viewbox のレイアウト上の高さ 100 より 5 下のヒットテストでは何も当たりませんでした。Viewbox のレイアウトのクリップは 300 &times; 100 でした。</td>
         </tr>
         <tr>
           <td><code>StretchDirection</code></td>
@@ -59,7 +59,7 @@
 
   <section class="content-section">
     <h2>XAML 使用例</h2>
-    <p>デモアプリ（<code>ViewboxUsageControl.xaml</code>）の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
+    <p>デモアプリ（<code>ViewboxUsageControl.xaml</code>）の欄から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。デモアプリでは Viewbox はウィンドウの結果の領域いっぱいに置かれますが、このページの計測では Viewbox の大きさを固定しました（300 &times; 100 と 40 &times; 20）。<code>markupextensions</code> はデモアプリ独自のマークアップ拡張の接頭辞です。</p>
     <pre><code class="language-xml">&lt;StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:markupextensions="clr-namespace:WPFStandardControlDemoApp.Common.MarkupExtensions"&gt;
@@ -95,7 +95,7 @@
       <li><strong>Viewbox の大きさを限る</strong> — 一方向に制限のない親の中では、もう一方の方向だけで拡大縮小します。</li>
       <li><strong>縮めても大きくはしないなら <code>DownOnly</code> を使う</strong> — 大きなウィンドウで文字が大きくなりすぎるのを防げます。</li>
       <li><strong>全体を見せる必要がある内容に <code>UniformToFill</code> を使わない</strong> — 収まらない部分が切れます。</li>
-      <li><strong>子の大きさは描画ではなくレイアウトから読む</strong> — <code>ActualWidth</code> は本来の大きさのままです。</li>
+      <li><strong>表示上の大きさは <code>ActualWidth</code> ではなく <code>TransformToAncestor</code> で読む</strong> — 子の <code>ActualWidth</code> は本来の大きさのままで、拡大縮小は変換にだけ表れます。</li>
     </ul>
   </section>
 
@@ -109,7 +109,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg" alt="Viewbox の計測結果の表。Decorator を継承し既定値は Uniform と Both だがデモアプリは None と UpOnly で始まり、子は無限の大きさで測られてラベルは 72.34 × 57.96、UniformToFill では収まらない部分が切れ、横の StackPanel の中の Viewbox は高さだけに合わせて拡大する" width="1030" height="230" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg" alt="Viewbox の計測結果の表。Decorator を継承し既定値は Uniform と Both だがデモアプリは None と UpOnly で始まり、子は無限の大きさで測られてラベルは 72.34 × 57.96、UniformToFill では収まらない部分が Viewbox のレイアウト上の高さで切れ、横の StackPanel の中の Viewbox は高さだけに合わせて拡大する" width="1108" height="230" loading="lazy">
       <figcaption>型、既定値、測り方、切り抜き。.NET 10 / Windows 11 で計測。</figcaption>
     </figure>
   </section>

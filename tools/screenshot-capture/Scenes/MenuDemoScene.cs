@@ -33,6 +33,7 @@ internal sealed class MenuDemoScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "Menu の IsMainMenu と、MenuItem の IsCheckable / IsChecked / StaysOpenOnClick / InputGestureText の既定値",
+        "F10 が効かなかった条件の切り分け（フォーカスが Button にあるとき、WPF の InputManager を通して F10 を送ったとき）",
         "デモアプリの Role の節と同じ階層での各 MenuItem の Role と、子のない最上位項目に子を追加したときの Role",
         "実際のマウスで項目をクリックしたときの IsChecked と、サブメニューが開いたままか（IsCheckable / StaysOpenOnClick の組み合わせ）",
         "IsChecked を TwoWay で結んだ CheckBox がクリックに追従するか、IsCheckable の 2 項目が排他になるか",
@@ -49,6 +50,28 @@ internal sealed class MenuDemoScene : IScene
             ["case", "measured"],
             await MeasureAsync(),
             "menu-behavior.svg");
+    }
+
+    /// <summary>F10 のようなシステムキーを、WPF の入力管理（InputManager）を通してフォーカスのある要素へ送る。</summary>
+    private static void SendSystemKey(Key key, bool down)
+    {
+        var target = (DependencyObject)Keyboard.FocusedElement!;
+        PresentationSource source = PresentationSource.FromDependencyObject(target)!;
+        var args = new KeyEventArgs(Keyboard.PrimaryDevice, source, Environment.TickCount, key)
+        {
+            RoutedEvent = down ? Keyboard.PreviewKeyDownEvent : Keyboard.PreviewKeyUpEvent,
+        };
+
+        // OS からは Key が System、実際のキー（SystemKey）が F10 として届く。内部のフィールドを同じ形にする。
+        System.Reflection.FieldInfo field = typeof(KeyEventArgs).GetField("_key", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?? throw new InvalidOperationException("KeyEventArgs._key が見つからない。");
+        field.SetValue(args, Key.System);
+        if (args.Key != Key.System || args.SystemKey != key)
+        {
+            throw new InvalidOperationException($"システムキーの形にできない（Key {args.Key}, SystemKey {args.SystemKey}）。");
+        }
+
+        InputManager.Current.ProcessInput(args);
     }
 
     private static MenuItem Item(string header, params MenuItem[] children)
@@ -108,8 +131,8 @@ internal sealed class MenuDemoScene : IScene
         var rows = new List<IReadOnlyList<string>>();
 
         var defaultItem = new MenuItem();
-        rows.Add(["defaults: Menu.IsMainMenu; MenuItem IsCheckable, IsChecked, StaysOpenOnClick",
-            $"{new Menu().IsMainMenu}; {defaultItem.IsCheckable}, {defaultItem.IsChecked}, {defaultItem.StaysOpenOnClick}"]);
+        rows.Add(["defaults: Menu.IsMainMenu; MenuItem IsCheckable, IsChecked, StaysOpenOnClick, InputGestureText",
+            $"{new Menu().IsMainMenu}; {defaultItem.IsCheckable}, {defaultItem.IsChecked}, {defaultItem.StaysOpenOnClick}, {WpfProbe.Describe(defaultItem.InputGestureText)}"]);
 
         {
             MenuItem subItem = Item("SubmenuItem");
@@ -218,6 +241,42 @@ internal sealed class MenuDemoScene : IScene
                     }
                 });
             }
+        }
+
+        // 公式ドキュメントは IsMainMenu を「ALT と F10 の通知を受けるか」と説明している。F10 が効かなかった条件を切り分ける。
+        foreach ((string name, bool onButton, bool throughInputManager) in new[]
+                 {
+                     ("real F10, a Button focused", true, false),
+                     ("F10 through WPF's InputManager, TextBox focused", false, true),
+                 })
+        {
+            MenuItem main = Item("Main Menu(_M)", Item("Item 1"));
+            var box = new TextBox { Width = 200 };
+            var button = new Button { Content = "Button" };
+            var panel = new StackPanel { Width = 240, Height = 140, Children = { MenuOf(true, main), box, button } };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = await FrontAsync(panel);
+                await FocusAsync(onButton ? button : box);
+                if (throughInputManager)
+                {
+                    // F10 は WPF ではシステムキー（Key.System、SystemKey=F10）として届く。
+                    SendSystemKey(Key.F10, down: true);
+                    SendSystemKey(Key.F10, down: false);
+                    await Capture.SettleAsync(window, 100);
+                }
+                else
+                {
+                    await RealKeyboard.PressAsync(window, VkF10);
+                }
+
+                rows.Add([$"IsMainMenu True, {name}: highlighted / submenu open / focus moved to the menu",
+                    $"{main.IsHighlighted} / {main.IsSubmenuOpen} / {main.IsKeyboardFocusWithin}"]);
+                if (main.IsHighlighted || main.IsKeyboardFocusWithin)
+                {
+                    await RealKeyboard.PressAsync(window, VkEscape);
+                }
+            });
         }
 
         {

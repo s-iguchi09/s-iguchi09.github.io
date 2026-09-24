@@ -25,7 +25,7 @@ internal sealed class TabControlDemoScene : IScene
         "TabStripPlacement ごとの、2 つのタブの見出しと内容の領域の位置",
         "デモアプリと同じ ContentStringFormat=\"Format: {0}.\" で表示される内容の文字、SelectedContent と SelectedContentStringFormat、TabItem 自身の ContentStringFormat との優先",
         "表示の前と後の SelectedIndex（最初のタブが自動で選ばれるか）",
-        "範囲外の SelectedIndex、-1、含まれない SelectedItem を設定したときの例外の有無と選択",
+        "項目数以上の SelectedIndex（5）、-1、-1 未満（-2）、含まれない SelectedItem を設定したときの例外の有無と選択",
         "選択中のタブを取り除いたときに選ばれるタブ",
         "Items に TabItem があるときに ItemsSource を設定した場合と、その逆の例外",
         "タブの見出しにフォーカスがあるときの右矢印キーでの選択の移動",
@@ -127,6 +127,8 @@ internal sealed class TabControlDemoScene : IScene
             {
                 string thrown = Throws(() => tabs.SelectedIndex = 5);
                 rows.Add(["2 tabs, SelectedIndex = 5: exception / SelectedIndex", $"{thrown} / {tabs.SelectedIndex}"]);
+                string belowMinusOne = Throws(() => tabs.SelectedIndex = -2);
+                rows.Add(["  SelectedIndex = -2: exception / SelectedIndex", $"{belowMinusOne} / {tabs.SelectedIndex}"]);
                 tabs.SelectedIndex = 1;
                 tabs.SelectedItem = new TabItem { Header = "not in the list" };
                 rows.Add(["Tab2 selected, SelectedItem = a TabItem not in the list", tabs.SelectedIndex.ToString()]);
