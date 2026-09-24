@@ -92,7 +92,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
-    <lastmod>2026-09-23T02:07:53Z</lastmod>
+    <lastmod>2026-09-23T19:45:30Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -102,7 +102,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo.html" />
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <lastmod>2026-09-23T19:45:30Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -191,7 +191,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/combobox.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/combobox.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:40:17Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -202,7 +203,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/combobox.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/combobox.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:40:17Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -387,7 +389,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/image.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/image.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/image.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/image/image-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/image/image-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T15:55:50Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -398,7 +402,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/image.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/image.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/image.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/image/image-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/image/image-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T15:55:50Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -409,7 +415,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/inkcanvas.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/inkcanvas.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/inkcanvas.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -420,7 +427,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/inkcanvas.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/inkcanvas.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/inkcanvas.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -431,7 +439,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/label.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/label.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/label.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/label/label-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -442,7 +451,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/label.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/label.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/label.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/label/label-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -479,7 +489,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listview.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listview.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/listview.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/listview/listview-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:40:17Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -490,7 +501,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/listview.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/listview.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/listview.png</image:loc></image:image>
-    <lastmod>2026-09-23T02:09:11Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/listview/listview-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:40:17Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -501,7 +513,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/menu.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/menu.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/menu.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -512,7 +525,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/menu.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/menu.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/menu.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -729,7 +743,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabcontrol.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabcontrol.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/tabcontrol.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T15:55:50Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -740,7 +756,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tabcontrol.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tabcontrol.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/tabcontrol.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T15:55:50Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -777,7 +795,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textblock.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textblock.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/textblock.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg</image:loc></image:image>
+    <lastmod>2026-09-24T04:45:59Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -788,7 +808,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/textblock.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/textblock.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/textblock.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg</image:loc></image:image>
+    <lastmod>2026-09-24T04:45:59Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -875,7 +897,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tooltip.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tooltip.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/tooltip.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -886,7 +909,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/tooltip.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/tooltip.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/tooltip.png</image:loc></image:image>
-    <lastmod>2026-09-23T02:09:11Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T16:56:28Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -945,7 +969,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/viewbox.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/viewbox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/viewbox.png</image:loc></image:image>
-    <lastmod>2026-08-20T09:27:49Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T15:55:50Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -956,7 +982,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/viewbox.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/viewbox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/viewbox.png</image:loc></image:image>
-    <lastmod>2026-09-22T19:05:20Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-24T15:55:50Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
