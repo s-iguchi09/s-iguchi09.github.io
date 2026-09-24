@@ -157,7 +157,7 @@
     <ul>
       <li><strong>Check the pen color against the background.</strong> The demo app's starting colors have a contrast ratio of only 1.09 : 1.</li>
       <li><strong>Switch to <code>Select</code> before running <code>SelectAll</code>.</strong> In the <code>Ink</code> mode the command was disabled.</li>
-      <li><strong>Keep strokes that are not meant as gestures.</strong> A straight drag was taken as a gesture and not kept as ink. Setting <code>Cancel</code> to <code>True</code> in the <code>Gesture</code> handler kept it as a stroke, and so did limiting the recognized gestures with <code>SetEnabledGestures</code> to a circle only.</li>
+      <li><strong>Keep strokes that are not meant as gestures.</strong> A straight drag was taken as a gesture and not kept as ink. In the <code>InkAndGesture</code> mode, setting <code>Cancel</code> to <code>True</code> in the <code>Gesture</code> handler kept it as a stroke, and so did limiting the recognized gestures with <code>SetEnabledGestures</code> to a circle only.</li>
       <li><strong>Change a stroke's own <code>DrawingAttributes</code> to recolor it.</strong> Changing the default pen affects only later strokes.</li>
       <li><strong>Keep your own history for undo.</strong> <code>ApplicationCommands.Undo</code> is not handled.</li>
     </ul>

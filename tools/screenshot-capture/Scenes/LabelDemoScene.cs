@@ -25,12 +25,12 @@ internal sealed class LabelDemoScene : IScene
         "デモアプリの Target の欄（_Name / _Age）で、アクセスキー N と A を押したときのフォーカスの移動先",
         "Target を設定しない Label のアクセスキーを押したときのフォーカス",
         "ToolBar（別のフォーカススコープ）の中の TextBox を Target にしたときのフォーカスの移動先",
-        "Target を設定したときの、TextBox の UI オートメーションの名前と LabeledBy（公式ドキュメントは名前になると説明している）と、AutomationProperties.LabeledBy を手動で設定したとき。スクリーンリーダーと同じく UI オートメーションのクライアントから読む",
+        "Target を設定したときの、TextBox の UI オートメーションの名前と LabeledBy（公式ドキュメントは名前になると説明している）と、AutomationProperties.LabeledBy を手動で設定したとき。スクリーンリーダーも使う UI オートメーションのクライアント API で、UI スレッドとは別のスレッドから読む",
         "改行を含む文字列の Content の行数（高さ）",
     ];
 
     /// <summary>
-    /// スクリーンリーダーと同じく、UI オートメーションのクライアント（プロセス外から読む経路）で、要素の名前と LabeledBy を読む。
+    /// スクリーンリーダーも使う UI オートメーションのクライアント API で、要素の名前と LabeledBy を読む（同じプロセスの、UI スレッドとは別のスレッドから）。
     /// WPF のオートメーションピアを直接呼ぶと、手動で設定した LabeledBy も空になり、実際に読み上げられる内容と食い違うため。
     /// UI スレッドを止めないよう、呼び出し側は Task.Run（MTA のスレッド）から呼ぶ。
     /// </summary>

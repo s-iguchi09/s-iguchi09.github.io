@@ -13,7 +13,7 @@ verifies:
   - "Background が null のときにドラッグで描けるか"
   - "EditingMode が None / GestureOnly / InkAndGesture / EraseByStroke / EraseByPoint / Select のときにドラッグ・クリックした結果"
   - "SelectAll / Copy / Undo コマンドを InkCanvas に対して実行できるか（Ink / Select モード、ストロークの有無）と、SelectAll で選ばれたストローク"
-  - "GestureOnly / InkAndGesture で左から右へドラッグしたときに Gesture イベントで認識されたジェスチャーと、Cancel を設定したとき・SetEnabledGestures で円だけに限ったときにストロークが残るか"
+  - "GestureOnly / InkAndGesture で左から右へドラッグしたときに Gesture イベントで認識されたジェスチャーと、InkAndGesture で Cancel を設定したとき・SetEnabledGestures で円だけに限ったときにストロークが残るか"
   - "StrokeCollection を ISF で保存して読み込んだときのストロークの数"
 images:
   - "images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg"

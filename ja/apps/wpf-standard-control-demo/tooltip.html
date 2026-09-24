@@ -132,7 +132,7 @@
 
   <section class="content-section" id="measured-behavior">
     <h2>実測した挙動</h2>
-    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToolTipDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToolTipDemoScene</code></a> を使いました。ツールチップは、計測用のウィンドウのボタンの上に実際のマウスを置いて開き、<kbd>Tab</kbd> は実際のキーボード入力として押しました。時間は 50 ms 単位に丸め、位置はデバイスに依存しないピクセルで表しています。どちらも計測したマシンでの値です。</p>
+    <p>このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ToolTipDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>ToolTipDemoScene</code></a> を使いました。ツールチップは、計測用のウィンドウのボタンの上に実際のマウスを置いて開き、<kbd>Tab</kbd> は実際のキーボード入力として押しました。時間は、ツールがカーソルをボタンの上へ動かした時点から、ツールチップが開いたのを確かめるまでで、約 10 ms ごとに確かめ、50 ms 単位に丸めています。位置はデバイスに依存しないピクセルで表しています。どちらも計測したマシンでの値です。</p>
 
     <figure class="article-figure article-figure--wide">
       <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="ToolTip の計測結果の表。既定値は開くまで 1000 ms、表示時間 Int32.MaxValue、間隔 100 ms、位置は Mouse、キーボードの設定は null、ShowOnDisabled と HasDropShadow はどちらも False、待ち時間 500 と 2000 でそれぞれ約 700 と 2050 ms 後に開き、ShowDuration 1000 で閉じ、開くたびに新しい ToolTip のインスタンスになり、無効なボタンでは ShowOnDisabled のときだけ開き、Bottom と Mouse の位置と 50 のずらし、キーボードフォーカスでは False 以外で開く" width="1116" height="440" loading="lazy">

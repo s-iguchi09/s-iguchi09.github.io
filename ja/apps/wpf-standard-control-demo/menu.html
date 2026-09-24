@@ -45,7 +45,7 @@
         <tr>
           <td><code>IsMainMenu (Menu)</code></td>
           <td><code>bool</code></td>
-          <td><kbd>Alt</kbd> を押したときにメニューへ入るかどうかで、既定値は <code>True</code> です。TextBox にフォーカスがある状態で実際に <kbd>Alt</kbd> を押すと、<code>True</code> では最初の見出しが強調されてフォーカスが移り、<code>False</code> では何も起きませんでした。ドキュメントは <code>IsMainMenu</code> を <kbd>Alt</kbd> と <kbd>F10</kbd> の通知を受けるかどうかと説明しています。日本語入力を使う計測したマシンでは、TextBox にフォーカスがある状態で実際に <kbd>F10</kbd> を押すと、どちらでも何も起きませんでした。<code>True</code> で、Button にフォーカスがある状態の実際の <kbd>F10</kbd> と、WPF の入力管理を通して TextBox に送った <kbd>F10</kbd> では、どちらもメニューに入りました。違いは、実際のキーが TextBox に届いたことから生じていました。アクセスキーはどちらでも働き、<kbd>Alt</kbd>+<kbd>M</kbd> は <code>False</code> でもデモアプリの「Main Menu(_M)」を開きました。</td>
+          <td><kbd>Alt</kbd> を押したときにメニューへ入るかどうかで、既定値は <code>True</code> です。TextBox にフォーカスがある状態で実際に <kbd>Alt</kbd> を押すと、<code>True</code> では最初の見出しが強調されてフォーカスが移り、<code>False</code> では何も起きませんでした。ドキュメントは <code>IsMainMenu</code> を <kbd>Alt</kbd> と <kbd>F10</kbd> の通知を受けるかどうかと説明しています。日本語入力を使う計測したマシンでは、TextBox にフォーカスがある状態で実際に <kbd>F10</kbd> を押すと、どちらでも何も起きませんでした。<code>True</code> で、Button にフォーカスがある状態の実際の <kbd>F10</kbd> と、WPF の入力管理を通して TextBox に送った <kbd>F10</kbd> では、どちらもメニューに入りました。違いの原因として、<kbd>F10</kbd> を自分でも使う日本語入力が考えられますが、入力方式をオフにして測ってはいないので、確かめていません。アクセスキーはどちらでも働き、<kbd>Alt</kbd>+<kbd>M</kbd> は <code>False</code> でもデモアプリの「Main Menu(_M)」を開きました。</td>
         </tr>
         <tr>
           <td><code>IsCheckable</code></td>

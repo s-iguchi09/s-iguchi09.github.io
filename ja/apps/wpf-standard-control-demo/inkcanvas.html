@@ -129,7 +129,7 @@
     <ul>
       <li><strong>ペンの色を背景と比べて選ぶ</strong> — デモアプリの初期の色どうしのコントラスト比は 1.09 : 1 しかありません。</li>
       <li><strong><code>SelectAll</code> の前に <code>Select</code> モードにする</strong> — <code>Ink</code> モードでは、このコマンドは無効でした。</li>
-      <li><strong>ジェスチャーのつもりでないストロークを残す</strong> — まっすぐなドラッグはジェスチャーとみなされ、インクとして残りませんでした。<code>Gesture</code> のハンドラーで <code>Cancel</code> を <code>True</code> にするとストロークとして残り、<code>SetEnabledGestures</code> で認識するジェスチャーを円だけに限った場合も残りました。</li>
+      <li><strong>ジェスチャーのつもりでないストロークを残す</strong> — まっすぐなドラッグはジェスチャーとみなされ、インクとして残りませんでした。<code>InkAndGesture</code> モードでは、<code>Gesture</code> のハンドラーで <code>Cancel</code> を <code>True</code> にするとストロークとして残り、<code>SetEnabledGestures</code> で認識するジェスチャーを円だけに限った場合も残りました。</li>
       <li><strong>描いたストロークの色を変えるには、そのストロークの <code>DrawingAttributes</code> を変える</strong> — 既定のペンを変えても、影響するのはその後のストロークだけです。</li>
       <li><strong>元に戻す機能は自分で履歴を持つ</strong> — <code>ApplicationCommands.Undo</code> は処理されません。</li>
     </ul>

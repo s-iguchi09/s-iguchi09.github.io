@@ -68,7 +68,7 @@
         <tr>
           <td><code>Target</code></td>
           <td><code>UIElement</code></td>
-          <td>The element that receives the focus when the Label's access key is pressed. In the demo app's two pairs, <code>_Name(Press Alt+N)</code> and <code>_Age(Press Alt+A)</code>, the access keys <code>N</code> and <code>A</code> moved the focus to the Name and Age text boxes. Without <code>Target</code>, the access key of <code>_Plain</code> left the focus where it was. A different focus scope is not a problem: a Label whose <code>Target</code> was a TextBox inside a ToolBar moved the focus into it. <code>Target</code> did not name the field for screen readers, although the documentation of the <code>Label</code> class says that setting the target makes UI Automation use the label's text as the name of the target. Read by a UI Automation client, as a screen reader reads it, the Name TextBox had an empty name and no <code>LabeledBy</code>. This matches an open report, <a href="https://github.com/dotnet/wpf/issues/9185" target="_blank" rel="noopener noreferrer">dotnet/wpf#9185</a>. Setting <code>AutomationProperties.LabeledBy</code> by hand did work: the Age TextBox was then named "Age(Press Alt+A)".</td>
+          <td>The element that receives the focus when the Label's access key is pressed. In the demo app's two pairs, <code>_Name(Press Alt+N)</code> and <code>_Age(Press Alt+A)</code>, the access keys <code>N</code> and <code>A</code> moved the focus to the Name and Age text boxes. Without <code>Target</code>, the access key of <code>_Plain</code> left the focus where it was. A different focus scope is not a problem: a Label whose <code>Target</code> was a TextBox inside a ToolBar moved the focus into it. <code>Target</code> did not name the field for screen readers, although the documentation of the <code>Label</code> class says that setting the target makes UI Automation use the label's text as the name of the target. Read through the UI Automation client API, which screen readers use, the Name TextBox had an empty name and no <code>LabeledBy</code>. This matches an open report, <a href="https://github.com/dotnet/wpf/issues/9185" target="_blank" rel="noopener noreferrer">dotnet/wpf#9185</a>. Setting <code>AutomationProperties.LabeledBy</code> by hand did work: the Age TextBox was then named "Age(Press Alt+A)".</td>
         </tr>
         <tr>
           <td><code>Content (ContentControl)</code></td>
@@ -148,7 +148,7 @@
       <a href="https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs" target="_blank" rel="noopener noreferrer"><code>LabelDemoScene</code></a>
       in this site's screenshot tool. Access keys were sent through <code>AccessKeyManager.ProcessKey</code>, which handles a
       key pressed with <kbd>Alt</kbd>, and <kbd>Tab</kbd> through WPF's input manager, the same path as keys typed on a
-      keyboard. UI Automation names were read by a UI Automation client from outside the window, as a screen reader reads them. Sizes are the values on the measuring machine.
+      keyboard. UI Automation names were read through the UI Automation client API, which screen readers also use, from a thread other than the window's UI thread in the same process. Sizes are the values on the measuring machine.
     </p>
 
     <figure class="article-figure article-figure--wide">
