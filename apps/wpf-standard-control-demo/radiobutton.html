@@ -78,7 +78,7 @@
         <tr>
           <td><code>VerticalContentAlignment (Control)</code></td>
           <td><code>Top / Center / Bottom / Stretch</code></td>
-          <td>Where the round mark and the content are placed vertically inside the RadioButton. The default is <code>Top</code>, from the property's default value; it stayed <code>Top</code> after the default style was applied. With a label that wraps to three lines, <code>Top</code> put the mark at the top of the label. <code>Center</code> centered both in the RadioButton: in a RadioButton 200 high, the mark's center and the label's center were both at about 100. The mark lines up with the middle of the label only when the RadioButton is as high as its label: at 46.88 high, the centers were at 23.44 and 22.94. The demo app chooses the value from a combo box.</td>
+          <td>Where the round mark and the content are placed vertically inside the RadioButton. The default is <code>Top</code>, from the property's default value; it stayed <code>Top</code> after the default style was applied. With a label that wraps to three lines, <code>Top</code> put the mark at the top of the label. <code>Center</code> centered both in the RadioButton, so the mark lined up with the middle of the label whatever the RadioButton's height: the centers were both at about 100 in a RadioButton 200 high, and at 23.44 and 22.94 in one 46.88 high, as high as the label. The demo app chooses the value from a combo box.</td>
         </tr>
       </tbody>
     </table>
@@ -128,7 +128,7 @@
       <li><strong>Use a name that is unique in the window.</strong> The same name in two sections of one window makes them one group.</li>
       <li><strong>Do not rely on the same name to link windows or popups.</strong> Each of them has its own groups.</li>
       <li><strong>Check one button at the start.</strong> A group starts with nothing selected unless one button is set to <code>IsChecked="True"</code>.</li>
-      <li><strong>Set <code>VerticalContentAlignment="Center"</code> for labels of several lines, and let the RadioButton take the label's height</strong> (for example with <code>VerticalAlignment="Top"</code>). The default <code>Top</code> leaves the mark at the first line.</li>
+      <li><strong>Set <code>VerticalContentAlignment="Center"</code> for labels of several lines.</strong> The default <code>Top</code> leaves the mark at the first line.</li>
     </ul>
   </section>
 
@@ -147,7 +147,7 @@
     </figure>
 
     <figure class="article-figure article-figure--wide">
-      <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg" alt="Table of RadioButton bindings and keys: with IsChecked bound to three bools, clicking B sets A and C to false and keeps the bindings, setting C in the source unchecks B, the Down arrow moves the focus but not the check, Tab goes to the next button, VerticalContentAlignment defaults to Top, and Center centers the mark and the label in the RadioButton, which lines the mark up with the middle of a three-line label when the RadioButton is as high as the label" width="1061" height="320" loading="lazy">
+      <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg" alt="Table of RadioButton bindings and keys: with IsChecked bound to three bools, clicking B sets A and C to false and keeps the bindings, setting C in the source unchecks B, the Down arrow moves the focus but not the check, Tab goes to the next button, VerticalContentAlignment defaults to Top, and Center centers the mark and the label in the RadioButton, lining the mark up with the middle of a three-line label" width="1061" height="320" loading="lazy">
       <figcaption>Bound <code>IsChecked</code>, the keyboard, and <code>VerticalContentAlignment</code>. Measured on .NET 10 / Windows 11.</figcaption>
     </figure>
   </section>
