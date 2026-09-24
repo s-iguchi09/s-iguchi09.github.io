@@ -91,11 +91,11 @@
   &lt;ComboBox x:Name="StretchComboBox"
             DisplayMemberPath="Name"
             ItemsSource="{markupextensions:EnumBindingSource EnumType=Stretch}"
-            SelectedIndex="0" SelectedValuePath="Value" /&gt;
+            SelectedValuePath="Value" SelectedIndex="0" /&gt;
   &lt;ComboBox x:Name="StretchDirectionComboBox"
             DisplayMemberPath="Name"
             ItemsSource="{markupextensions:EnumBindingSource EnumType=StretchDirection}"
-            SelectedIndex="0" SelectedValuePath="Value" /&gt;
+            SelectedValuePath="Value" SelectedIndex="0" /&gt;
 
   &lt;Viewbox x:Name="StretchViewBox"
            Stretch="{Binding SelectedValue, ElementName=StretchComboBox}"
