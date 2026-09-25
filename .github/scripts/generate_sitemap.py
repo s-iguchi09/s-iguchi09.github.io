@@ -2,7 +2,7 @@
 """
 Generate sitemap.xml for s-iguchi09.github.io.
 
-This script scans all HTML files in the repository root,
+This script scans all HTML pages and Markdown pages in the repository,
 builds a multilingual sitemap with hreflang annotations
 for English and Japanese pages, and writes sitemap.xml.
 
@@ -349,26 +349,94 @@ def extract_images_from_file(abs_path: str) -> list:
     return unique
 
 
+PERMALINK_FRONT_MATTER_RE = re.compile(
+    r"""^permalink[ \t]*:[ \t]+(?:"([^"]*)"|'([^']*)'|([^\s#]+))"""
+)
+
+
+def read_front_matter_permalink(rel_path: str) -> Optional[str]:
+    """Return the top-level `permalink:` of a page's front matter, or None.
+
+    Front matter is scanned line by line for the same reason as
+    is_excluded_from_sitemap(): PyYAML is not available in the workflow.
+    """
+    path = os.path.join(REPO_ROOT, rel_path)
+    try:
+        with open(path, encoding="utf-8-sig") as handle:
+            if handle.readline().strip() != "---":
+                return None
+            for line in handle:
+                if line.strip() == "---":
+                    return None
+                match = PERMALINK_FRONT_MATTER_RE.match(line)
+                if match:
+                    return next(g for g in match.groups() if g is not None)
+    except OSError:
+        return None
+    return None
+
+
+def has_front_matter(rel_path: str) -> bool:
+    """Return True if the file starts with a front matter delimiter.
+
+    Jekyll renders a Markdown file into a page only when it has front matter;
+    without it the .md file is copied as it is and never becomes an HTML page.
+    """
+    try:
+        with open(os.path.join(REPO_ROOT, rel_path), encoding="utf-8-sig") as handle:
+            return handle.readline().strip() == "---"
+    except OSError:
+        return False
+
+
+def output_path(rel_path: str) -> str:
+    """Return the path Jekyll writes a page to, relative to the site root.
+
+    A Markdown page (apps/foo/bar.md) is published as apps/foo/bar.html unless
+    its front matter sets a permalink. The HTML pages that were rewritten in
+    Markdown set permalink to that same .html path, so their URLs did not move.
+    """
+    rel_path = rel_path.replace("\\", "/")
+    permalink = read_front_matter_permalink(rel_path)
+    if permalink:
+        stripped = permalink.lstrip("/")
+        return stripped + "index.html" if stripped.endswith("/") or not stripped else stripped
+    if rel_path.endswith(".md"):
+        return rel_path[: -len(".md")] + ".html"
+    return rel_path
+
+
 def rel_path_to_url(rel_path: str) -> str:
-    """Convert a relative file path to the public URL."""
+    """Convert a relative source file path to the public URL."""
     # index.html files → directory-style URL
-    parts = rel_path.replace("\\", "/").split("/")
+    parts = output_path(rel_path).split("/")
     if parts[-1] == "index.html":
         dir_part = "/".join(parts[:-1])
         return f"{BASE_URL}/{dir_part}/" if dir_part else f"{BASE_URL}/"
-    return f"{BASE_URL}/{rel_path.replace(chr(92), '/')}"
+    return f"{BASE_URL}/{'/'.join(parts)}"
 
 
 def collect_english_paths() -> list:
-    """Return sorted list of English HTML file paths relative to REPO_ROOT."""
+    """Return sorted list of English page source paths relative to REPO_ROOT.
+
+    Both .html pages and Markdown pages (.md with front matter) are collected.
+    Directories starting with "_" are skipped for Markdown: they hold
+    collections (_articles_en, ...) handled separately, and data or layouts
+    that are never published as pages. Directories starting with "." (such as
+    .claude, whose SKILL.md files carry front matter) are never published by
+    Jekyll either; glob already leaves them out, and the check below keeps it
+    that way if include_hidden is ever turned on.
+    """
     paths = []
-    for html_file in glob.glob(
-        os.path.join(REPO_ROOT, "**", "*.html"), recursive=True
-    ):
-        rel = os.path.relpath(html_file, REPO_ROOT).replace("\\", "/")
+    sources = glob.glob(os.path.join(REPO_ROOT, "**", "*.html"), recursive=True)
+    sources += glob.glob(os.path.join(REPO_ROOT, "**", "*.md"), recursive=True)
+    for source_file in sources:
+        rel = os.path.relpath(source_file, REPO_ROOT).replace("\\", "/")
         # Skip files inside excluded directories
         top_dir = rel.split("/")[0]
         if top_dir in EXCLUDE_DIRS:
+            continue
+        if rel.endswith(".md") and (top_dir.startswith(("_", ".")) or not has_front_matter(rel)):
             continue
         # Skip Japanese pages (handled separately via pairing)
         if rel.startswith("ja/"):
@@ -381,10 +449,24 @@ def collect_english_paths() -> list:
 
 
 def find_ja_counterpart(en_path: str) -> Optional[str]:
-    """Return the Japanese counterpart path if it exists, else None."""
-    ja_path = "ja/" + en_path
-    full = os.path.join(REPO_ROOT, ja_path)
-    return ja_path if os.path.exists(full) else None
+    """Return the Japanese counterpart source path if it exists, else None.
+
+    The two languages are converted to Markdown one page at a time, so the
+    counterpart of apps/x.md may still be ja/apps/x.html and vice versa.
+    Both extensions are tried. A Markdown candidate counts only when it has
+    front matter, the same condition collect_english_paths() applies: without
+    it Jekyll copies the .md file as it is and publishes no HTML page, so the
+    sitemap would advertise a Japanese URL that answers 404.
+    """
+    stem, ext = os.path.splitext(en_path)
+    for candidate_ext in (ext, ".md" if ext == ".html" else ".html"):
+        ja_path = "ja/" + stem + candidate_ext
+        if not os.path.exists(os.path.join(REPO_ROOT, ja_path)):
+            continue
+        if candidate_ext == ".md" and not has_front_matter(ja_path):
+            continue
+        return ja_path
+    return None
 
 
 def collect_article_en_paths() -> list:
