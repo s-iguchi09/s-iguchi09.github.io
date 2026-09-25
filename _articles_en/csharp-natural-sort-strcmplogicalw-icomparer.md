@@ -19,7 +19,7 @@ It also summarizes the pros and cons of this approach and compares it with the a
 
 ## Prerequisites / Environment
 
-- Language: C# 9.0 or later (the runnable examples in this article use top-level statements; the comparer class itself works on earlier versions, and P/Invoke works on any version)
+- Language: C# 9.0 or later (the runnable examples in this article use top-level statements; the comparer class itself needs C# 7.0 or later for `is null`, and P/Invoke works on any version)
 - Framework: .NET Framework 4.x / .NET 5 or later
 - Runtime: Windows only (depends on `shlwapi.dll`)
 - Use case: APIs that accept an `IComparer<string>`, such as `List<T>.Sort` and LINQ `OrderBy`
@@ -62,7 +62,7 @@ For ASCII strings such as this example, an ordinary string comparison—whether 
 Because `1` is less than `2`, `item10` is judged to come before `item2` regardless of how many digits follow.
 
 Explorer, by contrast, compares consecutive digits as a single numeric value.
-The Win32 API that provides this "digits as numbers" comparison—used internally by the shell—is `StrCmpLogicalW` in `shlwapi.dll`.
+The Win32 API that provides this "digits as numbers" comparison is `StrCmpLogicalW` in `shlwapi.dll`.
 `StrCmpLogicalW` compares two Unicode strings and returns 0 if they are identical, 1 if the first argument is greater, and -1 if it is smaller.
 The comparison is not case-sensitive.
 
@@ -102,7 +102,7 @@ Implementing the non-generic `IComparer` as well allows older APIs such as `List
 
 The following comparer wraps `StrCmpLogicalW`.
 To bind the Unicode version of the `shlwapi.dll` function exactly, specify `CharSet.Unicode` and `ExactSpelling = true`.
-Because passing `null` can lead to undefined behavior, `null` is handled explicitly before the call.
+`null` is handled explicitly before the call, because `StrCmpLogicalW` does not handle it as a comparer must (see Notes).
 
 ```csharp
 using System;
@@ -165,7 +165,7 @@ Note that `OrderBy` and `ToList` require `using System.Linq;`.
 - **Windows only.** `shlwapi.dll` is a Windows library; on Linux or macOS the call throws `DllNotFoundException`. The approach cannot be used where cross-platform execution is required.
 - **Not based on linguistic collation.** `StrCmpLogicalW` is not a locale-aware linguistic sort. The official documentation states it "should not be used for canonical sorting applications" and that its return values "can change from release to release." It is unsuitable for persisted key ordering or collations that require strict reproducibility.
 - **Not case-sensitive.** `Item2` and `item2` are treated as equal. A separate tiebreaker is needed to distinguish case.
-- **Handle `null` carefully.** `StrCmpLogicalW` expects null-terminated strings, so passing `null` directly leads to undefined behavior. Handle `null` before the call, as shown above.
+- **Handle `null` carefully.** The documentation of `StrCmpLogicalW` says nothing about `null`. On the test machine (Windows 10.0.26200), every call with a `null` argument returned `-2`, a value the documentation does not list: `(null, "a")`, `("a", null)`, and even `(null, null)`. Swapping the arguments did not flip the sign and two `null`s did not compare equal, which breaks the contract a comparer must keep. Handle `null` before the call, as shown above.
 - **Strings with embedded NUL characters are not compared correctly.** Marshaling passes the string as null-terminated, so a string containing `"\0"` is only compared up to the first `\0`. This comparer targets ordinary strings such as file names and does not account for embedded NUL characters.
 - **P/Invoke has a cost.** Every comparison incurs a native call. Sorting n elements invokes the comparison O(n log n) times, so the overhead can become noticeable compared with a pure managed implementation for extremely large collections.
 
