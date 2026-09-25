@@ -201,8 +201,17 @@ Property assignments written on the object element are applied as part of its in
 </Image>
 ```
 
-This `BitmapImage` is instantiated once, when the XAML is parsed.
-Because property changes after initialization are ignored, binding `UriSource` does not cause a new path to be displayed.
+This `BitmapImage` is instantiated once, when the XAML is parsed, and it needs `UriSource` or `StreamSource` by the end of its initialization.
+Binding `UriSource` therefore depends on when the binding has a value, and in neither case does it follow the path:
+
+- **No value while loading.** Loaded without a `DataContext`, as happens when the `DataContext` is set after `InitializeComponent`, the XAML threw `XamlParseException` (inner `InvalidOperationException`).
+- **A value while loading.** Inside a `DataTemplate` whose `DataContext` already held a path, the first image was shown. Changing the path afterward, with change notification, left the same image and the earlier `UriSource`, because property changes after initialization are ignored.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-urisource-binding.svg" alt="A table of a BitmapImage whose UriSource is bound. Loaded by XamlReader without a DataContext, it throws XamlParseException with an inner InvalidOperationException. In a DataTemplate whose DataContext holds a valid path, the 64x48 image is shown; after the path changes to a 64x96 image, the image is still 64x48 and UriSource is still the earlier path." width="834" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with <code>&lt;BitmapImage UriSource="{Binding ImagePath}" CacheOption="OnLoad" /&gt;</code> inside an <code>Image</code>.</figcaption>
+</figure>
+
 To swap the image at run time, convert the path with an `IValueConverter` that builds a `BitmapImage`, or expose an `ImageSource` property from the view model and bind it to `Image.Source`.
 The latter hands a new `ImageSource` to the control on every change, so the `BitmapImage` produced by `LoadWithoutLocking` above can be assigned directly.
 
@@ -213,8 +222,8 @@ The latter hands a new `ImageSource` to the control on every change, so the `Bit
 The table below records the result of calling `File.Delete` immediately after loading the image each way described in this article.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="A table comparing File.Delete outcomes per loading method. new BitmapImage(uri), setting CacheOption after that constructor, BeginInit alone, adding IgnoreImageCache, and ImageSourceConverter all raise IOException. Specifying OnLoad on CacheOption and StreamSource plus OnLoad allow deletion, as does the default method after dropping the reference and forcing garbage collection." width="500" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11, calling <code>File.Delete</code> immediately after loading a 64x48 PNG each way. The <code>size</code> column confirms the image loaded correctly in every case. The last row is the default loading method after releasing the <code>BitmapImage</code> reference and forcing a garbage collection.</figcaption>
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="A table comparing File.Delete, overwriting with File.Copy, and renaming with File.Move per loading method. new BitmapImage(uri), setting CacheOption after that constructor, BeginInit alone, adding IgnoreImageCache, and ImageSourceConverter raise IOException for all three. Specifying OnLoad on CacheOption and StreamSource plus OnLoad allow all three. The default method allows deletion after dropping the reference and forcing garbage collection." width="863" height="320" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, calling <code>File.Delete</code>, <code>File.Copy</code> with overwrite, or <code>File.Move</code> immediately after loading a 64x48 PNG each way. The <code>size</code> column confirms the image loaded correctly in every case. The last row is the default loading method after releasing the <code>BitmapImage</code> reference and forcing a garbage collection.</figcaption>
 </figure>
 
 Four things follow from the table.

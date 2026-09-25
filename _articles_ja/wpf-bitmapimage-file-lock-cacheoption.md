@@ -200,8 +200,17 @@ private static BitmapImage LoadFromStream(string path)
 </Image>
 ```
 
-この `BitmapImage` は XAML の解析時に一度だけ生成される。
-初期化後のプロパティ変更は無視されるため、`UriSource` にバインドを設定してもパスの切り替えは反映されない。
+この `BitmapImage` は XAML の解析時に一度だけ生成され、初期化の終わりまでに `UriSource` か `StreamSource` を必要とする。
+そのため `UriSource` へのバインドは、読み込みの時点で値があるかどうかで結果が分かれ、どちらの場合もパスの切り替えには追従しない。
+
+- **読み込みの時点で値が無い場合。** `InitializeComponent` の後で `DataContext` を設定する場合のように、`DataContext` の無いまま読み込むと、XAML は `XamlParseException`（内側は `InvalidOperationException`）になった。
+- **読み込みの時点で値がある場合。** `DataContext` にパスがある `DataTemplate` の中では、最初の画像は表示された。その後に変更通知付きでパスを変えても、画像も `UriSource` も前のままだった。初期化後のプロパティ変更は無視されるためである。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-urisource-binding.svg" alt="UriSource をバインドした BitmapImage の表。DataContext の無いまま XamlReader で読み込むと XamlParseException（内側は InvalidOperationException）になる。DataContext に有効なパスがある DataTemplate の中では 64x48 の画像が表示され、パスを 64x96 の画像に変えても 64x48 のままで、UriSource も前のパスのままだった。" width="834" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Image</code> の中に <code>&lt;BitmapImage UriSource="{Binding ImagePath}" CacheOption="OnLoad" /&gt;</code> を置いて測った結果。</figcaption>
+</figure>
+
 表示する画像を実行時に差し替える場合は、パス文字列から `BitmapImage` を生成する `IValueConverter` を挟むか、ViewModel 側で `ImageSource` 型のプロパティを公開して `Image.Source` にバインドする。
 後者では値が変わるたびに新しい `ImageSource` が渡されるため、前掲の `LoadWithoutLocking` で生成した `BitmapImage` をそのまま代入する。
 
@@ -212,8 +221,8 @@ private static BitmapImage LoadFromStream(string path)
 本記事で挙げた読み込み方それぞれについて、画像を読み込んだ直後に `File.Delete` を試みた結果が次の表である。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="読み込み方ごとに File.Delete の可否を比較した表。new BitmapImage(uri)、その後に CacheOption を設定した場合、BeginInit だけの場合、IgnoreImageCache を付けた場合、ImageSourceConverter はいずれも IOException。CacheOption に OnLoad を指定した場合と StreamSource + OnLoad は削除できる。既定のまま参照を捨てて GC を実行した場合も削除できる。" width="500" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、各方法により 64x48 の PNG を読み込んだ直後に <code>File.Delete</code> を実行した結果。<code>size</code> はいずれの方法でも画像が正しく読めていることを示す。最終行は既定の読み込み方で <code>BitmapImage</code> への参照を手放し、強制的にガベージコレクションを行った後の結果である。</figcaption>
+  <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="読み込み方ごとに、File.Delete、File.Copy による上書き、File.Move によるリネームの可否を比較した表。new BitmapImage(uri)、その後に CacheOption を設定した場合、BeginInit だけの場合、IgnoreImageCache を付けた場合、ImageSourceConverter は 3 つとも IOException。CacheOption に OnLoad を指定した場合と StreamSource + OnLoad は 3 つとも成功する。既定のまま参照を捨てて GC を実行した場合も削除できる。" width="863" height="320" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、各方法により 64x48 の PNG を読み込んだ直後に <code>File.Delete</code>、上書きの <code>File.Copy</code>、<code>File.Move</code> をそれぞれ実行した結果。<code>size</code> はいずれの方法でも画像が正しく読めていることを示す。最終行は既定の読み込み方で <code>BitmapImage</code> への参照を手放し、強制的にガベージコレクションを行った後の結果である。</figcaption>
 </figure>
 
 読み取れることは 4 点ある。
