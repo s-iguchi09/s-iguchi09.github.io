@@ -33,7 +33,7 @@ The following properties are demonstrated interactively in the WPF Standard Cont
 | `StaysOpenOnEdit` | `bool` | Whether the list stays open when the user clicks into the edit box; the default is `False`. With a real mouse click into the edit box of an open, editable ComboBox, the list closed with `False` and stayed open with `True`. |
 | `ShouldPreserveUserEnteredPrefix` | `bool` | Whether autocomplete keeps the letters as typed; the default is `False`. After typing "tue", the text was `Tuesday` with `False` and `tuesday` with `True`. `SelectedValue` was Tuesday either way. |
 | `SelectedIndex / SelectedItem / SelectedValue / SelectedValuePath / DisplayMemberPath (Selector, ItemsControl)` | `int / object / object / string / string` | The selection, and which property of an item is its value and its display text (see above). |
-| `IsSynchronizedWithCurrentItem (ItemsControl)` | `bool?` | Whether the selection follows the current item of the list's view. Two ComboBoxes on one list with `True` both started at index 0 and moved together: setting the first to 3 set the second to 3. Unset, both started at -1 and were independent. The demo app starts its three ComboBoxes at `True`, so they all start on Sunday. |
+| `IsSynchronizedWithCurrentItem (Selector)` | `bool?` | Whether the selection follows the current item of the list's view. Two ComboBoxes on one list with `True` both started at index 0 and moved together: setting the first to 3 set the second to 3. Unset, both started at -1 and were independent. The demo app starts its three ComboBoxes at `True`, so they all start on Sunday. |
 
 ## XAML Example
 

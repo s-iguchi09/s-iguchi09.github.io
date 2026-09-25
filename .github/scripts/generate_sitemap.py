@@ -453,13 +453,19 @@ def find_ja_counterpart(en_path: str) -> Optional[str]:
 
     The two languages are converted to Markdown one page at a time, so the
     counterpart of apps/x.md may still be ja/apps/x.html and vice versa.
-    Both extensions are tried.
+    Both extensions are tried. A Markdown candidate counts only when it has
+    front matter, the same condition collect_english_paths() applies: without
+    it Jekyll copies the .md file as it is and publishes no HTML page, so the
+    sitemap would advertise a Japanese URL that answers 404.
     """
     stem, ext = os.path.splitext(en_path)
     for candidate_ext in (ext, ".md" if ext == ".html" else ".html"):
         ja_path = "ja/" + stem + candidate_ext
-        if os.path.exists(os.path.join(REPO_ROOT, ja_path)):
-            return ja_path
+        if not os.path.exists(os.path.join(REPO_ROOT, ja_path)):
+            continue
+        if candidate_ext == ".md" and not has_front_matter(ja_path):
+            continue
+        return ja_path
     return None
 
 
