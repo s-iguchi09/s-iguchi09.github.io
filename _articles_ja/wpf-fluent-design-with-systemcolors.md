@@ -81,7 +81,7 @@ WPF は柔軟な描画基盤を持つが、Fluent 固有の外観は標準で自
 直接読み取った側は差し替え後も値が変わらず、リソースキーを `DynamicResource` で参照した側だけが新しい色になっている。
 **差し替えに追随させるには、色ではなく `SystemColors.WindowBrushKey` のようなリソースキーを `DynamicResource` で参照する必要がある。**
 
-ただし、`DynamicResource` でも、値そのものが変わらなければ追従のしようがない。`ThemeMode` を `Light` と `Dark` で切り替えると、Fluent のブラシのキーはすべて変わったが、`SystemColors` のキーは 1 つも変わらなかった。
+ただし、`DynamicResource` でも、値そのものが変わらなければ追従のしようがない。`ThemeMode` を `Light` と `Dark` で切り替えると、測った Fluent のブラシのキー 5 つはすべて変わったが、測った `SystemColors` のキー 3 つ（`WindowBrushKey`・`ControlTextBrushKey`・`AccentColorBrushKey`）はどれも変わらなかった。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg" alt="ThemeMode の Light と Dark でのブラシのキーの値の表。Fluent の ApplicationBackgroundBrush・CardBackgroundFillColorDefaultBrush・TextFillColorPrimaryBrush・TextFillColorSecondaryBrush・AccentFillColorDefaultBrush はすべて変わり、たとえば背景は FAFAFA から 202020 になる。SystemColors.WindowBrushKey は白、ControlTextBrushKey は黒、AccentColorBrushKey は同じ赤のままだった。" width="610" height="320" loading="lazy">
@@ -144,7 +144,8 @@ Fluent リソースディクショナリを使う場合は次のように記述�
 </Application>
 ```
 
-ただし、2 つの方法は同等ではない。[`Application.ThemeMode` プロパティのリファレンス](https://learn.microsoft.com/dotnet/api/system.windows.application.thememode)によれば、`ThemeMode` はウィンドウの背景とダークモードも制御する。また、`ThemeMode` を設定したうえで Fluent のディクショナリを手動でもマージすると、手動のほうが優先されるため、併用は勧められていない。次の手順の例は `ThemeMode` を使う。  
+ただし、2 つの方法は同等ではない。[`Application.ThemeMode` プロパティのリファレンス](https://learn.microsoft.com/dotnet/api/system.windows.application.thememode)によれば、`ThemeMode` はウィンドウの背景とダークモードも制御する。また、`ThemeMode` を設定したうえで Fluent のディクショナリを手動でもマージすると、手動のほうが優先されるため、併用は勧められていない。
+なお、同じリファレンスによれば `ThemeMode` は .NET 10 でも実験的な API（`Experimental("WPF0001")`）であり、将来のバージョンで削除される可能性がある。コードから使うには診断 WPF0001 を抑える必要がある。長く保守するアプリケーションでは、この点を踏まえて選ぶ。次の手順の例は `ThemeMode` を使う。  
 どちらか一方を先に入れることで、各 Window 側ではコントロールのローカル調整に集中できる。  
 `App.xaml` の設定がない場合、Fluent テーマの適用範囲が局所化し、画面間で見た目が揃わない。  
 

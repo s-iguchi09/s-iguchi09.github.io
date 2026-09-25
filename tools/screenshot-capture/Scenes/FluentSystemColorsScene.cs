@@ -123,6 +123,7 @@ internal sealed class FluentSystemColorsScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
+        FluentThemeMeasurements.EnsureNotHighContrast();
         await context.ShootAsync(BuildDefaultWindow(), "fluent-default-theme.png");
 
         // 記事の実装例を、Light と Dark で撮る。Light の画像は記事の代表画像でもあるため、ファイル名を変えない。

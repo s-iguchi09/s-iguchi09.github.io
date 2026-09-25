@@ -99,7 +99,8 @@ The following table shows the contents of `Application.Resources.MergedDictionar
 
 What `ThemeMode` does is swap `Fluent.Light.xaml` and `Fluent.Dark.xaml` placed directly under `Application.Resources`.
 Control appearance and brushes are resolved from this dictionary through resource lookup.
-Anything that stays Light after the switch is therefore in one of three situations: **another Fluent dictionary is found before the swapped one**, **the result of an earlier lookup is being held as a value**, or **the key referenced is not one the Fluent dictionaries define**, such as a `SystemColors` key.
+Among values resolved through resource lookup, anything that stays Light after the switch is therefore in one of three situations: **another Fluent dictionary is found before the swapped one**, **the result of an earlier lookup is being held as a value**, or **the key referenced is not one the Fluent dictionaries define**, such as a `SystemColors` key.
+Separately, a fixed value written without a resource, such as `Foreground="Black"`, stays as it is regardless of the dictionary swap.
 The way the symptom appears roughly indicates which one applies.
 
 | Symptom | Suspected cause |

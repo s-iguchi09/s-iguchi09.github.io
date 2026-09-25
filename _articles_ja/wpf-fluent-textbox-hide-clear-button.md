@@ -65,7 +65,7 @@ Fluent テーマの `TextBox` は、キーボードフォーカスが入ると�
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行ではどちらの経路でも DeleteButton が残る。" width="913" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。<code>Style applied</code> は <code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（Aero2 のテーマスタイル）を示す。</figcaption>
+  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。<code>Style applied</code> は <code>Style</code> プロパティが埋まっているか（暗黙スタイルがある）、<code>null</code> のままか（暗黙スタイルが無く、テーマのスタイルが使われる）を示す。<code>null</code> 自体はテーマの種類を表さない。この表で <code>null</code> になったのは <code>ThemeMode</code> を設定しない行だけで、そのテーマは Aero2 である。Fluent は <code>ThemeMode</code> でも直接マージでも暗黙スタイルとして届く。</figcaption>
 </figure>
 
 **`DeleteButton` が存在するのは、Fluent のテンプレートが届いており、かつそれを上書きする暗黙スタイルが無い行である。** `ThemeMode` を設定した場合と `Fluent.xaml` を直接マージした場合の両方で現れる。 これがクリアボタンの実体であり、`.NET 10` でのパーツ名がこの名前であることが確かめられる。

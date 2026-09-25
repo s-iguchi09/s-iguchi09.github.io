@@ -10,6 +10,20 @@ namespace ScreenshotCapture.Scenes;
 internal static class FluentThemeMeasurements
 {
     /// <summary>
+    /// Windows のハイコントラストが有効だと、WPF は ThemeMode が Light でも Dark でもハイコントラスト用のテーマを当てる。
+    /// そのまま測ると、Light と Dark の比較のつもりの表が同じテーマどうしの比較になるため、計測を止める。
+    /// ThemeMode を切り替えて比べるシーンは、計測の前に必ずこれを呼ぶ。
+    /// </summary>
+    public static void EnsureNotHighContrast()
+    {
+        if (SystemParameters.HighContrast)
+        {
+            throw new InvalidOperationException(
+                "Windows のハイコントラストが有効なため、ThemeMode の Light と Dark を比べられない。ハイコントラストを切ってから実行する。");
+        }
+    }
+
+    /// <summary>
     /// 記事に載せた「余白だけを変える暗黙スタイル」。
     /// これを当てると Fluent のテンプレートが供給されなくなる、というのが記事の主張である。
     /// </summary>
@@ -230,6 +244,7 @@ internal static class FluentThemeMeasurements
             ("SystemColors.AccentColorBrushKey", SystemColors.AccentColorBrushKey),
         ];
 
+        EnsureNotHighContrast();
         var values = new Dictionary<string, string[]>();
         int column = 0;
 #pragma warning disable WPF0001 // ThemeMode は実験的 API として公開されている。

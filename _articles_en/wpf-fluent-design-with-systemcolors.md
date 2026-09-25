@@ -81,7 +81,7 @@ Reading a color directly, as in `SystemColors.WindowColor`, bakes in the value a
 The directly read side keeps its value; only the side referencing the resource key through `DynamicResource` takes the new color.
 **Following a replacement requires referencing a resource key such as `SystemColors.WindowBrushKey` through `DynamicResource`, not the color.**
 
-What `DynamicResource` cannot give is a change that never happens. Switching `ThemeMode` between `Light` and `Dark` changed every Fluent brush key, but none of the `SystemColors` keys:
+What `DynamicResource` cannot give is a change that never happens. Switching `ThemeMode` between `Light` and `Dark` changed all five Fluent brush keys measured, but none of the three `SystemColors` keys measured (`WindowBrushKey`, `ControlTextBrushKey`, and `AccentColorBrushKey`):
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg" alt="A table of brush keys under ThemeMode Light and Dark. The Fluent keys ApplicationBackgroundBrush, CardBackgroundFillColorDefaultBrush, TextFillColorPrimaryBrush, TextFillColorSecondaryBrush, and AccentFillColorDefaultBrush all change, for example the background from FAFAFA to 202020. SystemColors.WindowBrushKey stays white, ControlTextBrushKey stays black, and AccentColorBrushKey stays the same red in both." width="610" height="320" loading="lazy">
@@ -144,7 +144,8 @@ Use the Fluent resource dictionary:
 </Application>
 ```
 
-The two are not equivalent. The reference for the [`Application.ThemeMode` property](https://learn.microsoft.com/dotnet/api/system.windows.application.thememode) notes that `ThemeMode` also controls the window backdrop and dark mode, and recommends against also merging the Fluent dictionaries by hand, because the manual merge takes precedence. The sample in the next step uses `ThemeMode`.  
+The two are not equivalent. The reference for the [`Application.ThemeMode` property](https://learn.microsoft.com/dotnet/api/system.windows.application.thememode) notes that `ThemeMode` also controls the window backdrop and dark mode, and recommends against also merging the Fluent dictionaries by hand, because the manual merge takes precedence.
+The same reference also marks `ThemeMode` as experimental on .NET 10 (`Experimental("WPF0001")`) and says it may be removed in future versions; using it from code requires suppressing diagnostic WPF0001. Weigh that for an application maintained over the long term. The sample in the next step uses `ThemeMode`.  
 Defining one of them in `App.xaml` first keeps window-level styling focused on local adjustments and reduces theme drift across screens.  
 
 ### 2. Use Fluent Theme Brushes in Window-Level Styling

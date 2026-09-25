@@ -74,6 +74,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
+        FluentThemeMeasurements.EnsureNotHighContrast();
         Application application = Application.Current;
         ThemeMode original = application.ThemeMode;
 

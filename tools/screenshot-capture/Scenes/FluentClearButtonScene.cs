@@ -27,6 +27,7 @@ internal sealed class FluentClearButtonScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
+        FluentThemeMeasurements.EnsureNotHighContrast();
         Window standard = BuildWindow(out TextBox defaultTextBox);
         await context.ShootAsync(
             standard,
