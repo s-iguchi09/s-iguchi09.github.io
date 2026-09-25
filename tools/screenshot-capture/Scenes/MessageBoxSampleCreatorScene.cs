@@ -190,9 +190,22 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
         // 両方の読み取りを先に始める。片方だけ読むと、もう片方のパイプが埋まって子プロセスが止まる。
         Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync();
         Task<string> stderrTask = process.StandardError.ReadToEndAsync();
+
+        // ダイアログが閉じられないなど、一時プロジェクトが終わらない場合に呼び出し元まで止まらないよう、時間を区切る。
+        // ビルドと 90 回ほどのダイアログ表示は 1〜2 分で終わるため、10 分を上限にする。
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            process.Kill(entireProcessTree: true);
+            throw new TimeoutException($"{fileName} {arguments} が 10 分以内に終わらなかったため止めた。");
+        }
+
         string stdout = await stdoutTask;
         string stderr = await stderrTask;
-        await process.WaitForExitAsync();
         return (process.ExitCode, stdout + stderr);
     }
 
@@ -245,7 +258,9 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
                         {
                             IntPtr dialog = IntPtr.Zero;
                             for (int i = 0; i < 200 && dialog == IntPtr.Zero; i++) { Thread.Sleep(25); dialog = FindWindow("#32770", caption); }
-                            if (dialog == IntPtr.Zero) { found = "no dialog"; return; }
+                            // ダイアログを見つけられないと、メインスレッドの MessageBox.Show を閉じる手段が無い。
+                            // 待ち続けないよう、失敗の終了コードでプロセスごと終わらせる（呼び出し元が失敗として扱う）。
+                            if (dialog == IntPtr.Zero) { Console.Error.WriteLine($"dialog not found: {caption}"); Environment.Exit(2); }
                             Thread.Sleep(100);
                             var buttons = new List<(IntPtr Handle, string Name, bool IsDefault)>();
                             EnumChildWindows(dialog, (h, _) =>
@@ -266,10 +281,12 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
                             {
                                 buttons[0] = (buttons[0].Handle, "OK", buttons[0].IsDefault);
                             }
+                            if (buttons.Count == 0) { Console.Error.WriteLine($"no buttons in the dialog: {caption}"); Environment.Exit(3); }
                             shown = string.Join(",", buttons.Select(b => b.Name));
                             var defaults = buttons.Where(b => b.IsDefault).Select(b => b.Name).ToList();
                             found = defaults.Count == 1 ? defaults[0] : "defaults:" + string.Join("+", defaults);
                             for (int i = 0; i < 40 && IsWindow(dialog); i++) { PostMessage(buttons[0].Handle, 0x00F5 /* BM_CLICK */, IntPtr.Zero, IntPtr.Zero); Thread.Sleep(50); }
+                            if (IsWindow(dialog)) { Console.Error.WriteLine($"the dialog did not close: {caption}"); Environment.Exit(4); }
                         }) { IsBackground = true };
                         watcher.Start();
                         MessageBox.Show("probe", caption, button, MessageBoxImage.None, result);
