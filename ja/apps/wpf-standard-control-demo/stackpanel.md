@@ -17,7 +17,7 @@ StackPanel は仮想化しません。高さ 200 の ScrollViewer の中の Stac
 
 ## 画面キャプチャ
 
-![stackpanel demo screen](/images/wpf-standard-control-demo/stackpanel.png){: .screenshot-img}
+![デモアプリの StackPanel のページ。左にコントロールの一覧、右に最初の節の Orientation](/images/wpf-standard-control-demo/stackpanel.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

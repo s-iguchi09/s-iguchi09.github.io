@@ -17,7 +17,7 @@ ListBox と違い、TreeView は既定では仮想化されません。高さ 10
 
 ## 画面キャプチャ
 
-![treeview demo screen](/images/wpf-standard-control-demo/treeview.png){: .screenshot-img}
+![デモアプリの TreeView のページ。左にコントロールの一覧、右に最初の節の IsExpanded(TreeViewItem)](/images/wpf-standard-control-demo/treeview.png){: .screenshot-img}
 
 ## デモしているプロパティ
 
@@ -66,7 +66,7 @@ ListBox と違い、TreeView は既定では仮想化されません。高さ 10
 
 ## 主な使用例
 
-- **フォルダーとファイル** — 展開したときに子を読み込むフォルダーのツリーです。
+- **フォルダーとファイル** — 展開したときに子を読み込むフォルダーのツリーです。仮の子を置き、`Expanded` のハンドラーで入れ替えると、展開ボタンを実際にクリックしたときに本来の 2 つの子が表示されました。
 - **設定の分類** — 左のツリーで選んだノードに応じて、右のページを切り替えます。
 - **入れ子のデータ** — XML・JSON・組織などのデータを `HierarchicalDataTemplate` で表示します。
 
@@ -79,10 +79,10 @@ ListBox と違い、TreeView は既定では仮想化されません。高さ 10
 
 ## 実測した挙動 {#measured-behavior}
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`TreeViewDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TreeViewDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。キー操作は表示したウィンドウへキーのイベントを送り、展開ボタンは、クリックと同じ切り替え処理を実行する UI オートメーションで切り替えて再現しました。
+このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`TreeViewDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TreeViewDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。キー操作は表示したウィンドウへキーのイベントを送り、展開ボタンは、クリックと同じ切り替え処理を実行する UI オートメーションで切り替えて再現しました。仮の子を持つノードの展開ボタンだけは、実際のマウスでクリックしました。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="TreeView の計測結果の表。デモアプリの IsExpanded のバインドは展開ボタンで折りたたむと外れ、データで展開した子は親を開くと展開され、HierarchicalDataTemplate はすべての階層に適用され、DataType が合わないと ToString が表示され、既定では仮想化されず、矢印キーとテンキーの * で展開・折りたたみが変わり Space と Enter では何も起きず、ContextMenu は開いている間ノードを DataContext にする" width="1210" height="560" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="TreeView の計測結果の表。デモアプリの IsExpanded のバインドは展開ボタンで折りたたむと外れ、データで展開した子は親を開くと展開され、HierarchicalDataTemplate はすべての階層に適用され、DataType が合わないと ToString が表示され、既定では仮想化されず、矢印キーとテンキーの * で展開・折りたたみが変わり Space と Enter では何も起きず、ContextMenu は開いている間ノードを DataContext にする。Expanded のハンドラーで仮の子を入れ替えると展開ボタンの実際のクリックで本来の子が表示される" width="1210" height="590" loading="lazy">
   <figcaption>展開、テンプレート、仮想化、キー操作、コンテキストメニュー。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

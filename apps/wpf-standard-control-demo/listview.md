@@ -17,7 +17,7 @@ The demo app has sections for `SelectionMode`, `View` with the columns and `Allo
 
 ## Screen Preview
 
-![listview demo screen](/images/wpf-standard-control-demo/listview.png){: .screenshot-img}
+![The ListView page of the demo app, with the control list on the left and the first section, SelectionMode](/images/wpf-standard-control-demo/listview.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

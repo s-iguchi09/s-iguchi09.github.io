@@ -17,7 +17,7 @@ The demo app has one section with `EditingMode`, `EditingModeInverted`, `ActiveE
 
 ## Screen Preview
 
-![inkcanvas demo screen](/images/wpf-standard-control-demo/inkcanvas.png){: .screenshot-img}
+![The InkCanvas page of the demo app, with the control list on the left and the first section, EditingMode / ActiveEditingMode / EditingModeInverted / DefaultDrawingAttributes / Strokes / Background](/images/wpf-standard-control-demo/inkcanvas.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

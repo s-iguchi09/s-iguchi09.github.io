@@ -17,7 +17,7 @@ description: "WPF の GridSplitter で変わる列の組を、ResizeBehavior と
 
 ## 画面キャプチャ
 
-![gridsplitter demo screen](/images/wpf-standard-control-demo/gridsplitter.png){: .screenshot-img}
+![デモアプリの GridSplitter のページ。左にコントロールの一覧、右に最初の節の DragIncrement](/images/wpf-standard-control-demo/gridsplitter.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

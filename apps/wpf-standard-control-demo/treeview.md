@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/treeview.html
 title: "TreeView"
 badge: "List"
 lead: "TreeView shows hierarchical data as nodes that the user expands and collapses. Nodes come from nested <code>TreeViewItem</code>s or from data with a <code>HierarchicalDataTemplate</code>."
-description: "WPF TreeView control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF TreeView measured on .NET 10: no virtualization by default, an IsExpanded binding the expander removes unless TwoWay, HierarchicalDataTemplate, and keys."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ The demo app has a section for each property below. The "Show Code" link under e
 
 ## Screen Preview
 
-![treeview demo screen](/images/wpf-standard-control-demo/treeview.png){: .screenshot-img}
+![The TreeView page of the demo app, with the control list on the left and the first section, IsExpanded(TreeViewItem)](/images/wpf-standard-control-demo/treeview.png){: .screenshot-img}
 
 ## Demonstrated Properties
 
@@ -66,7 +66,7 @@ With node A selected and focused (A has children, the first of which has its own
 
 ## Common Use Cases
 
-- **Folders and files:** a folder tree whose nodes load their children when expanded.
+- **Folders and files:** a folder tree whose nodes load their children when expanded. With a placeholder child that the `Expanded` handler replaced, a real click on the expander button showed the two real children.
 - **Settings categories:** a tree on the left whose selected node chooses the page on the right.
 - **Nested data:** XML, JSON, or organization data shown with a `HierarchicalDataTemplate`.
 
@@ -79,10 +79,10 @@ With node A selected and focused (A has children, the first of which has its own
 
 ## Measured Behavior {#measured-behavior}
 
-Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`TreeViewDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TreeViewDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Keys were reproduced by sending key events to a displayed window, and the expander button by toggling it through UI Automation, which runs the same toggle handling as a click.
+Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`TreeViewDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TreeViewDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Keys were reproduced by sending key events to a displayed window, and the expander button by toggling it through UI Automation, which runs the same toggle handling as a click. Only the expander of the node with a placeholder child was clicked with the real mouse.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="Table of TreeView results: the demo app's IsExpanded binding is removed when the node is collapsed with its expander, a child expanded in the data opens when its parent opens, a HierarchicalDataTemplate applies at every level, a mismatched DataType shows ToString, the tree is not virtualized by default, arrow keys and numpad asterisk expand or collapse while Space and Enter do nothing, and a ContextMenu gets the node as DataContext while open" width="1210" height="560" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="Table of TreeView results: the demo app's IsExpanded binding is removed when the node is collapsed with its expander, a child expanded in the data opens when its parent opens, a HierarchicalDataTemplate applies at every level, a mismatched DataType shows ToString, the tree is not virtualized by default, arrow keys and numpad asterisk expand or collapse while Space and Enter do nothing, a ContextMenu gets the node as DataContext while open, and a placeholder child replaced in the Expanded handler shows the real children after a real click on the expander button" width="1210" height="590" loading="lazy">
   <figcaption>Expansion, templates, virtualization, keys, and context menus. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

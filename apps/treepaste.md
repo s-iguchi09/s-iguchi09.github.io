@@ -70,13 +70,13 @@ Matching on the window handle rather than simply taking the first shell window i
 
 - **The destination follows focus.** If a non-Explorer window (a browser, an editor) is in the foreground when you press Ctrl+Alt+V, there is no Explorer path to read and the paste targets the Desktop. Click the destination folder window first.
 - **The tree reflects the clipboard at the moment you open the window.** Copy the files first, then invoke TreePaste.
-- **Ctrl+Alt+V is a system-wide shortcut.** If another resident application has already registered the same combination, whichever registered it first receives the key.
+- **Ctrl+Alt+V is a system-wide shortcut.** If another resident application has already registered the same combination, TreePaste cannot register it: it shows "Failed to register hotkey (Ctrl+Alt+V)." at startup and exits.
 - **Colors follow the Windows color mode.** Switching between light and dark mode is picked up without reconfiguring the app.
 
 ## System Requirements
 
 - **OS:** Windows 10 / 11 (x64)
-- **.NET:** .NET 10
+- **.NET:** the app ZIP of the latest release, v0.0.4.0, is self-contained and includes the .NET 10 runtime; building from source needs the .NET 10 SDK
 - **UI framework:** WPF
 
 ## Building from Source
@@ -87,7 +87,13 @@ With the .NET 10 SDK installed, build the solution directly:
 dotnet build src/TreePaste/TreePaste.slnx
 ```
 
-To produce a runnable build, publish for the win-x64 runtime in Release configuration. The output is written under `src/publish/win-x64/`.
+To produce the same self-contained single-file executable as the release, publish with the repository's publish profile:
+
+```shell
+dotnet publish src/TreePaste/TreePaste/TreePaste.csproj -c Release -p:PublishProfile=win-x64.pubxml
+```
+
+The output is written to `src/TreePaste/TreePaste/bin/Release/net10.0-windows/publish/win-x64/`.
 
 ## Repository
 

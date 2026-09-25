@@ -17,6 +17,8 @@ verifies:
   - "TextAlignment ごとの 1 文字目の横位置"
   - "TextDecorations に複数の値を与えられるか"
   - "ScrollToEnd を UI スレッド以外から呼んだときの例外と、UI スレッドから呼んだときのスクロール位置"
+  - "UpdateSourceTrigger が既定と PropertyChanged のときに、1 文字ずつ入力する間と、フォーカスが移った後にソースへ書き込まれる回数"
+  - "IsReadOnly のときに入力した文字が入るかと、全体を選択したときの Copy / Cut / Paste の実行可否"
 images:
   - "images/wpf-standard-control-demo/verification/textbox/textbox-defaults.svg"
   - "images/wpf-standard-control-demo/verification/textbox/textbox-input.svg"

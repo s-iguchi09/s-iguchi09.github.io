@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/slider.html
 title: "Slider"
 badge: "Inputs"
 lead: "Slider lets the user pick a value in a range by dragging a thumb along a track, by clicking the track, or with the keyboard. Tick marks, snapping to them, a highlighted sub-range, and a tooltip with the current value are built in."
-description: "WPF Slider control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF Slider measured on .NET 10: range coercion, snapping, keys and the tooltip, a Value binding that updates while dragging, and ticks drawn at both ends."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ Snapping applies only to what the user does. With `IsSnapToTickEnabled="True"`, 
 
 ## Screen Preview
 
-![slider demo screen](/images/wpf-standard-control-demo/slider.png){: .screenshot-img}
+![The Slider page of the demo app, with the control list on the left and the first section, Minimum(RangeBase) / Maximum(RangeBase) / Value(RangeBase)](/images/wpf-standard-control-demo/slider.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

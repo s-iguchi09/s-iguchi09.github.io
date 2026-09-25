@@ -17,7 +17,7 @@ description: "WPF の ListBox の選択モード、SelectedItem・SelectedValue�
 
 ## 画面キャプチャ
 
-![listbox demo screen](/images/wpf-standard-control-demo/listbox.png){: .screenshot-img}
+![デモアプリの ListBox のページ。左にコントロールの一覧、右に最初の節の SelectionMode](/images/wpf-standard-control-demo/listbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

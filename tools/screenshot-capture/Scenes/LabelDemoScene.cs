@@ -27,6 +27,7 @@ internal sealed class LabelDemoScene : IScene
         "ToolBar（別のフォーカススコープ）の中の TextBox を Target にしたときのフォーカスの移動先",
         "Target を設定したときの、TextBox の UI オートメーションの名前と LabeledBy（公式ドキュメントは名前になると説明している）と、AutomationProperties.LabeledBy を手動で設定したとき。スクリーンリーダーも使う UI オートメーションのクライアント API で、UI スレッドとは別のスレッドから読む",
         "改行を含む文字列の Content の行数（高さ）",
+        "ComboBox・編集可能な ComboBox・DatePicker を Target にした Label のアクセスキーで、フォーカスが移る要素",
     ];
 
     /// <summary>
@@ -164,6 +165,40 @@ internal sealed class LabelDemoScene : IScene
             var label = new Label { Content = content, VerticalAlignment = VerticalAlignment.Top };
             Layout(new Grid { Children = { label } }, 200, 200);
             rows.Add([$"string Content {(content.Contains('\n') ? "with a line break" : "on one line")}: height", D(label.ActualHeight)]);
+        }
+
+
+        {
+            // 使用例「ComboBox や DatePicker を Target にする」。アクセスキーでフォーカスがどこへ移るか。
+            var combo = new ComboBox { ItemsSource = new[] { "A", "B" }, Width = 120 };
+            var editable = new ComboBox { ItemsSource = new[] { "A", "B" }, IsEditable = true, Width = 120 };
+            var picker = new DatePicker { Width = 120 };
+            var other = new Button { Content = "Other" };
+            var panel = new StackPanel
+            {
+                Width = 200,
+                Children =
+                {
+                    new Label { Content = "_Combo", Target = combo }, combo,
+                    new Label { Content = "_Editable", Target = editable }, editable,
+                    new Label { Content = "_Date", Target = picker }, picker,
+                    other,
+                },
+            };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = Window.GetWindow(panel)!;
+                async Task<string> PressAsync(string key)
+                {
+                    await FocusAsync(other);
+                    AccessKeyManager.ProcessKey(null, key, false);
+                    await Capture.SettleAsync(window, 50);
+                    return Keyboard.FocusedElement?.GetType().Name ?? "none";
+                }
+
+                rows.Add(["access key, Target ComboBox / editable ComboBox / DatePicker: focus goes to",
+                    $"{await PressAsync("C")} / {await PressAsync("E")} / {await PressAsync("D")}"]);
+            }, activate: true);
         }
 
         return rows;

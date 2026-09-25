@@ -17,7 +17,7 @@ description: "WPF の ComboBox を .NET 10 で実測して解説。編集可能�
 
 ## 画面キャプチャ
 
-![combobox demo screen](/images/wpf-standard-control-demo/combobox.png){: .screenshot-img}
+![デモアプリの ComboBox のページ。左にコントロールの一覧、右に最初の節の IsDropDownOpen](/images/wpf-standard-control-demo/combobox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

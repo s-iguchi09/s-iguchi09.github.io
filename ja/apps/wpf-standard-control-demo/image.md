@@ -17,7 +17,7 @@ description: "WPF の Image を .NET 10 で実測して解説。Stretch と Stre
 
 ## 画面キャプチャ
 
-![image demo screen](/images/wpf-standard-control-demo/image.png){: .screenshot-img}
+![デモアプリの Image のページ。左にコントロールの一覧、右に最初の節の Source / Stretch / StretchDirection](/images/wpf-standard-control-demo/image.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

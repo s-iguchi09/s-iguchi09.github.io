@@ -17,7 +17,7 @@ description: "WPF の GroupBox を .NET 10 で実測して解説。HeaderStringF
 
 ## 画面キャプチャ
 
-![groupbox demo screen](/images/wpf-standard-control-demo/groupbox.png){: .screenshot-img}
+![デモアプリの GroupBox のページ。左にコントロールの一覧、右に最初の節の Header(ContentControl) / HasHeader(ContentControl)](/images/wpf-standard-control-demo/groupbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

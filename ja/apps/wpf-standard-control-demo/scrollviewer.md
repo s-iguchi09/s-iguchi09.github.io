@@ -19,7 +19,7 @@ description: "WPF の ScrollViewer を .NET 10 で実測して解説。スクロ
 
 ## 画面キャプチャ
 
-![scrollviewer demo screen](/images/wpf-standard-control-demo/scrollviewer.png){: .screenshot-img}
+![デモアプリの ScrollViewer のページ。左にコントロールの一覧、右に最初の節の CanContentScroll](/images/wpf-standard-control-demo/scrollviewer.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

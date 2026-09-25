@@ -17,7 +17,7 @@ description: "WPF の UniformGrid を .NET 10 で実測して解説。行と列�
 
 ## 画面キャプチャ
 
-![uniformgrid demo screen](/images/wpf-standard-control-demo/uniformgrid.png){: .screenshot-img}
+![デモアプリの UniformGrid のページ。左にコントロールの一覧、右に最初の節の Columns](/images/wpf-standard-control-demo/uniformgrid.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

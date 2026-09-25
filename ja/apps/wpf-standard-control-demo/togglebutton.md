@@ -17,7 +17,7 @@ description: "WPF の ToggleButton の IsThreeState、テンプレート、Click
 
 ## 画面キャプチャ
 
-![togglebutton demo screen](/images/wpf-standard-control-demo/togglebutton.png){: .screenshot-img}
+![デモアプリの ToggleButton のページ。左にコントロールの一覧、右に最初の節の IsChecked](/images/wpf-standard-control-demo/togglebutton.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

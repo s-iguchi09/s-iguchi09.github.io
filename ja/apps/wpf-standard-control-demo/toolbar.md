@@ -17,7 +17,7 @@ ToolBar に置いた項目には、ツールバー用のスタイルが当たり
 
 ## 画面キャプチャ
 
-![toolbar demo screen](/images/wpf-standard-control-demo/toolbar.png){: .screenshot-img}
+![デモアプリの ToolBar のページ。左にコントロールの一覧、右に最初の節の HasOverflowItems (ToolBar) / IsOverflowItem (ToolBar) / IsOverflowOpen (ToolBar) / OverflowMode (ToolBar)](/images/wpf-standard-control-demo/toolbar.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/textbox.html
 title: "TextBox"
 badge: "Inputs"
 lead: "TextBox is the editable text input of WPF, for single-line fields and, with <code>AcceptsReturn</code>, multiline text."
-description: "WPF TextBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF TextBox measured on .NET 10: MaxLength and CharacterCasing affect only typing, Wrap vs WrapWithOverflow, and why MinLines in XAML does not apply at first."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ The demo app has a section for each property below. In several sections, one sou
 
 ## Screen Preview
 
-![textbox demo screen](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
+![The TextBox page of the demo app, with the control list on the left and the first section, Text](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 
@@ -64,9 +64,9 @@ The following XAML is the `Text` section of the demo app (`TextBoxUsageControl.x
 ## Common Use Cases
 
 - **Form fields:** names, addresses, and codes, with `MaxLength` to guide the user and validation in the ViewModel.
-- **Search boxes:** `UpdateSourceTrigger=PropertyChanged` so the filter follows each keystroke.
+- **Search boxes:** `UpdateSourceTrigger=PropertyChanged`, so the filter follows each keystroke. Typing "abc" one character at a time wrote the source 3 times with it, and not at all with the default until the focus left the TextBox.
 - **Notes and comments:** `AcceptsReturn="True"`, `TextWrapping="Wrap"`, and `VerticalScrollBarVisibility="Auto"`.
-- **Copyable output:** `IsReadOnly="True"` for logs or error details the user may need to copy.
+- **Copyable output:** `IsReadOnly="True"` for logs or error details the user may need to copy. Typed text was ignored, and with the text selected, Copy could execute while Cut and Paste could not.
 
 ## Tips and Best Practices
 
@@ -79,8 +79,8 @@ The following XAML is the `Text` section of the demo app (`TextBoxUsageControl.x
 
 Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`TextBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Typing was reproduced one character at a time with `TextCompositionManager`, which delivers text through the same `TextInput` path as the keyboard, and the Enter key by sending a key event to a displayed window. Heights, widths, and positions on this page are the values on the measuring machine; they depend on the font and display scaling.
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="Table comparing typed input with text set from code or a binding: MaxLength 5 cuts typed text to ABCDE but not text from code or a binding, CharacterCasing Upper converts typed text but not text from code, IsReadOnly ignores typed text but allows selection, and Enter inserts a line break only with AcceptsReturn" width="575" height="350" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="Table comparing typed input with text set from code or a binding: MaxLength 5 cuts typed text to ABCDE but not text from code or a binding, CharacterCasing Upper converts typed text but not text from code, IsReadOnly ignores typed text but allows selection, Enter inserts a line break only with AcceptsReturn, PropertyChanged writes the source on every typed character while the default waits for the focus to leave, and a read-only TextBox ignores typing while Copy can still execute" width="975" height="440" loading="lazy">
   <figcaption>Typed input compared with text set from code or a binding. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

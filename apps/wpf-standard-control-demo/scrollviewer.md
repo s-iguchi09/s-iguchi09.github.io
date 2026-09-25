@@ -19,7 +19,7 @@ The demo app has sections for `CanContentScroll`, `IsDeferredScrollingEnabled`, 
 
 ## Screen Preview
 
-![scrollviewer demo screen](/images/wpf-standard-control-demo/scrollviewer.png){: .screenshot-img}
+![The ScrollViewer page of the demo app, with the control list on the left and the first section, CanContentScroll](/images/wpf-standard-control-demo/scrollviewer.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

@@ -13,5 +13,6 @@ verifies:
   - "ToolBar（別のフォーカススコープ）の中の TextBox を Target にしたときのフォーカスの移動先"
   - "Target を設定したときの、TextBox の UI オートメーションの名前と LabeledBy（公式ドキュメントは名前になると説明している）と、AutomationProperties.LabeledBy を手動で設定したとき。スクリーンリーダーも使う UI オートメーションのクライアント API で、UI スレッドとは別のスレッドから読む"
   - "改行を含む文字列の Content の行数（高さ）"
+  - "ComboBox・編集可能な ComboBox・DatePicker を Target にした Label のアクセスキーで、フォーカスが移る要素"
 images:
   - "images/wpf-standard-control-demo/verification/label/label-behavior.svg"

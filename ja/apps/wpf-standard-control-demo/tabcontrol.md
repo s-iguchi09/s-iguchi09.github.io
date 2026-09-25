@@ -19,7 +19,7 @@ description: "WPF の TabControl を .NET 10 で実測して解説。TabStripPla
 
 ## 画面キャプチャ
 
-![tabcontrol demo screen](/images/wpf-standard-control-demo/tabcontrol.png){: .screenshot-img}
+![デモアプリの TabControl のページ。左にコントロールの一覧、右に最初の節の TabStripPlacement](/images/wpf-standard-control-demo/tabcontrol.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

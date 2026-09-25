@@ -18,6 +18,7 @@ verifies:
   - "キー操作（下矢印・右矢印・左矢印・Space・Enter・テンキーの *）による選択と展開の変化"
   - "ItemContainerStyle で設定した ContextMenu の DataContext"
   - "スクロールバーの既定値とその出どころ"
+  - "仮の子を置いた TreeViewItem で、Expanded のハンドラーで子を入れ替えるときに、展開ボタンを実際にクリックする前と後の子"
 images:
   - "images/wpf-standard-control-demo/verification/treeview/treeview-selection.svg"
   - "images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg"

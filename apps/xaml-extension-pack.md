@@ -92,7 +92,7 @@ Xaml.ExtensionPack multi-targets `net10.0`, `net8.0`, and `net472` from a single
 | `AsyncRelayCommand<T>` | class | Typed variant of the above, wrapping a `Func<T, Task>`. |
 | `IRaiseCanExecuteChanged` | interface | Extends `ICommand` with `RaiseCanExecuteChanged()`, so a view model can re-evaluate command availability without depending on a concrete command type. |
 | `IAsyncCommand` | interface | Contract for the async commands, exposing `ExecuteAsync` and `IsExecuting` alongside the `ICommand` members. |
-| `TaskExtensions.FireAndForget` | extension method | Awaits a `Task` in a discarded context with an optional exception handler, avoiding unobserved task exceptions. |
+| `TaskExtensions.FireAndForget` | extension method | Awaits a `Task` inside an `async void` method and passes an exception to an optional handler, so it does not go unobserved. |
 
 ## Usage
 

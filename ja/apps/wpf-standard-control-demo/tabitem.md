@@ -17,7 +17,7 @@ description: "WPF の TabItem の選択、TabStripPlacement、無効なタブ、
 
 ## 画面キャプチャ
 
-![tabitem demo screen](/images/wpf-standard-control-demo/tabitem.png){: .screenshot-img}
+![デモアプリの TabItem のページ。左にコントロールの一覧、右に最初の節の IsSelected](/images/wpf-standard-control-demo/tabitem.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

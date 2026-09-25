@@ -19,7 +19,7 @@ The demo app has two sections, `GroupName` and `VerticalContentAlignment`. The "
 
 ## Screen Preview
 
-![radiobutton demo screen](/images/wpf-standard-control-demo/radiobutton.png){: .screenshot-img}
+![The RadioButton page of the demo app, with the control list on the left and the first section, GroupName](/images/wpf-standard-control-demo/radiobutton.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

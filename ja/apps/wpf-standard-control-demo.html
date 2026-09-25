@@ -5,10 +5,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>WPF 標準コントロールデモアプリ (.NET 10) | UI設計とスタイルの検証ツール</title>
+  <title>WPF 標準コントロールデモアプリ (.NET 10) | 36 コントロールと XAML</title>
   {% include head.html %}
 
-  <meta name="description" content=".NET 10 上で動作する WPF 標準コントロールの挙動を確認できるデモアプリ。GitHub Release でビルド済み exe を公開中。Style定義のみで視認性を高めたUI設計、エンジニア・デザイナー間の仕様合意を支援するプロトタイピングの知見を公開。">
+  <meta name="description" content=".NET 10 で動く WPF 標準コントロール 36 種のデモアプリです。既定のスタイルのままの各コントロールを、プロパティを変える入力欄と、その節の XAML を表示する機能とあわせて確認できます。ビルド済みの exe を GitHub で配布しています。">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,77 +21,42 @@
   <section class="hero">
     <h1>WPF 標準コントロールデモアプリ (.NET 10)</h1>
     <p>
-      最新の .NET 10 環境における WPF 標準 UI の挙動を網羅的に確認。
-      ビルド不要の exe 形式で公開。コードを書く前に「実現可能性」を視覚化する、プロフェッショナルのための検証ツール。
+      .NET 10 で動く WPF の標準コントロール 36 種を確認できる Windows アプリです。コントロールごとにページがあり、プロパティを変える入力欄と、各節の XAML を表示する「Show Code」を備えています。
     </p>
   </section>
 
   <section class="content-section">
-    <h2>概要：次世代 .NET 環境での UI 検証を一元化</h2>
+    <h2>アプリの内容</h2>
     <p>
-      このアプリケーションは、WPF (Windows Presentation Foundation) の標準コントロールが、最新のランタイムである <strong>.NET 10</strong> 上でどのように動作・描画されるかを一元的に確認するためのデモアプリです。
+      ウィンドウの左に、コントロールが Inputs・Layout・Display・List・Graphics・Selectors・Menu・Overlays・Resizer の 9 つのグループに分けて並びます。選ぶとそのページが開きます。ページはプロパティや機能ごとの節に分かれ、各節では、列挙値の ComboBox・Slider・CheckBox などの入力欄が、デモ対象のコントロールの隣に置かれています。値を変えると、その効果がすぐに表示されます。
     </p>
     <p>
-      ボタン、テキストボックス、チェックボックスといった基本要素から、リストビュー、データグリッド、タブコントロールなどの複雑なレイアウト要素までを網羅。単なるカタログではなく、実際の OS 環境下でのフォーカス遷移やレスポンス、デフォルトのビジュアルスタイルを即座に検証できる「動く仕様書」としての役割を果たします。
-    </p>
-    <p>
-      <strong>本ツールは GitHub Releases にてビルド済みの実行ファイル（.exe）を公開しています。</strong> 最新の .NET 10 SDK をインストールしていない環境でも、ダウンロードするだけで即座に次世代 WPF の挙動を体験することが可能です。
+      節の下の「Show Code」を押すと、その節の要素の XAML がポップアップに表示されます。この文字列は、アプリとずれうる別の写しではありません。ビルド時に各ページの XAML のソースを実行ファイルに埋め込み、実行時に節の要素を <code>x:Name</code> で抜き出しています。表示されるのは、実際に動いているマークアップです。
     </p>
   </section>
 
   <section class="content-section">
-    <h2>開発背景：標準機能の「素の美しさ」とポータビリティの両立</h2>
+    <h2>スタイル</h2>
     <p>
-      WPF は進化を続けていますが、.NET のバージョンアップごとにレンダリングやスタイルに微細な変化が生じます。特に .NET 10 への移行期において、既存の UI 資産が意図通りに動作するかを確認する作業は、開発者にとって避けては通れない課題です。
+      デモ対象のコントロールは、後述の 1 つの例外を除き、WPF の既定のスタイルのままの見た目です。アプリは <code>ThemeMode</code> を設定していないため、Fluent ではなく、WPF の既定の Aero2 テーマで表示されます。アプリ共通のスタイルは、<code>App.xaml</code> でマージする 9 つの <code>ResourceDictionary</code> にあり、すべて <code>x:Key</code> を持つため、参照した要素にだけ適用されます。参照しているのは、コントロールの一覧、節を囲む GroupBox と Expander、入力欄の Slider、「Show Code」のリンク、コードのポップアップなど、アプリの枠組みだけで、デモ対象のコントロールは参照していません。暗黙のスタイルも 1 つも無いため、デモ対象のコントロールには届きません。
     </p>
     <p>
-      本ツールの開発において私が最も注力したのは、<strong>「外部ライブラリに頼らず、標準機能だけでいかに見やすい UI を構築するか」</strong>という点でした。サードパーティ製の UI キットを使えば見栄えは整いますが、それでは「標準の挙動」を確認するという目的がぼやけてしまいます。
-    </p>
-    <p>
-      そのため、WPF 標準コントロールの構造を崩さず、<strong>Style の定義のみで情報の整理と視認性の向上</strong>を追求しました。この「制約の中でのデザイン」をビルド済みのアプリとして配布することで、環境構築の壁を取り払い、誰もが「生の WPF」に最速でアクセスできる環境を実現しました。
+      いくつかのページは、独自のスタイルを持ちます。多くは入力欄を整えるものか、プロパティを示すためのもので、たとえば DataGrid のページの CheckBox の余白や、<code>RowStyle</code> と <code>CellStyle</code> の見本です。例外は DatePicker のページで、そこでは暗黙のスタイルが、デモ対象を含むページ内のすべての DatePicker について、カレンダーボタン（<code>PART_Button</code>）の縦位置と余白を設定しています。これらのスタイルは、リポジトリの各ページの XAML にあります。
     </p>
   </section>
 
   <section class="content-section">
-    <h2>技術解説：WPF 標準コントロールを美しく保つ Style 設計のコツ</h2>
-    
+    <h2>ダウンロードと動作環境</h2>
     <p>
-      本デモアプリの実装過程で採用した、標準コントロールをカスタマイズする際の設計ポイントを共有します。
-    </p>
-    <h3>1. プロパティの直交性を活かした設計</h3>
-    <p>
-      本アプリでは、各コントロールのプロパティを個別に設定できるよう設計されています。WPF のデータバインディング機能を活用し、特定のプロパティ変更が他の属性を破壊しないよう「直交性」を意識した Style 定義を行っています。これにより、複雑な組み合わせを試してもレイアウトが崩れにくい堅牢な UI を実現しました。
-    </p>
-    <h3>2. 継承（BasedOn）の適切な活用</h3>
-    <p>
-      コードの重複を避けつつ視認性を高めるため、共通の Base Style を定義し、各コントロールで <code>BasedOn</code> を用いて拡張しています。これにより、.NET 10 の新しいレンダリング特性にも一括で対応できる柔軟性を確保しています。
-    </p>
-    <h3>3. リソースディクショナリによる管理の分離</h3>
-    <p>
-      デザイン（XAML）とロジック（C#）を明確に分離し、UI のスタイルはすべて <code>ResourceDictionary</code> で管理しています。GitHub からソースコードを参照した際、特定のコントロールのスタイルだけを自分のプロジェクトに「つまみ食い」して持ち帰りやすい、再利用性の高い構造にしています。
-    </p>
-  </section>
-
-  <section class="content-section">
-    <h2>ターゲットユーザー：開発現場での具体的な活用方法</h2>
-    <p>
-      本ツールは、単なる「見本帳」以上の価値を提供します。
+      GitHub Releases の最新版 v1.0.0.0 には、アプリの ZIP が 2 つあります（それ以前のリリースは 1 つです。GitHub が各リリースに自動で付けるソースコードの ZIP は数えていません）。どちらも 64 ビット版 Windows 用です。
     </p>
     <ul>
-      <li><strong>デザイナー：</strong> 「WPFで何ができるか」を SDK のインストールなしで把握。実機での挙動を確認することで、エンジニアとの共通言語を構築。</li>
-      <li><strong>設計者・ディレクター：</strong> 仕様検討フェーズで「標準コントロールを使えばコストを抑えて実装できるか」といった判断を、exe を動かしながらその場で行えます。</li>
-      <li><strong>エンジニア：</strong> 最新ランタイム環境での標準的な挙動を、自前でプロジェクトを作ることなくクイックに確認。自身のアプリへの Style 移植元としても活用。</li>
+      <li><strong>standalone 付き:</strong> 自己完結型の単一ファイルの実行ファイル（約 59 MB）です。.NET のランタイムを含むため、ほかに何もインストールする必要はありません。</li>
+      <li><strong>standalone なし:</strong> フレームワーク依存の単一ファイルの実行ファイル（約 250 KB）です。.NET 10 デスクトップ ランタイムが必要です。</li>
     </ul>
-  </section>
-
-  <section class="content-section">
-    <h2>技術スタック</h2>
-    <ul>
-      <li><strong>Runtime:</strong> .NET 10</li>
-      <li><strong>Framework:</strong> WPF</li>
-      <li><strong>UI Implementation:</strong> XAML (Pure Style Definition / ResourceDictionary)</li>
-      <li><strong>Development Environment:</strong> C# 14 / Visual Studio 2026</li>
-    </ul>
+    <p>
+      ソースは <code>net10.0-windows</code> を対象とし、Visual Studio 2026 で <code>.slnx</code> のソリューションとして開きます。
+    </p>
   </section>
 
   <section class="content-section">

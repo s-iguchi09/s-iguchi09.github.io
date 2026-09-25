@@ -19,7 +19,7 @@ UI オートメーションからは、読み取り専用の範囲に見えま�
 
 ## 画面キャプチャ
 
-![progressbar demo screen](/images/wpf-standard-control-demo/progressbar.png){: .screenshot-img}
+![デモアプリの ProgressBar のページ。左にコントロールの一覧、右に最初の節の IsIndeterminate](/images/wpf-standard-control-demo/progressbar.png){: .screenshot-img}
 
 ## デモしているプロパティ
 
