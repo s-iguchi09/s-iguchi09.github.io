@@ -201,6 +201,13 @@ public class RowItem
 `SortDescriptions` を `ItemsView` 側で管理することで、UI コンポーネントへの依存を減らし、テスト容易性を確保できる。
 
 **ただし、この `ClearSort` が解除するのはビューの並び順だけである。** `DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `ItemsSource = ICollectionView` の行がまさにこれを測っており、ビューの `SortDescriptions` を消しても `SortDirection` は `Ascending` のまま残った）。
+また、この `ClearSort` は `SortDescriptions` だけを消すため、`ListCollectionView.CustomSort` で並べ替えている場合は解除されない。`CustomSort` を設定したビューに `ClearSort` と同じ手順を実行しても、`CustomSort` は残り、並びも変わらなかった。`CustomSort` を使う画面では、`ClearSort` で `CustomSort` にも `null` を代入する。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg" alt="ListCollectionView に CustomSort を設定してから記事の ClearSort を実行した表。初期は 21800, 2480, 4980 の順。CustomSort で Price の降順にすると 21800, 4980, 2480。SortDescriptions.Clear と Refresh の後も CustomSort は set のままで、並びも 21800, 4980, 2480。CustomSort に null を代入して Refresh すると初期の順に戻る。" width="756" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、サンプルデータの <code>ListCollectionView</code> に操作を順に行って測った結果。<code>SortDescriptions</code> の列は条件の数である。</figcaption>
+</figure>
+
 矢印まで戻すには、ViewModel から列の状態を触れない以上、`DataGrid` 側で `SortDirection` を `null` にする処理が別に要る。Behavior 化する場合は、その処理を Behavior に含めるとコマンドから一度に初期化できる。
 
 ```xml

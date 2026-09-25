@@ -12,6 +12,8 @@ verifies:
   - "SortDescriptions を 2 つ足すと複数列ソートになること（1 つ目の条件が同点の行で、2 つ目の条件が効くこと）"
   - "ItemsSource に渡した ICollectionView の SortDescriptions を消しても、列の SortDirection が残ること"
   - "コードから一方だけを操作すると 2 か所が食い違うのに対し、列ヘッダークリックで走る標準の並び替えでは両方が同時に更新されること"
+  - "ListCollectionView.CustomSort を設定したビューに、記事の ClearSort（SortDescriptions.Clear と Refresh）を呼んでも CustomSort が残るか"
 images:
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png"
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg"
+  - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg"
