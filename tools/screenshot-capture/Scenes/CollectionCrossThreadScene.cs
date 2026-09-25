@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Threading;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -26,7 +25,8 @@ internal sealed class CollectionCrossThreadScene : IScene
         "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）",
         "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること",
         "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている",
-        "CollectionChanged が通知された時点でそのロックが保持されていたか（Monitor.IsEntered で確認）",
+        "Add のあと、コレクションの Count と ItemsControl の Items.Count（CollectionView に反映された件数）が一致するか",
+        "バックグラウンドスレッドから 5,000 件を Add したときの所要時間を、Dispatcher.Invoke と EnableCollectionSynchronization で比べる",
     ];
 
     public string Slug => "wpf-observablecollection-cross-thread-update";
@@ -37,8 +37,8 @@ internal sealed class CollectionCrossThreadScene : IScene
 
         async Task AddRowAsync(string collection, string countermeasure, Bound bound, Fix fix)
         {
-            (string result, string lockHeld) = await RunDetailedAsync(bound, fix);
-            rows.Add([collection, countermeasure, result, lockHeld]);
+            (string result, string counts) = await RunDetailedAsync(bound, fix);
+            rows.Add([collection, countermeasure, result, counts]);
         }
 
         await AddRowAsync("ObservableCollection alone", "-", Bound.No, Fix.None);
@@ -48,9 +48,94 @@ internal sealed class CollectionCrossThreadScene : IScene
 
         await context.SaveTableAsync(
             "Add() from a background thread",
-            ["collection", "countermeasure", "result", "notified while holding the gate"],
+            ["collection", "countermeasure", "result", "Count / Items.Count"],
             rows,
             "collection-cross-thread-matrix.svg");
+
+        await context.SaveTableAsync(
+            $"{BulkCount:N0} Add() calls from a background thread",
+            ["countermeasure", "background loop ms", "Items.Count at loop end", "until all shown ms"],
+            [
+                await MeasureBulkAsync(Fix.Dispatcher),
+                await MeasureBulkAsync(Fix.Synchronization),
+            ],
+            "collection-cross-thread-bulk.svg");
+    }
+
+    private const int BulkCount = 5_000;
+
+    /// <summary>
+    /// バックグラウンドスレッドから <see cref="BulkCount"/> 件を 1 件ずつ Add し、
+    /// ループにかかった時間、ループを抜けた時点で UI に反映されていた件数、
+    /// 全件が UI に反映されるまでの時間を返す。
+    /// Dispatcher.Invoke は 1 件ごとに UI スレッドでの実行を待つ。
+    /// </summary>
+    private static async Task<IReadOnlyList<string>> MeasureBulkAsync(Fix fix)
+    {
+        var items = new ObservableCollection<string>();
+        var gate = new object();
+
+        if (fix == Fix.Synchronization)
+        {
+            BindingOperations.EnableCollectionSynchronization(items, gate);
+        }
+
+        // 反映の件数だけを見たいので、コンテナの生成が件数に比例しない仮想化した ListBox に載せる。
+        var list = new ListBox { ItemsSource = items };
+        var host = new Window
+        {
+            Content = list,
+            Width = 240,
+            Height = 160,
+            ShowInTaskbar = false,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = Brushes.White,
+        };
+        host.Show();
+        Settle(host);
+
+        Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
+        var total = Stopwatch.StartNew();
+        double elapsed = await Task.Run(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            for (int i = 0; i < BulkCount; i++)
+            {
+                if (fix == Fix.Dispatcher)
+                {
+                    uiDispatcher.Invoke(() => items.Add("row"));
+                }
+                else
+                {
+                    lock (gate)
+                    {
+                        items.Add("row");
+                    }
+                }
+            }
+
+            return stopwatch.Elapsed.TotalMilliseconds;
+        });
+
+        int shownAtLoopEnd = list.Items.Count;
+
+        // 反映は UI スレッドで非同期に進む。全件が Items に載るまで回す。
+        while (list.Items.Count < BulkCount && total.Elapsed < TimeSpan.FromSeconds(60))
+        {
+            Settle(host);
+        }
+
+        total.Stop();
+        string until = list.Items.Count == BulkCount ? total.Elapsed.TotalMilliseconds.ToString("N0") : $"not reached ({list.Items.Count:N0})";
+        host.Content = null;
+        host.Close();
+
+        if (fix == Fix.Synchronization)
+        {
+            BindingOperations.DisableCollectionSynchronization(items);
+        }
+
+        return [fix == Fix.Dispatcher ? "Dispatcher.Invoke per item" : "EnableCollectionSynchronization + lock", elapsed.ToString("N0"), shownAtLoopEnd.ToString("N0"), until];
     }
 
     private enum Bound
@@ -67,37 +152,15 @@ internal sealed class CollectionCrossThreadScene : IScene
     }
 
     /// <summary>
-    /// 指定の構成でバックグラウンドスレッドから <c>Add</c> を呼び、結果を返す。
+    /// <c>Add</c> の結果に加えて、コレクションの件数と、ItemsControl に反映された件数を返す。
+    /// 例外になった構成で、両者が食い違うかを見る。
     /// </summary>
-    private static async Task<string> RunAsync(Bound bound, Fix fix)
-    {
-        (string result, _) = await RunDetailedAsync(bound, fix);
-        return result;
-    }
-
-    /// <summary>
-    /// <c>Add</c> の結果に加えて、<c>CollectionChanged</c> が通知された時点で
-    /// 登録したロックが保持されていたかどうかも返す。
-    ///
-    /// 「変更と通知が同じロックの中で起きる」は、通知の中で
-    /// <see cref="Monitor.IsEntered"/> を見なければ確かめたことにならない。
-    /// </summary>
-    private static async Task<(string Result, string LockHeld)> RunDetailedAsync(Bound bound, Fix fix)
+    private static async Task<(string Result, string Counts)> RunDetailedAsync(Bound bound, Fix fix)
     {
         var items = new ObservableCollection<string>();
         var gate = new object();
         Window? host = null;
-
-        int notifications = 0;
-        int notifiedUnderLock = 0;
-        items.CollectionChanged += (_, _) =>
-        {
-            notifications++;
-            if (Monitor.IsEntered(gate))
-            {
-                notifiedUnderLock++;
-            }
-        };
+        ItemsControl? list = null;
 
         if (fix == Fix.Synchronization)
         {
@@ -106,7 +169,7 @@ internal sealed class CollectionCrossThreadScene : IScene
 
         if (bound == Bound.Yes)
         {
-            var list = new ItemsControl { ItemsSource = items };
+            list = new ItemsControl { ItemsSource = items };
             host = new Window
             {
                 Content = list,
@@ -152,9 +215,11 @@ internal sealed class CollectionCrossThreadScene : IScene
             }
         });
 
+        string counts = $"{items.Count}";
         if (host is not null)
         {
             Settle(host);
+            counts = $"{items.Count} / {list!.Items.Count}";
             host.Content = null;
             host.Close();
             Settle(host);
@@ -165,11 +230,7 @@ internal sealed class CollectionCrossThreadScene : IScene
             BindingOperations.DisableCollectionSynchronization(items);
         }
 
-        string lockHeld = notifications == 0
-            ? "no notification"
-            : $"{notifiedUnderLock}/{notifications}";
-
-        return (result, lockHeld);
+        return (result, counts);
     }
 
     /// <summary>レイアウトとバインドの反映が終わるまでディスパッチャーを回す。</summary>

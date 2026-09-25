@@ -10,6 +10,8 @@ verifies:
   - "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）"
   - "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること"
   - "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている"
-  - "CollectionChanged が通知された時点でそのロックが保持されていたか（Monitor.IsEntered で確認）"
+  - "Add のあと、コレクションの Count と ItemsControl の Items.Count（CollectionView に反映された件数）が一致するか"
+  - "バックグラウンドスレッドから 5,000 件を Add したときの所要時間を、Dispatcher.Invoke と EnableCollectionSynchronization で比べる"
 images:
   - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg"
+  - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg"
