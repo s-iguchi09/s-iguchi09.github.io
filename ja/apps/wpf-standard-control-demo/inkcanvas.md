@@ -17,7 +17,7 @@ description: "WPF の InkCanvas を .NET 10 と実際のマウスで実測して
 
 ## 画面キャプチャ
 
-![inkcanvas demo screen](/images/wpf-standard-control-demo/inkcanvas.png){: .screenshot-img}
+![デモアプリの InkCanvas のページ。左にコントロールの一覧、右に最初の節の EditingMode / ActiveEditingMode / EditingModeInverted / DefaultDrawingAttributes / Strokes / Background](/images/wpf-standard-control-demo/inkcanvas.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

@@ -17,7 +17,7 @@ The demo app has a section for each property below. In several sections, one sou
 
 ## Screen Preview
 
-![textbox demo screen](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
+![The TextBox page of the demo app, with the control list on the left and the first section, Text](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

@@ -17,7 +17,7 @@ With all text selected, the Copy and Cut commands could not be executed, while P
 
 ## Screen Preview
 
-![passwordbox demo screen](/images/wpf-standard-control-demo/passwordbox.png){: .screenshot-img}
+![The PasswordBox page of the demo app, with the control list on the left and the first section, CaretBrush](/images/wpf-standard-control-demo/passwordbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

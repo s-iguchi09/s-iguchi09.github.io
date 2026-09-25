@@ -17,7 +17,7 @@ description: "WPF の PasswordBox を .NET 10 で実測して解説します。P
 
 ## 画面キャプチャ
 
-![passwordbox demo screen](/images/wpf-standard-control-demo/passwordbox.png){: .screenshot-img}
+![デモアプリの PasswordBox のページ。左にコントロールの一覧、右に最初の節の CaretBrush](/images/wpf-standard-control-demo/passwordbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

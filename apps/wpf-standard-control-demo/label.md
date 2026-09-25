@@ -17,7 +17,7 @@ The demo app has sections for `Target`, the content, and the `Control` propertie
 
 ## Screen Preview
 
-![label demo screen](/images/wpf-standard-control-demo/label.png){: .screenshot-img}
+![The Label page of the demo app, with the control list on the left and the first section, Target](/images/wpf-standard-control-demo/label.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

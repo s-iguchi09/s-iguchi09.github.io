@@ -17,7 +17,7 @@ In the demo app, every property below has its own section with input controls th
 
 ## Screen Preview
 
-![grid demo screen](/images/wpf-standard-control-demo/grid.png){: .screenshot-img}
+![The Grid page of the demo app, with the control list on the left and the first section, Column / Row](/images/wpf-standard-control-demo/grid.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

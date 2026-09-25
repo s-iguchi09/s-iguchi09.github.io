@@ -19,7 +19,7 @@ The demo app has sections for `Orientation`, `ItemHeight`, `ItemWidth`, `Backgro
 
 ## Screen Preview
 
-![wrappanel demo screen](/images/wpf-standard-control-demo/wrappanel.png){: .screenshot-img}
+![The WrapPanel page of the demo app, with the control list on the left and the first section, Orientation](/images/wpf-standard-control-demo/wrappanel.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

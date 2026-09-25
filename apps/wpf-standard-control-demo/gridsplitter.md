@@ -17,7 +17,7 @@ The demo app has a section for each property below. The `ResizeBehavior` section
 
 ## Screen Preview
 
-![gridsplitter demo screen](/images/wpf-standard-control-demo/gridsplitter.png){: .screenshot-img}
+![The GridSplitter page of the demo app, with the control list on the left and the first section, DragIncrement](/images/wpf-standard-control-demo/gridsplitter.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

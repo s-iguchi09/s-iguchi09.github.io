@@ -19,7 +19,7 @@ The demo app binds `Delay` and `Interval` to two text boxes and shows the time o
 
 ## Screen Preview
 
-![repeatbutton demo screen](/images/wpf-standard-control-demo/repeatbutton.png){: .screenshot-img}
+![The RepeatButton page of the demo app, with the control list on the left and the first section, Delay / Interval](/images/wpf-standard-control-demo/repeatbutton.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

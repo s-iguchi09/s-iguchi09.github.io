@@ -17,7 +17,7 @@ The demo app has a section for each property below. The "Show Code" link under e
 
 ## Screen Preview
 
-![checkbox demo screen](/images/wpf-standard-control-demo/checkbox.png){: .screenshot-img}
+![The CheckBox page of the demo app, with the control list on the left and the first section, IsChecked(ToggleButton)](/images/wpf-standard-control-demo/checkbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

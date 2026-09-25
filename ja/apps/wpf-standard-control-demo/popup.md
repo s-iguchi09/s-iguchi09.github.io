@@ -19,7 +19,7 @@ ComboBox と最上位の MenuItem の既定のテンプレートには、`PART_P
 
 ## 画面キャプチャ
 
-![popup demo screen](/images/wpf-standard-control-demo/popup.png){: .screenshot-img}
+![デモアプリの Popup のページ。左にコントロールの一覧、右に最初の節の IsOpen / StaysOpen / AllowsTransparency](/images/wpf-standard-control-demo/popup.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

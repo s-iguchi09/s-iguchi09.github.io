@@ -17,7 +17,7 @@ The demo app has sections for the header, `HeaderStringFormat`, the content, and
 
 ## Screen Preview
 
-![groupbox demo screen](/images/wpf-standard-control-demo/groupbox.png){: .screenshot-img}
+![The GroupBox page of the demo app, with the control list on the left and the first section, Header(ContentControl) / HasHeader(ContentControl)](/images/wpf-standard-control-demo/groupbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

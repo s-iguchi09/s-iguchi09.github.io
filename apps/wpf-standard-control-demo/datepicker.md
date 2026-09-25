@@ -17,7 +17,7 @@ The demo app has a section for each property below. The "Show Code" link under e
 
 ## Screen Preview
 
-![datepicker demo screen](/images/wpf-standard-control-demo/datepicker.png){: .screenshot-img}
+![The DatePicker page of the demo app, with the control list on the left and the first section, DisplayDate](/images/wpf-standard-control-demo/datepicker.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

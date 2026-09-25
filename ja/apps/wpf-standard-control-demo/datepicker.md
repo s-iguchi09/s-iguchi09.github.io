@@ -17,7 +17,7 @@ description: "WPF の DatePicker を .NET 10 で実測して解説します。Di
 
 ## 画面キャプチャ
 
-![datepicker demo screen](/images/wpf-standard-control-demo/datepicker.png){: .screenshot-img}
+![デモアプリの DatePicker のページ。左にコントロールの一覧、右に最初の節の DisplayDate](/images/wpf-standard-control-demo/datepicker.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

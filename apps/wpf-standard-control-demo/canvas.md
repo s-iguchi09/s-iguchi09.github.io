@@ -17,7 +17,7 @@ The demo app has one section with two rectangles 100 × 100: rectangle A, whose 
 
 ## Screen Preview
 
-![canvas demo screen](/images/wpf-standard-control-demo/canvas.png){: .screenshot-img}
+![The Canvas page of the demo app, with the control list on the left and the first section, Top / Left / Right / Bottom / ZIndex(Panel)](/images/wpf-standard-control-demo/canvas.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

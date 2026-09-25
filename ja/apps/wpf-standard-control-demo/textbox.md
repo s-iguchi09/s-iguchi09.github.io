@@ -17,7 +17,7 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 
 ## 画面キャプチャ
 
-![textbox demo screen](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
+![デモアプリの TextBox のページ。左にコントロールの一覧、右に最初の節の Text](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

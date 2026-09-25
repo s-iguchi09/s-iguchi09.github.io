@@ -17,7 +17,7 @@ Snapping applies only to what the user does. With `IsSnapToTickEnabled="True"`, 
 
 ## Screen Preview
 
-![slider demo screen](/images/wpf-standard-control-demo/slider.png){: .screenshot-img}
+![The Slider page of the demo app, with the control list on the left and the first section, Minimum(RangeBase) / Maximum(RangeBase) / Value(RangeBase)](/images/wpf-standard-control-demo/slider.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

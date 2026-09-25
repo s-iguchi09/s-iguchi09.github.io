@@ -19,7 +19,7 @@ WPF 自身のテンプレートも RepeatButton を使っています。縦方�
 
 ## 画面キャプチャ
 
-![repeatbutton demo screen](/images/wpf-standard-control-demo/repeatbutton.png){: .screenshot-img}
+![デモアプリの RepeatButton のページ。左にコントロールの一覧、右に最初の節の Delay / Interval](/images/wpf-standard-control-demo/repeatbutton.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

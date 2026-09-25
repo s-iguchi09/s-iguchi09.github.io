@@ -17,7 +17,7 @@ The demo app has two sections. In the `IsSelected` section, a check box is bound
 
 ## Screen Preview
 
-![tabitem demo screen](/images/wpf-standard-control-demo/tabitem.png){: .screenshot-img}
+![The TabItem page of the demo app, with the control list on the left and the first section, IsSelected](/images/wpf-standard-control-demo/tabitem.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

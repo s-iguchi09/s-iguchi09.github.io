@@ -17,7 +17,7 @@ The demo app has a section for each of its twenty property groups, some of which
 
 ## Screen Preview
 
-![datagrid demo screen](/images/wpf-standard-control-demo/datagrid.png){: .screenshot-img}
+![The DataGrid page of the demo app, with the control list on the left and the first section, AlternatingRowBackground](/images/wpf-standard-control-demo/datagrid.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

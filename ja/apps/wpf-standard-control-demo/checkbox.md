@@ -17,7 +17,7 @@ description: "WPF の CheckBox の 3 状態の切り替え、IsChecked のバイ
 
 ## 画面キャプチャ
 
-![checkbox demo screen](/images/wpf-standard-control-demo/checkbox.png){: .screenshot-img}
+![デモアプリの CheckBox のページ。左にコントロールの一覧、右に最初の節の IsChecked(ToggleButton)](/images/wpf-standard-control-demo/checkbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

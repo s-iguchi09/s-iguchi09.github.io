@@ -17,7 +17,7 @@ GridView は並べ替えをしません。実際のマウスで Name の見出�
 
 ## 画面キャプチャ
 
-![listview demo screen](/images/wpf-standard-control-demo/listview.png){: .screenshot-img}
+![デモアプリの ListView のページ。左にコントロールの一覧、右に最初の節の SelectionMode](/images/wpf-standard-control-demo/listview.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

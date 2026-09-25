@@ -17,7 +17,7 @@ description: "WPF の Expander を .NET 10 で実測して解説。折りたた�
 
 ## 画面キャプチャ
 
-![expander demo screen](/images/wpf-standard-control-demo/expander.png){: .screenshot-img}
+![デモアプリの Expander のページ。左にコントロールの一覧、右に最初の節の ExpandDirection](/images/wpf-standard-control-demo/expander.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

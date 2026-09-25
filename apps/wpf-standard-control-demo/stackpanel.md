@@ -17,7 +17,7 @@ The demo app has three sections: `Orientation`, `Background`, and `ZIndex`. The 
 
 ## Screen Preview
 
-![stackpanel demo screen](/images/wpf-standard-control-demo/stackpanel.png){: .screenshot-img}
+![The StackPanel page of the demo app, with the control list on the left and the first section, Orientation](/images/wpf-standard-control-demo/stackpanel.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

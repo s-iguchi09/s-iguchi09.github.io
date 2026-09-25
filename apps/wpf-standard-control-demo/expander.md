@@ -17,7 +17,7 @@ The demo app has sections for `ExpandDirection`, `IsExpanded`, the header, the c
 
 ## Screen Preview
 
-![expander demo screen](/images/wpf-standard-control-demo/expander.png){: .screenshot-img}
+![The Expander page of the demo app, with the control list on the left and the first section, ExpandDirection](/images/wpf-standard-control-demo/expander.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

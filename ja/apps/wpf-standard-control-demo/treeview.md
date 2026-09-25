@@ -17,7 +17,7 @@ ListBox と違い、TreeView は既定では仮想化されません。高さ 10
 
 ## 画面キャプチャ
 
-![treeview demo screen](/images/wpf-standard-control-demo/treeview.png){: .screenshot-img}
+![デモアプリの TreeView のページ。左にコントロールの一覧、右に最初の節の IsExpanded(TreeViewItem)](/images/wpf-standard-control-demo/treeview.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

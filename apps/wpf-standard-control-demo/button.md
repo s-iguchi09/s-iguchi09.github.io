@@ -17,7 +17,7 @@ The demo app has sections for `IsCancel` and `IsDefault`, `ClickMode`, `IsPresse
 
 ## Screen Preview
 
-![button demo screen](/images/wpf-standard-control-demo/button.png){: .screenshot-img}
+![The Button page of the demo app, with the control list on the left and the first section, IsCancel / IsDefault](/images/wpf-standard-control-demo/button.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

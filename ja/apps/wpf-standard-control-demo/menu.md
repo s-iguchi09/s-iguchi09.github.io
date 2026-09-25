@@ -17,7 +17,7 @@ description: "WPF の Menu を .NET 10 で実測して解説。項目の Role、
 
 ## 画面キャプチャ
 
-![menu demo screen](/images/wpf-standard-control-demo/menu.png){: .screenshot-img}
+![デモアプリの Menu のページ。左にコントロールの一覧、右に最初の節の IsMainMenu](/images/wpf-standard-control-demo/menu.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

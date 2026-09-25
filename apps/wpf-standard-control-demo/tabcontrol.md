@@ -19,7 +19,7 @@ The demo app has sections for `TabStripPlacement`, `ContentStringFormat`, and `S
 
 ## Screen Preview
 
-![tabcontrol demo screen](/images/wpf-standard-control-demo/tabcontrol.png){: .screenshot-img}
+![The TabControl page of the demo app, with the control list on the left and the first section, TabStripPlacement](/images/wpf-standard-control-demo/tabcontrol.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

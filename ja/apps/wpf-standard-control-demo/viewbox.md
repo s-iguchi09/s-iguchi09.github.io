@@ -19,7 +19,7 @@ Viewbox が拡大縮小するには、大きさが限られている必要があ
 
 ## 画面キャプチャ
 
-![viewbox demo screen](/images/wpf-standard-control-demo/viewbox.png){: .screenshot-img}
+![デモアプリの Viewbox のページ。左にコントロールの一覧、右に最初の節の Stretch / StretchDirection](/images/wpf-standard-control-demo/viewbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

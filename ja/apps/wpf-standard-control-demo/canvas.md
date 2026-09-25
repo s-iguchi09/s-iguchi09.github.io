@@ -17,7 +17,7 @@ Canvas 自身は大きさを求めません。(20, 20) に四角形を置いた 
 
 ## 画面キャプチャ
 
-![canvas demo screen](/images/wpf-standard-control-demo/canvas.png){: .screenshot-img}
+![デモアプリの Canvas のページ。左にコントロールの一覧、右に最初の節の Top / Left / Right / Bottom / ZIndex(Panel)](/images/wpf-standard-control-demo/canvas.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

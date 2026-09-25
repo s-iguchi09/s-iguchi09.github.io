@@ -17,7 +17,7 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 
 ## 画面キャプチャ
 
-![label demo screen](/images/wpf-standard-control-demo/label.png){: .screenshot-img}
+![デモアプリの Label のページ。左にコントロールの一覧、右に最初の節の Target](/images/wpf-standard-control-demo/label.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

@@ -17,7 +17,7 @@ description: "WPF の Button を .NET 10 で実測して解説。UserControl や
 
 ## 画面キャプチャ
 
-![button demo screen](/images/wpf-standard-control-demo/button.png){: .screenshot-img}
+![デモアプリの Button のページ。左にコントロールの一覧、右に最初の節の IsCancel / IsDefault](/images/wpf-standard-control-demo/button.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

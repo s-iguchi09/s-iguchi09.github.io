@@ -17,7 +17,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 ## 画面キャプチャ
 
-![textblock demo screen](/images/wpf-standard-control-demo/textblock.png){: .screenshot-img}
+![デモアプリの TextBlock のページ。左にコントロールの一覧、右に最初の節の Text](/images/wpf-standard-control-demo/textblock.png){: .screenshot-img}
 
 ## デモしているプロパティ
 
