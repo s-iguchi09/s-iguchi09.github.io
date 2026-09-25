@@ -53,7 +53,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 | 目的 | 回避イディオム | 実行コスト |
 | --- | --- | --- |
 | 最大サイズで分割 | インデックス付き `Select` + `GroupBy(t => t.i / size)` | 初回列挙時に全要素をグルーピングし、中間タプルを割り当てる |
-| キー基準の最大・最小 | `OrderByDescending(x => x.Key).First()` | $O(n \log n)$ の全件ソート |
+| キー基準の最大・最小 | `OrderByDescending(x => x.Key).First()` | .NET Framework では $O(n \log n)$ の全件ソート |
 | キー基準の重複除去 | `GroupBy(x => x.Key).Select(g => g.First())` | キーごとの要素リストを丸ごと構築 |
 
 問題は記述の冗長さだけではない。
@@ -285,7 +285,7 @@ var products = new[]
     new { Name = "C", Price = 200 },
 };
 
-// 回避イディオム: O(n log n) の全件ソート
+// 回避イディオム: .NET Framework では O(n log n) の全件ソート（.NET Core 3.0 以降は First が 1 回の走査に置き換える）
 var before = products.OrderByDescending(p => p.Price).First();
 
 // MaxBy: O(n) の 1 パス走査

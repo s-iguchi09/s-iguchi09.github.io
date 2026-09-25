@@ -54,7 +54,7 @@ Producing the same results without them requires workaround idioms.
 | Goal | Workaround idiom | Runtime cost |
 | --- | --- | --- |
 | Split into chunks | Indexed `Select` + `GroupBy(t => t.i / size)` | Groups all elements on first enumeration, plus intermediate tuples |
-| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort |
+| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort on .NET Framework |
 | Distinct by key | `GroupBy(x => x.Key).Select(g => g.First())` | Full per-key element lists |
 
 The problem is not only verbosity.
@@ -286,7 +286,7 @@ var products = new[]
     new { Name = "C", Price = 200 },
 };
 
-// Workaround: O(n log n) full sort
+// Workaround: an O(n log n) full sort on .NET Framework (.NET Core 3.0+ turns First into a single pass)
 var before = products.OrderByDescending(p => p.Price).First();
 
 // MaxBy: O(n) single pass
