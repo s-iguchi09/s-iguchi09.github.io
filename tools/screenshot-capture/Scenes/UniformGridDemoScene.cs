@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「UniformGrid」（apps/wpf-standard-control-demo/uniformgrid.html と日本語版）の記述を実測する。
+/// デモページ「UniformGrid」（apps/wpf-standard-control-demo/uniformgrid.md と日本語版）の記述を実測する。
 ///
 /// 子はデモアプリと同じ、枠 1 の Label を使う。
 /// レイアウトはウィンドウを作らずに Measure / Arrange で行い、子の矩形から行と列を読む。

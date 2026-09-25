@@ -12,7 +12,7 @@ using Calendar = System.Windows.Controls.Calendar;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「DatePicker」（apps/wpf-standard-control-demo/datepicker.html と日本語版）の記述を実測する。
+/// デモページ「DatePicker」（apps/wpf-standard-control-demo/datepicker.md と日本語版）の記述を実測する。
 ///
 /// 表示書式とカルチャの関係は記事 wpf-datepicker-custom-format（DatePickerFormatScene）で実測済みのため、
 /// ここでは範囲・入力・バインド・カレンダーの表示など、デモページだけが述べている挙動を確かめる。

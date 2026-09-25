@@ -14,7 +14,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Button」（apps/wpf-standard-control-demo/button.html と日本語版）の記述を実測する。
+/// デモページ「Button」（apps/wpf-standard-control-demo/button.md と日本語版）の記述を実測する。
 ///
 /// Esc・Enter・Space は <see cref="DemoProbe.SendKey"/> で、実際のキー入力と同じ経路から送る。
 /// IsCancel / IsDefault はその経路の後処理（アクセスキー）で動くためである。

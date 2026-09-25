@@ -12,7 +12,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「TabItem」（apps/wpf-standard-control-demo/tabitem.html と日本語版）の記述を実測する。
+/// デモページ「TabItem」（apps/wpf-standard-control-demo/tabitem.md と日本語版）の記述を実測する。
 /// </summary>
 internal sealed class TabItemDemoScene : IScene
 {

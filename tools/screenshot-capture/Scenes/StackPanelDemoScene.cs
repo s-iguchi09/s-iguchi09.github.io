@@ -7,7 +7,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「StackPanel」（apps/wpf-standard-control-demo/stackpanel.html と日本語版）の記述を実測する。
+/// デモページ「StackPanel」（apps/wpf-standard-control-demo/stackpanel.md と日本語版）の記述を実測する。
 ///
 /// レイアウトはウィンドウを作らずに Measure / Arrange で行い、子に渡された大きさと配置を読む。
 /// 背景と ZIndex は、指定した位置のヒットテストで最初に当たる要素の名前で確かめる。

@@ -10,7 +10,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Menu」（apps/wpf-standard-control-demo/menu.html と日本語版）の記述を実測する。
+/// デモページ「Menu」（apps/wpf-standard-control-demo/menu.md と日本語版）の記述を実測する。
 ///
 /// メニューの構成はデモアプリ（MenuUsageControl.xaml）の各節と同じにする。
 /// クリックとホバーは実際のマウス（<see cref="RealMouse"/>）、Alt・F10・Ctrl+O は実際のキー入力（<see cref="RealKeyboard"/>）で行う。

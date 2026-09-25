@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「GroupBox」（apps/wpf-standard-control-demo/groupbox.html と日本語版）の記述を実測する。
+/// デモページ「GroupBox」（apps/wpf-standard-control-demo/groupbox.md と日本語版）の記述を実測する。
 ///
 /// 見出しの表示は、見出しの ContentPresenter の中の TextBlock / AccessText の文字と大きさで読む。
 /// アクセスキーは AccessKeyManager.ProcessKey（Alt と文字キーを押したときに呼ばれる処理）で送る。

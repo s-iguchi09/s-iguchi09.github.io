@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ProgressBar」（apps/wpf-standard-control-demo/progressbar.html と日本語版）の記述を実測する。
+/// デモページ「ProgressBar」（apps/wpf-standard-control-demo/progressbar.md と日本語版）の記述を実測する。
 ///
 /// 塗りの長さはテンプレートの PART_Indicator の矩形で読む。
 /// 不定モードのアニメーションが動いているかは、テンプレート内の要素の位置と変形を 300 ms 空けて 2 回読み、変わったかどうかで判断する。

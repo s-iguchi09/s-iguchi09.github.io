@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「PasswordBox」（apps/wpf-standard-control-demo/passwordbox.html と日本語版）の記述を実測する。
+/// デモページ「PasswordBox」（apps/wpf-standard-control-demo/passwordbox.md と日本語版）の記述を実測する。
 ///
 /// キーボードからの文字入力は、TextCompositionManager で TextInput を発生させて再現する。
 /// クリップボードは実際には操作せず、コピー・切り取りのコマンドが実行可能かどうかだけを読む。

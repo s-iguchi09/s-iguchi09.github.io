@@ -6,7 +6,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「DockPanel」（apps/wpf-standard-control-demo/dockpanel.html と日本語版）の記述を実測する。
+/// デモページ「DockPanel」（apps/wpf-standard-control-demo/dockpanel.md と日本語版）の記述を実測する。
 ///
 /// 子はデモアプリと同じ、枠 1 の Label を使う。
 /// レイアウトはウィンドウを作らずに Measure / Arrange で行い、子の矩形を読む。

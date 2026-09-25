@@ -10,7 +10,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「GridSplitter」（apps/wpf-standard-control-demo/gridsplitter.html と日本語版）の記述を実測する。
+/// デモページ「GridSplitter」（apps/wpf-standard-control-demo/gridsplitter.md と日本語版）の記述を実測する。
 ///
 /// ドラッグは、Thumb がマウス操作で発生させるのと同じ DragStarted / DragDelta / DragCompleted
 /// イベントを GridSplitter に発生させて再現する。GridSplitter はこれらのイベントを受けて列幅を変える。

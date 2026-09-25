@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Label」（apps/wpf-standard-control-demo/label.html と日本語版）の記述を実測する。
+/// デモページ「Label」（apps/wpf-standard-control-demo/label.md と日本語版）の記述を実測する。
 ///
 /// アクセスキーは AccessKeyManager.ProcessKey（Alt と文字キーを押したときに呼ばれる処理）で送り、移ったフォーカスを読む。
 /// </summary>

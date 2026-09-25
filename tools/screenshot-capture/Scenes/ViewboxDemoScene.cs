@@ -7,7 +7,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Viewbox」（apps/wpf-standard-control-demo/viewbox.html と日本語版）の記述を実測する。
+/// デモページ「Viewbox」（apps/wpf-standard-control-demo/viewbox.md と日本語版）の記述を実測する。
 ///
 /// 子はデモアプリと同じ、Padding 20・枠 1 の Label を使う。
 /// 拡大率は、子の本来の大きさ（ActualWidth / ActualHeight）と、Viewbox から見た子の矩形の比で読む。

@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「InkCanvas」（apps/wpf-standard-control-demo/inkcanvas.html と日本語版）の記述を実測する。
+/// デモページ「InkCanvas」（apps/wpf-standard-control-demo/inkcanvas.md と日本語版）の記述を実測する。
 ///
 /// 描く・消す・選ぶ操作は実際のマウス（<see cref="RealMouse"/>）でドラッグして行う。ペン（スタイラス）は計測しない。
 /// Copy / Cut / Paste はクリップボードを書き換えるため実行せず、CanExecute だけを読む。
