@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/datepicker.html
 title: "DatePicker"
 badge: "Inputs"
 lead: "DatePicker combines a text box for typing a date with a button that opens a calendar popup. The selected date is a nullable <code>DateTime</code>."
-description: "WPF DatePicker control reference: date selection, range restrictions, format options, XAML examples, and best practices."
+description: "WPF DatePicker measured on .NET 10: DisplayDateStart and End do not stop typed dates, bad input reverts, and the style sets defaults like IsTodayHighlighted."
 ---
 
 ## Overview

@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/grid.html
 title: "Grid"
 badge: "Layout"
 lead: "Grid arranges its children in rows and columns. Each row and column is sized by a fixed value, by <code>Auto</code> (the size of its content), or by a star (<code>*</code>) share of the space that remains."
-description: "WPF Grid layout panel reference: rows, columns, spans, star sizing, XAML examples, and best practices. Part of the WPF Standard Control Demo App."
+description: "WPF Grid measured on .NET 10: Auto, fixed and star sizes, spans, SharedSizeGroup, ZIndex, where out-of-range indexes go, and when star columns lose their ratio."
 ---
 
 ## Overview

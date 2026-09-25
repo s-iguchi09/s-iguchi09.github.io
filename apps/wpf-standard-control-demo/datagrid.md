@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/datagrid.html
 title: "DataGrid"
 badge: "List"
 lead: "DataGrid shows a collection as a table of rows and columns, with built-in column sorting, in-place editing, and adding and deleting rows."
-description: "WPF DataGrid control reference: columns, sorting, editing, adding rows, validation, virtualization, and frozen columns, measured on .NET 10 with the demo app."
+description: "WPF DataGrid measured on .NET 10: generated columns, sorting, editing, validation, virtualization, frozen columns, and why a third click keeps the sort."
 ---
 
 ## Overview

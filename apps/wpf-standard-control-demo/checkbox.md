@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/checkbox.html
 title: "CheckBox"
 badge: "Inputs"
 lead: "CheckBox lets the user turn an option on or off. With <code>IsThreeState</code>, it also has a third, undetermined state."
-description: "WPF CheckBox control reference: three-state toggling, XAML examples, and best practices. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF CheckBox measured on .NET 10: three-state toggling, IsChecked bindings, keys, and label layout, and why null bound to a bool gives a binding error."
 ---
 
 ## Overview

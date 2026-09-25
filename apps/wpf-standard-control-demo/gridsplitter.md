@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/gridsplitter.html
 title: "GridSplitter"
 badge: "Resizer"
 lead: "GridSplitter is placed in a Grid and lets the user resize the rows or columns next to it, by dragging it or with the arrow keys."
-description: "WPF GridSplitter control reference: resizable pane layouts, resize direction, preview, XAML examples, and best practices, from the WPF control demo app."
+description: "WPF GridSplitter measured on .NET 10: what each ResizeBehavior resizes, why the default Right alignment grows its own column, preview, and the arrow keys."
 ---
 
 ## Overview
