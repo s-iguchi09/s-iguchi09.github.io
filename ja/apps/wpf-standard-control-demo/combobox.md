@@ -33,7 +33,7 @@ description: "WPF の ComboBox を .NET 10 で実測して解説。編集可能�
 | `StaysOpenOnEdit` | `bool` | 利用者が編集欄をクリックしたときに一覧を開いたままにするかどうかで、既定値は `False` です。開いた編集可能な ComboBox の編集欄を実際のマウスでクリックすると、`False` では一覧が閉じ、`True` では開いたままでした。 |
 | `ShouldPreserveUserEnteredPrefix` | `bool` | 自動補完で、入力した文字をそのまま残すかどうかで、既定値は `False` です。「tue」を入力すると、`False` では `Tuesday`、`True` では `tuesday` になりました。`SelectedValue` はどちらも Tuesday でした。 |
 | `SelectedIndex / SelectedItem / SelectedValue / SelectedValuePath / DisplayMemberPath (Selector, ItemsControl)` | `int / object / object / string / string` | 選択と、項目のどのプロパティを値と表示の文字にするかです（上を参照）。 |
-| `IsSynchronizedWithCurrentItem (ItemsControl)` | `bool?` | 選択を一覧のビューの現在の項目に合わせるかどうかです。同じリストの 2 つの ComboBox を `True` にすると、どちらもインデックス 0 で始まり、一緒に動きました。1 つ目を 3 にすると 2 つ目も 3 になりました。未設定では、どちらも -1 で始まり、互いに独立でした。デモアプリは 3 つの ComboBox を `True` で始めるので、すべて Sunday で始まります。 |
+| `IsSynchronizedWithCurrentItem (Selector)` | `bool?` | 選択を一覧のビューの現在の項目に合わせるかどうかです。同じリストの 2 つの ComboBox を `True` にすると、どちらもインデックス 0 で始まり、一緒に動きました。1 つ目を 3 にすると 2 つ目も 3 になりました。未設定では、どちらも -1 で始まり、互いに独立でした。デモアプリは 3 つの ComboBox を `True` で始めるので、すべて Sunday で始まります。 |
 
 ## XAML 使用例
 
