@@ -19,7 +19,7 @@ The WPF MessageBox Sample Creator is a prototyping application that allows you t
 
 In WPF development, repeatedly writing code just to check the behavior of dialogs is inefficient. Furthermore, designers and architects often find it difficult to use tools that are only shared as source code, as setting up a build environment is a significant hurdle.
 
-To solve this, this tool is distributed in a ready-to-run format. The tool uses WPF alone, with no third-party libraries and no custom styles, so the ZIP of the latest release, v1.0.0.2, is about 200 KB.
+To solve this, this tool is distributed in a ready-to-run format. The tool uses WPF alone, with no third-party libraries and no custom styles, so the app ZIP of the latest release, v1.0.0.2, is about 200 KB.
 
 ## Configurable Parameters
 
@@ -68,7 +68,7 @@ The window uses WPF's default styles. There is no `Style` in its XAML.
 ## System Requirements {#requirements}
 
 - **OS:** Windows, x64
-- **Runtime:** The ZIP of the latest release, v1.0.0.2, contains two win-x64 builds, one for .NET 8 and one for .NET 10. Both are framework-dependent — the runtime is not bundled — so the matching x64 **.NET Desktop Runtime** has to be installed. Pick the executable for whichever version you already have.
+- **Runtime:** The app ZIP of the latest release, v1.0.0.2, contains two win-x64 builds, one for .NET 8 and one for .NET 10. Both are framework-dependent — the runtime is not bundled — so the matching x64 **.NET Desktop Runtime** has to be installed. Pick the executable for whichever version you already have.
 - **UI framework:** WPF, no third-party dependencies
 
 ## Downloads & Repository
