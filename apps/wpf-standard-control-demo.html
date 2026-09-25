@@ -5,10 +5,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>WPF Standard Control Demo App (.NET 10) | UI Style Validation Tool</title>
+  <title>WPF Standard Control Demo App (.NET 10) | 36 Controls and Their XAML</title>
   {% include head.html %}
 
-  <meta name="description" content="A demo app for checking the behavior of WPF standard controls on .NET 10, styled through pure style definitions. A pre-built exe is on GitHub Releases.">
+  <meta name="description" content="A WPF app on .NET 10 that shows 36 standard controls in their default look, with inputs for each property and the XAML behind each section. Exe on GitHub.">
 
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -21,64 +21,42 @@
   <section class="hero">
     <h1>WPF Standard Control Demo App (.NET 10)</h1>
     <p>
-      Comprehensively verify the behavior of WPF standard UI in the latest .NET 10 environment. 
-      Available as a pre-built executable. Visualize "feasibility" before writing a single line of code.
+      A Windows app that shows 36 WPF standard controls on .NET 10. Each control has its own page, with inputs that change its properties and a "Show Code" link that shows the XAML behind each section.
     </p>
   </section>
 
   <section class="content-section">
-    <h2>Overview: Centralized UI Validation for Next-Gen .NET</h2>
+    <h2>What the App Shows</h2>
     <p>
-      This application is a centralized demo tool designed to verify how WPF (Windows Presentation Foundation) standard controls operate and render on the latest <strong>.NET 10</strong> runtime.
+      The window lists the controls on the left in nine groups: Inputs, Layout, Display, List, Graphics, Selectors, Menu, Overlays, and Resizer. Selecting one opens its page. A page is split into sections, one for each property or feature. Each section puts input controls, such as a ComboBox of enum values, a Slider, or a CheckBox, next to the control being demonstrated, so the effect of a value shows as soon as it is changed.
     </p>
     <p>
-      It covers everything from basic elements like Buttons and TextBoxes to complex components like ListViews and DataGrids. More than just a catalog, it serves as a "living specification" for testing focus transitions and visual styles under real OS conditions.
-    </p>
-    <p>
-      <strong>Pre-built executables (.exe) are available via GitHub Releases.</strong> You can experience next-gen WPF behavior instantly by simply downloading the app—even without the .NET 10 SDK installed on your system.
+      "Show Code" under a section opens a popup with the XAML of the elements in that section. The text is not a separate copy that could drift from the app: the build embeds each page's XAML source in the executable, and the popup picks out the section's elements by <code>x:Name</code> at run time. What it shows is the markup that is running.
     </p>
   </section>
 
   <section class="content-section">
-    <h2>Background: Balancing "Raw Beauty" and Portability</h2>
+    <h2>Styles</h2>
     <p>
-      As .NET evolves, WPF undergoes subtle rendering changes. Verifying existing UI assets on the latest runtime is essential for modern Windows app development.
+      The controls being demonstrated keep the look of WPF's default styles. The app does not set <code>ThemeMode</code>, so they appear in the classic theme rather than Fluent. The app's own styles, in nine <code>ResourceDictionary</code> files merged in <code>App.xaml</code>, all have an <code>x:Key</code>. They style only the app's frame, such as the list of controls, the group boxes around sections, the sliders used as inputs, the "Show Code" link, and the code popup. Because none of them is an implicit style, they do not change the controls on the pages.
     </p>
     <p>
-      My focus was <strong>achieving high visibility using only standard features, without relying on third-party libraries.</strong> While external UI kits make it easy to polish an app, they often obscure the "standard behavior" we need to verify.
-    </p>
-    <p>
-      By adhering to <strong>Style definitions to optimize hierarchy and visibility</strong>, I've created a tool that provides instant access to "Pure WPF." Providing it in a pre-built format removes the barrier of environment setup, allowing everyone to interact with the tech immediately.
+      A few pages add local styles of their own, for example to set the spacing of the check boxes on the DataGrid page or to demonstrate <code>RowStyle</code> and <code>CellStyle</code>. They are part of that page's XAML in the repository.
     </p>
   </section>
 
   <section class="content-section">
-    <h2>Technical Insights: Tips for Clean Style Design in WPF</h2>
+    <h2>Downloads and Requirements</h2>
     <p>
-      Here are the key design principles used to customize standard controls in this app.
+      GitHub Releases has two ZIP files for each version, both for 64-bit Windows:
     </p>
-    <h3>1. Design Leveraging Property Orthogonality</h3>
-    <p>
-      By utilizing "orthogonality" in Style definitions, I ensured that changing one property doesn't break others. This creates a robust UI that remains stable even when experimenting with complex property combinations.
-    </p>
-    <h3>2. Effective Use of Inheritance (BasedOn)</h3>
-    <p>
-      To avoid code duplication, I defined common Base Styles and extended them using <code>BasedOn</code>. This provides the flexibility to adapt to new rendering characteristics across the entire app at once.
-    </p>
-    <h3>3. Separation via Resource Dictionaries</h3>
-    <p>
-      Design (XAML) and logic (C#) are strictly separated, with all styles managed through <code>ResourceDictionary</code>. This structure makes it easy for developers to "cherry-pick" specific styles for their own projects.
-    </p>
-  </section>
-
-  <section class="content-section">
-    <h2>Technology Stack</h2>
     <ul>
-      <li><strong>Runtime:</strong> .NET 10</li>
-      <li><strong>Framework:</strong> WPF</li>
-      <li><strong>UI Implementation:</strong> XAML (Pure Style Definition / ResourceDictionary)</li>
-      <li><strong>Development Environment:</strong> C# 14 / Visual Studio 2026</li>
+      <li><strong>standalone:</strong> a self-contained single-file executable (about 59 MB). It includes the .NET runtime, so nothing else needs to be installed.</li>
+      <li><strong>without "standalone":</strong> a framework-dependent single-file executable (about 250 KB). It needs the .NET 10 Desktop Runtime.</li>
     </ul>
+    <p>
+      The source targets <code>net10.0-windows</code> and opens as a <code>.slnx</code> solution in Visual Studio 2026.
+    </p>
   </section>
 
   <section class="content-section">
