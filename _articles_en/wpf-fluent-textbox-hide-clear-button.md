@@ -65,7 +65,7 @@ Which named parts a template holds can be confirmed by applying it and looking t
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the rows whose implicit style inherits through BasedOn keep DeleteButton on both routes." width="913" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
+  <figcaption>Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (the Aero2 theme style).</figcaption>
 </figure>
 
 **`DeleteButton` is present wherever the Fluent template reaches the control and no implicit style overrides it** — both with `ThemeMode` set and with `Fluent.xaml` merged directly. That part is the clear button, and this confirms its name on `.NET 10`.
@@ -155,7 +155,8 @@ public static partial class TextBoxHelper
         }
     }
 
-    private static void HideClearButtonPart(TextBox textBox)
+    // Public so that it can be called again after the template is replaced (see Notes).
+    public static void HideClearButtonPart(TextBox textBox)
     {
         textBox.ApplyTemplate();
 
@@ -189,7 +190,7 @@ Once applied, the clear button no longer appears even while the control has focu
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png" alt="The same window after applying Approach 1. The TextBox still holds text and has keyboard focus, but no clear button is shown." width="346" height="143" loading="lazy">
-  <figcaption>The same screen after applying Approach 1. The input value and the focus state are identical to the previous image, and only the clear button is gone. Text input behavior such as wrapping and caret position is unchanged.</figcaption>
+  <figcaption>The same screen after applying Approach 1. The input value and the focus state are identical to the previous image, and only the clear button is gone.</figcaption>
 </figure>
 
 ### Approach 2: Use the `AcceptsReturn` Hide Trigger (`.NET 10` or later)
@@ -321,6 +322,12 @@ It gives complete control over the structure at the cost of far more markup. Tha
 - A `TextBox` whose control template has been fully replaced may not contain a clear-button part. In that case, remove the button element itself within the replaced template.
 - The implementations above only hide the button when `True` is set and do not include logic to restore it dynamically. If toggling on and off at runtime is required, add a branch that restores `Visibility` and the handler registrations.
 - When an implicit style overrides the `TextBox` style, omitting `BasedOn` loses the Fluent template altogether and the part ceases to exist. The corresponding row of the table above measures exactly that.
+- **Approach 1 is undone when the template is replaced.** Switching `ThemeMode` while the window is open gives the `TextBox` the new theme's template, and the clear button is created again. In the measurement below, the new part was a different instance without the local `Collapsed`, and it appeared again on focus. Calling `HideClearButtonPart` again after the switch hid it; the method is `public` in the code above for this reason.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.svg" alt="A table of Approach 1 across a ThemeMode switch. After applying it under Light, the part is Collapsed. After switching the window to Dark, the part is a different instance with no local Visibility and is Visible with focus. Applying Approach 1 again makes it Collapsed." width="850" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by applying Approach 1, switching the window's <code>ThemeMode</code> from <code>Light</code> to <code>Dark</code>, and applying it again, with keyboard focus in the <code>TextBox</code>.</figcaption>
+</figure>
 
 ---
 
