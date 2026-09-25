@@ -34,7 +34,7 @@ WPF の `DataGrid` は便利なソート機能を持っていますが、要件�
 - 並び替えの状態は、`ICollectionView` の `SortDescriptions` と列の `SortDirection` に分かれて保持される。
 - `SortDescriptions` を消しただけでは列の `SortDirection` が残り、ヘッダーの矢印が消えない。
 - `SortDescriptions` を足しただけでは、列の `SortDirection` は付かない。
-- `SortDescriptions` を 2 つ足すと、複数列ソートになる。
+- `SortDescriptions` を 2 つ足すと、複数列ソートになる。1 つ目の条件で同点の行は、2 つ目の条件で並ぶ。
 
 ## 問題
 
@@ -53,9 +53,9 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 
 並び替えの状態は 2 か所に分かれている。操作ごとに両方を測った結果が次の図である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="操作ごとに SortDescriptions の件数と列の SortDirection、並び順を測った表。コードから SortDescriptions を足しただけでは SortDirection は null のまま。SortDescriptions を消しただけでは SortDirection が Ascending のまま残る。両方を消して初めて初期状態に戻る。最終行の列ヘッダークリックでは両方が同時に更新される。" width="827" height="290" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。最終行以外はコードから直接操作した場合である。</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="操作ごとに SortDescriptions の件数と列の SortDirection、並び順を測った表。コードから SortDescriptions を足しただけでは SortDirection は null のまま。SortDescriptions を消しただけでは、ItemsSource に渡した ICollectionView から消した場合も含めて、SortDirection が Ascending のまま残る。両方を消して初めて初期状態に戻る。Score が同点の行を足すと、条件が 1 つなら carol が anna より前のままで、Name を 2 つ目に足すと anna が前になる。最終行の列ヘッダークリックでは両方が同時に更新される。" width="1070" height="350" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 での実測結果。<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。最終行以外はコードから直接操作した場合である。<code>with a tie</code> の 2 行は、carol と同じ <code>Score</code> の行（anna）を足している。</figcaption>
 </figure>
 
 **`SortDescriptions.Clear()` を呼んだ行を見ると、並び順は初期状態に戻っているのに `column.SortDirection` は `Ascending` のまま残っている。**
@@ -64,7 +64,7 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 逆に `SortDescriptions` を足しただけの行では、並び順が変わっているのに `SortDirection` は `null` のままである。
 **コードから一方を操作しても、もう一方は追随しない。** どちらの向きにも、両方を明示的に設定する必要がある。
 
-`SortDescriptions` を 2 つ足した行は複数列ソートである。Shift + クリックはこの状態を作る操作であり、解除ではない。
+`with a tie` の 2 行が複数列ソートを示している。`Score` だけでは同点の carol と anna が元の順のままで、`Name` を足すと anna が前になる。Shift + クリックはこの状態を作る操作であり、解除ではない。
 
 最終行はその対照で、列ヘッダーのクリックで走る標準の並び替えである。**この経路では `SortDescriptions` と `SortDirection` が同時に更新される。**
 ユーザーが並び替えたときに矢印と並び順が食い違わないのはこのためであり、食い違いが生じるのはコードから一方だけを触ったときである。
@@ -110,7 +110,7 @@ public static class DataGridSortHelper
 
 #### ポイント
 
-- `SortDescriptions.Clear()` だけでは見た目の矢印が残る場合がある
+- `SortDescriptions.Clear()` だけでは見た目の矢印が残る
 - `column.SortDirection = null` を併用して UI 整合性を保つ
 
 ### 3回目のクリックで自動的に初期化する（カスタム挙動）
@@ -200,7 +200,7 @@ public class RowItem
 
 `SortDescriptions` を `ItemsView` 側で管理することで、UI コンポーネントへの依存を減らし、テスト容易性を確保できる。
 
-**ただし、この `ClearSort` が解除するのはビューの並び順だけである。** `DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `then SortDescriptions.Clear() only` の行がその実測である）。
+**ただし、この `ClearSort` が解除するのはビューの並び順だけである。** `DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `ItemsSource = ICollectionView` の行がまさにこれを測っており、ビューの `SortDescriptions` を消しても `SortDirection` は `Ascending` のまま残った）。
 矢印まで戻すには、ViewModel から列の状態を触れない以上、`DataGrid` 側で `SortDirection` を `null` にする処理が別に要る。Behavior 化する場合は、その処理を Behavior に含めるとコマンドから一度に初期化できる。
 
 ```xml
@@ -304,7 +304,7 @@ XAML に宣言を 1 行足すだけで横展開でき、重複コードを減ら
 
 ## 注意点
 
-- `SortDescriptions` のクリアだけではヘッダー矢印表示と不整合になる場合があります。  
+- `SortDescriptions` のクリアだけでは、ヘッダーの矢印の表示と並び順が食い違う。  
 - `Sorting` イベント例で `SortMemberPath` をキーに解除する場合、対象列に `SortMemberPath` が未設定だと解除処理が意図どおり動作しない可能性があります。  
 - 複数列ソートを併用する場合は、対象列のみを解除するか全解除するかを要件で明確化する必要があります。  
 

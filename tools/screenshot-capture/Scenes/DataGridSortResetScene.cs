@@ -16,7 +16,8 @@ internal sealed class DataGridSortResetScene : IScene
         "並び替えの状態が ICollectionView の SortDescriptions と列の SortDirection に分かれていること",
         "SortDescriptions を消しただけでは列の SortDirection が残ること（ヘッダーの矢印が消えない）",
         "SortDescriptions を足しただけでは列の SortDirection が付かないこと",
-        "SortDescriptions を 2 つ足すと複数列ソートになること",
+        "SortDescriptions を 2 つ足すと複数列ソートになること（1 つ目の条件が同点の行で、2 つ目の条件が効くこと）",
+        "ItemsSource に渡した ICollectionView の SortDescriptions を消しても、列の SortDirection が残ること",
         "コードから一方だけを操作すると 2 か所が食い違うのに対し、列ヘッダークリックで走る標準の並び替えでは両方が同時に更新されること",
     ];
 

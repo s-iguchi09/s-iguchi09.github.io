@@ -96,11 +96,31 @@ internal static class DataGridMeasurements
             column.SortDirection = null;
         }));
 
-        rows.Add(await MeasureAsync("two SortDescriptions (multi-column)", (grid, _) =>
+        // 複数列ソートの確認には、1 つ目の条件（Score）が同点の行が要る。同点が無いと 2 つ目の条件（Name）が
+        // 効いているかどうかが並びに現れない。ほかの行と共有するデータは変えず、この 2 行でだけ同点の行を足す。
+        rows.Add(await MeasureAsync("one SortDescription (Score desc), with a tie", (grid, _) =>
         {
+            AddTie(grid);
+            grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Score), ListSortDirection.Descending));
+            grid.Items.Refresh();
+        }));
+
+        rows.Add(await MeasureAsync("two SortDescriptions (Score desc, Name asc), with a tie", (grid, _) =>
+        {
+            AddTie(grid);
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Score), ListSortDirection.Descending));
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
             grid.Items.Refresh();
+        }));
+
+        // 記事の ViewModel の ClearSort と同じく、ItemsSource に渡した ICollectionView の SortDescriptions を消す。
+        rows.Add(await MeasureAsync("ItemsSource = ICollectionView; view.SortDescriptions.Clear()", (grid, column) =>
+        {
+            ICollectionView view = CollectionViewSource.GetDefaultView(grid.ItemsSource);
+            grid.ItemsSource = view;
+            view.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
+            column.SortDirection = ListSortDirection.Ascending;
+            view.SortDescriptions.Clear();
         }));
 
         // ここまでの行はすべてコードから直接操作している。
@@ -135,6 +155,10 @@ internal static class DataGridMeasurements
         onClick.Invoke(header, null);
         grid.UpdateLayout();
     }
+
+    /// <summary>carol と同じ Score の行を、名前の順と元の並びが食い違う位置（末尾）に足す。</summary>
+    private static void AddTie(DataGrid grid)
+        => ((ObservableCollection<Row>)grid.ItemsSource).Add(new Row { Name = "anna", Score = 20 });
 
     private static async Task<IReadOnlyList<string>> MeasureAsync(
         string label, Action<DataGrid, DataGridTextColumn> operate)
