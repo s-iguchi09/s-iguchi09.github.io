@@ -19,7 +19,7 @@ The demo app has sections for the range, `IsIndeterminate`, and `Orientation`. T
 
 ## Screen Preview
 
-![progressbar demo screen](/images/wpf-standard-control-demo/progressbar.png){: .screenshot-img}
+![The ProgressBar page of the demo app, with the control list on the left and the first section, IsIndeterminate](/images/wpf-standard-control-demo/progressbar.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

@@ -19,7 +19,7 @@ description: "WPF の RadioButton を .NET 10 で実測して解説。GroupName 
 
 ## 画面キャプチャ
 
-![radiobutton demo screen](/images/wpf-standard-control-demo/radiobutton.png){: .screenshot-img}
+![デモアプリの RadioButton のページ。左にコントロールの一覧、右に最初の節の GroupName](/images/wpf-standard-control-demo/radiobutton.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

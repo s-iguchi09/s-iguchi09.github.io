@@ -17,7 +17,7 @@ The demo app has sections for `LastChildFill`, `Dock`, `Background`, and `ZIndex
 
 ## Screen Preview
 
-![dockpanel demo screen](/images/wpf-standard-control-demo/dockpanel.png){: .screenshot-img}
+![The DockPanel page of the demo app, with the control list on the left and the first section, LastChildFill](/images/wpf-standard-control-demo/dockpanel.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

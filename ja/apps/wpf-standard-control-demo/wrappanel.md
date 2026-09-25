@@ -19,7 +19,7 @@ description: "WPF の WrapPanel を .NET 10 で実測して解説。デモアプ
 
 ## 画面キャプチャ
 
-![wrappanel demo screen](/images/wpf-standard-control-demo/wrappanel.png){: .screenshot-img}
+![デモアプリの WrapPanel のページ。左にコントロールの一覧、右に最初の節の Orientation](/images/wpf-standard-control-demo/wrappanel.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

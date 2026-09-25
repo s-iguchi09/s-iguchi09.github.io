@@ -17,7 +17,7 @@ The demo app starts with the path `C:\Windows\Web\Wallpaper\Windows\img0.jpg`, w
 
 ## Screen Preview
 
-![image demo screen](/images/wpf-standard-control-demo/image.png){: .screenshot-img}
+![The Image page of the demo app, with the control list on the left and the first section, Source / Stretch / StretchDirection](/images/wpf-standard-control-demo/image.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

@@ -17,6 +17,7 @@ verifies:
   - "デモアプリと同じ XAML（Command の後に CommandParameter をバインド）で読み込んだときに CanExecute へ渡る値、CommandParameter の変化で CanExecute が呼ばれるか、Execute に渡る値"
   - "Button の基底クラス、既定のテンプレートの VisualStateGroup とトリガー、ContentPresenter の RecognizesAccessKey"
   - "UI オートメーションの名前（文字列の内容、アンダースコア付きの内容、画像だけの内容、AutomationProperties.Name）"
+  - "ItemTemplate の中のボタンに CommandParameter=\"{Binding}\" を設定し、2 行目を実際にクリックしたときに Execute が受け取る値"
 images:
   - "images/wpf-standard-control-demo/verification/button/button-keys.svg"
   - "images/wpf-standard-control-demo/verification/button/button-clickmode.svg"

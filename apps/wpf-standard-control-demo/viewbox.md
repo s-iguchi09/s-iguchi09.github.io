@@ -19,7 +19,7 @@ The demo app has one section, with `Stretch` and `StretchDirection`. The "Show C
 
 ## Screen Preview
 
-![viewbox demo screen](/images/wpf-standard-control-demo/viewbox.png){: .screenshot-img}
+![The Viewbox page of the demo app, with the control list on the left and the first section, Stretch / StretchDirection](/images/wpf-standard-control-demo/viewbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

@@ -17,7 +17,7 @@ The demo app has sections for `Target`, the content, and the `Control` propertie
 
 ## Screen Preview
 
-![label demo screen](/images/wpf-standard-control-demo/label.png){: .screenshot-img}
+![The Label page of the demo app, with the control list on the left and the first section, Target](/images/wpf-standard-control-demo/label.png){: .screenshot-img}
 
 ## Demonstrated Properties
 
@@ -61,7 +61,7 @@ The following XAML is the `Target` section of the demo app (`LabelUsageControl.x
 ## Common Use Cases
 
 - **Form captions:** a caption next to each field, with an access key that jumps to it.
-- **Captions for other controls:** a ComboBox or a DatePicker as the `Target`.
+- **Captions for other controls:** a ComboBox or a DatePicker as the `Target`. The access key moved the focus to a ComboBox itself, and to the text box inside an editable ComboBox or a DatePicker.
 - **Captions with content:** an icon and text together, since the content can be any element.
 
 ## Tips and Best Practices
@@ -75,7 +75,7 @@ The following XAML is the `Target` section of the demo app (`LabelUsageControl.x
 Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`LabelDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Access keys were sent through `AccessKeyManager.ProcessKey`, which handles a key pressed with <kbd>Alt</kbd>, and <kbd>Tab</kbd> through WPF's input manager, the same path as keys typed on a keyboard. UI Automation names were read through the UI Automation client API, which screen readers also use, from a thread other than the window's UI thread in the same process. Sizes are the values on the measuring machine.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Table of Label results: it derives from ContentControl, is not focusable or a tab stop, has padding 5 and Left and Top content alignment, Tab skips it, the demo's access keys N and A move the focus to the Name and Age text boxes, a Label without Target moves nothing, a Target inside a ToolBar receives the focus, the target TextBox gets no UI Automation name or LabeledBy while AutomationProperties.LabeledBy set by hand names it, and a line break makes the Label two lines high" width="1108" height="350" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Table of Label results: it derives from ContentControl, is not focusable or a tab stop, has padding 5 and Left and Top content alignment, Tab skips it, the demo's access keys N and A move the focus to the Name and Age text boxes, a Label without Target moves nothing, a Target inside a ToolBar receives the focus, the target TextBox gets no UI Automation name or LabeledBy while AutomationProperties.LabeledBy set by hand names it, a line break makes the Label two lines high, and a Target that is a ComboBox receives the focus itself while an editable ComboBox or a DatePicker passes it to the text box inside" width="1108" height="380" loading="lazy">
   <figcaption>Defaults, access keys, <code>Target</code>, and UI Automation. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

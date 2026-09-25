@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/passwordbox.html
 title: "PasswordBox"
 badge: "Inputs"
 lead: "PasswordBox is a text input that shows a mask character for each typed character and does not let the text be copied out."
-description: "WPF PasswordBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF PasswordBox measured on .NET 10: Password cannot be bound, MaxLength limits only typing, IsSelectionActive follows focus, and Copy is blocked."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ With all text selected, the Copy and Cut commands could not be executed, while P
 
 ## Screen Preview
 
-![passwordbox demo screen](/images/wpf-standard-control-demo/passwordbox.png){: .screenshot-img}
+![The PasswordBox page of the demo app, with the control list on the left and the first section, CaretBrush](/images/wpf-standard-control-demo/passwordbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

@@ -19,7 +19,7 @@ description: "WPF の ToolTip を .NET 10 と実際のマウス・キーボー�
 
 ## 画面キャプチャ
 
-![tooltip demo screen](/images/wpf-standard-control-demo/tooltip.png){: .screenshot-img}
+![デモアプリの ToolTip のページ。左にコントロールの一覧、右に最初の節の Placement](/images/wpf-standard-control-demo/tooltip.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

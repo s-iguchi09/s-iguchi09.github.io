@@ -17,7 +17,7 @@ The demo app has sections for `Columns`, `Rows`, `FirstColumn`, `Background`, an
 
 ## Screen Preview
 
-![uniformgrid demo screen](/images/wpf-standard-control-demo/uniformgrid.png){: .screenshot-img}
+![The UniformGrid page of the demo app, with the control list on the left and the first section, Columns](/images/wpf-standard-control-demo/uniformgrid.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

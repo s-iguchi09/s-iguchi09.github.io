@@ -92,7 +92,7 @@ Xaml.ExtensionPack は単一パッケージで `net10.0` / `net8.0` / `net472` �
 | `AsyncRelayCommand<T>` | クラス | `Func<T, Task>` をラップする、上記の型付き版です。 |
 | `IRaiseCanExecuteChanged` | インターフェース | `ICommand` に `RaiseCanExecuteChanged()` を追加したインターフェースです。 ViewModel が具象コマンド型に依存せずに実行可否を再評価できます。 |
 | `IAsyncCommand` | インターフェース | 非同期コマンドの契約です。`ICommand` のメンバーに加えて `ExecuteAsync` と `IsExecuting` を公開します。 |
-| `TaskExtensions.FireAndForget` | 拡張メソッド | `Task` を破棄コンテキストで await し、任意の例外ハンドラーを受け取ります。 観測されない例外の発生を防ぎます。 |
+| `TaskExtensions.FireAndForget` | 拡張メソッド | `Task` を `async void` メソッドの中で await し、例外を任意のハンドラーに渡します。 例外が観測されないまま残ることを防ぎます。 |
 
 ## 使い方
 

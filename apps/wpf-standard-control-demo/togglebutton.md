@@ -17,7 +17,7 @@ The demo app has two sections, `IsChecked` and `IsThreeState`, each showing the 
 
 ## Screen Preview
 
-![togglebutton demo screen](/images/wpf-standard-control-demo/togglebutton.png){: .screenshot-img}
+![The ToggleButton page of the demo app, with the control list on the left and the first section, IsChecked](/images/wpf-standard-control-demo/togglebutton.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

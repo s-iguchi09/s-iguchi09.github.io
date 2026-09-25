@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/checkbox.html
 title: "CheckBox"
 badge: "Inputs"
 lead: "CheckBox lets the user turn an option on or off. With <code>IsThreeState</code>, it also has a third, undetermined state."
-description: "WPF CheckBox control reference: three-state toggling, XAML examples, and best practices. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF CheckBox measured on .NET 10: three-state toggling, IsChecked bindings, keys, and label layout, and why null bound to a bool gives a binding error."
 ---
 
 ## Overview
@@ -17,7 +17,7 @@ The demo app has a section for each property below. The "Show Code" link under e
 
 ## Screen Preview
 
-![checkbox demo screen](/images/wpf-standard-control-demo/checkbox.png){: .screenshot-img}
+![The CheckBox page of the demo app, with the control list on the left and the first section, IsChecked(ToggleButton)](/images/wpf-standard-control-demo/checkbox.png){: .screenshot-img}
 
 ## Demonstrated Properties
 
@@ -53,7 +53,7 @@ The following XAML is the `IsThreeState` section of the demo app (`CheckBoxUsage
 - **Settings:** independent on/off options, each bound to a `bool` property.
 - **Filters:** several categories that can be combined.
 - **Select all:** a three-state check box whose `null` means that only some items are selected.
-- **Consent:** a check box that enables a button once the user agrees.
+- **Consent:** a check box that enables a button once the user agrees. With the button's `IsEnabled` bound to the check box's `IsChecked`, the button went from disabled to enabled on a real click on the check box.
 
 ## Tips and Best Practices
 
@@ -64,10 +64,10 @@ The following XAML is the `IsThreeState` section of the demo app (`CheckBoxUsage
 
 ## Measured Behavior {#measured-behavior}
 
-Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`CheckBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/CheckBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Clicks were reproduced with UI Automation's `Toggle`, which runs the same toggle handling as a click, and the Space key by sending key-down and key-up events to a displayed window. Positions are the values on the measuring machine.
+Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`CheckBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/CheckBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Clicks were reproduced with UI Automation's `Toggle`, which runs the same toggle handling as a click, and the Space key by sending key-down and key-up events to a displayed window. The click on the consent check box was made with the real mouse. Positions are the values on the measuring machine.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="Table of CheckBox results: it derives from ToggleButton, IsChecked binds two-way by default, the events bubble, VerticalContentAlignment defaults to Top, three-state clicks cycle false, true, null, a bool source rejects null with a binding error, Space toggles the box, the label is part of the clickable area, and Center centers the box and the label in the CheckBox, lining the box up with the middle of a wrapped label" width="1093" height="560" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="Table of CheckBox results: it derives from ToggleButton, IsChecked binds two-way by default, the events bubble, VerticalContentAlignment defaults to Top, three-state clicks cycle false, true, null, a bool source rejects null with a binding error, Space toggles the box, the label is part of the clickable area, and Center centers the box and the label in the CheckBox, lining the box up with the middle of a wrapped label, and a button whose IsEnabled is bound to IsChecked becomes enabled on a real click on the check box" width="1140" height="590" loading="lazy">
   <figcaption>States, bindings, keyboard, hit testing, and layout. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

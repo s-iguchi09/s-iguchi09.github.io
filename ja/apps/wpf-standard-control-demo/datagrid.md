@@ -17,7 +17,7 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 ## 画面キャプチャ
 
-![datagrid demo screen](/images/wpf-standard-control-demo/datagrid.png){: .screenshot-img}
+![デモアプリの DataGrid のページ。左にコントロールの一覧、右に最初の節の AlternatingRowBackground](/images/wpf-standard-control-demo/datagrid.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

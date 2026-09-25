@@ -19,7 +19,7 @@ The demo app has sections for the placement and its offsets and target, the keyb
 
 ## Screen Preview
 
-![tooltip demo screen](/images/wpf-standard-control-demo/tooltip.png){: .screenshot-img}
+![The ToolTip page of the demo app, with the control list on the left and the first section, Placement](/images/wpf-standard-control-demo/tooltip.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

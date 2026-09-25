@@ -17,7 +17,7 @@ Grid は行を `RowDefinition`、列を `ColumnDefinition` で定義し、子要
 
 ## 画面キャプチャ
 
-![grid demo screen](/images/wpf-standard-control-demo/grid.png){: .screenshot-img}
+![デモアプリの Grid のページ。左にコントロールの一覧、右に最初の節の Column / Row](/images/wpf-standard-control-demo/grid.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

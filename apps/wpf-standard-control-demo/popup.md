@@ -19,7 +19,7 @@ The demo app has four sections: `IsOpen`, `StaysOpen`, and `AllowsTransparency`;
 
 ## Screen Preview
 
-![popup demo screen](/images/wpf-standard-control-demo/popup.png){: .screenshot-img}
+![The Popup page of the demo app, with the control list on the left and the first section, IsOpen / StaysOpen / AllowsTransparency](/images/wpf-standard-control-demo/popup.png){: .screenshot-img}
 
 ## Demonstrated Properties
 

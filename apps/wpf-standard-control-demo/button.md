@@ -17,7 +17,7 @@ The demo app has sections for `IsCancel` and `IsDefault`, `ClickMode`, `IsPresse
 
 ## Screen Preview
 
-![button demo screen](/images/wpf-standard-control-demo/button.png){: .screenshot-img}
+![The Button page of the demo app, with the control list on the left and the first section, IsCancel / IsDefault](/images/wpf-standard-control-demo/button.png){: .screenshot-img}
 
 ## Demonstrated Properties
 
@@ -58,7 +58,7 @@ public ICommand ClickWithParameterCommand { get; } =
 
 - **Dialog buttons:** OK with `IsDefault` and Cancel with `IsCancel` in a window opened with `ShowDialog`.
 - **Commands in MVVM:** a button bound to a view model's `ICommand`, enabled and disabled by `CanExecute`.
-- **Buttons in list rows:** a button in an item template that passes its item as `CommandParameter`.
+- **Buttons in list rows:** a button in an item template that passes its item as `CommandParameter`. With `CommandParameter="{Binding}"`, a real click on the button of the second row passed `Row 2` to `Execute`.
 
 ## Tips and Best Practices
 
@@ -71,7 +71,7 @@ public ICommand ClickWithParameterCommand { get; } =
 
 ## Measured Behavior {#measured-behavior}
 
-Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`ButtonDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ButtonDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Keys were sent through WPF's input manager, the same path as keys typed on a keyboard, so that `IsCancel` and `IsDefault`, which are handled there, respond to them. `ClickMode` was measured by moving and clicking the real mouse over the measuring window. The click with a `CommandParameter` was made through UI Automation's `Invoke`.
+Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`ButtonDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ButtonDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Keys were sent through WPF's input manager, the same path as keys typed on a keyboard, so that `IsCancel` and `IsDefault`, which are handled there, respond to them. `ClickMode` was measured by moving and clicking the real mouse over the measuring window. The click with a `CommandParameter` from a TextBox was made through UI Automation's `Invoke`, and the click on a row's button in an item template with the real mouse.
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/wpf-standard-control-demo/verification/button/button-keys.svg" alt="Table of IsCancel and IsDefault results: in a UserControl Esc clicks the IsCancel button and the window stays open, Enter clicks the IsDefault button, Enter in a TextBox with AcceptsReturn adds a line break without a click, Enter on another button clicks that button, two IsCancel buttons only move the focus, and a dialog opened with ShowDialog closes and returns false" width="889" height="290" loading="lazy">
@@ -83,8 +83,8 @@ Every behavior on this page was measured by running it on .NET 10 / Windows 11, 
   <figcaption><code>ClickMode</code> and <code>IsPressed</code> with a real mouse and with the keyboard. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Table of Command results: CanExecute false disables the button even with IsEnabled True, a RequerySuggested command updates only after InvalidateRequerySuggested, one focus change calls CanExecute 20 times for 20 buttons, the demo XAML passes the text to CanExecute while loading, clearing the text re-queries CanExecute once, and Execute receives the current text" width="857" height="260" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Table of Command results: CanExecute false disables the button even with IsEnabled True, a RequerySuggested command updates only after InvalidateRequerySuggested, one focus change calls CanExecute 20 times for 20 buttons, the demo XAML passes the text to CanExecute while loading, clearing the text re-queries CanExecute once, Execute receives the current text, and in an item template a real click on a row's button passed that row's item through CommandParameter=&quot;{Binding}&quot;" width="1046" height="290" loading="lazy">
   <figcaption><code>Command</code> and <code>CommandParameter</code>. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

@@ -17,7 +17,7 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 
 ## 画面キャプチャ
 
-![textbox demo screen](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
+![デモアプリの TextBox のページ。左にコントロールの一覧、右に最初の節の Text](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
 
 ## デモしているプロパティ
 
@@ -64,9 +64,9 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 ## 主な使用例
 
 - **フォームの入力欄** — 名前・住所・コードなど。`MaxLength` で入力の目安を示し、検証は ViewModel で行います。
-- **検索ボックス** — `UpdateSourceTrigger=PropertyChanged` にして、キーを押すたびに絞り込みます。
+- **検索ボックス** — `UpdateSourceTrigger=PropertyChanged` にして、キーを押すたびに絞り込みます。「abc」を 1 文字ずつ入力すると、この設定ではソースへの書き込みが 3 回あり、既定ではフォーカスが移るまで 1 回もありませんでした。
 - **メモ・コメント** — `AcceptsReturn="True"`・`TextWrapping="Wrap"`・`VerticalScrollBarVisibility="Auto"` を組み合わせます。
-- **コピーできる出力** — ユーザーがコピーする可能性のあるログやエラーの詳細を `IsReadOnly="True"` で表示します。
+- **コピーできる出力** — ユーザーがコピーする可能性のあるログやエラーの詳細を `IsReadOnly="True"` で表示します。入力した文字は入らず、全体を選択すると、コピーは実行でき、切り取りと貼り付けは実行できませんでした。
 
 ## ヒントとベストプラクティス
 
@@ -79,8 +79,8 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 
 このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`TextBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。文字の入力は、キーボードと同じ `TextInput` の経路で文字を届ける `TextCompositionManager` で 1 文字ずつ、Enter キーは表示したウィンドウへキーのイベントを送って再現しています。このページの高さ・幅・位置は計測した環境での値で、フォントや表示スケールによって変わります。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="キー入力と、コードやバインドで設定した文字列を比べた表。MaxLength 5 は入力を ABCDE で止めるがコードやバインドの文字列は切らず、CharacterCasing Upper は入力を大文字にするがコードの文字列は変えず、IsReadOnly は入力を無視するが選択はでき、Enter キーは AcceptsReturn のときだけ改行を入れる" width="575" height="350" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="キー入力と、コードやバインドで設定した文字列を比べた表。MaxLength 5 は入力を ABCDE で止めるがコードやバインドの文字列は切らず、CharacterCasing Upper は入力を大文字にするがコードの文字列は変えず、IsReadOnly は入力を無視するが選択はでき、Enter キーは AcceptsReturn のときだけ改行を入れる。PropertyChanged では入力の 1 文字ごとにソースへ書き込み、既定ではフォーカスが移るまで書き込まず、読み取り専用の TextBox は入力を受け付けずコピーは実行できる" width="975" height="440" loading="lazy">
   <figcaption>キー入力と、コードやバインドで設定した文字列の比較。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

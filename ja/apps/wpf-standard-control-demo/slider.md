@@ -17,7 +17,7 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 
 ## 画面キャプチャ
 
-![slider demo screen](/images/wpf-standard-control-demo/slider.png){: .screenshot-img}
+![デモアプリの Slider のページ。左にコントロールの一覧、右に最初の節の Minimum(RangeBase) / Maximum(RangeBase) / Value(RangeBase)](/images/wpf-standard-control-demo/slider.png){: .screenshot-img}
 
 ## デモしているプロパティ
 

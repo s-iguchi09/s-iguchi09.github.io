@@ -17,7 +17,7 @@ description: "WPF の DockPanel を .NET 10 で実測して解説。Dock ごと�
 
 ## 画面キャプチャ
 
-![dockpanel demo screen](/images/wpf-standard-control-demo/dockpanel.png){: .screenshot-img}
+![デモアプリの DockPanel のページ。左にコントロールの一覧、右に最初の節の LastChildFill](/images/wpf-standard-control-demo/dockpanel.png){: .screenshot-img}
 
 ## デモしているプロパティ
 
