@@ -12,7 +12,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「CheckBox」（apps/wpf-standard-control-demo/checkbox.html と日本語版）の記述を実測する。
+/// デモページ「CheckBox」（apps/wpf-standard-control-demo/checkbox.md と日本語版）の記述を実測する。
 ///
 /// クリックは ToggleButton の UI オートメーション（Toggle）で行う。クリックと同じ切り替え処理（OnToggle）を通る。
 /// Space キーは、表示したウィンドウでキーを押す・離すイベントを送って再現する。

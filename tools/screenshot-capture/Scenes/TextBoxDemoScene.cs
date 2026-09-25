@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「TextBox」（apps/wpf-standard-control-demo/textbox.html と日本語版）の記述を実測する。
+/// デモページ「TextBox」（apps/wpf-standard-control-demo/textbox.md と日本語版）の記述を実測する。
 ///
 /// キーボードからの文字入力は、TextCompositionManager で文字の入力（TextInput）を発生させて再現する。
 /// コードから Text を設定する場合と経路が異なり、MaxLength や CharacterCasing が効くかどうかがここで分かれる。

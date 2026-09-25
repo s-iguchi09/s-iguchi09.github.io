@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Canvas」（apps/wpf-standard-control-demo/canvas.html と日本語版）の記述を実測する。
+/// デモページ「Canvas」（apps/wpf-standard-control-demo/canvas.md と日本語版）の記述を実測する。
 ///
 /// 子はデモアプリと同じ 100 x 100 の Rectangle を使う。
 /// レイアウトはウィンドウを作らずに Measure / Arrange で行い、Canvas から見た子の矩形を読む。

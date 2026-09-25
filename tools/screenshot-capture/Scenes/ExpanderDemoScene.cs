@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Expander」（apps/wpf-standard-control-demo/expander.html と日本語版）の記述を実測する。
+/// デモページ「Expander」（apps/wpf-standard-control-demo/expander.md と日本語版）の記述を実測する。
 ///
 /// 見出しのクリックは実際のマウス（<see cref="RealMouse"/>）で行う。
 /// 位置と大きさは Expander から見た矩形で読む。

@@ -1,8 +1,8 @@
 ---
-layout: control-demo-en
+layout: control-demo
 permalink: /apps/wpf-standard-control-demo/button.html
-title: Button
-badge: Inputs
+title: "Button"
+badge: "Inputs"
 lead: "Button runs an action when it is clicked, through its Click event or a command bound to Command. ClickMode, IsPressed, and the command properties come from its base class ButtonBase."
 description: "WPF Button measured on .NET 10: IsCancel and IsDefault in a UserControl and a dialog, ClickMode with a real mouse and keys, and when CanExecute is re-queried."
 ---
@@ -69,7 +69,7 @@ public ICommand ClickWithParameterCommand { get; } =
 - **Give buttons that show only an image an `AutomationProperties.Name`.** Without it, the UI Automation name was empty.
 - **Do not use `ClickMode="Hover"` for buttons that must work from the keyboard.** <kbd>Space</kbd> and <kbd>Enter</kbd> do not click them.
 
-## Measured Behavior
+## Measured Behavior {#measured-behavior}
 
 Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`ButtonDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ButtonDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Keys were sent through WPF's input manager, the same path as keys typed on a keyboard, so that `IsCancel` and `IsDefault`, which are handled there, respond to them. `ClickMode` was measured by moving and clicking the real mouse over the measuring window. The click with a `CommandParameter` was made through UI Automation's `Invoke`.
 

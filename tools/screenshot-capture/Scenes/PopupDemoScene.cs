@@ -10,7 +10,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Popup」（apps/wpf-standard-control-demo/popup.html と日本語版）の記述を実測する。
+/// デモページ「Popup」（apps/wpf-standard-control-demo/popup.md と日本語版）の記述を実測する。
 ///
 /// 位置は、ポップアップの子と配置の基準の要素の画面上の左上を読み、その差を DIP で表す。
 /// StaysOpen の「外側のクリックで閉じる」は、実際のマウス（<see cref="RealMouse"/>）で計測用のウィンドウの空き領域をクリックして確かめる。

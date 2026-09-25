@@ -11,7 +11,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「TreeView」（apps/wpf-standard-control-demo/treeview.html と日本語版）の記述を実測する。
+/// デモページ「TreeView」（apps/wpf-standard-control-demo/treeview.md と日本語版）の記述を実測する。
 ///
 /// SelectedItem が読み取り専用であることと、子のコンテナーが親を展開するまで作られないことは、
 /// 記事 wpf-treeview-select-item-programmatically（TreeViewSelectItemScene）で実測済みのため、

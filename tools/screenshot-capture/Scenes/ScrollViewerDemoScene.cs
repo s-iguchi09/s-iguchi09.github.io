@@ -7,7 +7,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ScrollViewer」（apps/wpf-standard-control-demo/scrollviewer.html と日本語版）の記述を実測する。
+/// デモページ「ScrollViewer」（apps/wpf-standard-control-demo/scrollviewer.md と日本語版）の記述を実測する。
 ///
 /// 内容はデモアプリと同じく、枠付きの Label を並べた StackPanel を高さ 100 の ScrollViewer に入れる。
 /// つまみのドラッグは、マウスのドラッグと同じ DragStarted / DragDelta / DragCompleted をつまみに発生させて再現する。

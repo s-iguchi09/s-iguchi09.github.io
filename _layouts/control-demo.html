@@ -1,0 +1,74 @@
+---
+---
+{%- comment -%}
+  WPF Standard Control Demo App のコントロール別ページ（日英共通）のレイアウト。
+  本文は Markdown で書き、ページ固有の値は front matter に置く。
+
+    title       … コントロール名（<title>・パンくず・<h1> に使う）
+    badge       … <h1> 横のカテゴリ表示（Inputs など）
+    lead        … <h1> 直下のリード文（HTML として出力する。<code> を使ってよい）
+    description … <meta name="description">
+    permalink   … 公開 URL。HTML 時代と同じ /apps/wpf-standard-control-demo/<name>.html
+                  （日本語版は /ja/apps/...）を明示する
+
+  言語は URL で判定する（_includes/head.html と同じ判定）。
+{%- endcomment -%}
+{%- if page.url contains '/ja/' -%}
+  {%- assign lang = 'ja' -%}
+  {%- assign app_name = 'WPF 標準コントロールデモアプリ' -%}
+  {%- assign app_url = '/ja/apps/wpf-standard-control-demo.html' -%}
+{%- else -%}
+  {%- assign lang = 'en' -%}
+  {%- assign app_name = 'WPF Standard Control Demo App' -%}
+  {%- assign app_url = '/apps/wpf-standard-control-demo.html' -%}
+{%- endif -%}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }} | {{ app_name }} (.NET 10)</title>
+  {% include head.html %}
+
+  <meta name="description" content="{{ page.description | escape }}">
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% if lang == 'ja' %}{% include header-ja.html %}{% else %}{% include header-en.html %}{% endif %}
+
+<main>
+
+  <section class="hero">
+    <p style="font-size:0.9rem; color:#555;"><a href="{{ app_url }}">{{ app_name }}</a> &rsaquo; {{ page.title }}</p>
+    <h1>{{ page.title }} <span class="category-badge">{{ page.badge }}</span></h1>
+    <p>{{ page.lead }}</p>
+  </section>
+
+  {%- comment -%}
+    HTML で書いていたころは、<h2> ごとに <section class="content-section"> で囲んでいた。
+    CSS（余白と最大幅）がこの区切りを前提にしているため、Markdown から生成した本文を
+    <h2> の直前で区切り、同じ構造に戻す。本文は必ず <h2> から始めること。
+    先頭の <h2> の前にも閉じタグが入るので、remove_first で最初の 1 つだけ取り除く。
+
+    プロパティ表には .prop-table を付ける（CSS が通常の表と別の見た目にしている）。
+    kramdown の IAL（{: .prop-table}）で付けると markdownlint が表の行と誤認するため、
+    kramdown が属性なしで出力する <table> をここで置き換える。
+
+    kramdown は見出しの id を文言から自動で付けるが、日本語の見出しからは英字の id を
+    作れない。ページ内リンクの飛び先（#measured-behavior）は本文側で {#...} と明示する。
+
+    kramdown はインラインコードに class="language-plaintext highlighter-rouge" を付ける。
+    style.css の .content-section .highlighter-rouge はコードブロックのカード枠のための
+    指定だが、このクラスにも一致し、インラインコードに枠線と影が付いてしまう
+    （.prop-table code の背景色も上書きされる）。HTML 時代と同じ素の <code> に戻す。
+  {%- endcomment %}
+  {{ content | replace: '<h2', '</section><section class="content-section"><h2' | remove_first: '</section>' | replace: '<table>', '<table class="prop-table">' | replace: '<code class="language-plaintext highlighter-rouge">', '<code>' }}
+  </section>
+
+</main>
+
+{% if lang == 'ja' %}{% include footer-ja.html %}{% else %}{% include footer-en.html %}{% endif %}
+
+</body>
+</html>

@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ListView」（apps/wpf-standard-control-demo/listview.html と日本語版）の記述を実測する。
+/// デモページ「ListView」（apps/wpf-standard-control-demo/listview.md と日本語版）の記述を実測する。
 ///
 /// 選択（SelectionMode・SelectedIndex・IsSelected）は ListBox のページで計測済みなので、ここでは既定値だけを読み、
 /// GridView の列（自動幅・幅のバインド・並べ替え・見出しのクリック）とスクロールを計測する。

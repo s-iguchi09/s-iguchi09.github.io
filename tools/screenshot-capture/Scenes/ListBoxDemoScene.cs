@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ListBox」（apps/wpf-standard-control-demo/listbox.html と日本語版）の記述を実測する。
+/// デモページ「ListBox」（apps/wpf-standard-control-demo/listbox.md と日本語版）の記述を実測する。
 ///
 /// 項目のクリックは、ListBoxItem にマウスの左ボタンのイベントを発生させて再現する。
 /// ListBoxItem はこのイベントを受けて ListBox に選択を伝える（修飾キーなしのクリック）。

@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ComboBox」（apps/wpf-standard-control-demo/combobox.html と日本語版）の記述を実測する。
+/// デモページ「ComboBox」（apps/wpf-standard-control-demo/combobox.md と日本語版）の記述を実測する。
 ///
 /// 項目はデモアプリの EnumBindingSource と同じく、Name と Value を持つ DayOfWeek の 7 項目にする（ToString は上書きしない）。
 /// 文字の入力は編集用の TextBox へ TextComposition で 1 文字ずつ送り、ドロップダウンの操作は SendKey（InputManager 経由）、

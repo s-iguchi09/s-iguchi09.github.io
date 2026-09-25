@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「WrapPanel」（apps/wpf-standard-control-demo/wrappanel.html と日本語版）の記述を実測する。
+/// デモページ「WrapPanel」（apps/wpf-standard-control-demo/wrappanel.md と日本語版）の記述を実測する。
 ///
 /// 子はデモアプリと同じ、余白 2・枠 1 の Label を使う。
 /// レイアウトはウィンドウを作らずに Measure / Arrange で行い、子の配置を読む。

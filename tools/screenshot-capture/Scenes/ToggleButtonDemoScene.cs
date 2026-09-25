@@ -12,7 +12,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ToggleButton」（apps/wpf-standard-control-demo/togglebutton.html と日本語版）の記述を実測する。
+/// デモページ「ToggleButton」（apps/wpf-standard-control-demo/togglebutton.md と日本語版）の記述を実測する。
 ///
 /// クリックは UI オートメーションの Toggle（クリックと同じ OnToggle を通る）で行う。
 /// ClickMode の違いは、マウスの左ボタンを押す・離すイベントを発生させて確かめる。
