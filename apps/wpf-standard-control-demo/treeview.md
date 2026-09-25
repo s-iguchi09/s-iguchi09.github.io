@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/treeview.html
 title: "TreeView"
 badge: "List"
 lead: "TreeView shows hierarchical data as nodes that the user expands and collapses. Nodes come from nested <code>TreeViewItem</code>s or from data with a <code>HierarchicalDataTemplate</code>."
-description: "WPF TreeView control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF TreeView measured on .NET 10: no virtualization by default, an IsExpanded binding the expander removes unless TwoWay, HierarchicalDataTemplate, and keys."
 ---
 
 ## Overview

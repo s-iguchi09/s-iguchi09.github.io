@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/textbox.html
 title: "TextBox"
 badge: "Inputs"
 lead: "TextBox is the editable text input of WPF, for single-line fields and, with <code>AcceptsReturn</code>, multiline text."
-description: "WPF TextBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF TextBox measured on .NET 10: MaxLength and CharacterCasing affect only typing, Wrap vs WrapWithOverflow, and why MinLines in XAML does not apply at first."
 ---
 
 ## Overview

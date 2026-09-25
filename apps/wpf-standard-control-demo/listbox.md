@@ -4,7 +4,7 @@ permalink: /apps/wpf-standard-control-demo/listbox.html
 title: "ListBox"
 badge: "List"
 lead: "ListBox shows a scrollable list from which the user selects one item or, with <code>SelectionMode</code>, several."
-description: "WPF ListBox control reference: overview, properties, XAML examples, and use cases. Part of the WPF Standard Control Demo App running on .NET 10."
+description: "WPF ListBox measured on .NET 10: selection modes, SelectedItem and SelectedValue, virtualization, matching by Equals, and why selecting in code does not scroll."
 ---
 
 ## Overview
