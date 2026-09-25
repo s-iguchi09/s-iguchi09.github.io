@@ -64,7 +64,7 @@ description: "WPF の CheckBox の 3 状態の切り替え、IsChecked のバイ
 
 ## 実測した挙動 {#measured-behavior}
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`CheckBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/CheckBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。クリックはクリックと同じ切り替え処理を実行する UI オートメーションの `Toggle` で、Space キーは表示したウィンドウへキーを押す・離すイベントを送って再現しました。位置は計測した環境での値です。
+このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`CheckBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/CheckBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。クリックは、同意の CheckBox だけ実際のマウスで、ほかはクリックと同じ切り替え処理を実行する UI オートメーションの `Toggle` で、Space キーは表示したウィンドウへキーを押す・離すイベントを送って再現しました。位置は計測した環境での値です。
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="CheckBox の計測結果の表。ToggleButton を継承し、IsChecked は既定で TwoWay、イベントはバブルし、VerticalContentAlignment の既定値は Top、3 状態のクリックは false・true・null と巡回し、bool 型のソースは null をバインドエラーにし、Space キーで切り替わり、ラベルもクリックできる範囲に含まれ、Center では四角い部分とラベルが CheckBox の中央に置かれ、四角い部分が折り返したラベルの中央に揃う。IsEnabled を IsChecked にバインドしたボタンは CheckBox の実際のクリックで有効になる" width="1140" height="590" loading="lazy">

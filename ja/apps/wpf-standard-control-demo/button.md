@@ -71,7 +71,7 @@ public ICommand ClickWithParameterCommand { get; } =
 
 ## 実測した挙動 {#measured-behavior}
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`ButtonDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ButtonDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。`IsCancel` と `IsDefault` は WPF の入力管理（InputManager）の中で処理されるため、キーはキーボードから打ったときと同じく InputManager を通して送りました。`ClickMode` は、計測用のウィンドウの上で実際のマウスを動かし、クリックして確かめました。`CommandParameter` を渡すクリックは、UI オートメーションの `Invoke` で行いました。
+このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`ButtonDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/ButtonDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。`IsCancel` と `IsDefault` は WPF の入力管理（InputManager）の中で処理されるため、キーはキーボードから打ったときと同じく InputManager を通して送りました。`ClickMode` は、計測用のウィンドウの上で実際のマウスを動かし、クリックして確かめました。TextBox の文字を `CommandParameter` で渡すクリックは UI オートメーションの `Invoke` で、項目のテンプレートの行のボタンのクリックは実際のマウスで行いました。
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/wpf-standard-control-demo/verification/button/button-keys.svg" alt="IsCancel と IsDefault の計測結果の表。UserControl の中でも Esc で IsCancel のボタンが押されてウィンドウは開いたまま、Enter で IsDefault のボタンが押され、AcceptsReturn の TextBox では改行になって押されず、ほかのボタンにフォーカスがあるとそのボタンが押され、IsCancel のボタンが 2 つあるとフォーカスが移るだけで、ShowDialog で開いたウィンドウは閉じて false を返す" width="889" height="290" loading="lazy">
@@ -84,7 +84,7 @@ public ICommand ClickWithParameterCommand { get; } =
 </figure>
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Command の計測結果の表。CanExecute が false なら IsEnabled を True にしても無効、RequerySuggested のコマンドは InvalidateRequerySuggested の後に更新され、ボタン 20 個ではフォーカスの移動 1 回で CanExecute が 20 回呼ばれ、デモアプリの XAML では読み込み時の CanExecute にテキストが渡り、テキストを空にすると CanExecute が 1 回呼ばれ、Execute には現在のテキストが渡る。項目のテンプレートでは行のボタンの実際のクリックで CommandParameter="{Binding}" によりその行の項目が渡る" width="1046" height="290" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Command の計測結果の表。CanExecute が false なら IsEnabled を True にしても無効、RequerySuggested のコマンドは InvalidateRequerySuggested の後に更新され、ボタン 20 個ではフォーカスの移動 1 回で CanExecute が 20 回呼ばれ、デモアプリの XAML では読み込み時の CanExecute にテキストが渡り、テキストを空にすると CanExecute が 1 回呼ばれ、Execute には現在のテキストが渡る。項目のテンプレートでは行のボタンの実際のクリックで CommandParameter=&quot;{Binding}&quot; によりその行の項目が渡る" width="1046" height="290" loading="lazy">
   <figcaption><code>Command</code> と <code>CommandParameter</code>。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

@@ -19,7 +19,7 @@ namespace ScreenshotCapture.Scenes;
 ///
 /// Esc・Enter・Space は <see cref="DemoProbe.SendKey"/> で、実際のキー入力と同じ経路から送る。
 /// IsCancel / IsDefault はその経路の後処理（アクセスキー）で動くためである。
-/// ClickMode の Release と Hover は、実際のマウス（<see cref="RealMouse"/>）で確かめる。
+/// ClickMode の Release と Hover、項目のテンプレートの行のボタンのクリックは、実際のマウス（<see cref="RealMouse"/>）で確かめる。
 /// </summary>
 internal sealed class ButtonDemoScene : IScene
 {

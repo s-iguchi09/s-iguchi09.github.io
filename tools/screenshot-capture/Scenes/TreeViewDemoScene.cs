@@ -16,6 +16,7 @@ namespace ScreenshotCapture.Scenes;
 /// SelectedItem が読み取り専用であることと、子のコンテナーが親を展開するまで作られないことは、
 /// 記事 wpf-treeview-select-item-programmatically（TreeViewSelectItemScene）で実測済みのため、
 /// ここではデモページだけが述べている挙動を確かめる。
+/// 展開ボタンは UI オートメーションで切り替える。仮の子を持つノードの展開ボタンだけは、実際のマウス（<see cref="RealMouse"/>）でクリックする。
 /// </summary>
 internal sealed class TreeViewDemoScene : IScene
 {
