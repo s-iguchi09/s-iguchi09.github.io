@@ -189,6 +189,8 @@ internal sealed class LinqBackportNet7Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "戻り値が IOrderedEnumerable であり、ThenBy を連結できること",
         "比較子で等しくなる要素どうしの順序が保たれること（安定ソート）",
+        "ja-JP のカルチャ依存の比較で、ハイフンとアンダースコアを含む文字列の並びが net48（NLS）と net10.0（ICU）で変わること",
+        "比較できない要素で、Order().ToList() と Order().First() が投げる例外の型（net10.0 では全体を並べる場合だけ InvalidOperationException に包まれる）",
     ];
 
     public string Slug => "linq-backport-netframework-to-net7";
@@ -214,6 +216,12 @@ internal sealed class LinqBackportNet7Scene : IScene
         new("Order(ByLength), stability", "Words.Order(new ByLength())"),
         new("Order().ThenByDescending(len)", "Words.Order().ThenByDescending(w => w.Length)"),
         new("empty.Order()", "new string[0].Order()"),
+        // カルチャ依存の比較は、.NET Framework（NLS）と .NET 5 以降（ICU）で結果が変わりうる。マシンに左右されないよう ja-JP を明示する。
+        new("Order(ja-JP comparer), hyphen and underscore",
+            "new[] { \"coop\", \"co-op\", \"Co-op\", \"co_op\" }.Order(StringComparer.Create(new System.Globalization.CultureInfo(\"ja-JP\"), false))"),
+        // 比較できない要素。全体を並べる ToList と、全体を並べない First で例外の型が分かれるかを見る。
+        new("non-comparable items: Order().ToList()", "new[] { new object(), new object() }.Order().ToList()"),
+        new("non-comparable items: Order().First()", "new[] { new object(), new object() }.Order().First()"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
