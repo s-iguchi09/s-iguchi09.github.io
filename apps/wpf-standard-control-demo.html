@@ -38,10 +38,10 @@
   <section class="content-section">
     <h2>Styles</h2>
     <p>
-      The controls being demonstrated keep the look of WPF's default styles. The app does not set <code>ThemeMode</code>, so they appear in the classic theme rather than Fluent. The app's own styles, in nine <code>ResourceDictionary</code> files merged in <code>App.xaml</code>, all have an <code>x:Key</code>. They style only the app's frame, such as the list of controls, the group boxes around sections, the sliders used as inputs, the "Show Code" link, and the code popup. Because none of them is an implicit style, they do not change the controls on the pages.
+      The controls being demonstrated keep the look of WPF's default styles, with one exception described below. The app does not set <code>ThemeMode</code>, so they appear in the classic theme rather than Fluent. The app's shared styles, in nine <code>ResourceDictionary</code> files merged in <code>App.xaml</code>, all have an <code>x:Key</code>, so they apply only to elements that refer to them. Only the app's frame refers to them, such as the list of controls, the group boxes and expanders around sections, the sliders used as inputs, the "Show Code" link, and the code popup; the controls being demonstrated do not. None of them is an implicit style, so they do not reach those controls either.
     </p>
     <p>
-      A few pages add local styles of their own, for example to set the spacing of the check boxes on the DataGrid page or to demonstrate <code>RowStyle</code> and <code>CellStyle</code>. They are part of that page's XAML in the repository.
+      A few pages add local styles of their own. Most of them set up the inputs or demonstrate a property, such as the spacing of the check boxes on the DataGrid page or its <code>RowStyle</code> and <code>CellStyle</code> samples. The exception is the DatePicker page: an implicit style there sets the vertical alignment and margin of the calendar button (<code>PART_Button</code>) on every DatePicker on the page, including the ones being demonstrated. These styles are part of each page's XAML in the repository.
     </p>
   </section>
 

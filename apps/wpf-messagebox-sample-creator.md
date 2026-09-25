@@ -46,7 +46,7 @@ The arguments of the `MessageBox.Show` overload this tool calls are each exposed
 | `Exclamation` / `Warning` | 48 | Exclamation point in a yellow triangle |
 | `Asterisk` / `Information` | 64 | Lowercase i in a circle |
 
-The duplicates also show up in code. `Enum.GetValues` returned `Hand` three times, `Exclamation` twice, and `Asterisk` twice, because each value has only one name when converted to a string. A ComboBox bound to it would therefore list `Hand` three times, which is why the tool builds its icon list from the nine names instead.
+The duplicates also show up in code. On .NET 8.0.31 and 10.0.10, the values from `Enum.GetValues` converted to strings as `Hand` three times, `Exclamation` twice, and `Asterisk` twice. A value shared by several names converts to only one of them, and .NET does not specify which, so another runtime may show a different name. Either way, a ComboBox bound to it would list the same name several times, which is why the tool builds its icon list from the nine names instead.
 
 Selecting `Error`, `Hand` and `Stop` in turn and seeing the identical dialog each time settles a question that reading the enum definition tends to raise. It also means picking between those names is a readability decision for the code, not a visual one for the user.
 

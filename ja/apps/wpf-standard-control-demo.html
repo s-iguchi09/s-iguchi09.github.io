@@ -38,10 +38,10 @@
   <section class="content-section">
     <h2>スタイル</h2>
     <p>
-      デモ対象のコントロールは、WPF の既定のスタイルのままの見た目です。アプリは <code>ThemeMode</code> を設定していないため、Fluent ではなく従来のテーマで表示されます。アプリ自身のスタイルは、<code>App.xaml</code> でマージする 9 つの <code>ResourceDictionary</code> にあり、すべて <code>x:Key</code> を持ちます。対象は、コントロールの一覧、節を囲む GroupBox、入力欄の Slider、「Show Code」のリンク、コードのポップアップなど、アプリの枠組みだけです。暗黙のスタイルが 1 つも無いため、各ページのコントロールの見た目は変わりません。
+      デモ対象のコントロールは、後述の 1 つの例外を除き、WPF の既定のスタイルのままの見た目です。アプリは <code>ThemeMode</code> を設定していないため、Fluent ではなく従来のテーマで表示されます。アプリ共通のスタイルは、<code>App.xaml</code> でマージする 9 つの <code>ResourceDictionary</code> にあり、すべて <code>x:Key</code> を持つため、参照した要素にだけ適用されます。参照しているのは、コントロールの一覧、節を囲む GroupBox と Expander、入力欄の Slider、「Show Code」のリンク、コードのポップアップなど、アプリの枠組みだけで、デモ対象のコントロールは参照していません。暗黙のスタイルも 1 つも無いため、デモ対象のコントロールには届きません。
     </p>
     <p>
-      いくつかのページは、独自のスタイルを持ちます。たとえば DataGrid のページでは、CheckBox の余白を整えるスタイルや、<code>RowStyle</code> と <code>CellStyle</code> を示すためのスタイルを定義しています。これらはリポジトリのそのページの XAML にあります。
+      いくつかのページは、独自のスタイルを持ちます。多くは入力欄を整えるものか、プロパティを示すためのもので、たとえば DataGrid のページの CheckBox の余白や、<code>RowStyle</code> と <code>CellStyle</code> の見本です。例外は DatePicker のページで、そこでは暗黙のスタイルが、デモ対象を含むページ内のすべての DatePicker について、カレンダーボタン（<code>PART_Button</code>）の縦位置と余白を設定しています。これらのスタイルは、リポジトリの各ページの XAML にあります。
     </p>
   </section>
 
