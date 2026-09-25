@@ -4,6 +4,7 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -39,6 +40,7 @@ internal sealed class ButtonDemoScene : IScene
         "デモアプリと同じ XAML（Command の後に CommandParameter をバインド）で読み込んだときに CanExecute へ渡る値、CommandParameter の変化で CanExecute が呼ばれるか、Execute に渡る値",
         "Button の基底クラス、既定のテンプレートの VisualStateGroup とトリガー、ContentPresenter の RecognizesAccessKey",
         "UI オートメーションの名前（文字列の内容、アンダースコア付きの内容、画像だけの内容、AutomationProperties.Name）",
+        "ItemTemplate の中のボタンに CommandParameter=\"{Binding}\" を設定し、2 行目を実際にクリックしたときに Execute が受け取る値",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -405,6 +407,32 @@ internal sealed class ButtonDemoScene : IScene
                 ((IInvokeProvider)new ButtonAutomationPeer(button)).Invoke();
                 await Capture.SettleAsync(window);
                 rows.Add(["  TextBox.Text set to Hello, then clicked: parameter of Execute", command.Executed]);
+            });
+        }
+
+
+        {
+            // 使用例「一覧の行のボタンが、その行の項目を CommandParameter として渡す」を実際のクリックで確かめる。
+            var command = new ProbeCommand();
+            var factory = new FrameworkElementFactory(typeof(Button));
+            factory.SetBinding(ContentControl.ContentProperty, new Binding());
+            factory.SetValue(ButtonBase.CommandProperty, command);
+            factory.SetBinding(ButtonBase.CommandParameterProperty, new Binding());
+            var list = new ItemsControl { ItemsSource = new[] { "Row 1", "Row 2", "Row 3" }, ItemTemplate = new DataTemplate { VisualTree = factory } };
+            var panel = new StackPanel { Width = 160, Children = { list } };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = await FrontAsync(panel);
+                var row = (ContentPresenter)list.ItemContainerGenerator.ContainerFromIndex(1);
+                var button = (Button)VisualTreeHelper.GetChild(row, 0);
+                using (RealMouse.Preserve())
+                {
+                    await RealMouse.MoveToAsync(button);
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                }
+
+                rows.Add(["item template, CommandParameter=\"{Binding}\": real click on the second row: Execute received", command.Executed]);
             });
         }
 

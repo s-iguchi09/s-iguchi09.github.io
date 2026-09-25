@@ -61,7 +61,7 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 ## 主な使用例
 
 - **フォームの見出し** — 各入力欄の横に見出しを置き、アクセスキーでその欄へ移れるようにします。
-- **ほかのコントロールの見出し** — ComboBox や DatePicker を `Target` にします。
+- **ほかのコントロールの見出し** — ComboBox や DatePicker を `Target` にします。アクセスキーで、ComboBox ではそれ自体に、編集可能な ComboBox と DatePicker では中のテキストボックスにフォーカスが移りました。
 - **内容のある見出し** — 内容には任意の要素を置けるので、アイコンと文字を並べられます。
 
 ## ヒントとベストプラクティス
@@ -75,7 +75,7 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`LabelDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。アクセスキーは <kbd>Alt</kbd> と一緒に押したキーを処理する `AccessKeyManager.ProcessKey` で、<kbd>Tab</kbd> はキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。UI オートメーションの名前は、スクリーンリーダーも使う UI オートメーションのクライアント API で、同じプロセスの中の、ウィンドウの UI スレッドとは別のスレッドから読みました。大きさは、計測したマシンでの値です。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Label の計測結果の表。ContentControl を継承しフォーカスもタブ移動も受けず、余白は 5 で内容は Left と Top、Tab は Label を飛ばし、デモアプリのアクセスキー N と A で Name と Age のテキストボックスへフォーカスが移り、Target のない Label では動かず、ToolBar の中の Target にも移り、対象の TextBox には UI オートメーションの名前も LabeledBy も付かず、手動で設定した AutomationProperties.LabeledBy では名前が付き、改行で 2 行の高さになる" width="1108" height="350" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Label の計測結果の表。ContentControl を継承しフォーカスもタブ移動も受けず、余白は 5 で内容は Left と Top、Tab は Label を飛ばし、デモアプリのアクセスキー N と A で Name と Age のテキストボックスへフォーカスが移り、Target のない Label では動かず、ToolBar の中の Target にも移り、対象の TextBox には UI オートメーションの名前も LabeledBy も付かず、手動で設定した AutomationProperties.LabeledBy では名前が付き、改行で 2 行の高さになる。Target が ComboBox ならそれ自体に、編集可能な ComboBox と DatePicker なら中のテキストボックスにフォーカスが移る" width="1108" height="380" loading="lazy">
   <figcaption>既定値、アクセスキー、<code>Target</code>、UI オートメーション。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

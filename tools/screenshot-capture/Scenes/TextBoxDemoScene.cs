@@ -33,6 +33,8 @@ internal sealed class TextBoxDemoScene : IScene
         "TextAlignment ごとの 1 文字目の横位置",
         "TextDecorations に複数の値を与えられるか",
         "ScrollToEnd を UI スレッド以外から呼んだときの例外と、UI スレッドから呼んだときのスクロール位置",
+        "UpdateSourceTrigger が既定と PropertyChanged のときに、1 文字ずつ入力する間と、フォーカスが移った後にソースへ書き込まれる回数",
+        "IsReadOnly のときに入力した文字が入るかと、全体を選択したときの Copy / Cut / Paste の実行可否",
     ];
 
     private const string WrapText = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -175,6 +177,43 @@ internal sealed class TextBoxDemoScene : IScene
                 await Capture.SettleAsync(Window.GetWindow(box)!);
                 rows.Add([$"AcceptsReturn={accepts}, Enter between \"a\" and \"b\"",
                     $"\"{box.Text.Replace("\r", "\\r").Replace("\n", "\\n")}\""]);
+            }, activate: true);
+        }
+
+
+        foreach (UpdateSourceTrigger trigger in new[] { UpdateSourceTrigger.Default, UpdateSourceTrigger.PropertyChanged })
+        {
+            // 使用例「検索欄は UpdateSourceTrigger=PropertyChanged で 1 文字ごとに絞り込む」。ソースに何回書き込まれるか。
+            var source = new Source();
+            int writes = 0;
+            source.PropertyChanged += (_, _) => writes++;
+            var box = new TextBox { Width = 200 };
+            box.SetBinding(TextBox.TextProperty, new Binding(nameof(Source.Text)) { Source = source, UpdateSourceTrigger = trigger });
+            var other = new Button { Content = "Other" };
+            var panel = new StackPanel { Children = { box, other } };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = Window.GetWindow(panel)!;
+                Type(box, "abc");
+                await Capture.SettleAsync(window, 50);
+                string whileTyping = $"{writes} ({WpfProbe.Describe(source.Text)})";
+                await FocusAsync(other);
+                rows.Add([$"{trigger}: \"abc\" typed: source writes while typing; after focus leaves",
+                    $"{whileTyping}; {writes} ({WpfProbe.Describe(source.Text)})"]);
+            }, activate: true);
+        }
+
+        {
+            // 使用例「ログやエラーの詳細は IsReadOnly にして、コピーできるようにする」。
+            var box = new TextBox { Width = 200, Text = "error details", IsReadOnly = true };
+            await ShowAsync(box, async () =>
+            {
+                box.CaretIndex = box.Text.Length;
+                Type(box, "x");
+                await Capture.SettleAsync(Window.GetWindow(box)!, 50);
+                box.SelectAll();
+                rows.Add(["IsReadOnly: text after typing \"x\"; all selected: Copy / Cut / Paste can execute",
+                    $"{WpfProbe.Describe(box.Text)}; {ApplicationCommands.Copy.CanExecute(null, box)} / {ApplicationCommands.Cut.CanExecute(null, box)} / {ApplicationCommands.Paste.CanExecute(null, box)}"]);
             }, activate: true);
         }
 

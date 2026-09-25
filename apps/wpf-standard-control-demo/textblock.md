@@ -68,7 +68,7 @@ The following XAML is the `LineHeight` section of the demo app (`TextBlockUsageC
 - **Do not rely on `Text` of a TextBlock built with `Inlines`.** With the inlines added before the first layout, it was empty.
 - **Use `Wrap` when nothing may run past the edge.** `WrapWithOverflow` lets a long word overflow.
 - **Limit the width when using `TextTrimming`.** In a horizontal StackPanel the text is never trimmed.
-- **Use `MaxHeight` or a `LineHeight` larger than the text** to avoid overlapping lines.
+- **Use `LineStackingStrategy="MaxHeight"` or a `LineHeight` larger than the text** to avoid overlapping lines.
 
 ## Measured Behavior {#measured-behavior}
 

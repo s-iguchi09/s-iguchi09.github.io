@@ -41,6 +41,7 @@ internal sealed class MenuDemoScene : IScene
         "InputGestureText=\"Ctrl+O\" の項目の表示と、実際の Ctrl+O で Click が起きるか。Command=ApplicationCommands.Copy の項目の InputGestureText",
         "Command=ApplicationCommands.Copy の項目の IsEnabled（メニューを閉じたまま / 実際のクリックで開いたとき。TextBox の選択の有無、Button にフォーカスがあるとき）",
         "実際のマウスでホバー・押下・解放したときの最上位項目の IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation",
+        "キーの組み合わせを持たないコマンドに、ウィンドウの KeyBinding で Ctrl+O を結んだときに、実際の Ctrl+O で実行されるかと、そのコマンドの項目の InputGestureText",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -399,6 +400,26 @@ internal sealed class MenuDemoScene : IScene
                 file.IsSubmenuOpen = false;
                 edit.IsSubmenuOpen = false;
                 await Capture.SettleAsync(window, 50);
+            });
+        }
+
+
+        {
+            // ヒント「ショートカットは KeyBinding で結ぶ」。キーの組み合わせを持たないコマンドに、ウィンドウの KeyBinding で Ctrl+O を結ぶ。
+            var open = new RoutedCommand("OpenDemo", typeof(MenuDemoScene));
+            int executed = 0;
+            MenuItem item = new() { Header = "Open...", Command = open };
+            var box = new TextBox { Width = 200 };
+            var panel = new StackPanel { Width = 240, Height = 120, Children = { MenuOf(false, Item("File", item)), box } };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = await FrontAsync(panel);
+                window.CommandBindings.Add(new CommandBinding(open, (_, _) => executed++));
+                window.InputBindings.Add(new KeyBinding(open, Key.O, ModifierKeys.Control));
+                await FocusAsync(box);
+                await RealKeyboard.PressAsync(window, VkO, VkControl);
+                rows.Add(["window KeyBinding Ctrl+O, real Ctrl+O: executed / item's InputGestureText",
+                    $"{executed} / {WpfProbe.Describe(item.InputGestureText)}"]);
             });
         }
 

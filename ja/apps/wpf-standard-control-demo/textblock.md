@@ -68,7 +68,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 - **`Inlines` で作った TextBlock の `Text` に頼らない** — 最初のレイアウトの前に Inlines を追加した場合、空文字でした。
 - **端からはみ出させたくないなら `Wrap` を使う** — `WrapWithOverflow` は長い語をはみ出させます。
 - **`TextTrimming` を使うなら幅を限る** — 横の StackPanel の中では省略されません。
-- **行が重ならないよう、`MaxHeight` か文字より大きい `LineHeight` を使う**
+- **行が重ならないよう、`LineStackingStrategy="MaxHeight"` か文字より大きい `LineHeight` を使う**
 
 ## 実測した挙動 {#measured-behavior}
 

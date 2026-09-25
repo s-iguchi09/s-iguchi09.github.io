@@ -37,6 +37,7 @@ internal sealed class TreeViewDemoScene : IScene
         "キー操作（下矢印・右矢印・左矢印・Space・Enter・テンキーの *）による選択と展開の変化",
         "ItemContainerStyle で設定した ContextMenu の DataContext",
         "スクロールバーの既定値とその出どころ",
+        "仮の子を置いた TreeViewItem で、Expanded のハンドラーで子を入れ替えるときに、展開ボタンを実際にクリックする前と後の子",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -410,6 +411,41 @@ internal sealed class TreeViewDemoScene : IScene
             rows.Add(["ScrollViewer.HorizontalScrollBarVisibility / VerticalScrollBarVisibility (value source)",
                 $"{WpfProbe.ValueAndSource(tree, ScrollViewer.HorizontalScrollBarVisibilityProperty)} / " +
                 WpfProbe.ValueAndSource(tree, ScrollViewer.VerticalScrollBarVisibilityProperty)]);
+        }
+
+
+        {
+            // 使用例「フォルダーのツリーで、展開されたときに子を読み込む」。仮の子を置き、Expanded で本来の子に入れ替える。
+            var folder = new TreeViewItem { Header = "Folder" };
+            folder.Items.Add(new TreeViewItem { Header = "(loading)" });
+            int loads = 0;
+            folder.Expanded += (_, _) =>
+            {
+                if (folder.Items.Count == 1 && folder.Items[0] is TreeViewItem { Header: "(loading)" })
+                {
+                    loads++;
+                    folder.Items.Clear();
+                    folder.Items.Add(new TreeViewItem { Header = "Child 1" });
+                    folder.Items.Add(new TreeViewItem { Header = "Child 2" });
+                }
+            };
+            var tree = new TreeView { Width = 200, Height = 120, Items = { folder } };
+            await ShowAsync(tree, async () =>
+            {
+                Window window = await FrontAsync(tree);
+                var expander = (ToggleButton)folder.Template.FindName("Expander", folder);
+                string Children() => string.Join(", ", folder.Items.OfType<TreeViewItem>().Select(i => i.Header));
+                string before = Children();
+                using (RealMouse.Preserve())
+                {
+                    await RealMouse.MoveToAsync(expander);
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                }
+
+                rows.Add(["placeholder replaced in Expanded: before; after real click on expander (loads)",
+                    $"{before}; {Children()} ({loads})"]);
+            });
         }
 
         return rows;

@@ -68,7 +68,7 @@ description: "WPF の Menu を .NET 10 で実測して解説。項目の Role、
 ## ヒントとベストプラクティス
 
 - **サブメニューの項目の `IsEnabled` を読まず、コマンドの `CanExecute` を呼ぶ** — メニューが閉じている間、項目は更新されません。
-- **ショートカットは `KeyBinding` で結ぶ** — `InputGestureText` は文字を出すだけです。キーの組み合わせを持つコマンドなら、文字は自動で入ります。
+- **ショートカットは `KeyBinding` で結び、`InputGestureText` も設定する** — ウィンドウに `KeyBinding` を付けると、キーの組み合わせを持たないコマンドが実際の <kbd>Ctrl</kbd>+<kbd>O</kbd> で実行されましたが、項目の `InputGestureText` は空のままでした。`InputGestureText` は文字を出すだけです。`Copy` のようにキーの組み合わせを持つコマンドなら、文字は自動で入ります。
 - **排他の選択は自分で作る** — チェックできる項目は互いに独立しているので、ほかの項目のチェックをコードで外すか、値のバインドで表します。
 - **メニューバー以外のメニューには `IsMainMenu="False"` を設定する** — 既定値は `True` で、<kbd>Alt</kbd> でそのメニューに入ります。
 
@@ -77,7 +77,7 @@ description: "WPF の Menu を .NET 10 で実測して解説。項目の Role、
 このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`MenuDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/MenuDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使い、デモアプリの各欄と同じ形のメニューで試しました。クリックとマウスの重ね合わせは実際のマウスで行い、<kbd>Alt</kbd>・<kbd>F10</kbd>・ショートカットは実際のキー入力として押しました。<kbd>F10</kbd> は切り分けのため、WPF の入力管理を通しても送りました。計測したマシンのクリップボードを書き換えないよう、`Copy` の項目はクリックせず、有効かどうかだけを読みました。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Menu の計測結果の表。IsMainMenu の既定値は True、Role の欄の 4 項目はそれぞれの Role で、子を持った TopLevelItem は TopLevelHeader になり、実際のクリックはチェックできる項目にチェックを付けて StaysOpenOnClick でなければサブメニューを閉じ、チェックできる 2 項目は両方チェックされ、Alt はメインメニューにだけ入り、TextBox にフォーカスがあるときの実際の F10 はどちらにも入らないが Button にフォーカスがあるときや入力管理を通したときはメインメニューに入り、Alt+M はどちらも開き、Ctrl+O の文字は出るが Ctrl+O ではクリックされず、Copy の項目には Ctrl+C が入り、Copy の項目は閉じている間は有効と読め、開くと TextBox の選択に従い、マウスの重ね合わせ・押下・解放で見出しの状態が変わる" width="1242" height="770" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Menu の計測結果の表。IsMainMenu の既定値は True、Role の欄の 4 項目はそれぞれの Role で、子を持った TopLevelItem は TopLevelHeader になり、実際のクリックはチェックできる項目にチェックを付けて StaysOpenOnClick でなければサブメニューを閉じ、チェックできる 2 項目は両方チェックされ、Alt はメインメニューにだけ入り、TextBox にフォーカスがあるときの実際の F10 はどちらにも入らないが Button にフォーカスがあるときや入力管理を通したときはメインメニューに入り、Alt+M はどちらも開き、Ctrl+O の文字は出るが Ctrl+O ではクリックされず、Copy の項目には Ctrl+C が入り、Copy の項目は閉じている間は有効と読め、開くと TextBox の選択に従い、マウスの重ね合わせ・押下・解放で見出しの状態が変わる。ウィンドウの KeyBinding では実際の Ctrl+O でコマンドが実行されるが項目の InputGestureText は空のまま" width="1242" height="800" loading="lazy">
   <figcaption>Role、チェックできる項目、メインメニュー、ショートカット、コマンド、見出しの状態。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

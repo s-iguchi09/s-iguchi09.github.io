@@ -15,5 +15,6 @@ verifies:
   - "InputGestureText=\"Ctrl+O\" の項目の表示と、実際の Ctrl+O で Click が起きるか。Command=ApplicationCommands.Copy の項目の InputGestureText"
   - "Command=ApplicationCommands.Copy の項目の IsEnabled（メニューを閉じたまま / 実際のクリックで開いたとき。TextBox の選択の有無、Button にフォーカスがあるとき）"
   - "実際のマウスでホバー・押下・解放したときの最上位項目の IsHighlighted / IsPressed / IsSubmenuOpen / IsSuspendingPopupAnimation"
+  - "キーの組み合わせを持たないコマンドに、ウィンドウの KeyBinding で Ctrl+O を結んだときに、実際の Ctrl+O で実行されるかと、そのコマンドの項目の InputGestureText"
 images:
   - "images/wpf-standard-control-demo/verification/menu/menu-behavior.svg"

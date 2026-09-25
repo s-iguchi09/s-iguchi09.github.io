@@ -32,6 +32,7 @@ internal sealed class CheckBoxDemoScene : IScene
         "ラベル（Content）の位置をヒットテストしたときに当たる要素が CheckBox の中の要素か",
         "複数行のラベルで VerticalContentAlignment を Top と Center にしたときの、チェックの記号とラベルの縦位置（CheckBox を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合）",
         "親要素に置いた Checked のハンドラーが子の CheckBox の変化を受け取ること",
+        "Button の IsEnabled を CheckBox の IsChecked にバインドし、CheckBox を実際にクリックする前と後の IsEnabled",
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -187,6 +188,29 @@ internal sealed class CheckBoxDemoScene : IScene
                 Click(box);
                 rows.Add(["Checked handler on the parent StackPanel, child clicked: handler calls", received.ToString()]);
                 await Task.CompletedTask;
+            });
+        }
+
+
+        {
+            // 使用例「同意のチェックボックスで、ボタンを有効にする」を、IsEnabled のバインドと実際のクリックで確かめる。
+            var agree = new CheckBox { Content = "I agree" };
+            var next = new Button { Content = "Next" };
+            next.SetBinding(UIElement.IsEnabledProperty, new Binding(nameof(ToggleButton.IsChecked)) { Source = agree });
+            var panel = new StackPanel { Width = 160, Children = { agree, next } };
+            await ShowAsync(panel, async () =>
+            {
+                Window window = await FrontAsync(panel);
+                string before = next.IsEnabled.ToString();
+                using (RealMouse.Preserve())
+                {
+                    await RealMouse.MoveToAsync(agree);
+                    await RealMouse.LeftDownAsync(window);
+                    await RealMouse.LeftUpAsync(window);
+                }
+
+                rows.Add(["Button IsEnabled bound to a CheckBox's IsChecked: before / after a real click on the CheckBox",
+                    $"{before} / {next.IsEnabled}"]);
             });
         }
 

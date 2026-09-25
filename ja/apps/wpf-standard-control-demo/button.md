@@ -58,7 +58,7 @@ public ICommand ClickWithParameterCommand { get; } =
 
 - **ダイアログのボタン** — `ShowDialog` で開くウィンドウで、OK に `IsDefault`、キャンセルに `IsCancel` を設定します。
 - **MVVM のコマンド** — ビューモデルの `ICommand` にバインドし、`CanExecute` で有効・無効を切り替えます。
-- **一覧の行のボタン** — 項目のテンプレートにボタンを置き、その項目を `CommandParameter` で渡します。
+- **一覧の行のボタン** — 項目のテンプレートにボタンを置き、その項目を `CommandParameter` で渡します。`CommandParameter="{Binding}"` にすると、2 行目のボタンを実際にクリックしたとき、`Execute` は `Row 2` を受け取りました。
 
 ## ヒントとベストプラクティス
 
@@ -83,8 +83,8 @@ public ICommand ClickWithParameterCommand { get; } =
   <figcaption>実際のマウスとキーボードでの <code>ClickMode</code> と <code>IsPressed</code>。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Command の計測結果の表。CanExecute が false なら IsEnabled を True にしても無効、RequerySuggested のコマンドは InvalidateRequerySuggested の後に更新され、ボタン 20 個ではフォーカスの移動 1 回で CanExecute が 20 回呼ばれ、デモアプリの XAML では読み込み時の CanExecute にテキストが渡り、テキストを空にすると CanExecute が 1 回呼ばれ、Execute には現在のテキストが渡る" width="857" height="260" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Command の計測結果の表。CanExecute が false なら IsEnabled を True にしても無効、RequerySuggested のコマンドは InvalidateRequerySuggested の後に更新され、ボタン 20 個ではフォーカスの移動 1 回で CanExecute が 20 回呼ばれ、デモアプリの XAML では読み込み時の CanExecute にテキストが渡り、テキストを空にすると CanExecute が 1 回呼ばれ、Execute には現在のテキストが渡る。項目のテンプレートでは行のボタンの実際のクリックで CommandParameter="{Binding}" によりその行の項目が渡る" width="1046" height="290" loading="lazy">
   <figcaption><code>Command</code> と <code>CommandParameter</code>。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 
