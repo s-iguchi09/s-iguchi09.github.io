@@ -1,7 +1,7 @@
 ---
 layout: app-page
 permalink: /apps/wpf-messagebox-sample-creator.html
-title: "WPF MessageBox Sample Creator | Efficiency in Prototyping & UX Design"
+title: "WPF MessageBox Sample Creator | Preview MessageBox Settings Live"
 heading: "WPF MessageBox Sample Creator"
 lead: "Real-time simulation of the standard Windows <code>MessageBox</code>. Pre-built .exe available on GitHub—start UI specification reviews without a dev environment."
 description: "A tool to configure and preview WPF MessageBox live and compare MessageBoxButton and MessageBoxImage combinations. A pre-built exe is on GitHub Releases."
@@ -19,7 +19,7 @@ The WPF MessageBox Sample Creator is a prototyping application that allows you t
 
 In WPF development, repeatedly writing code just to check the behavior of dialogs is inefficient. Furthermore, designers and architects often find it difficult to use tools that are only shared as source code, as setting up a build environment is a significant hurdle.
 
-To solve this, this tool is distributed in a ready-to-run format. By adhering strictly to standard WPF Style definitions without third-party libraries, I achieved a lightweight tool with minimal dependencies.
+To solve this, this tool is distributed in a ready-to-run format. The tool uses WPF alone, with no third-party libraries and no custom styles, so the release ZIP is about 200 KB.
 
 ## Configurable Parameters
 
@@ -29,10 +29,10 @@ The arguments of the `MessageBox.Show` overload this tool calls are each exposed
 | --- | --- | --- |
 | Message text | `string` | The body of the dialog. Useful for checking how long text wraps and how the dialog resizes. |
 | Caption | `string` | The title bar text. |
-| Buttons | `MessageBoxButton` | The button set: OK, OK/Cancel, Yes/No, or Yes/No/Cancel. |
-| Icon | `MessageBoxImage` | The system icon shown beside the message. All nine enum values are selectable. |
-| Default result | `MessageBoxResult` | Which button receives focus when the dialog opens — that is, what Enter activates. Every member of the enum is selectable here, but the value only takes effect when the chosen button set actually contains that button. Ask for a result the dialog is not displaying and the first button becomes the default instead, which is worth trying once to see. |
-| Options | `MessageBoxOptions` | Display options such as right-aligned text and right-to-left reading order. |
+| Buttons | `MessageBoxButton` | The button set. The list is the enum's members on the runtime in use: the .NET 8 build offers four (OK, OKCancel, YesNoCancel, YesNo), and the .NET 10 build seven, adding AbortRetryIgnore, RetryCancel, and CancelTryContinue. |
+| Icon | `MessageBoxImage` | The system icon shown beside the message. All nine member names are selectable. |
+| Default result | `MessageBoxResult` | Which button is the default when the dialog opens — that is, what Enter activates. Every member of the enum is selectable here (ten on .NET 10), but the value only takes effect when the chosen button set contains that button. Showing every button set with every result on .NET 8.0.31 and 10.0.10, a result the dialog did not display always made the first button the default. |
+| Options | `MessageBoxOptions` | Display options such as right-aligned text and right-to-left reading order. The list holds the enum's five members and one is chosen at a time, so flags cannot be combined here. |
 
 ## What the Tool Makes Obvious: Nine Icon Names, Four Icons
 
@@ -46,23 +46,17 @@ The arguments of the `MessageBox.Show` overload this tool calls are each exposed
 | `Exclamation` / `Warning` | 48 | Exclamation point in a yellow triangle |
 | `Asterisk` / `Information` | 64 | Lowercase i in a circle |
 
+The duplicates also show up in code. `Enum.GetValues` returned `Hand` three times, `Exclamation` twice, and `Asterisk` twice, because each value has only one name when converted to a string. A ComboBox bound to it would therefore list `Hand` three times, which is why the tool builds its icon list from the nine names instead.
+
 Selecting `Error`, `Hand` and `Stop` in turn and seeing the identical dialog each time settles a question that reading the enum definition tends to raise. It also means picking between those names is a readability decision for the code, not a visual one for the user.
 
 One further caveat worth knowing before you reach for it: Microsoft documents the `Question` icon as no longer recommended, on the grounds that a question mark does not identify a category of message and can be mistaken for a help affordance. It remains in the enum for backward compatibility. For a confirmation prompt, `Warning` or no icon at all is the safer choice.
 
-## Technical Insights: Flexibility and Portability
+## How the Tool Is Built
 
-### 1\. No Build Required: Download and Run
+The **Show MessageBox.** button makes a single call, `MessageBox.Show(text, caption, button, icon, defaultResult, options)`, with the six values held by the view model. The lists for the button set, the default result, and the options are `Enum.GetValues` results bound through `ObjectDataProvider`, so they follow the enum of the runtime the build targets. That is why the .NET 10 build offers button sets that the .NET 8 build does not. The icon list is the exception described above.
 
-Sharing a tool with non-engineers requires more than just providing source code. By maintaining a public release of the executable, I've established a workflow where every team member can verify the latest UI specifications on their own machines instantly.
-
-### 2\. Independent Property Settings
-
-Each control is designed to be configured independently. This allows users to test complex scenarios—such as specific button/icon combinations or automatic resizing—without worrying about code logic.
-
-### 3\. Clean UI Management via XAML
-
-The layout is defined purely in XAML, separating design from logic. It serves as an implementation sample showing how standard controls can be optimized through Styles alone.
+The window uses WPF's default styles. There is no `Style` in its XAML.
 
 ## Typical Uses
 
