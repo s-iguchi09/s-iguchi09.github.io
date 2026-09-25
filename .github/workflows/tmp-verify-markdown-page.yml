@@ -1,0 +1,58 @@
+# 一時的な確認用ワークフロー。マージ前に削除する。
+name: Verify Markdown pages (temporary)
+
+on:
+  push:
+    branches:
+      - feat/app-pages-markdown
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: branch
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Build main
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./main
+          destination: ./site-main
+      - name: Build branch
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./branch
+          destination: ./site-branch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Collect outputs
+        run: |
+          set -euo pipefail
+          for side in main branch; do
+            mkdir -p "out/$side/apps" "out/$side/ja/apps"
+            for p in treepaste wpf-messagebox-sample-creator xaml-extension-pack; do
+              sudo cp "site-$side/apps/$p.html" "out/$side/apps/"
+              sudo cp "site-$side/ja/apps/$p.html" "out/$side/ja/apps/"
+            done
+          done
+          sudo chown -R "$(id -u)" out
+          sudo rm -rf site-main site-branch
+          (cd branch && python3 .github/scripts/generate_sitemap.py && cp sitemap.xml ../out/sitemap-branch.xml)
+          (cd main && python3 .github/scripts/generate_sitemap.py && cp sitemap.xml ../out/sitemap-main.xml)
+          find out -type f | wc -l
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verify-output
+          path: out
