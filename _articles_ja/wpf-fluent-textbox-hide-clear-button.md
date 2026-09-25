@@ -63,7 +63,7 @@ Fluent テーマの `TextBox` は、キーボードフォーカスが入ると�
 
 テンプレートに存在する名前付きパーツは、実際に適用してから読み出せば確かめられる。
 
-<figure class="article-figure">
+<figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行ではどちらの経路でも DeleteButton が残る。" width="913" height="320" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。<code>Style applied</code> は <code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（従来のテーマスタイル）を示す。</figcaption>
 </figure>

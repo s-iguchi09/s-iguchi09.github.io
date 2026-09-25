@@ -63,7 +63,7 @@ Because of this, no public property is provided to hide only the clear button, s
 
 Which named parts a template holds can be confirmed by applying it and looking them up.
 
-<figure class="article-figure">
+<figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the rows whose implicit style inherits through BasedOn keep DeleteButton on both routes." width="913" height="320" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
 </figure>

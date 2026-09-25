@@ -97,7 +97,7 @@ Both carry `xml:lang="en-US"` so that the comparison does not depend on the mach
 ```
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="Two DatePicker controls holding the same date. The default one displays 4/15/2026 while the one with StringFormat displays 2026/04/15." width="486" height="146" loading="lazy">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="Two DatePicker controls holding the same date. The default one displays 4/15/2026 while the one with StringFormat displays 2026/04/15." width="501" height="146" loading="lazy">
   <figcaption>Two <code>DatePicker</code> controls given the same <code>SelectedDate</code>. Both carry <code>xml:lang="en-US"</code> so that the difference in format is visible. The upper one uses the default display, which follows that setting and renders <code>4/15/2026</code>. The lower one applies the style from this section, which fixes the separators and the year-month-day order.</figcaption>
 </figure>
 
