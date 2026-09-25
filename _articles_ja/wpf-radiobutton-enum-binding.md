@@ -17,8 +17,8 @@ WPF で列挙体の値を選ばせる UI は、`RadioButton.IsChecked` をコン
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 8 以降 / WPF（.NET Framework 版の WPF でも同じ挙動）
-- 検証環境: .NET 10 / Windows 11（本記事の実測結果と図はこの環境で取得したものであり、グループ化の判定・`ConvertBack` の呼び出し・検証エラーの発生は .NET Framework 4.8 でも同一の結果を確認した）
+- フレームワーク: WPF（.NET 10 と .NET Framework 4.8 で確認）
+- 検証環境: Windows 11。本記事の実測は、記事の XAML・ViewModel・コンバーターをそのまま .NET 10 と .NET Framework 4.8 で実行して得たもので、測った項目はすべて両方で同じ結果になった（後掲の表）。画面の図は .NET 10 で取得した
 - 言語: C# / XAML（コード例は nullable 参照型有効を前提とする）
 - 対象コントロール: `System.Windows.Controls.RadioButton`、`System.Windows.Data.IValueConverter`
 - アーキテクチャ: MVVM（選択状態を ViewModel の列挙体プロパティで保持する構成）
@@ -139,7 +139,7 @@ WPF の `RadioButton.GroupName` の既定値は空文字列である。
 問題は、この解除がバインディングを通じてソース側へ伝わろうとする点にある。
 `ToggleButton.IsChecked` は `bool?` 型の依存関係プロパティで、メタデータで既定の双方向バインディングが有効になっており、既定の `UpdateSourceTrigger` は `PropertyChanged` である。
 そのため解除は即座にソース更新として扱われ、コンバーターの `ConvertBack` が `false` で呼び出される。
-実測でも、`Single` の選択が確定した直後に `ConvertBack(value: false, parameter: Quality.Standard)` が 1 回呼ばれることを確認した。
+実測でも、`ConvertBack` が `value: false`、`parameter: Quality.Standard` で 1 回呼ばれた（後掲の表）。
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-group-convertback-path.svg" alt="GroupName を省いたときに解除がソースへ伝わる経路を示す 3 段構成の図。1 段目は、GroupName が空文字列のため 1 つの暗黙のグループができ、PageLayout.Single が選択されると Quality.Standard の IsChecked が true から false へ変わること、およびそのバインディングが TwoWay で UpdateSourceTrigger が PropertyChanged であること。2 段目は、その変化によって ConvertBack が value: false、parameter: Quality.Standard で呼ばれること。3 段目は、ConvertBack の戻り値 4 通りそれぞれの結果で、Binding.DoNothing と DependencyProperty.UnsetValue はいずれも Quality = Standard のまま IsChecked = false（後者には Validation.Errors が加わる）、parameter を返すと IsChecked = true に復元、例外を投げると NotImplementedException が UnhandledException となる。" width="880" height="466" loading="lazy">
@@ -158,29 +158,29 @@ WPF の `RadioButton.GroupName` の既定値は空文字列である。
 なお、**同じ列挙体プロパティにバインドしたラジオボタン同士では、この `ConvertBack(false)` は通常発生しない**。
 選択を切り替えると、まず選択された側の `ConvertBack(true)` でソースが更新され、その変更が `Convert` を通じて他のボタンへ伝わって `false` になる。
 グループ機構が解除しようとした時点では既に `false` であり、値が変化しないためソース更新も起きない。
-検証環境でも、同一プロパティ内の切り替えでは `ConvertBack` は `true` で 1 回だけ呼ばれ、`false` では一度も呼ばれなかった。
+実測でも、同一プロパティ内の切り替えでは `ConvertBack` は `true` で 1 回だけ呼ばれ、`false` では一度も呼ばれなかった（後掲の表）。
 `ConvertBack` が `false` で呼ばれるのは、**同じソースの同じプロパティにバインドしたボタン以外が、同じグループに混ざったとき**である。
 別のプロパティにバインドしたボタンのほか、同じ名前のプロパティでもオブジェクトが異なるボタン、そもそもバインドしていないボタンがこれに当たる。
-実行して確認したところ、一覧の各行が別の ViewModel の同名プロパティにバインドして全行に同じ `GroupName` を与えた構成でも、バインドしていないラジオボタンを 1 つ混ぜた構成でも `ConvertBack(false)` が発生した。
+実行して確認したところ、一覧の各行が別の ViewModel の同名プロパティにバインドして全行に同じ `GroupName` を与えた構成でも、バインドしていないラジオボタンを 1 つ混ぜた構成でも `ConvertBack(false)` が発生した（後掲の表）。
 
 ---
 
-`GroupName` の有無だけを変えて、コンバーターの呼び出しとチェック状態を測った結果が次の図である。
+本記事の XAML をそのまま動かし、コンバーターの呼び出しとチェック状態を測った結果が次の表である。本文で「実測では」と書いた箇所は、すべてこの表の行に対応する。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="GroupName の有無別に ConvertBack の呼び出し回数とチェック状態を測った表。GroupName の既定値は空文字列。GroupName を設定しない場合は ConvertBack が false で 1 回呼ばれ、チェックが Single だけになる。GroupName を設定すると、画面の初期化の間は呼び出しが 0 回で、Standard と Single の両方にチェックが残る。ソース側の値はどちらも Standard / Single のままである。" width="764" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、同じ <code>StackPanel</code> の下に 2 組（<code>Quality</code> と <code>Layout</code>）のラジオボタンを置いて測った結果。<code>GroupName</code> 属性の有無だけが 2 行の差である。</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="本記事の XAML を .NET Framework 4.8 と .NET 10 で実行して測った表。ランタイムの行以外は両方で同じ値。GroupName の既定値は空文字列。GroupName なしではチェックが Single だけで、ConvertBack(false) が Standard で 1 回、ソースは Standard / Single。GroupName ありでは Standard と Single にチェックが付き、ConvertBack(false) は 0 回。Fine を選ぶと ConvertBack(true) 1 回・(false) 0 回、Draft を選ぶと Quality だけが Draft に変わる。列挙体ごとに StackPanel を分けると GroupName なしでも両方にチェックが付く。別々の Border の同じ GroupName は 1 つに解除される。ConverterParameter を文字列にすると Quality 側はどれもチェックされず、Fine を選ぶとソースだけが Fine になる。別の ViewModel の同名プロパティや、バインドしていないボタンが混ざると ConvertBack(false) が 1 回。ConvertBack が NotImplementedException を投げると呼び出し元まで上がる。UnsetValue を返すと Standard は未チェックのまま検証エラーが付き、ソースは変わらない。false でも parameter を返す実装とラッパープロパティでは両方にチェックが付く。Grid の別セル、GroupBox の Header と Content、ItemsControl の Items では 2 つのうち 1 つだけがチェックされる。" width="1218" height="770" loading="lazy">
+  <figcaption>Windows 11 で、記事の XAML・ViewModel・コンバーターをそのまま <code>XamlReader</code> で読み込む一時プロジェクトを、<code>net48</code> と <code>net10.0-windows</code> の両方でビルドして測った結果。値が 1 つの行は、両方のランタイムで同じ値だったことを示す。選択の操作は、クリックと同じ経路を通る UI オートメーションの <code>Select</code> で行った。</figcaption>
 </figure>
 
-**`GroupName` を設定しない行では、チェックが `Single` だけになっている。** 別のプロパティにバインドしているにもかかわらず `Standard` が解除されており、これが「初期選択が表示されない」症状の実体である。
+**`GroupName` を設定しない場合（`no GroupName` の行）、チェックが `Single` だけになっている。** 別のプロパティにバインドしているにもかかわらず `Standard` が解除されており、これが「初期選択が表示されない」症状の実体である。
 このとき `ConvertBack` が `false` で 1 回呼ばれている。
 
-注目すべきは、**ソース側の値はどちらの行も `Standard / Single` のまま無傷である**点である。
+注目すべきは、**ソース側の値はどちらの場合も `Standard / Single` のまま無傷である**点である。
 コンバーターが `false` に対して `Binding.DoNothing` を返しているため、ViewModel は壊れていない。
 壊れているのは画面の表示だけであり、ViewModel をログに出しても原因にたどり着けない。
 
-`GroupName` を設定した行では、画面の初期化の間に `ConvertBack` が 1 度も呼ばれず、両方のチェックが残る。
-この行が測っているのは初期化までである。その後にユーザーが選択を変えれば、前述のとおり新しくチェックされたボタンで `ConvertBack(true)` が走る。
+`GroupName` を設定した場合（`GroupName set` の行）、画面の初期化の間に `ConvertBack` が 1 度も呼ばれず、両方のチェックが残る。
+その後に選択を変えると、新しくチェックされたボタンで `ConvertBack(true)` が 1 回だけ走る（`select Fine` の行）。
 
 ---
 
@@ -198,7 +198,7 @@ WPF の `RadioButton.GroupName` の既定値は空文字列である。
   文字列を渡すと比較が成立しない（後述）。
 
 グループ化は論理親の単位で行われるため、列挙体のプロパティごとに親のパネルを分けても症状は解消する。
-実行して確認したところ、「問題」の 5 つを `Quality` 用と `PageLayout` 用の 2 つの `StackPanel` に分けるだけで、`GroupName` を書かずに初期選択が両方とも表示された。
+実測でも、「問題」の 5 つを `Quality` 用と `PageLayout` 用の 2 つの `StackPanel` に分けるだけで、`GroupName` を書かずに初期選択が両方とも表示された（表の `one StackPanel per enum`）。
 ただしこの方法はレイアウトの構造に依存し、後の変更でパネルをまとめ直すと再発する。
 `GroupBox` の `Header` と `Content`、`Grid` の別セルのように、画面上は離れていても論理親が同じになる配置では、グループが分かれない（「注意点」参照）。
 グループの境界を意図として明示できる `GroupName` の指定を推奨する。
@@ -258,7 +258,7 @@ XAML では、列挙体のプロパティごとに異なる `GroupName` を与�
 
 - **`GroupName` は親要素をまたいでグループ化する。**
   `GroupName` を設定したラジオボタンは、別々の `Border` や別のパネルに分かれていても同一グループになる。
-  実測では、異なる親に配置した `GroupName="quality"` の 2 組が互いを解除した。
+  実測では、異なる親に配置した `GroupName="quality"` の 2 組が互いを解除し、チェックは 1 つだけ残った（表の `two Borders`）。
   そのため、1 つのグループに与える名前を、同じビジュアルツリーのルート内にある他のグループの名前と重複させないようにする（同じグループに属するボタンには同じ名前を与える）。
   命名規則をアプリケーション全体で統一する場合も、同じ列挙体の選択群が 1 つの画面に 2 セット出ないことが前提となる。
   なお、グループ化はビジュアルツリーのルートをまたがない。
@@ -267,7 +267,7 @@ XAML では、列挙体のプロパティごとに異なる `GroupName` を与�
   `ConverterParameter=Draft` と書くと、`ConverterParameter` が `object` 型で変換先の型が確定しないため、値は文字列 `"Draft"` のまま渡る。
   `Convert` の比較が常に `false` となり、どのボタンも選択表示されない。
   一方でクリック時の `ConvertBack` は文字列を返し、WPF の既定の型変換で列挙体へ変換されるため、ソースの更新だけは成功する。
-  実測では、ViewModel の値だけが変わり画面はどれも未選択のまま、という状態になった。
+  実測では、ViewModel の値だけが変わり、`Quality` 側の画面はどれも未選択のまま、という状態になった（表の `ConverterParameter=Draft (string)`）。
   `x:Static` で列挙体の値を渡すか、`Convert` 側で `Enum.Parse` して受けること。
 - **`ConverterParameter` にはバインドできない。**
   `Binding` は `BindingBase` を経て `MarkupExtension` を継承しており、`DependencyObject` ではない。
@@ -275,28 +275,28 @@ XAML では、列挙体のプロパティごとに異なる `GroupName` を与�
   項目ごとに値を変えたい場合はコンバーター方式では対応できず、添付ビヘイビアや選択コントロールへの置き換えが必要になる。
 - **`ConvertBack` を `NotImplementedException` のまま放置しない。**
   双方向バインディングでは `ConvertBack` が呼ばれ、データバインディングエンジンはコンバーターが投げた例外を捕捉しない。
-  グループが混在した状態では解除時に `ConvertBack(false)` が発生するため、実測でもそのまま `NotImplementedException` でアプリケーションが停止した。
+  グループが混在した状態では解除時に `ConvertBack(false)` が発生する。実測では、ウィンドウの表示中にこの呼び出しが起き、`NotImplementedException` が `Show` の呼び出し元まで上がった。捕捉しなければアプリケーションは終了する。
 - **解除時に `DependencyProperty.UnsetValue` を返さない。**
   公式ドキュメントは、想定内の問題を `DependencyProperty.UnsetValue` の返却で扱うよう記し、その場合は `FallbackValue` があればそれが、なければ既定値が使われると述べている（[IValueConverter.ConvertBack メソッド](https://learn.microsoft.com/dotnet/api/system.windows.data.ivalueconverter.convertback)）。
-  しかし検証環境では、`ConvertBack` からこの値を返してもソースは更新されず、`FallbackValue` も適用されないまま、`Value 'False' could not be converted.`（日本語環境では「値 'False' を変換できませんでした。」）という検証エラーがバインディングに設定され、`Validation.Errors` に残った。
+  しかし検証環境では、`ConvertBack` からこの値を返してもソースは更新されず、`FallbackValue` も適用されないまま、`Value 'False' could not be converted.`（英語の UI カルチャで実行した場合の文面）という検証エラーがバインディングに設定され、`Validation.Errors` に残った。
   `Binding.DoNothing` を返した場合は、同じ条件でも検証エラーは発生しない。
   値を転送しないという意図だけを表すのは `Binding.DoNothing` である。
   検証エラーの読み方は[WPF バインディングエラーの読み方と出力ウィンドウを使った原因特定](/ja/articles/wpf-binding-error-debugging-output-window/)で扱っている。
 - **解除時に `parameter` を返す実装は、グループの誤りを隠す。**
   `false` のときも `parameter` を返すと、解除された側のソースが同じ値で更新され、直後の読み戻しでターゲットが選択状態へ復元される。
-  この復元はグループ機構による解除より後に効くため、.NET 10 で実行したところ、1 つのグループにまとめられているにもかかわらず `Quality` 側と `PageLayout` 側の両方が選択された状態で表示された。
+  この復元はグループ機構による解除より後に効くため、実行したところ、1 つのグループにまとめられているにもかかわらず `Quality` 側と `PageLayout` 側の両方が選択された状態で表示された。
   画面は意図どおりに見え、本記事が扱う「初期選択が表示されない」症状は現れない。
   ただし相互排他が読み戻しに打ち消されているだけであり、`GroupName` の欠落は残る。
   症状が現れないため欠落に気付きにくく、選択を切り替えるたびにソースへの書き込みと読み戻しが余分に発生する。
   解除時は `Binding.DoNothing` を返し、グループ化そのものを正すこと。
 - **ラッパープロパティ方式でも `GroupName` は必要である。**
   列挙体の値ごとに `bool` プロパティを用意する方式でも、グループ化は UI 側の仕組みであるため、`GroupName` を省けば同じように別の列挙体のボタンが解除される。
-  .NET 10 で実行したところ、解除された側のセッターが `false` で呼ばれて無視され、直後にソースが読み直されて選択が復元された。
+  実行したところ、解除された側のセッターが `false` で 1 回呼ばれて無視され、直後にソースが読み直されて選択が復元された。
   `parameter` を返すコンバーターと同じく画面は意図どおりに見えるが、無駄な往復が起きており、`GroupName` の欠落も残ったままである。
 - **暗黙のグループ化の単位は論理ツリー上の親であり、画面上の区画でもビジュアルツリー上の親でもない。**
   `Grid` の別々のセルに置いたラジオボタンは、セルの指定が `Grid.Row` / `Grid.Column` という添付プロパティで行われ要素の階層を作らないため、論理親がいずれも同じ `Grid` になる。
   実際に動かすと 1 つのグループになった。
-  判定が論理ツリーで行われるため、`GroupBox` の `Header` と `Content` のようにビジュアルツリー上は別々の `ContentPresenter` に属する配置でも、論理親が同じ `GroupBox` であれば 1 グループになる（検証環境で確認）。
+  判定が論理ツリーで行われるため、`GroupBox` の `Header` と `Content` のようにビジュアルツリー上は別々の `ContentPresenter` に属する配置でも、論理親が同じ `GroupBox` であれば 1 グループになる（前掲の表）。
   `ItemsControl` でも、`Items` にラジオボタンを直接並べた場合は論理親が `ItemsControl` 自身になり 1 グループになる。
   逆に、列挙体のプロパティごとに親のパネルを分けると論理親が別になるため、グループも分かれる。
 - **テンプレートや単一子要素の内側では、論理親が変わる。**

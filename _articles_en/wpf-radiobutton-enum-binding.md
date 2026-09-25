@@ -18,8 +18,8 @@ Using measured results, this article traces that behavior to a grouping mistake 
 
 ## Prerequisites / Environment
 
-- Framework: .NET 8 or later / WPF (the behavior is the same on WPF for .NET Framework)
-- Verified on: .NET 10 / Windows 11 (all measured results and the figures come from this environment); the grouping decision, the `ConvertBack` calls, and the validation error were reproduced identically on .NET Framework 4.8
+- Framework: WPF (checked on .NET 10 and .NET Framework 4.8)
+- Verified on: Windows 11. The measured results come from running this article's XAML, view model, and converter unchanged on .NET 10 and .NET Framework 4.8, and every measured item gave the same result on both (see the table below). The screenshot was taken on .NET 10
 - Language: C# / XAML (code samples assume nullable reference types are enabled)
 - Target controls: `System.Windows.Controls.RadioButton`, `System.Windows.Data.IValueConverter`
 - Architecture: MVVM, with the selection held in an enum property on the ViewModel
@@ -140,7 +140,7 @@ The moment `Single` is checked, the grouping mechanism clears `Standard`, which 
 The problem is that this clearing propagates back toward the source through the binding.
 `ToggleButton.IsChecked` is a `bool?` dependency property whose metadata enables two-way binding by default, and its default `UpdateSourceTrigger` is `PropertyChanged`.
 Clearing the control is therefore treated as an immediate source update, and the converter's `ConvertBack` is invoked with `false`.
-The measured run confirmed this: `ConvertBack(value: false, parameter: Quality.Standard)` fired exactly once, right after `Single` became checked.
+The measured run confirmed this: `ConvertBack` ran exactly once with `value: false` and `parameter: Quality.Standard` (see the table below).
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-group-convertback-path.svg" alt="Three-row diagram of the path by which clearing reaches the source when GroupName is omitted. The first row shows that an empty GroupName produces one implicit group, so checking PageLayout.Single flips IsChecked on Quality.Standard from true to false, and that the binding is two-way with UpdateSourceTrigger set to PropertyChanged. The second row shows that change causing ConvertBack to be called with value false and parameter Quality.Standard. The third row gives the result for each of the four return values: Binding.DoNothing and DependencyProperty.UnsetValue both leave Quality as Standard with IsChecked false, the latter adding a Validation.Errors entry; returning the parameter restores IsChecked to true; and throwing produces an unhandled NotImplementedException." width="880" height="466" loading="lazy">
@@ -157,29 +157,29 @@ The ViewModel keeps `Standard` while the radio button alone remains cleared, whi
 **Among radio buttons bound to the same enum property, this `ConvertBack(false)` does not normally occur.**
 Changing the selection first calls `ConvertBack(true)` on the newly checked button, updating the source; that change flows through `Convert` and clears the other buttons.
 By the time the grouping mechanism tries to clear them, they are already `false`, so no value changes and no source update follows.
-The measured run agreed: switching within one property invoked `ConvertBack` once with `true` and never with `false`.
+The measured run agreed: switching within one property invoked `ConvertBack` once with `true` and never with `false` (see the table below).
 `ConvertBack` receives `false` when **anything other than a button bound to the same property on the same source joins the group**.
 That covers a button bound to a different property, a button bound to the same property name on a different object, and a button with no binding at all.
-A test run reproduced `ConvertBack(false)` both in a list where each row was bound to the same property name on a separate ViewModel and every row shared one `GroupName`, and in a panel where a single unbound radio button sat among the bound ones.
+A test run reproduced `ConvertBack(false)` both in a list where each row was bound to the same property name on a separate ViewModel and every row shared one `GroupName`, and in a panel where a single unbound radio button sat among the bound ones (see the table below).
 
 ---
 
-The figure below records the converter calls and the checked state, varying only whether `GroupName` is set.
+The table below records the converter calls and the checked state from running this article's XAML unchanged. Every "measured run" mentioned in this article corresponds to a row of this table.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="A table of ConvertBack calls and checked state with and without GroupName. The GroupName default is the empty string. Without GroupName, ConvertBack runs once with false and only Single stays checked. With GroupName set, no ConvertBack call occurs while the view initializes and both Standard and Single stay checked. The source values remain Standard and Single in both rows." width="764" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with two pairs of radio buttons — one for <code>Quality</code>, one for <code>Layout</code> — under a single <code>StackPanel</code>. The presence of the <code>GroupName</code> attribute is the only difference between the two rows.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="A table measured by running this article's XAML on .NET Framework 4.8 and .NET 10; every row except the runtime has the same value on both. The GroupName default is the empty string. Without GroupName only Single is checked, ConvertBack(false) runs once for Standard, and the source is Standard / Single. With GroupName, Standard and Single are checked and ConvertBack(false) runs 0 times. Selecting Fine gives ConvertBack(true) once and (false) 0 times; selecting Draft changes only Quality to Draft. One StackPanel per enum shows both checked without GroupName. The same GroupName in two Borders clears one of them. With a string ConverterParameter nothing on the Quality side is checked, and selecting Fine changes only the source to Fine. A different ViewModel's same-named property or an unbound button in the group causes one ConvertBack(false). A ConvertBack throwing NotImplementedException propagates to the caller. Returning UnsetValue leaves Standard unchecked with a validation error and the source unchanged. Returning parameter for false and wrapper properties both show both checked. In separate Grid cells, a GroupBox Header and Content, and ItemsControl Items, only one of two stays checked." width="1218" height="770" loading="lazy">
+  <figcaption>Measured on Windows 11 by building a temporary project that loads this article's XAML, view model, and converter unchanged through <code>XamlReader</code>, for both <code>net48</code> and <code>net10.0-windows</code>. A row with one value means both runtimes gave that value. Selections are made through UI Automation's <code>Select</code>, which follows the same path as a click.</figcaption>
 </figure>
 
-**On the row without `GroupName`, only `Single` remains checked.** `Standard` has been cleared even though it is bound to a different property, and that is the initial selection failing to appear.
+**Without `GroupName` (the `no GroupName` rows), only `Single` remains checked.** `Standard` has been cleared even though it is bound to a different property, and that is the initial selection failing to appear.
 `ConvertBack` runs once with `false` at that moment.
 
-What deserves attention is that **the source values stay `Standard / Single` on both rows.**
+What deserves attention is that **the source values stay `Standard / Single` in both cases.**
 Because the converter returns `Binding.DoNothing` for `false`, the view model is never corrupted.
 Only the display is wrong, which is why logging the view model never leads to the cause.
 
-With `GroupName` set, no `ConvertBack` call occurs while the view initializes, and both stay checked.
-This row measures initialization only. Changing the selection afterward still calls `ConvertBack(true)` on the newly checked button, as described above.
+With `GroupName` set (the `GroupName set` rows), no `ConvertBack` call occurs while the view initializes, and both stay checked.
+Changing the selection afterward calls `ConvertBack(true)` exactly once on the newly checked button (the `select Fine` row).
 
 ---
 
@@ -197,7 +197,7 @@ The root cause lies in UI-side grouping, so the fix belongs there as well.
   A plain string never compares equal, as described below.
 
 Because grouping falls back to the logical parent, giving each enum property its own parent panel also resolves the symptom.
-A test run split the five buttons from Problem into one `StackPanel` for `Quality` and another for `PageLayout`, and both initial selections appeared without a single `GroupName`.
+A measured run split the five buttons from Problem into one `StackPanel` for `Quality` and another for `PageLayout`, and both initial selections appeared without a single `GroupName` (the `one StackPanel per enum` row).
 That arrangement depends on the layout structure, however, and merging the panels again in a later change brings the symptom back.
 Nor does it help where the logical parent stays the same despite visual distance, such as a `GroupBox` split between `Header` and `Content`, or separate `Grid` cells (see Notes).
 Setting `GroupName` makes the group boundary explicit, and that is why it is the recommended fix.
@@ -257,7 +257,7 @@ Selecting `Draft` changes only `Quality`, leaving the `PageLayout` selection int
 
 - **`GroupName` groups across parent elements.**
   Radio buttons that carry a `GroupName` join the same group even when they sit in separate `Border` elements or separate panels.
-  In the measured run, two sets marked `GroupName="quality"` under different parents cleared each other.
+  In the measured run, two sets marked `GroupName="quality"` under different parents cleared each other, leaving one check (the `two Borders` row).
   The name given to one group must therefore differ from the name of every other group under the same visual tree root; the buttons that belong to one group all share the same name.
   A naming convention applied across the application still assumes that no view shows two sets for the same enum.
   Grouping does not cross the root of the visual tree.
@@ -266,7 +266,7 @@ Selecting `Draft` changes only `Quality`, leaving the `PageLayout` selection int
   Writing `ConverterParameter=Draft` passes the string `"Draft"` through unchanged, because `ConverterParameter` is typed as `object` and no target type drives a conversion.
   The comparison in `Convert` then always yields `false`, and no button is ever displayed as selected.
   On click, `ConvertBack` still returns that string, and WPF's default type conversion turns it into the enum value, so only the source update succeeds.
-  In the measured run, the ViewModel value changed while every button stayed cleared.
+  In the measured run, the ViewModel value changed while every button on the `Quality` side stayed cleared (the `ConverterParameter=Draft (string)` rows).
   Pass the enum value with `x:Static`, or call `Enum.Parse` inside `Convert`.
 - **`ConverterParameter` cannot be data bound.**
   `Binding` derives from `BindingBase` and ultimately from `MarkupExtension`, not from `DependencyObject`.
@@ -274,29 +274,29 @@ Selecting `Draft` changes only `Quality`, leaving the `PageLayout` selection int
   When each item needs a different value, the converter approach does not apply; use an attached behavior or a selection control instead.
 - **Do not leave `ConvertBack` throwing `NotImplementedException`.**
   Two-way bindings call `ConvertBack`, and the data binding engine does not catch exceptions thrown by a converter.
-  Once groups are mixed, clearing a button triggers a `ConvertBack(false)` call; in the measured run, the application terminated with `NotImplementedException` at that point.
+  Once groups are mixed, clearing a button triggers a `ConvertBack(false)` call; in the measured run, that call happened while the window was being shown, and `NotImplementedException` propagated to the caller of `Show`. Left uncaught, it terminates the application.
 - **Do not return `DependencyProperty.UnsetValue` when the control is cleared.**
   The official documentation states that anticipated problems should be handled by returning `DependencyProperty.UnsetValue`, and that the binding then uses `FallbackValue` when present and the default value otherwise ([IValueConverter.ConvertBack Method](https://learn.microsoft.com/dotnet/api/system.windows.data.ivalueconverter.convertback)).
-  In the measured run, however, returning it from `ConvertBack` left the source untouched, applied no `FallbackValue`, and attached the validation error `Value 'False' could not be converted.` to the binding, where it remained in `Validation.Errors`.
+  In the measured run, however, returning it from `ConvertBack` left the source untouched, applied no `FallbackValue`, and attached the validation error `Value 'False' could not be converted.` (the text under an English UI culture) to the binding, where it remained in `Validation.Errors`.
   Returning `Binding.DoNothing` under the same conditions raises no validation error.
   `Binding.DoNothing` is the value that expresses only the intent to transfer nothing.
   Reading such errors is covered in [Reading WPF Binding Errors and Diagnosing Them with the Output Window](/articles/wpf-binding-error-debugging-output-window/).
 - **Returning `parameter` when the control is cleared hides the grouping mistake.**
   Returning `parameter` for `false` as well updates the cleared button's source with the same value, and the read-back that follows restores the target to checked.
-  That restoration lands after the grouping mechanism has already cleared the button, so running this on .NET 10 showed both the `Quality` and the `PageLayout` selection checked despite the two sharing one group.
+  That restoration lands after the grouping mechanism has already cleared the button, so running this showed both the `Quality` and the `PageLayout` selection checked despite the two sharing one group.
   The screen looks as intended, and the missing-initial-selection symptom this article covers never appears.
   Mutual exclusion is merely undone by the read-back, though, and the missing `GroupName` remains.
   The absent symptom is what makes it easy to overlook, and every selection change costs the source an extra write and read-back.
   Return `Binding.DoNothing` on clearing and fix the grouping itself.
 - **Wrapper properties still need `GroupName`.**
   Exposing one `bool` property per enum value does not change the fact that grouping is a UI-side mechanism, so omitting `GroupName` clears buttons across enums in exactly the same way.
-  In the measured run, the setter of the cleared property ran with `false` and ignored it, after which the source was read back and the selection was restored.
+  In the measured run, the setter of the cleared property ran once with `false` and ignored it, after which the source was read back and the selection was restored.
   As with a converter that returns `parameter`, the screen looks as intended, yet the redundant round trip and the missing `GroupName` both remain.
 - **Implicit grouping is determined by the logical parent, not by the visual region or the visual parent.**
   Radio buttons in separate `Grid` cells take the same `Grid` as their logical parent, because a cell is assigned through the `Grid.Row` and `Grid.Column` attached properties, which add no element to the hierarchy.
   A test run confirmed they form one group.
   The check runs against the logical tree, so radio buttons split between a `GroupBox`'s `Header` and its `Content` still form one group.
-  Each sits under a separate `ContentPresenter` in the visual tree, yet both share the `GroupBox` as logical parent (confirmed on .NET 10).
+  Each sits under a separate `ContentPresenter` in the visual tree, yet both share the `GroupBox` as logical parent (see the table above).
   Even in an `ItemsControl`, radio buttons added directly to `Items` take the `ItemsControl` itself as their logical parent and form one group.
   Giving each enum property its own parent panel, by contrast, changes the logical parent and so separates the groups.
 - **Inside a template or a single-child element, the logical parent changes.**
