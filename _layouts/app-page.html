@@ -1,0 +1,50 @@
+---
+---
+{%- comment -%}
+  アプリ紹介ページ（apps/<name>.md と日本語版）のレイアウト。
+  本文は Markdown で書き、ページ固有の値は front matter に置く。
+
+    title       … <title> の全文
+    heading     … <h1>（アプリ名）
+    lead        … <h1> 直下のリード文（HTML として出力する。<code> を使ってよい）
+    description … <meta name="description">
+    permalink   … 公開 URL。HTML 時代と同じ /apps/<name>.html（日本語版は /ja/apps/...）を明示する
+
+  言語は URL で判定する（_includes/head.html と同じ判定）。
+  本文を <h2> ごとに section.content-section で包み直す処理などは、
+  _layouts/control-demo.html と同じ（理由はそちらのコメントを参照）。
+{%- endcomment -%}
+{%- if page.url contains '/ja/' -%}
+  {%- assign lang = 'ja' -%}
+{%- else -%}
+  {%- assign lang = 'en' -%}
+{%- endif -%}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }}</title>
+  {% include head.html %}
+  <meta name="description" content="{{ page.description | escape }}">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+{% if lang == 'ja' %}{% include header-ja.html %}{% else %}{% include header-en.html %}{% endif %}
+
+<main>
+
+  <section class="hero">
+    <h1>{{ page.heading }}</h1>
+    <p>{{ page.lead }}</p>
+  </section>
+
+  {{ content | replace: '<h2', '</section><section class="content-section"><h2' | remove_first: '</section>' | replace: '<table>', '<table class="prop-table">' | replace: '<code class="language-plaintext highlighter-rouge">', '<code>' }}
+  </section>
+
+</main>
+
+{% if lang == 'ja' %}{% include footer-ja.html %}{% else %}{% include footer-en.html %}{% endif %}
+
+</body>
+</html>
