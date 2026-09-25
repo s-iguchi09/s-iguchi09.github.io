@@ -121,17 +121,24 @@ This can satisfy special UI requirements, but it tends to increase XAML complexi
   <Grid>
     <TextBlock x:Name="display" Text="{Binding Name}" />
     <TextBox x:Name="editor" Text="{Binding Name, Mode=TwoWay}" Visibility="Collapsed" />
-    <DataTemplate.Triggers>
-      <DataTrigger
-        Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
-        Value="True">
-        <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
-        <Setter TargetName="editor" Property="Visibility" Value="Visible" />
-      </DataTrigger>
-    </DataTemplate.Triggers>
   </Grid>
+  <DataTemplate.Triggers>
+    <DataTrigger
+      Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
+      Value="True">
+      <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
+      <Setter TargetName="editor" Property="Visibility" Value="Visible" />
+    </DataTrigger>
+  </DataTemplate.Triggers>
 </DataTemplate>
 ```
+
+`DataTemplate.Triggers` must sit directly under `DataTemplate`, after the root element. Placed inside the `Grid`, the template still loads, because its content is not parsed until it is used, but showing it in a cell threw `XamlParseException`.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.svg" alt="A table of the single-template example in a DataGrid cell. With DataTemplate.Triggers inside the Grid, loading succeeds but showing the grid throws XamlParseException. With the triggers directly under DataTemplate, the TextBlock is visible and the TextBox collapsed before BeginEdit, and the other way round after it." width="1195" height="140" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by using each template as the <code>CellTemplate</code> of a <code>DataGridTemplateColumn</code> and calling <code>BeginEdit</code>.</figcaption>
+</figure>
 
 This approach is valid for specific cases, but `CellTemplate` plus `CellEditingTemplate` should remain the default policy for maintainability and predictability.
 

@@ -16,6 +16,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
     [
         "表示中は CellTemplate、編集中は CellEditingTemplate の要素がセルに置かれること",
         "BeginEdit を呼ぶと実際に要素の型が入れ替わること",
+        "記事の単一テンプレートの例で、DataTemplate.Triggers を Grid の中に置いた形と DataTemplate の直下に置いた形を、DataGrid のセルに使ったときの結果と、BeginEdit の前後の表示の切り替わり",
     ];
 
     public string Slug => "wpf-datagrid-cell-editing-template";
@@ -49,6 +50,108 @@ internal sealed class DataGridEditingTemplateScene : IScene
             ["state", "element in the cell", "cell.IsEditing"],
             await DataGridMeasurements.EditingTemplateAsync(),
             "datagrid-editing-template.svg");
+
+        await context.SaveTableAsync(
+            "single template switched by DataGridCell.IsEditing",
+            ["placement of DataTemplate.Triggers", "result"],
+            await SingleTemplateAsync(),
+            "datagrid-single-template.svg");
+    }
+
+    /// <summary>記事の単一テンプレートの例。{0} に Triggers の位置による違いを入れる。</summary>
+    private const string SingleTemplate = """
+        <DataTemplate>
+          <Grid>
+            <TextBlock x:Name="display" Text="{Binding Name}" />
+            <TextBox x:Name="editor" Text="{Binding Name, Mode=TwoWay}" Visibility="Collapsed" />
+            {0}
+          </Grid>
+          {1}
+        </DataTemplate>
+        """;
+
+    private const string Triggers = """
+        <DataTemplate.Triggers>
+          <DataTrigger
+            Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
+            Value="True">
+            <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
+            <Setter TargetName="editor" Property="Visibility" Value="Visible" />
+          </DataTrigger>
+        </DataTemplate.Triggers>
+        """;
+
+    /// <summary>
+    /// Triggers を Grid の中に置いた形（記事の以前の例）と、DataTemplate の直下に置いた形を実際に使う。
+    /// テンプレートの中身は使うときまで解釈されないため、読み込みでは失敗せず、セルに適用した時点で結果が分かれる。
+    /// </summary>
+    private static async Task<List<IReadOnlyList<string>>> SingleTemplateAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+        foreach ((string label, string inside, string after) in new[]
+        {
+            ("inside <Grid>", Triggers, ""),
+            ("directly under <DataTemplate>, after <Grid>", "", Triggers),
+        })
+        {
+            DataTemplate template;
+            try
+            {
+                template = SceneContext.LoadXaml<DataTemplate>(SingleTemplate.Replace("{0}", inside).Replace("{1}", after));
+            }
+            catch (Exception e)
+            {
+                rows.Add([label, $"loading the template: {e.GetType().Name}"]);
+                continue;
+            }
+
+            var items = new ObservableCollection<Product>(SampleData.Products().Take(1));
+            var grid = new DataGrid { ItemsSource = items, AutoGenerateColumns = false, CanUserAddRows = false };
+            grid.Columns.Add(new DataGridTemplateColumn { Header = "Name", CellTemplate = template });
+            var window = new Window { Content = grid, Width = 320, Height = 160, ShowActivated = false };
+            try
+            {
+                try
+                {
+                    await Capture.ShowAndSettleAsync(window);
+                }
+                catch (Exception e)
+                {
+                    rows.Add([label, $"loading succeeds; showing the grid throws {e.GetType().Name}"]);
+                    continue;
+                }
+
+                string before = Visibilities(grid);
+                grid.CurrentCell = new DataGridCellInfo(items[0], grid.Columns[0]);
+                grid.BeginEdit();
+                await Capture.SettleAsync(window);
+                rows.Add([label, $"before BeginEdit: {before}; after: {Visibilities(grid)}"]);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        return rows;
+    }
+
+    private static string Visibilities(DataGrid grid)
+    {
+        TextBlock? display = null;
+        TextBox? editor = null;
+        void Walk(DependencyObject node)
+        {
+            if (node is TextBlock { Name: "display" } block) display = block;
+            if (node is TextBox { Name: "editor" } box) editor = box;
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(node); i++)
+            {
+                Walk(System.Windows.Media.VisualTreeHelper.GetChild(node, i));
+            }
+        }
+
+        Walk(grid);
+        return $"TextBlock {display?.Visibility}, TextBox {editor?.Visibility}";
     }
 
     private static DataGrid BuildGrid(ObservableCollection<Product> items) => new()

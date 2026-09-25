@@ -118,17 +118,24 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
   <Grid>
     <TextBlock x:Name="display" Text="{Binding Name}" />
     <TextBox x:Name="editor" Text="{Binding Name, Mode=TwoWay}" Visibility="Collapsed" />
-    <DataTemplate.Triggers>
-      <DataTrigger
-        Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
-        Value="True">
-        <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
-        <Setter TargetName="editor" Property="Visibility" Value="Visible" />
-      </DataTrigger>
-    </DataTemplate.Triggers>
   </Grid>
+  <DataTemplate.Triggers>
+    <DataTrigger
+      Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
+      Value="True">
+      <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
+      <Setter TargetName="editor" Property="Visibility" Value="Visible" />
+    </DataTrigger>
+  </DataTemplate.Triggers>
 </DataTemplate>
 ```
+
+`DataTemplate.Triggers` は、ルート要素の後ろで `DataTemplate` の直下に置く。`Grid` の中に置いても、テンプレートの中身は使うまで解釈されないため読み込みは成功するが、セルに表示した時点で `XamlParseException` になった。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.svg" alt="単一テンプレートの例を DataGrid のセルに使った結果の表。DataTemplate.Triggers を Grid の中に置くと、読み込みは成功するが表示で XamlParseException になる。DataTemplate の直下に置くと、BeginEdit の前は TextBlock が表示されて TextBox が隠れ、後はその逆になる。" width="1195" height="140" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、それぞれのテンプレートを <code>DataGridTemplateColumn</code> の <code>CellTemplate</code> にして <code>BeginEdit</code> を呼んだ結果。</figcaption>
+</figure>
 
 この方法は一部の特殊要件で有効だが、基本方針は `CellTemplate` と `CellEditingTemplate` の分離を優先する。
 保守性、再利用性、デバッグ容易性の点で差が出る。
