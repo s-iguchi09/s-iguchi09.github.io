@@ -28,6 +28,7 @@ internal sealed class LinqBackportNet5Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "TakeLast / SkipLast に 0・要素数超過・負数を渡したときの挙動",
         "空の並びに対する TakeLast",
+        "SkipLast(0) が元の配列そのものを返すか（本家は別のイテレーターを返す）",
         "NET471_OR_GREATER が SDK 形式の暗黙定義に依存しており、それを切った場合と従来形式では同じソースが CS0121 になること、および DefineConstants で明示すれば通ること",
     ];
 
@@ -60,6 +61,8 @@ internal sealed class LinqBackportNet5Scene : IScene
         new("Numbers.SkipLast(10)", "Numbers.SkipLast(10)"),
         new("Numbers.SkipLast(-1)", "Numbers.SkipLast(-1)"),
         new("empty.TakeLast(2)", "new int[0].TakeLast(2)"),
+        // 本家は 0 でも別のイテレーターを返す。元の配列そのものを返すと、キャストして書き換えられてしまう。
+        new("SkipLast(0) is source", "ReferenceEquals(Numbers.SkipLast(0), Numbers)"),
     ];
 
     public async Task CaptureAsync(SceneContext context)

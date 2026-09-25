@@ -10,10 +10,10 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 
 ## Overview
 
-.NET Framework 4.8 continues to ship with Windows, but feature development stopped in 2019, so any LINQ method added since then is unavailable.
+.NET Framework 4.8 continues to ship with Windows, but its last versions, 4.8 (2019) and 4.8.1 (2022), no longer gain new LINQ operators, so the methods added to .NET since then are unavailable.
 The missing methods can be hand-rolled as extension methods (polyfills), yet reproducing the exact feel of standard LINQ takes more than matching signatures.
 
-This article uses the four methods added during the .NET Core 2.0–3.0 era — `Append`, `Prepend`, `TakeLast` and `SkipLast` — to establish three design principles for writing LINQ polyfills.
+This article uses the four methods added during the .NET Core 1.0–2.0 era — `Append`, `Prepend`, `TakeLast` and `SkipLast` — to establish three design principles for writing LINQ polyfills.
 
 1. **Split argument validation from the iterator body** — keep lazy evaluation while making exceptions fire at call time
 2. **Minimize buffering** — choose between pass-through and sliding-window algorithms
@@ -59,10 +59,10 @@ The additions from that window include `ToHashSet` (.NET Core 2.0) among others,
 
 | Method | Added in | Description |
 | --- | --- | --- |
-| `Append<T>` | .NET Core 2.0 | Appends one element to the end of a sequence |
-| `Prepend<T>` | .NET Core 2.0 | Prepends one element to the beginning of a sequence |
-| `TakeLast<T>` | .NET Core 3.0 | Returns the last N elements of a sequence |
-| `SkipLast<T>` | .NET Core 3.0 | Returns all elements except the last N |
+| `Append<T>` | .NET Core 1.0 / .NET Standard 1.6 | Appends one element to the end of a sequence |
+| `Prepend<T>` | .NET Core 1.0 / .NET Standard 1.6 | Prepends one element to the beginning of a sequence |
+| `TakeLast<T>` | .NET Core 2.0 / .NET Standard 2.1 | Returns the last N elements of a sequence |
+| `SkipLast<T>` | .NET Core 2.0 / .NET Standard 2.1 | Returns all elements except the last N |
 
 Whether these four exist in the .NET Framework BCL is settled by compiling against each target framework in turn.
 
@@ -71,7 +71,7 @@ Whether these four exist in the .NET Framework BCL is settled by compiling again
   <figcaption>Code calling each method without a polyfill, compiled and recorded as to whether it built. <code>yes</code> means the method exists in the BCL of that TFM. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 
-**`Append` and `Prepend` are available from .NET Framework 4.7.1 onward**, because 4.7.1 is the version that implements .NET Standard 2.0, which includes both.
+**`Append` and `Prepend` are available from .NET Framework 4.7.1 onward**: the "Applies to" list of [`Enumerable.Append`](https://learn.microsoft.com/dotnet/api/system.linq.enumerable.append) names .NET Framework 4.7.1 and later, where the methods are part of the framework itself.
 Defining them unconditionally as a polyfill while targeting 4.8 therefore collides with the BCL definitions and fails to compile with `CS0121` (ambiguous call).
 The implementation below guards those two with an extra `#if !NET471_OR_GREATER`.
 
@@ -117,7 +117,7 @@ Their implementation is covered in a [separate article](/articles/linq-backport-
 
 ## Implementation
 
-The following code makes all four methods available in a .NET Framework project with the same call syntax as the originals.
+The following code makes all four methods available in a .NET Framework project with the same call syntax as the originals. It assumes a project that targets .NET Framework only; the `#if` guards are written for that case.
 Copy it into a file such as `LinqExtensions.Net5.cs`.
 
 ```csharp
@@ -210,7 +210,9 @@ namespace System.Linq
         public static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, int count)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (count <= 0) return source;
+            // Return a new iterator even for 0, as the built-in does, so that callers cannot cast the
+            // result back to the source collection and modify it.
+            if (count <= 0) return source.Skip(0);
 
             return SkipLastIterator(source, count);
         }
@@ -238,7 +240,7 @@ Two structural traits carry the design principles explained below: every method 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Append, Prepend, TakeLast, and SkipLast all produce identical results, boundary cases included." width="607" height="410" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Append, Prepend, TakeLast, and SkipLast all produce identical results, boundary cases included. SkipLast(0) returns a new iterator, not the source array, on both." width="615" height="440" loading="lazy">
   <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. The boundary cases — <code>0</code>, a count past the end, a negative count, and an empty sequence — agree as well. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 
@@ -280,6 +282,8 @@ var result = numbers.Append(5); // No error here
 Console.WriteLine("Subsequent logic runs...");
 
 foreach (var item in result) // ArgumentNullException is finally thrown here
+{
+}
 ```
 
 At the call site, even the null check at (1) never runs.
@@ -408,7 +412,7 @@ The compiler defines the `NETCOREAPP` symbol automatically when building for .NE
 When the framework is upgraded, the switch to the built-in implementation happens automatically — no file deletion, no code edits.
 This is the migration guard that pairs with the namespace strategy described earlier.
 
-Note that `!NETCOREAPP` is only correct because the methods here were added in .NET Core 2.0–3.0.
+Note that `!NETCOREAPP` is only correct because the methods here were added in .NET Core 1.0–2.0.
 Guarding methods added in .NET 6 or later with this condition would disable the polyfill on .NET 5 and break the build.
 The choice of version-specific symbols (`NET6_0_OR_GREATER` and friends) is covered in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
@@ -417,7 +421,7 @@ The choice of version-specific symbols (`NET6_0_OR_GREATER` and friends) is cove
 ## Caveats
 
 - **`TakeLast` / `SkipLast` consume memory proportional to `count`**: the sliding window is frugal, but a huge `count` still allocates a buffer of that size. The approach brings no benefit when the window effectively spans the whole sequence.
-- **Behavior for `count <= 0`**: `TakeLast` returns an empty sequence and `SkipLast` returns the source itself. No exception is thrown, matching the built-in behavior.
+- **Behavior for `count <= 0`**: `TakeLast` returns an empty sequence and `SkipLast` returns every element. No exception is thrown, matching the built-in behavior. `SkipLast(0)` returns a new iterator rather than the source object, as the built-in does (the `SkipLast(0) is source` row of the table).
 - **Re-execution on every enumeration**: all four methods are lazy, so enumerating the same query twice walks the source twice. Materialize with `.ToList()` when the result is reused.
 - **Performance optimizations are simpler than the originals**: the built-in implementations special-case `IList<T>` sources and more. This polyfill is generic-only; results and exceptions match, but certain collection types may run slower than on modern .NET.
 

@@ -10,11 +10,11 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 
 ## 概要
 
-.NET Framework 4.8 は Windows に同梱され続ける一方で機能追加は 2019 年に止まっており、それ以降に LINQ へ加わったメソッドの多くは利用できない。
+.NET Framework 4.8 は Windows に同梱され続ける一方で、最後の版である 4.8（2019 年）と 4.8.1（2022 年）にも新しい LINQ の演算子は加わっていないため、それ以降に .NET の LINQ へ加わったメソッドは利用できない。
 **ただし「.NET Core で追加されたから .NET Framework には無い」と一括りにはできない。** 実測すると `Append` と `Prepend` は .NET Framework 4.7.1 以降で使える（後述）。
 不足分は拡張メソッド（ポリフィル）として自作できるが、標準 LINQ と同じ使用感を再現するには、シグネチャを揃えるだけでは足りない設計上の配慮がある。
 
-本記事では、.NET Core 2.0〜3.0 期に追加された `Append`・`Prepend`・`TakeLast`・`SkipLast` の 4 メソッドを題材に、LINQ ポリフィルを自作するうえで守るべき 3 つの設計原則を解説する。
+本記事では、.NET Core 1.0〜2.0 期に追加された `Append`・`Prepend`・`TakeLast`・`SkipLast` の 4 メソッドを題材に、LINQ ポリフィルを自作するうえで守るべき 3 つの設計原則を解説する。
 
 1. **引数検証とイテレータ本体を分離する** — 遅延評価を保ったまま、例外を呼び出し時点で即時化する
 2. **バッファリングを最小化する** — パススルー型とスライディングウィンドウ型を使い分ける
@@ -60,10 +60,10 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 
 | メソッド名 | 追加されたバージョン | 概要 |
 | --- | --- | --- |
-| `Append<T>` | .NET Core 2.0 | シーケンスの末尾に要素を 1 つ追加する |
-| `Prepend<T>` | .NET Core 2.0 | シーケンスの先頭に要素を 1 つ追加する |
-| `TakeLast<T>` | .NET Core 3.0 | シーケンスの末尾から指定数の要素を取得する |
-| `SkipLast<T>` | .NET Core 3.0 | シーケンスの末尾から指定数の要素を除外する |
+| `Append<T>` | .NET Core 1.0 / .NET Standard 1.6 | シーケンスの末尾に要素を 1 つ追加する |
+| `Prepend<T>` | .NET Core 1.0 / .NET Standard 1.6 | シーケンスの先頭に要素を 1 つ追加する |
+| `TakeLast<T>` | .NET Core 2.0 / .NET Standard 2.1 | シーケンスの末尾から指定数の要素を取得する |
+| `SkipLast<T>` | .NET Core 2.0 / .NET Standard 2.1 | シーケンスの末尾から指定数の要素を除外する |
 
 これら 4 つが .NET Framework 側の BCL に存在するかを、ターゲットフレームワークを変えて実際にコンパイルして調べた結果が次の図である。
 
@@ -72,7 +72,7 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
   <figcaption>ポリフィルを足さずに各メソッドを呼ぶコードをコンパイルし、通ったかどうかを記録した結果。<code>yes</code> はその TFM の BCL にメソッドが存在することを示す。.NET SDK 10.0.302 で測定した。</figcaption>
 </figure>
 
-**`Append` と `Prepend` は .NET Framework 4.7.1 以降で使える。** .NET Framework 4.7.1 が .NET Standard 2.0 に対応し、そこに両メソッドが含まれるためである。
+**`Append` と `Prepend` は .NET Framework 4.7.1 以降で使える。** [`Enumerable.Append`](https://learn.microsoft.com/dotnet/api/system.linq.enumerable.append) の「適用対象」には .NET Framework 4.7.1 以降が挙がっており、この版からフレームワーク自身に含まれている。
 したがって、4.8 を対象にしながらこの 2 つをポリフィルとして無条件に定義すると、BCL 側の定義と衝突して `CS0121`（あいまいな呼び出し）でコンパイルできない。
 後述の実装コードでは、この 2 つを `#if !NET471_OR_GREATER` で追加ガードしている。
 
@@ -118,7 +118,7 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 ## 実装コード
 
 以下は 4 メソッドを .NET Framework 環境でも同一の使用感で利用できるようにするポリフィルの全体である。
-`LinqExtensions.Net5.cs` などの名前でプロジェクトにそのままコピーして利用できる。
+`LinqExtensions.Net5.cs` などの名前でプロジェクトにそのままコピーして利用できる。ただし、対象が .NET Framework だけのプロジェクトを前提にしており、`#if` の条件もその場合に合わせてある。
 
 ```csharp
 using System;
@@ -210,7 +210,9 @@ namespace System.Linq
         public static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, int count)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (count <= 0) return source;
+            // 本家と同じく 0 でも新しいイテレーターを返す。元のコレクションそのものを返すと、
+            // 呼び出し側がキャストして元のコレクションを書き換えられてしまう。
+            if (count <= 0) return source.Skip(0);
 
             return SkipLastIterator(source, count);
         }
@@ -236,7 +238,7 @@ namespace System.Linq
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Append、Prepend、TakeLast、SkipLast の通常ケースに加え、0・要素数超過・負数・空の並びを渡した場合も、すべて同じ結果になっている。" width="607" height="410" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Append、Prepend、TakeLast、SkipLast の通常ケースに加え、0・要素数超過・負数・空の並びを渡した場合も、すべて同じ結果になっている。SkipLast(0) はどちらも元の配列ではなく新しいイテレーターを返す。" width="615" height="440" loading="lazy">
   <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。境界値（<code>0</code>・要素数超過・負数・空の並び）も含めて一致している。.NET SDK 10.0.302 で測定した。</figcaption>
 </figure>
 
@@ -283,6 +285,8 @@ var result = numbers.Append(5); // ここではエラーが起きない
 Console.WriteLine("後続のロジックが走る...");
 
 foreach (var item in result) // ここで初めて ArgumentNullException が発生する
+{
+}
 ```
 
 メソッドを呼び出した時点では ① の null チェックすら実行されない。
@@ -411,7 +415,7 @@ namespace System.Linq
 フレームワークを更新した際、ファイルの削除もコードの修正も行うことなく、自動的に本家実装へ切り替わる。
 これが名前空間戦略（前述）と対になる移行ガードである。
 
-なお、`!NETCOREAPP` が使えるのは「バックポート対象が .NET Core 2.0〜3.0 で追加されたメソッド」だからである。
+なお、`!NETCOREAPP` が使えるのは「バックポート対象が .NET Core 1.0〜2.0 で追加されたメソッド」だからである。
 .NET 6 以降で追加されたメソッドをこの条件でガードすると、.NET 5 環境でポリフィルが無効化されてコンパイルエラーになる。
 バージョン別シンボル（`NET6_0_OR_GREATER` など）の使い分けは[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で詳しく扱う。
 
@@ -420,7 +424,7 @@ namespace System.Linq
 ## 注意点
 
 - **`TakeLast` / `SkipLast` は `count` 個分のメモリを消費する**: スライディングウィンドウは省メモリだが、`count` に巨大な値を渡せばその分のバッファが確保される。全件保持が前提になるような使い方では効果がない。
-- **`count <= 0` の扱い**: `TakeLast` は空シーケンス、`SkipLast` は元シーケンスそのものを返す。例外にはならず、本家 .NET の挙動と一致する。
+- **`count <= 0` の扱い**: `TakeLast` は空シーケンスを、`SkipLast` はすべての要素を返す。例外にはならず、本家 .NET の挙動と一致する。`SkipLast(0)` は、本家と同じく元のオブジェクトではなく新しいイテレーターを返す（表の `SkipLast(0) is source` の行）。
 - **列挙のたびに再実行される**: 4 メソッドとも遅延評価であるため、同じクエリを複数回列挙するとソースの走査も毎回やり直される。結果を再利用する場合は `.ToList()` などで実体化する。
 - **性能の最適化は本家より簡素である**: 本家 .NET の実装はソースが `IList<T>` の場合の特殊化などを持つが、本ポリフィルは汎用実装のみである。返す結果と例外の挙動は一致するが、コレクション型によっては本家より遅くなる余地がある。
 
