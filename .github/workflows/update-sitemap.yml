@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - "**/*.html"
+      # HTML から Markdown に書き換えたページ（apps/wpf-standard-control-demo/*.md など）。
+      - "**/*.md"
       - "_articles_en/**"
       - "_articles_ja/**"
       - "images/**"
