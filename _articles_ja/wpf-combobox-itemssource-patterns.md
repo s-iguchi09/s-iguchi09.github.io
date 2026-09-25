@@ -165,7 +165,7 @@ public int SelectedDepartmentId
 }
 ```
 
-`SelectedValue` の型と `SelectedValuePath` で指定するプロパティの型が違っても、計測では選択は反映された。`Id` が `int` で、ソースが文字列の `"20"` でも `Id` 20 の項目が選択され、別の項目を選ぶと `Int32` の 30 が書き戻された（後述の「注意点」の表）。ただし書き戻される値はパスの型になるため、ViewModel のプロパティはパスと同じ型にしておくほうが分かりやすい。  
+`SelectedValue` の型と `SelectedValuePath` で指定するプロパティの型が違っても、計測では選択は反映された。`Id` が `int` で、ソースが文字列型のプロパティ（値は `"20"`）でも `Id` 20 の項目が選択され、別の項目を選ぶと文字列の `"30"` が書き戻された（後述の「注意点」の表）。ただし、宣言型が `object` のプロパティに `"20"` を入れた場合は、`Int32` の 30 が書き戻され、値の型が変わった。ViewModel のプロパティはパスと同じ型にしておくほうが分かりやすい。  
 また `SelectedItem` と `SelectedValue` は同時に利用できるが、一方を変更するともう一方も自動で更新される。  
 ---
 
@@ -263,7 +263,7 @@ ViewModel 側のプロパティ型と `ComboBox` の設定が対応していれ�
 ## 注意点
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.svg" alt="ComboBox の 4 つの設定を測った表。DisplayMemberPath と ItemTemplate を両方設定すると、コードでは InvalidOperationException、XAML では XamlParseException になる。SelectedValuePath が int の Id を指し、ソースが文字列の 20 でも Id 20 の項目が選択され、別の項目を選ぶと Int32 の 30 が書き戻される。列挙型の項目に SelectedValuePath=value__ とすると SelectedValue は null になる。SelectedValue を ItemsSource より先に設定しても、コードでもバインドでも該当する項目が選択される。" width="1093" height="260" loading="lazy">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.svg" alt="ComboBox の 4 つの設定を測った表。DisplayMemberPath と ItemTemplate を両方設定すると、コードでは InvalidOperationException、XAML では XamlParseException になる。SelectedValuePath が int の Id を指し、ソースが文字列型のプロパティで値が 20 でも Id 20 の項目が選択され、別の項目を選ぶと文字列の 30 が書き戻される。宣言型が object のプロパティでは Int32 の 30 が書き戻される。列挙型の項目に SelectedValuePath=value__ とすると SelectedValue は null になる。SelectedValue を ItemsSource より先に設定しても、コードでもバインドでも一致する項目が選択される。" width="1116" height="290" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>Id</code> が 10・20・30 の 3 件を使って測った結果。</figcaption>
 </figure>
 
@@ -288,8 +288,8 @@ ViewModel 側で `null` を許容する型（例: `string?`, `int?`）を使う�
 `ComboBox` の実装パターンは `ItemsSource` に渡す型によって決まる。
 単純値なら `SelectedItem`、オブジェクトなら全体が要るか特定フィールドだけで足りるかで `SelectedItem` と `SelectedValue` を選び分ける。
 
-初期値が反映されない問題の多くは、参照比較の不一致か、`ItemsSource` に無い値を初期値にしていることに起因する。
-`SelectedValuePath` を使うか、同一インスタンスを参照するよう設計することで回避できる。
+初期値が反映されない問題の多くは、`SelectedItem` に渡した値が `ItemsSource` のどの項目とも `Equals` で一致しないことか、`ItemsSource` に無い値を初期値にしていることに起因する。
+前者は、`SelectedValuePath` で ID などの値を比べるか、`ItemsSource` の項目と同じインスタンスを渡すよう設計することで回避できる。後者は、`SelectedValuePath` を使っても一致する項目が無いため選択されない。初期値は `ItemsSource` にある値から選ぶ。
 
 ---
 

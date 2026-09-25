@@ -42,7 +42,26 @@ internal static class ComboBoxAndDatePickerMeasurements
         rows.Add(["DisplayMemberPath + ItemTemplate (XAML)", Throws(() => System.Windows.Markup.XamlReader.Parse(
             "<ComboBox xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" DisplayMemberPath=\"Name\"><ComboBox.ItemTemplate><DataTemplate /></ComboBox.ItemTemplate></ComboBox>"))]);
 
-        // 型の違い: SelectedValuePath の Id は int、バインドしたソースは文字列 "20"。
+        // 型の違い: SelectedValuePath の Id は int、バインドしたソースは文字列型のプロパティで値は "20"。
+        var typed = new StringHolder { Value = "20" };
+        var typedCombo = new ComboBox { ItemsSource = Items, SelectedValuePath = nameof(Item.Id), DisplayMemberPath = nameof(Item.Name), DataContext = typed };
+        typedCombo.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty, new System.Windows.Data.Binding(nameof(StringHolder.Value)) { Mode = System.Windows.Data.BindingMode.TwoWay });
+        string typedInitial = "";
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "SelectedValuePath=Id (int), source string property \"20\"",
+                typedCombo,
+                _ => [$"shown: SelectedIndex {typedInitial}; after selecting index 2, source = {typed.Value} ({typed.Value?.GetType().Name})"],
+                Act: _ =>
+                {
+                    typedInitial = typedCombo.SelectedIndex.ToString();
+                    typedCombo.SelectedIndex = 2;
+                    return Task.CompletedTask;
+                }),
+        ]));
+
+        // 同じ値を、宣言型が object のプロパティに入れた場合。書き戻しで型が変わる。
         var mismatch = new ValueHolder { Value = "20" };
         var mismatchCombo = new ComboBox { ItemsSource = Items, SelectedValuePath = nameof(Item.Id), DisplayMemberPath = nameof(Item.Name), DataContext = mismatch };
         mismatchCombo.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty, new System.Windows.Data.Binding(nameof(ValueHolder.Value)) { Mode = System.Windows.Data.BindingMode.TwoWay });
@@ -50,7 +69,7 @@ internal static class ComboBoxAndDatePickerMeasurements
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
             new WpfProbe.Case(
-                "SelectedValuePath=Id (int), source \"20\" (string)",
+                "SelectedValuePath=Id (int), source object property holding \"20\"",
                 mismatchCombo,
                 _ => [$"shown: SelectedIndex {mismatchInitial}; after selecting index 2, source = {mismatch.Value} ({mismatch.Value?.GetType().Name})"],
                 Act: _ =>
@@ -107,6 +126,11 @@ internal static class ComboBoxAndDatePickerMeasurements
     private sealed class ValueHolder
     {
         public object? Value { get; set; }
+    }
+
+    private sealed class StringHolder
+    {
+        public string? Value { get; set; }
     }
 
     private static string Throws(Action action)

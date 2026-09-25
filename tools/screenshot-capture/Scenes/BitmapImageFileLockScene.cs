@@ -25,7 +25,25 @@ internal sealed class BitmapImageFileLockScene : IScene
 
     public string Slug => "wpf-bitmapimage-file-lock-cacheoption";
 
+    /// <summary>
+    /// このシーンが作った一時ファイル。既定の読み込み方式の BitmapImage は GC されるまでファイルを掴むため、
+    /// 計測の途中では消せないものがある。最後に GC を掛けてから、まとめて消す。
+    /// </summary>
+    private static readonly List<string> CreatedFiles = [];
+
     public async Task CaptureAsync(SceneContext context)
+    {
+        try
+        {
+            await CaptureTablesAsync(context);
+        }
+        finally
+        {
+            CleanupCreatedFiles();
+        }
+    }
+
+    private static async Task CaptureTablesAsync(SceneContext context)
     {
         await context.SaveTableAsync(
             "BitmapImage: delete, overwrite and rename right after loading",
@@ -250,6 +268,8 @@ internal sealed class BitmapImageFileLockScene : IScene
         string directory = Path.Combine(Path.GetTempPath(), "bitmapimage-file-lock-scene");
         Directory.CreateDirectory(directory);
         string path = Path.Combine(directory, $"probe-{Guid.NewGuid():N}.png");
+        CreatedFiles.Add(path);
+        CreatedFiles.Add(path + ".renamed");
 
         var visual = new DrawingVisual();
         using (DrawingContext dc = visual.RenderOpen())
@@ -335,7 +355,39 @@ internal sealed class BitmapImageFileLockScene : IScene
         }
         catch (IOException)
         {
-            // ロックされたままのファイルは、プロセス終了時に解放される。
+            // 画像がまだファイルを掴んでいる。最後の CleanupCreatedFiles で、GC の後にもう一度消す。
         }
+    }
+
+    /// <summary>
+    /// 画像への参照はもう残っていないため、GC で BitmapImage を回収してファイルを解放させ、
+    /// 作った一時ファイルを消す。解放が遅れる場合に備えて数回やり直す。
+    /// </summary>
+    private static void CleanupCreatedFiles()
+    {
+        for (int attempt = 0; attempt < 5 && CreatedFiles.Any(File.Exists); attempt++)
+        {
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+
+            foreach (string path in CreatedFiles)
+            {
+                TryCleanup(path);
+            }
+
+            if (CreatedFiles.Any(File.Exists))
+            {
+                Thread.Sleep(200);
+            }
+        }
+
+        string[] remaining = CreatedFiles.Where(File.Exists).ToArray();
+        if (remaining.Length > 0)
+        {
+            throw new InvalidOperationException($"一時ファイルを消せなかった: {string.Join(", ", remaining)}");
+        }
+
+        CreatedFiles.Clear();
     }
 }
