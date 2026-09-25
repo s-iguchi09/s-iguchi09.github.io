@@ -1,0 +1,53 @@
+# 一時的な確認用ワークフロー。マージ前に削除する。
+# GitHub Pages と同じビルダーでサイトを作り、Markdown にしたページの出力と
+# サイトマップ生成スクリプトの結果を確かめる。
+name: Verify Markdown page (temporary)
+
+on:
+  push:
+    branches:
+      - feat/demo-button-markdown
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build with GitHub Pages builder
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
+      - name: Show built page
+        run: |
+          set -euo pipefail
+          ls -la _site/apps/wpf-standard-control-demo/ | grep -i button
+          test -f _site/apps/wpf-standard-control-demo/button.html
+          cat _site/apps/wpf-standard-control-demo/button.html
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Generate sitemap (not pushed)
+        run: |
+          set -euo pipefail
+          sudo rm -rf _site
+          python3 .github/scripts/generate_sitemap.py
+          echo "::group::sitemap diff"
+          git diff --stat -- sitemap.xml _data/lastmod.yml
+          git diff -U2 -- sitemap.xml
+          echo "::endgroup::"
+          echo "::group::button entries"
+          grep -n -A12 "<loc>https://s-iguchi09.github.io/apps/wpf-standard-control-demo/button.html</loc>" sitemap.xml
+          grep -n -A12 "<loc>https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/button.html</loc>" sitemap.xml
+          echo "::endgroup::"
+          ! grep -n "button.md\|SKILL\|CLAUDE\|AGENTS" sitemap.xml
