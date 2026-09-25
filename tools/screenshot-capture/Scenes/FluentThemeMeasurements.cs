@@ -183,6 +183,10 @@ internal static class FluentThemeMeasurements
         ];
 
         var rows = new List<IReadOnlyList<string>>();
+
+        // SystemColors は Windows のダークモードでは変わらない。どちらのモードで測ったかを表に残す。
+        rows.Add(["Windows app mode (AppsUseLightTheme)", AppMode(), "-"]);
+
         foreach ((string label, Color color) in targets)
         {
             rows.Add([
@@ -193,6 +197,68 @@ internal static class FluentThemeMeasurements
         }
 
         return rows;
+    }
+
+    /// <summary>レジストリの AppsUseLightTheme。0 がダーク、1 がライト。</summary>
+    private static string AppMode()
+    {
+        using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+        return key?.GetValue("AppsUseLightTheme") switch
+        {
+            0 => "dark (0)",
+            1 => "light (1)",
+            object other => other.ToString() ?? "-",
+            null => "not set",
+        };
+    }
+
+    /// <summary>
+    /// ThemeMode を Light と Dark にしたときの、Fluent テーマのブラシのキーと SystemColors のブラシのキーの値。
+    /// ウィンドウに ThemeMode を設定して表示し、そのウィンドウから各キーを引く。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> ThemeBrushValuesAsync()
+    {
+        (string Label, object Key)[] keys =
+        [
+            ("ApplicationBackgroundBrush", "ApplicationBackgroundBrush"),
+            ("CardBackgroundFillColorDefaultBrush", "CardBackgroundFillColorDefaultBrush"),
+            ("TextFillColorPrimaryBrush", "TextFillColorPrimaryBrush"),
+            ("TextFillColorSecondaryBrush", "TextFillColorSecondaryBrush"),
+            ("AccentFillColorDefaultBrush", "AccentFillColorDefaultBrush"),
+            ("SystemColors.WindowBrushKey", SystemColors.WindowBrushKey),
+            ("SystemColors.ControlTextBrushKey", SystemColors.ControlTextBrushKey),
+            ("SystemColors.AccentColorBrushKey", SystemColors.AccentColorBrushKey),
+        ];
+
+        var values = new Dictionary<string, string[]>();
+        int column = 0;
+#pragma warning disable WPF0001 // ThemeMode は実験的 API として公開されている。
+        foreach (ThemeMode mode in new[] { ThemeMode.Light, ThemeMode.Dark })
+        {
+            var window = new Window { Width = 200, Height = 120, ShowActivated = false, ShowInTaskbar = false, ThemeMode = mode };
+#pragma warning restore WPF0001
+            try
+            {
+                await Capture.ShowAndSettleAsync(window);
+                foreach ((string label, object key) in keys)
+                {
+                    if (!values.TryGetValue(label, out string[]? cells))
+                    {
+                        values[label] = cells = new string[2];
+                    }
+
+                    cells[column] = window.TryFindResource(key) is SolidColorBrush brush ? brush.Color.ToString() : "not found";
+                }
+            }
+            finally
+            {
+                window.Close();
+            }
+
+            column++;
+        }
+
+        return keys.Select(k => (IReadOnlyList<string>)[k.Label, values[k.Label][0], values[k.Label][1]]).ToList();
     }
 
     /// <summary>
