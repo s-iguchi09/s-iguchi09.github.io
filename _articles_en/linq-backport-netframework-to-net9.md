@@ -58,7 +58,7 @@ var counts = words.GroupBy(w => w)
 
 The invisible cost of this code is the intermediate grouping.
 `GroupBy` walks all elements up front and builds, for every key, a list of references to all elements belonging to that key.
-When only a count is needed, those lists are ultimately discarded — but not the moment `Count()` returns: they stay retained until the entire sequence returned by `GroupBy` has been enumerated (every key's group built).
+When only a count is needed, those lists are ultimately discarded — but not the moment `Count()` returns: they stay retained, as one lookup holding every group, until the enumeration of the sequence returned by `GroupBy` finishes and its enumerator is released.
 For a million elements across ten keys, a grouping holding a million references stays in memory for the whole time it takes to produce the ten numbers.
 
 The `Index` substitute — `Select((item, index) => (index, item))` — is a different kind of problem: not cost, but intent buried in boilerplate.
