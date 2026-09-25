@@ -52,6 +52,20 @@ WPF 開発において、エラーメッセージや確認ダイアログの挙�
 
 もう 1 点、使う前に知っておく価値のある注意があります。 Microsoft は `Question` アイコンを非推奨としています。 疑問符はメッセージの種類を示しておらず、ヘルプ機能と誤解されうる、というのがその理由です。 現在も列挙型に残っているのは後方互換性のためです。 確認ダイアログには `Warning` を使うか、アイコンを付けないほうが無難です。
 
+## 実測した挙動 {#measured-behavior}
+
+このページの列挙型のメンバー、アイコンの名前、既定のボタンは、.NET 8.0.31 と .NET 10.0.10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`MessageBoxSampleCreatorScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/MessageBoxSampleCreatorScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。ランタイムごとに小さなプログラムをビルドし、本ツールと同じく所有者を指定せずに `MessageBox.Show` を呼び、すべてのボタン構成とすべての `MessageBoxResult` の組み合わせを表示しています。既定のボタンはダイアログのボタンのコントロール ID で読んでいるため、ボタンの文字の言語には左右されません。入力は送っておらず、各ダイアログは先頭のボタンをウィンドウメッセージで押して閉じました。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-messagebox-sample-creator/verification/messagebox-enums.svg" alt="MessageBox の列挙型の表。MessageBoxButton は .NET 8 では 4 つ、.NET 10 では AbortRetryIgnore・RetryCancel・CancelTryContinue を加えた 7 つ、MessageBoxResult は .NET 8 では 5 つ、.NET 10 では 10 個、MessageBoxOptions はどちらも同じ 5 つ、MessageBoxImage の Enum.GetValues を文字列にすると None、Hand が 3 回、Question、Exclamation が 2 回、Asterisk が 2 回並ぶ" width="998" height="470" loading="lazy">
+  <figcaption>ツールの選択肢の元になる列挙型のメンバー。.NET 8.0.31 と .NET 10.0.10 / Windows 11 で計測。</figcaption>
+</figure>
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-messagebox-sample-creator/verification/messagebox-default-button.svg" alt="ボタン構成ごとの既定のボタンの表。構成に含まれる defaultResult を指定するとそのボタンが既定になり、None か構成に含まれない値を指定すると先頭のボタンが既定になる。.NET 8 では 12 件中 12 件、.NET 10 では 54 件中 54 件" width="1140" height="320" loading="lazy">
+  <figcaption>ボタン構成と <code>defaultResult</code> ごとの既定のボタン。.NET 8.0.31 と .NET 10.0.10 / Windows 11 で計測。</figcaption>
+</figure>
+
 ## ツールの作り
 
 **Show MessageBox.** ボタンは、ビューモデルが持つ 6 つの値で `MessageBox.Show(本文, タイトル, ボタン, アイコン, 既定の結果, オプション)` を 1 回呼ぶだけです。 ボタン構成・既定の結果・オプションの一覧は、`Enum.GetValues` の結果を `ObjectDataProvider` でバインドしたもので、ビルドが対象とするランタイムの列挙型に従います。 .NET 10 用のビルドにだけ、.NET 8 用のビルドに無いボタン構成が並ぶのはこのためです。 アイコンの一覧だけは、前述のとおり例外です。
