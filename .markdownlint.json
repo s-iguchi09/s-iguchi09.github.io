@@ -4,6 +4,6 @@
   "MD013": false,
   "MD060": false,
   "MD033": {
-    "allowed_elements": ["figure", "img", "figcaption", "code"]
+    "allowed_elements": ["figure", "img", "figcaption", "code", "kbd"]
   }
 }
