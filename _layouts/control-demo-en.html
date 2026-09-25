@@ -43,8 +43,13 @@
     kramdown の IAL（{: .prop-table}）で付けると markdownlint が表の行と誤認するため、
     kramdown が属性なしで出力する <table> をここで置き換える。
     見出しの id（#measured-behavior など）は kramdown が見出しの文言から自動で付ける。
+
+    kramdown はインラインコードに class="language-plaintext highlighter-rouge" を付ける。
+    style.css の .content-section .highlighter-rouge はコードブロックのカード枠のための
+    指定だが、このクラスにも一致し、インラインコードに枠線と影が付いてしまう
+    （.prop-table code の背景色も上書きされる）。HTML 時代と同じ素の <code> に戻す。
   {%- endcomment %}
-  {{ content | replace: '<h2', '</section><section class="content-section"><h2' | remove_first: '</section>' | replace: '<table>', '<table class="prop-table">' }}
+  {{ content | replace: '<h2', '</section><section class="content-section"><h2' | remove_first: '</section>' | replace: '<table>', '<table class="prop-table">' | replace: '<code class="language-plaintext highlighter-rouge">', '<code>' }}
   </section>
 
 </main>
