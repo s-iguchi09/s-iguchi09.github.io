@@ -17,6 +17,9 @@ internal sealed class DataGridSortingScene : IScene
         "列の作り方ごとに SortMemberPath と CanUserSort に何が入るかを確かめる",
         "SortMemberPath を明示しない DataGridTextColumn では Binding のパスが入ること",
         "Binding を持たないテンプレート列では SortMemberPath が空になり、並び替えられないこと",
+        "列ヘッダーのクリックと同じ標準の並べ替えを実行したときの、列の作り方ごとの並び（CanUserSort=False の列、SortMemberPath を明示したテンプレート列を含む）",
+        "ListCollectionView の CustomSort を設定すると SortDescriptions が消え、SortDescriptions を足すと CustomSort が null に戻ること",
+        "Items.Refresh() の後も SelectedItem と CurrentCell が残ること",
     ];
 
     public string Slug => "wpf-datagrid-sorting";
@@ -52,9 +55,15 @@ internal sealed class DataGridSortingScene : IScene
 
         await context.SaveTableAsync(
             "sortability by how the column is declared",
-            ["column", "SortMemberPath", "CanUserSort", "order after sorting"],
+            ["column", "SortMemberPath", "CanUserSort", "order after a header click"],
             await DataGridMeasurements.SortabilityAsync(),
             "datagrid-sortability.svg");
+
+        await context.SaveTableAsync(
+            "CustomSort and SortDescriptions on a ListCollectionView, and Items.Refresh",
+            ["operation", "SortDescriptions", "CustomSort", "order / selection"],
+            await DataGridMeasurements.CustomSortAndRefreshAsync(),
+            "datagrid-customsort-refresh.svg");
     }
 
     private static DataGrid BuildGrid()

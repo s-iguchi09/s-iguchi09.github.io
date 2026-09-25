@@ -49,15 +49,15 @@ The default behavior does not return to an unsorted state, so clear logic must b
 
 The figure below records what lands in `SortMemberPath` and `CanUserSort` for each way of declaring a column.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="A table of SortMemberPath and CanUserSort per column declaration. A DataGridTextColumn with only a Binding takes the binding path as its SortMemberPath and is sortable. An explicit SortMemberPath takes precedence. Setting CanUserSort to False disables sorting. A template column with no binding ends up with an empty SortMemberPath and CanUserSort False." width="803" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11, varying only the column declaration. <code>order after sorting</code> is the order after sorting ascending by that column&#39;s <code>SortMemberPath</code>; a column that cannot sort keeps the original order.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="A table of SortMemberPath, CanUserSort, and the order after a header click per column declaration. A DataGridTextColumn with only a Binding takes the binding path as its SortMemberPath and sorts. An explicit SortMemberPath takes precedence. With CanUserSort set to False, the header click leaves the original order. A template column with no binding ends up with an empty SortMemberPath and CanUserSort False and does not sort, while a template column with SortMemberPath set to Name sorts." width="882" height="230" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, varying only the column declaration. <code>order after a header click</code> is the order after running the same sort that a click on that column's header runs; the original order is carol, alice, bob.</figcaption>
 </figure>
 
 **`SortMemberPath` is filled in from the `Binding` path even when it is not written.** Stating it in the XAML above makes the intent explicit; omitting it produces the same result.
 
 The last row is the one to note. A `DataGridTemplateColumn` without a `Binding` ends up with an empty `SortMemberPath`, and **`CanUserSort` becomes `False`** as well.
-It stays out of sorting even with `CanUserSortColumns` set to `True`. Making a template column sortable requires stating `SortMemberPath` explicitly.
+It stays out of sorting even with `CanUserSortColumns` set to `True`. Making a template column sortable requires stating `SortMemberPath` explicitly; the last row, a template column with `SortMemberPath="Name"`, sorted by name.
 
 ---
 
@@ -71,8 +71,9 @@ using System.ComponentModel;
 dataGrid.Items.SortDescriptions.Clear();
 dataGrid.Items.SortDescriptions.Add(
     new SortDescription(nameof(Product.Price), ListSortDirection.Descending));
-dataGrid.Items.Refresh();
 ```
+
+The view re-sorts as soon as a `SortDescription` is added, so no `Items.Refresh()` call is needed.
 
 Reset the column-header sort glyph too so the UI stays in sync:
 
@@ -93,7 +94,7 @@ Without this glyph update the header arrow still points at the previous column, 
 
 ## Custom Sort Logic with ListCollectionView
 
-For comparison rules that `SortDescriptions` cannot express — such as a case-insensitive string sort or sorting by an expression not exposed as a public property — use `ListCollectionView.CustomSort`. (`SortDescriptions` can still sort by a public property whose getter computes a value; the limit is comparisons not exposed as a property.) Multi-level sorting does not need it: add several `SortDescription` entries instead.  
+For comparison rules that `SortDescriptions` cannot express — such as an ordinal, culture-independent string comparison (a `SortDescription` compares strings with culture-aware rules) or sorting by an expression not exposed as a public property — use `ListCollectionView.CustomSort`. (`SortDescriptions` can still sort by a public property whose getter computes a value; the limit is comparisons not exposed as a property.) Multi-level sorting does not need it: add several `SortDescription` entries instead.  
 `CollectionViewSource.GetDefaultView` returns an `ICollectionView`, which does not expose `CustomSort`. For an in-memory collection the concrete type is `ListCollectionView`, but a view over another source (such as a `DataView`) is not, so narrow the type with a pattern match rather than an unconditional cast that could throw `InvalidCastException`:
 
 ```csharp
@@ -104,12 +105,17 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 }
 ```
 
-`CustomSort` takes precedence over `SortDescriptions`. To switch back to `SortDescriptions`-based sorting, set `view.CustomSort = null` first — clearing `SortDescriptions` alone leaves `CustomSort` in effect — and then configure `SortDescriptions`.  
+`CustomSort` and `SortDescriptions` do not stack; the one set last replaces the other. Setting `CustomSort` cleared `SortDescriptions`, and adding a `SortDescription` afterward reset `CustomSort` to `null`. The reference for [`ListCollectionView.CustomSort`](https://learn.microsoft.com/dotnet/api/system.windows.data.listcollectionview.customsort) states the first half: setting the property clears `SortDescriptions`. Switching back to `SortDescriptions` therefore needs no extra step.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.svg" alt="A table of a ListCollectionView. After a Name ascending SortDescription, setting CustomSort to a comparer by name length leaves zero SortDescriptions and orders bob, alice, carol. Adding a Name descending SortDescription then resets CustomSort to null and orders carol, bob, alice. After Items.Refresh with a row selected, SelectedItem and CurrentCell are still bob." width="882" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 on the default view of a three-item collection, and on a <code>DataGrid</code> bound to it for the last row.</figcaption>
+</figure>
 
 ## Notes
 
 - `SortMemberPath` is required only when it differs from the column's `Binding` path. For a plain `DataGridTextColumn` bound to a simple property, sorting works without it, but specifying it explicitly avoids surprises when the binding path is complex.  
-- Calling `Items.Refresh()` rebuilds the entire view and resets the current cell and selection. On large collections this is noticeable, so prefer setting `SortDescriptions` before the grid is populated when possible.  
+- `Items.Refresh()` rebuilds the view, but it is not needed after changing `SortDescriptions`. In the measurement above, a `Refresh` with a row selected kept both `SelectedItem` and `CurrentCell`.  
 - `CustomSort` is a property of `ListCollectionView`, the default view returned for in-memory collections. A view over another source — such as the `BindingListCollectionView` returned for a `DataView` — is not a `ListCollectionView` and offers no `CustomSort`, which is why the pattern match above skips it. For those sources the ordering must come from another mechanism, such as `SortDescriptions` or sorting at the data source.  
 - Sorting changes only the display order, not the underlying collection. Code that iterates the bound collection directly still sees the original order.  
 

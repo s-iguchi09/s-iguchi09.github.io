@@ -312,6 +312,9 @@ internal static class DataGridMeasurements
         rows.Add(await MeasureColumnAsync("DataGridTemplateColumn, no SortMemberPath", () =>
             new DataGridTemplateColumn { Header = "Name", CellTemplate = new DataTemplate() }));
 
+        rows.Add(await MeasureColumnAsync("DataGridTemplateColumn + SortMemberPath=Name", () =>
+            new DataGridTemplateColumn { Header = "Name", CellTemplate = new DataTemplate(), SortMemberPath = nameof(Row.Name) }));
+
         return rows;
     }
 
@@ -343,20 +346,64 @@ internal static class DataGridMeasurements
                 ],
                 Act: _ =>
                 {
-                    // ヘッダークリックと同じく、その列の SortMemberPath で並べ替える。
-                    if (column.CanUserSort && column.SortMemberPath.Length > 0)
-                    {
-                        grid.Items.SortDescriptions.Add(
-                            new SortDescription(column.SortMemberPath, ListSortDirection.Ascending));
-                        grid.Items.Refresh();
-                    }
-
+                    // どの列も、列ヘッダーのクリックで走る標準の並べ替えを実行する。
+                    // 並べ替えられない列は、ここで何も起きないことが結果として表に出る。
+                    ClickColumnHeader(grid, column);
                     grid.UpdateLayout();
                     return Task.CompletedTask;
                 }),
         ]);
 
         return measured[0];
+    }
+
+    private sealed class ByNameLength : System.Collections.IComparer
+    {
+        public int Compare(object? x, object? y) => ((Row)x!).Name.Length.CompareTo(((Row)y!).Name.Length);
+    }
+
+    /// <summary>
+    /// ListCollectionView の CustomSort と SortDescriptions の関係、Items.Refresh と選択の関係を測る。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> CustomSortAndRefreshAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+        ObservableCollection<Row> source = Sample();
+        var view = (ListCollectionView)CollectionViewSource.GetDefaultView(source);
+        string Order() => string.Join(", ", view.OfType<Row>().Select(row => row.Name));
+
+        view.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
+        rows.Add(["SortDescriptions: Name asc", view.SortDescriptions.Count.ToString(), "null", Order()]);
+
+        view.CustomSort = new ByNameLength();
+        rows.Add(["then CustomSort = by name length", view.SortDescriptions.Count.ToString(), "set", Order()]);
+
+        view.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Descending));
+        rows.Add(["then SortDescriptions.Add(Name desc)", view.SortDescriptions.Count.ToString(), view.CustomSort is null ? "null" : "set", Order()]);
+
+        // 選択と現在セルを決めてから Items.Refresh を呼ぶ。
+        view.SortDescriptions.Clear();
+        var grid = new DataGrid { ItemsSource = source, AutoGenerateColumns = true, CanUserAddRows = false, Height = 140 };
+        string selection = "";
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "Items.Refresh() with a row selected",
+                grid,
+                _ => [ "-", "-", selection ],
+                Act: _ =>
+                {
+                    Row target = source[2];
+                    grid.SelectedItem = target;
+                    grid.CurrentCell = new DataGridCellInfo(target, grid.Columns[0]);
+                    grid.Items.Refresh();
+                    grid.UpdateLayout();
+                    selection = $"SelectedItem {((Row)grid.SelectedItem).Name}, CurrentCell {((Row)grid.CurrentCell.Item).Name}";
+                    return Task.CompletedTask;
+                }),
+        ]));
+
+        return rows;
     }
 
     private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
