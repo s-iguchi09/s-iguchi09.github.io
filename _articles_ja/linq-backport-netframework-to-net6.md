@@ -31,7 +31,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 `net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
 この環境で確認しているのは次の点である。
 
-- `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
+- `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合（`int.MaxValue` を含む）・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
 - `MaxBy` / `MinBy` が空の並びに対して返す値は、`int` のような null 非許容の値型と、参照型とで異なる。
 - `DistinctBy` が残す要素とその順序は、両ターゲットで一致する。
 
@@ -80,7 +80,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 もう 1 つは、移行ガードに `!NETCOREAPP` ではなく `!NET6_0_OR_GREATER` を使うことである。
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png" alt="4 つのメソッドを同じ入力に適用した結果。Chunk(2) は 2 要素ずつのまとまり、MaxBy と MinBy は 1 件、DistinctBy はカテゴリごとの先頭 1 件になっている。" width="519" height="218" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png" alt="4 つのメソッドを同じ入力に適用した結果。Chunk(2) は 3 件を 2 件と 1 件のまとまりに分け、MaxBy と MinBy は 1 件、DistinctBy はカテゴリごとの先頭 1 件になっている。" width="519" height="218" loading="lazy">
   <figcaption>同じ 3 件の入力に対する評価結果。<code>Chunk</code> だけが並びを分割して返し、<code>MaxBy</code> / <code>MinBy</code> は要素を 1 つ返す。<code>DistinctBy</code> はキーごとに最初の要素だけを残す。この戻り値の形の違いが、後述する評価戦略の違いに対応する。</figcaption>
 </figure>
 
@@ -122,21 +122,15 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                var chunk = new TSource[size];
-                chunk[0] = enumerator.Current;
-                int count = 1;
+                // size 個をまとめて確保すると、source が短くても size が大きいだけで失敗するため、伸びる List に詰める。
+                var chunk = new List<TSource>(Math.Min(size, 16)) { enumerator.Current };
 
-                while (count < size && enumerator.MoveNext())
+                while (chunk.Count < size && enumerator.MoveNext())
                 {
-                    chunk[count++] = enumerator.Current;
+                    chunk.Add(enumerator.Current);
                 }
 
-                if (count < size)
-                {
-                    Array.Resize(ref chunk, count);
-                }
-
-                yield return chunk;
+                yield return chunk.ToArray();
             }
         }
 
@@ -267,7 +261,7 @@ namespace System.Linq
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Chunk・MaxBy・MinBy・DistinctBy のいずれも、境界値を含めて同じ結果になっている。" width="905" height="380" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Chunk・MaxBy・MinBy・DistinctBy のいずれも、境界値を含めて同じ結果になっている。3 件に Chunk(int.MaxValue) を適用すると、どちらも 3 件のチャンクを 1 つ返す。" width="905" height="410" loading="lazy">
   <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
 </figure>
 
@@ -371,24 +365,18 @@ var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
 // result: [1, 2], [3, 4], [5]
 ```
 
-ポリフィルの内部は、`size` 個分の配列を確保してデータを詰め、端数チャンクのみ `Array.Resize` で切り詰める。
+ポリフィルの内部は、要素が来るたびに伸びる `List<TSource>` にチャンクを集め、揃ったところで配列にする。
+`size` 個分の配列を先に確保するほうが安く見えるが、`source` が短くても `size` が大きいだけで失敗する。このポリフィルの以前の版はそうしており、.NET Framework では `new[] { 1, 2, 3 }.Chunk(int.MaxValue)` が `OutOfMemoryException` になった。本家は 3 要素のチャンクを 1 つ返す（表の `Chunk(int.MaxValue)` の行）。
 
 ```csharp
-var chunk = new TSource[size]; // size 個分の配列を事前に確保する
-chunk[0] = enumerator.Current;
-int count = 1;
+var chunk = new List<TSource>(Math.Min(size, 16)) { enumerator.Current };
 
-while (count < size && enumerator.MoveNext())
+while (chunk.Count < size && enumerator.MoveNext())
 {
-    chunk[count++] = enumerator.Current;
+    chunk.Add(enumerator.Current);
 }
 
-if (count < size)
-{
-    Array.Resize(ref chunk, count); // 末尾チャンクが端数の場合のみリサイズする
-}
-
-yield return chunk;
+yield return chunk.ToArray();
 ```
 
 チャンクを 1 つ返すたびに次のチャンクを構築するため、全件を先読みするグルーピングが不要になる。

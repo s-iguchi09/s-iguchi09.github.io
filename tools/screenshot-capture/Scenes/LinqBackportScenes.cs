@@ -106,7 +106,7 @@ internal sealed class LinqBackportNet6Scene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
-        "Chunk の端数・ちょうど・source より大きい size・不正な size での挙動",
+        "Chunk の端数・ちょうど・source より大きい size（int.MaxValue を含む）・不正な size での挙動",
         "MaxBy / MinBy が空の並びに対して返すもの（値型と参照型で異なる）",
         "DistinctBy が残す要素と、その順序",
     ];
@@ -145,6 +145,8 @@ internal sealed class LinqBackportNet6Scene : IScene
         new("Numbers.Chunk(2)", "Numbers.Chunk(2)"),
         new("Numbers.Chunk(5)", "Numbers.Chunk(5)"),
         new("Numbers.Chunk(10)", "Numbers.Chunk(10)"),
+        // size を事前に確保する実装は、短い入力でも size が大きいだけで OutOfMemoryException になる。
+        new("Chunk(int.MaxValue)", "new[] { 1, 2, 3 }.Chunk(int.MaxValue)"),
         new("Numbers.Chunk(0)", "Numbers.Chunk(0).ToArray()"),
         new("Items.MaxBy(Price)", "Items.MaxBy(x => x.Price)"),
         new("Items.MinBy(Price)", "Items.MinBy(x => x.Price)"),
