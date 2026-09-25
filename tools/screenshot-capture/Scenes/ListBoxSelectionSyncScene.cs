@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -30,6 +31,9 @@ internal sealed class ListBoxSelectionSyncScene : IScene
         "仮想化した ListBox をスクロールさせ、SelectedItems とデータ側の IsSelected が何件一致するかを測る",
         "ItemContainerStyle のバインドだけでは、スクロールで選択が失われること",
         "VirtualizingStackPanel の仮想化を切った場合の visual 要素数とレイアウト時間",
+        "バインドと SelectionChanged を併用したとき、スクロールでコンテナが実体化されるたびに SelectionChanged が発生するか",
+        "画面外の項目をデータ側で選んだとき SelectedItems に載るか、ScrollIntoView で実体化されると載るか",
+        "実際のキー入力（Shift+End）で画面外まで範囲選択したとき、SelectionChanged の AddedItems に画面外の項目が含まれるか",
     ];
 
     public string Slug => "wpf-listbox-virtualization-selecteditems";
@@ -38,6 +42,158 @@ internal sealed class ListBoxSelectionSyncScene : IScene
     {
         await context.ShootAsync(BuildSelectionSyncWindow(), "listbox-selection-sync-measurement.png");
         await context.ShootAsync(BuildVirtualizationCostWindow(), "listbox-virtualization-cost.png");
+
+        await context.SaveTableAsync(
+            $"ListBox, {ItemCount:N0} items, virtualized: when SelectionChanged is raised",
+            ["", "", "measured"],
+            MeasureSelectionEvents(),
+            "listbox-selection-events.svg");
+    }
+
+    /// <summary>SelectionChanged の発生回数と、AddedItems / RemovedItems の件数の累計。</summary>
+    private sealed class SelectionLog
+    {
+        public int Raised { get; set; }
+
+        public int Added { get; set; }
+
+        public int Removed { get; set; }
+
+        public void Reset() => (Raised, Added, Removed) = (0, 0, 0);
+
+        public override string ToString() => $"SelectionChanged {Raised:N0} (added {Added:N0}, removed {Removed:N0})";
+    }
+
+    /// <summary>
+    /// SelectionChanged を数える。<paramref name="writeBack"/> が真のとき、記事の解決策どおり
+    /// 選択の変化をデータ側へ反映する。
+    /// </summary>
+    private static SelectionLog Attach(ListBox listBox, bool writeBack)
+    {
+        var log = new SelectionLog();
+        listBox.SelectionChanged += (_, e) =>
+        {
+            log.Raised++;
+            log.Added += e.AddedItems.Count;
+            log.Removed += e.RemovedItems.Count;
+
+            if (!writeBack)
+            {
+                return;
+            }
+
+            foreach (RowItemViewModel item in e.AddedItems)
+            {
+                item.IsSelected = true;
+            }
+
+            foreach (RowItemViewModel item in e.RemovedItems)
+            {
+                item.IsSelected = false;
+            }
+        };
+        return log;
+    }
+
+    /// <summary>
+    /// SelectionChanged がどの操作で発生するかを測る。
+    /// 範囲選択は、ListBox が Keyboard.Modifiers で Shift を判定するため、実際のキー入力で行う。
+    /// </summary>
+    private static List<IReadOnlyList<string>> MeasureSelectionEvents()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        // 1. 併用の構成で全件を選び、スクロールでコンテナを実体化させる。
+        {
+            List<RowItemViewModel> items = CreateRows();
+            ListBox listBox = CreateListBox(items, bindIsSelected: true);
+            SelectionLog log = Attach(listBox, writeBack: true);
+            using var host = new HostWindow(listBox);
+
+            listBox.SelectAll();
+            host.Settle();
+            log.Reset();
+            PageDown(listBox, host);
+            rows.Add(["both", $"SelectAll(), then PageDown x{PageDownCount}", log.ToString()]);
+        }
+
+        // 2. 併用の構成で、画面外の 1 件をデータ側で選び、その行までスクロールする。
+        {
+            List<RowItemViewModel> items = CreateRows();
+            ListBox listBox = CreateListBox(items, bindIsSelected: true);
+            SelectionLog log = Attach(listBox, writeBack: true);
+            using var host = new HostWindow(listBox);
+
+            RowItemViewModel target = items[ItemCount / 2];
+            target.IsSelected = true;
+            host.Settle();
+            rows.Add(["both", $"{target.Name}.IsSelected = true (off screen)", $"SelectedItems {listBox.SelectedItems.Count}, {log}"]);
+
+            listBox.ScrollIntoView(target);
+            host.Settle();
+            rows.Add(["both", $"then ScrollIntoView({target.Name})", $"SelectedItems {listBox.SelectedItems.Count}, {log}"]);
+        }
+
+        // 3. 先頭の行を選び、Shift+End で末尾まで範囲選択する。
+        foreach ((string label, bool bind, bool writeBack) in new[] { ("SelectionChanged", false, true), ("ItemContainerStyle", true, false) })
+        {
+            List<RowItemViewModel> items = CreateRows();
+            ListBox listBox = CreateListBox(items, bind);
+            SelectionLog log = Attach(listBox, writeBack);
+            using var host = new HostWindow(listBox);
+
+            listBox.SelectedIndex = 0;
+            host.Settle();
+            var first = (ListBoxItem)listBox.ItemContainerGenerator.ContainerFromIndex(0);
+            host.Activate();
+            first.Focus();
+            host.Settle();
+            log.Reset();
+
+            PressShiftEnd(host);
+            rows.Add(
+            [
+                label,
+                "Row 1 selected, then Shift+End",
+                $"SelectedItems {Format(listBox.SelectedItems.Count)}, IsSelected {Format(items.Count(x => x.IsSelected))}, {log}",
+            ]);
+        }
+
+        return rows;
+    }
+
+    private static void PageDown(ListBox listBox, HostWindow host)
+    {
+        ScrollViewer scrollViewer = FindFirst<ScrollViewer>(listBox)
+            ?? throw new InvalidOperationException("ScrollViewer が見つからない。");
+        for (int i = 0; i < PageDownCount; i++)
+        {
+            scrollViewer.PageDown();
+            host.Settle();
+        }
+    }
+
+    private const byte VkShift = 0x10;
+    private const byte VkEnd = 0x23;
+    private const uint KeyEventExtendedKey = 0x1;
+    private const uint KeyEventKeyUp = 0x2;
+
+    [DllImport("user32.dll")]
+    private static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    /// <summary>実際のキー入力として Shift+End を送り、ListBox が処理し終えるまで待つ。</summary>
+    private static void PressShiftEnd(HostWindow host)
+    {
+        keybd_event(VkShift, 0, 0, UIntPtr.Zero);
+        keybd_event(VkEnd, 0, KeyEventExtendedKey, UIntPtr.Zero);
+        keybd_event(VkEnd, 0, KeyEventExtendedKey | KeyEventKeyUp, UIntPtr.Zero);
+        keybd_event(VkShift, 0, KeyEventKeyUp, UIntPtr.Zero);
+
+        for (int i = 0; i < 10; i++)
+        {
+            Thread.Sleep(50);
+            host.Settle();
+        }
     }
 
     /// <summary>各行を表す ViewModel。記事の実装例と同じ形にする。</summary>
@@ -277,6 +433,12 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             Settle();
             stopwatch.Stop();
             return stopwatch.Elapsed.TotalMilliseconds;
+        }
+
+        public void Activate()
+        {
+            _window.Activate();
+            Settle();
         }
 
         public void Clear()

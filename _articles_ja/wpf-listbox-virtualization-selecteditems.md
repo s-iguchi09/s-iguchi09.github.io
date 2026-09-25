@@ -16,7 +16,7 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 対策として広く知られているのは、各アイテムの ViewModel に `IsSelected` を持たせ、`ItemContainerStyle` で `ListBoxItem.IsSelected` を TwoWay バインドする方法である。
 ただし**この構成だけでは不十分である**。
 実体化されていないコンテナにはバインドが存在しないため、`Ctrl + A` や `Shift` による範囲選択が画面外に及ぶと、その選択はデータ側に届かない。
-さらに悪いことに、後からスクロールしてコンテナが実体化されると、データ側の `false` が UI へ書き戻され、**いったん成立していた選択が失われる**。
+さらに悪いことに、後からスクロールしてコンテナが実体化されると、データ側の `false` が UI へ書き戻され、**いったん成立していた選択の一部が失われる**。
 
 本記事では、この非対称性を実測で示したうえで、`SelectionChanged` を併用して両方向の同期を成立させる構成を示す。
 
@@ -24,7 +24,7 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 
 ## 前提・対象環境
 
-- フレームワーク / 言語: .NET 10 / C# 14（コード例は .NET 6 / C# 10 以降でそのまま動作する）
+- フレームワーク / 言語: .NET 10 / C# 14
 - 対象コントロール: WPF `ListBox`(`System.Windows.Controls`)
 - アーキテクチャ: MVVM(各アイテム ViewModel が `IsSelected` を公開する)
 - OS: Windows 11(WPF は Windows 専用)
@@ -32,7 +32,7 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 
 以降の例では、UI 仮想化が有効な状態(`ListBox` の既定)で、1 万件規模のコレクションを `ListBox` にバインドすることを前提とする。
 `SelectionMode` は複数選択を扱う `Extended` を用いる。
-挙動は .NET 6 以降で変わらない。
+挙動は .NET 10 で確かめた。他のバージョンでは確認していない。
 
 本記事の数値は、この環境で実際にアプリケーションを起動し、`SelectedItems.Count` とデータ側の `IsSelected` が真である件数を数えて得たものである。
 
@@ -196,8 +196,9 @@ public class MainViewModel
 
 **2. スクロールすると、成立していた選択が壊れる。**
 10 ページ分スクロールした後、`SelectedItems` は 10,000 件から 9,845 件へ減っている。
-新しく実体化されたコンテナが、データ側の `IsSelected`(まだ `false`)を読み取り、その値で自身の選択状態を上書きするためである。
-`ItemContainerStyle` のバインドは選択を守るどころか、この経路では選択を消す方向に働く。
+同時に、データ側の `IsSelected` は 31 件から 166 件へ増えている。
+新しく実体化されたコンテナでは、2 通りのことが起きた。データ側の `false` を読み取って選択が外れたもの（`SelectedItems` の減少分の 155 件）と、逆に `ListBoxItem` の選択状態がデータ側へ書き戻されたもの（`IsSelected` の増加分の 135 件）である。
+どちらになるかの条件は測っていない。いずれにしても、`ItemContainerStyle` のバインドだけでは、スクロールするたびに両者が食い違ったまま選択が変わっていく。
 
 **3. `SelectionChanged` を使うと両方が一致する。**
 選択の変化をイベントで受けてデータ側へ書き戻す構成では、`SelectAll()` の直後もスクロール後も 10,000 件で一致した。
@@ -237,8 +238,15 @@ private void RowListBox_SelectionChanged(object sender, SelectionChangedEventArg
 ```
 
 `SelectionChanged` はユーザー操作だけで発生するイベントではない。
-`SelectAll` の呼び出し、`SelectedItem` への代入、そして本節の構成では**コンテナが実体化されてバインドが選択状態を復元したとき**にも発生する。
-そのため上のハンドラーは、復元のたびに「すでに `true` の項目へ `true` を代入する」呼び出しを受ける。
+`SelectAll` の呼び出し、`SelectedItem` への代入のほか、本節の構成では**データ側で選択した項目のコンテナが実体化され、バインドが選択状態を復元したとき**にも発生する。
+一方、UI とデータの選択が一致している項目では、実体化されても発生しない。全件を選んだあと 10 ページ スクロールしても、`SelectionChanged` は 1 回も発生しなかった。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg" alt="仮想化した 10,000 件の ListBox で、SelectionChanged が発生した回数の表。バインドと SelectionChanged を併用して全件を選んだあと 10 ページ スクロールしても 0 回。画面外の Row 5001 をデータ側で選んだ直後は SelectedItems 0 件で 0 回、ScrollIntoView で実体化すると SelectedItems 1 件で 1 回（追加 1 件）。Row 1 を選んで Shift+End を押すと、どちらの構成でも SelectedItems は 10,000 件で、SelectionChanged は 1 回、追加 9,999 件。データ側の IsSelected は SelectionChanged で反映する構成では 10,000 件、ItemContainerStyle のバインドだけの構成では 31 件。" width="1215" height="230" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。Shift+End は実際のキー入力として送っている。<code>ListBox</code> は <code>Shift</code> の状態を <code>Keyboard.Modifiers</code> で判定するためである。</figcaption>
+</figure>
+
+復元で発生した場合、上のハンドラーは「すでに `true` の項目へ `true` を代入する」呼び出しを受ける。
 前掲の `RowItemViewModel` のように**セッターで同値を弾いておく**ことで、この経路が余計な変更通知を発生させずに済む。
 
 MVVM を保ちたい場合は、同じ処理を添付ビヘイビアか、`Microsoft.Xaml.Behaviors.Wpf` パッケージの `EventTrigger` から呼び出す。
@@ -277,11 +285,11 @@ XAML 側でイベントを結び付ける。
 ### データ側から選択を変更する場合
 
 ViewModel で `IsSelected` を書き換えた場合、その効果は実体化済みのコンテナにしか即座には現れない。
-5,000 件を `true` にしても、`SelectedItems` に載るのは表示範囲の分だけである。
+画面外の項目を `true` にしても、その項目は `SelectedItems` に載らない。
 
 ただしこれは選択が失われているわけではない。
 `ScrollIntoView` などでその行が実体化されると、バインドがデータから `true` を読み取り、`SelectedItems` に加わる。
-実測でも、画面外の 1 件をデータ側で選択した直後は `SelectedItems` が 0 件であったが、その行までスクロールすると 1 件になった。
+実測でも、画面外の 1 件をデータ側で選択した直後は `SelectedItems` が 0 件であったが、`ScrollIntoView` でその行を実体化すると 1 件になった（前掲の表）。
 
 したがって**選択集合をアプリケーションのロジックから参照するときは、`SelectedItems` ではなくデータ側の `IsSelected` を数える**。
 前掲の `GetSelectedItems` がその役割を果たす。
@@ -291,10 +299,10 @@ ViewModel で `IsSelected` を書き換えた場合、その効果は実体化�
 ## Shift 範囲選択への対応
 
 本手法は `SelectionMode="Extended"` を維持するため、`Shift` による範囲選択や `Ctrl` による追加選択は WPF の標準動作に任せられる。
-`Shift` による範囲選択が行われると、`ListBox` は選択された範囲の項目を `SelectedItems` に加え、`SelectionChanged` の `e.AddedItems` に載せる。
+先頭の行を選んでから `Shift + End` で末尾まで範囲選択すると、`SelectionChanged` が 1 回発生し、`e.AddedItems` に画面外の分も含めた 9,999 件が載った（前掲の表）。
 
-範囲が画面外に及んでも `e.AddedItems` には含まれるため、前節の `SelectionChanged` ハンドラーがあればデータ側の `IsSelected` も全件更新される。
-ハンドラーが無い場合は、実体化済みのコンテナ分しか更新されない点が `Ctrl + A` と同じである。
+このため、前節の `SelectionChanged` ハンドラーがあれば、データ側の `IsSelected` も 10,000 件すべて更新される。
+ハンドラーが無く `ItemContainerStyle` のバインドだけの場合、データ側に届いたのは実体化済みのコンテナの 31 件だけで、`Ctrl + A`（`SelectAll()`）と同じ結果になった。
 
 ---
 
@@ -348,7 +356,7 @@ ViewModel で `IsSelected` を書き換えた場合、その効果は実体化�
 
 ### 5. アイテム数が少なければ標準の SelectedItems で足りる
 
-すべてのコンテナが実体化される規模(数十件程度)であれば、これらの非対称性は表面化しない。
+すべてのコンテナが実体化される規模（表示範囲に収まる件数。本記事の計測では高さ 600 の `ListBox` で 31 件が実体化された）であれば、これらの非対称性は表面化しない。
 `ListBox.SelectedItems` をそのまま読む実装で問題ない。
 本記事の構成が必要になるのは、仮想化が実際に働く件数を扱う場合である。
 

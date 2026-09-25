@@ -17,7 +17,7 @@ If selection state is managed on the container, previously selected items can ap
 The widely known remedy is to give each item's ViewModel an `IsSelected` property and TwoWay-bind `ListBoxItem.IsSelected` to it through `ItemContainerStyle`.
 However, **that configuration alone is insufficient.**
 Unrealized containers have no binding, so a `Ctrl + A` or a `Shift` range selection that extends off-screen never reaches the data.
-Worse, once those containers are realized by scrolling, the `false` on the data side is written back to the UI and **the selection that had been established is lost**.
+Worse, once those containers are realized by scrolling, the `false` on the data side is written back to the UI and **part of the selection that had been established is lost**.
 
 This article demonstrates that asymmetry with measurements, then presents a configuration that pairs `SelectionChanged` with the binding to make synchronization work in both directions.
 
@@ -25,7 +25,7 @@ This article demonstrates that asymmetry with measurements, then presents a conf
 
 ## Prerequisites / Environment
 
-- Framework / Language: .NET 10 / C# 14 (the samples compile unchanged on .NET 6 / C# 10 or later)
+- Framework / Language: .NET 10 / C# 14
 - Target control: WPF `ListBox` (`System.Windows.Controls`)
 - Architecture: MVVM (each item ViewModel exposes `IsSelected`)
 - OS: Windows 11 (WPF is Windows-only)
@@ -33,7 +33,7 @@ This article demonstrates that asymmetry with measurements, then presents a conf
 
 The examples below assume UI virtualization is active (the `ListBox` default) and that a collection of roughly 10,000 items is bound to the `ListBox`.
 `SelectionMode` is `Extended` to handle multiple selection.
-The behavior is unchanged from .NET 6 onward.
+The behavior was checked on .NET 10 and not on other versions.
 
 The figures in this article were obtained by running an actual application in this environment and counting `SelectedItems.Count` alongside the number of items whose `IsSelected` is true.
 
@@ -197,8 +197,9 @@ The 9,969 items without a binding never received the selection.
 
 **2. Scrolling destroys the selection that had been established.**
 After ten pages of scrolling, `SelectedItems` fell from 10,000 to 9,845.
-Newly realized containers read the data-side `IsSelected` (still `false`) and overwrite their own selection state with it.
-Far from protecting the selection, the `ItemContainerStyle` binding actively erases it along this path.
+At the same time, the data-side `IsSelected` count rose from 31 to 166.
+Two things happened in the newly realized containers: some read the data-side `false` and lost their selection (the 155 items by which `SelectedItems` fell), and some wrote the `ListBoxItem` selection back to the data (the 135 items by which `IsSelected` rose).
+The conditions deciding which happens were not measured. Either way, with only the `ItemContainerStyle` binding, the selection keeps changing on every scroll while the two sides disagree.
 
 **3. `SelectionChanged` keeps both in agreement.**
 The configuration that handles the event and writes back to the data reported 10,000 on both sides, immediately after `SelectAll()` and after scrolling.
@@ -237,8 +238,15 @@ private void RowListBox_SelectionChanged(object sender, SelectionChangedEventArg
 ```
 
 `SelectionChanged` is not raised by user interaction alone.
-It also fires on a `SelectAll` call, on assignment to `SelectedItem`, and — in the configuration described here — **when a container is realized and the binding restores its selection state**.
-The handler above therefore receives a call assigning `true` to an item that is already `true` every time a container is restored.
+It also fires on a `SelectAll` call, on assignment to `SelectedItem`, and — in the configuration described here — **when the container of an item selected on the data side is realized and the binding restores its selection state**.
+It does not fire for items whose selection already agrees between the UI and the data: after selecting all, scrolling ten pages raised no `SelectionChanged` at all.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg" alt="A table of how often SelectionChanged was raised in a virtualized ListBox with 10,000 items. With the binding and SelectionChanged combined, scrolling ten pages after selecting all raised it 0 times. Selecting the off-screen Row 5001 on the data side left SelectedItems at 0 with 0 events; ScrollIntoView realized it, giving SelectedItems 1 and 1 event with 1 added item. Selecting Row 1 and pressing Shift+End gave SelectedItems 10,000 and 1 event with 9,999 added items in both configurations; the data-side IsSelected count was 10,000 with the SelectionChanged write-back and 31 with only the ItemContainerStyle binding." width="1215" height="230" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. Shift+End is sent as real keyboard input, because <code>ListBox</code> reads the <code>Shift</code> state from <code>Keyboard.Modifiers</code>.</figcaption>
+</figure>
+
+When it fires for a restore, the handler above receives a call assigning `true` to an item that is already `true`.
 Rejecting an unchanged value in the setter, as `RowItemViewModel` does above, keeps that path from emitting redundant change notifications.
 
 To preserve MVVM, invoke the same logic from an attached behavior or from an `EventTrigger` in the `Microsoft.Xaml.Behaviors.Wpf` package.
@@ -277,11 +285,11 @@ Wire the event up in XAML.
 ### Changing Selection from the Data Side
 
 When `IsSelected` is set on the ViewModel, the effect is immediately visible only on realized containers.
-Setting 5,000 items to `true` adds only the visible range to `SelectedItems`.
+Setting an off-screen item to `true` does not add it to `SelectedItems`.
 
 This does not mean the selection is lost.
 Once that row is realized — through `ScrollIntoView`, for example — the binding reads `true` from the data and the item joins `SelectedItems`.
-In measurement, selecting a single off-screen item on the data side left `SelectedItems` at 0, and scrolling to that row raised it to 1.
+In measurement, selecting a single off-screen item on the data side left `SelectedItems` at 0, and realizing that row with `ScrollIntoView` raised it to 1 (see the table above).
 
 Therefore, **when application logic needs the selected set, count the data-side `IsSelected` rather than reading `SelectedItems`**.
 The `GetSelectedItems` method shown earlier serves that purpose.
@@ -291,10 +299,10 @@ The `GetSelectedItems` method shown earlier serves that purpose.
 ## Handling Shift Range Selection
 
 Because this approach keeps `SelectionMode="Extended"`, `Shift` range selection and `Ctrl` additive selection remain WPF standard behavior.
-When a `Shift` range selection occurs, the `ListBox` adds the selected range to `SelectedItems` and reports it through `e.AddedItems` on `SelectionChanged`.
+Selecting the first row and pressing `Shift + End` to extend the selection to the end raised `SelectionChanged` once, with 9,999 items in `e.AddedItems`, off-screen ones included (see the table above).
 
-Items outside the visible range are still included in `e.AddedItems`, so the handler from the previous section updates `IsSelected` for all of them.
-Without the handler, only the realized containers are updated, exactly as with `Ctrl + A`.
+With the `SelectionChanged` handler from the previous section, the data-side `IsSelected` is therefore updated for all 10,000 items.
+Without the handler, with only the `ItemContainerStyle` binding, just the 31 realized containers reached the data, the same result as `Ctrl + A` (`SelectAll()`).
 
 ---
 
@@ -348,7 +356,7 @@ Allowing `Ctrl + A` or wide `Shift` selections without pairing it with `Selectio
 
 ### 5. Small Lists Are Fine with Plain SelectedItems
 
-At a scale where every container is realized — a few dozen items — none of these asymmetries surface.
+At a scale where every container is realized — as many items as fit in the visible range; a `ListBox` 600 high realized 31 in this article's measurements — none of these asymmetries surface.
 Reading `ListBox.SelectedItems` directly is sufficient.
 The configuration in this article becomes necessary only at item counts where virtualization actually engages.
 
