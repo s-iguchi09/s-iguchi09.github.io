@@ -375,6 +375,7 @@ internal sealed class LinqBackportNet10Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "相手が居ない行に対して LeftJoin / RightJoin が渡す既定値",
         "Shuffle が元の並びの並べ替えになっていること（乱数のため整列して比較する）",
+        "同時に始めた 8 スレッドで Shuffle したときに、異なる並びがいくつ出るか（.NET Framework の new Random() は時刻から種を作るため、種を分けないと同じ並びになる）",
     ];
 
     public string Slug => "linq-backport-netframework-to-net10";
@@ -393,6 +394,35 @@ internal sealed class LinqBackportNet10Scene : IScene
                 (3, "dry"),
                 (4, "unknown"),
             };
+
+            // 8 スレッドを同時に始めて 1〜10 を Shuffle し、異なる並びの数を返す。
+            private static int ShuffleAcrossThreads()
+            {
+                var results = new string[8];
+                using (var start = new System.Threading.ManualResetEventSlim(false))
+                {
+                    var threads = new System.Threading.Thread[8];
+                    for (int k = 0; k < threads.Length; k++)
+                    {
+                        int index = k;
+                        threads[k] = new System.Threading.Thread(() =>
+                        {
+                            start.Wait();
+                            results[index] = string.Join(",", Enumerable.Range(1, 10).Shuffle());
+                        });
+                        threads[k].Start();
+                    }
+
+                    System.Threading.Thread.Sleep(100);
+                    start.Set();
+                    foreach (var thread in threads)
+                    {
+                        thread.Join();
+                    }
+                }
+
+                return results.Distinct().Count();
+            }
         """;
 
     private static readonly LinqBackportParity.Probe[] Probes =
@@ -412,6 +442,7 @@ internal sealed class LinqBackportNet10Scene : IScene
         new("Shuffle, sorted back", "Left.Select(l => l.Name).Shuffle().OrderBy(n => n)"),
         new("Shuffle, count", "Left.Shuffle().Count()"),
         new("empty.Shuffle()", "new int[0].Shuffle()"),
+        new("Shuffle, 8 threads started together: distinct orders", "ShuffleAcrossThreads()"),
     ];
 
     public async Task CaptureAsync(SceneContext context)

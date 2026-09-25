@@ -67,8 +67,8 @@ The composed idiom buries the intent — "outer join" — in structure, and misp
 Random ordering has the same shape of problem: `OrderBy(_ => Guid.NewGuid())` generates a key per element, pays for a full sort, and offers no uniformity guarantee as a shuffle.
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="Results of LeftJoin and RightJoin over two sequences. LeftJoin yields null for the missing right side, RightJoin yields null for the missing left side, and Shuffle reorders the elements." width="448" height="218" loading="lazy">
-  <figcaption>Evaluation results when the two sequences contain non-matching keys. <code>LeftJoin</code> keeps the left side and fills the counterpart with <code>null</code>; <code>RightJoin</code> does the reverse. <code>Shuffle</code> randomizes the order, so that row shows the result of a single run.</figcaption>
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="Results of LeftJoin and RightJoin over two sequences. LeftJoin yields the default value, shown as null, for the missing right side, RightJoin does the same for the missing left side, and Shuffle reorders the elements." width="448" height="218" loading="lazy">
+  <figcaption>Evaluation results when the two sequences contain non-matching keys. <code>LeftJoin</code> keeps the left side and fills the counterpart with its default value; <code>RightJoin</code> does the reverse. The figure uses value tuples, so the missing side is <code>default</code> rather than <code>null</code>, and is printed as null. <code>Shuffle</code> randomizes the order, so that row shows the result of a single run.</figcaption>
 </figure>
 
 ---
@@ -191,9 +191,31 @@ namespace System.Linq
         private static Random SharedRandom => Random.Shared;
 #else
         // .NET Framework has no Random.Shared, so keep one instance per thread.
+        // new Random() is seeded from the clock there, so threads that start together would get
+        // the same seed and the same order. Take each thread's seed from one locked instance instead.
+        private static readonly Random SeedSource = new Random();
+
         [ThreadStatic]
         private static Random? _threadRandom;
-        private static Random SharedRandom => _threadRandom ??= new Random();
+
+        private static Random SharedRandom
+        {
+            get
+            {
+                if (_threadRandom == null)
+                {
+                    int seed;
+                    lock (SeedSource)
+                    {
+                        seed = SeedSource.Next();
+                    }
+
+                    _threadRandom = new Random(seed);
+                }
+
+                return _threadRandom;
+            }
+        }
 #endif
     }
 }
@@ -203,8 +225,8 @@ namespace System.Linq
 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. LeftJoin, RightJoin, and Shuffle all produce identical results, boundary cases included." width="866" height="290" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. LeftJoin, RightJoin, and Shuffle all produce identical results, boundary cases included. Eight threads started together also get eight different Shuffle orders on both." width="1078" height="320" loading="lazy">
   <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 
@@ -212,7 +234,7 @@ Whether this implementation returns what the standard LINQ returns can be checke
 
 The result selectors of `LeftJoin` / `RightJoin` carry the same nullable annotations as the built-ins — `TInner?` for `LeftJoin`, `TOuter?` for `RightJoin`.
 The signature itself thus documents which side can be missing, and nullable analysis agrees before and after migration.
-`Shuffle`'s random source branches further on a nested `#if NET6_0_OR_GREATER`: where `Random.Shared` is unavailable, a `[ThreadStatic]` instance provides thread safety.
+`Shuffle`'s random source branches further on a nested `#if NET6_0_OR_GREATER`: where `Random.Shared` is unavailable, a `[ThreadStatic]` instance provides thread safety. On .NET Framework, `new Random()` takes its seed from the clock, as the [`Random` constructor reference](https://learn.microsoft.com/dotnet/api/system.random.-ctor) notes, so instances created at the same moment produce the same numbers. With a plain `new Random()` per thread, eight threads started together returned one and the same order; seeding each thread from one locked instance, as above, gave eight different orders (the `8 threads` row of the table).
 
 ---
 
@@ -284,7 +306,7 @@ var result = employees.RightJoin(
 ## `Shuffle` versus Pseudo-Shuffles
 
 Random ordering via `OrderBy(_ => Guid.NewGuid())` is widespread but carries two problems.
-It generates a GUID per element and pays for an $O(n \log n)$ sort, and the distribution of generated GUIDs as sort keys guarantees no uniformity of the resulting permutation.
+It generates a GUID per element and pays for an $O(n \log n)$ sort, and GUIDs are not specified as a source of uniformly random sort keys, so nothing guarantees a uniform permutation.
 
 `Shuffle` uses Fisher–Yates, producing each permutation with equal probability in a single $O(n)$ pass.
 
@@ -301,7 +323,7 @@ var shuffled = deck.Shuffle().ToArray();
 var query = Enumerable.Range(1, 3).Shuffle();
 
 var first = query.ToArray();  // Source is enumerated and shuffled here
-var second = query.ToArray(); // Re-enumerating yields a different order
+var second = query.ToArray(); // Re-enumerating can yield a different order
 ```
 
 Because deferred queries re-shuffle on every enumeration, materialize once with `ToArray` / `ToList` when a fixed order is needed.
@@ -337,7 +359,7 @@ The general rule — disable at and above the version that introduced the method
 - **Join direction**: `LeftJoin` preserves every element of the first argument (`outer`); `RightJoin` preserves every element of the second (`inner`). The nullable selector argument is the inner element for `LeftJoin` and the outer element for `RightJoin` — null-check before use.
 - **Key equality**: the comparer-free overloads use `EqualityComparer<TKey>.Default`. Pass an `IEqualityComparer<TKey>` for case-insensitive joins and the like. Delegation from the smaller overloads pins resolution with the named argument `comparer:` (the same technique used in the [ToDictionary backport](/articles/linq-backport-netframework-to-net8/)).
 - **`Shuffle` cannot handle infinite sequences**: the entire source is buffered at enumeration start, so an unbounded sequence never completes.
-- **Compile with C# 9 or later**: the nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) fail with errors such as `CS8627` under the .NET Framework 4.8 default `LangVersion` (7.3). Set `<LangVersion>9.0</LangVersion>` (or `latest`) in the `.csproj`.
+- **Compile with C# 9 or later**: the nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) fail under the .NET Framework 4.8 default `LangVersion` (7.3) with `CS8370` and `CS8627`, and `LangVersion` 8.0 still reports `CS8627`. Set `<LangVersion>9.0</LangVersion>` (or `latest`) in the `.csproj`.
 - **No name collisions**: these signatures do not exist in .NET Framework, and they differ from `Join` and `OrderBy` in name and parameters, so overload resolution is unaffected.
 
 ---
@@ -362,7 +384,7 @@ Until a .NET 10 migration, the pragmatic split is: polyfill for in-memory collec
 The backport rests on three points.
 
 - `LeftJoin` / `RightJoin` embed the classic `GroupJoin` + `SelectMany` + `DefaultIfEmpty` idiom and use nullable annotations to state which side can be missing
-- `Shuffle` performs a uniform Fisher–Yates shuffle, fixing both the inefficiency and the bias of `Guid.NewGuid()` sorting
+- `Shuffle` performs a Fisher–Yates shuffle in one pass, replacing the inefficient `Guid.NewGuid()` sort, whose uniformity nothing guarantees; on .NET Framework, seed each thread's `Random` separately
 - The polyfill is `Enumerable`-only; applied to an `IQueryable<T>` database query it falls back to client evaluation — keep the classic idiom for database queries
 
 | Method | Side preserved | Nullable selector argument | Evaluation |
