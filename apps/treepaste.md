@@ -76,7 +76,7 @@ Matching on the window handle rather than simply taking the first shell window i
 ## System Requirements
 
 - **OS:** Windows 10 / 11 (x64)
-- **.NET:** the release ZIP is self-contained and includes the .NET 10 runtime; building from source needs the .NET 10 SDK
+- **.NET:** the ZIP of the latest release, v0.0.4.0, is self-contained and includes the .NET 10 runtime; building from source needs the .NET 10 SDK
 - **UI framework:** WPF
 
 ## Building from Source
