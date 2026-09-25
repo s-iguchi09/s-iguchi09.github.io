@@ -12,7 +12,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「RepeatButton」（apps/wpf-standard-control-demo/repeatbutton.html と日本語版）の記述を実測する。
+/// デモページ「RepeatButton」（apps/wpf-standard-control-demo/repeatbutton.md と日本語版）の記述を実測する。
 ///
 /// 押し続けたときの繰り返しは、実際のマウス（<see cref="RealMouse"/>）でボタンを押したまま待って確かめる。
 /// クリックの時刻は環境で揺れるため、本文には Delay・Interval との対応だけを書き、ミリ秒の値は図に持たせる。

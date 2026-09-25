@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「TextBlock」（apps/wpf-standard-control-demo/textblock.html と日本語版）の記述を実測する。
+/// デモページ「TextBlock」（apps/wpf-standard-control-demo/textblock.md と日本語版）の記述を実測する。
 ///
 /// レイアウトはウィンドウを作らずに Measure / Arrange で行い、TextBlock の大きさから行数を読む。
 /// 大きさはフォントと表示スケールで変わるため、本文には比と行数を書き、値は図に持たせる。

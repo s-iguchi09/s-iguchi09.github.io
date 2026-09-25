@@ -11,7 +11,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Slider」（apps/wpf-standard-control-demo/slider.html と日本語版）の記述を実測する。
+/// デモページ「Slider」（apps/wpf-standard-control-demo/slider.md と日本語版）の記述を実測する。
 ///
 /// つまみのドラッグは、Thumb がマウス操作で発生させる DragStarted / DragDelta イベントを
 /// つまみに発生させて再現する。Slider はこれらのイベントを受けて Value を変える。

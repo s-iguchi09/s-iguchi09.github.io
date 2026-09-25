@@ -7,7 +7,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ToolBar」（apps/wpf-standard-control-demo/toolbar.html と日本語版）の記述を実測する。
+/// デモページ「ToolBar」（apps/wpf-standard-control-demo/toolbar.md と日本語版）の記述を実測する。
 ///
 /// ToolBar のドラッグは、ToolBar のつまみ（Thumb）に DragDelta イベントを発生させて再現する。
 /// マウスでドラッグしたときに Thumb が発生させるのと同じイベントである。

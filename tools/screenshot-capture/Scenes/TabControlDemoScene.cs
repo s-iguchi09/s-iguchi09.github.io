@@ -8,7 +8,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「TabControl」（apps/wpf-standard-control-demo/tabcontrol.html と日本語版）の記述を実測する。
+/// デモページ「TabControl」（apps/wpf-standard-control-demo/tabcontrol.md と日本語版）の記述を実測する。
 ///
 /// タブはデモアプリと同じく Header="Tab1" / Content="Item1" の TabItem を並べる。
 /// 表示中の内容の文字は、テンプレートの PART_SelectedContentHost の中の TextBlock から読む。

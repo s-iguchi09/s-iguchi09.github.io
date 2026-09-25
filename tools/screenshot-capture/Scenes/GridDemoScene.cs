@@ -6,7 +6,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Grid」（apps/wpf-standard-control-demo/grid.html と日本語版）の記述を実測する。
+/// デモページ「Grid」（apps/wpf-standard-control-demo/grid.md と日本語版）の記述を実測する。
 /// </summary>
 internal sealed class GridDemoScene : IScene
 {

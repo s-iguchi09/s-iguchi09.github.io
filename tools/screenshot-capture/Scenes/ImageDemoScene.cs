@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「Image」（apps/wpf-standard-control-demo/image.html と日本語版）の記述を実測する。
+/// デモページ「Image」（apps/wpf-standard-control-demo/image.md と日本語版）の記述を実測する。
 ///
 /// 画像は一時フォルダーに PNG を書き出して使う（大きさと DPI を決めるため）。
 /// Source はデモアプリと同じく、TextBox の文字（ファイルのパス）をバインドで渡す。

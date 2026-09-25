@@ -12,7 +12,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「DataGrid」（apps/wpf-standard-control-demo/datagrid.html と日本語版）の記述を実測する。
+/// デモページ「DataGrid」（apps/wpf-standard-control-demo/datagrid.md と日本語版）の記述を実測する。
 ///
 /// 並べ替えの状態の持ち方とセルのテンプレートの切り替えは、記事 wpf-datagrid-sorting /
 /// wpf-datagrid-sort-reset / wpf-datagrid-cell-editing-template で実測済み。

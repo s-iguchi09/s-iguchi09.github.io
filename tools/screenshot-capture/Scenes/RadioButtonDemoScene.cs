@@ -12,7 +12,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「RadioButton」（apps/wpf-standard-control-demo/radiobutton.html と日本語版）の記述を実測する。
+/// デモページ「RadioButton」（apps/wpf-standard-control-demo/radiobutton.md と日本語版）の記述を実測する。
 ///
 /// クリックは ButtonBase の OnClick を呼んで行う（実際のクリックと同じく OnToggle を通る）。
 /// 矢印キーと Tab は <see cref="DemoProbe.SendKey"/> で、実際のキー入力と同じ経路から送る。

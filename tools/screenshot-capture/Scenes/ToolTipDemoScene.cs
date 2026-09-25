@@ -9,7 +9,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// デモページ「ToolTip」（apps/wpf-standard-control-demo/tooltip.html と日本語版）の記述を実測する。
+/// デモページ「ToolTip」（apps/wpf-standard-control-demo/tooltip.md と日本語版）の記述を実測する。
 ///
 /// ツールチップは実際のマウス（<see cref="RealMouse"/>）でボタンの上にカーソルを置いて開く。
 /// 開いた ToolTip は、ToolTip.Opened のクラスハンドラーで受け取る。
