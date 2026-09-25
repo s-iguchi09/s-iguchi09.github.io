@@ -11,7 +11,7 @@ description: "WPF TextBlock measured on .NET 10: Text versus Inlines, how each T
 
 **TextBlock** derives from `FrameworkElement`, not from `Control`, so it has no template. It does not take the focus (`Focusable` was `False`), and its `Padding` is 0 by default. Its text cannot be selected; the article linked below shows how to display selectable read-only text.
 
-Text can be given in two ways, and they do not mix as one might expect. A TextBlock whose content was built from `Inlines` (a `Run` and a `Bold`) returned an empty `Text`, before and after layout. Setting `Text` on it afterwards threw no exception; it replaced the formatted runs with a single one. To combine binding and formatting, bind the `Text` of a `Run` instead: a bound `Run` after a bold "Name: " showed the bound text and followed the source when it changed.
+Text can be given in two ways, and they do not mix as one might expect. A TextBlock whose `Inlines` (a `Run` and a `Bold`) were added before its first layout returned an empty `Text`, before and after layout. Setting `Text` on it afterwards threw no exception; it replaced the formatted runs with a single one. To combine binding and formatting, bind the `Text` of a `Run` instead: a bound `Run` after a bold "Name: " showed the bound text and followed the source when it changed.
 
 The demo app has sections for `Text`, `TextWrapping`, `TextTrimming`, `TextAlignment`, `Padding`, the font properties, `Background`, `Foreground`, and `LineHeight` with `LineStackingStrategy`. The "Show Code" link under each section displays its XAML.
 
@@ -25,7 +25,7 @@ The following properties are demonstrated interactively in the WPF Standard Cont
 
 | Property | Values | Description |
 | --- | --- | --- |
-| `Text` | `string` | The text as one string. The demo app binds it to a text box. It is empty for a TextBlock whose content is given as `Inlines` (see above). |
+| `Text` | `string` | The text as one string. The demo app binds it to a text box. It was empty for a TextBlock whose `Inlines` were added before its first layout (see above). |
 | `TextWrapping` | `NoWrap / Wrap / WrapWithOverflow` | Whether and how lines are broken; the default is `NoWrap`. With "Say Supercalifragilisticexpialidocious now" in a width of 100, whose long word alone is wider than 100, `NoWrap` gave one line cut off at 100. `Wrap` gave 4 lines, breaking the long word itself. `WrapWithOverflow` gave 3 lines and kept the word whole, so it ran past 100 and was cut off there. |
 | `TextTrimming` | `None / CharacterEllipsis / WordEllipsis` | Whether text that does not fit ends with an ellipsis; the default is `None`. It only works when the width is limited. With `CharacterEllipsis`, a long text was 100 wide in a Grid 100 wide. In a horizontal StackPanel, which gives unlimited width, it took its full width of 220.43, so nothing was trimmed. |
 | `TextAlignment` | `Left / Right / Center / Justify` | The horizontal alignment of the lines inside the TextBlock. The demo app shows the four values side by side with wrapping on. |
@@ -65,7 +65,7 @@ The following XAML is the `LineHeight` section of the demo app (`TextBlockUsageC
 
 ## Tips and Best Practices
 
-- **Do not read `Text` from a TextBlock built with `Inlines`.** It was empty.
+- **Do not rely on `Text` of a TextBlock built with `Inlines`.** With the inlines added before the first layout, it was empty.
 - **Use `Wrap` when nothing may run past the edge.** `WrapWithOverflow` lets a long word overflow.
 - **Limit the width when using `TextTrimming`.** In a horizontal StackPanel the text is never trimmed.
 - **Use `MaxHeight` or a `LineHeight` larger than the text** to avoid overlapping lines.
@@ -75,7 +75,7 @@ The following XAML is the `LineHeight` section of the demo app (`TextBlockUsageC
 Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. The TextBlocks were laid out with `Measure` and `Arrange`. Line counts are the height divided by the height of one line, and "clipped" means WPF's layout clip cut the TextBlock at the width it was given. Sizes depend on the font and display scaling; they are the values on the measuring machine.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="Table of TextBlock results: it derives from FrameworkElement, is not focusable, and has no padding by default, Text is empty for content built from Inlines and setting it replaces them without an exception, a long word gives one clipped line with NoWrap, 4 lines with Wrap, and 3 clipped lines with WrapWithOverflow, trimming limits the width to 100 in a Grid but not in a StackPanel, and Padding 10 adds 20 in each direction" width="1022" height="290" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="Table of TextBlock results: it derives from FrameworkElement, is not focusable, and has no padding by default, Text is empty for inlines added before the first layout and setting it replaces them without an exception, a long word gives one clipped line with NoWrap, 4 lines with Wrap, and 3 clipped lines with WrapWithOverflow, trimming limits the width to 100 in a Grid but not in a StackPanel, and Padding 10 adds 20 in each direction" width="1022" height="290" loading="lazy">
   <figcaption>Text and inlines, wrapping, trimming, and padding. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

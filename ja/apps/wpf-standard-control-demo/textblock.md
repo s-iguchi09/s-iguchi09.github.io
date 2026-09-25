@@ -11,7 +11,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 **TextBlock** は `Control` ではなく `FrameworkElement` を継承しているので、テンプレートを持ちません。フォーカスは受け取らず（`Focusable` は `False`）、`Padding` の既定値は 0 です。文字を選択することはできません。選択できる読み取り専用の文字の表示方法は、下にリンクした記事で扱っています。
 
-文字の与え方は 2 通りあり、思われているようには混ざりません。`Inlines`（`Run` と `Bold`）で内容を作った TextBlock の `Text` は、レイアウトの前も後も空文字でした。そのあと `Text` を設定しても例外にはならず、書式付きの並びが 1 つの並びに置き換わりました。バインドと書式を組み合わせるなら、`Run` の `Text` をバインドします。太字の「Name: 」の後に置いてバインドした `Run` は、バインドした文字を表示し、ソースの変更にも追従しました。
+文字の与え方は 2 通りあり、思われているようには混ざりません。最初のレイアウトの前に `Inlines`（`Run` と `Bold`）で内容を作った TextBlock の `Text` は、レイアウトの前も後も空文字でした。そのあと `Text` を設定しても例外にはならず、書式付きの並びが 1 つの並びに置き換わりました。バインドと書式を組み合わせるなら、`Run` の `Text` をバインドします。太字の「Name: 」の後に置いてバインドした `Run` は、バインドした文字を表示し、ソースの変更にも追従しました。
 
 デモアプリには、`Text`、`TextWrapping`、`TextTrimming`、`TextAlignment`、`Padding`、フォントの各プロパティ、`Background`、`Foreground`、`LineHeight` と `LineStackingStrategy` の欄があります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。
 
@@ -25,7 +25,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 | プロパティ | 設定値 | 説明 |
 | --- | --- | --- |
-| `Text` | `string` | 1 つの文字列としての文字です。デモアプリはテキストボックスにバインドしています。内容を `Inlines` で与えた TextBlock では空になります（上を参照）。 |
+| `Text` | `string` | 1 つの文字列としての文字です。デモアプリはテキストボックスにバインドしています。最初のレイアウトの前に内容を `Inlines` で与えた TextBlock では空でした（上を参照）。 |
 | `TextWrapping` | `NoWrap / Wrap / WrapWithOverflow` | 行を折り返すかと、その方法です。既定値は `NoWrap` です。1 語だけで幅 100 を超える語を含む「Say Supercalifragilisticexpialidocious now」を幅 100 に置くと、`NoWrap` は 1 行で 100 の位置で切れました。`Wrap` は長い語そのものを折って 4 行になりました。`WrapWithOverflow` は語を分けずに 3 行になり、その語が 100 を超えてそこで切れました。 |
 | `TextTrimming` | `None / CharacterEllipsis / WordEllipsis` | 収まらない文字の末尾を省略記号にするかどうかです。既定値は `None` です。幅が限られているときだけ働きます。`CharacterEllipsis` の長い文字は、幅 100 の Grid では幅 100 になりました。幅に制限のない横の StackPanel では本来の幅 220.43 になり、省略されませんでした。 |
 | `TextAlignment` | `Left / Right / Center / Justify` | TextBlock の中での行の横位置です。デモアプリは折り返しを有効にして 4 つの値を並べています。 |
@@ -65,7 +65,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 ## ヒントとベストプラクティス
 
-- **`Inlines` で作った TextBlock の `Text` を読まない** — 空文字でした。
+- **`Inlines` で作った TextBlock の `Text` に頼らない** — 最初のレイアウトの前に Inlines を追加した場合、空文字でした。
 - **端からはみ出させたくないなら `Wrap` を使う** — `WrapWithOverflow` は長い語をはみ出させます。
 - **`TextTrimming` を使うなら幅を限る** — 横の StackPanel の中では省略されません。
 - **行が重ならないよう、`MaxHeight` か文字より大きい `LineHeight` を使う**
@@ -75,7 +75,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「clipped」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="TextBlock の計測結果の表。FrameworkElement を継承しフォーカスを受けず既定の余白はなく、Inlines で作った内容では Text は空で、設定すると例外なく置き換わり、長い語は NoWrap で 1 行で切れ、Wrap で 4 行、WrapWithOverflow で 3 行ではみ出して切れ、省略は幅 100 の Grid では効くが StackPanel では効かず、Padding 10 で縦横 20 大きくなる" width="1022" height="290" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="TextBlock の計測結果の表。FrameworkElement を継承しフォーカスを受けず既定の余白はなく、最初のレイアウトの前に Inlines で作った内容では Text は空で、設定すると例外なく置き換わり、長い語は NoWrap で 1 行で切れ、Wrap で 4 行、WrapWithOverflow で 3 行ではみ出して切れ、省略は幅 100 の Grid では効くが StackPanel では効かず、Padding 10 で縦横 20 大きくなる" width="1022" height="290" loading="lazy">
   <figcaption>文字と Inlines、折り返し、省略、余白。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 
