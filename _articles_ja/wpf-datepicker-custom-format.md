@@ -104,6 +104,15 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
   <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。書式の差が出るよう、どちらにも <code>xml:lang="en-US"</code> を指定している。上は既定の表示で、この設定に従って <code>4/15/2026</code> になる。下は本節のスタイルを適用したもので、区切り文字と年月日の並びが指定どおりに固定される。</figcaption>
 </figure>
 
+この書式は、表示した後も保たれる。
+`xml:lang="de-DE"` で表示したあと、コードで `SelectedDate` を変えても、カレンダーで日付を選んでも、表示は指定どおりの `2026/05/20`・`2026/06/03` だった。
+`DatePickerTextBox.Text` の値の出どころは、最後までスタイルのバインドのままだった。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.svg" alt="本節のスタイルを xml:lang が de-DE の DatePicker に当てた結果の表。表示直後は 2026/04/15、コードで SelectedDate を 2026-05-20 にすると 2026/05/20、カレンダーで 2026-06-03 を選ぶと 2026/06/03。TextBox.Text の値の出どころはどれも Style のバインド。" width="658" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、本節のスタイルを当てた <code>DatePicker</code> を表示し、日付を 2 回変えて測った結果。値の出どころは <code>DependencyPropertyHelper.GetValueSource</code> で読んだ。</figcaption>
+</figure>
+
 ただし、区切り文字のエスケープで固定できるのは区切り文字と並び順であって、暦そのものではない。区切りが保たれても、`th-TH`・`ar-SA`・`fa-IR` はそれぞれの暦の年と月で表示される。
 
 <figure class="article-figure article-figure--wide">
@@ -115,10 +124,11 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 
 ## コードビハインドによる方法
 
-`SelectedDateChanged` イベントを購読し、整形した文字列を `DatePicker.Text` に代入する方法がよく紹介される。この方法では表示は変わらない。ハンドラーの後で `DatePicker` が `SelectedDate` から自分の書式で文字列を書き直すため、既定の書式に戻った。
+`SelectedDateChanged` イベントを購読し、整形した文字列を `DatePicker.Text` に代入する方法がよく紹介される。この方法では表示は変わらない。
+`SelectedDateChanged` が発生した時点で、`Text` はすでに既定の書式で設定されている。そこへ `yyyy/MM/dd` の文字列を代入すると、`DatePicker` はその文字列を日付として解析し、代入の直後に既定の書式の文字列へ直した。ハンドラーの入口でも代入の直後でも、`Text` は `4/15/2026` だった。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="xml:lang が en-US の DatePicker で、SelectedDateChanged の中で Text を書き換えた結果の表。ハンドラーは 2 回呼ばれ、Text も表示も、ハンドラーが設定した yyyy/MM/dd ではなく 4/15/2026 だった。" width="626" height="110" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="xml:lang が en-US の DatePicker で、SelectedDateChanged の中で Text を書き換えた結果の表。ハンドラーは 2 回呼ばれ、どちらも入口の Text は 4/15/2026、yyyy/MM/dd を代入した直後の Text も 4/15/2026 だった。ハンドラーの後の Text と表示も 4/15/2026。" width="929" height="110" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>SelectedDate</code> を 2026-04-15 にしたあと、ハンドラーで <code>Text</code> を不変カルチャの <code>yyyy/MM/dd</code> に書き換えて測った結果。</figcaption>
 </figure>
 

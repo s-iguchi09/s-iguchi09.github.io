@@ -101,6 +101,15 @@ Both carry `xml:lang="en-US"` so that the comparison does not depend on the mach
   <figcaption>Two <code>DatePicker</code> controls given the same <code>SelectedDate</code>. Both carry <code>xml:lang="en-US"</code> so that the difference in format is visible. The upper one uses the default display, which follows that setting and renders <code>4/15/2026</code>. The lower one applies the style from this section, which fixes the separators and the year-month-day order.</figcaption>
 </figure>
 
+The format also survives after the picker is shown.
+With `xml:lang="de-DE"`, changing `SelectedDate` in code and picking a date in the calendar both displayed the specified `2026/05/20` and `2026/06/03`.
+The value of `DatePickerTextBox.Text` kept coming from the style's binding throughout.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.svg" alt="A table of this section's style applied to a DatePicker with xml:lang de-DE. Right after display it shows 2026/04/15; after SelectedDate is set to 2026-05-20 in code it shows 2026/05/20; after 2026-06-03 is picked in the calendar it shows 2026/06/03. The value source of TextBox.Text is the Style binding every time." width="658" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by showing a <code>DatePicker</code> with this section's style and changing the date twice. The value source was read with <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
+</figure>
+
 What the escaped separator fixes is the separator and the field order, not the calendar itself: with the separators kept, `th-TH`, `ar-SA`, and `fa-IR` still show their own years and months.
 
 <figure class="article-figure article-figure--wide">
@@ -112,10 +121,11 @@ To pin the calendar as well, set `ConverterCulture` on the binding so the cultur
 
 ## Setting the Format in Code-Behind
 
-A common suggestion is to handle `SelectedDateChanged` and assign the formatted text to `DatePicker.Text`. This does not change the display: `DatePicker` writes its own text from `SelectedDate` after the handler, so the text went back to the default format.
+A common suggestion is to handle `SelectedDateChanged` and assign the formatted text to `DatePicker.Text`. This does not change the display.
+When `SelectedDateChanged` fires, `Text` has already been set in the default format. Assigning a `yyyy/MM/dd` string there makes `DatePicker` parse it as a date and normalize it to the default format right away: `Text` read `4/15/2026` both at the handler's entry and right after the assignment.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="A table of setting DatePicker.Text in SelectedDateChanged with xml:lang en-US: the handler ran twice, and both Text and the displayed text were 4/15/2026, not the yyyy/MM/dd text the handler set." width="626" height="110" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="A table of setting DatePicker.Text in SelectedDateChanged with xml:lang en-US: the handler ran twice; each time Text was 4/15/2026 at the entry and still 4/15/2026 right after assigning yyyy/MM/dd. After the handler, Text and the displayed text were 4/15/2026." width="929" height="110" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 with a handler that sets <code>Text</code> to <code>yyyy/MM/dd</code> in the invariant culture, after setting <code>SelectedDate</code> to 2026-04-15.</figcaption>
 </figure>
 

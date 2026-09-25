@@ -45,7 +45,8 @@ internal sealed class DatePickerFormatScene : IScene
         "それぞれの設定で実際に表示される文字列",
         "テンプレート内のテキスト部分を書き換えると任意の書式にできること",
         @"XAML のマークアップ拡張の中の StringFormat の書き方（\/、\\/、\'/\'、エスケープしない '/'）ごとの、解析後の書式と、xml:lang を 6 つの文化圏に変えたときの表示",
-        "SelectedDateChanged で DatePicker.Text を書き換える方法で、表示が変わるか",
+        "SelectedDateChanged で DatePicker.Text を書き換える方法で、表示が変わるか（ハンドラーの入口と、代入の直後の Text も記録する）",
+        "記事の Style（DatePickerTextBox.Text へのバインド）が、表示後に SelectedDate を変えても効き続けるか。TextBox.Text の値の出どころも記録する",
         "既定表示のカルチャが要素の Language（xml:lang）とスレッドの CurrentCulture のどちらに従うか（自身への指定・親要素からの継承・CurrentCulture を独立に変えて表示文字列を測る）",
     ];
 
@@ -87,9 +88,83 @@ internal sealed class DatePickerFormatScene : IScene
 
         await context.SaveTableAsync(
             "setting DatePicker.Text in SelectedDateChanged",
-            ["xml:lang", "handler calls", "Text / shown after the handler set yyyy/MM/dd"],
+            ["xml:lang", "handler calls", "Text at handler entry → right after the assignment", "Text / shown after the handler"],
             [await CodeBehindAsync()],
             "datepicker-codebehind.svg");
+
+        await context.SaveTableAsync(
+            @"the article's Style (StringFormat='yyyy\\/MM\\/dd', xml:lang=""de-DE""): text shown over time",
+            ["step", "shown text", "TextBox.Text value source"],
+            await StyleLifecycleAsync(),
+            "datepicker-style-lifecycle.svg");
+    }
+
+    /// <summary>
+    /// 記事の Style を当てた DatePicker で、表示直後・コードで SelectedDate を変えた後・
+    /// カレンダーで日付を選んだ後の表示を測る。既定の書式（de-DE なら dd.MM.yyyy）に戻れば、
+    /// DatePicker が TextBox.Text を書き換えて Style のバインドに勝ったことになる。
+    /// </summary>
+    private static async Task<List<IReadOnlyList<string>>> StyleLifecycleAsync()
+    {
+        // 記事の XAML と同じ書き方（XAML の中で \\/ と書く）。
+        DatePicker picker = SceneContext.LoadXaml<DatePicker>(StyledPicker(@"'yyyy\\/MM\\/dd'", "de-DE"));
+        picker.SelectedDate = new DateTime(2026, 4, 15);
+        var window = new Window { Content = picker, Width = 260, Height = 320, ShowActivated = false, ShowInTaskbar = false };
+        var rows = new List<IReadOnlyList<string>>();
+        try
+        {
+            await Capture.ShowAndSettleAsync(window);
+            rows.Add(Row("shown (SelectedDate = 2026-04-15)"));
+
+            picker.SelectedDate = new DateTime(2026, 5, 20);
+            await Capture.SettleAsync(window);
+            rows.Add(Row("SelectedDate = 2026-05-20 in code"));
+
+            // カレンダーを開き、カレンダー側の選択として日付を選ぶ。利用者がクリックで選んだときと同じく、
+            // Calendar.SelectedDate から DatePicker.SelectedDate へ伝わる経路を通る。
+            picker.IsDropDownOpen = true;
+            await Capture.SettleAsync(window);
+            System.Windows.Controls.Calendar calendar = FindCalendar(picker) ?? throw new InvalidOperationException("カレンダーが見つからない。");
+            calendar.SelectedDate = new DateTime(2026, 6, 3);
+            picker.IsDropDownOpen = false;
+            await Capture.SettleAsync(window);
+            rows.Add(Row("2026-06-03 selected in the calendar"));
+        }
+        finally
+        {
+            window.Close();
+        }
+
+        return rows;
+
+        IReadOnlyList<string> Row(string step)
+        {
+            DatePickerTextBox box = FindTextBox(picker) ?? throw new InvalidOperationException("テキスト部分が見つからない。");
+            ValueSource source = DependencyPropertyHelper.GetValueSource(box, TextBox.TextProperty);
+            string flags = (source.IsExpression ? ", binding" : "") + (source.IsCurrent ? ", current value" : "");
+            return [step, Visible(box.Text), source.BaseValueSource + flags];
+        }
+    }
+
+    private static DatePickerTextBox? FindTextBox(DependencyObject root)
+    {
+        if (root is DatePickerTextBox box) return box;
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            DatePickerTextBox? found = FindTextBox(VisualTreeHelper.GetChild(root, i));
+            if (found is not null) return found;
+        }
+
+        return null;
+    }
+
+    /// <summary>カレンダーは Popup の中にあり、DatePicker の visual ツリーには入らないため、Popup の子から探す。</summary>
+    private static System.Windows.Controls.Calendar? FindCalendar(DatePicker picker)
+    {
+        picker.ApplyTemplate();
+        return picker.Template.FindName("PART_Popup", picker) is System.Windows.Controls.Primitives.Popup { Child: System.Windows.Controls.Calendar calendar }
+            ? calendar
+            : null;
     }
 
     private static readonly string[] Cultures = ["en-US", "ja-JP", "de-DE", "th-TH", "ar-SA", "fa-IR"];
@@ -154,10 +229,13 @@ internal sealed class DatePickerFormatScene : IScene
     {
         var picker = new DatePicker { Width = 200, Language = XmlLanguage.GetLanguage("en-US") };
         int calls = 0;
+        var trace = new List<string>();
         picker.SelectedDateChanged += (_, _) =>
         {
             calls++;
+            string entry = picker.Text;
             picker.Text = picker.SelectedDate?.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture) ?? string.Empty;
+            trace.Add($"{entry} → {picker.Text}");
         };
         var window = new Window { Content = picker, Width = 260, Height = 100, ShowActivated = false, ShowInTaskbar = false };
         try
@@ -165,7 +243,7 @@ internal sealed class DatePickerFormatScene : IScene
             await Capture.ShowAndSettleAsync(window);
             picker.SelectedDate = new DateTime(2026, 4, 15);
             await Capture.SettleAsync(window);
-            return ["en-US", calls.ToString(CultureInfo.InvariantCulture), $"{picker.Text} / {ShownText(picker)}"];
+            return ["en-US", calls.ToString(CultureInfo.InvariantCulture), string.Join("; ", trace), $"{picker.Text} / {ShownText(picker)}"];
         }
         finally
         {
