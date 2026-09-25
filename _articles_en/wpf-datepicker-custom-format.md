@@ -3,7 +3,7 @@ layout: article-en
 title: "Customising the DatePicker Display Format in WPF"
 date: 2026-04-15
 category: WPF
-excerpt: "How to fix the WPF DatePicker format with a DatePickerTextBox style, escape separators in XAML, why setting Text in code-behind fails, and when a converter fits."
+excerpt: "Fixing the WPF DatePicker format with a DatePickerTextBox style, escape separators in XAML, why setting Text in code-behind fails, and when a converter fits."
 image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 
