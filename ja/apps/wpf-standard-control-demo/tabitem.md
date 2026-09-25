@@ -9,7 +9,7 @@ description: "WPF の TabItem の選択、TabStripPlacement、無効なタブ、
 
 ## 概要
 
-**TabItem** は `HeaderedContentControl` を継承しており、タブの帯に出す `Header` と、ページ本体の `Content` を持ちます。親の `TabControl` で同時に選択できるタブは最大 1 つです。ある TabItem の `IsSelected` を設定すると、`SelectedIndex` がそのタブに移り、他のタブの `IsSelected` は外れます。
+**TabItem** は `HeaderedContentControl` を継承しており、タブの帯に出す `Header` と、ページ本体の `Content` を持ちます。親の `TabControl` で同時に選択できるタブは最大 1 つです。ある TabItem の `IsSelected` を `True` にすると、`SelectedIndex` がそのタブに移り、他のタブの `IsSelected` は外れます。
 
 表示されてレイアウトされるのは選択中のタブの内容だけですが、他のタブの内容が何もしていないわけではありません。XAML に直接書いた内容は、XAML の読み込み時に作られます。3 つのタブで試すと、ウィンドウを開いた時点で 3 つの内容すべてに `Loaded` が発生し、測られた（Measure された）のは選択中の 1 つだけでした。`ItemsSource` と `ContentTemplate` で作った場合は、内容の要素は 1 つだけ作られ、どのタブでもデータだけを入れ替えて使い回されました。
 

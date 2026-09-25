@@ -9,7 +9,7 @@ description: "WPF TabItem measured on .NET 10: selection with IsSelected, TabStr
 
 ## Overview
 
-**TabItem** derives from `HeaderedContentControl`, so it has a `Header` (the label in the tab strip) and a `Content` (the page). The parent `TabControl` selects at most one tab at a time: setting `IsSelected` on one TabItem moves `SelectedIndex` to it and clears `IsSelected` on the others.
+**TabItem** derives from `HeaderedContentControl`, so it has a `Header` (the label in the tab strip) and a `Content` (the page). The parent `TabControl` selects at most one tab at a time: setting `IsSelected` to `True` on one TabItem moves `SelectedIndex` to it and clears `IsSelected` on the others.
 
 Only the selected tab's content is shown and laid out, but that does not mean the other tabs' content is idle. Content written directly in XAML is created when the XAML is loaded. In a test with three tabs, all three content elements raised `Loaded` when the window opened, and only the selected one was measured. With `ItemsSource` and a `ContentTemplate`, the TabControl created one content element and reused it for every tab, changing only its data.
 
