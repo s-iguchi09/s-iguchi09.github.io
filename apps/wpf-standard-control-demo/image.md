@@ -24,7 +24,7 @@ The part outside the area is cut off, and it is cut from the right and bottom: w
 
 ## DPI and the decoded size
 
-Without scaling, the size is in device-independent units, the pixels × 96 / DPI: 100 × 50 pixels at 72 DPI were 133.36 × 66.68. The same pixels are shown larger at a lower DPI, so check the file's DPI when you use `Stretch="None"`. The PNGs used here stored their resolution in a `pHYs` chunk in pixels per metre, so even the 96 DPI ones came back as 100.01 wide.
+Without scaling, the size is in device-independent units, the pixels × 96 / DPI: 100 × 50 pixels at 72 DPI would be 133.33 × 66.67; the measured 72 DPI picture was 133.36 × 66.68. The same pixels are shown larger at a lower DPI, so check the file's DPI when you use `Stretch="None"`. The PNGs used here stored their resolution in a `pHYs` chunk as a whole number of pixels per metre, which makes the effective DPI slightly lower than the nominal one: the measured sizes match 2834 pixels per metre for 72 DPI (71.98 DPI) and 3779 for 96 DPI (95.99 DPI), which is why the 96 DPI picture came back as 100.01 wide.
 
 Set `DecodePixelWidth` for thumbnails. With 100, a 600 × 300 picture was decoded to 100 × 50 pixels. It also changes the picture's own size: without scaling it was shown 100 wide, not 600.
 
