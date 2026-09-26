@@ -11,7 +11,7 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 **DataGrid** は `MultiSelector`・`Selector`・`ItemsControl` を継承しています。既定の `AutoGenerateColumns="True"` では、公開プロパティごとに 1 列を、プロパティを宣言した順に作ります。`Zeta`・`Alpha`・`Mid` の順に宣言したクラスでは、アルファベット順ではなくこの順に列ができました。セッターのないプロパティは読み取り専用の列になりました。
 
-公開プロパティはすべて列になります。デモアプリの項目は `IDataErrorInfo` を実装しているため、自動で作られた列は `Name`・`Value` と、インターフェイスから来た読み取り専用の `Error` 列でした。見せたくないメンバーがある型では、`AutoGenerateColumns` を `False` にし、`DataGridTextColumn`・`DataGridCheckBoxColumn`・`DataGridComboBoxColumn` などで列を宣言します。編集中のセルには、それぞれ `TextBox`・`CheckBox`・`ComboBox` が入りました。
+計測した項目の型では、公開プロパティがすべて列になりました。デモアプリの項目は `IDataErrorInfo` を実装しているため、自動で作られた列は `Name`・`Value` と、インターフェイスから来た読み取り専用の `Error` 列でした。見せたくないメンバーがある型では、`AutoGenerateColumns` を `False` にし、`DataGridTextColumn`・`DataGridCheckBoxColumn`・`DataGridComboBoxColumn` などで列を宣言します。編集中のセルには、それぞれ `TextBox`・`CheckBox`・`ComboBox` が入りました。
 
 ## 行の追加・削除と、読み取り専用の表
 
@@ -26,7 +26,7 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 ## 行の検証には規則が要る
 
-`RowValidationErrorTemplate` は、行の検証に失敗したときの表示です。行が検証に失敗するのは規則が行を調べたときだけで、`RowValidationRules` は既定では空です。デモアプリのデータでは 3 行目が `IDataErrorInfo.Error` を返しますが、この行は編集した後も `Validation.HasError` になりませんでした。そのため、テンプレートは表示されません。`RowValidationRules` に `DataErrorValidationRule` を加えると、3 行目は検証エラーになりました。行にエラーを表示するなら、検証の規則を加えます。
+`RowValidationErrorTemplate` は、行の検証に失敗したときの表示です。行が検証に失敗するのは規則が行を調べたときだけで、`RowValidationRules` は既定では空です。デモアプリのデータでは 3 行目が `IDataErrorInfo.Error` を返しますが、この行は編集した後も `Validation.HasError` になりませんでした。そのため、このデータで規則が無いままでは、テンプレートは表示されませんでした。`RowValidationRules` に `DataErrorValidationRule` を加えると、3 行目は検証エラーになりました。行にエラーを表示するなら、検証の規則を加えます。
 
 ## 編集と、編集中の並べ替え
 

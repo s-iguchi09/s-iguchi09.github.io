@@ -11,7 +11,7 @@ description: "WPF DataGrid measured on .NET 10: generated columns, sorting, edit
 
 **DataGrid** derives from `MultiSelector`, `Selector`, and `ItemsControl`. With the default `AutoGenerateColumns="True"`, it creates one column per public property, in the order the properties are declared: a class with `Zeta`, `Alpha`, and `Mid` gave the columns in that order, not alphabetically. A property without a setter became a read-only column.
 
-Every public property is included. The demo app's items implement `IDataErrorInfo`, so the generated columns were `Name`, `Value`, and a read-only `Error` column taken from the interface. When the item type has members that should not be shown, set `AutoGenerateColumns` to `False` and declare the columns as `DataGridTextColumn`, `DataGridCheckBoxColumn`, `DataGridComboBoxColumn`, and so on. In edit mode their cells hold a `TextBox`, a `CheckBox`, and a `ComboBox`.
+Every public property of the measured item types became a column. The demo app's items implement `IDataErrorInfo`, so the generated columns were `Name`, `Value`, and a read-only `Error` column taken from the interface. When the item type has members that should not be shown, set `AutoGenerateColumns` to `False` and declare the columns as `DataGridTextColumn`, `DataGridCheckBoxColumn`, `DataGridComboBoxColumn`, and so on. In edit mode their cells hold a `TextBox`, a `CheckBox`, and a `ComboBox`.
 
 ## Adding, deleting, and read-only grids
 
@@ -26,7 +26,7 @@ Every public property is included. The demo app's items implement `IDataErrorInf
 
 ## Row validation needs a rule
 
-`RowValidationErrorTemplate` is what a row shows when its validation fails. A row only fails validation when a rule checks it, and `RowValidationRules` is empty by default. In the demo app's data, the third row returns an `IDataErrorInfo.Error`, but that row never had `Validation.HasError` set, even after it was edited, so the template never appears. After adding a `DataErrorValidationRule` to `RowValidationRules`, the third row had a validation error. Add a validation rule if rows should show errors.
+`RowValidationErrorTemplate` is what a row shows when its validation fails. A row only fails validation when a rule checks it, and `RowValidationRules` is empty by default. In the demo app's data, the third row returns an `IDataErrorInfo.Error`, but that row never had `Validation.HasError` set, even after it was edited, so with this data and no rule the template did not appear. After adding a `DataErrorValidationRule` to `RowValidationRules`, the third row had a validation error. Add a validation rule if rows should show errors.
 
 ## Editing, and sorting while a cell is being edited
 
