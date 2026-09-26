@@ -50,7 +50,10 @@ internal sealed class SceneContext(string slug, string outputDirectory)
     /// <summary>
     /// ウィンドウを表示し、描画が安定してから PNG として保存して閉じる。
     /// </summary>
-    public async Task ShootAsync(Window window, string fileName, Func<Window, Task>? beforeCapture = null)
+    /// <param name="requireContentRendered">
+    /// 真なら、クライアント領域が一色のときに保存せず例外にする。中身が一色の図を意図して撮るときだけ偽にする。
+    /// </param>
+    public async Task ShootAsync(Window window, string fileName, Func<Window, Task>? beforeCapture = null, bool requireContentRendered = true)
     {
         try
         {
@@ -78,7 +81,7 @@ internal sealed class SceneContext(string slug, string outputDirectory)
                 return;
             }
 
-            Capture.SaveWindow(window, path);
+            Capture.SaveWindow(window, path, requireContentRendered);
             _saved.Add(path);
         }
         finally
@@ -93,11 +96,11 @@ internal sealed class SceneContext(string slug, string outputDirectory)
     /// 複数のウィンドウを同時に開いた状態を撮る場合に使う。
     /// <see cref="ShootAsync"/> は表示から始めるため、表示済みのウィンドウには使えない。
     /// </summary>
-    public async Task SaveShownWindowAsync(Window window, string fileName)
+    public async Task SaveShownWindowAsync(Window window, string fileName, bool requireContentRendered = true)
     {
         await Capture.SettleAsync(window);
         string path = Path.Combine(OutputDirectory, fileName);
-        Capture.SaveWindow(window, path);
+        Capture.SaveWindow(window, path, requireContentRendered);
         _saved.Add(path);
     }
 
