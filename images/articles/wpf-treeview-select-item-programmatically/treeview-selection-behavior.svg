@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 967 260" width="967" height="260" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="967" height="260" />
+  <text class="title" x="12" y="24">the article's XAML: exclusivity, value source, and selection color</text>
+  <rect class="head" x="12" y="38" width="943" height="30" />
+  <text class="cell" x="26" y="57.5">case</text>
+  <text class="cell" x="941" y="57.5" text-anchor="end">measured</text>
+  <text class="cell" x="26" y="87.5">select 'Program Files', then 'Users' (both generated)</text>
+  <text class="cell" x="941" y="87.5" text-anchor="end">ViewModel: Program Files False, Users True</text>
+  <text class="cell" x="26" y="117.5">select 'C:', then 'drivers' (no container yet)</text>
+  <text class="cell" x="941" y="117.5" text-anchor="end">ViewModel: C: True, drivers True; SelectedItem C:</text>
+  <text class="cell" x="26" y="147.5">TwoWay: assign container.IsSelected, then ViewModel false</text>
+  <text class="cell" x="941" y="147.5" text-anchor="end">source Style; container.IsSelected False</text>
+  <text class="cell" x="26" y="177.5">OneWay: assign container.IsSelected, then ViewModel false</text>
+  <text class="cell" x="941" y="177.5" text-anchor="end">source Local; container.IsSelected True</text>
+  <text class="cell" x="26" y="207.5">selected background, item focused</text>
+  <text class="cell" x="941" y="207.5" text-anchor="end">#FF0078D7 = SystemColors.HighlightColor</text>
+  <text class="cell" x="26" y="237.5">selected background, focus elsewhere</text>
+  <text class="cell" x="941" y="237.5" text-anchor="end">#FFF0F0F0 = SystemColors.InactiveSelectionHighlightBrush</text>
+  <line class="line" x1="12" y1="38" x2="955" y2="38" />
+  <line class="line" x1="12" y1="68" x2="955" y2="68" />
+  <line class="line" x1="12" y1="98" x2="955" y2="98" />
+  <line class="line" x1="12" y1="128" x2="955" y2="128" />
+  <line class="line" x1="12" y1="158" x2="955" y2="158" />
+  <line class="line" x1="12" y1="188" x2="955" y2="188" />
+  <line class="line" x1="12" y1="218" x2="955" y2="218" />
+  <line class="line" x1="12" y1="248" x2="955" y2="248" />
+  <line class="line" x1="12" y1="38" x2="12" y2="248" />
+  <line class="line" x1="487" y1="38" x2="487" y2="248" />
+  <line class="line" x1="955" y1="38" x2="955" y2="248" />
+</svg>

@@ -14,7 +14,7 @@ image: /images/articles/wpf-treeview-select-item-programmatically/treeview-selec
 ところが `ListBox` や `DataGrid` と同じ要領で `treeView.SelectedItem = node;` と書くとコンパイルエラーになり、XAML でバインドしても通常の構成ではビルドが通らない。
 
 本記事では、この制約が `TreeView` の選択状態の持ち方に由来することを説明し、コードから選択を指示する 2 つの方式と、表示位置・フォーカスの制御を担う添付ビヘイビアを組み合わせた実装を示す。
-記載した挙動と例外メッセージは、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である。
+記載した挙動と例外の型は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である（本文の図の表にまとめた）。
 
 ---
 
@@ -121,7 +121,7 @@ error MC3065: 'SelectedItem' property is read-only and cannot be set from markup
 ここまでの説明は、いずれもコードから確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="TreeView の選択とコンテナ生成を測った表。SelectedItemProperty.ReadOnly は True、外部からの SetValue は InvalidOperationException、子のコンテナは展開前も IsExpanded を true にした直後もまだ null で、レイアウトが走ってから TreeViewItem になる。子の IsSelected を true にすると TreeView.SelectedItem がその項目になる。" width="767" height="260" loading="lazy">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="TreeView の選択とコンテナ生成を測った表。SelectedItemProperty.ReadOnly は True、外部からの SetValue は InvalidOperationException、子のコンテナは展開前も IsExpanded を true にした直後もまだ null で、レイアウトが走ってから TreeViewItem になる。子の IsSelected を true にすると TreeView.SelectedItem がその項目になる。" width="732" height="260" loading="lazy">
   <figcaption>.NET 10 / Windows 11 での実測結果。<code>child container</code> は親の <code>ItemContainerGenerator.ContainerFromIndex(0)</code> が返した値の型である。</figcaption>
 </figure>
 
@@ -327,7 +327,7 @@ public static class RevealSelectedItemBehavior
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png" alt="TreeView で C: / Windows / System32 が展開され、その下の drivers が選択色で強調表示されている。下部のテキストに TreeView.SelectedItem = drivers と表示されている。" width="326" height="293" loading="lazy">
-  <figcaption>ViewModel の <code>IsExpanded</code> / <code>IsSelected</code> を変更しただけで、祖先が展開され目的のノードが選択された状態。下部の行は読み取り専用の <code>TreeView.SelectedItem</code> をバインドのソースとして読み出したもので、コンテナ側の選択に追従していることを示す。選択部分の配色は OS のアクセントカラー設定に従う（.NET 10 / Windows 11 で生成）。</figcaption>
+  <figcaption>ViewModel の <code>IsExpanded</code> / <code>IsSelected</code> を変更しただけで、祖先が展開され目的のノードが選択された状態。下部の行は読み取り専用の <code>TreeView.SelectedItem</code> をバインドのソースとして読み出したもので、コンテナ側の選択に追従していることを示す。選択部分の背景は、フォーカスがあるときは <code>SystemColors.HighlightColor</code>、無いときは <code>SystemColors.InactiveSelectionHighlightBrush</code> だった（後掲の表。.NET 10 / Windows 11 で生成）。</figcaption>
 </figure>
 
 ---
@@ -347,12 +347,12 @@ public static class RevealSelectedItemBehavior
 `Setter` に `Mode=TwoWay` の `Binding` を書いた構成では、コンテナの `IsSelected` へ代入してもバインドは維持され、値は ViewModel へ書き戻される。
 UI 上の操作と同じ扱いになるだけで、以後の ViewModel 側の変更も引き続き反映される。
 一方、`Mode=OneWay` の `Binding` やリテラル値を書いた `Setter` では、代入がローカル値となってスタイルの `Setter` より優先される。
-実測でも、`TwoWay` では代入後の値の供給元（`DependencyPropertyHelper.GetValueSource` の `BaseValueSource`）が `Style` のままだったのに対し、`OneWay` では `Local` へ変わり、その後 ViewModel から選択し直しても反映されなくなった。
+実測でも、`TwoWay` では代入後の値の供給元（`DependencyPropertyHelper.GetValueSource` の `BaseValueSource`）が `Style` のままだったのに対し、`OneWay` では `Local` へ変わり、その後 ViewModel から選択し直しても反映されなくなった（後掲の表）。
 この優先順位の詳細は [WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/) で扱っている。
-- **`TreeView` は単一選択である。**
-ViewModel 側で複数のノードの `IsSelected` を `true` にしても、実際に選択されるのは 1 つだけである。
-別のノードが選択されると、直前に選択されていたノードのコンテナの `IsSelected` が `false` になり、双方向バインド経由で ViewModel にも書き戻される。
-選択の排他制御を ViewModel 側で実装する必要はない。
+- **`TreeView` は単一選択だが、排他が働くのはコンテナが生成済みのノードの間だけである。**
+コンテナが生成済みのノードの間では、別のノードが選択されると、直前に選択されていたノードのコンテナの `IsSelected` が `false` になり、双方向バインド経由で ViewModel にも書き戻された。
+一方、祖先が閉じていてコンテナが生成されていないノードを ViewModel で選ぶと、排他は働かず、ViewModel には `true` が 2 つ残った（下の表）。
+コンテナの有無に関係なく選択を 1 つに保つには、ViewModel 側で前の選択を `false` にしておく。
 - **ノードの型に該当プロパティが無いとバインディングエラーになる。**
 `Setter` の `Binding` はコンテナの `DataContext`、すなわちデータ項目を起点に解決される。
 階層ごとに異なる型を混在させる場合は、共通の基底クラスかインターフェイスに `IsSelected` / `IsExpanded` を持たせる。
@@ -364,6 +364,11 @@ ViewModel 側で複数のノードの `IsSelected` を `true` にしても、実
 `ItemContainerGenerator` を辿る方式では `ContainerFromItem` が `null` を返すため、コンテナを取得できない。
 `BringIndexIntoView` を公開したカスタムの `VirtualizingStackPanel` を `TreeView` と `TreeViewItem` の双方の `ItemsPanel` に据え、階層ごとにコンテナを実体化させれば取得できるが、実装量は大きく増える。
 仮想化と選択状態の関係は [WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法](/ja/articles/wpf-listbox-virtualization-selecteditems/) でも扱っている。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="記事の XAML で選択の振る舞いを測った表。コンテナが生成済みの Program Files と Users を順に選ぶと、ViewModel では Users だけが True になる。C: を選んでから、祖先が閉じていてコンテナの無い drivers を選ぶと、ViewModel では両方が True のまま、SelectedItem は C:。IsSelected が TwoWay ではコンテナへ代入した後の値の出どころは Style で、ViewModel から false にするとコンテナも False になる。OneWay では Local になり、ViewModel から false にしてもコンテナは True のまま。選択中の項目の背景は、フォーカスがあると SystemColors.HighlightColor、無いと SystemColors.InactiveSelectionHighlightBrush。" width="967" height="260" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、記事の XAML と ViewModel をそのまま使って測った結果。背景は、既定テンプレートの <code>Bd</code> の <code>Background</code> を読んだ。</figcaption>
+</figure>
 
 ---
 

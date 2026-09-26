@@ -14,7 +14,7 @@ Jumping to a folder returned by a search, restoring the node selected in the pre
 Writing `treeView.SelectedItem = node;` — the pattern that works for `ListBox` and `DataGrid` — fails to compile, and binding the property in XAML breaks the build in an ordinary project.
 
 This article explains how the restriction follows from the way `TreeView` stores its selection, and presents two ways to request a selection from code, combined with an attached behavior that controls scroll position and focus.
-Every behavior and exception message reported here was observed by running the code on .NET 10 / Windows 11.
+Every behavior and exception type reported here was observed by running the code on .NET 10 / Windows 11 (collected in the tables in the figures).
 
 ---
 
@@ -114,7 +114,7 @@ The problem is therefore not "how to write to a read-only property" but a design
 Everything described so far can be confirmed from code.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="A table measuring TreeView selection and container generation. SelectedItemProperty.ReadOnly is True, an external SetValue throws InvalidOperationException, the child container is null before expansion and still null right after IsExpanded is set, becoming a TreeViewItem only once a layout pass runs, and setting the child IsSelected makes TreeView.SelectedItem that item." width="767" height="260" loading="lazy">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="A table measuring TreeView selection and container generation. SelectedItemProperty.ReadOnly is True, an external SetValue throws InvalidOperationException, the child container is null before expansion and still null right after IsExpanded is set, becoming a TreeViewItem only once a layout pass runs, and setting the child IsSelected makes TreeView.SelectedItem that item." width="732" height="260" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11. <code>child container</code> is the type returned by the parent&#39;s <code>ItemContainerGenerator.ContainerFromIndex(0)</code>.</figcaption>
 </figure>
 
@@ -318,7 +318,7 @@ Running the XAML and the code above and calling `SelectAndReveal` on `drivers`, 
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png" alt="A TreeView with C:, Windows, and System32 expanded and the drivers node highlighted with the selection color. The line below reads TreeView.SelectedItem = drivers." width="326" height="293" loading="lazy">
-  <figcaption>The state reached by changing only <code>IsExpanded</code> and <code>IsSelected</code> on the view model: ancestors expanded and the target node selected. The bottom line reads the read-only <code>TreeView.SelectedItem</code> as a binding source, showing that it follows the container state. The highlight color follows the accent color configured in the OS (produced on .NET 10 / Windows 11).</figcaption>
+  <figcaption>The state reached by changing only <code>IsExpanded</code> and <code>IsSelected</code> on the view model: ancestors expanded and the target node selected. The bottom line reads the read-only <code>TreeView.SelectedItem</code> as a binding source, showing that it follows the container state. The selected item's background was <code>SystemColors.HighlightColor</code> while it had focus and <code>SystemColors.InactiveSelectionHighlightBrush</code> otherwise (see the table further below; produced on .NET 10 / Windows 11).</figcaption>
 </figure>
 
 ---
@@ -336,11 +336,12 @@ The value is deferred rather than lost, so requesting expansion and selection to
 With a `Mode=TwoWay` binding in the setter, assigning to `IsSelected` on the container keeps the binding alive and writes the value back to the view model.
 The assignment is treated exactly like a selection made through the UI, and later view model changes still reach the container.
 With a `Mode=OneWay` binding or a literal value in the setter, the same assignment becomes a local value that outranks the style setter.
-Measurement confirms this: under `TwoWay`, the base value source reported by `DependencyPropertyHelper.GetValueSource` (`ValueSource.BaseValueSource`) stayed `Style` after the assignment, whereas under `OneWay` it changed to `Local` and subsequent selections requested from the view model no longer had any effect.
+Measurement confirms this: under `TwoWay`, the base value source reported by `DependencyPropertyHelper.GetValueSource` (`ValueSource.BaseValueSource`) stayed `Style` after the assignment, whereas under `OneWay` it changed to `Local` and subsequent selections requested from the view model no longer had any effect (see the table below).
 The precedence rules are covered in [Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence](/articles/wpf-style-trigger-not-working-local-value/).
-- **`TreeView` is single-select.**
-Marking several nodes as `IsSelected` in the view model still selects only one.
-When another node is selected, `IsSelected` on the previously selected container becomes `false` and the two-way binding writes that back to the view model, so mutual exclusion does not have to be implemented by hand.
+- **`TreeView` is single-select, but exclusion works only among nodes whose containers exist.**
+Among nodes with generated containers, selecting another node set `IsSelected` on the previously selected container to `false`, and the two-way binding wrote that back to the view model.
+Selecting, from the view model, a node whose ancestors are collapsed so that it has no container did not trigger that exclusion: two `true` values remained in the view model (see the table below).
+To keep a single selection regardless of containers, set the previous selection to `false` in the view model.
 - **Missing properties on the node type produce binding errors.**
 Setter bindings resolve against the `DataContext` of the container, that is, the data item.
 When levels of the tree use different types, declare `IsSelected` and `IsExpanded` on a shared base class or interface.
@@ -352,6 +353,11 @@ With the `ItemContainerGenerator` approach, `ContainerFromItem` returns `null`, 
 It can be reached by assigning a custom `VirtualizingStackPanel` that exposes `BringIndexIntoView` as the `ItemsPanel` of both the `TreeView` and its `TreeViewItem` containers, realizing each level in turn.
 That comes at the cost of a substantially larger implementation.
 Related interactions between virtualization and selection state are covered in [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/).
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="A table of selection behavior measured with the article's XAML. Selecting Program Files and then Users, both with generated containers, leaves only Users True in the view model. Selecting C: and then drivers, whose ancestors are collapsed so it has no container, leaves both True in the view model with SelectedItem at C:. With IsSelected bound TwoWay, the value source after assigning the container is Style, and setting false from the view model makes the container False too; with OneWay it becomes Local, and the container stays True after the view model sets false. The selected item's background is SystemColors.HighlightColor while it has focus and SystemColors.InactiveSelectionHighlightBrush otherwise." width="967" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with the article's XAML and view model as they are. The background is the <code>Background</code> of <code>Bd</code> in the default template.</figcaption>
+</figure>
 
 ---
 

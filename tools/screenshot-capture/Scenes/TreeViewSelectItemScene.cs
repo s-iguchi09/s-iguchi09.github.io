@@ -48,6 +48,10 @@ internal sealed class TreeViewSelectItemScene : IScene
         "子のコンテナが、親を展開するまで生成されないこと",
         "IsExpanded を true にした直後はまだ生成されておらず、レイアウトが走って初めて取得できること",
         "TreeViewItem.IsSelected を true にすると TreeView.SelectedItem に反映されること",
+        "記事の XAML で、生成済みのコンテナの間では選択が排他になり、ViewModel にも書き戻されること",
+        "コンテナが生成されていないノードとの間では排他にならず、ViewModel に true が 2 つ残ること",
+        "ItemContainerStyle の IsSelected が TwoWay と OneWay のとき、コンテナへ代入した後の値の出どころと、ViewModel から選択を戻したときの反映",
+        "選択中の項目の背景が、SystemColors のどのブラシと一致するか（フォーカスあり・なし）",
     ];
 
     public string Slug => "wpf-treeview-select-item-programmatically";
@@ -86,9 +90,142 @@ internal sealed class TreeViewSelectItemScene : IScene
 
         await context.SaveTableAsync(
             "TreeView selection and container generation",
-            ["what was measured", "result", ""],
+            ["what was measured", "result"],
             await SelectionAndTriggerMeasurements.TreeViewSelectionAsync(),
             "treeview-selection-facts.svg");
+
+        await context.SaveTableAsync(
+            "the article's XAML: exclusivity, value source, and selection color",
+            ["case", "measured"],
+            await BehaviorAsync(),
+            "treeview-selection-behavior.svg");
+    }
+
+    /// <summary>記事の XAML を読み込み、ViewModel を載せて表示したうえで測る。</summary>
+    private static async Task<List<IReadOnlyList<string>>> BehaviorAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        // 生成済みのコンテナの間の排他。C: を展開して、その子 2 つを順に選ぶ。
+        {
+            var content = SceneContext.LoadXaml<DockPanel>(ContentXaml);
+            var viewModel = BuildViewModel(out _);
+            FolderNode root = viewModel.Roots[0];
+            root.IsExpanded = true;
+            FolderNode first = root.Children[0];
+            FolderNode second = root.Children[1];
+            content.DataContext = viewModel;
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    "select 'Program Files', then 'Users' (both generated)",
+                    content,
+                    _ => [$"ViewModel: Program Files {WpfProbe.Describe(first.IsSelected)}, Users {WpfProbe.Describe(second.IsSelected)}"],
+                    Act: async _ =>
+                    {
+                        first.IsSelected = true;
+                        await Task.Delay(50);
+                        second.IsSelected = true;
+                    }),
+            ]));
+        }
+
+        // 生成されていないノードとの間。drivers は祖先が閉じているのでコンテナが無い。
+        {
+            var content = SceneContext.LoadXaml<DockPanel>(ContentXaml);
+            var viewModel = BuildViewModel(out FolderNode hidden);
+            FolderNode root = viewModel.Roots[0];
+            content.DataContext = viewModel;
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    "select 'C:', then 'drivers' (no container yet)",
+                    content,
+                    _ =>
+                    [
+                        $"ViewModel: C: {WpfProbe.Describe(root.IsSelected)}, drivers {WpfProbe.Describe(hidden.IsSelected)}; " +
+                        $"SelectedItem {((content.FindName("Tree") as TreeView)?.SelectedItem as FolderNode)?.Name ?? "null"}",
+                    ],
+                    Act: async _ =>
+                    {
+                        root.IsSelected = true;
+                        await Task.Delay(50);
+                        hidden.IsSelected = true;
+                    }),
+            ]));
+        }
+
+        // TwoWay と OneWay。コンテナへ代入した後の値の出どころと、ViewModel から選択を外したときの反映。
+        foreach (string mode in new[] { "TwoWay", "OneWay" })
+        {
+            var content = SceneContext.LoadXaml<DockPanel>(ContentXaml.Replace("Value=\"{Binding IsSelected, Mode=TwoWay}\"", $"Value=\"{{Binding IsSelected, Mode={mode}}}\""));
+            var viewModel = BuildViewModel(out _);
+            FolderNode root = viewModel.Roots[0];
+            content.DataContext = viewModel;
+            string sourceAfterAssign = "";
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    $"{mode}: assign container.IsSelected, then ViewModel false",
+                    content,
+                    _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        var container = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(root);
+                        return [$"source {sourceAfterAssign}; container.IsSelected {WpfProbe.Describe(container.IsSelected)}"];
+                    },
+                    Act: async _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        var container = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(root);
+                        container.IsSelected = true;
+                        sourceAfterAssign = System.Windows.DependencyPropertyHelper.GetValueSource(container, TreeViewItem.IsSelectedProperty).BaseValueSource.ToString();
+                        await Task.Delay(50);
+                        root.IsSelected = true;
+                        root.IsSelected = false;
+                    }),
+            ]));
+        }
+
+        // 選択中の項目の背景。既定テンプレートの Bd を読み、SystemColors のブラシと比べる。
+        foreach (bool focused in new[] { true, false })
+        {
+            var content = SceneContext.LoadXaml<DockPanel>(ContentXaml);
+            var viewModel = BuildViewModel(out _);
+            FolderNode root = viewModel.Roots[0];
+            var other = new Button { Content = "other" };
+            DockPanel.SetDock(other, Dock.Top);
+            content.Children.Insert(0, other);
+            content.DataContext = viewModel;
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    focused ? "selected background, item focused" : "selected background, focus elsewhere",
+                    content,
+                    _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        var container = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(root);
+                        var border = container.Template.FindName("Bd", container) as Border;
+                        Color? color = (border?.Background as SolidColorBrush)?.Color;
+                        string match =
+                            color == SystemColors.HighlightColor ? "SystemColors.HighlightColor" :
+                            color == SystemColors.InactiveSelectionHighlightBrush.Color ? "SystemColors.InactiveSelectionHighlightBrush" :
+                            color == SystemColors.AccentColor ? "SystemColors.AccentColor" :
+                            "no match";
+                        return [$"{color?.ToString() ?? "null"} = {match}"];
+                    },
+                    Act: async _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        var container = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(root);
+                        root.IsSelected = true;
+                        await DemoProbe.FocusAsync(focused ? container : other);
+                    }),
+            ]));
+        }
+
+        return rows;
     }
 
     /// <summary>
