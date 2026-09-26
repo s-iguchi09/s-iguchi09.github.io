@@ -37,9 +37,9 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 
 複数行の TextBox にも、既定ではスクロールバーは出ません。`VerticalScrollBarVisibility` と `HorizontalScrollBarVisibility` の既定値が `Hidden` のためです。高さ 60 の TextBox に 10 行を入れると内容の高さは 159.6 になりましたが、`VerticalScrollBarVisibility="Auto"` にするまでスクロールバーは出ませんでした。高さを制限しない `StackPanel` の中では、同じ TextBox は高さ 161.6 まで伸びました。メモやコメントの欄には、`AcceptsReturn="True"`・`TextWrapping="Wrap"`・`VerticalScrollBarVisibility="Auto"` を組み合わせます。
 
-`MaxLines` は TextBox が広がる最大の行数で、既定値は `Int32.MaxValue` です。`AcceptsReturn`、`VerticalScrollBarVisibility="Auto"` で 10 行の文字列を入れると、`MaxLines` が 2・4・6 のときの高さは 33.92・65.84・97.77 になり、いずれも縦のスクロールバーが表示されました。
+`MaxLines` は TextBox が広がる最大の行数で、既定値は `Int32.MaxValue` です。ドキュメントによれば、`Height` を明示した TextBox では `MaxLines` も `MinLines` も効きません。ここで測った TextBox には `Height` を指定していません。`AcceptsReturn`、`VerticalScrollBarVisibility="Auto"` で 10 行の文字列を入れると、`MaxLines` が 2・4・6 のときの高さは 33.92・65.84・97.77 になり、いずれも縦のスクロールバーが表示されました。
 
-`MinLines` は TextBox の最小の行数で、既定値は 1 です。.NET 10 では、XAML のように表示前に設定した値は効きませんでした。空の TextBox に `MinLines="4"` を指定しても、高さは 1 行分（17.96）で、1・2・6 を指定した場合と同じでした。表示後に文字列が変わると効き、高さは 4 行分の 65.84 になりました。表示後に `MinLines` を設定するとすぐに効き、XAML で指定していなければ `Loaded` のハンドラーで設定しても効きました。XAML にも `MinLines="4"` があると、`Loaded` で 4 を設定し直しても値は変わらず、高さは 1 行分のままでした。最初の表示で効かせたいなら、XAML では指定せず、読み込み後に設定します。
+`MinLines` は TextBox の最小の行数で、既定値は 1 です。.NET 10 では、XAML のように表示前に設定した値は効きませんでした。空の TextBox に `MinLines="4"` を指定しても、高さは 1 行分（17.96）で、1・2・6 を指定した場合と同じでした。表示後に文字列が変わると効き、高さは 4 行分の 65.84 になりました。表示後に `MinLines` を設定するとすぐに効き、XAML で指定していなければ `Loaded` のハンドラーで設定しても効きました。XAML にも `MinLines="4"` があると、`Loaded` で 4 を設定し直しても値は変わらず、高さは 1 行分のままでした。最初の表示で効かせたいなら、`Height` を明示していない TextBox で、XAML では指定せず、読み込み後に設定します。
 
 `ScrollToEnd()` は、UI スレッドから呼ぶと末尾までスクロールしました（`VerticalOffset` 101.6、スクロールできる高さと同じ）。ワーカースレッドから呼ぶと `InvalidOperationException` が発生しました。別のスレッドから文字列を追加する場合は、`Dispatcher` を通して呼びます。
 

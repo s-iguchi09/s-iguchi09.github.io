@@ -29,7 +29,7 @@ description: "WPF の ComboBox を .NET 10 で実測して解説。編集可能�
 
 ## 一緒に動く ComboBox
 
-`IsSynchronizedWithCurrentItem` は、選択を一覧のビューの現在の項目に合わせます。同じリストの 2 つの ComboBox を `True` にすると、どちらもインデックス 0 で始まり、一緒に動きました。1 つ目を 3 にすると 2 つ目も 3 になりました。未設定では、どちらも -1 で始まり、互いに独立でした。最初の項目を選んだ状態で始まることにもなるので、一覧を連動させたいときだけ設定します。
+`IsSynchronizedWithCurrentItem` は、選択を一覧のビューの現在の項目に合わせます。同じリストの 2 つの ComboBox を `True` にすると、ビューの現在の項目が先頭だったため、どちらもインデックス 0 で始まり、一緒に動きました。1 つ目を 3 にすると 2 つ目も 3 になりました。ビューの現在の項目が別の項目なら、その項目が選ばれます。未設定では、どちらも -1 で始まり、互いに独立でした。新しいビューでは最初の項目を選んだ状態で始まることにもなるので、一覧を連動させたいときだけ設定します。
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg" alt="ComboBox の計測結果の表。既定では編集不可・読み取り専用でなく、StaysOpenOnEdit と ShouldPreserveUserEnteredPrefix は False、文字検索は有効、MaxDropDownHeight 480 は画面の 3 分の 1、IsDropDownOpen は TwoWay なので Enter で閉じるとバインドしたチェックボックスも外れ、SelectedItem は項目のクラスの完全な型名を出し、tue の入力は Tuesday、入力を保つ設定では tuesday に補完され、xyz では選択がなく、IsReadOnly は入力を止めるが Down キーは止めず、一覧の高さは 141.72、デモアプリの値では 100、編集欄の実際のクリックは StaysOpenOnEdit でなければ一覧を閉じ、同期した ComboBox は 0 で始まって一緒に動く" width="1171" height="530" loading="lazy">
