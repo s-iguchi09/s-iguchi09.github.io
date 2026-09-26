@@ -52,7 +52,7 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 
 ![デモアプリの TextBox のページ。左にコントロールの一覧、右に最初の節の Text](/images/wpf-standard-control-demo/textbox.png){: .screenshot-img}
 
-デモアプリの TextBox のページには、`Text`、`TextWrapping`、`TextDecorations`、`TextAlignment`、`MaxLength`、`MaxLines`、`MinLines`、`CharacterCasing` の欄があります。いくつかの欄では 1 つの入力欄の文字列をバインドで複数のテキストボックスに流しており、同じ文字列で設定を比べられます。そのため、`MaxLength="5"` と `MaxLength="10"` の欄には上限を超えた文字列もそのまま表示され、`MinLines` の欄は最初はどれも 1 行の高さで、入力欄に文字を入れると広がります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。次の XAML は、`Text` の欄（`TextBoxUsageControl.xaml`）から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。3 つのテキストボックスが、同じ `TextBlock` へ異なるタイミングで書き込みます。前の 2 つはテキストボックスから離れたときに、3 つ目はキーを押すたびに書き込みます。
+デモアプリの TextBox のページには、`Text`、`TextWrapping`、`TextDecorations`、`TextAlignment`、`MaxLength`、`MaxLines`、`MinLines`、`CharacterCasing` の欄があります。いくつかの欄では 1 つの入力欄の文字列をバインドで複数のテキストボックスに流しており、同じ文字列で設定を比べられます。そのため、`MaxLength="5"` と `MaxLength="10"` の欄には上限を超えた文字列もそのまま表示され、`MinLines` の欄は最初はどれも 1 行の高さで、入力欄に文字を入れると広がります。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。次の XAML は、`Text` の欄（`TextBoxUsageControl.xaml`）から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。`UpdateSourceTrigger` をそれぞれ `Default`・`LostFocus`・`PropertyChanged` にした 3 つのテキストボックスが、同じ `TextBlock` へ異なるタイミングで書き込みます。前の 2 つはテキストボックスから離れたときに、3 つ目はキーを押すたびに書き込みます。
 
 ```xml
 <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
