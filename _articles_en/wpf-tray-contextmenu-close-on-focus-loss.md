@@ -33,11 +33,12 @@ Indeed, the foreground restriction described below prevented a process that had 
 That said, the following points were verified by running them in the environment above.
 
 - The default value of `ContextMenu.StaysOpen` was `true`, both in the dependency property metadata and right after `new`. The [official reference](https://learn.microsoft.com/dotnet/api/system.windows.controls.contextmenu.staysopen) states the default as `false`, which disagrees with the implementation.
-- With another window in the foreground, calling `SetForegroundWindow` on this process's own window returned `false`, and the foreground did not change.
+- With the process's own window already in the foreground, `SetForegroundWindow` returned `true`, and the window stayed in front.
+- With another process's window in the foreground, calling `SetForegroundWindow` on this process's own window returned `false`, and the foreground did not change.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg" alt="A table of ContextMenu.StaysOpen and SetForegroundWindow. The metadata default of ContextMenu.StaysOpen and its value right after new are both True, and the default of Popup.StaysOpen is True as well. With another window in the foreground, SetForegroundWindow called from this process returns False and the foreground does not change." width="1022" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11.</figcaption>
+  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg" alt="A table of ContextMenu.StaysOpen and SetForegroundWindow. The metadata default of ContextMenu.StaysOpen and its value right after new are both True, and the default of Popup.StaysOpen is True as well. With the own window already in front, SetForegroundWindow returns True and it stays in front. With another process in front, it returns False and the foreground does not change." width="810" height="230" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. For the row with another process in front, a helper PowerShell process shows a small form to take the foreground before the call.</figcaption>
 </figure>
 
 Whether the `ContextMenu` itself closes has not been confirmed under automation, for the reason given above.
@@ -128,7 +129,7 @@ This P/Invoke bridge allows the WPF app to coordinate tray menu activation with 
 
 ## Notes
 
-- `SetForegroundWindow` is still subject to Windows foreground restrictions and should not be treated as an unconditional override. In measurement, with another window in the foreground, this process, which had not just received user input, could not raise its own window: the call returned `false` and the foreground did not change (see the table above). A click on the tray icon satisfies one of the conditions for changing the foreground, but **that does not guarantee success**. Calls made from a timer or background work fail more readily. In every case, check the return value and treat `false` as "the menu may not close".  
+- `SetForegroundWindow` is still subject to Windows foreground restrictions and should not be treated as an unconditional override. In measurement, with another process's window in the foreground, this process, which had not just received user input, could not raise its own window: the call returned `false` and the foreground did not change (see the table above). A click on the tray icon satisfies one of the conditions for changing the foreground, but **that does not guarantee success**. Calls made from a timer or background work fail more readily. In every case, check the return value and treat `false` as "the menu may not close".  
 - For mixed `NotifyIcon` + WPF `ContextMenu` implementations, menu operations should remain on the UI thread via `Dispatcher.Invoke`.  
 - `StaysOpen = false` alone may not fully resolve close behavior if the opening window context is not foreground-aligned.  
 - Tray residency decouples window presence from application lifetime, so set `ShutdownMode` to `OnExplicitShutdown` and call `Shutdown()` from the exit menu, since forgetting that call leaves the process running with no window (diagnosis is covered in [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/)).  

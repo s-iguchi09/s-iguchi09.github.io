@@ -22,7 +22,7 @@ internal sealed class TrayContextMenuScene : IScene
     [
         "ContextMenu.StaysOpen の既定値（依存関係プロパティのメタデータと、new した直後の値）",
         "Popup.StaysOpen の既定値（比較のため）",
-        "別のウィンドウが前面のとき、このプロセスから自分のウィンドウへ SetForegroundWindow を呼んだ戻り値と、前面が切り替わったか",
+        "別のプロセスが前面のとき（補助の PowerShell のフォームに前面を渡す）、このプロセスから自分のウィンドウへ SetForegroundWindow を呼んだ戻り値と、前面が切り替わったか",
         "自分のウィンドウが既に前面のときの SetForegroundWindow の戻り値（前面を取れない状況では測れないと記録する）",
     ];
 
@@ -33,6 +33,57 @@ internal sealed class TrayContextMenuScene : IScene
 
     [DllImport("user32.dll")]
     private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+    /// <summary>
+    /// 前面を取る別のプロセス。起動したプロセスが前面にあれば、起動されたプロセスは前面を取れる。
+    /// 小さなフォームを最前面に出して待つだけの PowerShell を使う。
+    /// </summary>
+    private const string ForegroundHelper =
+        "Add-Type -AssemblyName System.Windows.Forms; " +
+        "$f = New-Object System.Windows.Forms.Form; $f.Text = 'foreground helper'; $f.Width = 240; $f.Height = 120; $f.TopMost = $true; " +
+        "$f.Add_Shown({ $f.Activate() }); [System.Windows.Forms.Application]::Run($f)";
+
+    /// <summary>
+    /// 別のプロセスに前面を渡してから、このプロセスの自分のウィンドウへ SetForegroundWindow を呼ぶ。
+    /// 補助のプロセスが前面を取れなかったときは、測れなかったと返す。
+    /// </summary>
+    private static async Task<string> WhileAnotherProcessInFrontAsync(Window window, IntPtr own)
+    {
+        using var helper = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+            "powershell.exe", $"-NoProfile -NonInteractive -Command \"{ForegroundHelper}\"")
+        {
+            UseShellExecute = false,
+        }) ?? throw new InvalidOperationException("補助のプロセスを起動できない。");
+        try
+        {
+            bool helperInFront = false;
+            for (int i = 0; i < 100 && !helperInFront; i++)
+            {
+                await Task.Delay(100);
+                GetWindowThreadProcessId(GetForegroundWindow(), out uint pid);
+                helperInFront = pid == helper.Id;
+            }
+
+            if (!helperInFront)
+            {
+                return "not measured in this run (the helper process could not take the foreground)";
+            }
+
+            bool result = SetForegroundWindow(own);
+            await Capture.SettleAsync(window);
+            return $"returns {WpfProbe.Describe(result)}, foreground switched {WpfProbe.Describe(GetForegroundWindow() == own)}";
+        }
+        finally
+        {
+            if (!helper.HasExited)
+            {
+                helper.Kill(entireProcessTree: true);
+            }
+        }
+    }
 
     public async Task CaptureAsync(SceneContext context)
     {
@@ -49,15 +100,7 @@ internal sealed class TrayContextMenuScene : IScene
             await Capture.ShowAndSettleAsync(window);
             IntPtr own = new WindowInteropHelper(window).Handle;
 
-            IntPtr before = GetForegroundWindow();
-            if (before != own)
-            {
-                bool result = SetForegroundWindow(own);
-                await Capture.SettleAsync(window);
-                bool switched = GetForegroundWindow() == own;
-                rows.Add(["another window in front: SetForegroundWindow(own)", $"returns {WpfProbe.Describe(result)}, foreground switched {WpfProbe.Describe(switched)}"]);
-            }
-
+            // 画面が使えれば、表示した直後の自分のウィンドウは前面にある。消灯中などで前面を取れなければ測れない。
             if (GetForegroundWindow() == own)
             {
                 bool result = SetForegroundWindow(own);
@@ -68,6 +111,8 @@ internal sealed class TrayContextMenuScene : IScene
             {
                 rows.Add(["own window already in front: SetForegroundWindow(own)", "not measured in this run (the window could not take the foreground)"]);
             }
+
+            rows.Add(["another process in front: SetForegroundWindow(own)", await WhileAnotherProcessInFrontAsync(window, own)]);
         }
         finally
         {

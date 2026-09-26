@@ -32,11 +32,12 @@ excerpt: "TreePaste の開発で発生した、タスクトレイから表示し
 そのうえで、次の点は上記の環境で実際に動かして確認した。
 
 - `ContextMenu.StaysOpen` の既定値は、依存関係プロパティのメタデータでも、`new` した直後の値でも `true` だった。[公式リファレンス](https://learn.microsoft.com/dotnet/api/system.windows.controls.contextmenu.staysopen)は既定値を `false` としており、実装と食い違っている。
-- 別のウィンドウが前面にある状態で、このプロセスから自分のウィンドウへ `SetForegroundWindow` を呼ぶと `false` が返り、前面は切り替わらなかった。
+- 自分のウィンドウが既に前面にあるときに `SetForegroundWindow` を呼ぶと `true` が返り、前面のままだった。
+- 別のプロセスのウィンドウが前面にある状態で、このプロセスから自分のウィンドウへ `SetForegroundWindow` を呼ぶと `false` が返り、前面は切り替わらなかった。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg" alt="ContextMenu.StaysOpen と SetForegroundWindow を測った表。ContextMenu.StaysOpen のメタデータの既定値と new した直後の値はどちらも True、Popup.StaysOpen の既定値も True。別のウィンドウが前面のとき、このプロセスから SetForegroundWindow を呼ぶと False を返し、前面は切り替わらない。" width="1022" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。</figcaption>
+  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg" alt="ContextMenu.StaysOpen と SetForegroundWindow を測った表。ContextMenu.StaysOpen のメタデータの既定値と new した直後の値はどちらも True、Popup.StaysOpen の既定値も True。自分のウィンドウが既に前面のときの SetForegroundWindow は True を返し、前面のまま。別のプロセスが前面のときは False を返し、前面は切り替わらない。" width="810" height="230" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。別のプロセスが前面の行は、補助の PowerShell のプロセスに小さなフォームを出させて前面を渡し、そのあとで呼んだ結果である。</figcaption>
 </figure>
 
 `ContextMenu` が閉じるかどうかそのものは、上記の理由から自動化して確認できていない。
@@ -126,7 +127,7 @@ Win32 API の P/Invoke 定義を追加しておくことで、WPF アプリ側�
 
 ## 注意点
 
-- `SetForegroundWindow` は OS のフォアグラウンド制御制約を受けるため、常に完全な制御を保証するものではない。実測では、別のウィンドウが前面にある状態で、直前にユーザー入力を受けていないこのプロセスから自分のウィンドウを前面化しようとすると `false` が返り、前面は切り替わらなかった（前掲の表）。トレイアイコンのクリック直後は許可条件の 1 つを満たすが、**それで成功が保証されるわけではない**。タイマーやバックグラウンド処理から呼ぶ場合はより失敗しやすい。いずれの場合も戻り値を確認し、`false` のときはメニューが閉じない可能性があるものとして扱う。
+- `SetForegroundWindow` は OS のフォアグラウンド制御制約を受けるため、常に完全な制御を保証するものではない。実測では、別のプロセスのウィンドウが前面にある状態で、直前にユーザー入力を受けていないこのプロセスから自分のウィンドウを前面化しようとすると `false` が返り、前面は切り替わらなかった（前掲の表）。トレイアイコンのクリック直後は許可条件の 1 つを満たすが、**それで成功が保証されるわけではない**。タイマーやバックグラウンド処理から呼ぶ場合はより失敗しやすい。いずれの場合も戻り値を確認し、`false` のときはメニューが閉じない可能性があるものとして扱う。
 - `NotifyIcon` と WPF `ContextMenu` を混在させる実装では、UI スレッド上でメニュー操作を行うため `Dispatcher.Invoke` を維持する。
 - `StaysOpen = false` を設定しても、表示元の状態が不整合なままでは期待どおりに閉じないケースがある。
 - タスクトレイ常駐はウィンドウの有無と寿命が一致しないため、`ShutdownMode` を `OnExplicitShutdown` にしたうえで終了メニューから `Shutdown()` を呼ぶ（呼び忘れるとウィンドウが無いままプロセスが残る。切り分けは[WPF でウィンドウを閉じてもプロセスが終了しない原因の切り分けと ShutdownMode・フォアグラウンドスレッドの扱い](/ja/articles/wpf-application-not-exiting-shutdownmode-threads/)で扱っている）。
