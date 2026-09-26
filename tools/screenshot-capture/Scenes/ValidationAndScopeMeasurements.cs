@@ -50,7 +50,7 @@ internal static class ValidationAndScopeMeasurements
             rows.AddRange(await WpfProbe.MeasureAsync(
             [
                 new WpfProbe.Case(
-                    background ? "ErrorsChanged raised on a background thread (Task.Run)" : "ErrorsChanged raised on the UI thread",
+                    background ? "ErrorsChanged raised on a background thread" : "ErrorsChanged raised on the UI thread",
                     box,
                     _ =>
                     [

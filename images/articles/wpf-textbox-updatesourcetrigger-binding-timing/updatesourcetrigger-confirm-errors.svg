@@ -17,7 +17,7 @@
   <text class="cell" x="996" y="87.5" text-anchor="end">in Click: UserName = suzuki, TextBox focused True</text>
   <text class="cell" x="26" y="117.5">ErrorsChanged raised on the UI thread</text>
   <text class="cell" x="996" y="117.5" text-anchor="end">Validation.HasError True (raised on thread UI)</text>
-  <text class="cell" x="26" y="147.5">ErrorsChanged raised on a background thread (Task.Run)</text>
+  <text class="cell" x="26" y="147.5">ErrorsChanged raised on a background thread</text>
   <text class="cell" x="996" y="147.5" text-anchor="end">Validation.HasError True (raised on thread other than UI)</text>
   <line class="line" x1="12" y1="38" x2="1010" y2="38" />
   <line class="line" x1="12" y1="68" x2="1010" y2="68" />

@@ -19,7 +19,7 @@ image: /images/articles/wpf-validation-error-not-displayed/validation-error-disp
 
 本記事では、エラーが表示されない原因をこの 3 段階に分解して切り分け、`ValidationRule` / `IDataErrorInfo` / `INotifyDataErrorInfo` および例外・型変換による検証の使い分けを整理する。
 3 段階がすべて成立していても、既定の `ErrorTemplate` の仕様によりメッセージだけが出ないという症状も併せて扱う。
-記載した挙動・既定値は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である。
+記載した挙動・既定値は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である（注意点の挙動は、その末尾の表にまとめた）。
 
 ---
 
@@ -202,6 +202,7 @@ WPF の入力検証は、次の 3 段階が独立して成立して初めて画�
 後者は ViewModel の `ErrorsChanged` に追随するが、この構成でそのイベントを起こすのはプロパティの setter であり、setter を呼ぶのがソース更新だからである。
 `UpdateSourceTrigger=Explicit` の場合はさらに顕著で、同じ構成では `UpdateSource` を呼ぶまで検証結果が変化しなかった。
 逆に、`ErrorsChanged` をソース更新とは独立に発生させる構成、たとえば非同期の照会が完了した時点で通知する実装は、この制約を受けない。
+入力の途中で検証結果を出したい場合は、対象の `TextBox.Text` バインディングに `UpdateSourceTrigger=PropertyChanged` を指定する。
 
 ---
 
@@ -221,8 +222,6 @@ WPF の入力検証は、次の 3 段階が独立して成立して初めて画�
 
 最終行が段階 3 だけで止まった状態である。`HasError` は `True`、`Errors` は 1 件のまま、アドーナーだけが 0 になっている。
 **エラーは保持されているのに描かれない。** 「値は不正なのに赤枠が出ない」という症状は、この行に当たる。
-
-この段階の手前を解消するには、入力の途中で結果を出すなら、対象の `TextBox.Text` バインディングに `UpdateSourceTrigger=PropertyChanged` を指定する。
 
 ---
 
@@ -384,13 +383,14 @@ XAML 側では、メッセージを描く `ErrorTemplate` を定義して `Style
 表示自体は正しく消えるため見落としやすい。
 現在の項目を指す `/ErrorContent` に書き換えると、同じ表示のままトレースが出なくなる。
 出力ウィンドウのメッセージの読み方は [WPF バインディングエラーの読み方と出力ウィンドウを使った原因特定](/ja/articles/wpf-binding-error-debugging-output-window/) で扱っている。
-- **`Mode=OneWay` ではユーザーの入力が検証されず、一度出た赤枠が消えない。**
+- **`Mode=OneWay` ではユーザーの入力が検証されず、一度出た赤枠は入力では消えない。**
 `OneWay` にはターゲットからソースへの転送が無いため、入力内容は検証対象にならない。
 ただし「検証が一切走らない」わけではない。
 前述の `ValidatesOnTargetUpdated` により、実測では `OneWay` でもバインディングの確立時とソース側のプロパティ更新時に評価され、無効な値であれば赤枠が出た。
 問題は、この赤枠がユーザーの操作では消えないことである。
 実測でも、`OneWay` の `TextBox` へ有効な文字列を入力しても `Validation.HasError` は `true` のままであった。
-表示専用のつもりで `OneWay` にした入力欄が、恒久的にエラー表示のまま残ることになる。
+ソース側の値を有効な値に変えると、ターゲットの更新で再評価されて赤枠は消えた。
+表示専用のつもりで `OneWay` にした入力欄は、ソースが変わるまでエラー表示のまま残る。
 - **`OneWay` バインディングのターゲットへコードから代入するとバインディングが外れる。**
 実測では、`TextBox.Text` へコードから直接代入すると `BindingOperations.GetBinding` が `null` を返し、赤枠も消えた。
 `OneTime` でも同じである。
@@ -398,9 +398,9 @@ XAML 側では、メッセージを描く `ErrorTemplate` を定義して `Style
 - **`ErrorsChanged` のプロパティ名がバインディングのパスと一致しないと表示されない。**
 `Name` にバインドしている状態で、誤って `Namee` を指定して `ErrorsChanged` を発生させたところ、`HasErrors` が `true` であるにもかかわらず `Validation.HasError` は `false` のままであった。
 `nameof` を使い、文字列リテラルを避けることで防げる。
-- **非同期に確定した検証結果は UI スレッドで反映する。**
-バインディングエンジンは `ErrorsChanged` を購読して `Validation.Errors` を更新するため、この通知は UI スレッドで発生させる必要がある。
-バックグラウンドの処理で結果が確定する構成では、`errors` の書き換えと 2 つの通知を含む `SetErrors` の呼び出し全体を `Dispatcher` 経由で UI スレッドへ移す。
+- **`ErrorsChanged` はバックグラウンドのスレッドから発生させても反映された。**
+バインディングエンジンは `ErrorsChanged` を購読して `Validation.Errors` を更新する。実測では、`Task.Run` の中から発生させても `Validation.HasError` は `true` になった。
+ただし、`errors` を UI スレッドとバックグラウンドのスレッドの両方から読み書きする構成では、その同期は ViewModel 側で行う。
 - **`Validation.Error` 添付イベントは既定では発生しない。**
 エラーを画面表示以外の経路（ログ・集計・画面遷移の抑止など）で拾う場合、`Binding.NotifyOnValidationError` を `True` にする必要がある。
 既定は `False` であり、指定しなければハンドラーは一度も呼ばれない。
@@ -423,6 +423,11 @@ XAML 側では、メッセージを描く `ErrorTemplate` を定義して `Style
 入力中に結果を出すか、フォーカスが外れてから出すかは、表示の好みではなく更新タイミングの設計そのものである。
 各値の違いは [WPF TextBox の UpdateSourceTrigger で入力がソースへ反映されるタイミングを制御する](/ja/articles/wpf-textbox-updatesourcetrigger-binding-timing/) で扱っている。
 `Explicit` を選んだ場合に View 側から更新を指示する実装は [WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/) で扱っている。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-validation-error-not-displayed/validation-pitfalls.svg" alt="注意点の挙動を測った表。setter で検証する INotifyDataErrorInfo は、LostFocus では入力で空にしても HasError は False のままで、フォーカスが外れると True になる。Explicit ではフォーカスが外れても False で、UpdateSource で True になる。OneWay と検証ルールでは、開始時に True、入力しても True、ソースを直すと False。OneWay と OneTime でコードから代入するとバインドが外れて False、SetCurrentValue ではバインドが残って True。ErrorsChanged を Namee で通知すると HasErrors は True でも Validation.HasError は False、Name なら True。Validation.Error は NotifyOnValidationError が False なら 0 回、True なら 2 回。Validation.Errors の先頭要素を添字で指す ErrorContent のバインドはエラーの解消時に Error 17 を 1 回出し、現在の項目を指す /ErrorContent は 0 回。ErrorsChanged は UI スレッドからでもバックグラウンドのスレッドからでも True になる。" width="1218" height="500" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。入力とキー操作は WPF の入力処理（<code>InputManager</code>）を通して送った。<code>Error 17</code> は、データバインドのトレースに記録された件数である。</figcaption>
+</figure>
 
 ---
 
