@@ -115,7 +115,7 @@ The separate problem of underscores disappearing from the display is covered in 
 
 Everything above compares elements placed directly in a `StackPanel`, without virtualization.
 An `ItemsControl` with UI virtualization changes the premise.
-Only the containers within the visible range are realized, so the number of simultaneously live visuals stays constant no matter how large the collection grows.
+Only the containers within the visible range and the cache area before and after it, set by [`VirtualizingPanel.CacheLength`](https://learn.microsoft.com/dotnet/api/system.windows.controls.virtualizingpanel.cachelength), are realized, so the number of simultaneously live visuals stays constant no matter how large the collection grows.
 
 Binding 10,000 items to a virtualized `ListBox` and swapping only the contents of `ItemTemplate` gives the following.
 
