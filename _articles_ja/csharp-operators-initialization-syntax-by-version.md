@@ -25,7 +25,7 @@ excerpt: ".NET Framework 環境では ??= などの C# 新構文が使用でき�
 `LangVersion` を下げながら `net10.0` へコンパイルして構文が受け付けられる下限を求め、`net48` へコンパイルして BCL 側の型が足りるかどうかを確かめている。
 `^` と `..` については、`net48` 上で実行して戻り値も確認した。
 
-その結果、**ドキュメントの記述だけでは分からない差異が 3 点見つかっている**。いずれも本文中で該当箇所に記す。
+その結果、**ドキュメントの記述だけでは分からない点が見つかっている**。`init` が純粋な言語機能ではないこと、`with` が BCL の型を要するかが対象の型で決まること、`required` が `init` と `set` で要る属性が異なることである。いずれも表の注記 †3〜†5 で説明する。
 
 ---
 
@@ -50,7 +50,7 @@ public void AddNumber(int val)
 ## 原因・背景
 
 C# の言語バージョンはターゲットフレームワークとは独立しており、利用可否は主に (1) コンパイラ／`LangVersion` と、(2) 機能が要求するランタイム側の型・API の有無で決まる。
-そのため .NET Framework をターゲットとしていても、ビルド環境が C# 8.0 に対応していれば `??=` や `!` のような言語機能は使用できる。
+そのため .NET Framework をターゲットとしていても、`LangVersion` を 8.0 以上に設定すれば `??=` や `!` のような言語機能は使用できる。コンパイラを新しくするだけでは、.NET Framework の既定の C# 7.3 のままである（†1 を参照）。
 
 以下に、本記事で取り上げる演算子・構文と導入された C# バージョンの対応表を示す。
 導入時期を時系列で見ると次のようになる。
@@ -76,10 +76,10 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 | `..`（範囲） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `init` アクセサ | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
 | `with`（record クラス） | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
-| `with`（struct / record struct） | C# 10.0 | .NET 6 | ✅ 言語機能のみ（†1・†5） |
+| `with`（可変な struct / 位置指定の record struct） | C# 10.0 | .NET 6 | ✅ 言語機能のみ（†1・†5） |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ 言語機能のみ（†1） |
 | `required` プロパティ | C# 11.0 | .NET 7 | ⚠️ BCL 属性が必要（†4） |
-| コレクション式 | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
+| コレクション式 | C# 12.0 | .NET 8 | ✅ 配列と `List<T>` は言語機能のみ（†1）。Span 系は `System.Memory` が必要 |
 | プライマリコンストラクタ | C# 12.0 | .NET 8 | ✅ 言語機能のみ（†1） |
 
 - **†1**: 純粋な言語機能。`LangVersion` を対応する C# バージョンに設定すれば .NET Framework 上でも使用できる。**SDK や Visual Studio を更新するだけでは足りない。** .NET Framework をターゲットにしたプロジェクトの既定は C# 7.3 のままであり、更新によって自動的に上がることはない（`.csproj` の `LangVersion` を明示する）。
@@ -98,14 +98,14 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="693" height="590" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、位置指定の record struct への with は OK。a[^1]、a[1..3]、init、readonly record struct への with、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="717" height="620" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
 読み取れることは 4 点ある。
 
 **1. `??=` や `!` は `LangVersion` を上げるだけで .NET Framework でも使える。**
-Target-typed `new`、コレクション式、プライマリコンストラクタも同様である。
+Target-typed `new`、プライマリコンストラクタ、配列や `List<T>` を作るコレクション式も同様である。
 これらは記事冒頭の問題（`??=` が使えない）に対して、`LangVersion` の引き上げだけで解決できることを意味する。
 
 **2. `init` と、`init` を持つ型への `with` は `LangVersion` を上げても通らない。**
@@ -313,7 +313,7 @@ error CS0656: コンパイラが必要とするメンバー
 
 #### 自前定義の注意点
 
-- `RuntimeHelpers` は `mscorlib` にも同名の型が存在する。自プロジェクトで定義すると、そのプロジェクト内ではこちらが優先される。`RuntimeHelpers` の他のメンバー（`InitializeArray` など）を使っている場合は、そちらも自前の型へ実装する必要がある。**完全修飾名で書いても BCL 側は呼べない**（`System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray` と書いてもローカル型が優先され、`CS0117` になる。`net48` で確認した）。実装を足したくない場合は、配列スライスのポリフィルを使わず `Skip` / `Take` などで代替する。
+- `RuntimeHelpers` は `mscorlib` にも同名の型が存在する。自プロジェクトで定義すると、そのプロジェクト内ではこちらが優先される。`RuntimeHelpers` の他のメンバーは、自分で呼ぶ場合だけでなく、コンパイラが生成するコードが呼ぶ場合にも失われる。この型を置いた `net48` のプロジェクトでは、`fixed (char* p = "abc")` が `CS0656` になった。文字列の `fixed` にはコンパイラが `RuntimeHelpers.OffsetToStringData` を呼ぶためである。プロジェクトが必要とするメンバーは、すべて自前の型へ実装する必要がある。**完全修飾名で書いても BCL 側は呼べない**（`System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray` と書いてもローカル型が優先され、`CS0117` になる。`net48` で確認した）。実装を足したくない場合は、配列スライスのポリフィルを使わず `Skip` / `Take` などで代替する。
 - いずれの型も `internal` で定義する。`public` にすると、そのアセンブリを参照する側と型が衝突しうる。
 - ターゲットを .NET 5 以降へ移行した際は、これらの定義を削除する。BCL 側の型と重複すると、自プロジェクトの定義が優先されて意図しない挙動になりうる。
 
@@ -385,7 +385,7 @@ string? rawInput = GetValidatedInput();
 string solidInput = rawInput!;
 ```
 
-`!` を使用すると `null` チェックが省略されるため、実際に `null` が渡された場合は実行時例外が発生する。
+`!` はコンパイラの null 解析の警告を抑えるだけで、実行時のチェックは元から無い。実際に `null` が渡されると、`!` の時点ではなく、後でその値を参照したときに例外になり得る。
 静的分析への過信は危険であり、使用箇所を最小限に抑えることが望ましい。
 
 ---
@@ -502,7 +502,7 @@ public void UpdateText(string? newText)
 既存の `record` または構造体をベースに、一部のプロパティのみを変更した新しいコピーを生成する。
 元のインスタンス自体は変更されない。
 
-ただし、生成されるのは**浅いコピー**である。アクセス可能なインスタンスのプロパティまたはフィールドだけが複製され、参照型のメンバーは参照先を共有する。
+ただし、生成されるのは**浅いコピー**である。private も含めたすべてのインスタンスフィールドが複製され（`net48` で、record の private フィールドの値が `with` の後も保たれた）、参照型のメンバーは参照先を共有する。
 コピー側からネストした可変オブジェクトを書き換えると、元のインスタンスからもその変更が見える。
 
 ```csharp
@@ -556,7 +556,7 @@ public class Example
 ```csharp
 int[] row = [1, 2, 3];                     // 配列
 List<string> tags = ["C#", "WPF", ".NET"]; // List<T>
-ReadOnlySpan<byte> data = [0x00, 0x01];    // Span<T>
+ReadOnlySpan<byte> data = [0x00, 0x01];    // Span<T>（.NET Framework では System.Memory パッケージが必要）
 ```
 
 コレクション式の中では `..` スプレッド演算子を使用して、別のコレクションの要素をフラットに展開して結合できる。
@@ -606,6 +606,8 @@ C# 12 から `class` や `struct` でもクラス名の後ろに直接コンス�
 コンストラクタ本体の記述や、引数をプライベートフィールドに代入するだけの定型コードが不要になる。
 
 ```csharp
+public enum LogLevel { Debug, Info, Warning, Error }
+
 public class LogWriter(string logFilePath, LogLevel minimumLevel)
 {
     // 引数はクラス内の全メンバーから直接参照できる
@@ -628,8 +630,8 @@ public class LogWriter(string logFilePath, LogLevel minimumLevel)
 
 - .NET Framework をターゲットにする場合でも、`??=` や `!` のような言語機能はビルド環境（コンパイラ／`LangVersion`）が対応していれば使用できる。一方 `^` / `..`（Index / Range）は必要な型・API（`System.Index` / `System.Range` など）の有無に依存するため、追加参照／ポリフィルが必要になるか、利用できない場合がある。
 - `!`（null 免除演算子）はコンパイル時の警告を抑制するだけであり、実行時の `null` チェックを行わない。
-  使用した箇所で `null` が渡された場合は `NullReferenceException` が発生するため、使用箇所を最小限に抑える。
-- Target-typed `new`、コレクション式、プライマリコンストラクタは純粋な言語機能であり、`LangVersion` を対応バージョンに設定すれば .NET Framework 上でも使用できる（`net48` で確認済み）。一方 **`init` は純粋な言語機能ではない**。`init` を持つ型への `with` も同様である。`IsExternalInit` を必要とするため、`LangVersion` を上げただけでは .NET Framework でコンパイルできない。可変な `struct` と positional の `record struct` への `with` は、通常のセッターを生成するためそのまま通る。`required` はさらに `RequiredMemberAttribute` と `CompilerFeatureRequiredAttribute` を要する。
+  使用した箇所に実際に `null` が渡されると、後でその値を参照したときに `NullReferenceException` が発生し得るため、使用箇所を最小限に抑える。
+- Target-typed `new`、プライマリコンストラクタ、配列や `List<T>` を作るコレクション式は純粋な言語機能であり、`LangVersion` を対応バージョンに設定すれば .NET Framework 上でも使用できる（`net48` で確認済み）。`ReadOnlySpan<T>` へのコレクション式は、`System.Memory` パッケージが無いと型そのものが無いため、`net48` では `CS0246` になった。一方 **`init` は純粋な言語機能ではない**。`init` を持つ型への `with` も同様である。`IsExternalInit` を必要とするため、`LangVersion` を上げただけでは .NET Framework でコンパイルできない。可変な `struct` と positional の `record struct` への `with` は、通常のセッターを生成するためそのまま通る。`required` はさらに `RequiredMemberAttribute` と `CompilerFeatureRequiredAttribute` を要する。
 - コレクション式の `..` スプレッド演算子は、C# 8.0 の範囲演算子 `..` と同じ記号を使用するが、用途が異なる（コレクション式の中での要素展開）。
 
 ---
@@ -641,7 +643,7 @@ C# 新構文でコンパイルエラーが発生した場合の対処を比較�
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
 | `LangVersion` を引き上げる | 新構文をそのまま使用できる。コードの簡潔さが維持される。 | ビルド環境（VS / SDK）のアップデートが必要。 | 開発環境を更新できる場合。長期的に保守するプロジェクト。 |
-| ビルド環境（VS / .NET SDK）を更新する | 最新の言語機能・ツールサポートを得られる。 | 既存プロジェクトへの影響範囲が広い場合がある。 | 新規または移行可能なプロジェクト。 |
+| ビルド環境（VS / .NET SDK）を更新する | 最新の言語機能（`LangVersion` の引き上げと併せて）・ツールサポートを得られる。 | 既存プロジェクトへの影響範囲が広い場合がある。 | 新規または移行可能なプロジェクト。 |
 | 旧構文に書き換える | 環境を一切変更せずに対応できる。 | コードが冗長になる。新機能の恩恵を受けられない。 | レガシー環境で環境変更が許可されない場合。 |
 | 不足する型を自前で定義する | `^` / `..` / `init` / `with` / `required` を .NET Framework で使用できる。追加パッケージが要らない。 | 定義の管理が必要。.NET 5 以降へ移行する際は削除する。`RuntimeHelpers` は BCL の同名型を隠す。 | BCL 型が不足する構文を .NET Framework で利用したい場合。 |
 | `Microsoft.Bcl.Memory` を参照する | `Index` / `Range` 型が使えるようになる。.NET Framework 4.6.2 以降で推奨されるパッケージである。 | 配列のスライス `a[1..3]` に必要な `GetSubArray` の扱いは別途確かめる必要がある。 | 新規に NuGet で補う場合。 |
@@ -656,13 +658,13 @@ C# の演算子と初期化構文は言語バージョンとともに段階的�
 環境ごとの選択基準は以下のとおりである。
 
 - **.NET Framework 環境（コンパイラを更新しない場合）**：`??`（C# 2.0）、`?.`（C# 6.0）、`nameof`（C# 6.0）、`is` パターンマッチング（C# 7.0）が上限の目安となる。`^1` は `array[array.Length - 1]` に、`..` は LINQ に置き換えて対処する。
-- **.NET Framework 環境（LangVersion を引き上げた場合）**：`??=`、`!`、Target-typed `new`、コレクション式、プライマリコンストラクタが追加で利用可能になる（`net48` で確認済み）。一方 `^` / `..` / `init` / `with` / `required` は BCL 側の型が不足するため、自前定義するまで使えない。
-- **.NET 5〜6（C# 9〜10）**：BCL 型も含めてすべての C# 9〜10 機能が使用可能になる。
+- **.NET Framework 環境（LangVersion を引き上げた場合）**：`??=`、`!`、Target-typed `new`、配列や `List<T>` を作るコレクション式、プライマリコンストラクタ、可変な `struct` と位置指定の `record struct` への `with` が追加で利用可能になる（`net48` で確認済み）。一方 `^` / `..` / `init` / `init` を持つ型（`record` クラスや `readonly record struct`）への `with` / `required` は BCL 側の型が不足するため、自前定義するまで使えない。
+- **.NET 5〜6（C# 9〜10）**：本記事で扱う C# 9〜10 の機能は、必要な BCL 型も含めて使用可能になる。
 - **.NET 7（C# 11）以降**：`required` プロパティが利用可能になる。
 - **.NET 8（C# 12）以降**：コレクション式、プライマリコンストラクタが利用可能になる。
 
 実際に `net48` へコンパイルして確かめたところ、**「純粋な言語機能かどうか」は構文の見た目からは判断できない**ことが分かった。
-`with` は演算子のように見えるが `IsExternalInit` を要し、逆にプライマリコンストラクタやコレクション式のような大きな構文追加が BCL 型を要さない。
+`with` は演算子のように見えるが、`init` を持つ型に対しては `IsExternalInit` を要し、逆にプライマリコンストラクタやコレクション式のような大きな構文追加が BCL 型を要さない。
 
 したがって、`LangVersion` を上げれば済むのか、型を補う必要があるのかは、**対象フレームワークへ実際にコンパイルして確認する**のが確実である。
 不足する型はコンパイラが `CS0518` / `CS0656` で名指しするため、そのまま自前定義すればよい。

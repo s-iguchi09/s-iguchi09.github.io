@@ -10,7 +10,7 @@ image: /images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-
 ## 概要
 
 WPF のリソース参照には `StaticResource` と `DynamicResource` の2種類がある。
-`StaticResource` で定義したリソースをコードから変更しても画面が更新されない場合、その原因はリソースを評価するタイミングの違いにある。
+`StaticResource` で参照したリソースを、コードから別のオブジェクトに差し替えても画面が更新されない場合、その原因はリソースを評価するタイミングの違いにある。
 本記事では、両者の内部動作の違いを解説し、用途に応じた選択基準を整理する。
 
 ---
@@ -38,11 +38,14 @@ WPF のリソース参照には `StaticResource` と `DynamicResource` の2種�
 たとえば、以下のように `Window.Resources` に定義した `SolidColorBrush` をコードから差し替えても、ボタンの背景色は変化しない。
 
 ```xml
-<Window.Resources>
-    <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
+    </Window.Resources>
 
-<Button Background="{StaticResource ThemeColor}" Content="ボタン" />
+    <Button Background="{StaticResource ThemeColor}" Content="ボタン" />
+</Window>
 ```
 
 ```csharp
@@ -66,7 +69,8 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 ### StaticResource の動作
 
 `StaticResource` は XAML が解析（ロード）される瞬間に一度だけリソースを検索し、見つかった値をコントロールのプロパティに直接セットする。
-値のセット後は参照関係が存在しないため、リソースの内容を変更しても WPF はそれを検知せず、プロパティは変化しない。
+値のセット後はリソースのキーとの関係が残らないため、リソースディクショナリのエントリを別のオブジェクトに差し替えても、WPF はそれを検知せず、プロパティは変化しない。
+ただし、プロパティにセットされたのはブラシなどのオブジェクトそのものである。Freeze されていない同じブラシの `Color` を書き換えた場合は、`StaticResource` 側の表示も変わる（下の表の最後の 2 行）。
 
 また、XAML は上から順番に解析されるため、`StaticResource` で参照するリソースは参照元より**前**の行で定義されている必要がある。
 定義順が守られていない場合、`XamlParseException` が発生する。
@@ -79,7 +83,8 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 | 比較項目 | StaticResource | DynamicResource |
 | --- | --- | --- |
 | 評価タイミング | XAML ロード時（一度のみ） | ロード時 ＋ 変更検知のたびに再評価 |
-| 実行時の変更 | 反映されない | 即座に反映される |
+| 実行時にエントリを差し替える | 反映されない | 即座に反映される |
+| 実行時に同じブラシ（Freeze していない）を変更する | 反映される | 反映される |
 | リソースの定義順 | 参照元より前に定義が必要 | 前後どちらでも可 |
 | パフォーマンス | 高速 | 監視オーバーヘッドあり |
 
@@ -88,8 +93,8 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 この違いは、実行中にリソースを差し替えてプロパティを読めば確かめられる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="リソースを白から赤へ差し替える前後の Border.Background を測った表。StaticResource は差し替え前後とも白のまま。DynamicResource は差し替え前が白、差し替え後は赤になる。" width="433" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、同じキー <code>PanelBrush</code> の値を実行中に白から赤へ差し替え、その前後で <code>Border.Background</code> を読んだ結果。参照の書き方以外の条件は同一である。</figcaption>
+  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="リソースを白から赤へ変える前後の Border.Background を測った表。エントリを差し替えると、StaticResource は白のまま、DynamicResource は赤になる。エントリを差し替えずに同じブラシの Color を赤に書き換えると、Freeze されていないブラシでは StaticResource も DynamicResource も赤になる。" width="637" height="260" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、同じキー <code>PanelBrush</code> のエントリを実行中に白から赤のブラシへ差し替えた場合と、エントリを差し替えずに同じブラシの <code>Color</code> を赤に書き換えた場合に、<code>Border.Background</code> を読んだ結果。参照の書き方と変え方以外の条件は同一である。</figcaption>
 </figure>
 
 差し替え前は両者とも同じ値である。差が出るのは差し替えた後だけであり、`StaticResource` 側は白のまま変わらない。
@@ -106,17 +111,21 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 
 ### DynamicResource による動的テーマ切り替え
 
-以下の例では、ボタンのクリック時にリソースディクショナリのブラシを差し替え、画面全体の配色を切り替える。
+以下の例では、ボタンのクリック時にリソースディクショナリのブラシを差し替え、対象ボタンの背景色を切り替える。
 
 ```xml
-<Window.Resources>
-    <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
-</Window.Resources>
+<Window x:Class="SampleApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
+    </Window.Resources>
 
-<StackPanel>
-    <Button Background="{DynamicResource ThemeColor}" Content="対象ボタン" />
-    <Button Content="テーマ切り替え" Click="OnThemeToggleClick" />
-</StackPanel>
+    <StackPanel>
+        <Button Background="{DynamicResource ThemeColor}" Content="対象ボタン" />
+        <Button Content="テーマ切り替え" Click="OnThemeToggleClick" />
+    </StackPanel>
+</Window>
 ```
 
 ```csharp
@@ -140,7 +149,8 @@ private void OnThemeToggleClick(object sender, RoutedEventArgs e)
 テーマファイルの例（`Themes/Light.xaml`）：
 
 ```xml
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="Background" Color="White" />
     <SolidColorBrush x:Key="Foreground" Color="Black" />
 </ResourceDictionary>
@@ -149,7 +159,8 @@ private void OnThemeToggleClick(object sender, RoutedEventArgs e)
 テーマファイルの例（`Themes/Dark.xaml`）：
 
 ```xml
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="Background" Color="#1E1E1E" />
     <SolidColorBrush x:Key="Foreground" Color="White" />
 </ResourceDictionary>
@@ -199,7 +210,7 @@ private void SwitchTheme(string themeName)
 
 ## まとめ
 
-`StaticResource` は XAML ロード時に値を確定するため、実行後のリソース変更は画面に反映されない。
+`StaticResource` は XAML ロード時に値を確定するため、実行後にリソースのエントリを差し替えても画面に反映されない。
 実行中に変更を反映させる必要がある場合は `DynamicResource` を使用する。
 
 選択の基準は次のとおりである。

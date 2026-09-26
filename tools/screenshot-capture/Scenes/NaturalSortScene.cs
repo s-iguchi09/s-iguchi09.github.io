@@ -54,6 +54,12 @@ internal sealed class NaturalSortScene : IScene
             ["pair", "StrCmpLogicalW", "CompareOrdinal"],
             FormatAndSortMeasurements.LogicalComparisons(),
             "natural-sort-pairs.svg");
+
+        await context.SaveTableAsync(
+            "raw return value with null arguments",
+            ["pair", "StrCmpLogicalW"],
+            FormatAndSortMeasurements.NullComparisons(),
+            "natural-sort-null.svg");
     }
 
     private static UIElement BuildList(IEnumerable<string> items) => new ListBox

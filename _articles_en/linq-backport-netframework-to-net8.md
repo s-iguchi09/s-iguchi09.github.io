@@ -192,10 +192,10 @@ This polyfill is safe because the first (extended) parameter type partitions the
 For any polyfill that adds signatures to an existing method, the first thing to verify is that the new signatures match none of the existing call shapes.
 If that property does not hold, code may compile while silently binding to an unintended overload.
 
-### Decision 2: Pinning Resolution with the Named Argument `comparer:`
+### Decision 2: Stating the Target Overload with the Named Argument `comparer:`
 
 The parameterless overloads delegate to the comparer overloads by passing `null`.
-Writing that plainly as `source.ToDictionary(null)` is ambiguous: the `null` literal converts both to `IEqualityComparer<TKey>` and to `Func<...>`, leaving the compiler multiple candidates.
+Writing that plainly as `source.ToDictionary(null)` is not ambiguous: the overloads that take a `Func<...>` cannot infer their type arguments from `null` and drop out. With `comparer: null` replaced by `null`, the article's polyfill still compiled on net48 and called the comparer overload. The named argument is kept to state explicitly which overload the method delegates to.
 
 ```csharp
 public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
@@ -204,8 +204,7 @@ public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
     => source.ToDictionary(comparer: null); // Named argument pins the comparer overload
 ```
 
-With the named argument `comparer:`, only overloads that have a parameter of that name remain candidates, making the resolution target unique.
-This is the standard technique when delegating into a densely overloaded API.
+With the named argument `comparer:`, only overloads that have a parameter of that name remain candidates. The result is the same as without it today, but the intent stays visible in the code.
 
 ### Decision 3: Matching `where TKey : notnull` and the Return Type
 

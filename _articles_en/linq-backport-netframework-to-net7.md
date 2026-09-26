@@ -37,6 +37,7 @@ The following points were confirmed in that environment:
 
 - The return value is an `IOrderedEnumerable`, so `ThenBy` can be chained onto it.
 - Elements that compare equal keep their relative order (a stable sort).
+- Culture-sensitive comparison follows the comparison engine the runtime uses (NLS on .NET Framework; on .NET 5 and later the default depends on the Windows version, and NLS can also be selected by configuration), and for non-comparable items the exception type differs only when the whole sequence is sorted.
 
 ---
 
@@ -63,7 +64,7 @@ A dedicated method with the identity function baked in removes that noise, and .
 ## Implementation by Delegation
 
 The following is the complete polyfill for all four signatures.
-Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability and culture-sensitive comparison behavior are identical to the originals.
+Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS. On .NET 5 and later, the default depends on the Windows version (on Windows Server 2019, for example, ICU became the default only in .NET 7), and an app can also be configured to use NLS. On the test machine (.NET 10 on Windows 11), net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
 Add it to the project as, for example, `LinqExtensions.Net7.cs`.
 
 ```csharp
@@ -122,12 +123,12 @@ namespace System.Linq
 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Order and OrderDescending both produce identical results, boundary cases included." width="866" height="290" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Order and OrderDescending produce identical results, boundary cases included, except for three rows: the comparison engine is ICU on net10.0 and NLS on net48, and a ja-JP comparer orders strings with a hyphen and an underscore differently, and for non-comparable items Order().ToList() throws InvalidOperationException on net10.0 but ArgumentException on net48. Order().First() throws ArgumentException on both." width="1023" height="410" loading="lazy">
   <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 
-The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
+The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. Both are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
 
 Because the delegation style contains no `yield return`, the validation/iterator split required for hand-written iterators ([principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)) does not apply.
 The `source` null check runs immediately at call time, while the sort itself stays lazy through the delegated `OrderBy`.
@@ -187,9 +188,9 @@ Which exception type surfaces depends on the runtime.
 
 - The default comparer itself throws `ArgumentException` (message: "At least one object must implement IComparable.").
 - On **.NET Framework**, `OrderBy` does not wrap comparison exceptions in its internal sort, so this `ArgumentException` propagates as-is.
-- On **.NET Core 3.0 and later** (including the built-in .NET 7 `Order`), the internal sort wraps comparison exceptions in `InvalidOperationException` (message: "Failed to compare two elements in the array.", with the `ArgumentException` as the inner exception).
+- On **.NET Core 3.0 and later** (including the built-in .NET 7 `Order`), a sort of the whole sequence wraps comparison exceptions in `InvalidOperationException` (message: "Failed to compare two elements in the array.", with the `ArgumentException` as the inner exception). On net10.0 this happened for `Order().ToList()`, but not for `Order().First()`, which finds the smallest element without sorting everything and let the `ArgumentException` through (the last two rows of the table).
 
-In other words, while this polyfill runs on .NET Framework, its exception type does not match the built-in .NET 7 behavior.
+In other words, while this polyfill runs on .NET Framework, its exception type does not match the built-in behavior whenever the whole sequence is sorted.
 This is a structural limit of delegation-based polyfills: the delegate's behavior surfaces unchanged, so wherever the delegate itself differs from modern .NET, the polyfill cannot paper over it.
 
 Code that handles exceptions by type should account for this difference during migration; better yet, pass an explicit `IComparer<T>` whenever sorting arbitrary types.

@@ -9,7 +9,11 @@ verifies:
   - "プロパティごとの DefaultUpdateSourceTrigger をメタデータから読み出す"
   - "TextBox.Text だけが LostFocus で、他の多くは PropertyChanged であること"
   - "既定・PropertyChanged・Explicit で、ソースへ値が渡る時点が異なること"
+  - "図は、各入力欄にフォーカスを移して InputManager 経由で打ち込んで撮っていること"
+  - "既定のバインドのまま、フォーカスを残して Enter で既定ボタン（IsDefault）を押すと、Click の時点でソースが更新されていないこと"
+  - "ErrorsChanged をバックグラウンドのスレッドから発生させてもエラーが反映されるか"
 images:
   - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png"
   - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg"
   - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg"
+  - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.svg"

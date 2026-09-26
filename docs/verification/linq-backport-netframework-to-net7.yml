@@ -9,6 +9,9 @@ verifies:
   - "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる"
   - "戻り値が IOrderedEnumerable であり、ThenBy を連結できること"
   - "比較子で等しくなる要素どうしの順序が保たれること（安定ソート）"
+  - "実際に使われた比較エンジン（NLS か ICU か）を、ドキュメントの SortVersion による方法で記録する"
+  - "ja-JP のカルチャ依存の比較で、ハイフンとアンダースコアを含む文字列の並びが net48（NLS）と net10.0（ICU）で変わること"
+  - "比較できない要素で、Order().ToList() と Order().First() が投げる例外の型（net10.0 では全体を並べる場合だけ InvalidOperationException に包まれる）"
 images:
   - "images/articles/linq-backport-netframework-to-net7/linq-order-orderdescending.png"
   - "images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg"

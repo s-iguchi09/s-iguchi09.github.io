@@ -160,7 +160,7 @@ Every combination of receiver form and member kind was compiled.
 </figure>
 
 **The `extension(Directory directory)` rows report `CS0721` regardless of member kind.**
-Naming the receiver settles the error before the block body is considered.
+Naming the receiver is enough for `CS0721`, and the member kinds inside the block do not change that. The members are still checked: a block that also held a method with a static-type parameter and an indexer reported a second `CS0721` and `CS9282` as well.
 The restriction to static members on a static class is the combination of these two errors.
 
 As the last row shows, the same "named receiver plus instance member" shape compiles without issue when the target is not a static class.
@@ -311,7 +311,7 @@ It extends a corresponding instance type such as `DirectoryInfo`. Resolving a pa
 **Supporting C# 13 or earlier calls for Option C.**
 The `extension` block is available only from C# 14 (.NET 10). Anything earlier falls back to a conventional static helper class. The call form no longer matches the standard API, but the location is the most obvious of the three.
 
-Options A and B both require the declaring namespace to be imported at the call site. Forgetting it yields `CS0117`, which does not obviously indicate a failed extension member lookup.
+Options A and B both require the declaring namespace to be imported at the call site. Forgetting it yields `CS0117` for A (the static call) and `CS1061` for B (the instance call), and neither obviously indicates a failed extension member lookup.
 
 ---
 
@@ -341,8 +341,8 @@ Support for attaching members to existing types has expanded incrementally acros
 | Version | Platform | Key change |
 |---|---|---|
 | C# 3.0 | .NET Framework 3.5 | **Extension methods introduced.** A `this`-prefixed first parameter inside a `public static class` allows instance methods to be attached to existing types. This feature underpins LINQ. |
-| C# 7.2 | .NET Core 2.0 / .NET Framework 4.7.2 | **Improved support for value types.** The `ref this` and `in this` modifiers became available, enabling extension methods on large structs to pass the receiver by reference without copying. |
-| C# 14 | .NET 10 | **Extension member syntax (`extension` block) introduced.** In addition to the `this`-parameter form, members can be declared inside an `extension(Type)` block, which supports properties, indexers, and operators as well as methods — and static members. |
+| C# 7.2 | Visual Studio 2017 15.5 (no specific runtime) | **Improved support for value types.** The `ref this` and `in this` modifiers became available, enabling extension methods on large structs to pass the receiver by reference without copying. |
+| C# 14 | .NET 10 | **Extension member syntax (`extension` block) introduced.** In addition to the `this`-parameter form, members can be declared inside an `extension(Type)` block, which supports properties and operators as well as methods — and static members. Indexers are not supported: an indexer in an `extension` block reported `CS9282`. |
 
 The `this`-parameter syntax can only declare instance extension methods; before C# 14 there was no way to attach a static member at all.
 Adding a member such as `Directory.DeleteIfExists(...)` to a static class first became possible with the C# 14 `extension` block.

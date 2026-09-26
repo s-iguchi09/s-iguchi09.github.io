@@ -76,8 +76,8 @@ WPF のオブジェクトの多くは `DispatcherObject` から派生し、生�
 バインドの有無と対処の有無を変えて、バックグラウンドスレッドから `Add` を呼んだ結果が次の表である。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="バックグラウンドスレッドから Add を呼んだ結果の表。バインドしていない ObservableCollection では例外が発生しない。ItemsControl にバインドすると NotSupportedException になる。Dispatcher.Invoke と EnableCollectionSynchronization ではいずれも例外が発生しない。通知時にロックを保持していたのは EnableCollectionSynchronization の行だけである。" width="992" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>Task.Run</code> の中から <code>ObservableCollection&lt;string&gt;.Add</code> を呼んだ結果。1 行目はどこにもバインドしていないコレクション、2 行目以降は <code>ItemsControl.ItemsSource</code> にバインドしたうえでウィンドウに表示したコレクションである。最終列は、<code>CollectionChanged</code> が通知された時点で <code>Monitor.IsEntered</code> がロックの保持を報告した回数と、通知の総数である。</figcaption>
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="バックグラウンドスレッドから Add を呼んだ結果の表。バインドしていない ObservableCollection では例外が発生しない。ItemsControl にバインドすると NotSupportedException になる。Dispatcher.Invoke と EnableCollectionSynchronization ではいずれも例外が発生しない。バインドした行では、コレクションの Count と ItemsControl の Items.Count はどれも 1 だが、ビューが受け取った変更通知は、NotSupportedException の行では 0、ほかの 2 行では 1 である。" width="1062" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Task.Run</code> の中から <code>ObservableCollection&lt;string&gt;.Add</code> を呼んだ結果。1 行目はどこにもバインドしていないコレクション、2 行目以降は <code>ItemsControl.ItemsSource</code> にバインドしたうえでウィンドウに表示したコレクションである。最終列は、<code>Add</code> のあとのコレクションの <code>Count</code>、<code>ItemsControl</code> の <code>Items.Count</code>、ビュー（<code>Items</code>）が受け取った <code>CollectionChanged</code> の通知の数である。</figcaption>
 </figure>
 
 **バインドしていないコレクションは、バックグラウンドスレッドから変更しても例外にならない。**
@@ -88,13 +88,9 @@ WPF のオブジェクトの多くは `DispatcherObject` から派生し、生�
 `ObservableCollection<T>` は複数スレッドからの同時アクセスに対する保護を持たないため、競合する更新を行えば別の形で壊れる。
 ここで確認できるのは、あくまで「`NotSupportedException` の発生源はバインド先である」という点だけである。
 
-最終列は、`CollectionChanged` が通知された時点でロックが保持されていたかを示す。
-**`EnableCollectionSynchronization` を使った行だけが 1/1 であり、変更と通知が同じロックの中で起きている。**
-他の行は 0/1 で、通知はロックの外で行われている。
-
-この 1/1 は、**アプリケーション側が `lock` で `Add` を囲んだ構成での結果**である。
-`EnableCollectionSynchronization` に渡したロックが、その `Add` から生じる通知まで保持されたままであることを示している。
-登録するだけで通知がロック内に入るわけではない。`Add` を同じロックで囲むのはアプリケーション側の責務である。
+最終列は、`Add` のあとのコレクションの件数、`ItemsControl` の `Items.Count`、ビューが受け取った変更通知の数である。
+1 件の `Add` では、2 つの件数はどの行も 1 だった。ただし `Items.Count` が一致しても、変更がビューに届いたことにはならない。同期のないビューは、件数を元のリストから読むことがあるためである。`NotSupportedException` になった行ではビューは通知を 1 つも受け取っておらず、`Dispatcher.Invoke` と `EnableCollectionSynchronization` では 1 つ受け取った。
+`EnableCollectionSynchronization` の行は、アプリケーション側が登録したのと同じロックで `Add` を囲んだ構成で測っている。登録するだけで `Add` がロックの中に入るわけではない。`Add` を同じロックで囲むのはアプリケーション側の責務である。
 
 ---
 
@@ -103,7 +99,7 @@ WPF のオブジェクトの多くは `DispatcherObject` から派生し、生�
 アプローチは 2 つある。
 
 - **`Dispatcher` で UI スレッドへマーシャリングする** — コレクションの変更操作自体を UI スレッド上で実行する。実装が単純で、既存コードにも適用しやすい。
-- **`BindingOperations.EnableCollectionSynchronization` を使う** — アプリ側でロックを用意し、そのロックを WPF に登録することで、バックグラウンドスレッドからの直接変更を許可する。大量更新でも UI スレッドを占有しにくい。
+- **`BindingOperations.EnableCollectionSynchronization` を使う** — アプリ側でロックを用意し、そのロックを WPF に登録することで、バックグラウンドスレッドからの直接変更を許可する。変更通知は UI スレッドで非同期にビューへ反映されるので、変更はその反映を待たない。ただしコレクションへのアクセスは登録したロックで直列化されるため、UI スレッドがロックを持っている間は、バックグラウンド側がロックの取得を待つことがある。
 
 前者は「変更を UI スレッドへ寄せる」方法、後者は「別スレッドでの変更を WPF に安全に取り込ませる」方法である。
 
@@ -164,7 +160,7 @@ private async Task LoadAsync(string path)
 `EnableCollectionSynchronization` を呼ぶと、`CollectionView` は登録されたロックを使ってコレクションへアクセスし、UI スレッド用の「シャドウコピー」を保持する。
 変更通知は到着順にキューされ、UI スレッドが処理可能なときに反映される。
 これによりバックグラウンドスレッドから直接 `Add` できる。
-公式ドキュメントの要件どおり、呼び出しは UI スレッドで、かつコレクションを別スレッドで使う前（またはコントロールへ結び付ける前）に行う必要がある。
+公式ドキュメントの要件どおり、呼び出しは UI スレッドで行い、コレクションを別スレッドで使い始めるときと、コントロールへ結び付けるときのうち、遅いほうより前に行う必要がある。
 
 ---
 
@@ -176,7 +172,15 @@ private async Task LoadAsync(string path)
 追加設定が要らず、既存コードの変更箇所も小さい。要素ごとに UI スレッドへ往復するコストは、件数が少なければ問題にならない。
 
 **別スレッドで大量・高頻度に更新するなら `EnableCollectionSynchronization`。**
-要素単位の同期 `Invoke` を大量に回すと UI スレッドが飽和して応答性が落ちる。ロックを共有すれば、バックグラウンドから直接変更してもその往復が発生しない。
+要素単位の同期 `Invoke` は、1 件ごとに UI スレッドでの実行を待つ。ロックを共有すれば、バックグラウンドから直接変更でき、その往復が発生しない。ただし、UI スレッドがロックを持っている間は、バックグラウンド側が待つ。
+5,000 件を 1 件ずつ `Add` すると、`Dispatcher.Invoke` ではループに 992 ms かかった。
+`EnableCollectionSynchronization` ではループが 6 ms で終わり、ビューが全件分の通知を受け取るまでで 64 ms だった。
+ただし、ループのあと UI スレッドへ戻った時点でビューが受け取っていた通知は 746 件で、残りは後から UI スレッドで反映された。この値は `await` のあとに読んだもので、ループを抜けた瞬間の値ではない。その間にも UI スレッドは通知を処理できる。反映そのものは UI スレッドの仕事として残る。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg" alt="バックグラウンドスレッドから 5,000 件を 1 件ずつ Add した結果の表。1 件ごとに Dispatcher.Invoke する方式は、ループに 992 ms かかり、await のあとの時点でビューは 5,000 件分の通知を受け取っており、全件分を受け取るまで 994 ms。EnableCollectionSynchronization とロックの方式は、ループが 6 ms で、await のあとの時点の通知は 746 件、全件分を受け取るまで 64 ms。" width="976" height="140" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、仮想化した <code>ListBox</code> にバインドしたコレクションへ、<code>Task.Run</code> の中から 5,000 件を 1 件ずつ <code>Add</code> した結果。3 列目は、ループのあと UI スレッドへ戻った時点でビューが受け取っていた <code>CollectionChanged</code> の通知の数、右端の列は、ループの開始からビューが 5,000 件分の通知を受け取るまでの時間である。</figcaption>
+</figure>
 
 **セマフォなど独自の同期機構が既にあるなら、コールバック版のオーバーロード。**
 ロック以外の同期機構を WPF 側の待ちに使わせられる。実装は最も複雑になる。
@@ -191,7 +195,7 @@ private async Task LoadAsync(string path)
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
 | `Dispatcher.Invoke` / `InvokeAsync` | 追加設定が不要で単純。既存コードに適用しやすい | 要素ごとの往復で UI スレッドを圧迫しやすい | 更新頻度・件数が少ない。散発的な追加・削除 |
-| `EnableCollectionSynchronization`（単純ロック） | バックグラウンドから直接変更でき、UI を占有しにくい | ロックの一貫運用が必要。設計がやや複雑 | 大量・高頻度の更新を別スレッドで行う |
+| `EnableCollectionSynchronization`（単純ロック） | バックグラウンドから直接変更でき、変更通知は UI スレッドで非同期に反映される（アクセスは共有したロックを待つ） | ロックの一貫運用が必要。設計がやや複雑 | 大量・高頻度の更新を別スレッドで行う |
 | `EnableCollectionSynchronization`（コールバック版） | セマフォ等、ロック以外の同期機構を使える | 実装が最も複雑 | 独自の同期機構が既にある構成 |
 | UI スレッドでまとめて反映 | スレッド問題を回避できる | バックグラウンドの利点が薄れる | 収集後に一括反映できる処理 |
 
