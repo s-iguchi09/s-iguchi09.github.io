@@ -13,7 +13,7 @@ description: "WPF の GridSplitter で変わる列の組を、ResizeBehavior と
 
 ## どの列の組が変わるか
 
-`ResizeBehavior` は、どの列（行）の組を変えるかを決めます。`PreviousAndNext` はスプリッターの列の両隣の境界を動かし、`CurrentAndNext` は自分の列と次の列を、`PreviousAndCurrent` は前の列と自分の列を変えます。既定値の `BasedOnAlignment` は `HorizontalAlignment` で選びます。実測では、`Left` は `PreviousAndCurrent`、`Right` は `CurrentAndNext`、`Center` と `Stretch` は `PreviousAndNext` と同じ動きになりました。
+`ResizeBehavior` は、どの列（行）の組を変えるかを決めます。`PreviousAndNext` はスプリッターの列の両隣の境界を動かし、`CurrentAndNext` は自分の列と次の列を、`PreviousAndCurrent` は前の列と自分の列を変えます。既定値の `BasedOnAlignment` は、列を変えるスプリッターでは `HorizontalAlignment` で選びます。実測では、`Left` は `PreviousAndCurrent`、`Right` は `CurrentAndNext`、`Center` と `Stretch` は `PreviousAndNext` と同じ動きになりました。行を変えるスプリッターでは、ドキュメントによれば代わりに `VerticalAlignment` で選びます。こちらは測っていません。
 
 GridSplitter の `HorizontalAlignment` の既定値は `Stretch` ではなく `Right` なので、既定では自分の列と次の列を変えます。内容と同じ列の右端に置く場合はこれで意図どおりに動き、0 列目の右端に置いたスプリッターは 0 列目と 1 列目を変えました。しかしスプリッター専用の列に置いた場合は、右へ 30 ドラッグすると幅 5 の `Auto` 列そのものが 35 に広がり、スプリッターの横に隙間ができました。専用の列に置くときは、`HorizontalAlignment="Stretch"`（または `Center`）か、`ResizeBehavior="PreviousAndNext"` を設定します。
 
@@ -28,7 +28,7 @@ GridSplitter の `HorizontalAlignment` の既定値は `Stretch` ではなく `R
 
 `ResizeDirection` は、列と行のどちらを変えるかを決めます。既定値の `Auto` は配置から判断します。横方向に引き伸ばされていないスプリッターは列を変えます。縦横とも `Stretch` の場合は形で決まり、幅より高さが大きいスプリッターは列を、高さより幅が大きいスプリッターは行を変えました。
 
-デモアプリの欄には、全行にまたがる縦のスプリッターと、全列にまたがる横のスプリッターがあります。`Auto` ではそれぞれの向きに変わりました。`Columns` では横のスプリッターが、`Rows` では縦のスプリッターが何も変えませんでした。全列にまたがるスプリッターは 0 列目にあり、その前に変えられる列が無いためです。
+デモアプリの欄には、全行にまたがる縦のスプリッターと、全列にまたがる横のスプリッターがあります。`Auto` ではそれぞれの向きに変わりました。`Columns` では横のスプリッターが、`Rows` では縦のスプリッターが何も変えませんでした。全列にまたがる横のスプリッターは 0 列目にあってその前に変えられる列が無く、同じように、0 行目から全行にまたがる縦のスプリッターには、その前の行が無いためです。
 
 置き場所を誤っても何も起きません。Grid の外に置いたスプリッターや、`PreviousAndNext` で前の列が無い位置のスプリッターは、例外も出さず何も変えませんでした。ドラッグしても変わらないときは、スプリッターの列と `ResizeBehavior` を確認します。
 

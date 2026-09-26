@@ -20,7 +20,7 @@ Mixing `Auto` and star definitions can make Grid measure a child twice. In a 2 �
 The default of `Grid.Row` and `Grid.Column` is 0, so children that omit them all land in the first cell and overlap. Out-of-range values do not raise an error:
 
 - An index beyond the defined columns or rows places the child in the last one. In a 2 × 2 Grid, `Grid.Column="5" Grid.Row="5"` put the child in the bottom-right cell. The demo app shows this, because its 2 × 2 Grid lets you choose column 2, and the text then stays in the right-hand column.
-- A span longer than the remaining columns or rows is cut short. In a three-column Grid, `Grid.Column="1" Grid.ColumnSpan="5"` covered columns 1 and 2; `RowSpan="5"` in a two-row Grid covered both rows.
+- A span longer than the remaining columns or rows is cut short. In a three-column Grid, `Grid.Column="1" Grid.ColumnSpan="5"` covered columns 1 and 2 (numbered from 0, so the second and third columns); `RowSpan="5"` in a two-row Grid covered both rows.
 - A Grid without any definitions is one cell. Every child fills it, and a child with `Grid.Column="1"` was still placed in that single cell.
 
 Only invalid numbers are rejected: a negative index or a span of 0 throws `ArgumentException`. Because everything else is clamped silently, check the children that referred to a `ColumnDefinition` after removing it; they move into the last column without any warning.

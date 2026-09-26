@@ -9,7 +9,7 @@ description: "WPF の UniformGrid を .NET 10 で実測して解説。行と列�
 
 ## 行と列がいくつになるか
 
-**UniformGrid** は `System.Windows.Controls.Primitives` 名前空間にあります。`Rows`・`Columns`・`FirstColumn` の既定値は 0 です。`Rows` と `Columns` の 0 は「自動で決める」という意味で、どちらも設定しないと、デモアプリの 5 つのラベルは 2 行 3 列になりました。一方を設定するとその数が固定され、もう一方は必要なだけ増えます。300 × 200 のグリッドで、5 つのラベルは `Columns="1"` で 300 × 40 のセルの 5 行に、`Columns="2"` で 150 × 66.67 のセルの 3 行になりました。`Rows="1"` では 5 列の 1 行に、`Rows="2"` では 2 行 3 列になりました。
+**UniformGrid** は `System.Windows.Controls.Primitives` 名前空間にあります。`Rows`・`Columns`・`FirstColumn` の既定値は 0 です。`Rows` と `Columns` の 0 は「自動で決める」という意味で、どちらも設定しないと、UniformGrid は正方形の配置を作ります。デモアプリの 5 つのラベルでは 3 行 3 列（300 × 200 のグリッドで 100 × 66.67 のセル）になり、ラベルは上の 2 行に入って 3 行目は空きました。一方を設定するとその数が固定され、もう一方は必要なだけ増えます。300 × 200 のグリッドで、5 つのラベルは `Columns="1"` で 300 × 40 のセルの 5 行に、`Columns="2"` で 150 × 66.67 のセルの 3 行になりました。`Rows="1"` では 5 列の 1 行に、`Rows="2"` では 2 行 3 列になりました。
 
 `Collapsed` の子はセルを使いません。5 つのうち 2 つ目を折りたたんで `Columns="2"` にすると、3 つ目のラベルが 2 つ目のセルに入り、行数は 2 のままでした。グリッドから外したい子は折りたたみます。
 
@@ -32,7 +32,7 @@ description: "WPF の UniformGrid を .NET 10 で実測して解説。行と列�
 2 列に 1 つのラベルを置くと、空いたセルのヒットテストで、`Background` が既定値の `null` では何も当たらず、`Transparent` ではグリッドが当たりました。子が重なったときは `Panel.ZIndex` で順序が決まります。デモアプリでは 2 つ目のラベルの上余白が -15 で、1 つ目に重なっています。`ZIndex` が 1 と 2 では 2 つ目が、3 と 2 では 1 つ目が上になりました。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.svg" alt="UniformGrid の計測結果の表。Primitives 名前空間にあり Rows・Columns・FirstColumn の既定値は 0、デモアプリの 5 つのラベルは 5 行 1 列、3 行 2 列、1 行 5 列、2 行 3 列、2 行 3 列に並び、2 行 2 列では 5 つ目がグリッドの下に置かれ、3 列で FirstColumn 1 は 2 つ目のセルから始まり 3 や 4 は 0 に戻されてバインドも外れ、折りたたんだ子はセルを使わず、セルは広げると幅 100、幅 150 の子に合わせると 150 になり、空いたセルは Background があるときだけ当たり、ZIndex がデモアプリの重なったラベルの順序を決める" width="1093" height="590" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.svg" alt="UniformGrid の計測結果の表。Primitives 名前空間にあり Rows・Columns・FirstColumn の既定値は 0、デモアプリの 5 つのラベルは 5 行 1 列、3 行 2 列、1 行 5 列、2 行 3 列に並び、どちらも設定しない場合は 3 行目が空いた 3 行 3 列になり、2 行 2 列では 5 つ目がグリッドの下に置かれ、3 列で FirstColumn 1 は 2 つ目のセルから始まり 3 や 4 は 0 に戻されてバインドも外れ、折りたたんだ子はセルを使わず、セルは広げると幅 100、幅 150 の子に合わせると 150 になり、空いたセルは Background があるときだけ当たり、ZIndex がデモアプリの重なったラベルの順序を決める" width="1187" height="590" loading="lazy">
   <figcaption>行、列、<code>FirstColumn</code>、セルの大きさ。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

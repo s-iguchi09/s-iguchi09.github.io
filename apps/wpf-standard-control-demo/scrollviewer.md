@@ -33,16 +33,16 @@ To change the ScrollViewer inside a control, set the attached property on the co
 
 `CanContentScroll` decides whether the content scrolls by its own units. With the demo app's StackPanel of 9 labels, `False` gave `ExtentHeight` 251.64 and `ViewportHeight` 100 in pixels, and one `LineDown` moved 16. `True` gave 9 and 3, counted in items, and one `LineDown` moved one item.
 
-It also decides virtualization in a list. A ListBox with 1000 items and 200 high created 10 `ListBoxItem`s with `True` and all 1000 with `False`. Keep it `True` in long lists.
+In a list it also affects virtualization. A ListBox with default settings, 1000 items, and 200 high created 10 `ListBoxItem`s with `True` and all 1000 with `False`. `False` turns virtualization off, but `True` alone does not turn it on: the items must also be in a `VirtualizingStackPanel` with `VirtualizingPanel.IsVirtualizing` left `True`, as they are by default in a ListBox. Keep it `True` in long lists.
 
 ## Deferred scrolling and when the sizes are known
 
-`IsDeferredScrollingEnabled` makes the content wait until the thumb is released. With `False`, dragging the thumb 30 down moved `VerticalOffset` to 114.38 during the drag. With `True`, it stayed at 0 during the drag and moved to 114.38 on release.
+`IsDeferredScrollingEnabled` makes the content wait until the thumb is released. With `False`, dragging the thumb 30 down moved both `VerticalOffset` and `ContentVerticalOffset` to 114.38 during the drag. With `True`, both stayed at 0 during the drag and moved to 114.38 on release. The drag was reproduced by raising the thumb's drag events (started, a delta of 30, completed), not with a real mouse.
 
 The size properties are known only after layout. `ExtentHeight` and `ViewportHeight` were 0 before the first layout and 251.64 and 100 after it. Why a ScrollViewer sometimes does not scroll at all, for example inside a StackPanel, is covered in the article linked below.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg" alt="Table of ScrollViewer scrolling: the defaults are Visible and Disabled, CanContentScroll False scrolls 16 pixels and True one item, a ListBox of 1000 items creates 10 containers with CanContentScroll True and 1000 with False, deferred scrolling keeps the offset at 0 until the thumb is released, ListBox, TreeView, and DataGrid have Auto and TextBox Hidden inside, an attached property reaches the ListBox's ScrollViewer and an outer ScrollViewer does not, and the sizes are 0 before layout" width="936" height="380" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg" alt="Table of ScrollViewer scrolling: the defaults are Visible and Disabled, CanContentScroll False scrolls 16 pixels and True one item, a ListBox of 1000 items creates 10 containers with CanContentScroll True and 1000 with False, deferred scrolling keeps both VerticalOffset and ContentVerticalOffset at 0 until the thumb is released, ListBox, TreeView, and DataGrid have Auto and TextBox Hidden inside, an attached property reaches the ListBox's ScrollViewer and an outer ScrollViewer does not, and the sizes are 0 before layout" width="936" height="380" loading="lazy">
   <figcaption><code>CanContentScroll</code>, deferred scrolling, and the ScrollViewers inside controls. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 

@@ -33,16 +33,16 @@ ScrollViewer の既定値は、`VerticalScrollBarVisibility` が `Visible`、`Ho
 
 `CanContentScroll` は、内容が自分の単位でスクロールするかどうかを決めます。デモアプリの 9 つのラベルの StackPanel では、`False` で `ExtentHeight` 251.64、`ViewportHeight` 100 とピクセル単位になり、`LineDown` 1 回で 16 動きました。`True` では 9 と 3 と項目の数になり、`LineDown` 1 回で 1 項目動きました。
 
-一覧の仮想化もこれで決まります。1000 項目、高さ 200 の ListBox は、`True` で 10 個、`False` で 1000 個すべての `ListBoxItem` を作りました。長い一覧では `True` のままにします。
+一覧では仮想化にも関わります。既定の設定の、1000 項目、高さ 200 の ListBox は、`True` で 10 個、`False` で 1000 個すべての `ListBoxItem` を作りました。`False` にすると仮想化は止まりますが、`True` だけで仮想化されるわけではなく、ListBox の既定のように項目が `VirtualizingStackPanel` に並び、`VirtualizingPanel.IsVirtualizing` が `True` のままである必要があります。長い一覧では `True` のままにします。
 
 ## 遅延スクロールと、大きさが分かる時点
 
-`IsDeferredScrollingEnabled` は、つまみを離すまで内容の移動を待つかどうかです。`False` では、つまみを 30 下へドラッグすると、ドラッグ中に `VerticalOffset` が 114.38 になりました。`True` ではドラッグ中は 0 のままで、離した時点で 114.38 になりました。
+`IsDeferredScrollingEnabled` は、つまみを離すまで内容の移動を待つかどうかです。`False` では、つまみを 30 下へドラッグすると、ドラッグ中に `VerticalOffset` と `ContentVerticalOffset` がどちらも 114.38 になりました。`True` ではドラッグ中はどちらも 0 のままで、離した時点で 114.38 になりました。ドラッグは、実際のマウスではなく、つまみのドラッグのイベント（開始、30 の移動、完了）を送って再現しました。
 
 大きさのプロパティは、レイアウトの後でないと分かりません。`ExtentHeight` と `ViewportHeight` は、最初のレイアウトの前は 0、後は 251.64 と 100 でした。StackPanel の中などで ScrollViewer がまったくスクロールしない理由は、下にリンクした記事で扱っています。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg" alt="ScrollViewer のスクロールの計測結果の表。既定値は Visible と Disabled、CanContentScroll が False なら 16 ピクセル、True なら 1 項目ずつスクロールし、1000 項目の ListBox は True でコンテナーを 10 個、False で 1000 個作り、遅延スクロールではつまみを離すまで位置が 0 のまま、ListBox・TreeView・DataGrid の中は Auto、TextBox の中は Hidden、ListBox の添付プロパティは中に届き外側の ScrollViewer は届かず、大きさはレイアウト前は 0" width="936" height="380" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg" alt="ScrollViewer のスクロールの計測結果の表。既定値は Visible と Disabled、CanContentScroll が False なら 16 ピクセル、True なら 1 項目ずつスクロールし、1000 項目の ListBox は True でコンテナーを 10 個、False で 1000 個作り、遅延スクロールではつまみを離すまで VerticalOffset と ContentVerticalOffset が 0 のまま、ListBox・TreeView・DataGrid の中は Auto、TextBox の中は Hidden、ListBox の添付プロパティは中に届き外側の ScrollViewer は届かず、大きさはレイアウト前は 0" width="936" height="380" loading="lazy">
   <figcaption><code>CanContentScroll</code>、遅延スクロール、コントロールの中の ScrollViewer。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

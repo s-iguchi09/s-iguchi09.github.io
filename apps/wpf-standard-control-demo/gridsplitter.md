@@ -13,7 +13,7 @@ description: "WPF GridSplitter measured on .NET 10: what each ResizeBehavior res
 
 ## Which pair of columns changes
 
-`ResizeBehavior` decides which pair of columns (or rows) changes. `PreviousAndNext` moves the boundary between the neighbors of the splitter's column, `CurrentAndNext` resizes the splitter's own column and the next one, and `PreviousAndCurrent` resizes the previous column and its own. `BasedOnAlignment` (the default) chooses from `HorizontalAlignment`: `Left` behaved like `PreviousAndCurrent`, `Right` like `CurrentAndNext`, and `Center` or `Stretch` like `PreviousAndNext`.
+`ResizeBehavior` decides which pair of columns (or rows) changes. `PreviousAndNext` moves the boundary between the neighbors of the splitter's column, `CurrentAndNext` resizes the splitter's own column and the next one, and `PreviousAndCurrent` resizes the previous column and its own. `BasedOnAlignment` (the default) chooses from `HorizontalAlignment` when the splitter resizes columns: `Left` behaved like `PreviousAndCurrent`, `Right` like `CurrentAndNext`, and `Center` or `Stretch` like `PreviousAndNext`. When it resizes rows, the documentation says it chooses from `VerticalAlignment` instead; that case was not measured.
 
 The default `HorizontalAlignment` of GridSplitter is `Right`, not `Stretch`, so by default a splitter resizes its own column and the next one. That is what you want when the splitter shares a column with content and sits on its right edge: a right-aligned splitter in column 0 resized columns 0 and 1. It is not what you want when the splitter has a column of its own: dragging it 30 to the right widened its own 5-wide `Auto` column to 35 and left a gap beside the splitter. In a column of its own, set `HorizontalAlignment="Stretch"` (or `Center`) or `ResizeBehavior="PreviousAndNext"`.
 
@@ -28,7 +28,7 @@ In the demo app the splitter sits in its own `Auto` column. There, only `Previou
 
 `ResizeDirection` decides whether the splitter resizes columns or rows. The default `Auto` decides from the alignment. A splitter that is not horizontally stretched resizes columns. When both alignments are `Stretch`, the shape decides: a splitter taller than it is wide resized columns, and one wider than it is tall resized rows.
 
-The demo app's section has a vertical splitter spanning all rows and a horizontal splitter spanning all columns. With `Auto`, each resized in its own direction. With `Columns`, the horizontal splitter did nothing, and with `Rows` the vertical one did nothing: a splitter that spans every column sits in column 0 and has no column before it to resize.
+The demo app's section has a vertical splitter spanning all rows and a horizontal splitter spanning all columns. With `Auto`, each resized in its own direction. With `Columns`, the horizontal splitter did nothing, and with `Rows` the vertical one did nothing. The horizontal splitter spans every column, so it sits in column 0 and has no column before it to resize; likewise the vertical splitter spans every row from row 0 and has no row before it.
 
 A misplaced splitter fails silently. A splitter outside a Grid, or one with no column before it under `PreviousAndNext`, raised no exception and changed nothing. If dragging has no effect, check the splitter's column and its `ResizeBehavior`.
 
