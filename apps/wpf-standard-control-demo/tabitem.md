@@ -68,6 +68,8 @@ The TabItem page of the demo app has two sections. In the `IsSelected` section, 
 </StackPanel>
 ```
 
+Because `IsSelected` binds two-way by default, the check boxes follow the tabs as well as control them. With Tab2 selected, setting Tab1's source to `True` (what checking its box does) selected Tab1 and set Tab2's source to `False`.
+
 ## Related controls and articles
 
 - [TabControl](/apps/wpf-standard-control-demo/tabcontrol.html) — the parent that selects one TabItem at a time and shows its content.

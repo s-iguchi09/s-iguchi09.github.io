@@ -68,6 +68,8 @@ TabItem の `TabStripPlacement` は読み取り専用で、親の TabControl に
 </StackPanel>
 ```
 
+`IsSelected` は既定で TwoWay にバインドされるので、チェックボックスはタブを操作するだけでなく、タブの状態にも追従します。Tab2 を選んでいる状態で Tab1 のソースを `True` にする（チェックボックスをオンにする操作に当たる）と、Tab1 が選ばれ、Tab2 のソースは `False` になりました。
+
 ## 関連するコントロールと記事
 
 - [TabControl](/ja/apps/wpf-standard-control-demo/tabcontrol.html) — 同時に 1 つの TabItem を選択し、その内容を表示する親コントロールです。
