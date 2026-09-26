@@ -9,7 +9,7 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 
 ## アクセスキーでフォーカスがどこへ移るか
 
-**Label** は `ContentControl` を継承しています。Label 自身はフォーカスを受け取りません。`Focusable` も `IsTabStop` も `False` で、Label の前の TextBox から <kbd>Tab</kbd> を押すと、Label の後の TextBox へ直接移りました。Label がするのはフォーカスの受け渡しで、`Target` は Label のアクセスキーを押したときにフォーカスを受け取る要素です。
+**Label** は `ContentControl` を継承しています。Label 自身は、既定ではフォーカスを受け取りません。`Focusable` も `IsTabStop` も `False` で、Label の前の TextBox から <kbd>Tab</kbd> を押すと、Label の後の TextBox へ直接移りました。Label がするのはフォーカスの受け渡しで、`Target` は Label のアクセスキーを押したときにフォーカスを受け取る要素です。
 
 `_Name(Press Alt+N)` と `_Age(Press Alt+A)` では、アクセスキー `N` と `A` を `AccessKeyManager.ProcessKey` で処理させると、フォーカスが Name と Age のテキストボックスへ移りました（実際のキー入力は測っていません）。`Target` のない `_Plain` のアクセスキーでは、フォーカスは動きませんでした。アクセスキーを付けた見出しには必ず `Target` を設定します。フォーカススコープが違っても問題はなく、ToolBar の中の TextBox を `Target` にした Label でも、フォーカスがその中へ移りました。ほかのコントロールも対象にでき、アクセスキーで、ComboBox ではそれ自体に、編集可能な ComboBox と DatePicker では中のテキストボックスにフォーカスが移りました。
 

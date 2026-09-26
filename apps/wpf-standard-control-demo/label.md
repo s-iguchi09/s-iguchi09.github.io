@@ -9,7 +9,7 @@ description: "WPF Label measured on .NET 10: where its access key moves the focu
 
 ## Where the access key moves the focus
 
-**Label** derives from `ContentControl`. It does not take the focus itself: `Focusable` and `IsTabStop` were both `False`, and <kbd>Tab</kbd> from a TextBox before a Label went straight to the TextBox after it. What it does is pass the focus on: `Target` is the element that receives the focus when the Label's access key is pressed.
+**Label** derives from `ContentControl`. By default it does not take the focus itself: `Focusable` and `IsTabStop` were both `False`, and <kbd>Tab</kbd> from a TextBox before a Label went straight to the TextBox after it. What it does is pass the focus on: `Target` is the element that receives the focus when the Label's access key is pressed.
 
 With `_Name(Press Alt+N)` and `_Age(Press Alt+A)`, processing the access keys `N` and `A` with `AccessKeyManager.ProcessKey` moved the focus to the Name and Age text boxes (a physical key press was not measured). Without `Target`, the access key of `_Plain` left the focus where it was, so set `Target` on every caption with an access key. A different focus scope is not a problem: a Label whose `Target` was a TextBox inside a ToolBar moved the focus into it. Other controls work as targets too: the access key moved the focus to a ComboBox itself, and to the text box inside an editable ComboBox or a DatePicker.
 
