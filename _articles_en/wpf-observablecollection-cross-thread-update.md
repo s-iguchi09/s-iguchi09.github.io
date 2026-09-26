@@ -99,7 +99,7 @@ The `EnableCollectionSynchronization` row was measured with the application wrap
 There are two approaches.
 
 - **Marshal to the UI thread with the `Dispatcher`** — run the collection mutation itself on the UI thread. This is simple and easy to apply to existing code.
-- **Use `BindingOperations.EnableCollectionSynchronization`** — provide a lock in the application and register it with WPF, which allows direct modification from a background thread. Each change does not wait for the UI thread.
+- **Use `BindingOperations.EnableCollectionSynchronization`** — provide a lock in the application and register it with WPF, which allows direct modification from a background thread. Change notifications are applied to the view asynchronously on the UI thread, so a change does not wait for them to be applied; access to the collection is still serialized by the registered lock, so the background thread can wait for the lock while the UI thread holds it.
 
 The former moves changes onto the UI thread; the latter lets WPF safely take in changes made on another thread.
 
@@ -172,7 +172,7 @@ The two core approaches above, plus a variant and a way to avoid the problem ent
 It needs no extra setup and touches little of the existing code. The cost of a per-item round-trip to the UI thread does not matter at low counts.
 
 **Heavy, frequent updates from another thread call for `EnableCollectionSynchronization`.**
-A per-item synchronous `Invoke` waits for the UI thread to run each item. Sharing a lock allows direct modification from the background and removes those round-trips.
+A per-item synchronous `Invoke` waits for the UI thread to run each item. Sharing a lock allows direct modification from the background and removes those round-trips, although the background thread still waits whenever the UI thread holds the lock.
 Adding 5,000 items one at a time, the loop took 992 ms with `Dispatcher.Invoke`.
 With `EnableCollectionSynchronization` the loop finished in 6 ms, and the view had received notifications for all items after 64 ms.
 When control returned to the UI thread after the loop, though, the view had received only 746 notifications; the rest were applied later on the UI thread. That count was read after the `await`, not at the instant the loop ended, and the UI thread can process notifications in between. Applying the changes remains work for the UI thread.
@@ -195,7 +195,7 @@ This avoids producing a cross-thread modification in the first place. The benefi
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |
 | `Dispatcher.Invoke` / `InvokeAsync` | No extra setup; simple and easy to retrofit | Per-item round-trips can strain the UI thread | Low update frequency and volume; occasional add or remove |
-| `EnableCollectionSynchronization` (simple lock) | Direct modification from the background; each change does not wait for the UI thread | Requires consistent locking; slightly more design effort | High-volume, high-frequency updates on another thread |
+| `EnableCollectionSynchronization` (simple lock) | Direct modification from the background; notifications are applied on the UI thread asynchronously (access still waits for the shared lock) | Requires consistent locking; slightly more design effort | High-volume, high-frequency updates on another thread |
 | `EnableCollectionSynchronization` (callback) | Allows non-lock mechanisms such as semaphores | Most complex to implement | A design that already has a custom synchronization mechanism |
 | Batch on the UI thread | Avoids the threading issue entirely | Loses the benefit of background work | Work that can apply all changes at once after gathering |
 
