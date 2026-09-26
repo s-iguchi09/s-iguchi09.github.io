@@ -65,7 +65,7 @@ public class RelayCommand : ICommand
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png" alt="同じ文字列を入力した 2 組の入力欄とボタン。CanExecuteChanged を発火しない実装ではボタンが無効のまま、CommandManager.RequerySuggested へ委譲した実装ではボタンが有効になっている。" width="382" height="179" loading="lazy">
-  <figcaption>どちらも同じ条件（<code>Name</code> が空でなければ実行可能）で、同じ文字列を入力した状態。上は <code>CanExecuteChanged</code> を一度も発火しない実装で、入力してもボタンは無効のままである。下は <code>CommandManager.RequerySuggested</code> へ委譲した実装で、再問い合わせが走りボタンが有効になる。</figcaption>
+  <figcaption>どちらも同じ条件（<code>Name</code> が空でなければ実行可能）で、同じ文字列を入力した状態。文字は WPF の入力処理（<code>InputManager</code>）を通して打ち込み、<code>InvalidateRequerySuggested</code> などは呼んでいない。上は <code>CanExecuteChanged</code> を一度も発火しない実装で、入力してもボタンは無効のままである。下は <code>CommandManager.RequerySuggested</code> へ委譲した実装で、入力を受けて WPF が再問い合わせを行い、ボタンが有効になる。</figcaption>
 </figure>
 
 ---
@@ -86,11 +86,12 @@ WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは�
 ---
 
 どの発火方法がどちらの実装に効くかは、実際にボタンを表示して `IsEnabled` を読めば確かめられる。
-`CanExecute` が `false` を返す状態で表示し、`true` を返すよう条件を変えてから、何も呼ばない場合・`CommandManager.InvalidateRequerySuggested()` を呼ぶ場合・コマンド自身の `RaiseCanExecuteChanged()` を呼ぶ場合を測った結果が次の図である。
+`CanExecute` が `false` を返す状態で表示し、`true` を返すよう条件を変えてから、何も呼ばない場合・`CommandManager.InvalidateRequerySuggested()` を呼ぶ場合・コマンド自身の `RaiseCanExecuteChanged()` を呼ぶ場合・何も呼ばずに隣の `TextBox` へキーを 1 つ入力した場合を測った結果が次の図である。
+委譲した実装は自前のイベントを持たず、`RaiseCanExecuteChanged()` で発火するものが無いため、その組み合わせは測っていない。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="実装と発火方法の組み合わせごとに Button.IsEnabled を測った表。何も呼ばない場合はどちらの実装も False のまま。InvalidateRequerySuggested で True になるのは RequerySuggested に委譲した実装だけ。RaiseCanExecuteChanged で True になるのは自前イベントの実装だけ。Command 未設定のボタンは最初から True。" width="548" height="290" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>CanExecute</code> の戻り値を <code>false</code> から <code>true</code> に変えた前後の <code>Button.IsEnabled</code> を測った結果。<code>before</code> は条件を変える直前、<code>after</code> は変えて発火操作を行った直後の値である。</figcaption>
+  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="実装と発火方法の組み合わせごとに Button.IsEnabled を測った表。何も呼ばない場合はどちらの実装も False のまま。InvalidateRequerySuggested で True になるのは RequerySuggested に委譲した実装だけ。RaiseCanExecuteChanged で True になるのは自前イベントの実装だけ。隣の TextBox へのキー入力で True になるのは RequerySuggested に委譲した実装だけ。Command 未設定のボタンは最初から True。" width="548" height="320" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>CanExecute</code> の戻り値を <code>false</code> から <code>true</code> に変えた前後の <code>Button.IsEnabled</code> を測った結果。<code>before</code> は条件を変える直前、<code>after</code> は変えて発火操作を行った直後の値である。キー入力は、WPF の入力処理（<code>InputManager</code>）を通して送った。</figcaption>
 </figure>
 
 **何も呼ばなければ、どちらの実装でも `IsEnabled` は `False` のままである。** `CanExecute` の戻り値が変わっただけでは反映されない。
@@ -99,6 +100,8 @@ WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは�
 `InvalidateRequerySuggested()` が効くのは `CanExecuteChanged` を `CommandManager.RequerySuggested` へ委譲した実装だけであり、自前のイベントを持つ実装には届かない。
 逆に `RaiseCanExecuteChanged()` が効くのは自前のイベントを持つ実装だけである。
 どちらの方式を採るかで、条件が変わったときに呼ぶべきものが変わる。
+
+キー入力の行が示すとおり、ユーザーが入力すると WPF は `RequerySuggested` を発生させて再問い合わせを行う。これが効くのも委譲した実装だけで、自前のイベントを持つ実装は入力があっても `False` のままだった。
 
 最終行は対照である。`Command` が未設定のボタンは判定の対象が無いため、最初から有効のまま変化しない。
 
@@ -230,7 +233,7 @@ public class SaveViewModel
 - **`InvalidateRequerySuggested` は UI スレッドで呼ぶ:** この API が促す `CommandManager` の再評価は UI スレッド側で処理され、対象のコマンドソース（UI 要素）も UI スレッドに属する。そのため呼び出しも UI スレッドを前提とし、バックグラウンドスレッドで状態を変えた場合は、`Dispatcher` で UI スレッドへ移してから呼ぶ。
 - **自前発火も UI スレッドで行う:** `RaiseCanExecuteChanged` の発火はボタン側のハンドラ（UI 要素の更新）を同期的に呼び出す。別スレッドから発火すると UI 要素へ別スレッドで触れることになるため、`Dispatcher` 経由で UI スレッドに寄せる。
 - **`CanExecute` は軽量に保つ:** `InvalidateRequerySuggested` は `RequerySuggested` に接続されたコマンドソースに `CanExecute` を問い直させる。重い処理を書くと、頻繁な再評価が UI の応答性を損なう。
-- **`CanExecute` を空実装のまま放置しない:** 冒頭のように `CanExecuteChanged` を宣言だけして発火しない実装は、コンパイルは通るが状態が固定される典型的な原因である。
+- **`CanExecuteChanged` を宣言だけのまま放置しない:** 冒頭のように `CanExecuteChanged` を宣言だけして発火しない実装は、コンパイルは通るが状態が固定される典型的な原因である。
 
 ---
 

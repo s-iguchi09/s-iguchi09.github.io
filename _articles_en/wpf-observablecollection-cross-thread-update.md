@@ -76,8 +76,8 @@ The distinction is visible by performing the same operation on an `ObservableCol
 The table below records the result of calling `Add` from a background thread, varying whether the collection is bound and which countermeasure is applied.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception. Only the EnableCollectionSynchronization row was notified while the lock was held." width="992" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window. The last column gives how many of the <code>CollectionChanged</code> notifications fired while <code>Monitor.IsEntered</code> reported the lock as held, out of the total.</figcaption>
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception. In the bound rows, the collection's Count and the ItemsControl's Items.Count are both 1, but the view received no change notification in the NotSupportedException row and one notification in each of the other two." width="1062" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window. The last column gives the collection's <code>Count</code> after the <code>Add</code>, the <code>ItemsControl</code>'s <code>Items.Count</code>, and the number of <code>CollectionChanged</code> notifications the view (<code>Items</code>) received.</figcaption>
 </figure>
 
 **An unbound collection can be modified from a background thread without an exception.**
@@ -88,13 +88,9 @@ Note that the absence of an exception on the unbound row **does not mean the col
 `ObservableCollection<T>` provides no protection against concurrent access, so competing updates still corrupt it in other ways.
 What the row establishes is narrower: the source of `NotSupportedException` is the binding target.
 
-The last column reports whether the lock was held at the moment `CollectionChanged` fired.
-**Only the `EnableCollectionSynchronization` row reads 1/1, meaning the change and its notification happen inside the same lock.**
-The other rows read 0/1, with the notification raised outside any lock.
-
-That 1/1 is the result **for a configuration where the application wraps the `Add` in a `lock`**.
-It shows that the lock handed to `EnableCollectionSynchronization` is still held when the notification arising from that `Add` is raised.
-Registering alone does not place notifications inside the lock; wrapping the `Add` in the same lock is the application&#39;s responsibility.
+The last column gives the collection's count after the `Add`, the `ItemsControl`'s `Items.Count`, and the number of change notifications the view received.
+With a single `Add`, the two counts were 1 in every row, but a matching `Items.Count` does not show that the change reached the view: without synchronization the view can read the count from the source list. In the row that threw `NotSupportedException`, the view received no notification; with `Dispatcher.Invoke` and with `EnableCollectionSynchronization`, it received one.
+The `EnableCollectionSynchronization` row was measured with the application wrapping the `Add` in the same lock it registered. Registering alone does not put the `Add` inside the lock; wrapping it in the same lock is the application's responsibility.
 
 ---
 
@@ -103,7 +99,7 @@ Registering alone does not place notifications inside the lock; wrapping the `Ad
 There are two approaches.
 
 - **Marshal to the UI thread with the `Dispatcher`** — run the collection mutation itself on the UI thread. This is simple and easy to apply to existing code.
-- **Use `BindingOperations.EnableCollectionSynchronization`** — provide a lock in the application and register it with WPF, which allows direct modification from a background thread. This is less likely to saturate the UI thread even under heavy updates.
+- **Use `BindingOperations.EnableCollectionSynchronization`** — provide a lock in the application and register it with WPF, which allows direct modification from a background thread. Change notifications are applied to the view asynchronously on the UI thread, so a change does not wait for them to be applied; access to the collection is still serialized by the registered lock, so the background thread can wait for the lock while the UI thread holds it.
 
 The former moves changes onto the UI thread; the latter lets WPF safely take in changes made on another thread.
 
@@ -176,7 +172,15 @@ The two core approaches above, plus a variant and a way to avoid the problem ent
 It needs no extra setup and touches little of the existing code. The cost of a per-item round-trip to the UI thread does not matter at low counts.
 
 **Heavy, frequent updates from another thread call for `EnableCollectionSynchronization`.**
-Running a large number of per-item synchronous `Invoke` calls saturates the UI thread and reduces responsiveness. Sharing a lock removes those round-trips by allowing direct modification from the background.
+A per-item synchronous `Invoke` waits for the UI thread to run each item. Sharing a lock allows direct modification from the background and removes those round-trips, although the background thread still waits whenever the UI thread holds the lock.
+Adding 5,000 items one at a time, the loop took 992 ms with `Dispatcher.Invoke`.
+With `EnableCollectionSynchronization` the loop finished in 6 ms, and the view had received notifications for all items after 64 ms.
+When control returned to the UI thread after the loop, though, the view had received only 746 notifications; the rest were applied later on the UI thread. That count was read after the `await`, not at the instant the loop ended, and the UI thread can process notifications in between. Applying the changes remains work for the UI thread.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg" alt="A table of adding 5,000 items one by one from a background thread. With Dispatcher.Invoke per item, the loop took 992 ms, the view had received all 5,000 notifications after the await, and receiving all of them took 994 ms. With EnableCollectionSynchronization and a lock, the loop took 6 ms, the view had received 746 notifications after the await, and receiving all of them took 64 ms." width="976" height="140" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by adding 5,000 items one at a time from inside <code>Task.Run</code> to a collection bound to a virtualized <code>ListBox</code>. The third column is the number of <code>CollectionChanged</code> notifications the view had received when control returned to the UI thread after the loop, and the last column is the time from the start of the loop until the view had received 5,000.</figcaption>
+</figure>
 
 **A custom synchronization mechanism such as a semaphore calls for the callback overload.**
 It lets WPF wait on something other than a lock. This is the most complex to implement.
@@ -191,7 +195,7 @@ This avoids producing a cross-thread modification in the first place. The benefi
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |
 | `Dispatcher.Invoke` / `InvokeAsync` | No extra setup; simple and easy to retrofit | Per-item round-trips can strain the UI thread | Low update frequency and volume; occasional add or remove |
-| `EnableCollectionSynchronization` (simple lock) | Direct modification from the background; less UI pressure | Requires consistent locking; slightly more design effort | High-volume, high-frequency updates on another thread |
+| `EnableCollectionSynchronization` (simple lock) | Direct modification from the background; notifications are applied on the UI thread asynchronously (access still waits for the shared lock) | Requires consistent locking; slightly more design effort | High-volume, high-frequency updates on another thread |
 | `EnableCollectionSynchronization` (callback) | Allows non-lock mechanisms such as semaphores | Most complex to implement | A design that already has a custom synchronization mechanism |
 | Batch on the UI thread | Avoids the threading issue entirely | Loses the benefit of background work | Work that can apply all changes at once after gathering |
 

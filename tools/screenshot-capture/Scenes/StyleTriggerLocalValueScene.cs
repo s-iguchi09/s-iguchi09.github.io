@@ -63,6 +63,9 @@ internal sealed class StyleTriggerLocalValueScene : IScene
         "そのときの実効値の BaseValueSource が Local になること",
         "既定値を Setter へ移すと Trigger が反映され、BaseValueSource が変わること",
         "ClearValue でローカル値を取り除いても Trigger が反映されるようになること",
+        "SetCurrentValue はローカル値があっても実効値を変えること。その後にトリガーが作動しても、ローカル値がある場合はトリガーの値にならないこと",
+        "バインドのあるプロパティへ代入したとき、OneWay のバインドは外れ、TwoWay のバインドは残ってソースへ書き戻されること",
+        "明示スタイルを書いた要素にも、テーマスタイル（既定スタイル）は適用されること",
     ];
 
     public string Slug => "wpf-style-trigger-not-working-local-value";
@@ -90,6 +93,116 @@ internal sealed class StyleTriggerLocalValueScene : IScene
             ["configuration", "effective value (BaseValueSource)"],
             await ValuePrecedenceMeasurements.StyleTriggerPrecedenceAsync(),
             "style-trigger-precedence.svg");
+
+        await context.SaveTableAsync(
+            "SetCurrentValue, assignment over a binding, and the theme style",
+            ["case", "measured"],
+            await CurrentValueAndBindingAsync(),
+            "style-trigger-currentvalue-binding.svg");
+    }
+
+    /// <summary>トリガーの条件を Tag にしたスタイル。Tag が on のとき背景を緑にする。</summary>
+    private const string TaggedBorder = """
+        <Border Width="80" Height="24">
+          <Border.Style>
+            <Style TargetType="Border">
+              <Style.Triggers>
+                <Trigger Property="Tag" Value="on">
+                  <Setter Property="Background" Value="Green" />
+                </Trigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+        </Border>
+        """;
+
+    private sealed class Source : System.ComponentModel.INotifyPropertyChanged
+    {
+        private string _value = "from source";
+
+        public string Value
+        {
+            get => _value;
+            set
+            {
+                _value = value;
+                PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Value)));
+            }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    }
+
+    private static async Task<List<IReadOnlyList<string>>> CurrentValueAndBindingAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        foreach (bool withLocal in new[] { true, false })
+        {
+            var border = SceneContext.LoadXaml<Border>(TaggedBorder);
+            if (withLocal)
+            {
+                border.Background = Brushes.Red;
+            }
+
+            string prefix = withLocal ? "local Red" : "no local value";
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    $"{prefix}: SetCurrentValue(White), then Tag = on",
+                    border,
+                    _ => [WpfProbe.ValueAndSource(border, Border.BackgroundProperty)],
+                    Act: async _ =>
+                    {
+                        border.SetCurrentValue(Border.BackgroundProperty, Brushes.White);
+                        string afterSet = WpfProbe.ValueAndSource(border, Border.BackgroundProperty);
+                        border.Tag = "on";
+                        await Task.Yield();
+                        rows.Add([$"{prefix}: right after SetCurrentValue(White)", afterSet]);
+                    }),
+            ]));
+        }
+
+        foreach (System.Windows.Data.BindingMode mode in new[] { System.Windows.Data.BindingMode.OneWay, System.Windows.Data.BindingMode.TwoWay })
+        {
+            var source = new Source();
+            var box = new TextBox { Width = 120 };
+            box.SetBinding(TextBox.TextProperty, new System.Windows.Data.Binding(nameof(Source.Value)) { Source = source, Mode = mode });
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    $"TextBox.Text bound {mode}, then Text = \"typed\" in code",
+                    box,
+                    _ =>
+                    [
+                        $"binding {(System.Windows.Data.BindingOperations.GetBindingExpression(box, TextBox.TextProperty) is null ? "removed" : "kept")}, source.Value = {source.Value}",
+                    ],
+                    Act: _ =>
+                    {
+                        box.Text = "typed";
+                        return Task.CompletedTask;
+                    }),
+            ]));
+        }
+
+        var styled = SceneContext.LoadXaml<Button>("""
+            <Button Content="Run">
+              <Button.Style>
+                <Style TargetType="Button">
+                  <Setter Property="Foreground" Value="Blue" />
+                </Style>
+              </Button.Style>
+            </Button>
+            """);
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "Button with an explicit Style (Foreground only): Template",
+                styled,
+                _ => [$"{(styled.Template is null ? "null" : "set")} ({System.Windows.DependencyPropertyHelper.GetValueSource(styled, Control.TemplateProperty).BaseValueSource})"]),
+        ]));
+
+        return rows;
     }
 
     /// <summary>DataTrigger の条件に使う ViewModel 相当の状態。</summary>

@@ -50,6 +50,7 @@ internal sealed class StaticVsDynamicResourceScene : IScene
         "リソースを差し替えたとき、StaticResource で参照した側は値が変わらないこと",
         "DynamicResource で参照した側は値が追随すること",
         "差し替え前は両者が同じ値であること",
+        "リソースを差し替えず、Freeze されていない同じブラシの Color を書き換えた場合は、StaticResource 側にも反映されること",
     ];
 
     public string Slug => "wpf-staticresource-vs-dynamicresource";
@@ -76,7 +77,7 @@ internal sealed class StaticVsDynamicResourceScene : IScene
         });
 
         await context.SaveTableAsync(
-            "Brush resource replaced at run time (White -> Red)",
+            "Brush resource at run time (White -> Red): the entry replaced, or the same brush's Color changed",
             ["configuration", "Border.Background"],
             await ValuePrecedenceMeasurements.ResourceSwapAsync(),
             "static-vs-dynamic-resource-update.svg");

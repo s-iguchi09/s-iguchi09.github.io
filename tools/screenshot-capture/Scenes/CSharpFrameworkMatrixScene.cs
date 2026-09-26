@@ -26,6 +26,7 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
         "net48 に対して各構文をコンパイルし、通るか・不足する型は何かを確かめる",
         "with 式が IsExternalInit を要するのは対象が init アクセサを持つ場合に限ること",
         "可変な struct と positional record struct の with は IsExternalInit を要さないこと",
+        "readonly record struct の with は IsExternalInit を要すること",
         "required + init は 3 つの型を要するが、required + set では IsExternalInit が不要であること",
         "構文ごとに、通る最小の LangVersion を求める（既定のままではどうなるかも測る）",
         "with は record class なら C# 9.0、struct 系は C# 10.0 から使えること",
@@ -61,6 +62,11 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
         new(
             "record struct s with { }",
             "public record struct S(int X);\npublic class C { public S M(S s) => s with { X = 9 }; }",
+            IsExternalInitPolyfill),
+        // readonly record struct の位置指定のプロパティは init を生成するので、record クラスと同じく IsExternalInit を要する。
+        new(
+            "readonly record struct s with { }",
+            "public readonly record struct S(int X);\npublic class C { public S M(S s) => s with { X = 9 }; }",
             IsExternalInitPolyfill),
         new(
             "record r with { }",

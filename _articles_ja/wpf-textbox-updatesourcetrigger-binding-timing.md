@@ -51,7 +51,7 @@ ViewModel のプロパティに `TextBox` をバインドし、その値を使�
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-lostfocus-vs-propertychanged.png" alt="2 組の入力欄と ViewModel の値を並べた画面。既定のバインディングでは入力欄が sato でも UserName は suzuki のまま。UpdateSourceTrigger=PropertyChanged では UserName も sato になっている。" width="401" height="175" loading="lazy">
-  <figcaption>どちらも <code>UserName</code> の初期値は <code>suzuki</code> で、入力欄にフォーカスを残したまま <code>sato</code> へ書き換えた状態。右側は同じ <code>UserName</code> を <code>OneWay</code> で表示している。既定（上）ではフォーカスが外れていないためソースが更新されず、<code>PropertyChanged</code>（下）では即座に反映される。</figcaption>
+  <figcaption>どちらも <code>UserName</code> の初期値は <code>suzuki</code> で、入力欄にフォーカスを移して <code>sato</code> と打ち込んだ状態（WPF の入力処理 <code>InputManager</code> を通して入力した）。下の入力欄に打ち込んだ後に上の入力欄へ打ち込み、上の入力欄にフォーカスを残している。右側は同じ <code>UserName</code> を <code>OneWay</code> で表示している。既定（上）ではフォーカスが外れていないためソースが更新されず、<code>PropertyChanged</code>（下）では即座に反映される。</figcaption>
 </figure>
 
 ---
@@ -84,7 +84,7 @@ UpdateSourceTrigger def = metadata.DefaultUpdateSourceTrigger; // => LostFocus
 実際にメタデータを読み出して並べると、`TextBox.Text` だけが他と異なることが分かる。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg" alt="依存関係プロパティごとの DefaultUpdateSourceTrigger を測った表。TextBox.Text だけが LostFocus で、CheckBox.IsChecked、ComboBox.SelectedItem、Slider.Value、TextBlock.Text はいずれも PropertyChanged である。" width="634" height="260" loading="lazy">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg" alt="依存関係プロパティごとの DefaultUpdateSourceTrigger を測った表。TextBox.Text だけが LostFocus で、CheckBox.IsChecked、ComboBox.SelectedItem、Slider.Value、PasswordBox の型で読んだ FrameworkElement.Tag、TextBlock.Text はいずれも PropertyChanged である。" width="760" height="260" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>DependencyProperty.GetMetadata</code> から得た <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> を読み出した結果。<code>BindsTwoWayByDefault</code> も併せて示す。</figcaption>
 </figure>
 
@@ -152,11 +152,16 @@ be.UpdateSource();
 
 ## 注意点
 
-- **IME 変換中の即時更新**: `PropertyChanged` は日本語入力の変換中(未確定文字列)でもソースを更新するため、確定前の中間文字列が ViewModel へ流れ込む。変換確定を待ってから処理したい場合は `LostFocus` にする。後述の `Delay` は更新頻度を抑えるだけで、未確定文字列の流入自体は防げない点に注意する。
-- **検証(Validation)のタイミング**: `ValidationRules` は `Binding` に付き、`ValidationStep`(既定 `RawProposedValue`)に応じてソース更新の前後で走るため、`UpdateSourceTrigger` の契機に連動する。一方 `INotifyDataErrorInfo` は ViewModel 側でソース更新後に検証し、結果は `ErrorsChanged` の通知で反映されるため、非同期検証では更新契機と表示タイミングが一致しないことがある。`LostFocus` では入力欄を離れるまで、`PropertyChanged` では 1 文字ごとにソース更新(と `ValidationRules`)が走る。ただし `ValidatesOnTargetUpdated="True"` を指定したルールはターゲット更新時にも走るため、`UpdateSourceTrigger` の契機だけには連動しない。`INotifyDataErrorInfo` の反映契機も `ErrorsChanged` の発生時点であり、ソース更新とは独立に通知する実装ではこの契機に縛られない。この場合、バインディングエンジンは通知を受けてエラー状態を読み直すため、`ErrorsChanged` は UI スレッドで発生させる必要がある。バックグラウンド処理の完了で検証結果が確定する構成では、エラー状態の更新から通知までを `Dispatcher` などで UI スレッドへマーシャルする。検証結果が画面に出ない場合の切り分けは [WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け](/ja/articles/wpf-validation-error-not-displayed/) で扱っている。
+- **IME 変換中の文字列**: 日本語入力の変換中（未確定）の文字列が `PropertyChanged` でソースへ届くかどうかは、本記事では測っていない。確定した値だけを扱いたい場合は、`LostFocus` か `Explicit` にして、確定の契機を自分で決める。
+- **検証(Validation)のタイミング**: `ValidationRules` は `Binding` に付き、`ValidationStep`(既定 `RawProposedValue`)に応じてソース更新の前後で走るため、`UpdateSourceTrigger` の契機に連動する。一方 `INotifyDataErrorInfo` は ViewModel 側でソース更新後に検証し、結果は `ErrorsChanged` の通知で反映されるため、非同期検証では更新契機と表示タイミングが一致しないことがある。`LostFocus` では入力欄を離れるまで、`PropertyChanged` では 1 文字ごとにソース更新(と `ValidationRules`)が走る。ただし `ValidatesOnTargetUpdated="True"` を指定したルールはターゲット更新時にも走るため、`UpdateSourceTrigger` の契機だけには連動しない。`INotifyDataErrorInfo` の反映契機も `ErrorsChanged` の発生時点であり、ソース更新とは独立に通知する実装ではこの契機に縛られない。`ErrorsChanged` をバックグラウンドのスレッドから発生させても、エラーは画面に反映された（下の表）。検証結果が画面に出ない場合の切り分けは [WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け](/ja/articles/wpf-validation-error-not-displayed/) で扱っている。
 - **`Delay` による抑制**: `PropertyChanged` の過剰な更新は、`Binding.Delay`(.NET Framework 4.5 以降)で最後の入力から指定ミリ秒後に 1 回だけ更新するよう抑制できる。例: `{Binding UserName, UpdateSourceTrigger=PropertyChanged, Delay=500}`。
-- **フォーカスを移動させない確定操作**: `TextBox` がフォーカスを失わず、かつ `UpdateSource()` も呼ばれない経路では、既定の `LostFocus` でソース更新が起きない。クリックで起動する `Focusable="False"` のボタン、Enter で起動する既定ボタン(`IsDefault="True"`)、アクセスキーがこれに該当する。`Focusable="False"` はボタンへのフォーカス移動を防ぐだけで、`IsDefault` やアクセスキーによる起動自体は妨げない点にも注意する。この経路で確定する UI では `PropertyChanged` か `Explicit` を使う。
+- **フォーカスを移動させない確定操作**: `TextBox` がフォーカスを失わず、かつ `UpdateSource()` も呼ばれない経路では、既定の `LostFocus` でソース更新が起きない。クリックで起動する `Focusable="False"` のボタン、Enter で起動する既定ボタン(`IsDefault="True"`)、アクセスキーがこれに該当する。既定ボタンで測ると、`Click` の時点で `UserName` は更新前の値のままで、`TextBox` にフォーカスが残っていた（下の表）。`Focusable="False"` はボタンへのフォーカス移動を防ぐだけで、`IsDefault` やアクセスキーによる起動自体は妨げない点にも注意する。この経路で確定する UI では `PropertyChanged` か `Explicit` を使う。
 - **`x:Bind` との違い**: WPF の `{Binding}` は `Explicit` を含む 3 値をサポートする。UWP/WinUI の `{x:Bind}` は `Explicit` を持たない点が異なるため、他プラットフォームの記事を参照する際は混同しない。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.svg" alt="フォーカスを移さない確定と、ErrorsChanged を発生させるスレッドを測った表。既定のバインドの TextBox に sato と打ち込み、フォーカスを残したまま Enter で IsDefault のボタンを押すと、Click の時点で UserName は suzuki のままで、TextBox にフォーカスが残っている。ErrorsChanged を UI スレッドから発生させても、バックグラウンドのスレッドから発生させても、Validation.HasError は True になる。" width="1022" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。文字と Enter は WPF の入力処理（<code>InputManager</code>）を通して送った。</figcaption>
+</figure>
 
 ---
 

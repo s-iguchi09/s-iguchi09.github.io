@@ -59,7 +59,7 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
 `TextBox` に変えると選択でき、枠と背景を消しても選択できることは変わらない。見た目と機能は独立している。
 
 最終行が示すとおり、`IsTabStop` を `False` にしても `Focusable` は `True` のままである。
-Tab キーの巡回からは外れるが、クリックでのフォーカスと選択は残る。表示専用の見た目に寄せつつ選択を残したい場合は、この組み合わせになる。
+Tab キーの巡回からは外れるが、`Focusable` は `True` のままで、選択の API も使える。表示専用の見た目に寄せつつ選択を残したい場合は、この組み合わせになる。
 
 ---
 
@@ -70,12 +70,12 @@ Tab キーの巡回からは外れるが、クリックでのフォーカスと�
 
 - `IsReadOnly="True"`
 編集を禁止しつつ、選択とコピーを可能にする
-- `IsReadOnlyCaretVisible="False"`
-読み取り専用時にキャレットを表示しない
 - `Background="Transparent"`
 背景を透明にする
 - `BorderThickness="0"`
 枠線を消す
+- `Padding="0"`
+内側の余白を消し、`TextBlock` と同じ位置に文字を置く
 - `TextWrapping="Wrap"`
 長文を折り返して表示する
 
@@ -86,15 +86,15 @@ Tab キーの巡回からは外れるが、クリックでのフォーカスと�
 ## 実装例
 
 以下の XAML は、エラーメッセージを編集不可かつ選択可能な状態で表示する最小構成である。  
-`TextBlock` の置き換え先として利用しやすいように、背景と枠線を除去し、読み取り専用時のキャレットも非表示としている。  
+`TextBlock` の置き換え先として利用しやすいように、背景・枠線・内側の余白を除去している。読み取り専用時のキャレットは、`IsReadOnlyCaretVisible` の既定値が `False` のため、指定しなくても表示されない。  
 
 ```xml
 <TextBox
     Text="{Binding ErrorMessage}"
     IsReadOnly="True"
-    IsReadOnlyCaretVisible="False"
     Background="Transparent"
     BorderThickness="0"
+    Padding="0"
     TextWrapping="Wrap" />
 ```
 
@@ -106,30 +106,33 @@ Tab キーの巡回からは外れるが、クリックでのフォーカスと�
 </figure>
 
 また、見た目も `TextBlock` に近いため、既存の表示用テキストを `TextBox` に置き換える形で適用しやすい。  
-長文や複数行の表示を前提とする場合は、改行入力の扱いやスクロール表示も加えると実用性が高まる。  
+長文の表示を前提とする場合は、縦のスクロールバーを加えると実用性が高まる。  
 以下はその例である。  
 
 ```xml
 <TextBox
     Text="{Binding ErrorMessage}"
     IsReadOnly="True"
-    IsReadOnlyCaretVisible="False"
     Background="Transparent"
     BorderThickness="0"
+    Padding="0"
     TextWrapping="Wrap"
-    AcceptsReturn="True"
     VerticalScrollBarVisibility="Auto" />
 ```
 
-`AcceptsReturn="True"` を設定することで複数行テキストを自然に扱いやすくなり、`VerticalScrollBarVisibility="Auto"` により表示領域を超えた内容も確認しやすくなる。
+`VerticalScrollBarVisibility="Auto"` により、表示領域を超えた内容はスクロールバーで確認できる。改行を含む文字列の表示に `AcceptsReturn` は要らない。`AcceptsReturn` は Enter キーで改行を入れるかどうかを決めるだけで、読み取り専用の `TextBox` に 3 行の文字列を表示すると、`False` でも `True` でも 3 行で表示された。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.svg" alt="読み取り専用の TextBox の表。IsReadOnlyCaretVisible の既定値は False。3 行の文字列を表示すると、AcceptsReturn が False でも True でも LineCount は 3 で高さも同じ。" width="504" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>IsReadOnlyCaretVisible</code> の既定値を読み、読み取り専用の <code>TextBox</code> に <code>line1</code>〜<code>line3</code> を表示して測った結果。</figcaption>
+</figure>
 
 ---
 
 ## 注意点
 
 - `TextBox` は `TextBlock` よりも入力コントロールとしての性質が強いため、既定スタイルによっては余白やフォーカス時の見た目が異なる場合がある。
-- `IsReadOnly="True"` のみでは、フォーカス時にキャレットが表示され、入力可能なコントロールに見えることがある。
-- `IsReadOnlyCaretVisible="False"` を設定すると、読み取り専用時のキャレット表示を抑制でき、表示専用の印象に近づけやすい。
+- 読み取り専用の `TextBox` は、既定ではキャレットを表示しない。`IsReadOnlyCaretVisible` の既定値が `False` のため、`IsReadOnly="True"` だけでよい。キーボードで範囲選択させたいなど、キャレットを見せたい場合だけ `True` にする。
 - デザイン上の統一が必要な場合は、`Padding` や `Focusable`、スタイル定義もあわせて調整する構成が適する。
 
 ---
@@ -147,7 +150,7 @@ Tab キーの巡回からは外れるが、クリックでのフォーカスと�
 ## まとめ
 
 WPF で、編集は不可としつつテキストの選択・コピーを可能にしたい場合は、`TextBlock` の代わりに `TextBox` を読み取り専用で利用する方法が有効である。  
-`IsReadOnly="True"` により編集を防ぎ、`IsReadOnlyCaretVisible="False"` により読み取り専用時のキャレット表示を抑制できる。  
+`IsReadOnly="True"` により編集を防げる。`IsReadOnlyCaretVisible` の既定値は `False` のため、入力できるように見せるキャレットも表示されない。  
 さらに、背景や枠線を調整することで、`TextBlock` と同じような表示用途で扱いながら、選択・コピーに対応できる。  
 表示専用でありながらコピー性が求められる場面では、この構成を基本パターンとして採用するのが適切である。  
 ---

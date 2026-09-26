@@ -11,6 +11,13 @@ verifies:
   - "子のコンテナが、親を展開するまで生成されないこと"
   - "IsExpanded を true にした直後はまだ生成されておらず、レイアウトが走って初めて取得できること"
   - "TreeViewItem.IsSelected を true にすると TreeView.SelectedItem に反映されること"
+  - "記事の XAML で、生成済みのコンテナの間では選択が排他になり、ViewModel にも書き戻されること"
+  - "コンテナが生成されていないノードとの間では排他にならず、ViewModel に true が 2 つ残ること"
+  - "ItemContainerStyle の IsSelected が TwoWay と OneWay のとき、コンテナへ代入した後の値の出どころと、ViewModel から選択を戻したときの反映"
+  - "選択中の項目の背景が、SystemColors のどのブラシと一致するか（フォーカスあり・なし）"
+  - "IsSelected を true にしてもスクロール位置は変わらず、BringIntoView で初めて動くこと（200 ノード、仮想化なし）"
+  - "仮想化を有効にすると、コンテナの無いノードを ViewModel から選んでも、スクロールで生成されるまで SelectedItem に届かないこと"
 images:
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png"
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg"
+  - "images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg"

@@ -23,7 +23,6 @@ internal static class SelectionAndTriggerMeasurements
         rows.Add([
             "TreeView.SelectedItemProperty.ReadOnly",
             WpfProbe.Describe(TreeView.SelectedItemProperty.ReadOnly),
-            "-",
         ]);
 
         // 親 1 つ、その下に子 2 つ。子のコンテナは展開するまで作られない。
@@ -112,7 +111,7 @@ internal static class SelectionAndTriggerMeasurements
             new WpfProbe.Case(label, host, _ => [read(tree, parent, child)]),
         ]);
 
-        return [measured[0][0], measured[0][1], "-"];
+        return [measured[0][0], measured[0][1]];
     }
 
     // ------------------------------------------------------------------
@@ -214,7 +213,7 @@ internal static class SelectionAndTriggerMeasurements
             ("CheckBox.IsChecked", CheckBox.IsCheckedProperty, typeof(CheckBox)),
             ("ComboBox.SelectedItem", ComboBox.SelectedItemProperty, typeof(ComboBox)),
             ("Slider.Value", Slider.ValueProperty, typeof(Slider)),
-            ("PasswordBox.Tag", FrameworkElement.TagProperty, typeof(PasswordBox)),
+            ("FrameworkElement.Tag (on PasswordBox)", FrameworkElement.TagProperty, typeof(PasswordBox)),
             ("TextBlock.Text", TextBlock.TextProperty, typeof(TextBlock)),
         ];
 

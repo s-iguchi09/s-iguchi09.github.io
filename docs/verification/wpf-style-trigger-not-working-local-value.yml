@@ -10,6 +10,10 @@ verifies:
   - "そのときの実効値の BaseValueSource が Local になること"
   - "既定値を Setter へ移すと Trigger が反映され、BaseValueSource が変わること"
   - "ClearValue でローカル値を取り除いても Trigger が反映されるようになること"
+  - "SetCurrentValue はローカル値があっても実効値を変えること。その後にトリガーが作動しても、ローカル値がある場合はトリガーの値にならないこと"
+  - "バインドのあるプロパティへ代入したとき、OneWay のバインドは外れ、TwoWay のバインドは残ってソースへ書き戻されること"
+  - "明示スタイルを書いた要素にも、テーマスタイル（既定スタイル）は適用されること"
 images:
   - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png"
   - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg"
+  - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg"

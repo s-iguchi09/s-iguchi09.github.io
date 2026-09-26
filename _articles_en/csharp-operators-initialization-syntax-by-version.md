@@ -26,7 +26,7 @@ The tables in this article record **what actually compiled**.
 Each construct was compiled against `net10.0` with `LangVersion` lowered step by step to find the minimum the compiler accepts, and against `net48` to determine whether the BCL supplies the types it needs.
 For `^` and `..`, the compiled output was also executed on .NET Framework to confirm the returned values.
 
-That process surfaced **three discrepancies that documentation alone does not reveal**. Each is called out where it applies.
+That process surfaced **points that documentation alone does not reveal**: `init` is not a pure language feature, whether `with` needs a BCL type depends on the target type, and `required` needs different attributes with `init` and with `set`. They are explained in footnotes †3 to †5 of the table.
 
 ---
 
@@ -57,7 +57,7 @@ Feature availability depends mainly on two factors:
 1. The compiler and `LangVersion`.
 2. Runtime-side requirements such as BCL types or attributes.
 
-As a result, even when targeting .NET Framework, language features such as `??=` and `!` can be used if the build environment supports C# 8.0.
+As a result, even when targeting .NET Framework, language features such as `??=` and `!` can be used once `LangVersion` is set to 8.0 or later; a newer compiler alone keeps the .NET Framework default of C# 7.3 (see †1).
 
 The following table summarizes the operators and syntax covered in this article and the C# version in which they were introduced.
 Plotted over time, they line up as follows.
@@ -83,10 +83,10 @@ Plotted over time, they line up as follows.
 | `..` (range) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `init` accessor | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
 | `with` (record class) | C# 9.0 | .NET 5 | ⚠️ Requires a BCL type (†3) |
-| `with` (struct / record struct) | C# 10.0 | .NET 6 | ✅ Language feature only (†1, †5) |
+| `with` (mutable struct / positional record struct) | C# 10.0 | .NET 6 | ✅ Language feature only (†1, †5) |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ Language feature only (†1) |
 | `required` property | C# 11.0 | .NET 7 | ⚠️ Requires BCL attributes (†4) |
-| Collection expressions | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
+| Collection expressions | C# 12.0 | .NET 8 | ✅ Language feature only for arrays and `List<T>` (†1); span targets need `System.Memory` |
 | Primary constructors | C# 12.0 | .NET 8 | ✅ Language feature only (†1) |
 
 - **†1**: Pure language features. These can be used on .NET Framework once `LangVersion` is set to the corresponding C# version. **Updating the SDK or Visual Studio is not enough on its own:** a project targeting .NET Framework defaults to C# 7.3 and does not move off it when the tooling is updated, so `LangVersion` has to be set explicitly in the `.csproj`.
@@ -105,14 +105,14 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="693" height="590" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a positional record struct are OK. a[^1], a[1..3], init, with on a readonly record struct, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="717" height="620" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 
 Four things follow from the table.
 
 **1. `??=` and `!` work on .NET Framework by raising `LangVersion` alone.**
-The same holds for target-typed `new`, collection expressions, and primary constructors.
+The same holds for target-typed `new`, primary constructors, and collection expressions that create arrays or `List<T>`.
 For the problem this article opens with — `??=` being unavailable — raising `LangVersion` is sufficient.
 
 **2. `init`, and `with` on a type that has `init`, do not compile even at the highest `LangVersion`.**
@@ -320,7 +320,7 @@ Array slicing therefore still requires defining `RuntimeHelpers` as shown above.
 
 #### Notes on Defining These Yourself
 
-- `RuntimeHelpers` also exists in `mscorlib`. Defining it locally makes the local type win inside that project. If other `RuntimeHelpers` members (such as `InitializeArray`) are in use, implement them on the local type as well. **Writing the fully qualified name does not reach the BCL type** — `System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray` still resolves to the local type and fails with `CS0117` (verified on `net48`). If adding those members is undesirable, avoid the array-slicing polyfill and use `Skip` / `Take` instead.
+- `RuntimeHelpers` also exists in `mscorlib`. Defining it locally makes the local type win inside that project. The other `RuntimeHelpers` members are lost not only where they are called explicitly but also where compiler-generated code calls them: with this local type, `fixed (char* p = "abc")` failed on `net48` with `CS0656`, because the compiler calls `RuntimeHelpers.OffsetToStringData` for a string in `fixed`. Implement every member that the project needs on the local type. **Writing the fully qualified name does not reach the BCL type** — `System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray` still resolves to the local type and fails with `CS0117` (verified on `net48`). If adding those members is undesirable, avoid the array-slicing polyfill and use `Skip` / `Take` instead.
 - Declare all of these as `internal`. Making them `public` can collide with the types of assemblies that reference yours.
 - Remove the definitions after retargeting to .NET 5 or later. Duplicating a BCL type means the local definition wins, which can produce unintended behavior.
 
@@ -518,7 +518,7 @@ For that reason, it can also be used in `case` labels and attribute arguments.
 This expression creates a copy of an existing `record` or struct, changing only selected properties.
 The original instance itself remains unchanged.
 
-What it produces, however, is a **shallow copy**: only the accessible instance properties and fields are duplicated, and reference-type members keep pointing at the same objects.
+What it produces, however, is a **shallow copy**: every instance field is duplicated, private ones included (a private field of a record kept its value through `with` on `net48`), and reference-type members keep pointing at the same objects.
 Mutating a nested mutable object through the copy is therefore visible from the original as well.
 
 ```csharp
@@ -572,7 +572,7 @@ This syntax provides a unified `[...]` notation for initializing arrays, `List<T
 ```csharp
 int[] row = [1, 2, 3];                     // Array
 List<string> tags = ["C#", "WPF", ".NET"]; // List<T>
-ReadOnlySpan<byte> data = [0x00, 0x01];    // Span<T>
+ReadOnlySpan<byte> data = [0x00, 0x01];    // Span<T> (on .NET Framework, needs the System.Memory package)
 ```
 
 Inside a collection expression, the `..` spread operator can be used to flatten and combine another collection’s elements.
@@ -622,6 +622,8 @@ Starting with C# 12, `class` and `struct` types can define constructor parameter
 This removes the need for a constructor body or boilerplate field assignments.
 
 ```csharp
+public enum LogLevel { Debug, Info, Warning, Error }
+
 public class LogWriter(string logFilePath, LogLevel minimumLevel)
 {
     // Parameters can be referenced directly from within the class.
@@ -645,7 +647,7 @@ Primary constructors were introduced in C# 12.0 and require a compiler and SDK t
 - Even when targeting .NET Framework, language features such as `??=` and `!` can be used if the compiler and `LangVersion` support them.
 - `!` suppresses compile-time warnings only and does not perform a runtime null check.
   If `null` is actually passed to the marked location, a `NullReferenceException` can still occur.
-- Target-typed `new`, collection expressions, and primary constructors are pure language features and work on .NET Framework once `LangVersion` is raised (confirmed against `net48`).
+- Target-typed `new`, primary constructors, and collection expressions that create arrays or `List<T>` are pure language features and work on .NET Framework once `LangVersion` is raised (confirmed against `net48`). A collection expression for `ReadOnlySpan<T>` failed on `net48` with `CS0246`, because the type itself is missing without the `System.Memory` package.
   **`init` is not a pure language feature**, and neither is `with` when its target has `init` accessors. Both require `IsExternalInit`, so raising `LangVersion` alone does not make them compile on .NET Framework. A `with` expression on a mutable `struct` or a positional `record struct` does compile, because those generate ordinary setters rather than `init`.
   `required` additionally requires `RequiredMemberAttribute` and `CompilerFeatureRequiredAttribute`.
 - The `..` spread operator in collection expressions uses the same symbol as the C# 8.0 range operator, but the purpose is different.
@@ -660,7 +662,7 @@ The following table compares the approaches for handling compile errors caused b
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |
 | Raise `LangVersion` | New syntax can be used directly. Code remains concise. | Requires updates to the build environment such as Visual Studio or the SDK. | Projects where compiler settings can be changed. |
-| Update the build environment | Provides the latest language features and tooling support. | May have a wider impact on existing projects. | New development or environments that can be updated. |
+| Update the build environment | Provides the latest language features (together with a raised `LangVersion`) and tooling support. | May have a wider impact on existing projects. | New development or environments that can be updated. |
 | Rewrite to older syntax | Works without changing the environment. | Code becomes more verbose and newer features cannot be used. | Legacy environments where updates are not allowed. |
 | Define the missing types yourself | Enables `^`, `..`, `init`, `with`, and `required` on .NET Framework. No extra package needed. | The definitions need maintaining and must be removed when retargeting to .NET 5+. `RuntimeHelpers` shadows the BCL type of the same name. | Projects that need BCL-dependent syntax but must stay on .NET Framework. |
 | Reference `Microsoft.Bcl.Memory` | Supplies `Index` / `Range`. This is the package recommended from .NET Framework 4.6.2 onward. | How it handles the `GetSubArray` that array slicing `a[1..3]` needs has to be checked separately. | Filling the gap from NuGet in a new project. |
@@ -676,13 +678,13 @@ Whether a feature can be used depends mainly on the compiler configuration (`Lan
 The following selection criteria are practical guidelines.
 
 - **.NET Framework without compiler updates**: `??` (C# 2.0), `?.` (C# 6.0), `nameof` (C# 6.0), and `is` pattern matching (C# 7.0) are the upper baseline.
-- **.NET Framework with `LangVersion` raised**: `??=`, `!`, target-typed `new`, collection expressions, and primary constructors become available (confirmed against `net48`). `^`, `..`, `init`, `with`, and `required` remain unusable until the missing BCL types are defined.
-- **.NET 5 to 6 (C# 9 to 10)**: all C# 9 to 10 features are available, including the required supporting BCL types.
+- **.NET Framework with `LangVersion` raised**: `??=`, `!`, target-typed `new`, collection expressions for arrays and `List<T>`, primary constructors, and `with` on a mutable `struct` or a positional `record struct` become available (confirmed against `net48`). `^`, `..`, `init`, `with` on a type with `init` accessors (a `record` class or a `readonly record struct`), and `required` remain unusable until the missing BCL types are defined.
+- **.NET 5 to 6 (C# 9 to 10)**: the C# 9 to 10 features covered in this article are available, including the supporting BCL types they need.
 - **.NET 7 (C# 11) and later**: `required` properties are available.
 - **.NET 8 (C# 12) and later**: collection expressions and primary constructors are available.
 
 Compiling against `net48` showed that **whether a construct is a pure language feature cannot be inferred from how it looks**.
-`with` reads like an operator yet requires `IsExternalInit`, while larger additions such as primary constructors and collection expressions require no BCL type at all.
+`with` reads like an operator yet requires `IsExternalInit` on a type with `init` accessors, while larger additions such as primary constructors and collection expressions require no BCL type at all.
 
 The reliable way to tell whether raising `LangVersion` is enough, or whether types must be supplied, is to **compile against the target framework and see**.
 The compiler names the missing types in `CS0518` / `CS0656`, which can then be defined directly.

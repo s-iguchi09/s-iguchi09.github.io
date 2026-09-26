@@ -20,7 +20,7 @@ When one of them is missing, the other two keep working correctly while the UI s
 
 This article breaks the "no error shown" symptom into those three stages, isolates each cause, and compares `ValidationRule`, `IDataErrorInfo`, `INotifyDataErrorInfo`, and exception-based validation.
 One more symptom is covered alongside them: all three stages hold, yet the message alone is missing, which is the documented behavior of the default `ErrorTemplate`.
-Every behavior and default value described here was measured on .NET 10 / Windows 11.
+Every behavior and default value described here was measured on .NET 10 / Windows 11 (the behaviors in the notes are collected in the table at their end).
 
 ---
 
@@ -201,6 +201,7 @@ This applies to `IDataErrorInfo` and, as in the implementation below, to an `INo
 The latter follows `ErrorsChanged` on the view model, but in that arrangement the event is raised by the property setter, and the setter is invoked by the source update.
 With `UpdateSourceTrigger=Explicit` the effect is stronger: in the same arrangement the validation state did not change until `UpdateSource` was called.
 An implementation that raises `ErrorsChanged` independently of the source update, such as one that reports when an asynchronous lookup completes, is not bound by this.
+To report results while the user is still typing, specify `UpdateSourceTrigger=PropertyChanged` on the `TextBox.Text` binding. This applies to a binding that updates its source, that is `TwoWay` (the default for `TextBox.Text`) or `OneWayToSource`; with `Mode=OneWay` the input never reaches the source and the setter does not validate it.
 
 ---
 
@@ -220,8 +221,6 @@ The two interfaces differing in their default is part of what makes this hard to
 
 The last row is a case that reaches stage 3 and stops there. `HasError` is `True` and `Errors` still holds one entry, but the adorner count is 0.
 **The error is held and simply not drawn.** A value that is invalid without any red outline appearing corresponds to this row.
-
-To get past this point, specify `UpdateSourceTrigger=PropertyChanged` on the `TextBox.Text` binding to report results while the user is still typing.
 
 ---
 
@@ -381,12 +380,13 @@ A path that addresses the first element by index is re-evaluated the moment the 
 The display itself clears correctly, so the trace is easy to miss.
 Rewriting the path as `/ErrorContent`, which refers to the current item, keeps the same display and produces no trace.
 How to read output window messages is covered in [Reading WPF Binding Errors and Diagnosing Them with the Output Window](/articles/wpf-binding-error-debugging-output-window/).
-- **`Mode=OneWay` does not validate user input, and a red border once shown never clears.**
+- **`Mode=OneWay` does not validate user input, and typing does not clear a red border once shown.**
 `OneWay` has no target-to-source transfer, so typed input never becomes subject to validation.
 That does not mean validation never runs.
 Through `ValidatesOnTargetUpdated` described above, the rules were evaluated under `OneWay` both when the binding was established and when the source property changed, producing a red border for an invalid value.
 The problem is that no user action clears that border: typing a valid string into a `TextBox` bound with `OneWay` left `Validation.HasError` at `true`.
-A field switched to `OneWay` for display purposes therefore keeps its error indication permanently.
+Changing the source to a valid value did clear it, through re-evaluation on the target update.
+A field switched to `OneWay` for display purposes therefore keeps its error indication until the source changes.
 - **Assigning to the target of a `OneWay` binding from code removes the binding.**
 After a plain assignment to `TextBox.Text`, `BindingOperations.GetBinding` returned `null` and the red border disappeared.
 `OneTime` behaves the same way.
@@ -394,9 +394,9 @@ User input and `SetCurrentValue` both keep the binding intact, so only assignmen
 - **An `ErrorsChanged` property name that differs from the binding path suppresses the display.**
 Raising `ErrorsChanged` with `Namee` while the binding path was `Name` left `Validation.HasError` at `false` even though `HasErrors` was `true`.
 Using `nameof` instead of string literals prevents this.
-- **Validation results settled asynchronously must be applied on the UI thread.**
-The binding engine subscribes to `ErrorsChanged` to update `Validation.Errors`, so that notification has to be raised on the UI thread.
-When results are settled by background work, move the whole `SetErrors` call — the dictionary update and both notifications — onto the UI thread through the `Dispatcher`.
+- **`ErrorsChanged` raised from a background thread was still reflected.**
+The binding engine subscribes to `ErrorsChanged` to update `Validation.Errors`. In the measured run, raising it inside `Task.Run` still made `Validation.HasError` `true`.
+When the error dictionary is read and written from both the UI thread and a background thread, however, the view model has to synchronize that access itself.
 - **The `Validation.Error` attached event is not raised by default.**
 Handling errors outside the visual layer, for logging or for blocking navigation, requires `Binding.NotifyOnValidationError` to be `True`.
 The default is `False`, and without it the handler is never invoked.
@@ -418,6 +418,11 @@ Switching controls between display and edit modes is covered in [Switching Contr
 Whether results appear while typing or after focus leaves is a decision about update timing, not about presentation.
 The differences between the values are covered in [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/).
 Driving the update from the view when `Explicit` is chosen is covered in [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/).
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-validation-error-not-displayed/validation-pitfalls.svg" alt="A table of the behaviors in the notes. For an INotifyDataErrorInfo validating in its setter, LostFocus leaves HasError False after clearing the box by typing and turns it True once focus leaves; Explicit stays False after focus leaves and turns True on UpdateSource. With OneWay and a rule, HasError is True at the start, still True after typing, and False once the source is fixed. Assigning from code under OneWay and OneTime removes the binding and gives False; SetCurrentValue keeps the binding and stays True. Raising ErrorsChanged with Namee leaves Validation.HasError False although HasErrors is True; with Name it is True. Validation.Error is raised 0 times with NotifyOnValidationError False and 2 times with True. A binding to the ErrorContent of the first element of Validation.Errors by index traces Error 17 once when the error clears; the current-item /ErrorContent traces none. ErrorsChanged gives True whether raised from the UI thread or a background thread." width="1218" height="500" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. Typing and key presses were sent through WPF's input processing (<code>InputManager</code>). <code>Error 17</code> is the number of entries recorded in the data binding trace.</figcaption>
+</figure>
 
 ---
 
@@ -455,7 +460,7 @@ Start from the value of `Validation.GetHasError` when an error fails to appear.
 
 - **`false`** — either no validation rule is associated with the binding, or the typed input has not reached the source yet.
 Check `ValidatesOnDataErrors="True"` for `IDataErrorInfo`, and the entry in `ValidationRules` for a custom rule.
-Specify `UpdateSourceTrigger=PropertyChanged` to react while the user types.
+Specify `UpdateSourceTrigger=PropertyChanged` to react while the user types (it has no effect with `Mode=OneWay`, which never sends input to the source).
 - **`true` with nothing on screen** — the rendering surface is missing.
 Include `AdornerDecorator` if the `Window` template has been replaced.
 - **A red border but no message** — that is the behavior of the default `ErrorTemplate`.

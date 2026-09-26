@@ -40,7 +40,7 @@
   <text class="code-sm" x="140" y="227" text-anchor="middle">target</text>
 
   <line x1="486" y1="213" x2="252" y2="213" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)" />
-  <text class="code-sm" x="369" y="202" text-anchor="middle" fill="#2563eb">Mode = TwoWay | OneWay</text>
+  <text class="code-sm" x="369" y="202" text-anchor="middle" fill="#2563eb">Mode = TwoWay | OneWay | OneTime</text>
 
   <rect class="box" x="498" y="190" width="230" height="46" rx="6" />
   <text class="code" x="613" y="211" text-anchor="middle">ViewModel.Amount</text>

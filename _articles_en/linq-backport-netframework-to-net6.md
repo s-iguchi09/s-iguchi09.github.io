@@ -32,7 +32,7 @@ The polyfill implementation in this article was built and run for both `net48` a
 On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
 The following points were confirmed in that environment:
 
-- `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source`, or uses an invalid `size`.
+- `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source` (including `int.MaxValue`), or uses an invalid `size`.
 - What `MaxBy` / `MinBy` return for an empty sequence differs between a non-nullable value type such as `int` and a reference type.
 - The elements `DistinctBy` keeps, and their order, match on both targets.
 
@@ -54,7 +54,7 @@ Producing the same results without them requires workaround idioms.
 | Goal | Workaround idiom | Runtime cost |
 | --- | --- | --- |
 | Split into chunks | Indexed `Select` + `GroupBy(t => t.i / size)` | Groups all elements on first enumeration, plus intermediate tuples |
-| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort |
+| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort on .NET Framework |
 | Distinct by key | `GroupBy(x => x.Key).Select(g => g.First())` | Full per-key element lists |
 
 The problem is not only verbosity.
@@ -81,7 +81,7 @@ First, the four methods split into two evaluation strategies — lazy (`Chunk`, 
 Second, the migration guard must be `!NET6_0_OR_GREATER`, not `!NETCOREAPP`.
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png" alt="The four methods applied to the same input. Chunk(2) groups two elements at a time, MaxBy and MinBy return one element each, and DistinctBy keeps the first element per category." width="519" height="218" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minby-distinctby.png" alt="The four methods applied to the same input. Chunk(2) splits the three items into a group of two and a group of one, MaxBy and MinBy return one element each, and DistinctBy keeps the first element per category." width="519" height="218" loading="lazy">
   <figcaption>Evaluation results over the same three inputs. Only <code>Chunk</code> returns the sequence split into groups; <code>MaxBy</code> and <code>MinBy</code> return a single element, and <code>DistinctBy</code> keeps only the first element per key. These differences in return shape mirror the evaluation strategies discussed later.</figcaption>
 </figure>
 
@@ -123,21 +123,15 @@ namespace System.Linq
             using var enumerator = source.GetEnumerator();
             while (enumerator.MoveNext())
             {
-                var chunk = new TSource[size];
-                chunk[0] = enumerator.Current;
-                int count = 1;
+                // Do not allocate size elements up front: a large size would fail even for a short source.
+                var chunk = new List<TSource>(Math.Min(size, 16)) { enumerator.Current };
 
-                while (count < size && enumerator.MoveNext())
+                while (chunk.Count < size && enumerator.MoveNext())
                 {
-                    chunk[count++] = enumerator.Current;
+                    chunk.Add(enumerator.Current);
                 }
 
-                if (count < size)
-                {
-                    Array.Resize(ref chunk, count);
-                }
-
-                yield return chunk;
+                yield return chunk.ToArray();
             }
         }
 
@@ -268,7 +262,7 @@ namespace System.Linq
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Chunk, MaxBy, MinBy, and DistinctBy all produce identical results, boundary cases included." width="905" height="380" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Chunk, MaxBy, MinBy, and DistinctBy all produce identical results, boundary cases included. Chunk(int.MaxValue) on three items returns one chunk of three on both." width="905" height="410" loading="lazy">
   <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 
@@ -292,7 +286,7 @@ var products = new[]
     new { Name = "C", Price = 200 },
 };
 
-// Workaround: O(n log n) full sort
+// Workaround: an O(n log n) full sort on .NET Framework (.NET Core 3.0+ turns First into a single pass)
 var before = products.OrderByDescending(p => p.Price).First();
 
 // MaxBy: O(n) single pass
@@ -372,24 +366,18 @@ var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
 // result: [1, 2], [3, 4], [5]
 ```
 
-Internally, an array of `size` elements is pre-allocated and filled; only a trailing partial chunk is trimmed with `Array.Resize`.
+Internally, each chunk is collected in a `List<TSource>` that grows as elements arrive and is copied to an array when it is complete.
+Allocating `size` elements up front looks cheaper, but it fails for a large `size` even on a short source: an earlier version of this polyfill did that, and `new[] { 1, 2, 3 }.Chunk(int.MaxValue)` threw `OutOfMemoryException` on .NET Framework while the built-in on .NET 10 returned one chunk of three (the `Chunk(int.MaxValue)` row of the table; other .NET versions were not measured).
 
 ```csharp
-var chunk = new TSource[size]; // Pre-allocate size elements
-chunk[0] = enumerator.Current;
-int count = 1;
+var chunk = new List<TSource>(Math.Min(size, 16)) { enumerator.Current };
 
-while (count < size && enumerator.MoveNext())
+while (chunk.Count < size && enumerator.MoveNext())
 {
-    chunk[count++] = enumerator.Current;
+    chunk.Add(enumerator.Current);
 }
 
-if (count < size)
-{
-    Array.Resize(ref chunk, count); // Resize only the trailing partial chunk
-}
-
-yield return chunk;
+yield return chunk.ToArray();
 ```
 
 Each chunk is built only after the previous one is yielded, so the up-front whole-sequence grouping disappears.

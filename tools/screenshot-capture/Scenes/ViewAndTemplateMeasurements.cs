@@ -123,6 +123,7 @@ internal static class ViewAndTemplateMeasurements
             new WpfProbe.Case("inside Grid", BuildScrollCase("Grid", ItemCount), ReadScroll),
             new WpfProbe.Case("inside DockPanel (LastChildFill)", BuildScrollCase("DockPanel", ItemCount), ReadScroll),
             new WpfProbe.Case("StackPanel + explicit Height", BuildScrollCase("StackPanelFixed", ItemCount), ReadScroll),
+            new WpfProbe.Case("StackPanel + MaxHeight", BuildScrollCase("StackPanelMax", ItemCount), ReadScroll),
         ]);
     }
 
@@ -156,6 +157,7 @@ internal static class ViewAndTemplateMeasurements
         {
             "StackPanel" => $"""<StackPanel Height="200">{scroller}</StackPanel>""",
             "StackPanelFixed" => $"""<StackPanel Height="200"><ScrollViewer x:Name="Target" VerticalScrollBarVisibility="Auto" Height="200"><StackPanel>{items}</StackPanel></ScrollViewer></StackPanel>""",
+            "StackPanelMax" => $"""<StackPanel Height="200"><ScrollViewer x:Name="Target" VerticalScrollBarVisibility="Auto" MaxHeight="200"><StackPanel>{items}</StackPanel></ScrollViewer></StackPanel>""",
             "DockPanel" => $"""<DockPanel Height="200" LastChildFill="True">{scroller}</DockPanel>""",
             _ => $"""<Grid Height="200">{scroller}</Grid>""",
         };
