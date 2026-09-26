@@ -328,7 +328,7 @@ nullable 参照型を有効にしているプロジェクトでは、`Dispatcher
   UI スレッドがデッドロックや長時間の同期待ちでブロックされている場合も `OnExit` は呼ばれない。
   止まっているのは第 1 関門だが、原因は残存ウィンドウでも `ShutdownMode` でもないため、`dotnet-stack report` で UI スレッドの停止位置を先に確認する。
 - **モーダル表示は UI スレッドのブロックではない。**
-  `Window.ShowDialog()` や `MessageBox.Show` の表示中は入れ子の `Dispatcher` フレームが回っており、UI スレッドはメッセージを処理し続けている。
+  `Window.ShowDialog()` の表示中は、入れ子の `Dispatcher` フレームがキューを処理している。`MessageBox.Show` は Win32 の `MessageBox` 関数を呼び、入れ子の `Dispatcher` フレームではなく、その関数自身のモーダルループがスレッドのメッセージを処理する。どちらの場合も、UI スレッドはメッセージを処理し続けている。
   `Window.ShowDialog()` で開いたものは `Application.Windows` に残っているだけであり、通常の残存ウィンドウとして扱える。
   一方、`MessageBox` と、`OpenFileDialog` などの `CommonDialog` 派生は `Window` を継承しないため、この列挙には現れない。
 - **`OnMainWindowClose` は最初に生成されたウィンドウを基準にする。**

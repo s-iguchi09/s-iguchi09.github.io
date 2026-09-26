@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 998 470" width="998" height="470" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="998" height="470" />
+  <text class="title" x="12" y="24">MessageBox default button for each button set and defaultResult</text>
+  <rect class="head" x="12" y="38" width="974" height="30" />
+  <text class="cell" x="26" y="57.5">button set (buttons shown)</text>
+  <text class="cell" x="972" y="57.5" text-anchor="end">defaultResult → default button</text>
+  <text class="cell" x="26" y="87.5">.NET 8.0.31: OK (OK)</text>
+  <text class="cell" x="972" y="87.5" text-anchor="end">OK → OK</text>
+  <text class="cell" x="26" y="117.5">.NET 8.0.31: OKCancel (OK, Cancel)</text>
+  <text class="cell" x="972" y="117.5" text-anchor="end">OK → OK; Cancel → Cancel</text>
+  <text class="cell" x="26" y="147.5">.NET 8.0.31: YesNoCancel (Yes, No, Cancel)</text>
+  <text class="cell" x="972" y="147.5" text-anchor="end">Cancel → Cancel; Yes → Yes; No → No</text>
+  <text class="cell" x="26" y="177.5">.NET 8.0.31: YesNo (Yes, No)</text>
+  <text class="cell" x="972" y="177.5" text-anchor="end">Yes → Yes; No → No</text>
+  <text class="cell" x="26" y="207.5">.NET 8.0.31: None or a result not in the set → first button</text>
+  <text class="cell" x="972" y="207.5" text-anchor="end">12 of 12 (of 20 dialogs shown)</text>
+  <text class="cell" x="26" y="237.5">.NET 10.0.10: OK (OK)</text>
+  <text class="cell" x="972" y="237.5" text-anchor="end">OK → OK</text>
+  <text class="cell" x="26" y="267.5">.NET 10.0.10: OKCancel (OK, Cancel)</text>
+  <text class="cell" x="972" y="267.5" text-anchor="end">OK → OK; Cancel → Cancel</text>
+  <text class="cell" x="26" y="297.5">.NET 10.0.10: AbortRetryIgnore (Abort, Retry, Ignore)</text>
+  <text class="cell" x="972" y="297.5" text-anchor="end">Abort → Abort; Retry → Retry; Ignore → Ignore</text>
+  <text class="cell" x="26" y="327.5">.NET 10.0.10: YesNoCancel (Yes, No, Cancel)</text>
+  <text class="cell" x="972" y="327.5" text-anchor="end">Cancel → Cancel; Yes → Yes; No → No</text>
+  <text class="cell" x="26" y="357.5">.NET 10.0.10: YesNo (Yes, No)</text>
+  <text class="cell" x="972" y="357.5" text-anchor="end">Yes → Yes; No → No</text>
+  <text class="cell" x="26" y="387.5">.NET 10.0.10: RetryCancel (Retry, Cancel)</text>
+  <text class="cell" x="972" y="387.5" text-anchor="end">Cancel → Cancel; Retry → Retry</text>
+  <text class="cell" x="26" y="417.5">.NET 10.0.10: CancelTryContinue (Cancel, TryAgain, Continue)</text>
+  <text class="cell" x="972" y="417.5" text-anchor="end">Cancel → Cancel; TryAgain → TryAgain; Continue → Continue</text>
+  <text class="cell" x="26" y="447.5">.NET 10.0.10: None or a result not in the set → first button</text>
+  <text class="cell" x="972" y="447.5" text-anchor="end">54 of 54 (of 70 dialogs shown)</text>
+  <line class="line" x1="12" y1="38" x2="986" y2="38" />
+  <line class="line" x1="12" y1="68" x2="986" y2="68" />
+  <line class="line" x1="12" y1="98" x2="986" y2="98" />
+  <line class="line" x1="12" y1="128" x2="986" y2="128" />
+  <line class="line" x1="12" y1="158" x2="986" y2="158" />
+  <line class="line" x1="12" y1="188" x2="986" y2="188" />
+  <line class="line" x1="12" y1="218" x2="986" y2="218" />
+  <line class="line" x1="12" y1="248" x2="986" y2="248" />
+  <line class="line" x1="12" y1="278" x2="986" y2="278" />
+  <line class="line" x1="12" y1="308" x2="986" y2="308" />
+  <line class="line" x1="12" y1="338" x2="986" y2="338" />
+  <line class="line" x1="12" y1="368" x2="986" y2="368" />
+  <line class="line" x1="12" y1="398" x2="986" y2="398" />
+  <line class="line" x1="12" y1="428" x2="986" y2="428" />
+  <line class="line" x1="12" y1="458" x2="986" y2="458" />
+  <line class="line" x1="12" y1="38" x2="12" y2="458" />
+  <line class="line" x1="511" y1="38" x2="511" y2="458" />
+  <line class="line" x1="986" y1="38" x2="986" y2="458" />
+</svg>

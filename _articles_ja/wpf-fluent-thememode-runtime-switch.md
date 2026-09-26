@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF の ThemeMode を実行時に切り替えても一部だけ Light のまま残る原因の切り分け"
 date: 2026-09-19
 category: WPF
-excerpt: "Application.ThemeMode を Dark に切り替えても、一部のウィンドウや文字色が Light のまま残る。原因はウィンドウ側の Fluent 辞書、ネストした辞書、StaticResource の 3 系統に分かれる。実測の対応表から切り分け手順と対処を示す。"
+excerpt: "Application.ThemeMode を Dark に切り替えても、一部のウィンドウや文字色が Light のまま残る。実測した原因は、ウィンドウ側やネストした Fluent 辞書、StaticResource、SystemColors のキーである。切り分けと対処を示す。"
 image: /images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png
 ---
 
@@ -14,8 +14,8 @@ image: /images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window
 その辞書を経由せずに色を決めている部分は、切り替えても Light のまま残る。
 例外は発生せず、バインディングエラーも出力されないため、どこが追従していないのかを画面から探すことになる。
 
-実測すると、追従しない原因は 3 系統に分かれた。
-ウィンドウ側が自前の Fluent 辞書を持っている場合、Fluent 辞書を別の辞書の中にネストしている場合、ブラシを `StaticResource` で固定している場合である。
+測った構成では、追従しない原因は 3 系統に分かれた。ウィンドウ側が自前の Fluent 辞書を持っている場合、Fluent 辞書を別の辞書の中にネストしている場合、ブラシを `StaticResource` で固定している場合である。
+このほか、参照の書き方は正しく見える 4 つ目の場合がある。`SystemColors` のキーから取った色は、`DynamicResource` で参照していても追従しない。`SystemColors` の値が `ThemeMode` で変わらないためである。
 本記事では、`ThemeMode` の切り替えが何を差し替えているかを実測で示し、そこから原因を絞り込む手順と、原因ごとの対処を整理する。
 
 ---
@@ -98,14 +98,16 @@ Application.Current.ThemeMode = ThemeMode.Dark;
 
 `ThemeMode` が行っているのは、`Application.Resources` 直下に置いた `Fluent.Light.xaml` と `Fluent.Dark.xaml` の入れ替えである。
 コントロールの外観やブラシは、この辞書からリソース検索で解決される。
-したがって、切り替え後も Light のまま残るのは、**入れ替えた辞書より先に別の Fluent 辞書が見つかる**か、**検索の結果を値として保持し続けている**かのどちらかである。
-症状の出方から、どちらに当たるかをおおよそ判別できる。
+したがって、リソース検索で解決される値のうち、切り替え後も Light のまま残るのは、**入れ替えた辞書より先に別の Fluent 辞書が見つかる**か、**検索の結果を値として保持し続けている**か、**参照しているキーが Fluent 辞書に定義されていない**（`SystemColors` のキーなど）かのいずれかである。
+これとは別に、`Foreground="Black"` のようにリソースを使わずに書いた固定値は、辞書の入れ替えと関係なく、そのまま残る。
+症状の出方から、どれに当たるかをおおよそ判別できる。
 
 | 症状 | 疑う原因 |
 |---|---|
 | 特定のウィンドウだけが、背景も標準コントロールもまるごと Light のまま残る | ウィンドウ自身が Fluent 辞書を持っている |
 | `Window.ThemeMode` を指定していないウィンドウでも、`DynamicResource` で参照した Fluent のブラシまで Light の値のまま残る | Fluent 辞書が別の辞書の中にネストしている |
 | 標準コントロールは切り替わるが、自前で色を指定した文字や背景だけが残る | ブラシを `StaticResource` やコードでの代入で固定している |
+| `DynamicResource` で参照した色が残り、その色は `SystemColors` のキーから来ている | `SystemColors` は `ThemeMode` で変わらない |
 
 ---
 
@@ -168,7 +170,7 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 
 - **`[ウィンドウ名] Window.ThemeMode` が `None` 以外と出るウィンドウ**（この例では `Light`）は、ウィンドウ自身が Fluent 辞書を持っている。直後の `[ウィンドウ名] >` の行に、その辞書が出る。
 - **`App > >` のように `>` が 2 つ以上続く行に `Fluent.` を含む URI が出る**場合は、Fluent 辞書がネストしている。
-- **`Foreground local value = SolidColorBrush`** であれば、その要素はブラシの値そのものを保持しており、切り替えに追従しない。`ResourceReferenceExpression` であれば `DynamicResource` で参照できている。ただしこの型名は WPF の内部実装の型であり、公開された契約ではない。本記事の値は検証環境（.NET 10）で読み出したものである。`(no local value)` は、値が Style・テンプレート・継承・既定値など、ローカル値以外で決まっていることを示す。
+- **`Foreground local value = SolidColorBrush`** であれば、その要素はブラシの値そのものを保持しており、切り替えに追従しない。`ResourceReferenceExpression` であれば `DynamicResource` で参照できている。ただし、どのキーを参照しているかまでは分からない。`SystemColors` のキーをこの方法で参照しても同じ型になり、それでも追従しない（本記事の後半の参照方法の表を参照）。ただしこの型名は WPF の内部実装の型であり、公開された契約ではない。本記事の値は検証環境（.NET 10）で読み出したものである。`(no local value)` は、値が Style・テンプレート・継承・既定値など、ローカル値以外で決まっていることを示す。
 
 ---
 
@@ -219,19 +221,20 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 
 標準コントロールは切り替わるのに、自前で色を付けた文字や背景だけが残る場合は、ブラシの参照方法が原因として疑わしい。
 同じブラシを 3 通りの方法で参照し、切り替えの前後で値を読み出した結果を次に示す。
-比較のため、`Foreground` を指定していない `Button` を最終行に加えている。
+比較のため、`SystemColors` のキーを `DynamicResource` で参照した行と、`Foreground` を指定していない `Button` の行（最終行）を加えている。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg" alt="ブラシの参照方法ごとの追従結果。StaticResource と FindResource の代入は ReadLocalValue が SolidColorBrush で追従せず、DynamicResource は ResourceReferenceExpression で追従する。Foreground を指定していない Button はローカル値が無く、Fluent のスタイル経由で追従する" width="808" height="200" loading="lazy">
-  <figcaption>TextFillColorPrimaryBrush を参照方法ごとに Foreground へ設定し、Application.ThemeMode を Light から Dark へ切り替えた結果。ReadLocalValue 列は Foreground のローカル値の型。最終行は Foreground を指定していない Button。.NET 10 / Windows 11 で計測。</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg" alt="ブラシの参照方法ごとの追従結果。StaticResource と FindResource の代入は ReadLocalValue が SolidColorBrush で追従せず、DynamicResource は ResourceReferenceExpression で追従する。SystemColors.ControlTextBrushKey を DynamicResource で参照した場合も ResourceReferenceExpression だが、黒のままで追従しない。Foreground を指定していない Button はローカル値が無く、Fluent のスタイル経由で追従する。" width="965" height="230" loading="lazy">
+  <figcaption>TextFillColorPrimaryBrush を参照方法ごとに Foreground へ設定し、SystemColors.ControlTextBrushKey も DynamicResource で設定して、Application.ThemeMode を Light から Dark へ切り替えた結果。ReadLocalValue 列は Foreground のローカル値の型。最終行は Foreground を指定していない Button。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 
 `StaticResource` は、XAML の読み込み時に見つかったブラシを 1 回だけ代入する。
 コードで `FindResource` の戻り値を代入した場合も同じで、その時点の Light のブラシが値として残る。
 辞書が Dark 版に入れ替わっても、要素はすでに受け取ったブラシを持ち続けるため追従しない。
 `DynamicResource` はキーへの参照を保持し、辞書の入れ替えを受けて値を引き直す。
+ただし、効くのはキーの値が変わる場合だけである。`SystemColors.ControlTextBrushKey` は Fluent 辞書に定義されていないため、切り替え後に引き直しても同じ黒のブラシが返る。
 
-対処は、テーマで変わる色をすべて `DynamicResource` で参照することである。
+対処は、テーマで変わる色をすべて `DynamicResource` で参照し、そのキーに `SystemColors` のキーではなく、`TextFillColorPrimaryBrush` のような Fluent 辞書が定義するキーを使うことである。
 コードから設定する場合は、`element.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorPrimaryBrush")` のように、値ではなくキーを渡す。
 `StaticResource` と `DynamicResource` の違いそのものは、[WPF で StaticResource を変更しても画面が更新されない原因と解決方法](/ja/articles/wpf-staticresource-vs-dynamicresource/)で扱っている。
 

@@ -334,12 +334,14 @@ internal sealed class LinqBackportNet9Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "CountBy / AggregateBy が返すキーの順序（最初に現れた順か）",
         "Index が返すタプルの中身と、空の並びに対する結果",
+        "キーに null を含む並びに対する CountBy / AggregateBy の結果（例外の型）",
     ];
 
     public string Slug => "linq-backport-netframework-to-net9";
 
     private const string Sample = """
             private static readonly string[] Words = { "pear", "fig", "pear", "PEAR" };
+            private static readonly string[] WithNull = { "a", null, "a" };
         """;
 
     private static readonly LinqBackportParity.Probe[] Probes =
@@ -352,6 +354,8 @@ internal sealed class LinqBackportNet9Scene : IScene
         new("Index()", "Words.Index()"),
         new("empty.Index()", "new string[0].Index()"),
         new("empty.CountBy()", "new string[0].CountBy(w => w)"),
+        new("CountBy, a null key", "WithNull.CountBy(w => w)"),
+        new("AggregateBy, a null key", "WithNull.AggregateBy(w => w, 0, (acc, w) => acc + 1)"),
     ];
 
     public async Task CaptureAsync(SceneContext context)

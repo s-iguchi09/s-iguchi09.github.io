@@ -1,0 +1,15 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-messagebox-sample-creator
+slug: "wpf-messagebox-sample-creator"
+scene: "MessageBoxSampleCreatorScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - ".NET 8 と .NET 10 での MessageBoxButton・MessageBoxResult・MessageBoxOptions のメンバー（ツールの選択肢は Enum.GetValues から作られる）"
+  - "Enum.GetValues(typeof(MessageBoxImage)) を文字列にしたときに並ぶ名前（同じ値の別名がどう表示されるか）"
+  - "すべてのボタン構成とすべての MessageBoxResult の組み合わせで MessageBox を表示したときに、既定になるボタン（.NET 8 と .NET 10）"
+  - "表示されていないボタンを既定の結果に指定したときに、先頭のボタンが既定になるか"
+images:
+  - "images/wpf-messagebox-sample-creator/verification/messagebox-enums.svg"
+  - "images/wpf-messagebox-sample-creator/verification/messagebox-default-button.svg"

@@ -118,17 +118,26 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
   <Grid>
     <TextBlock x:Name="display" Text="{Binding Name}" />
     <TextBox x:Name="editor" Text="{Binding Name, Mode=TwoWay}" Visibility="Collapsed" />
-    <DataTemplate.Triggers>
-      <DataTrigger
-        Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
-        Value="True">
-        <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
-        <Setter TargetName="editor" Property="Visibility" Value="Visible" />
-      </DataTrigger>
-    </DataTemplate.Triggers>
   </Grid>
+  <DataTemplate.Triggers>
+    <DataTrigger
+      Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=IsEditing}"
+      Value="True">
+      <Setter TargetName="display" Property="Visibility" Value="Collapsed" />
+      <Setter TargetName="editor" Property="Visibility" Value="Visible" />
+    </DataTrigger>
+  </DataTemplate.Triggers>
 </DataTemplate>
 ```
+
+`DataTemplate.Triggers` は、`DataTemplate` の直下で、ルート要素の後ろに置く。
+ルート要素の前に置くと、`Setter` の `TargetName` が参照する `display` がまだ現れていないため、ビルドではマークアップ コンパイラーのエラー MC4111 になり、`XamlReader` で読み込むと `NullReferenceException` になった。
+`Grid` の中に置いた場合は、読み込みは成功した。XAML の読み取りは読み込みの時点で行われるが、テンプレートの要素はセルに表示するときに生成され、その時点で `XamlParseException` になった。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.svg" alt="単一テンプレートの例を DataGrid のセルに使った結果の表。DataTemplate.Triggers を Grid の中に置くと、読み込みは成功するが表示で XamlParseException になる。DataTemplate の直下で Grid の後ろに置くと、BeginEdit の前は TextBlock が表示されて TextBox が隠れ、後はその逆になる。DataTemplate の直下で Grid の前に置くと、XamlReader では NullReferenceException、dotnet build では MC4111（ターゲット display は Setter より前に必要）になる。" width="1250" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、それぞれのテンプレートを <code>DataGridTemplateColumn</code> の <code>CellTemplate</code> にして <code>BeginEdit</code> を呼んだ結果。最終行は、同じテンプレートを .xaml ファイルに書いた一時プロジェクトを <code>dotnet build</code> した結果である。</figcaption>
+</figure>
 
 この方法は一部の特殊要件で有効だが、基本方針は `CellTemplate` と `CellEditingTemplate` の分離を優先する。
 保守性、再利用性、デバッグ容易性の点で差が出る。

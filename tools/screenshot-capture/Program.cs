@@ -19,6 +19,7 @@ internal static class Program
     private static readonly IScene[] AllScenes =
     [
         new LabelUnderscoreScene(),
+        new MessageBoxSampleCreatorScene(),
         new FluentClearButtonScene(),
         new DataGridSortingScene(),
         new DataGridSortResetScene(),
