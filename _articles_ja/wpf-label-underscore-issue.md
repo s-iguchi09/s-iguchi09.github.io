@@ -33,7 +33,8 @@ WPF の `Label` コントロールに `_` （アンダーバー）を含む文�
 ## 問題
 
 `Label` の `Content` にアンダーバーを含む文字列（例: `my_variable`）を設定したとき、画面には `myvariable` のようにアンダーバーが欠落した状態で表示される。
-また、`_F` のように書くと `F` に下線が付いた状態で表示されることがある。
+また、`_F` のように書くと `F` がアクセスキーになり、下線が付くことがある。
+下線が描かれるのは、Alt キーを押すなどキーボードで操作したときである。Windows の設定でアクセスキーに常に下線を表示している場合（[`SystemParameters.KeyboardCues`](https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.keyboardcues) が `true`）は、常に描かれる。
 バインドしている文字列データにアンダーバーが含まれている場合でも同様に消えてしまうため、動的なデータ表示でも問題が発生する。
 
 ファイルパス、識別子、データベースの列名、スネークケースのキーなど、アンダーバーを含む文字列を画面に出す場面は多い。
@@ -150,7 +151,7 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
   <figcaption>.NET 10 / Windows 11 で、同じ文字列 <code>my_var</code> を各コントロールに与えた実行結果。<code>Label</code>・<code>Button</code>・<code>CheckBox</code>・<code>GroupBox</code> のヘッダーではアンダーバーが失われ、<code>ListBoxItem</code> と <code>TextBlock</code> ではそのまま表示される。差は既定テンプレートの <code>ContentPresenter.RecognizesAccessKey</code> によって生じている。</figcaption>
 </figure>
 
-`ListBoxItem` や `ComboBoxItem` で問題が起きないのは、一覧に並ぶ項目にアクセスキーを割り当てる意味がないためである。
+`ListBoxItem` や `ComboBoxItem` で問題が起きないのは、既定テンプレートの `ContentPresenter` が `AccessText` を生成しないためである（前掲の表で `kept`）。
 逆に言えば、`ItemTemplate` の中に `Label` や `Button` を置いた場合は、そこでアンダーバーが消える。
 
 ---
@@ -291,7 +292,7 @@ public string DisplayName => Name.Replace("_", "__");
 静的なら方法 1 で足りる。バインドされたデータに対して `__` を作るには ViewModel 側で置換が要り、View の表示ルールを ViewModel へ持ち込むことになる。動的なデータには方法 3 が向く。
 
 **3. その `Label` を大量に並べるか。**
-後述のとおり、アンダーバーを含む文字列を与えた `Label` はレイアウト時間が約 3 倍になる。方法 3 はこの増加も避けられるため、一覧やグリッドでは方法 3 が有利である。
+後述のとおり、アンダーバーを含む文字列を与えた `Label` はレイアウト時間が約 3.5 倍になる。方法 3 は、アンダーバーを含む文字列でもこの増加が起きないため、一覧やグリッドでは方法 3 が有利である。
 
 **4. 既に独自の `ControlTemplate` を持っているか。**
 持っているなら、そのテンプレート内の `ContentPresenter` に `RecognizesAccessKey="False"` を足すだけで済む（方法 4）。持っていない場合、この方法のために既定テンプレートを再実装するのは割に合わない。
@@ -312,8 +313,8 @@ public string DisplayName => Name.Replace("_", "__");
 ## 描画コストへの副作用
 
 `AccessText` が挟まると visual が 1 段増えるため、描画コストにも影響する。
-非仮想化の `StackPanel` に `Label` を 1,000 個並べて比較すると、アンダーバーを含む文字列を与えた場合のレイアウト時間は、含まない場合の約 3 倍になる。
-一方、方法 3 の `ContentTemplate` を適用した `Label` は、アンダーバーを含まない `Label` とほぼ同じコストに収まる。
+非仮想化の `StackPanel` に `Label` を 1,000 個並べて比較すると、アンダーバーを含む文字列を与えた場合のレイアウト時間は、含まない場合の約 3.5 倍になる。
+一方、方法 3 の `ContentTemplate` を適用した `Label` は、アンダーバーを含む文字列を与えても `AccessText` が挟まらず、アンダーバーを含まない文字列の場合と同じレイアウト時間（243 ms と 249 ms）だった。
 
 大量のテキストを表示する画面でアンダーバー入りのデータを扱う場合、方法 3 は表示の正しさと描画コストの両方に効く。
 コントロール選択と描画コストの関係は「[WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針](/ja/articles/wpf-label-vs-textblock-performance/)」で詳しく扱う。

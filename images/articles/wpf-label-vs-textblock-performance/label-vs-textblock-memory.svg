@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 422 170" width="422" height="170" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="422" height="170" />
+  <text class="title" x="12" y="24">managed heap kept after laying out 1,000 items</text>
+  <rect class="head" x="12" y="38" width="398" height="30" />
+  <text class="cell" x="26" y="57.5"></text>
+  <text class="cell" x="274" y="57.5" text-anchor="end">KB</text>
+  <text class="cell" x="396" y="57.5" text-anchor="end">vs TextBlock</text>
+  <text class="cell" x="26" y="87.5">Label</text>
+  <text class="cell" x="274" y="87.5" text-anchor="end">4,111</text>
+  <text class="cell" x="396" y="87.5" text-anchor="end">2.6x</text>
+  <text class="cell" x="26" y="117.5">Label (Content has '_')</text>
+  <text class="cell" x="274" y="117.5" text-anchor="end">8,135</text>
+  <text class="cell" x="396" y="117.5" text-anchor="end">5.1x</text>
+  <text class="cell" x="26" y="147.5">TextBlock</text>
+  <text class="cell" x="274" y="147.5" text-anchor="end">1,588</text>
+  <text class="cell" x="396" y="147.5" text-anchor="end">1.0x</text>
+  <line class="line" x1="12" y1="38" x2="410" y2="38" />
+  <line class="line" x1="12" y1="68" x2="410" y2="68" />
+  <line class="line" x1="12" y1="98" x2="410" y2="98" />
+  <line class="line" x1="12" y1="128" x2="410" y2="128" />
+  <line class="line" x1="12" y1="158" x2="410" y2="158" />
+  <line class="line" x1="12" y1="38" x2="12" y2="158" />
+  <line class="line" x1="221" y1="38" x2="221" y2="158" />
+  <line class="line" x1="288" y1="38" x2="288" y2="158" />
+  <line class="line" x1="410" y1="38" x2="410" y2="158" />
+</svg>

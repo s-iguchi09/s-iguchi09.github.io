@@ -33,7 +33,8 @@ The figures and measured values in this article were captured by actually runnin
 ## Problem
 
 When a string containing an underscore (for example, `my_variable`) is set on a `Label`'s `Content`, the screen displays `myvariable` with the underscore missing.
-When the string contains `_F`, the letter `F` is rendered with an underline instead of showing `_F` as-is.
+When the string contains `_F`, the letter `F` becomes the access key and can be drawn with an underline instead of showing `_F` as-is.
+The underline appears when the keyboard is in use, for example while Alt is pressed, or always when Windows is set to always underline access keys ([`SystemParameters.KeyboardCues`](https://learn.microsoft.com/dotnet/api/system.windows.systemparameters.keyboardcues) is `true`).
 The same issue occurs with dynamically bound data: if the bound string contains an underscore, it is silently dropped from the display.
 
 File paths, identifiers, database column names, and snake_case keys are all common cases where underscores reach the screen.
@@ -150,7 +151,7 @@ The rendering result for the principal controls, all given the same string, is s
   <figcaption>Result of assigning the same string <code>my_var</code> to each control on .NET 10 / Windows 11. <code>Label</code>, <code>Button</code>, <code>CheckBox</code>, and the <code>GroupBox</code> header lose the underscore, while <code>ListBoxItem</code> and <code>TextBlock</code> preserve it. The difference comes from <code>ContentPresenter.RecognizesAccessKey</code> in the default templates.</figcaption>
 </figure>
 
-`ListBoxItem` and `ComboBoxItem` are unaffected because assigning access keys to entries in a list serves no purpose.
+`ListBoxItem` and `ComboBoxItem` are unaffected because the `ContentPresenter` in their default templates does not create an `AccessText` (`kept` in the table above).
 Conversely, placing a `Label` or `Button` inside an `ItemTemplate` reintroduces the problem at that point.
 
 ---
@@ -291,7 +292,7 @@ If so, Workaround 1 is the only option. Workarounds 2, 3 and 4 all stop access-k
 A static string is covered by Workaround 1. Producing `__` for bound data requires substitution on the ViewModel side, which pulls a view-level display rule into the ViewModel. Workaround 3 suits dynamic data.
 
 **3. Are you placing many of these `Label`s?**
-As shown below, a `Label` given a string containing an underscore takes roughly three times the layout time. Workaround 3 avoids that increase as well, which makes it the better fit for lists and grids.
+As shown below, a `Label` given a string containing an underscore takes roughly 3.5 times the layout time. Workaround 3 avoids that increase even for strings containing an underscore, which makes it the better fit for lists and grids.
 
 **4. Do you already have a custom `ControlTemplate`?**
 If so, adding `RecognizesAccessKey="False"` to its `ContentPresenter` is all it takes (Workaround 4). Without one, reimplementing the default template just for this is not worth the cost.
@@ -312,8 +313,8 @@ If so, adding `RecognizesAccessKey="False"` to its `ContentPresenter` is all it 
 ## Side Effect on Rendering Cost
 
 Because `AccessText` adds one visual level, it affects rendering cost as well.
-Placing 1,000 `Label`s in a non-virtualizing `StackPanel` and comparing, the layout time for strings containing an underscore is roughly three times that of strings without one.
-A `Label` with the `ContentTemplate` of Workaround 3 applied, on the other hand, stays close to the cost of a `Label` with no underscore.
+Placing 1,000 `Label`s in a non-virtualizing `StackPanel` and comparing, the layout time for strings containing an underscore is roughly 3.5 times that of strings without one.
+A `Label` with the `ContentTemplate` of Workaround 3 applied, on the other hand, got no `AccessText` even for a string containing an underscore, and its layout time matched that of a string without one (243 ms and 249 ms).
 
 For a screen displaying large amounts of text where the data contains underscores, Workaround 3 addresses both display correctness and rendering cost.
 The relationship between control choice and rendering cost is covered in detail in [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/).
