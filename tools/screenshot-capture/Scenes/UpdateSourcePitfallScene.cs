@@ -23,6 +23,9 @@ internal sealed class UpdateSourcePitfallScene : IScene
         "バインドを張ったまま UpdateSource を呼んだ場合と、Text を書き換えてから呼んだ場合の違い",
         "OneWay / OneTime では Text への代入がバインドを外し、その後の UpdateSource が例外になること",
         "同じ OneWay / OneTime でも、TextInput 経由の入力ではバインドが外れず、ソースも更新されないこと",
+        "TextBox をツリーから外した後に UpdateSource を呼んだとき、例外になるか",
+        "OneTime のバインドでも UpdateTarget でソースの値を読み直せるか",
+        "BindingGroup.UpdateSources で、RawProposedValue と UpdatedValue の段階の検証ルールが失敗したとき、ソースへ書き込まれるか",
     ];
 
     public string Slug => "wpf-textbox-updatesource-from-view-pitfalls";
@@ -53,6 +56,96 @@ internal sealed class UpdateSourcePitfallScene : IScene
             ["how Text is set", "GetBindingExpression state", "UpdateSource() as-is", "after editing Text / after typing"],
             rows,
             "updatesource-pitfall-matrix.svg");
+
+        await context.SaveTableAsync(
+            "detached TextBox, UpdateTarget with OneTime, and BindingGroup validation steps",
+            ["case", "result"],
+            ExtraRows(),
+            "updatesource-detach-group.svg");
+    }
+
+    private static List<IReadOnlyList<string>> ExtraRows()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        // ツリーから外すと、DataContext を失ったバインドは値を取れなくなる。そこで UpdateSource を呼ぶ。
+        {
+            var source = new AmountViewModel { Amount = "before" };
+            var box = new TextBox();
+            SetBinding(box, BindingMode.TwoWay);
+            var panel = new StackPanel { DataContext = source, Children = { box } };
+            var window = new Window { Content = panel, Width = 200, Height = 80, ShowActivated = false, ShowInTaskbar = false };
+            window.Show();
+            try
+            {
+                BindingExpression expression = box.GetBindingExpression(TextBox.TextProperty)!;
+                panel.Children.Remove(box);
+                box.Text = "after";
+                string result;
+                try
+                {
+                    expression.UpdateSource();
+                    result = "no exception";
+                }
+                catch (Exception ex)
+                {
+                    result = ex.GetType().Name;
+                }
+
+                rows.Add(["TwoWay, TextBox removed from the tree, then UpdateSource()", $"{result}; Status {expression.Status}; source = {source.Amount}"]);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        // OneTime はソースの変更を追わないが、UpdateTarget を呼べば読み直すか。
+        {
+            var source = new AmountViewModel { Amount = "before" };
+            var box = new TextBox { DataContext = source };
+            SetBinding(box, BindingMode.OneTime);
+            string initial = box.Text;
+            source.Amount = "changed";
+            string beforeCall = box.Text;
+            box.GetBindingExpression(TextBox.TextProperty)!.UpdateTarget();
+            rows.Add(["OneTime: source changed, then UpdateTarget()", $"Text {initial} -> {beforeCall} (no call) -> {box.Text} (after UpdateTarget)"]);
+        }
+
+        foreach (ValidationStep? step in new ValidationStep?[] { null, ValidationStep.RawProposedValue, ValidationStep.UpdatedValue })
+        {
+            var source = new AmountViewModel { Amount = "before" };
+            var box = new TextBox();
+            var binding = new Binding(nameof(AmountViewModel.Amount)) { Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.Explicit };
+            if (step is { } failing)
+            {
+                binding.ValidationRules.Add(new FailingRule(failing));
+            }
+
+            box.SetBinding(TextBox.TextProperty, binding);
+            var panel = new StackPanel { DataContext = source, BindingGroup = new BindingGroup(), Children = { box } };
+            var window = new Window { Content = panel, Width = 200, Height = 80, ShowActivated = false, ShowInTaskbar = false };
+            window.Show();
+            try
+            {
+                box.Text = "after";
+                bool committed = panel.BindingGroup.UpdateSources();
+                string label = step is null ? "BindingGroup.UpdateSources(), no rule" : $"BindingGroup.UpdateSources(), rule at {step} fails";
+                rows.Add([label, $"returns {committed}; source = {source.Amount}"]);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        return rows;
+    }
+
+    /// <summary>指定した段階で必ず失敗する検証ルール。</summary>
+    private sealed class FailingRule(ValidationStep step) : ValidationRule(step, validatesOnTargetUpdated: false)
+    {
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo) => new(false, "always fails");
     }
 
     /// <summary>

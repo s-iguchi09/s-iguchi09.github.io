@@ -21,6 +21,8 @@ internal sealed class RelayCommandCanExecuteScene : IScene
         "InvalidateRequerySuggested で更新されるのは RequerySuggested に委譲した実装だけであること",
         "自前で CanExecuteChanged を発火した場合に更新されるのはその実装だけであること",
         "Command が未設定のボタンは有効のままであること",
+        "InputManager を通したキー入力の後は、何も呼ばなくても RequerySuggested に委譲した実装だけが更新されること",
+        "図は、両方の入力欄へ InputManager を通したキー入力で文字を打ち込んで撮っていること（InvalidateRequerySuggested は呼ばない）",
     ];
 
     public string Slug => "wpf-relaycommand-canexecute-not-updating";
@@ -29,23 +31,34 @@ internal sealed class RelayCommandCanExecuteScene : IScene
     {
         var broken = new NameViewModel(useRequerySuggested: false);
         var fixedUp = new NameViewModel(useRequerySuggested: true);
+        var textBoxes = new List<TextBox>();
 
         Window window = DemoLayout.BuildPanelWindow(
             "RelayCommand.CanExecute",
             [
-                new DemoLayout.Panel("CanExecuteChanged  (never raised)", BuildRow(broken)),
-                new DemoLayout.Panel("CanExecuteChanged => CommandManager.RequerySuggested", BuildRow(fixedUp)),
+                new DemoLayout.Panel("CanExecuteChanged  (never raised)", BuildRow(broken, textBoxes)),
+                new DemoLayout.Panel("CanExecuteChanged => CommandManager.RequerySuggested", BuildRow(fixedUp, textBoxes)),
             ],
             Orientation.Vertical);
 
         await context.ShootAsync(window, "relaycommand-canexecute-button-state.png", async _ =>
         {
-            broken.Name = TypedName;
-            fixedUp.Name = TypedName;
+            // InputManager を通したキー入力で打ち込む。InvalidateRequerySuggested は呼ばない。
+            // 委譲した実装のボタンが有効になるのは、入力を受けて WPF が再問い合わせを行うためである。
+            foreach (TextBox textBox in textBoxes)
+            {
+                await DemoProbe.FocusAsync(textBox);
+                DemoProbe.TypeLetters(textBox, TypedName);
+                await Capture.SettleAsync(window);
+            }
+            if (broken.Name != TypedName || fixedUp.Name != TypedName)
+            {
+                throw new InvalidOperationException($"キー入力が入力欄に届いていない（{broken.Name} / {fixedUp.Name}）。");
+            }
 
-            // ユーザー操作時に WPF が行うのと同じ再問い合わせを促す。
-            CommandManager.InvalidateRequerySuggested();
-            await Task.Delay(250);
+            // 撮影に入力欄のキャレットが写らないよう、フォーカスを外す。
+            Keyboard.ClearFocus();
+            await Capture.SettleAsync(window);
         });
 
         await context.SaveTableAsync(
@@ -55,10 +68,11 @@ internal sealed class RelayCommandCanExecuteScene : IScene
             "relaycommand-requery.svg");
     }
 
-    private static UIElement BuildRow(NameViewModel viewModel)
+    private static UIElement BuildRow(NameViewModel viewModel, List<TextBox> textBoxes)
     {
         var textBox = SceneContext.LoadXaml<TextBox>(
             """<TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="150" />""");
+        textBoxes.Add(textBox);
 
         var button = SceneContext.LoadXaml<Button>(
             """<Button Content="Save" Command="{Binding SaveCommand}" Padding="14,4" />""");

@@ -20,7 +20,10 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
         "親のレイアウトを変えて ScrollViewer の ExtentHeight / ViewportHeight / ScrollableHeight を測る",
         "StackPanel の中では ScrollableHeight が 0 のままでスクロールバーが出ないこと",
         "Grid や DockPanel では高さが制約され、スクロールできること",
-        "StackPanel でも高さを明示すればスクロールできること",
+        "StackPanel でも高さを明示すればスクロールできること（Height と MaxHeight の両方）",
+        "ListBox の ScrollViewer.CanContentScroll が True になる出どころ（既定スタイルか）",
+        "ListBox の仮想化が失われる条件（CanContentScroll=False のほか、外側の ScrollViewer・StackPanel、IsVirtualizing=False）",
+        "グループ化したときに仮想化が保たれるか（この計測では保たれた）",
     ];
 
     public string Slug => "wpf-scrollviewer-not-scrolling";
@@ -41,6 +44,69 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
             ["parent layout", "Extent", "Viewport", "Scrollable", "scrollbar"],
             await ViewAndTemplateMeasurements.ScrollViewerHeightAsync(),
             "scrollviewer-height-matrix.svg");
+
+        await context.SaveTableAsync(
+            "ListBox with 2,000 items: realized ListBoxItem",
+            ["configuration", "ListBoxItem realized", "CanContentScroll (value source)"],
+            await VirtualizationLossAsync(),
+            "listbox-virtualization-loss.svg");
+    }
+
+    /// <summary>
+    /// 仮想化が失われる条件を、実体化された ListBoxItem の数で見る。
+    /// 仮想化が効いていれば表示範囲とキャッシュの分だけ、効いていなければ 2,000 個すべてが実体化される。
+    /// </summary>
+    private static Task<List<IReadOnlyList<string>>> VirtualizationLossAsync()
+    {
+        return WpfProbe.MeasureAsync(
+        [
+            Case("ListBox Height=180", listBox => listBox),
+            Case("ScrollViewer.CanContentScroll=False", listBox =>
+            {
+                ScrollViewer.SetCanContentScroll(listBox, false);
+                return listBox;
+            }),
+            Case("VirtualizingPanel.IsVirtualizing=False", listBox =>
+            {
+                VirtualizingPanel.SetIsVirtualizing(listBox, false);
+                return listBox;
+            }),
+            Case("grouped (CollectionView.GroupDescriptions)", listBox =>
+            {
+                var view = new System.Windows.Data.ListCollectionView(Enumerable.Range(0, 2000).Select(i => new Row(i)).ToList());
+                view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(Row.Group)));
+                listBox.ItemsSource = view;
+                return listBox;
+            }),
+            Case("inside an outer ScrollViewer (Height=180)", listBox =>
+            {
+                listBox.Height = double.NaN;
+                return new ScrollViewer { Height = 180, Content = listBox };
+            }),
+            Case("inside a StackPanel (Height=180)", listBox =>
+            {
+                listBox.Height = double.NaN;
+                return new StackPanel { Height = 180, Children = { listBox } };
+            }),
+        ]);
+
+        static WpfProbe.Case Case(string name, Func<ListBox, FrameworkElement> wrap)
+        {
+            var listBox = new ListBox { Height = 180, ItemsSource = Enumerable.Range(0, 2000).Select(i => new Row(i)).ToList(), DisplayMemberPath = nameof(Row.Text) };
+            FrameworkElement root = wrap(listBox);
+            return new WpfProbe.Case(name, root, _ =>
+            [
+                DemoProbe.Descendants(listBox).OfType<ListBoxItem>().Count().ToString("N0"),
+                $"{WpfProbe.Describe(ScrollViewer.GetCanContentScroll(listBox))} ({DependencyPropertyHelper.GetValueSource(listBox, ScrollViewer.CanContentScrollProperty).BaseValueSource})",
+            ]);
+        }
+    }
+
+    private sealed record Row(int Index)
+    {
+        public string Text => $"item {Index}";
+
+        public int Group => Index / 100;
     }
 
     /// <summary>
