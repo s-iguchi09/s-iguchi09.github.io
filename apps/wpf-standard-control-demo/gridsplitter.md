@@ -99,6 +99,6 @@ The GridSplitter page of the demo app has a section for each property on this pa
 
 ## Source code and how it was measured
 
-Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`GridSplitterDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GridSplitterDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Drags were reproduced by raising the same `DragStarted`, `DragDelta`, and `DragCompleted` events that `Thumb` raises for a mouse drag.
+Every behavior on this page, except the row case described as from the documentation, was measured by running it on .NET 10 / Windows 11, using [`GridSplitterDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GridSplitterDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. Drags were reproduced by raising the same `DragStarted`, `DragDelta`, and `DragCompleted` events that `Thumb` raises for a mouse drag.
 
 [View GridSplitter source code on GitHub →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridSplitterUsage){: target="_blank" rel="noopener noreferrer"}

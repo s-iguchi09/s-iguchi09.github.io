@@ -99,6 +99,6 @@ GridSplitter の `HorizontalAlignment` の既定値は `Stretch` ではなく `R
 
 ## ソースコードと計測の方法
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`GridSplitterDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GridSplitterDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。ドラッグは、マウスでドラッグしたときに `Thumb` が発生させるのと同じ `DragStarted`・`DragDelta`・`DragCompleted` イベントを発生させて再現しています。
+このページの挙動の記述は、ドキュメントによるものと断った行方向の場合を除き、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`GridSplitterDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GridSplitterDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。ドラッグは、マウスでドラッグしたときに `Thumb` が発生させるのと同じ `DragStarted`・`DragDelta`・`DragCompleted` イベントを発生させて再現しています。
 
 [GitHub で GridSplitter のソースコードを見る →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GridSplitterUsage){: target="_blank" rel="noopener noreferrer"}
