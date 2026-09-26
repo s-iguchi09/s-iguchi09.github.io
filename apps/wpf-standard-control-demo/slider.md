@@ -75,6 +75,8 @@ The Slider page of the demo app has a section for each property above. The `Smal
 </StackPanel>
 ```
 
+The `UpdateSourceTrigger=PropertyChanged` here belongs to the binding on `TextBox.Text`, whose default is `LostFocus`. It makes typing in the text box move the Slider at once. A binding on `Slider.Value` needs no such setting, because its default is already `PropertyChanged`.
+
 ## Related controls and articles
 
 - [ProgressBar](/apps/wpf-standard-control-demo/progressbar.html) — also derives from `RangeBase`; it displays a value in a range.

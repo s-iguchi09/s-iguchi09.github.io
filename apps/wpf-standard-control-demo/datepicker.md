@@ -69,6 +69,8 @@ The DatePicker page of the demo app has a section for each of `SelectedDate`, `D
 </StackPanel>
 ```
 
+The third DatePicker already has today selected. Moving the start to a day after today in the first DatePicker therefore does not narrow the range past today, as described under `DisplayDateStart`.
+
 ## Related controls and articles
 
 - [Customising the DatePicker Display Format in WPF](/articles/wpf-datepicker-custom-format/) — measured output of `SelectedDateFormat` by culture, and how to show a custom format.

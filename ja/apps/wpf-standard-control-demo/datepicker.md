@@ -69,6 +69,8 @@ description: "WPF の DatePicker を .NET 10 で実測して解説します。Di
 </StackPanel>
 ```
 
+3 つ目の DatePicker には最初から今日が選ばれています。そのため、1 つ目の DatePicker で開始日を今日より後にしても、`DisplayDateStart` の説明のとおり、範囲は今日より後には狭まりません。
+
 ## 関連するコントロールと記事
 
 - [DatePicker の表示形式をカスタマイズする方法](/ja/articles/wpf-datepicker-custom-format/) — カルチャごとの `SelectedDateFormat` の表示の実測と、独自の形式で表示する方法を扱います。

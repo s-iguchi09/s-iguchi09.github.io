@@ -75,6 +75,8 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 </StackPanel>
 ```
 
+ここにある `UpdateSourceTrigger=PropertyChanged` は `TextBox.Text` 側のバインドの指定で、その既定値は `LostFocus` です。この指定により、テキストボックスに入力するとすぐに Slider が動きます。`Slider.Value` をバインドする場合は、既定値がすでに `PropertyChanged` なので指定は要りません。
+
 ## 関連するコントロールと記事
 
 - [ProgressBar](/ja/apps/wpf-standard-control-demo/progressbar.html) — 同じく `RangeBase` の派生で、範囲内の値を表示します。

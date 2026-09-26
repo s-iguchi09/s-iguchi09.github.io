@@ -74,6 +74,13 @@ description: "WPF の Button を .NET 10 で実測して解説。UserControl や
 </StackPanel>
 ```
 
+コマンドはビューモデル（`ButtonUsageViewModel.cs`）で定義しています。
+
+```csharp
+public ICommand ClickWithParameterCommand { get; } =
+    new RelayCommand(param => MessageBox.Show(param?.ToString()), null);
+```
+
 ## 関連するコントロールと記事
 
 - [RepeatButton](/ja/apps/wpf-standard-control-demo/repeatbutton.html) — 押している間クリックを繰り返す ButtonBase です。

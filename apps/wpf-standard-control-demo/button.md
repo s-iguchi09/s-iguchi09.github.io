@@ -74,6 +74,13 @@ The Button page of the demo app has sections for `IsCancel` and `IsDefault`, `Cl
 </StackPanel>
 ```
 
+The command is defined in the view model (`ButtonUsageViewModel.cs`):
+
+```csharp
+public ICommand ClickWithParameterCommand { get; } =
+    new RelayCommand(param => MessageBox.Show(param?.ToString()), null);
+```
+
 ## Related controls and articles
 
 - [RepeatButton](/apps/wpf-standard-control-demo/repeatbutton.html) — a ButtonBase that keeps clicking while it is held down.
