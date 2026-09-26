@@ -198,8 +198,8 @@ The 9,969 items without a binding never received the selection.
 **2. Scrolling destroys the selection that had been established.**
 After ten pages of scrolling, `SelectedItems` fell from 10,000 to 9,845.
 At the same time, the data-side `IsSelected` count rose from 31 to 166.
-Two things happened in the newly realized containers: some read the data-side `false` and lost their selection (the 155 items by which `SelectedItems` fell), and some wrote the `ListBoxItem` selection back to the data (the 135 items by which `IsSelected` rose).
-The conditions deciding which happens were not measured. Either way, with only the `ItemContainerStyle` binding, the selection keeps changing on every scroll while the two sides disagree.
+These are net changes of the two counts: `SelectedItems` fell by 155 and `IsSelected` rose by 135.
+They show that selection was lost on one side and written to the data on the other as containers were realized, but which items changed, and in which direction, was not measured item by item. Either way, with only the `ItemContainerStyle` binding, the selection keeps changing on every scroll while the two sides disagree.
 
 **3. `SelectionChanged` keeps both in agreement.**
 The configuration that handles the event and writes back to the data reported 10,000 on both sides, immediately after `SelectAll()` and after scrolling.

@@ -210,7 +210,7 @@ namespace System.Linq
         public static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, int count)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            // Return a new iterator even for 0, as the built-in does, so that callers cannot cast the
+            // Return a new iterator even for 0, as the built-in does for a non-empty array, so that callers cannot cast the
             // result back to the source collection and modify it.
             if (count <= 0) return source.Skip(0);
 
@@ -421,7 +421,7 @@ The choice of version-specific symbols (`NET6_0_OR_GREATER` and friends) is cove
 ## Caveats
 
 - **`TakeLast` / `SkipLast` consume memory proportional to `count`**: the sliding window is frugal, but a huge `count` still allocates a buffer of that size. The approach brings no benefit when the window effectively spans the whole sequence.
-- **Behavior for `count <= 0`**: `TakeLast` returns an empty sequence and `SkipLast` returns every element. No exception is thrown, matching the built-in behavior. `SkipLast(0)` returns a new iterator rather than the source object, as the built-in does (the `SkipLast(0) is source` row of the table).
+- **Behavior for `count <= 0`**: `TakeLast` returns an empty sequence and `SkipLast` returns every element. No exception is thrown, matching the built-in behavior. For a non-empty array, `SkipLast(0)` returns a new iterator rather than the source object, as the built-in does (the `SkipLast(0) is source` row of the table, measured on a five-element array). An empty source was not measured for this.
 - **Re-execution on every enumeration**: all four methods are lazy, so enumerating the same query twice walks the source twice. Materialize with `.ToList()` when the result is reused.
 - **Performance optimizations are simpler than the originals**: the built-in implementations special-case `IList<T>` sources and more. This polyfill is generic-only; results and exceptions match, but certain collection types may run slower than on modern .NET.
 

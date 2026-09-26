@@ -36,7 +36,7 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 
 - 戻り値は `IOrderedEnumerable` であり、`ThenBy` を連結できる。
 - 比較子で等しくなる要素どうしの順序は保たれる（安定ソート）。
-- カルチャ依存の比較は実行しているランタイムに従い（.NET Framework は NLS、.NET 5 以降は ICU）、比較できない要素の例外の型は、全体を並べる場合にだけ食い違う。
+- カルチャ依存の比較は、ランタイムが使う比較エンジンに従い（.NET Framework は NLS。.NET 5 以降の Windows では既定が ICU で、設定で NLS にもできる）、比較できない要素の例外の型は、全体を並べる場合にだけ食い違う。
 
 ---
 
@@ -63,7 +63,7 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 ## 委譲による実装
 
 以下は 4 シグネチャのポリフィル実装一式である。
-実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS、.NET 5 以降は ICU で比べるため、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の `ja-JP comparer` の行）。
+実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS で比べ、.NET 5 以降の Windows では、NLS を使う設定にしていない限り ICU で比べる。計測した環境では net48 が NLS、net10.0 が ICU で（表の `comparison engine` の行）、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の `ja-JP comparer` の行）。
 プロジェクトに `LinqExtensions.Net7.cs` などの名前でそのまま追加して使用できる。
 
 ```csharp
@@ -123,11 +123,11 @@ namespace System.Linq
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Order・OrderDescending は境界値を含めて同じ結果になるが、例外が 2 つある。ja-JP の比較子では、ハイフンとアンダースコアを含む文字列の並びが変わる。比較できない要素では、Order().ToList() が net10.0 では InvalidOperationException、net48 では ArgumentException になる。Order().First() はどちらも ArgumentException。" width="1023" height="380" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Order・OrderDescending は境界値を含めて同じ結果になるが、3 つの行が異なる。比較エンジンは net10.0 が ICU、net48 が NLS で、ja-JP の比較子では、ハイフンとアンダースコアを含む文字列の並びが変わる。比較できない要素では、Order().ToList() が net10.0 では InvalidOperationException、net48 では ArgumentException になる。Order().First() はどちらも ArgumentException。" width="1023" height="410" loading="lazy">
   <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
 </figure>
 
-比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。食い違うのは、ランタイムの比較そのものに由来する最後の 3 行（カルチャ依存の並びと、全体を並べたときの例外の型）で、その理由は後述する。`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
+比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。食い違うのは、ランタイムの比較そのものに由来する 3 行（比較エンジン、カルチャ依存の並び、全体を並べたときの例外の型）で、その理由は後述する。`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
 
 委譲型では `yield return` を書かないため、イテレータ自作型で必要だった「引数検証とイテレータの分離」（[基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)）は考えなくてよい。
 `source` の null チェックは呼び出し時点で即座に実行され、並び替え自体は委譲先の `OrderBy` が持つ遅延評価のまま動く。

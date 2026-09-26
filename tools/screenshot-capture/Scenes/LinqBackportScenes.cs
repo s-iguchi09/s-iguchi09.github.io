@@ -61,7 +61,8 @@ internal sealed class LinqBackportNet5Scene : IScene
         new("Numbers.SkipLast(10)", "Numbers.SkipLast(10)"),
         new("Numbers.SkipLast(-1)", "Numbers.SkipLast(-1)"),
         new("empty.TakeLast(2)", "new int[0].TakeLast(2)"),
-        // 本家は 0 でも別のイテレーターを返す。元の配列そのものを返すと、キャストして書き換えられてしまう。
+        // 本家は 0 でも別のイテレーターを返す（入力は空でない Numbers。空の配列はこのプローブの対象外）。
+        // 元の配列そのものを返すと、キャストして書き換えられてしまう。
         new("SkipLast(0) is source", "ReferenceEquals(Numbers.SkipLast(0), Numbers)"),
     ];
 
@@ -189,6 +190,7 @@ internal sealed class LinqBackportNet7Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "戻り値が IOrderedEnumerable であり、ThenBy を連結できること",
         "比較子で等しくなる要素どうしの順序が保たれること（安定ソート）",
+        "実際に使われた比較エンジン（NLS か ICU か）を、ドキュメントの SortVersion による方法で記録する",
         "ja-JP のカルチャ依存の比較で、ハイフンとアンダースコアを含む文字列の並びが net48（NLS）と net10.0（ICU）で変わること",
         "比較できない要素で、Order().ToList() と Order().First() が投げる例外の型（net10.0 では全体を並べる場合だけ InvalidOperationException に包まれる）",
     ];
@@ -216,7 +218,12 @@ internal sealed class LinqBackportNet7Scene : IScene
         new("Order(ByLength), stability", "Words.Order(new ByLength())"),
         new("Order().ThenByDescending(len)", "Words.Order().ThenByDescending(w => w.Length)"),
         new("empty.Order()", "new string[0].Order()"),
-        // カルチャ依存の比較は、.NET Framework（NLS）と .NET 5 以降（ICU）で結果が変わりうる。マシンに左右されないよう ja-JP を明示する。
+        // カルチャ依存の比較は、比較エンジンが NLS か ICU かで結果が変わりうる。.NET 5 以降の既定は ICU だが、
+        // 設定で NLS にもできるので、ja-JP の指定だけではエンジンは決まらない。実際に使われたエンジンを記録する。
+        // 判定は .NET のドキュメント（"Determine if your app is using ICU"）の方法で、SortVersion から見る。
+        new("comparison engine (NLS or ICU)",
+            "(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion != 0 && System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion == BitConverter.ToInt32(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.SortId.ToByteArray(), 0)) ? \"ICU\" : \"NLS\""),
+        // ja-JP を明示して、既定のカルチャの違いには左右されないようにする（エンジンの違いは上の行で見る）。
         new("Order(ja-JP comparer), hyphen and underscore",
             "new[] { \"coop\", \"co-op\", \"Co-op\", \"co_op\" }.Order(StringComparer.Create(new System.Globalization.CultureInfo(\"ja-JP\"), false))"),
         // 比較できない要素。全体を並べる ToList と、全体を並べない First で例外の型が分かれるかを見る。

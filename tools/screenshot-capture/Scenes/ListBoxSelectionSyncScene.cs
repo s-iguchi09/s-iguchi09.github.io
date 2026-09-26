@@ -150,6 +150,14 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             host.Settle();
             log.Reset();
 
+            // 実際のキー入力はフォアグラウンドのウィンドウへ届く。Activate や Focus は失敗しうるので、
+            // 送る前に確かめ、満たせなければ誤った件数を記録せずに計測を失敗させる。
+            if (!host.IsActive || !first.IsKeyboardFocused)
+            {
+                throw new InvalidOperationException(
+                    $"Shift+End を送る前提が満たせない（IsActive={host.IsActive}, IsKeyboardFocused={first.IsKeyboardFocused}）。画面を表示し、ほかのウィンドウを前面に出さずに撮り直す。");
+            }
+
             PressShiftEnd(host);
             rows.Add(
             [
@@ -434,6 +442,8 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             stopwatch.Stop();
             return stopwatch.Elapsed.TotalMilliseconds;
         }
+
+        public bool IsActive => _window.IsActive;
 
         public void Activate()
         {

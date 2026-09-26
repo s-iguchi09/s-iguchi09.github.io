@@ -191,7 +191,7 @@ namespace System.Linq
 #else
         // .NET Framework には Random.Shared が無いため、スレッドごとにインスタンスを持つ。
         // ただし .NET Framework の new Random() は時刻から種を作るため、同時に始まったスレッドは
-        // 同じ種・同じ並びになる。スレッドごとの種は、ロックした 1 つのインスタンスから取る。
+        // 同じ種・同じ並びになることがある。スレッドごとの種は、ロックした 1 つのインスタンスから取る。
         private static readonly Random SeedSource = new Random();
 
         [ThreadStatic]
@@ -233,7 +233,7 @@ namespace System.Linq
 
 `LeftJoin`・`RightJoin` の結果セレクタには、本家と一致する `null` 許容注釈（`LeftJoin` は内部要素 `TInner?`、`RightJoin` は外部要素 `TOuter?`）を付けている。
 これにより「どちら側が欠けうるか」がシグネチャ上で表現され、移行前後の null 許容解析も一致する。
-`Shuffle` の乱数源は入れ子の `#if NET6_0_OR_GREATER` でさらに分岐し、`Random.Shared` の無い .NET Framework では `[ThreadStatic]` なインスタンスでスレッド安全性を確保する。ただし .NET Framework の `new Random()` は時刻から種を作り（[`Random` コンストラクターのリファレンス](https://learn.microsoft.com/dotnet/api/system.random.-ctor)）、同時に作られたインスタンスは同じ数列を返す。スレッドごとに単に `new Random()` すると、同時に始めた 8 スレッドが 1 つの同じ並びを返した。上のようにロックした 1 つのインスタンスから種を取ると、8 通りの並びに分かれた（表の `8 threads` の行）。
+`Shuffle` の乱数源は入れ子の `#if NET6_0_OR_GREATER` でさらに分岐し、`Random.Shared` の無い .NET Framework では `[ThreadStatic]` なインスタンスでスレッド安全性を確保する。ただし .NET Framework の `new Random()` は時刻から種を作り（[`Random` コンストラクターのリファレンス](https://learn.microsoft.com/dotnet/api/system.random.-ctor)）、近い時刻に作られたインスタンスは同じ種になり、同じ数列を返すことがある。計測では、スレッドごとに単に `new Random()` すると、同時に始めた 8 スレッドが 1 つの同じ並びを返した。上のようにロックした 1 つのインスタンスから種を取ると、8 通りの並びに分かれた（表の `8 threads` の行）。
 
 ---
 

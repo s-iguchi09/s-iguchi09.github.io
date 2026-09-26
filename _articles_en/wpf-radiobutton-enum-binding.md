@@ -160,7 +160,7 @@ By the time the grouping mechanism tries to clear them, they are already `false`
 The measured run agreed: switching within one property invoked `ConvertBack` once with `true` and never with `false` (see the table below).
 `ConvertBack` receives `false` when **anything other than a button bound to the same property on the same source joins the group**.
 That covers a button bound to a different property, a button bound to the same property name on a different object, and a button with no binding at all.
-A test run reproduced `ConvertBack(false)` both in a list where each row was bound to the same property name on a separate ViewModel and every row shared one `GroupName`, and in a panel where a single unbound radio button sat among the bound ones (see the table below).
+A test run reproduced `ConvertBack(false)` in two setups (see the table below): two rows, each with one radio button bound to the same property name on its own ViewModel and all sharing one `GroupName`, and a panel with one bound radio button plus one checked radio button with no binding in the same group.
 
 ---
 

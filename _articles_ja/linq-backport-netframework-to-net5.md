@@ -210,7 +210,7 @@ namespace System.Linq
         public static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, int count)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            // 本家と同じく 0 でも新しいイテレーターを返す。元のコレクションそのものを返すと、
+            // 空でない配列に対する本家と同じく、0 でも新しいイテレーターを返す。元のコレクションそのものを返すと、
             // 呼び出し側がキャストして元のコレクションを書き換えられてしまう。
             if (count <= 0) return source.Skip(0);
 
@@ -424,7 +424,7 @@ namespace System.Linq
 ## 注意点
 
 - **`TakeLast` / `SkipLast` は `count` 個分のメモリを消費する**: スライディングウィンドウは省メモリだが、`count` に巨大な値を渡せばその分のバッファが確保される。全件保持が前提になるような使い方では効果がない。
-- **`count <= 0` の扱い**: `TakeLast` は空シーケンスを、`SkipLast` はすべての要素を返す。例外にはならず、本家 .NET の挙動と一致する。`SkipLast(0)` は、本家と同じく元のオブジェクトではなく新しいイテレーターを返す（表の `SkipLast(0) is source` の行）。
+- **`count <= 0` の扱い**: `TakeLast` は空シーケンスを、`SkipLast` はすべての要素を返す。例外にはならず、本家 .NET の挙動と一致する。空でない配列に対しては、`SkipLast(0)` は本家と同じく元のオブジェクトではなく新しいイテレーターを返す（表の `SkipLast(0) is source` の行。5 要素の配列で計測）。空のシーケンスについては、この点を測っていない。
 - **列挙のたびに再実行される**: 4 メソッドとも遅延評価であるため、同じクエリを複数回列挙するとソースの走査も毎回やり直される。結果を再利用する場合は `.ToList()` などで実体化する。
 - **性能の最適化は本家より簡素である**: 本家 .NET の実装はソースが `IList<T>` の場合の特殊化などを持つが、本ポリフィルは汎用実装のみである。返す結果と例外の挙動は一致するが、コレクション型によっては本家より遅くなる余地がある。
 

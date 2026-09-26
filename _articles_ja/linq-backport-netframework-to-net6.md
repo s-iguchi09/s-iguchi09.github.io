@@ -366,7 +366,7 @@ var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
 ```
 
 ポリフィルの内部は、要素が来るたびに伸びる `List<TSource>` にチャンクを集め、揃ったところで配列にする。
-`size` 個分の配列を先に確保するほうが安く見えるが、`source` が短くても `size` が大きいだけで失敗する。このポリフィルの以前の版はそうしており、.NET Framework では `new[] { 1, 2, 3 }.Chunk(int.MaxValue)` が `OutOfMemoryException` になった。本家は 3 要素のチャンクを 1 つ返す（表の `Chunk(int.MaxValue)` の行）。
+`size` 個分の配列を先に確保するほうが安く見えるが、`source` が短くても `size` が大きいだけで失敗する。このポリフィルの以前の版はそうしており、.NET Framework では `new[] { 1, 2, 3 }.Chunk(int.MaxValue)` が `OutOfMemoryException` になった。.NET 10 の本家は 3 要素のチャンクを 1 つ返した（表の `Chunk(int.MaxValue)` の行。ほかの .NET のバージョンは測っていない）。
 
 ```csharp
 var chunk = new List<TSource>(Math.Min(size, 16)) { enumerator.Current };

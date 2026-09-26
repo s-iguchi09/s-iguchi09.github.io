@@ -191,7 +191,7 @@ namespace System.Linq
         private static Random SharedRandom => Random.Shared;
 #else
         // .NET Framework has no Random.Shared, so keep one instance per thread.
-        // new Random() is seeded from the clock there, so threads that start together would get
+        // new Random() is seeded from the clock there, so threads that start together can get
         // the same seed and the same order. Take each thread's seed from one locked instance instead.
         private static readonly Random SeedSource = new Random();
 
@@ -234,7 +234,7 @@ Whether this implementation returns what the standard LINQ returns can be checke
 
 The result selectors of `LeftJoin` / `RightJoin` carry the same nullable annotations as the built-ins — `TInner?` for `LeftJoin`, `TOuter?` for `RightJoin`.
 The signature itself thus documents which side can be missing, and nullable analysis agrees before and after migration.
-`Shuffle`'s random source branches further on a nested `#if NET6_0_OR_GREATER`: where `Random.Shared` is unavailable, a `[ThreadStatic]` instance provides thread safety. On .NET Framework, `new Random()` takes its seed from the clock, as the [`Random` constructor reference](https://learn.microsoft.com/dotnet/api/system.random.-ctor) notes, so instances created at the same moment produce the same numbers. With a plain `new Random()` per thread, eight threads started together returned one and the same order; seeding each thread from one locked instance, as above, gave eight different orders (the `8 threads` row of the table).
+`Shuffle`'s random source branches further on a nested `#if NET6_0_OR_GREATER`: where `Random.Shared` is unavailable, a `[ThreadStatic]` instance provides thread safety. On .NET Framework, `new Random()` takes its seed from the clock, as the [`Random` constructor reference](https://learn.microsoft.com/dotnet/api/system.random.-ctor) notes, so instances created close together can get the same seed and produce the same numbers. In the measurement, with a plain `new Random()` per thread, eight threads started together returned one and the same order; seeding each thread from one locked instance, as above, gave eight different orders (the `8 threads` row of the table).
 
 ---
 

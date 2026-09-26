@@ -66,6 +66,21 @@ internal sealed class SceneContext(string slug, string outputDirectory)
             }
 
             string path = Path.Combine(OutputDirectory, fileName);
+
+            // 画面が消灯しているときなど、ウィンドウを撮れない状況で表の計測だけを行うための切り替え。
+            // 既存の図は上書きせず、撮らなかったことを出力に残す。
+            if (Environment.GetEnvironmentVariable("SCREENSHOT_SKIP_WINDOW_CAPTURE") == "1")
+            {
+                Console.WriteLine($"skipped window capture (SCREENSHOT_SKIP_WINDOW_CAPTURE=1): {path}");
+                if (File.Exists(path))
+                {
+                    // 図そのものは変えていないので、検証記録の画像一覧には残す。
+                    _saved.Add(path);
+                }
+
+                return;
+            }
+
             Capture.SaveWindow(window, path, requireContentRendered);
             _saved.Add(path);
         }
