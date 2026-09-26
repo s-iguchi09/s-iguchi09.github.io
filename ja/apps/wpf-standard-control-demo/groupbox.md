@@ -11,7 +11,7 @@ description: "WPF の GroupBox を .NET 10 で実測して解説。HeaderStringF
 
 **GroupBox** は `HeaderedContentControl` を継承しています。UI オートメーションからは、見出しを名前とする `Group` に見えます。「Personal information」という見出しの GroupBox は、その名前で報告されました。スクリーンリーダーはこれをグループの名前として読み上げるので、見出しだけで意味の分かるものにします。
 
-見出しはキーボード操作にも関わります。文字列の見出しはアクセスキーを認識して表示されるので、`Header="_Name"` では `N` がアクセスキーになりました。これを押すと、フォーカスは見出しではなくグループの中の最初の TextBox へ移りました。見出しにアクセスキーを付けると、キーボードからグループの中へ移れます。
+見出しはキーボード操作にも関わります。文字列の見出しはアクセスキーを認識して表示されるので、`Header="_Name"` では `N` がアクセスキーになりました。このアクセスキーを `AccessKeyManager.ProcessKey` で処理させると、フォーカスは見出しではなくグループの中の最初の TextBox へ移りました。実際のキーボードでの <kbd>Alt</kbd>+<kbd>N</kbd> は測っていません。見出しにアクセスキーを付けると、キーボードからグループの中へ移れます。
 
 ## 見出しに表示できるもの
 
@@ -55,6 +55,6 @@ description: "WPF の GroupBox を .NET 10 で実測して解説。HeaderStringF
 
 ## ソースコードと計測の方法
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`GroupBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GroupBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。見出しは、テンプレートの見出しの ContentPresenter の中の文字の要素から読みました。アクセスキーは、<kbd>Alt</kbd> と一緒に押したキーを処理する `AccessKeyManager.ProcessKey` で送りました。位置は GroupBox の左上からのもので、大きさは計測したマシンでの値です。
+このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`GroupBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GroupBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。見出しは、テンプレートの見出しの ContentPresenter の中の文字の要素から読みました。アクセスキーは、<kbd>Alt</kbd> と一緒に押されたかのようにキーを処理する `AccessKeyManager.ProcessKey` を呼んで処理させました。実際のキー入力ではなく、API の呼び出しです。位置は GroupBox の左上からのもので、大きさは計測したマシンでの値です。
 
 [GitHub で GroupBox のソースコードを見る →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage){: target="_blank" rel="noopener noreferrer"}

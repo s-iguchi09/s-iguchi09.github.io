@@ -11,7 +11,7 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 
 **Label** は `ContentControl` を継承しています。Label 自身はフォーカスを受け取りません。`Focusable` も `IsTabStop` も `False` で、Label の前の TextBox から <kbd>Tab</kbd> を押すと、Label の後の TextBox へ直接移りました。Label がするのはフォーカスの受け渡しで、`Target` は Label のアクセスキーを押したときにフォーカスを受け取る要素です。
 
-`_Name(Press Alt+N)` と `_Age(Press Alt+A)` では、アクセスキー `N` と `A` でフォーカスが Name と Age のテキストボックスへ移りました。`Target` のない `_Plain` のアクセスキーでは、フォーカスは動きませんでした。アクセスキーを付けた見出しには必ず `Target` を設定します。フォーカススコープが違っても問題はなく、ToolBar の中の TextBox を `Target` にした Label でも、フォーカスがその中へ移りました。ほかのコントロールも対象にでき、アクセスキーで、ComboBox ではそれ自体に、編集可能な ComboBox と DatePicker では中のテキストボックスにフォーカスが移りました。
+`_Name(Press Alt+N)` と `_Age(Press Alt+A)` では、アクセスキー `N` と `A` を `AccessKeyManager.ProcessKey` で処理させると、フォーカスが Name と Age のテキストボックスへ移りました（実際のキー入力は測っていません）。`Target` のない `_Plain` のアクセスキーでは、フォーカスは動きませんでした。アクセスキーを付けた見出しには必ず `Target` を設定します。フォーカススコープが違っても問題はなく、ToolBar の中の TextBox を `Target` にした Label でも、フォーカスがその中へ移りました。ほかのコントロールも対象にでき、アクセスキーで、ComboBox ではそれ自体に、編集可能な ComboBox と DatePicker では中のテキストボックスにフォーカスが移りました。
 
 ## Target はスクリーンリーダー向けの名前にならない
 
@@ -67,6 +67,6 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 
 ## ソースコードと計測の方法
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`LabelDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。アクセスキーは <kbd>Alt</kbd> と一緒に押したキーを処理する `AccessKeyManager.ProcessKey` で、<kbd>Tab</kbd> はキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。UI オートメーションの名前は、スクリーンリーダーも使う UI オートメーションのクライアント API で、同じプロセスの中の、ウィンドウの UI スレッドとは別のスレッドから読みました。大きさは、計測したマシンでの値です。
+このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`LabelDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/LabelDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。アクセスキーは <kbd>Alt</kbd> と一緒に押されたかのようにキーを処理する `AccessKeyManager.ProcessKey` の呼び出しで（実際のキー入力ではない）、<kbd>Tab</kbd> はキーボードから打ったときと同じく WPF の入力管理（InputManager）を通して送りました。UI オートメーションの名前は、スクリーンリーダーも使う UI オートメーションのクライアント API で、同じプロセスの中の、ウィンドウの UI スレッドとは別のスレッドから読みました。大きさは、計測したマシンでの値です。
 
 [GitHub で Label のソースコードを見る →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/LabelUsage){: target="_blank" rel="noopener noreferrer"}

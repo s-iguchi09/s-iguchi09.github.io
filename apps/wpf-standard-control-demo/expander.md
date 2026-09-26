@@ -9,7 +9,7 @@ description: "WPF Expander measured on .NET 10: what collapsed content costs, wh
 
 ## What collapsed content costs
 
-**Expander** derives from `HeaderedContentControl`. Its `Content` is what is shown and hidden, and collapsed content costs less than it may seem. In an Expander collapsed from the start, the content element was created and received `Loaded`, but it was not measured. A ListBox of 1000 items inside it created no `ListBoxItem` at all, so lists inside a collapsed Expander are cheap. After expanding, the content was measured, the ListBox created 11 items, and `Loaded` was raised on the content a second time. Do not start heavy work in the content's `Loaded` handler: it runs while the Expander is collapsed, and again when it is expanded.
+**Expander** derives from `HeaderedContentControl`. Its `Content` is what is shown and hidden, and collapsed content costs less than it may seem. In an Expander collapsed from the start, the content element was created and received `Loaded`, but it was not measured. A ListBox of 1000 items inside it created no `ListBoxItem` at all: in this setup, the list created and measured no item containers until the Expander was expanded, although the content element itself was created and loaded. After expanding, the content was measured, the ListBox created 11 items, and `Loaded` was raised on the content a second time. Do not start heavy work in the content's `Loaded` handler: it runs while the Expander is collapsed, and again when it is expanded.
 
 ## Expanding and collapsing, with no animation
 

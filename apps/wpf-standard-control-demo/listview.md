@@ -25,7 +25,7 @@ A GridView does not sort. A real click on the Name header left the first item as
 
 ## Scrolling, and what Disabled cuts off
 
-A GridView keeps rows virtualized: with 1,000 items in a ListView 150 high, 8 item containers were created.
+With 1,000 data items set through `ItemsSource` and a GridView, the rows were virtualized: in a ListView 150 high, 8 item containers were created.
 
 In a list 300 wide and 100 high with one column 500 wide, `Disabled` scroll bars left no horizontal scrolling, so the right part of the column could not be reached, but the rows still scrolled vertically: `ScrollToBottom` and the Down key to the last row both moved the vertical offset to 2 rows (the horizontal offset stayed at 0). With `Auto`, the offsets went to 227 DIPs horizontally and 3 rows vertically. Leave the horizontal bar on `Auto` when columns are wide.
 

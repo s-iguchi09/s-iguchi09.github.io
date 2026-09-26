@@ -30,7 +30,7 @@ Setting `SelectedIndex = 2` selected the third item, updated `SelectedItem`, and
 
 ## Virtualization: what exists, and what scrolls
 
-The default style arranges the items in a `VirtualizingStackPanel`, so only the visible containers are created. With 1,000 items in a list 100 high, six `ListBoxItem`s existed.
+The default style arranges the items in a `VirtualizingStackPanel`, so with ordinary data items set through `ItemsSource`, only the visible containers are created: with 1,000 strings in a list 100 high, six `ListBoxItem`s existed. `ListBoxItem`s added directly to the ListBox are containers themselves and, according to the documentation, are not virtualized.
 
 That is why a selection made from code can be out of view. Setting `SelectedIndex = 500` did not scroll the list, and the container for item 500 was not created; `ScrollIntoView` scrolled to it. Call `ScrollIntoView` after selecting from code.
 

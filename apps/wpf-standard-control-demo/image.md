@@ -9,7 +9,7 @@ description: "WPF Image measured on .NET 10: the size for each Stretch and Stret
 
 ## The size for each Stretch and StretchDirection
 
-**Image** derives from `FrameworkElement`, not `Control`, and is not focusable. `Stretch` decides how the picture is scaled to the space; the default is `Uniform`, which keeps the proportions. In a 300 × 200 area, a 600 × 300 picture was 600 × 300 with `None`, 300 × 200 with `Fill`, 300 × 150 with `Uniform`, and 400 × 200 with `UniformToFill`.
+**Image** derives from `FrameworkElement`, not `Control`, and is not focusable by default (`Focusable` is `False`). `Stretch` decides how the picture is scaled to the space; the default is `Uniform`, which keeps the proportions. In a 300 × 200 area, a 600 × 300 picture was 600 × 300 with `None`, 300 × 200 with `Fill`, 300 × 150 with `Uniform`, and 400 × 200 with `UniformToFill`.
 
 `StretchDirection` decides whether the picture may be enlarged, reduced, or both; the default is `Both`. `UpOnly` kept the 600 × 300 picture at 600 × 300 in every mode, and `DownOnly` kept the 100 × 50 picture at 100 × 50. Use `DownOnly` for icons that should never be enlarged past their own size.
 
@@ -24,7 +24,7 @@ The part outside the area is cut off, and it is cut from the right and bottom: w
 
 ## DPI and the decoded size
 
-Without scaling, the size is in device-independent units, the pixels × 96 / DPI: 100 × 50 pixels at 72 DPI were 133.36 × 66.68. The same pixels are shown larger at a lower DPI, so check the file's DPI when you use `Stretch="None"`. PNG stores the resolution in pixels per metre, so even the 96 DPI PNGs came back as 100.01 wide.
+Without scaling, the size is in device-independent units, the pixels × 96 / DPI: 100 × 50 pixels at 72 DPI were 133.36 × 66.68. The same pixels are shown larger at a lower DPI, so check the file's DPI when you use `Stretch="None"`. The PNGs used here stored their resolution in a `pHYs` chunk in pixels per metre, so even the 96 DPI ones came back as 100.01 wide.
 
 Set `DecodePixelWidth` for thumbnails. With 100, a 600 × 300 picture was decoded to 100 × 50 pixels. It also changes the picture's own size: without scaling it was shown 100 wide, not 600.
 

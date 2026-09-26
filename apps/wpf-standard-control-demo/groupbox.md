@@ -11,7 +11,7 @@ description: "WPF GroupBox measured on .NET 10: when HeaderStringFormat applies,
 
 **GroupBox** derives from `HeaderedContentControl`. To UI Automation it is a `Group` whose name is the header: a GroupBox with the header "Personal information" was reported under that name. Write headers that make sense read on their own, because screen readers announce them as the group's name.
 
-The header also takes part in keyboard access. A string header is shown with access keys recognized, so `Header="_Name"` made `N` an access key. Pressing it moved the focus into the group, to the first TextBox of the content, not to the header. Give the header an access key so the user can jump into the group with the keyboard.
+The header also takes part in keyboard access. A string header is shown with access keys recognized, so `Header="_Name"` made `N` an access key. Processing that access key with `AccessKeyManager.ProcessKey` moved the focus into the group, to the first TextBox of the content, not to the header; a physical <kbd>Alt</kbd>+<kbd>N</kbd> was not measured. Give the header an access key so the user can jump into the group with the keyboard.
 
 ## What the header can show
 
@@ -55,6 +55,6 @@ The GroupBox page of the demo app has sections for the header, `HeaderStringForm
 
 ## Source code and how it was measured
 
-Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`GroupBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GroupBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. The header was read from the text element in the template's header presenter. The access key was sent through `AccessKeyManager.ProcessKey`, which handles a key pressed with <kbd>Alt</kbd>. Positions are measured from the GroupBox's top-left corner, and sizes are the values on the measuring machine.
+Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`GroupBoxDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/GroupBoxDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. The header was read from the text element in the template's header presenter. The access key was processed by calling `AccessKeyManager.ProcessKey`, which handles a key as if it had been pressed with <kbd>Alt</kbd>; this is an API call, not a physical key press. Positions are measured from the GroupBox's top-left corner, and sizes are the values on the measuring machine.
 
 [View GroupBox source code on GitHub →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/GroupBoxUsage){: target="_blank" rel="noopener noreferrer"}

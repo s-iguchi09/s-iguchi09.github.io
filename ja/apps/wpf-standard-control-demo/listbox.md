@@ -30,7 +30,7 @@ description: "WPF の ListBox の選択モード、SelectedItem・SelectedValue�
 
 ## 仮想化：何が作られ、何がスクロールするか
 
-既定のスタイルは項目を `VirtualizingStackPanel` に並べるため、作られるのは見えている範囲のコンテナーだけです。高さ 100 の一覧に 1,000 項目を入れると、`ListBoxItem` は 6 個でした。
+既定のスタイルは項目を `VirtualizingStackPanel` に並べるため、`ItemsSource` に通常のデータ項目を設定した場合、作られるのは見えている範囲のコンテナーだけです。高さ 100 の一覧に 1,000 個の文字列を入れると、`ListBoxItem` は 6 個でした。`ListBoxItem` を ListBox に直接追加した場合は、それ自体がコンテナーなので、ドキュメントによれば仮想化されません。
 
 コードから選んだ項目が見えないことがあるのはこのためです。`SelectedIndex = 500` としても一覧はスクロールせず、500 番目の項目のコンテナーも作られませんでした。`ScrollIntoView` を呼ぶと、その項目までスクロールしました。コードから選んだら `ScrollIntoView` を呼びます。
 

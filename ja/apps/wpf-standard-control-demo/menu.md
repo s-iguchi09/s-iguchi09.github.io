@@ -9,7 +9,7 @@ description: "WPF の Menu を .NET 10 で実測して解説。項目の Role、
 
 ## どのキーでメニューに入るか
 
-**Menu** の `IsMainMenu` は、<kbd>Alt</kbd> を押したときにメニューへ入るかどうかで、既定値は `True` です。TextBox にフォーカスがある状態で実際に <kbd>Alt</kbd> を押すと、`True` では最初の見出しが強調されてフォーカスが移り、`False` では何も起きませんでした。既定値が `True` なので、メニューバー以外のメニューには `IsMainMenu="False"` を設定します。
+**Menu** の `IsMainMenu` は、<kbd>Alt</kbd> を押したときにメニューへ入るかどうかで、既定値は `True` です。TextBox にフォーカスがある状態で実際に <kbd>Alt</kbd> を押すと、`True` では最初の見出しが強調されてフォーカスが移り、`False` では何も起きませんでした。既定値が `True` なので、<kbd>Alt</kbd> と <kbd>F10</kbd> の通知を受ける必要のないほかの `Menu` には `IsMainMenu="False"` を設定します。
 
 ドキュメントは `IsMainMenu` を <kbd>Alt</kbd> と <kbd>F10</kbd> の通知を受けるかどうかと説明しています。日本語入力を使う計測したマシンでは、TextBox にフォーカスがある状態で実際に <kbd>F10</kbd> を押すと、どちらでも何も起きませんでした。`True` で、Button にフォーカスがある状態の実際の <kbd>F10</kbd> と、WPF の入力管理を通して TextBox に送った <kbd>F10</kbd> では、どちらもメニューに入りました。違いの原因として、<kbd>F10</kbd> を自分でも使う日本語入力が考えられますが、入力方式をオフにして測ってはいないので、確かめていません。
 
@@ -17,7 +17,7 @@ description: "WPF の Menu を .NET 10 で実測して解説。項目の Role、
 
 ## 項目の Role と見出しの状態
 
-Menu は `MenuItem` を持ち、各 MenuItem の読み取り専用の `Role` は、置かれた位置と子の有無で決まります。デモアプリの Role の欄の 4 項目は、`TopLevelHeader`・`SubmenuHeader`・`SubmenuItem`・`TopLevelItem` でした。Role は子に応じて変わり、`TopLevelItem` に子を追加すると `TopLevelHeader` になりました。
+Menu は `MenuItem` を持ち、各 MenuItem の読み取り専用の `Role` は、置かれた位置と子の有無で決まります。デモアプリの Role の欄の 4 項目は、`TopLevelHeader`・`SubmenuHeader`・`SubmenuItem`・`TopLevelItem` でした。Role は子に応じて変わり、チェックできない `TopLevelItem` に子を追加すると `TopLevelHeader` になりました。WPF のソースでは、見出しの Role になるのは子を持ち、かつ `IsCheckable` が `False` の場合だけです。チェックできる項目に子を持たせた場合は測っていません。
 
 見出しの状態は `IsHighlighted`・`IsPressed`・`IsSubmenuOpen`・`IsSuspendingPopupAnimation` で表され、`IsSubmenuOpen` 以外は読み取り専用です。実際のマウスを重ねると `IsHighlighted` が `True` になりました。ボタンを押すと `IsPressed` が `True` になってサブメニューが開き、離すと `IsPressed` だけが戻りました。`IsSuspendingPopupAnimation` は、サブメニューが開くと `True` になりました。見出しが 2 つあるとき、1 つ目を開いたまま 2 つ目にマウスを重ねると、1 つ目が閉じて 2 つ目が開きました。
 
@@ -38,7 +38,7 @@ Menu は `MenuItem` を持ち、各 MenuItem の読み取り専用の `Role` は
 `Icon` は左に出す画像、`InputGestureText` は右に出すショートカットの文字です。`InputGestureText` は文字だけで、「Ctrl+O」は表示されましたが、実際に <kbd>Ctrl</kbd>+<kbd>O</kbd> を押しても項目はクリックされませんでした。キーの組み合わせを持つコマンドでは自動で入り、`Copy` の項目は設定しなくても `Ctrl+C` でした。ウィンドウに `KeyBinding` を付けると、キーの組み合わせを持たないコマンドが実際の <kbd>Ctrl</kbd>+<kbd>O</kbd> で実行されましたが、項目の `InputGestureText` は空のままでした。ショートカットは `KeyBinding` で結び、`InputGestureText` も設定します。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Menu の計測結果の表。IsMainMenu の既定値は True、Role の欄の 4 項目はそれぞれの Role で、子を持った TopLevelItem は TopLevelHeader になり、実際のクリックはチェックできる項目にチェックを付けて StaysOpenOnClick でなければサブメニューを閉じ、チェックできる 2 項目は両方チェックされ、Alt はメインメニューにだけ入り、TextBox にフォーカスがあるときの実際の F10 はどちらにも入らないが Button にフォーカスがあるときや入力管理を通したときはメインメニューに入り、Alt+M はどちらも開き、Ctrl+O の文字は出るが Ctrl+O ではクリックされず、Copy の項目には Ctrl+C が入り、Copy の項目は閉じている間は有効と読め、開くと TextBox の選択に従い、マウスの重ね合わせ・押下・解放で見出しの状態が変わる。ウィンドウの KeyBinding では実際の Ctrl+O でコマンドが実行されるが項目の InputGestureText は空のまま" width="1242" height="800" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Menu の計測結果の表。IsMainMenu の既定値は True、Role の欄の 4 項目はそれぞれの Role で、チェックできない TopLevelItem は子を持つと TopLevelHeader になり、実際のクリックはチェックできる項目にチェックを付けて StaysOpenOnClick でなければサブメニューを閉じ、チェックできる 2 項目は両方チェックされ、Alt はメインメニューにだけ入り、TextBox にフォーカスがあるときの実際の F10 はどちらにも入らないが Button にフォーカスがあるときや入力管理を通したときはメインメニューに入り、Alt+M はどちらも開き、Ctrl+O の文字は出るが Ctrl+O ではクリックされず、Copy の項目には Ctrl+C が入り、Copy の項目は閉じている間は有効と読め、開くと TextBox の選択に従い、マウスの重ね合わせ・押下・解放で見出しの状態が変わる。ウィンドウの KeyBinding では実際の Ctrl+O でコマンドが実行されるが項目の InputGestureText は空のまま" width="1242" height="800" loading="lazy">
   <figcaption>Role、チェックできる項目、メインメニュー、ショートカット、コマンド、見出しの状態。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 
