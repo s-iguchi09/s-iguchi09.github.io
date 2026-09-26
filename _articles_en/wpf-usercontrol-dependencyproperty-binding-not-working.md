@@ -259,7 +259,7 @@ The source is written per binding, so there is more markup, but `DataContext` st
 The markup is shorter, but it resolves differently from `RelativeSource`. `ElementName` looks a name up in a namescope, while `RelativeSource AncestorType` walks up the element tree matching a type. Where the name is closed off in a separate namescope and cannot be looked up, `ElementName` does not resolve — though in this arrangement it does resolve from a `DataTemplate`, as covered later. Reading the consuming `DataContext` is written as `Path=DataContext.HeaderText`.
 
 **Three or more internal references call for delegating `DataContext` on the inner root element.**
-One setting covers it, and everything inside can stay written as `{Binding Title}`. It is also the only way to resolve from inside a `ContextMenu` without breaking the binding the consumer supplies.
+One setting covers it, and everything inside can stay written as `{Binding Title}`. Of the three approaches compared in this article, it is also the only one that resolved from inside a `ContextMenu` (see the table below).
 
 None of them touches the `DataContext` of the `UserControl` element itself. Writing there breaks the binding the consumer supplies.
 
@@ -280,7 +280,7 @@ The four ways of reaching a control's own dependency property from inside compar
 
 The first is the case raised under Implementation, where the element holding the binding sits inside another `UserControl`.
 `ElementName` names the target directly and is unaffected.
-In the measured run, evaluating `AncestorType=UserControl` from an element nested inside another `UserControl` selected the inner control rather than the outer one.
+In the measured run, evaluating `AncestorType=UserControl` from an element nested inside another `UserControl` selected the inner control rather than the outer one (see the table below).
 Specifying `AncestorType={x:Type local:InfoCard}` stabilizes the target for `RelativeSource`, though a subclass of that type among the ancestors is still picked first when it is nearer.
 
 The second is a configuration where a template is reused from another control.
@@ -334,7 +334,7 @@ Local values and dependency property value precedence are covered in [Why WPF St
 Both fail, but for different reasons.
 Ancestor search with `RelativeSource` follows the parent chain, and a `ContextMenu` is attached through the `FrameworkElement.ContextMenu` property rather than as a child in the element tree, so that chain does not continue outward.
 `ElementName` looks a name up in a XAML name scope, and a `ContextMenu` carries its own name scope, so the `Root` registered on the `UserControl` side is not visible from it.
-In the measured run, a `ContextMenu` attached to a `Button` inside the `UserControl` produced `System.Windows.Data Error: 4` for both `AncestorType=UserControl` and `ElementName=Root`, leaving `MenuItem.Header` as `null`.
+In the measured run, a `ContextMenu` attached to a `Button` inside the `UserControl` produced `System.Windows.Data Error: 4` for both `AncestorType=UserControl` and `ElementName=Root`, leaving `MenuItem.Header` as `null` (see the table below).
 `DataContext`, on the other hand, is inherited from the placement site through a path separate from that parent chain, so the plain `{Binding Title}` resolved under option 3 once the menu was open.
 That inheritance holds only after the menu opens and is associated with its placement site, not before it opens or during `ContextMenuOpening`.
 `{Binding PlacementTarget.DataContext.Title, RelativeSource={RelativeSource AncestorType=ContextMenu}}` is sometimes offered as a workaround, but it reaches the `DataContext` of the placement element.
@@ -343,7 +343,7 @@ The form is useful only for reaching that consuming view model from the menu, no
 - **Inside an inline `Popup`, both do resolve.**
 The content of a `Popup` renders in a separate visual tree rooted at `PopupRoot`.
 The `Popup` itself is nonetheless written as a child element in the `UserControl` XAML, so the parent chain that `RelativeSource` follows stays intact and `Root` remains in the same name scope as far as `ElementName` is concerned.
-In the measured run, both `AncestorType=UserControl` and `ElementName=Root` resolved from inside a `Popup` declared inline in the `UserControl`.
+In the measured run, both `AncestorType=UserControl` and `ElementName=Root` resolved from inside a `Popup` declared inline in the `UserControl` (see the table below).
 What separates this from `ContextMenu` is whether the parent chain and the name scope extend outward, not whether a separate visual tree is involved.
 - **Bindings inside a `DataTemplate` resolve as well.**
 A template has its own name scope, yet in the measured run both `ElementName=Root` and `AncestorType=UserControl` resolved in a `DataTemplate` written inline and in one placed under `UserControl.Resources` with a key.
@@ -358,7 +358,11 @@ Behavior that must run on value changes belongs in the `PropertyChangedCallback`
 The `x:Name="Root"` on the `UserControl` root is confined to that control's name scope.
 In the measured run, placing an element of the same name in the consuming view resolved each to a different element with no error.
 
----
+<figure class="article-figure">
+  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.svg" alt="A table of whether each reference, by where it is written, reaches InfoCard.Title. From an inner TextBlock, ElementName=Root and {Binding Title} with the DataContext delegated to the inner root both reach it. In a ContextMenu's MenuItem.Header, AncestorType=UserControl and ElementName=Root give null, while {Binding Title} with the DataContext delegated reaches it. In an inline Popup, an inline DataTemplate, and a DataTemplate in UserControl.Resources, both AncestorType=UserControl and ElementName=Root reach it. From a UserControl nested inside the card, AncestorType=UserControl selects the inner UserControl." width="786" height="440" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. The card owns a name scope and registers itself as <code>Root</code> (equivalent to <code>x:Name="Root"</code>). The nested row tells the two controls apart by <code>Tag</code>.</figcaption>
+</figure>
+
 ---
 
 ## Summary

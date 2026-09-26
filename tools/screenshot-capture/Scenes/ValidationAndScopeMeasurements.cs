@@ -211,8 +211,173 @@ internal static class ValidationAndScopeMeasurements
             BuildCardCase("RelativeSource Self (on the inner element)", new RelativeSource(RelativeSourceMode.Self)),
             BuildCardCase(
                 "RelativeSource AncestorType=UserControl",
-                new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(InfoCard) }),
+                new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(UserControl) }),
         ]);
+
+    /// <summary>
+    /// 参照の起点と置き場所を変えて、UserControl の Title へ届くかを測る。
+    /// カードには名前スコープを持たせ、自身を Root という名前で登録する（x:Name="Root" と同じ）。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> UserControlResolutionAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        Binding ByAncestor() => new(nameof(InfoCard.Title)) { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(UserControl) } };
+        Binding ByName() => new(nameof(InfoCard.Title)) { ElementName = "Root" };
+
+        // 直接の子。ElementName と、内側のルート要素への DataContext の委譲。
+        rows.Add(await ReadTextAsync("inner TextBlock, ElementName=Root", _ => ByName()));
+        rows.Add(await ReadTextAsync("inner root DataContext = the control, then {Binding Title}", _ => new Binding(nameof(InfoCard.Title)), delegateDataContext: true));
+
+        // ContextMenu の中。
+        foreach ((string name, Func<Binding> make, bool delegated) in new (string, Func<Binding>, bool)[]
+        {
+            ("ContextMenu MenuItem.Header, AncestorType=UserControl", ByAncestor, false),
+            ("ContextMenu MenuItem.Header, ElementName=Root", ByName, false),
+            ("ContextMenu MenuItem.Header, {Binding Title} with DataContext delegated", () => new Binding(nameof(InfoCard.Title)), true),
+        })
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(delegated);
+            var item = new MenuItem();
+            item.SetBinding(HeaderedItemsControl.HeaderProperty, make());
+            var menu = new ContextMenu { Items = { item } };
+            var button = new Button { Content = "menu", ContextMenu = menu };
+            root.Children.Add(button);
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    name,
+                    Host(card),
+                    _ => [WpfProbe.Describe(item.Header)],
+                    Act: async _ =>
+                    {
+                        menu.PlacementTarget = button;
+                        menu.IsOpen = true;
+                        await Task.Delay(100);
+                    }),
+            ]));
+            menu.IsOpen = false;
+        }
+
+        // インラインの Popup の中。
+        foreach ((string name, Func<Binding> make) in new (string, Func<Binding>)[]
+        {
+            ("inline Popup, AncestorType=UserControl", ByAncestor),
+            ("inline Popup, ElementName=Root", ByName),
+        })
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(false);
+            var text = new TextBlock();
+            text.SetBinding(TextBlock.TextProperty, make());
+            var popup = new System.Windows.Controls.Primitives.Popup { Child = text };
+            root.Children.Add(popup);
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    name,
+                    Host(card),
+                    _ => [text.Text.Length == 0 ? "(empty)" : text.Text],
+                    Act: async _ =>
+                    {
+                        popup.IsOpen = true;
+                        await Task.Delay(100);
+                    }),
+            ]));
+            popup.IsOpen = false;
+        }
+
+        // DataTemplate の中。インラインで書いた場合と、UserControl.Resources にキー付きで置いた場合。
+        foreach (bool fromResources in new[] { false, true })
+        {
+            foreach ((string name, Func<Binding> make) in new (string, Func<Binding>)[]
+            {
+                ("AncestorType=UserControl", ByAncestor),
+                ("ElementName=Root", ByName),
+            })
+            {
+                (InfoCard card, Grid root) = BuildNamedCard(false);
+                var factory = new FrameworkElementFactory(typeof(TextBlock));
+                factory.SetBinding(TextBlock.TextProperty, make());
+                var template = new DataTemplate { VisualTree = factory };
+                var presenter = new ContentControl { Content = "x" };
+                if (fromResources)
+                {
+                    card.Resources["CardTemplate"] = template;
+                    presenter.SetResourceReference(ContentControl.ContentTemplateProperty, "CardTemplate");
+                }
+                else
+                {
+                    presenter.ContentTemplate = template;
+                }
+
+                root.Children.Add(presenter);
+                string label = (fromResources ? "DataTemplate in UserControl.Resources, " : "inline DataTemplate, ") + name;
+                rows.AddRange(await WpfProbe.MeasureAsync(
+                [
+                    new WpfProbe.Case(
+                        label,
+                        Host(card),
+                        _ =>
+                        {
+                            TextBlock? shown = DemoProbe.Descendants(presenter).OfType<TextBlock>().FirstOrDefault();
+                            return [shown is null ? "(no element)" : shown.Text.Length == 0 ? "(empty)" : shown.Text];
+                        }),
+                ]));
+            }
+        }
+
+        // 別の UserControl の内側。AncestorType=UserControl はどちらを選ぶか（Tag で見分ける）。
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(false);
+            card.Tag = "outer InfoCard";
+            var text = new TextBlock();
+            text.SetBinding(TextBlock.TextProperty, new Binding(nameof(FrameworkElement.Tag)) { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(UserControl) } });
+            root.Children.Add(new UserControl { Tag = "inner UserControl", Content = text });
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    "UserControl nested inside the card, AncestorType=UserControl (Path=Tag)",
+                    Host(card),
+                    _ => [text.Text]),
+            ]));
+        }
+
+        return rows;
+
+        async Task<IReadOnlyList<string>> ReadTextAsync(string label, Func<InfoCard, Binding> make, bool delegateDataContext = false)
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(delegateDataContext);
+            var text = new TextBlock();
+            text.SetBinding(TextBlock.TextProperty, make(card));
+            root.Children.Add(text);
+            List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(label, Host(card), _ => [text.Text.Length == 0 ? "(empty)" : text.Text]),
+            ]);
+            return measured[0];
+        }
+    }
+
+    /// <summary>
+    /// 名前スコープを持ち、自身を Root として登録したカード。内側のルート要素は Grid。
+    /// <paramref name="delegateDataContext"/> が真なら、Grid の DataContext をカード自身にする。
+    /// </summary>
+    private static (InfoCard Card, Grid Root) BuildNamedCard(bool delegateDataContext)
+    {
+        var root = new Grid();
+        var card = new InfoCard { Title = "from InfoCard.Title", Content = root };
+        NameScope.SetNameScope(card, new NameScope());
+        card.RegisterName("Root", card);
+        if (delegateDataContext)
+        {
+            root.DataContext = card;
+        }
+
+        return (card, root);
+    }
+
+    /// <summary>利用側の ViewModel を DataContext に持つ親の下にカードを置く。</summary>
+    private static Grid Host(InfoCard card) => new() { DataContext = new PageViewModel(), Children = { card } };
 
     private static WpfProbe.Case BuildCardCase(string label, RelativeSource? relativeSource)
     {

@@ -262,7 +262,7 @@ public static readonly DependencyProperty TitleProperty =
 記述は短くなるが、解決の仕組みは `RelativeSource` と異なる。`ElementName` は名前スコープから対象の名前を引き、`RelativeSource AncestorType` は要素ツリーを上へたどって型で探す。名前が別の名前スコープに閉じていて引けない位置では `ElementName` が解決しない（この構成での `DataTemplate` からの参照は後述のとおり解決する）。利用側の `DataContext` を参照するときは `Path=DataContext.HeaderText` のように書く。
 
 **内部で参照するプロパティが 3 つ以上あるなら、内側のルート要素へ `DataContext` を委譲する。**
-1 か所の設定で済み、以降は内部のすべてを `{Binding Title}` のまま書ける。`ContextMenu` の中からの参照が解決するのも、利用側からのバインディングを壊さない方法のうちではこれだけである。
+1 か所の設定で済み、以降は内部のすべてを `{Binding Title}` のまま書ける。本記事で比べた 3 つの方法のうち、`ContextMenu` の中からの参照が解決したのはこれだけだった（後掲の表）。
 
 いずれも `UserControl` 要素そのものの `DataContext` には手を触れない。ここを書き換えると利用側からのバインディングが壊れる。
 
@@ -283,7 +283,7 @@ public static readonly DependencyProperty TitleProperty =
 
 1 つは、実装例で触れた「バインディングを書いた要素が別の `UserControl` の内側に入っている構成」である。
 `ElementName` は名前で直接指すため、この影響を受けない。
-実測でも、別の `UserControl` の内側に置いた要素から `AncestorType=UserControl` を評価すると、外側のコントロールではなく内側のコントロールが選ばれた。
+実測でも、別の `UserControl` の内側に置いた要素から `AncestorType=UserControl` を評価すると、外側のコントロールではなく内側のコントロールが選ばれた（後掲の表）。
 `AncestorType={x:Type local:InfoCard}` と自身の型を指定すれば `RelativeSource` でも対象は安定するが、その型の派生型が祖先にある場合はやはり近い方が選ばれる。
 
 もう 1 つは、テンプレートを別のコントロールへ再利用する構成である。
@@ -337,7 +337,7 @@ public static readonly DependencyProperty TitleProperty =
 両者は失敗するが、理由は別である。
 `RelativeSource` の祖先探索は親チェーンをたどるが、`ContextMenu` は要素ツリーの子ではなく `FrameworkElement.ContextMenu` プロパティとして付くため、チェーンが外側へつながらない。
 `ElementName` は名前スコープから名前付き要素を探すが、`ContextMenu` は独自の名前スコープを持つため、`UserControl` 側に登録された `Root` が見えない。
-実測では、`UserControl` 内の `Button` に付けた `ContextMenu` の中で `AncestorType=UserControl` と `ElementName=Root` の双方が `System.Windows.Data Error: 4` となり、`MenuItem.Header` は `null` のままであった。
+実測では、`UserControl` 内の `Button` に付けた `ContextMenu` の中で `AncestorType=UserControl` と `ElementName=Root` の双方が `System.Windows.Data Error: 4` となり、`MenuItem.Header` は `null` のままであった（後掲の表）。
 一方、`DataContext` はこの親チェーンとは別の経路で配置元から継承されるため、前述の 3 の構成ではメニューを開いた状態で素の `{Binding Title}` が解決した。
 この継承が成立するのはメニューが開いて配置元と結び付いた後であり、開く前や `ContextMenuOpening` の時点では成立しない。
 `{Binding PlacementTarget.DataContext.Title, RelativeSource={RelativeSource AncestorType=ContextMenu}}` という書き方が回避策として挙げられることがあるが、これが指すのは配置元要素の `DataContext` である。
@@ -346,7 +346,7 @@ public static readonly DependencyProperty TitleProperty =
 - **インラインで宣言した `Popup` の中では、どちらも解決する。**
 `Popup` の中身は `PopupRoot` という別の視覚ツリーに描かれる。
 それでも `Popup` 自体は `UserControl` の XAML に子要素として書かれているため、`RelativeSource` がたどる親チェーンは途切れず、`ElementName` から見て `Root` も同じ名前スコープに属したままである。
-実測でも、`UserControl` の中にインラインで書いた `Popup` の内側から `AncestorType=UserControl` と `ElementName=Root` の双方が解決した。
+実測でも、`UserControl` の中にインラインで書いた `Popup` の内側から `AncestorType=UserControl` と `ElementName=Root` の双方が解決した（後掲の表）。
 `ContextMenu` との差は、別の視覚ツリーに描かれるかどうかではなく、親チェーンと名前スコープが外側へつながっているかどうかである。
 - **`DataTemplate` の中でも解決する。**
 テンプレートは別の名前スコープを持つが、実測では、`UserControl` 内にインラインで書いた `DataTemplate` でも、`UserControl.Resources` にキー付きで置いた `DataTemplate` でも、`ElementName=Root` と `AncestorType=UserControl` の双方が解決した。
@@ -361,7 +361,11 @@ XAML の解析とバインディングは、`Title` の setter ではなく `Set
 `UserControl` のルートに付けた `x:Name="Root"` は、そのコントロールの名前スコープに閉じる。
 実測でも、利用側に同じ名前の要素を置いた状態で双方が別の要素として解決し、エラーは出なかった。
 
----
+<figure class="article-figure">
+  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.svg" alt="参照の書き方と置き場所ごとに、InfoCard.Title へ届いたかを測った表。内側の TextBlock からの ElementName=Root と、内側のルート要素へ DataContext を委譲した {Binding Title} は届く。ContextMenu の MenuItem.Header では AncestorType=UserControl と ElementName=Root が null で、DataContext を委譲した {Binding Title} は届く。インラインの Popup、インラインの DataTemplate、UserControl.Resources の DataTemplate では、AncestorType=UserControl と ElementName=Root の両方が届く。カードの中に入れ子にした UserControl から AncestorType=UserControl を評価すると、内側の UserControl が選ばれる。" width="786" height="440" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。カードは名前スコープを持ち、自身を <code>Root</code> という名前で登録している（<code>x:Name="Root"</code> と同じ）。入れ子の行は、どちらのコントロールが選ばれたかを <code>Tag</code> で見分けた。</figcaption>
+</figure>
+
 ---
 
 ## まとめ

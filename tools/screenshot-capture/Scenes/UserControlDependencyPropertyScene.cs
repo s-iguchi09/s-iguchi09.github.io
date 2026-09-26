@@ -78,6 +78,10 @@ internal sealed class UserControlDependencyPropertyScene : IScene
         "利用側の DataContext を継承している UserControl では、内部の素の Binding が自身の依存関係プロパティに届かないこと",
         "内部要素に RelativeSource Self を書くとその要素自身を指すため、やはり届かないこと",
         "RelativeSource AncestorType=UserControl では届くこと",
+        "ElementName=Root と、内側のルート要素への DataContext の委譲でも届くこと",
+        "ContextMenu の中からは AncestorType=UserControl と ElementName=Root が届かず、DataContext の委譲では届くこと",
+        "インラインの Popup、インラインの DataTemplate、UserControl.Resources の DataTemplate からの参照が届くか",
+        "別の UserControl の内側で AncestorType=UserControl を評価すると、内側のコントロールが選ばれること",
     ];
 
     public string Slug => "wpf-usercontrol-dependencyproperty-binding-not-working";
@@ -122,6 +126,12 @@ internal sealed class UserControlDependencyPropertyScene : IScene
             ["binding inside the control", "resulting Text", "its DataContext"],
             await ValidationAndScopeMeasurements.UserControlPropertyScopeAsync(),
             "usercontrol-dp-scope.svg");
+
+        await context.SaveTableAsync(
+            "where the reference is written, and whether it reaches InfoCard.Title",
+            ["reference", "result"],
+            await ValidationAndScopeMeasurements.UserControlResolutionAsync(),
+            "usercontrol-dp-resolution.svg");
     }
 
     /// <summary>
