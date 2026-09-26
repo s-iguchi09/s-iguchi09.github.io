@@ -32,13 +32,13 @@ WPF の `Binding` が期待どおりに動かないとき、コントロール�
 ## バインディングエラーが出力ウィンドウに現れる仕組み
 
 WPF のバインディングは `System.Diagnostics.PresentationTraceSources` の `DataBindingSource` を通じて診断情報を出力する。
-バインドの解決に失敗すると、WPF はこのトレースソースに警告レベルのメッセージを書き込む。
+バインドに失敗すると、WPF はこのトレースソースに、失敗の種類に応じて Error または Warning のメッセージを書き込む。パスが解決できない場合は `Error 40` である。
 このメッセージは、Visual Studio でデバッグ実行している間、**出力ウィンドウ**（メニューの「表示」→「出力」、ショートカット `Ctrl+Alt+O`）の「出力元: デバッグ」に表示される。
 
 出力ウィンドウが表示されない場合は、次を確認する。
 
 - 「出力元」のドロップダウンが「デバッグ」になっていること。
-- ツール → オプション → デバッグ → 出力ウィンドウで、WPF トレース設定の「データ バインディング」が「オフ」以外になっていること。
+- ツール → オプション → デバッグ → 出力ウィンドウで、WPF トレース設定の「データ バインディング」が `Error` か、それより詳細なレベルになっていること。既定の `Warning` で出力される。`Critical` では、「オフ」と同じくパスのエラーは出ない。`Switch.Level` を `Critical` にすると `Error 40` は記録されなかった。
 
 重要な前提として、バインディングエラーは **例外ではない**。
 そのため `try/catch` では捕捉できず、プログラムの実行も止まらない。
@@ -111,9 +111,9 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 出力ウィンドウのメッセージは、原因ごとに現れる文言が異なる。
 代表的なパターンについて、実際にそのバインドを評価させ、`System.Windows.Data` のトレースに何が記録されるかを確認した結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="バインドの失敗パターンごとにトレース出力を記録した表。パス解決失敗は Error 40、ConvertBack の失敗は Error 7、空の Validation.Errors へのインデクサーアクセスとゲッターが例外を送出した場合はいずれも Error 17 として出力される。DataContext 未設定は既定の Warning レベルでは何も出力されず、Information レベルまで下げると Information 10 として DataItem=null が現れる。解決できるバインドは何も出力しない。" width="788" height="290" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>Switch.Level</code> は既定に相当する <code>Warning</code> を基本とし、<code>DataContext</code> 未設定の行のみ <code>Information</code> まで下げた場合も併記している。</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="バインドの失敗パターンごとにトレース出力を記録した表。パス解決失敗は Warning と Error のレベルで Error 40 になり、Critical では何も出ない。ConvertBack の失敗は Error 7、空の Validation.Errors へのインデクサーアクセスとゲッターが例外を送出した場合はいずれも Error 17 になる。DataContext 未設定は既定の Warning レベルでは何も出ず、Information レベルでは Information 10 として DataItem=null が現れる。バインドに TraceLevel=High を付けてレベルを Warning のままにすると、Warning 71 の DataContext is null は出るが Information 10 は出ない。検証エラーを出してから解消すると、発生時に Error 7、解消時に Error 17 が記録される。解決できるバインドは何も出力しない。" width="1141" height="410" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>TraceLevel=High</code> の行と、エラーを出してから解消する行は、段階ごとに記録された番号を示す。<code>Switch.Level</code> は行ごとに示し、<code>Warning</code> が既定に相当する。</figcaption>
 </figure>
 
 `.NET 10 / Windows 11` で確認した範囲では、`Error: 40` がパス解決失敗、`Error: 7` が `ConvertBack` の変換失敗、`Error: 17` が値の取得に失敗した場合に対応する。
@@ -144,8 +144,9 @@ BindingExpression:Path=UserName; DataItem=null;
 target element is 'TextBox' (Name=''); target property is 'Text' (type 'String')
 ```
 
-既定のトレースは `Error` と `Warning` までを対象とするため、この行は出力されない。
-確認するには、後述の `PresentationTraceSources.TraceLevel` を対象のバインドに設定するか、`System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level` を `Information` 以上に下げる。
+既定のレベル（`Warning`）では、この行は出力されない。
+バインドに `PresentationTraceSources.TraceLevel=High` を設定しただけでは出てこない。`Switch.Level` を `Warning` のままにすると、同じバインドで詳細な行の中に `Warning 71`（`DataContext is null`）は記録されたが、`Information 10` は記録されなかった。
+`Information 10` そのものを見るには、`System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level` を `Information` か、それより詳細なレベルにする。
 
 **注意すべきなのは、`DataContext` が未設定のときはパス解決のエラー（`Error: 40`）も出ないことである。**
 バインド元が `null` である以上、プロパティを探しにいく段階に到達しないためである。
@@ -211,7 +212,7 @@ public partial class App : Application
 `ConsoleTraceListener` の出力は、コンソールが割り当てられている場合（コンソールを確保した状態やデバッガ接続時）にのみ現れる。
 WPF の GUI アプリは既定でコンソールを持たないため、恒久的な記録はファイルへのリスナーに任せる。
 リリースビルドで常時有効にすると出力量とファイルサイズが増えるため、診断ビルドや調査時に限定して有効化する。
-また、`Switch.Level` を `Warning` 未満にすると失敗トレースが記録されない点に注意する。
+また、`Switch.Level` を `Critical` や `Off` にすると、`Error 40` のような失敗トレースが記録されなくなる点に注意する。`Error` にした場合は記録される。
 
 ---
 

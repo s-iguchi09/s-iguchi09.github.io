@@ -140,15 +140,15 @@ Depending on where the style lives, though, `BasedOn` itself may fail to resolve
 ---
 
 Which source supplied the template can be told apart by the named parts inside it.
-The Fluent `TextBox` template holds a `DeleteButton`; the classic theme does not.
+The Fluent `TextBox` template holds a `DeleteButton`; the Aero2 theme does not.
 
-<figure class="article-figure">
+<figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the rows whose implicit style inherits through BasedOn keep DeleteButton on both routes." width="913" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The <code>Style applied</code> column reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (a classic theme style).</figcaption>
+  <figcaption>Measured on .NET 10 / Windows 11. The <code>Style applied</code> column reports whether the <code>Style</code> property is filled in (an implicit style) or left <code>null</code> (the Aero2 theme style).</figcaption>
 </figure>
 
 **The point is the second row, where `Style applied` reads `implicit style`.** Setting `ThemeMode` alone fills in the `Style` property, showing that Fluent arrives as an implicit style rather than a theme style.
-On the first row, without `ThemeMode`, `Style` stays `null` and the template comes from the classic theme style.
+On the first row, without `ThemeMode`, `Style` stays `null` and the template comes from the Aero2 theme style.
 
 On the third row, an application-side implicit style under the same key that carries no `BasedOn` makes `DeleteButton` disappear.
 `Padding` reads 8, so the application style did take effect. **It is precisely because it took effect that the Fluent style was replaced and its template lost with it.**

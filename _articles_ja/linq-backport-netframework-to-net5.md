@@ -79,7 +79,7 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 **ただし、このガードは SDK による暗黙定義が効いている場合しか働かない。** `NET471_OR_GREATER` は SDK 形式のプロジェクトで `TargetFramework` から暗黙に定義されるシンボルであり、
 `TargetFrameworkVersion` で対象を指定する従来形式のプロジェクトでは定義されない。同じソースを構成を変えてビルドして確かめた結果が次の図である。
 
-<figure class="article-figure">
+<figure class="article-figure article-figure--wide">
   <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="同じソースをプロジェクト形式別にビルドし、NET471_OR_GREATER の定義状況とビルド結果を調べた表。SDK 形式ではシンボルが定義されポリフィルが無効になりビルドが通る。DisableImplicitFrameworkDefines を立てた SDK 形式と従来形式では定義されず、ポリフィルが有効になり CS0121 になる。従来形式でも DefineConstants でシンボルを定義すればビルドが通る。" width="1047" height="200" loading="lazy">
   <figcaption>ポリフィルを記事と同じく <code>namespace System.Linq</code> に置き、<code>Append</code> を呼ぶコードを 4 通りの構成でビルドした結果。<code>symbol</code> 列はビルドの成否からの推定ではなく、ソースに置いた <code>#warning</code> がどちらの分岐から出たかで判定している。</figcaption>
 </figure>

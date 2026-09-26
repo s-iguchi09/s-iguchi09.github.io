@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 882 200" width="882" height="200" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="882" height="200" />
+  <text class="title" x="12" y="24">CustomSort and SortDescriptions on a ListCollectionView, and Items.Refresh</text>
+  <rect class="head" x="12" y="38" width="858" height="30" />
+  <text class="cell" x="26" y="57.5">operation</text>
+  <text class="cell" x="462" y="57.5" text-anchor="end">SortDescriptions</text>
+  <text class="cell" x="569" y="57.5" text-anchor="end">CustomSort</text>
+  <text class="cell" x="856" y="57.5" text-anchor="end">order / selection</text>
+  <text class="cell" x="26" y="87.5">SortDescriptions: Name asc</text>
+  <text class="cell" x="462" y="87.5" text-anchor="end">1</text>
+  <text class="cell" x="569" y="87.5" text-anchor="end">null</text>
+  <text class="cell" x="856" y="87.5" text-anchor="end">alice, bob, carol</text>
+  <text class="cell" x="26" y="117.5">then CustomSort = by name length</text>
+  <text class="cell" x="462" y="117.5" text-anchor="end">0</text>
+  <text class="cell" x="569" y="117.5" text-anchor="end">set</text>
+  <text class="cell" x="856" y="117.5" text-anchor="end">bob, alice, carol</text>
+  <text class="cell" x="26" y="147.5">then SortDescriptions.Add(Name desc)</text>
+  <text class="cell" x="462" y="147.5" text-anchor="end">1</text>
+  <text class="cell" x="569" y="147.5" text-anchor="end">null</text>
+  <text class="cell" x="856" y="147.5" text-anchor="end">carol, bob, alice</text>
+  <text class="cell" x="26" y="177.5">Items.Refresh() with a row selected</text>
+  <text class="cell" x="462" y="177.5" text-anchor="end">-</text>
+  <text class="cell" x="569" y="177.5" text-anchor="end">-</text>
+  <text class="cell" x="856" y="177.5" text-anchor="end">SelectedItem bob, CurrentCell bob</text>
+  <line class="line" x1="12" y1="38" x2="870" y2="38" />
+  <line class="line" x1="12" y1="68" x2="870" y2="68" />
+  <line class="line" x1="12" y1="98" x2="870" y2="98" />
+  <line class="line" x1="12" y1="128" x2="870" y2="128" />
+  <line class="line" x1="12" y1="158" x2="870" y2="158" />
+  <line class="line" x1="12" y1="188" x2="870" y2="188" />
+  <line class="line" x1="12" y1="38" x2="12" y2="188" />
+  <line class="line" x1="323" y1="38" x2="323" y2="188" />
+  <line class="line" x1="476" y1="38" x2="476" y2="188" />
+  <line class="line" x1="583" y1="38" x2="583" y2="188" />
+  <line class="line" x1="870" y1="38" x2="870" y2="188" />
+</svg>

@@ -4,7 +4,7 @@ title: "Diagnosing Why Parts of a WPF App Stay Light After Switching ThemeMode a
 seo_title: "Why Parts of a WPF App Stay Light After a ThemeMode Switch"
 date: 2026-09-19
 category: WPF
-excerpt: "Parts of a WPF app stay Light after a ThemeMode switch to Dark. The causes: a window-level Fluent dictionary, a nested dictionary, or StaticResource."
+excerpt: "Parts of a WPF app stay Light after a ThemeMode switch to Dark. Measured causes: a window-level or nested Fluent dictionary, StaticResource, or SystemColors."
 image: /images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png
 ---
 
@@ -15,8 +15,8 @@ For control colors and styles, however, the rewrite reaches only the Fluent reso
 Any part whose colors are decided without going through that dictionary stays Light after the switch.
 No exception is thrown and no binding error is written, so finding what failed to follow means searching the screen.
 
-Measurement shows that the parts that do not follow fall into three groups of causes.
-The three groups are: the window carries its own Fluent dictionary, the Fluent dictionary is nested inside another dictionary, or a brush is pinned with `StaticResource`.
+In the configurations measured, the parts that do not follow fell into three groups of causes: the window carries its own Fluent dictionary, the Fluent dictionary is nested inside another dictionary, or a brush is pinned with `StaticResource`.
+A fourth case looks like a correct reference: a color taken from a `SystemColors` key does not follow even through `DynamicResource`, because the `SystemColors` values do not change with `ThemeMode`.
 This article measures what the `ThemeMode` switch actually replaces, derives a procedure for narrowing down the cause from that, and organizes the fix for each cause.
 
 ---
@@ -99,7 +99,8 @@ The following table shows the contents of `Application.Resources.MergedDictionar
 
 What `ThemeMode` does is swap `Fluent.Light.xaml` and `Fluent.Dark.xaml` placed directly under `Application.Resources`.
 Control appearance and brushes are resolved from this dictionary through resource lookup.
-Anything that stays Light after the switch is therefore in one of two situations: **another Fluent dictionary is found before the swapped one**, or **the result of an earlier lookup is being held as a value**.
+Among values resolved through resource lookup, anything that stays Light after the switch is therefore in one of three situations: **another Fluent dictionary is found before the swapped one**, **the result of an earlier lookup is being held as a value**, or **the key referenced is not one the Fluent dictionaries define**, such as a `SystemColors` key.
+Separately, a fixed value written without a resource, such as `Foreground="Black"`, stays as it is regardless of the dictionary swap.
 The way the symptom appears roughly indicates which one applies.
 
 | Symptom | Suspected cause |
@@ -107,6 +108,7 @@ The way the symptom appears roughly indicates which one applies.
 | One specific window stays Light entirely, including its background and standard controls | The window itself holds a Fluent dictionary |
 | Even in a window without `Window.ThemeMode`, Fluent brushes referenced through `DynamicResource` keep their Light values | The Fluent dictionary is nested inside another dictionary |
 | Standard controls switch, but text or backgrounds colored by the app stay the same | A brush is pinned by `StaticResource` or by assignment in code |
+| Colors referenced through `DynamicResource` stay the same, and they come from `SystemColors` keys | `SystemColors` do not change with `ThemeMode` |
 
 ---
 
@@ -169,7 +171,7 @@ The output reads as follows.
 
 - **A window whose `[window name] Window.ThemeMode` is anything other than `None`** (`Light` in this example) holds its own Fluent dictionary. The dictionary appears on the following `[window name] >` line.
 - **A URI containing `Fluent.` on a line with two or more `>` in a row, such as `App > >`**, means the Fluent dictionary is nested.
-- **`Foreground local value = SolidColorBrush`** means the element holds the brush value itself and does not follow the switch. `ResourceReferenceExpression` means the brush is referenced through `DynamicResource`. This type name, however, is an internal WPF implementation type, not a public contract; the values in this article were read in the test environment (.NET 10). `(no local value)` means the value comes from something other than a local value, such as a style, a template, inheritance, or the default value.
+- **`Foreground local value = SolidColorBrush`** means the element holds the brush value itself and does not follow the switch. `ResourceReferenceExpression` means the brush is referenced through `DynamicResource`, but it does not tell which key: a `SystemColors` key referenced this way reports the same type and still does not follow (see the reference table later in this article). This type name, however, is an internal WPF implementation type, not a public contract; the values in this article were read in the test environment (.NET 10). `(no local value)` means the value comes from something other than a local value, such as a style, a template, inheritance, or the default value.
 
 ---
 
@@ -220,19 +222,20 @@ When `ThemeMode` is used, the appropriate setup is one that does not merge Fluen
 
 If standard controls switch but text or backgrounds colored by the app stay the same, the way the brush is referenced is the likely cause.
 The following table shows the same brush referenced in three ways, read before and after the switch.
-For comparison, a `Button` without an explicit `Foreground` is added as the last row.
+A `SystemColors` key referenced through `DynamicResource` is added for comparison, and a `Button` without an explicit `Foreground` as the last row.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg" alt="Result per brush reference. StaticResource and a FindResource assignment have a SolidColorBrush local value and do not follow; DynamicResource has a ResourceReferenceExpression and follows. A Button without an explicit Foreground has no local value and follows through the Fluent style" width="808" height="200" loading="lazy">
-  <figcaption>TextFillColorPrimaryBrush set to Foreground in each way, with Application.ThemeMode switched from Light to Dark. The ReadLocalValue column is the type of the Foreground local value. The last row is a Button without an explicit Foreground. Measured on .NET 10 / Windows 11.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg" alt="Result per brush reference. StaticResource and a FindResource assignment have a SolidColorBrush local value and do not follow; DynamicResource has a ResourceReferenceExpression and follows. DynamicResource to SystemColors.ControlTextBrushKey also has a ResourceReferenceExpression but stays black and does not follow. A Button without an explicit Foreground has no local value and follows through the Fluent style" width="965" height="230" loading="lazy">
+  <figcaption>TextFillColorPrimaryBrush set to Foreground in each way, and SystemColors.ControlTextBrushKey through DynamicResource, with Application.ThemeMode switched from Light to Dark. The ReadLocalValue column is the type of the Foreground local value. The last row is a Button without an explicit Foreground. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 
 `StaticResource` assigns the brush found when the XAML is loaded, once.
 Assigning the return value of `FindResource` in code behaves the same way, leaving the Light brush of that moment as the value.
 When the dictionary is swapped for the Dark version, the element keeps the brush it already received and does not follow.
 `DynamicResource` holds a reference to the key and looks the value up again when the dictionary changes.
+That only helps if the key's value changes: `SystemColors.ControlTextBrushKey` is not defined by the Fluent dictionaries, so the lookup returns the same black brush after the switch.
 
-The fix is to reference every theme-dependent color through `DynamicResource`.
+The fix is to reference every theme-dependent color through `DynamicResource`, using a key that the Fluent dictionaries define, such as `TextFillColorPrimaryBrush`, rather than a `SystemColors` key.
 When the value is set from code, the key is passed instead of the value, as in `element.SetResourceReference(TextBlock.ForegroundProperty, "TextFillColorPrimaryBrush")`.
 The difference between `StaticResource` and `DynamicResource` itself is covered in [Why StaticResource Changes Are Not Reflected in WPF and How to Fix It](/articles/wpf-staticresource-vs-dynamicresource/).
 

@@ -99,7 +99,7 @@ Fluent テーマの導入自体は属性 1 つで済む。
 
 ### Fluent はテーマスタイルではなく暗黙スタイルとして配られる
 
-WPF の従来のテーマ（Aero2 など）は、コントロールの**テーマスタイル**として適用される。
+WPF の従来のテーマ（`ThemeMode` を設定しない場合は Aero2）は、コントロールの**テーマスタイル**として適用される。
 [依存関係プロパティ値の優先順位](https://learn.microsoft.com/dotnet/desktop/wpf/properties/dependency-property-value-precedence)では、テーマスタイルはスタイル由来の値の中で最も弱く、アプリ側のスタイルが設定した値がその上に載る。
 実測でも、`Padding` だけを設定した暗黙スタイルを当てたコントロールに、Aero2 のテンプレートが供給され続けることを確認した。
 テーマスタイルは、[`OverridesDefaultStyle`](https://learn.microsoft.com/dotnet/api/system.windows.frameworkelement.overridesdefaultstyle) を `true` にしない限り、アプリ側が `Style` を設定してもテンプレートの供給をやめない。
@@ -139,15 +139,15 @@ Fluent の暗黙スタイルのキーは、アプリ側が書く `<Style TargetT
 ---
 
 テンプレートがどちらから供給されているかは、テンプレート内の名前付きパーツで判別できる。
-Fluent の `TextBox` テンプレートは `DeleteButton` を持ち、従来のテーマは持たない。
+Fluent の `TextBox` テンプレートは `DeleteButton` を持ち、Aero2 のテーマは持たない。
 
-<figure class="article-figure">
+<figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行ではどちらの経路でも DeleteButton が残る。" width="913" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。<code>Style applied</code> の列は、<code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（従来のテーマスタイル）を示す。</figcaption>
+  <figcaption>.NET 10 / Windows 11 での実測結果。<code>Style applied</code> の列は、<code>Style</code> プロパティが埋まっているか（暗黙スタイル）、<code>null</code> のままか（Aero2 のテーマスタイル）を示す。</figcaption>
 </figure>
 
 **2 行目の `Style applied` が `implicit style` になっている点が要点である。** `ThemeMode` を設定しただけで `Style` プロパティが埋まっており、Fluent がテーマスタイルではなく暗黙スタイルとして届いていることが分かる。
-1 行目（`ThemeMode` なし）では `Style` が `null` のままで、従来のテーマスタイルからテンプレートが供給されている。
+1 行目（`ThemeMode` なし）では `Style` が `null` のままで、Aero2 のテーマスタイルからテンプレートが供給されている。
 
 3 行目で、`BasedOn` を書かない暗黙スタイルをアプリ側が同じキーに置くと `DeleteButton` が消える。
 `Padding` は 8 になっており、アプリ側のスタイルは効いている。**効いているからこそ Fluent のスタイルが置き換わり、テンプレートごと失われている。**
