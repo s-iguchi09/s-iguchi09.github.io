@@ -60,8 +60,8 @@ Calling it while the binding is detached from its target throws an `InvalidOpera
 The conditions above were verified by running them.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null. OneTime and OneWay do nothing on an intact binding and raise InvalidOperationException once Text has been assigned. Typing through TextInput leaves the binding alive in every mode, with UpdateSource never called and the source unchanged." width="976" height="410" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. The <code>GetBindingExpression state</code> column is read at a different moment per row: before <code>Text</code> is modified on the first eight rows, and after the keystroke on the last three (<code>typed via TextInput</code>). <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text / after typing</code> doubles as the result of calling <code>UpdateSource()</code> after an assignment and as the source value after typing. The last three rows type one character through the <code>TextInput</code> event instead of assigning. <code>no change</code> means the source value was left unchanged.</figcaption>
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null. OneTime and OneWay do nothing on an intact binding and raise InvalidOperationException once Text has been assigned. OneWayToSource and TwoWay update the source when called after Text is assigned. Typing through TextInput leaves the binding alive in every mode, with UpdateSource never called and the source unchanged. Even with TwoWay, calling the previously retrieved expression after ClearBinding raises InvalidOperationException." width="976" height="410" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. The <code>GetBindingExpression state</code> column is read at a different moment per row: before <code>Text</code> is modified on the first seven rows, after the keystroke on the next three (<code>typed via TextInput</code>), and before <code>ClearBinding</code> on the last row (<code>TwoWay, then ClearBinding</code>). <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text / after typing</code> doubles as the result of calling <code>UpdateSource()</code> after an assignment and as the source value after typing. The three <code>typed via TextInput</code> rows type one character through the <code>TextInput</code> event instead of assigning. <code>no change</code> means the source value was left unchanged.</figcaption>
 </figure>
 
 **The two columns disagree for `OneWay` and `OneTime`, and that difference matters.**
@@ -83,14 +83,14 @@ Committing an entire form requires calling it on each target `TextBox` individua
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-direction-and-null.svg" alt="A diagram showing that UpdateSource moves the value from target to source and UpdateTarget from source to target, with the three conditions that make GetBindingExpression return null listed below." width="820" height="412" loading="lazy">
-  <figcaption>The direction of each update and the binding modes it applies to. <code>UpdateSource()</code> writes from target to source, so it does nothing on <code>OneWay</code> or <code>OneTime</code>. The bottom row lists the three common conditions under which <code>GetBindingExpression</code> returns <code>null</code> — none of them raise an exception.</figcaption>
+  <figcaption>The direction of each update and the binding modes it applies to. <code>UpdateSource()</code> writes from target to source, so it does nothing on <code>OneWay</code> or <code>OneTime</code>. <code>UpdateTarget()</code>, going the other way, works on <code>OneTime</code> too and re-reads the source value (see the table further below). The bottom row lists the three common conditions under which <code>GetBindingExpression</code> returns <code>null</code> — none of them raise an exception.</figcaption>
 </figure>
 
 ---
 
 ## Solution
 
-The retrieved `BindingExpression` is always null-checked first, and a `null` isolates the cause: not bound, a `MultiBinding`, or inside a template.
+The retrieved `BindingExpression` is always null-checked first, and a `null` isolates the cause: not bound, a `MultiBinding`, or connected through `TemplateBinding`.
 A single element is written back safely with the null-conditional operator `?.`.
 A form that commits multiple elements together either walks the visual tree and calls each `TextBox`, or updates in bulk with a `BindingGroup`.
 To keep the View decoupled, the call lives in an attached property (behavior) rather than directly in code-behind, which also makes it reusable.
@@ -154,14 +154,21 @@ A binding joins the group in one of two ways.
 With implicit participation (no `BindingGroupName`), the `StackPanel`'s `DataContext` must be the same object as the bindings' source.
 With an explicit `BindingGroupName`, a binding can join a group of the same name even when its `DataContext` differs.
 From code-behind, a single call to `UpdateSources()` is enough.
-This method runs each binding's `ValidationRule` (those whose validation step is `RawProposedValue`, `ConvertedProposedValue`, or `UpdatedValue`) and, if all succeed, writes back to the sources and returns `true`.
+This method runs each binding's `ValidationRule` (those whose validation step is `RawProposedValue`, `ConvertedProposedValue`, or `UpdatedValue`) and returns `true` if all succeed.
 
 ```csharp
 // Validate all participating bindings and write back only on success
 bool committed = formPanel.BindingGroup.UpdateSources();
 ```
 
-`UpdateSources()` writes nothing and returns `false` if even one validation fails.
+`UpdateSources()` returns `false` if even one validation fails.
+A rule at a step that runs before the write-back (such as `RawProposedValue`) keeps the source untouched when it fails, but a rule at the `UpdatedValue` step runs after the write-back, so the value has already been written to the source even though `false` is returned (see the table below).
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.svg" alt="A table of further conditions. Removing a TwoWay TextBox from the tree and then calling UpdateSource raises no exception, leaves Status at PathError, and keeps the source at before. Changing the source of a OneTime binding leaves Text unchanged, but UpdateTarget turns it into changed. BindingGroup.UpdateSources returns True with the source at after when there is no rule. A rule failing at the RawProposedValue step returns False and keeps the source at before. A rule failing at the UpdatedValue step returns False, yet the source has already been written to after." width="1046" height="230" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. The <code>BindingGroup</code> rows assign <code>after</code> to <code>Text</code> and then call <code>UpdateSources()</code>.</figcaption>
+</figure>
+
 It does not end the `IEditableObject` edit transaction, so use `CommitEdit()` to commit fully.
 
 To push the display back from source to target, call `UpdateTarget()` instead of `UpdateSource()`.
@@ -307,9 +314,9 @@ As noted earlier, implicit participation in a `BindingGroup` (without `BindingGr
 
 ## Notes
 
-- **`null` is not swallowed silently**: `?.` prevents the exception, but a `null` on an element that should be bound indicates a configuration mistake (wrong retrieval method for a `MultiBinding`, an element inside a template, or a name-resolution failure). The `null` branch is worth logging during debugging.
+- **`null` is not swallowed silently**: `?.` prevents the exception, but a `null` on an element that should be bound indicates a configuration mistake (wrong retrieval method for a `MultiBinding`, a connection through `TemplateBinding`, or a name-resolution failure). The `null` branch is worth logging during debugging.
 - **`Mode` constraint**: `UpdateSource()` is silently ignored outside `TwoWay` / `OneWayToSource`. When nothing reflects, `Mode` should be checked first.
-- **Detached bindings**: calling it after the binding is detached (for example, the element left the tree) throws an `InvalidOperationException`.
+- **Detached bindings**: calling a previously retrieved expression after the binding is removed by `ClearBinding` or by assigning a local value throws an `InvalidOperationException`. Removing the element from the tree does not remove the binding, and the call does not throw: the binding loses its `DataContext`, `Status` becomes `PathError`, and the source is not updated (see the table above).
 - **Scope of bulk update**: the `VisualTreeHelper` walk targets only realized elements, so items not yet generated by virtualization are not written back. Unrealized regions such as inactive `TabControl` tabs are excluded as well.
 - **`BindingGroup` is tied to validation**: `UpdateSources()` runs the `ValidationRule` objects and returns `false` without writing back on failure. Used as a plain bulk write, a validation failure can look like no response.
 - **Direction of `UpdateSource` vs `UpdateTarget`**: the former is target-to-source, the latter source-to-target. Choose by intent (commit or discard).
@@ -337,7 +344,7 @@ A `BindingGroup` suits committing a whole form with validation, and an attached 
 
 The basic form for writing a `TextBox` binding back from the View is `GetBindingExpression(TextBox.TextProperty)?.UpdateSource()`.
 Because `GetBindingExpression` returns `null` when there is no binding, a `?.` guard is required, and a `null` on an element that should be bound points to a `MultiBinding`, a template, or name resolution.
-`UpdateSource()` works only on `TwoWay` / `OneWayToSource` and throws once detached.
+`UpdateSource()` works only on `TwoWay` / `OneWayToSource` and throws once the binding is removed, for example by `ClearBinding`.
 A direct call suits a single commit, `BindingGroup.UpdateSources()` suits committing multiple fields with validation, and an attached behavior suits keeping View separation as the priority.
 To commit multiple inputs from a submit button while preserving MVVM, a commit behavior on a button that inherits the `BindingGroup` runs the ViewModel command after a successful commit.
 To push the direction back, `UpdateTarget()` rather than `UpdateSource()` avoids bugs from confusing the two.

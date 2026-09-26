@@ -62,8 +62,8 @@ be.UpdateSource();
 上記の条件を実際に動かして確かめた結果が次の表である。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="Text の設定方法ごとに GetBindingExpression と UpdateSource の結果を並べた表。リテラル・MultiBinding・TemplateBinding では GetBindingExpression が null になる。OneTime と OneWay はバインドを張ったまま呼ぶと何も起きないが、Text を書き換えてから呼ぶと InvalidOperationException になる。OneWayToSource と TwoWay は Text を書き換えてから呼ぶとソースが更新される。TextInput 経由で入力した場合はどのモードでもバインドが残り、UpdateSource は呼ばれずソースも更新されない。" width="976" height="410" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。<code>GetBindingExpression state</code> の列は、行によって読み取った時点が違う。上の 8 行は <code>Text</code> を書き換える前、末尾の 3 行（<code>typed via TextInput</code>）は入力した後の状態である。<code>UpdateSource() as-is</code> はバインドを張った直後にそのまま呼んだ場合、<code>after editing Text / after typing</code> は、代入してから <code>UpdateSource()</code> を呼んだ場合の結果と、入力後のソースの値を兼ねる列である。末尾の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合である。<code>no change</code> はソースの値が変わらなかったことを示す。</figcaption>
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="Text の設定方法ごとに GetBindingExpression と UpdateSource の結果を並べた表。リテラル・MultiBinding・TemplateBinding では GetBindingExpression が null になる。OneTime と OneWay はバインドを張ったまま呼ぶと何も起きないが、Text を書き換えてから呼ぶと InvalidOperationException になる。OneWayToSource と TwoWay は Text を書き換えてから呼ぶとソースが更新される。TextInput 経由で入力した場合はどのモードでもバインドが残り、UpdateSource は呼ばれずソースも更新されない。TwoWay でも ClearBinding でバインドを外した後、先に取得した式で呼ぶと InvalidOperationException になる。" width="976" height="410" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。<code>GetBindingExpression state</code> の列は、行によって読み取った時点が違う。上の 7 行は <code>Text</code> を書き換える前、続く 3 行（<code>typed via TextInput</code>）は入力した後、最後の行（<code>TwoWay, then ClearBinding</code>）は <code>ClearBinding</code> で外す前に取得した状態である。<code>UpdateSource() as-is</code> はバインドを張った直後にそのまま呼んだ場合、<code>after editing Text / after typing</code> は、代入してから <code>UpdateSource()</code> を呼んだ場合の結果と、入力後のソースの値を兼ねる列である。<code>typed via TextInput</code> の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合である。<code>no change</code> はソースの値が変わらなかったことを示す。</figcaption>
 </figure>
 
 **この表で注意を要するのは、`OneWay` と `OneTime` の 2 列が食い違う点である。**
@@ -82,14 +82,14 @@ be.UpdateSource();
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-direction-and-null.svg" alt="UpdateSource がターゲットからソースへ、UpdateTarget がソースからターゲットへ値を移すことを示す図。下段には GetBindingExpression が null を返す 3 つの条件が並んでいる。" width="820" height="412" loading="lazy">
-  <figcaption>更新の向きと、対象になるバインディングモードの対応。<code>UpdateSource()</code> はターゲットからソースへ書き戻すため <code>OneWay</code> や <code>OneTime</code> では何も起きない。下段は <code>GetBindingExpression</code> が <code>null</code> を返す代表的な 3 条件で、いずれも例外ではなく <code>null</code> として現れる。</figcaption>
+  <figcaption>更新の向きと、対象になるバインディングモードの対応。<code>UpdateSource()</code> はターゲットからソースへ書き戻すため <code>OneWay</code> や <code>OneTime</code> では何も起きない。逆向きの <code>UpdateTarget()</code> は <code>OneTime</code> でも効き、ソースの値を読み直した（後掲の表）。下段は <code>GetBindingExpression</code> が <code>null</code> を返す代表的な 3 条件で、いずれも例外ではなく <code>null</code> として現れる。</figcaption>
 </figure>
 
 ---
 
 ## 解決方法
 
-まず取得した `BindingExpression` を必ず `null` チェックし、`null` の場合はバインドされていない・`MultiBinding` である・テンプレート内であるといった原因を切り分ける。
+まず取得した `BindingExpression` を必ず `null` チェックし、`null` の場合はバインドされていない・`MultiBinding` である・`TemplateBinding` で結ばれているといった原因を切り分ける。
 単一要素の書き戻しは、`null` 条件演算子 `?.` で安全に呼ぶ。
 複数要素をまとめて確定するフォームでは、ビジュアルツリーを走査して各 `TextBox` に呼ぶ方法と、`BindingGroup` で一括更新する方法がある。
 View の分離を保ちたい場合は、コードビハインドに直接書かず、添付プロパティ（ビヘイビア）として再利用可能にする。
@@ -153,14 +153,21 @@ static void UpdateAllTextSources(DependencyObject root)
 `BindingGroupName` を指定しない暗黙参加では、`StackPanel` の `DataContext` がそれらのバインディングのソースと同一オブジェクトである必要がある。
 一方、`BindingGroupName` を明示的に指定したバインディングは、`DataContext` が異なっていても同名の `BindingGroup` へ参加できる。
 コードビハインドからは `UpdateSources()` を 1 回呼ぶだけでよい。
-このメソッドは各バインディングの `ValidationRule`（検証ステップが `RawProposedValue`・`ConvertedProposedValue`・`UpdatedValue` のもの）を実行し、すべて成功した場合にソースへ書き戻して `true` を返す。
+このメソッドは各バインディングの `ValidationRule`（検証ステップが `RawProposedValue`・`ConvertedProposedValue`・`UpdatedValue` のもの）を実行し、すべて成功した場合に `true` を返す。
 
 ```csharp
 // すべての参加バインディングを検証し、成功時のみまとめて書き戻す
 bool committed = formPanel.BindingGroup.UpdateSources();
 ```
 
-`UpdateSources()` は検証が 1 つでも失敗すると書き戻しを行わず `false` を返す。
+`UpdateSources()` は検証が 1 つでも失敗すると `false` を返す。
+ただし、書き戻しの前に走る段階（`RawProposedValue` など）のルールが失敗した場合はソースへ書き込まれないが、`UpdatedValue` の段階のルールは書き戻しの後に走るため、失敗して `false` が返っても値はソースへ書き込まれた後である（下の表）。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.svg" alt="追加の条件を測った表。TwoWay の TextBox をツリーから外してから UpdateSource を呼ぶと、例外にならず Status は PathError で、ソースは before のまま。OneTime のバインドでソースを変えても Text は変わらないが、UpdateTarget を呼ぶと changed になる。BindingGroup.UpdateSources はルールが無ければ True でソースは after。RawProposedValue の段階のルールが失敗すると False でソースは before のまま。UpdatedValue の段階のルールが失敗すると False だが、ソースは after に書き込まれている。" width="1046" height="230" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。<code>BindingGroup</code> の行は、<code>Text</code> に <code>after</code> を代入してから <code>UpdateSources()</code> を呼んだ結果である。</figcaption>
+</figure>
+
 ただし `IEditableObject` の編集トランザクションは終了しないため、確定まで行うには `CommitEdit()` を使う。
 
 ソースからターゲットへ表示を戻したい場合は、`UpdateSource()` ではなく `UpdateTarget()` を呼ぶ。
@@ -298,7 +305,7 @@ XAML では親に `BindingGroup` を置き、各 `TextBox` を通常どおりバ
 
 このビヘイビアはコミットとコマンド実行の順序を自ら制御するため、`Click` と `Command` の発火順に依存しない。
 ボタンには標準の `Command` を別途バインドせず、`SubmitCommand` に寄せて二重実行を避ける。
-`BindingGroup` が未設定（継承されていない）、または `UpdateSources()` が検証失敗で `false` を返した場合はコマンドを実行しないため、未確定・不正な入力のまま保存処理へ進むことがない。
+`BindingGroup` が未設定（継承されていない）、または `UpdateSources()` が検証失敗で `false` を返した場合はコマンドを実行しないため、未確定・不正な入力のまま保存処理へ進むことがない。ただし `UpdatedValue` の段階のルールで失敗した値は、ソースには書き込まれている。
 保存処理そのものは `SaveCommand`（ViewModel）に残り、View 側にはコミットの配線だけが乗る。
 なお、`BindingGroupName` を指定しない暗黙参加では、前掲のとおり親の `DataContext` が各バインディングのソースに設定されている必要がある。
 
@@ -306,11 +313,11 @@ XAML では親に `BindingGroup` を置き、各 `TextBox` を通常どおりバ
 
 ## 注意点
 
-- **`null` を握りつぶさない**: `?.` は例外を防ぐが、本来バインドされているはずの要素で `null` が返る場合は設定ミス（`MultiBinding` の取得メソッド違い、テンプレート内要素、名前解決の失敗）を示す。デバッグ時は `null` 分岐でログを残す。
+- **`null` を握りつぶさない**: `?.` は例外を防ぐが、本来バインドされているはずの要素で `null` が返る場合は設定ミス（`MultiBinding` の取得メソッド違い、`TemplateBinding` による接続、名前解決の失敗）を示す。デバッグ時は `null` 分岐でログを残す。
 - **`Mode` の制約**: `UpdateSource()` は `TwoWay` / `OneWayToSource` 以外では黙って無視される。反映されないときはまず `Mode` を確認する。
-- **デタッチ済みバインディング**: 要素がツリーから外れるなどしてバインディングがデタッチされた後に呼ぶと `InvalidOperationException` になる。
+- **デタッチ済みバインディング**: `ClearBinding` やローカル値の代入でバインディングが外れた後に、先に取得しておいた式で呼ぶと `InvalidOperationException` になる。要素をツリーから外しただけではバインディングは外れず、呼んでも例外にならない。`DataContext` を失って `Status` が `PathError` になり、ソースは更新されない（前掲の表）。
 - **一括更新の範囲**: `VisualTreeHelper` の走査は生成済み要素のみが対象で、仮想化で未生成の項目は書き戻されない。`TabControl` の非アクティブタブなど、未実体化の領域にも注意する。
-- **`BindingGroup` は検証と一体**: `UpdateSources()` は `ValidationRule` を走らせ、失敗時は書き戻さず `false` を返す。単純な一括書き戻しのつもりで使うと、検証失敗で無反応に見えることがある。
+- **`BindingGroup` は検証と一体**: `UpdateSources()` は `ValidationRule` を走らせ、失敗時は `false` を返す（`UpdatedValue` の段階のルールの失敗では、ソースへの書き込みは済んでいる）。単純な一括書き戻しのつもりで使うと、検証失敗で無反応に見えることがある。
 - **`UpdateSource` と `UpdateTarget` の方向**: 前者はターゲット→ソース、後者はソース→ターゲットである。用途（確定か破棄か）に応じて選ぶ。
 
 ---
@@ -335,8 +342,8 @@ View から書き戻す手段は、対象範囲と設計方針に応じて選ぶ
 ## まとめ
 
 View から `TextBox` のバインディングを書き戻す実装は、`GetBindingExpression(TextBox.TextProperty)?.UpdateSource()` が基本形である。
-`GetBindingExpression` はバインディングが無ければ `null` を返すため、`?.` で保護しつつ、本来バインド済みの要素で `null` が返る場合は `MultiBinding`・テンプレート内・名前解決を疑う。
-`UpdateSource()` は `TwoWay` / `OneWayToSource` でのみ機能し、デタッチ後は例外になる点も踏まえる。
+`GetBindingExpression` はバインディングが無ければ `null` を返すため、`?.` で保護しつつ、本来バインド済みの要素で `null` が返る場合は `MultiBinding`・`TemplateBinding`・名前解決を疑う。
+`UpdateSource()` は `TwoWay` / `OneWayToSource` でのみ機能し、`ClearBinding` などでバインディングが外れた後は例外になる点も踏まえる。
 確定範囲が単一なら直接呼び出し、複数を検証付きで確定するなら `BindingGroup.UpdateSources()`、View の分離を優先するなら添付ビヘイビアを選ぶ。
 MVVM を保ったまま送信ボタンで複数入力を一括確定するには、`BindingGroup` を継承したボタンにコミット用の添付ビヘイビアを組み合わせ、コミット成功後に ViewModel のコマンドを実行する。
 方向を戻したい場合は `UpdateSource()` ではなく `UpdateTarget()` を使い、取り違えによる誤動作を避ける。
