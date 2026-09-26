@@ -121,7 +121,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/button/button-clickmode.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/button/button-command.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/button/button-template.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T05:15:48Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -136,7 +136,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/button/button-clickmode.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/button/button-command.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/button/button-template.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T05:15:48Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -172,7 +172,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/checkbox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/checkbox.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:50:20Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -184,7 +184,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/checkbox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/checkbox.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:50:20Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -196,7 +196,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/combobox.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T20:22:39Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -208,7 +208,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/combobox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/combobox.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T20:22:39Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -246,7 +246,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datepicker.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/datepicker.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T05:15:48Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -258,7 +258,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/datepicker.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/datepicker.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T05:15:48Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -541,9 +541,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/passwordbox.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/passwordbox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/passwordbox.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-defaults.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-26T04:55:31Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -554,9 +554,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/apps/wpf-standard-control-demo/passwordbox.html" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/passwordbox.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/passwordbox.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-defaults.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.svg</image:loc></image:image>
+    <lastmod>2026-09-26T04:55:31Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -621,7 +621,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/radiobutton.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:51:57Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -634,7 +634,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/radiobutton.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:51:57Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -647,7 +647,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/repeatbutton.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:53:09Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -660,7 +660,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/repeatbutton.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:53:09Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -699,7 +699,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/slider.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-snap.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T14:22:27Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -712,7 +712,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/slider.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-snap.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T14:22:27Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -827,7 +827,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/textbox.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T20:22:39Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -840,7 +840,7 @@
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/textbox.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T20:22:39Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -852,7 +852,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/togglebutton.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/togglebutton.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:52:36Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -864,7 +864,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/apps/wpf-standard-control-demo/togglebutton.html" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/togglebutton.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg</image:loc></image:image>
-    <lastmod>2026-09-25T11:31:54Z</lastmod>
+    <lastmod>2026-09-26T04:52:36Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
