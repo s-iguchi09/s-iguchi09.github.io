@@ -63,7 +63,7 @@ The figure below records, for each display-only candidate, whether the text can 
 Switching to a `TextBox` makes the text selectable, and removing the border and background does not change that. Appearance and behavior are independent here.
 
 As the last row shows, setting `IsTabStop` to `False` leaves `Focusable` at `True`.
-The control drops out of the Tab cycle while click-to-focus and selection remain — which is the combination to use for a display-only look that still allows selection.
+The control drops out of the Tab cycle while `Focusable` stays `True` and the selection API keeps working — which is the combination to use for a display-only look that still allows selection.
 
 ---
 
@@ -74,12 +74,12 @@ The key settings are as follows.
 
 - `IsReadOnly="True"`
     Prevents editing while allowing selection and copying
-- `IsReadOnlyCaretVisible="False"`
-    Hides the caret when the control is read-only
 - `Background="Transparent"`
     Makes the background transparent
 - `BorderThickness="0"`
     Removes the border
+- `Padding="0"`
+    Removes the inner padding so the text sits where a `TextBlock` would place it
 - `TextWrapping="Wrap"`
     Wraps long text across multiple lines
 
@@ -96,9 +96,9 @@ The control is styled so it can be used as a replacement for `TextBlock` in situ
 <TextBox
     Text="{Binding ErrorMessage}"
     IsReadOnly="True"
-    IsReadOnlyCaretVisible="False"
     Background="Transparent"
     BorderThickness="0"
+    Padding="0"
     TextWrapping="Wrap" />
 ```
 
@@ -111,30 +111,33 @@ With this configuration, the displayed text cannot be modified, but users can st
 
 Because the appearance is also close to `TextBlock`, existing display-only text can often be replaced with `TextBox` without changing the surrounding layout significantly.  
 
-For long or multi-line content, return handling and scrolling can be added to improve usability.  
+For long content, a vertical scroll bar can be added.  
 The following example shows that extended configuration.  
 
 ```xml
 <TextBox
     Text="{Binding ErrorMessage}"
     IsReadOnly="True"
-    IsReadOnlyCaretVisible="False"
     Background="Transparent"
     BorderThickness="0"
+    Padding="0"
     TextWrapping="Wrap"
-    AcceptsReturn="True"
     VerticalScrollBarVisibility="Auto" />
 ```
 
-Setting `AcceptsReturn="True"` makes multi-line content behave more naturally, and `VerticalScrollBarVisibility="Auto"` improves usability when the text exceeds the available display area.  
+`VerticalScrollBarVisibility="Auto"` shows a scroll bar when the text exceeds the available display area. `AcceptsReturn` is not needed for text that already contains line breaks: it only decides whether the Enter key inserts one. A read-only `TextBox` showed three lines of text as three lines with `AcceptsReturn` set to `False` or `True`.  
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.svg" alt="A table for a read-only TextBox. IsReadOnlyCaretVisible defaults to False. With three lines of text, LineCount is 3 and the height is the same whether AcceptsReturn is False or True." width="504" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by reading the default of <code>IsReadOnlyCaretVisible</code> and showing <code>line1</code> to <code>line3</code> in a read-only <code>TextBox</code>.</figcaption>
+</figure>
 
 ---
 
 ## Notes
 
 - `TextBox` retains input-control characteristics, so default styling may introduce padding or focus visuals that differ from `TextBlock`
-- Using only `IsReadOnly="True"` may still display a caret when the control receives focus, which can make the control appear editable
-- Setting `IsReadOnlyCaretVisible="False"` suppresses the read-only caret and gives the control a more display-oriented appearance
+- A read-only `TextBox` does not show a caret by default: `IsReadOnlyCaretVisible` defaults to `False`, so `IsReadOnly="True"` alone is enough. Set it to `True` only when a visible caret is wanted, for example for keyboard selection
 - If strict visual consistency is required, additional properties such as `Padding`, `Focusable`, or a shared style definition may also need adjustment
 
 ---
@@ -152,7 +155,7 @@ Setting `AcceptsReturn="True"` makes multi-line content behave more naturally, a
 ## Summary
 
 When WPF text must remain non-editable while still supporting selection and copying, using a read-only `TextBox` in place of `TextBlock` is an effective solution.  
-`IsReadOnly="True"` prevents editing, and `IsReadOnlyCaretVisible="False"` suppresses the caret that would otherwise make the control look editable.  
+`IsReadOnly="True"` prevents editing, and since `IsReadOnlyCaretVisible` defaults to `False`, no caret appears to make the control look editable.  
 By also removing the border and background, the control can be used in the same kinds of display scenarios as `TextBlock` while preserving copy functionality.  
 
 This configuration is a suitable default pattern for any screen that displays text which users may need to reference and partially copy.  

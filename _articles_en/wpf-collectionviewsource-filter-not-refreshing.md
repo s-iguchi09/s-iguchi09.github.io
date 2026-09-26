@@ -250,19 +250,24 @@ The XAML form uses `IsLiveFilteringRequested` and `LiveFilteringProperties` on `
 This is also the form used when each screen requires an independent view.
 
 ```xml
-<Window.Resources>
-  <CollectionViewSource x:Key="InStockProducts"
-                        Source="{Binding Products}"
-                        Filter="OnProductFilter"
-                        IsLiveFilteringRequested="True">
-    <CollectionViewSource.LiveFilteringProperties>
-      <sys:String>Stock</sys:String>
-    </CollectionViewSource.LiveFilteringProperties>
-  </CollectionViewSource>
-</Window.Resources>
+<Window x:Class="SampleApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <Window.Resources>
+    <CollectionViewSource x:Key="InStockProducts"
+                          Source="{Binding Products}"
+                          Filter="OnProductFilter"
+                          IsLiveFilteringRequested="True">
+      <CollectionViewSource.LiveFilteringProperties>
+        <sys:String>Stock</sys:String>
+      </CollectionViewSource.LiveFilteringProperties>
+    </CollectionViewSource>
+  </Window.Resources>
 
-<ListBox ItemsSource="{Binding Source={StaticResource InStockProducts}}"
-         DisplayMemberPath="Name" />
+  <ListBox ItemsSource="{Binding Source={StaticResource InStockProducts}}"
+           DisplayMemberPath="Name" />
+</Window>
 ```
 
 Declare the `sys` prefix as `xmlns:sys="clr-namespace:System;assembly=mscorlib"`; `assembly=System.Runtime` also resolves on both .NET and .NET Framework.

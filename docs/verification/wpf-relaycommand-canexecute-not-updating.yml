@@ -10,6 +10,8 @@ verifies:
   - "InvalidateRequerySuggested で更新されるのは RequerySuggested に委譲した実装だけであること"
   - "自前で CanExecuteChanged を発火した場合に更新されるのはその実装だけであること"
   - "Command が未設定のボタンは有効のままであること"
+  - "InputManager を通したキー入力の後は、何も呼ばなくても RequerySuggested に委譲した実装だけが更新されること"
+  - "図は、両方の入力欄へ InputManager を通したキー入力で文字を打ち込んで撮っていること（InvalidateRequerySuggested は呼ばない）"
 images:
   - "images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png"
   - "images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg"

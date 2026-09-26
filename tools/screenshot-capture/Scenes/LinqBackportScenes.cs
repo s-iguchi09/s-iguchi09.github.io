@@ -28,6 +28,7 @@ internal sealed class LinqBackportNet5Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "TakeLast / SkipLast に 0・要素数超過・負数を渡したときの挙動",
         "空の並びに対する TakeLast",
+        "SkipLast(0) が元の配列そのものを返すか（本家は別のイテレーターを返す）",
         "NET471_OR_GREATER が SDK 形式の暗黙定義に依存しており、それを切った場合と従来形式では同じソースが CS0121 になること、および DefineConstants で明示すれば通ること",
     ];
 
@@ -60,6 +61,9 @@ internal sealed class LinqBackportNet5Scene : IScene
         new("Numbers.SkipLast(10)", "Numbers.SkipLast(10)"),
         new("Numbers.SkipLast(-1)", "Numbers.SkipLast(-1)"),
         new("empty.TakeLast(2)", "new int[0].TakeLast(2)"),
+        // 本家は 0 でも別のイテレーターを返す（入力は空でない Numbers。空の配列はこのプローブの対象外）。
+        // 元の配列そのものを返すと、キャストして書き換えられてしまう。
+        new("SkipLast(0) is source", "ReferenceEquals(Numbers.SkipLast(0), Numbers)"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -103,7 +107,7 @@ internal sealed class LinqBackportNet6Scene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
-        "Chunk の端数・ちょうど・source より大きい size・不正な size での挙動",
+        "Chunk の端数・ちょうど・source より大きい size（int.MaxValue を含む）・不正な size での挙動",
         "MaxBy / MinBy が空の並びに対して返すもの（値型と参照型で異なる）",
         "DistinctBy が残す要素と、その順序",
     ];
@@ -142,6 +146,8 @@ internal sealed class LinqBackportNet6Scene : IScene
         new("Numbers.Chunk(2)", "Numbers.Chunk(2)"),
         new("Numbers.Chunk(5)", "Numbers.Chunk(5)"),
         new("Numbers.Chunk(10)", "Numbers.Chunk(10)"),
+        // size を事前に確保する実装は、短い入力でも size が大きいだけで OutOfMemoryException になる。
+        new("Chunk(int.MaxValue)", "new[] { 1, 2, 3 }.Chunk(int.MaxValue)"),
         new("Numbers.Chunk(0)", "Numbers.Chunk(0).ToArray()"),
         new("Items.MaxBy(Price)", "Items.MaxBy(x => x.Price)"),
         new("Items.MinBy(Price)", "Items.MinBy(x => x.Price)"),
@@ -184,6 +190,9 @@ internal sealed class LinqBackportNet7Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "戻り値が IOrderedEnumerable であり、ThenBy を連結できること",
         "比較子で等しくなる要素どうしの順序が保たれること（安定ソート）",
+        "実際に使われた比較エンジン（NLS か ICU か）を、ドキュメントの SortVersion による方法で記録する",
+        "ja-JP のカルチャ依存の比較で、ハイフンとアンダースコアを含む文字列の並びが net48（NLS）と net10.0（ICU）で変わること",
+        "比較できない要素で、Order().ToList() と Order().First() が投げる例外の型（net10.0 では全体を並べる場合だけ InvalidOperationException に包まれる）",
     ];
 
     public string Slug => "linq-backport-netframework-to-net7";
@@ -209,6 +218,18 @@ internal sealed class LinqBackportNet7Scene : IScene
         new("Order(ByLength), stability", "Words.Order(new ByLength())"),
         new("Order().ThenByDescending(len)", "Words.Order().ThenByDescending(w => w.Length)"),
         new("empty.Order()", "new string[0].Order()"),
+        // カルチャ依存の比較は、比較エンジンが NLS か ICU かで結果が変わりうる。.NET 5 以降の既定は Windows の
+        // バージョンによって異なり（Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS にもできるので、
+        // ja-JP の指定だけではエンジンは決まらない。実際に使われたエンジンを記録する（計測は Windows 11 の .NET 10 と net48）。
+        // 判定は .NET のドキュメント（"Determine if your app is using ICU"）の方法で、SortVersion から見る。
+        new("comparison engine (NLS or ICU)",
+            "(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion != 0 && System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion == BitConverter.ToInt32(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.SortId.ToByteArray(), 0)) ? \"ICU\" : \"NLS\""),
+        // ja-JP を明示して、既定のカルチャの違いには左右されないようにする（エンジンの違いは上の行で見る）。
+        new("Order(ja-JP comparer), hyphen and underscore",
+            "new[] { \"coop\", \"co-op\", \"Co-op\", \"co_op\" }.Order(StringComparer.Create(new System.Globalization.CultureInfo(\"ja-JP\"), false))"),
+        // 比較できない要素。全体を並べる ToList と、全体を並べない First で例外の型が分かれるかを見る。
+        new("non-comparable items: Order().ToList()", "new[] { new object(), new object() }.Order().ToList()"),
+        new("non-comparable items: Order().First()", "new[] { new object(), new object() }.Order().First()"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -379,6 +400,7 @@ internal sealed class LinqBackportNet10Scene : IScene
         "記事本文のポリフィル実装をそのまま net48 と net10.0 でビルドし、出力が一致するかを確かめる",
         "相手が居ない行に対して LeftJoin / RightJoin が渡す既定値",
         "Shuffle が元の並びの並べ替えになっていること（乱数のため整列して比較する）",
+        "同時に始めた 8 スレッドで Shuffle したときに、異なる並びがいくつ出るか（.NET Framework の new Random() は時刻から種を作るため、種を分けないと同じ並びになる）",
     ];
 
     public string Slug => "linq-backport-netframework-to-net10";
@@ -397,6 +419,35 @@ internal sealed class LinqBackportNet10Scene : IScene
                 (3, "dry"),
                 (4, "unknown"),
             };
+
+            // 8 スレッドを同時に始めて 1〜10 を Shuffle し、異なる並びの数を返す。
+            private static int ShuffleAcrossThreads()
+            {
+                var results = new string[8];
+                using (var start = new System.Threading.ManualResetEventSlim(false))
+                {
+                    var threads = new System.Threading.Thread[8];
+                    for (int k = 0; k < threads.Length; k++)
+                    {
+                        int index = k;
+                        threads[k] = new System.Threading.Thread(() =>
+                        {
+                            start.Wait();
+                            results[index] = string.Join(",", Enumerable.Range(1, 10).Shuffle());
+                        });
+                        threads[k].Start();
+                    }
+
+                    System.Threading.Thread.Sleep(100);
+                    start.Set();
+                    foreach (var thread in threads)
+                    {
+                        thread.Join();
+                    }
+                }
+
+                return results.Distinct().Count();
+            }
         """;
 
     private static readonly LinqBackportParity.Probe[] Probes =
@@ -416,6 +467,7 @@ internal sealed class LinqBackportNet10Scene : IScene
         new("Shuffle, sorted back", "Left.Select(l => l.Name).Shuffle().OrderBy(n => n)"),
         new("Shuffle, count", "Left.Shuffle().Count()"),
         new("empty.Shuffle()", "new int[0].Shuffle()"),
+        new("Shuffle, 8 threads started together: distinct orders", "ShuffleAcrossThreads()"),
     ];
 
     public async Task CaptureAsync(SceneContext context)

@@ -66,7 +66,7 @@ The button has no trigger to re-evaluate `CanExecute`.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png" alt="Two pairs of an input box and a button holding the same text. With an implementation that never raises CanExecuteChanged the button stays disabled, while delegating to CommandManager.RequerySuggested enables it." width="382" height="179" loading="lazy">
-  <figcaption>Both rows use the same condition (executable when <code>Name</code> is not empty) and contain the same text. The upper implementation never raises <code>CanExecuteChanged</code>, so the button stays disabled after typing. The lower one delegates to <code>CommandManager.RequerySuggested</code>, so the requery runs and the button becomes enabled.</figcaption>
+  <figcaption>Both rows use the same condition (executable when <code>Name</code> is not empty) and contain the same text, typed through WPF's input processing (<code>InputManager</code>) without calling <code>InvalidateRequerySuggested</code> or anything else. The upper implementation never raises <code>CanExecuteChanged</code>, so the button stays disabled after typing. The lower one delegates to <code>CommandManager.RequerySuggested</code>, so WPF requeries in response to the input and the button becomes enabled.</figcaption>
 </figure>
 
 ---
@@ -87,11 +87,12 @@ Note also that the `CommandManager` only detects UI interactions such as focus c
 ---
 
 Which way of raising the event reaches which implementation can be confirmed by displaying the button and reading `IsEnabled`.
-The figure below shows the button displayed while `CanExecute` returns `false`, the condition then changed so it returns `true`, and the result of calling nothing, `CommandManager.InvalidateRequerySuggested()`, or the command's own `RaiseCanExecuteChanged()`.
+The figure below shows the button displayed while `CanExecute` returns `false`, the condition then changed so it returns `true`, and the result of calling nothing, `CommandManager.InvalidateRequerySuggested()`, the command's own `RaiseCanExecuteChanged()`, or calling nothing and typing one key into the neighboring `TextBox`.
+The delegating implementation has no event of its own, so `RaiseCanExecuteChanged()` has nothing to raise there and that combination is not measured.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="A table of Button.IsEnabled per implementation and per way of raising the event. Calling nothing leaves both implementations at False. InvalidateRequerySuggested reaches only the implementation that delegates to RequerySuggested. RaiseCanExecuteChanged reaches only the implementation with its own event. A button with no Command is True throughout." width="548" height="290" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11, reading <code>Button.IsEnabled</code> before and after <code>CanExecute</code> switches from <code>false</code> to <code>true</code>. <code>before</code> is taken just prior to changing the condition; <code>after</code> is taken once the condition changed and the listed call was made.</figcaption>
+  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="A table of Button.IsEnabled per implementation and per way of raising the event. With nothing called, both implementations stay False. InvalidateRequerySuggested turns only the implementation delegating to RequerySuggested True. RaiseCanExecuteChanged turns only the implementation with its own event True. A key typed in the neighboring TextBox turns only the implementation delegating to RequerySuggested True. A button without a Command is True from the start." width="548" height="320" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11, reading <code>Button.IsEnabled</code> before and after <code>CanExecute</code> switches from <code>false</code> to <code>true</code>. <code>before</code> is taken just prior to changing the condition; <code>after</code> is taken once the condition changed and the listed call was made. The key input is sent through WPF's input processing (<code>InputManager</code>).</figcaption>
 </figure>
 
 **With nothing called, `IsEnabled` stays `False` on both implementations.** A changed return value from `CanExecute` alone does not reach the button.
@@ -100,6 +101,8 @@ Beyond that, **the way the event is raised must match the implementation.**
 `InvalidateRequerySuggested()` reaches only an implementation that forwards `CanExecuteChanged` to `CommandManager.RequerySuggested`; it never reaches one that holds its own event.
 `RaiseCanExecuteChanged()` is the reverse, reaching only the implementation with its own event.
 The choice of approach therefore determines what has to be called when a condition changes.
+
+As the key-input rows show, when the user types, WPF raises `RequerySuggested` and requeries. That, too, reaches only the delegating implementation; the one with its own event stayed `False` despite the input.
 
 The last row is a control: a button whose `Command` is unset has nothing to evaluate, so it stays enabled throughout.
 

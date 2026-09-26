@@ -10,5 +10,9 @@ verifies:
   - "バインドを張ったまま UpdateSource を呼んだ場合と、Text を書き換えてから呼んだ場合の違い"
   - "OneWay / OneTime では Text への代入がバインドを外し、その後の UpdateSource が例外になること"
   - "同じ OneWay / OneTime でも、TextInput 経由の入力ではバインドが外れず、ソースも更新されないこと"
+  - "TextBox をツリーから外した後に UpdateSource を呼んだとき、例外になるか"
+  - "OneTime のバインドでも UpdateTarget でソースの値を読み直せるか"
+  - "BindingGroup.UpdateSources で、RawProposedValue と UpdatedValue の段階の検証ルールが失敗したとき、ソースへ書き込まれるか"
 images:
   - "images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg"
+  - "images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.svg"

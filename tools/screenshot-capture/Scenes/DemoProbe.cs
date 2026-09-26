@@ -182,6 +182,41 @@ internal static class DemoProbe
         });
     }
 
+    /// <summary>
+    /// フォーカスのある要素へ、英小文字を 1 文字ずつ打ち込む。
+    /// キーの押下と離しは <see cref="SendKey"/> で、文字は TextCompositionManager で、どちらも InputManager を通して送る。
+    /// OS の入力（<see cref="RealKeyboard"/>）と違い、計測用のウィンドウが OS の前面になくても送れる。
+    /// </summary>
+    public static void TypeLetters(UIElement target, string letters)
+    {
+        foreach (char letter in letters)
+        {
+            if (letter is < 'a' or > 'z')
+            {
+                throw new ArgumentException("英小文字だけを打てる。", nameof(letters));
+            }
+
+            var key = (System.Windows.Input.Key)((int)System.Windows.Input.Key.A + (letter - 'a'));
+            SendKey(key);
+            System.Windows.Input.TextCompositionManager.StartComposition(
+                new System.Windows.Input.TextComposition(System.Windows.Input.InputManager.Current, target, letter.ToString()));
+            SendKey(key, down: false);
+        }
+    }
+
+    /// <summary>
+    /// <see cref="TypeLetters"/> で打ち込み、文字が TextBox に届いたことを確かめる。
+    /// 入力が成立しないまま次の操作に進むと、更新されていない値を計測してしまうので、届かなければ計測を止める。
+    /// </summary>
+    public static void TypeInto(System.Windows.Controls.TextBox box, string letters)
+    {
+        TypeLetters(box, letters);
+        if (!box.Text.EndsWith(letters, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"キー入力が TextBox に届いていない（Text = \"{box.Text}\"、打った文字 = \"{letters}\"）。");
+        }
+    }
+
     public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         int count = VisualTreeHelper.GetChildrenCount(root);
