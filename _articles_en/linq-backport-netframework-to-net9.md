@@ -241,7 +241,7 @@ namespace System.Linq
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. CountBy, AggregateBy, and Index all produce identical results, boundary cases included." width="1062" height="320" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. CountBy, AggregateBy, and Index all produce identical results, boundary cases included. With a null key in the sequence, both CountBy and AggregateBy throw ArgumentNullException on both sides." width="1062" height="380" loading="lazy">
   <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 
