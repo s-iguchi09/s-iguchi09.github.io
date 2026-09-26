@@ -14,7 +14,11 @@ internal sealed class ComboBoxItemsSourceScene : IScene
     [
         "同じ選択に対して SelectedItem / SelectedValue / SelectedIndex が返す値",
         "SelectedValuePath の有無で SelectedValue の中身が変わること",
-        "DisplayMemberPath の有無で表示される文字列が変わること",
+        "DisplayMemberPath の有無で表示される文字列が変わること（計測用の型は ToString をオーバーライドしない）",
+        "DisplayMemberPath と ItemTemplate をコードと XAML で両方設定したときの例外",
+        "SelectedValuePath のプロパティが int で、SelectedValue にバインドしたソースが文字列のときの選択と、選択を変えたときに書き戻される値の型",
+        "列挙型を ItemsSource にして SelectedValuePath=\"value__\" としたときの SelectedValue",
+        "SelectedValue を ItemsSource より先に設定したとき（コードで設定、バインドで表示後に ItemsSource を入れる）の選択",
     ];
 
     public string Slug => "wpf-combobox-itemssource-patterns";
@@ -63,6 +67,12 @@ internal sealed class ComboBoxItemsSourceScene : IScene
             ["configuration", "SelectedItem", "SelectedValue", "SelectedIndex", "displayed"],
             await ComboBoxAndDatePickerMeasurements.SelectionPropertiesAsync(),
             "combobox-selection-properties.svg");
+
+        await context.SaveTableAsync(
+            "ComboBox pitfalls: settings that are said to fail",
+            ["case", "measured"],
+            await ComboBoxAndDatePickerMeasurements.PitfallsAsync(),
+            "combobox-pitfalls.svg");
     }
 
     /// <summary>選択済みの表示を比べるため、いずれも 2 件目を選択しておく。</summary>

@@ -3,7 +3,7 @@ layout: article-ja
 title: "DatePicker の表示形式をカスタマイズする方法"
 date: 2026-04-15
 category: WPF
-excerpt: "WPF の DatePicker の SelectedDateFormat は Short と Long の 2 つしか持たない。yyyy/MM/dd などの固定形式で表示するため、XAML スタイル・コードビハインド・コンバーターの 3 通りの方法を比較し、使い分けを示す。"
+excerpt: "WPF の DatePicker の日付を yyyy/MM/dd などの固定形式で表示する方法。DatePickerTextBox のスタイル、XAML での区切り文字のエスケープ、コードビハインドで Text を書き換えても効かない理由、コンバーターの使いどころを実測で示す。"
 image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 
@@ -12,7 +12,7 @@ image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custo
 WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `xml:lang`)が指定されていない場合、選択された日付をスレッドの `CurrentCulture`(既定ではシステムの地域設定)の形式で表示する(例: en-US では `4/15/2026`)。
 この挙動は、マシンの地域設定に依存せず固定のレイアウトで日付を見せたい場合に不都合となる。
 ログ向けの `yyyy/MM/dd` やレポート向けの `dd MMM yyyy` などが典型例である。
-本記事では、コントロールが常にアプリの要求する形式で日付を表示するようカスタマイズする方法を、XAML スタイル・コードビハインド・バリューコンバーターの 3 通りで比較する。
+本記事では、コントロールが常にアプリの要求する形式で日付を表示するようカスタマイズする方法を、XAML スタイル・コードビハインド・バリューコンバーターの 3 通りで比較する。コードビハインドで `Text` を書き換える方法は、実測では表示を変えられなかった。
 
 ## 前提・対象環境
 
@@ -22,7 +22,7 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 - 検証環境: .NET 10 / Windows 11（日本語環境）
 
 以下の手法は、既定の `DatePicker` コントロールテンプレートが視覚ツリーに `DatePickerTextBox` を含むことに依存する。
-テンプレートを全面的に差し替えた `DatePicker` ではこの要素が公開されない場合があり、その際はコードビハインド方式か、カスタムテンプレート内での整形に頼ることになる。
+テンプレートを全面的に差し替えた `DatePicker` ではこの要素が公開されない場合があり、その際はカスタムテンプレート内で整形する必要がある。コードビハインドで `Text` を書き換えても、後述のとおり表示は変わらない。
 後述するコンバーターが整形するのは、`DatePicker` 本体ではなく併設の表示である。
 
 `DatePicker` に実際に表示される文字列は、設定を変えて読み出せば確かめられる。
@@ -60,15 +60,15 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
       <Setter Property="Text"
               Value="{Binding SelectedDate,
                               RelativeSource={RelativeSource AncestorType=DatePicker},
-                              StringFormat='yyyy\/MM\/dd'}" />
+                              StringFormat='yyyy\\/MM\\/dd'}" />
     </Style>
   </DatePicker.Resources>
 </DatePicker>
 ```
 
-区切り文字は `\/` とエスケープしてリテラルとして描画させている。
-エスケープしない `/` は日付区切りのプレースホルダーであり、バインドのカルチャによって別の文字に置き換えられ、固定レイアウトが崩れる。
-なお、シングルクォートで囲む `'/'`(例: `yyyy'/'MM'/'dd`)でも同じ効果が得られ、記事の後半ではこの記法を用いている。
+エスケープしない `/` は日付区切りのプレースホルダーであり、バインドのカルチャによって別の文字に置き換えられるため、リテラルとして描画させるにはエスケープが要る。
+ただし、マークアップ拡張の中では `\` 自体が XAML のエスケープ文字として扱われる。`\/` とだけ書くと XAML のパーサーに `\` が消費されて書式は `yyyy/MM/dd` になり、`de-DE` では `2026.04.15` と表示される。上の例のように `\\/` と重ねると、書式に `\/` が残る。
+シングルクォートで囲む場合も、`StringFormat=yyyy\'/\'MM\'/\'dd` のようにクォート自体をエスケープすれば同じ効果が得られる。エスケープしない `yyyy'/'MM'/'dd` では、XAML の読み込みに失敗した。4 通りの結果は、次の図の後の表に示す。
 
 既定表示のカルチャは、`Language`(XAML では `xml:lang`)の値がどこから来ているかで決まる。
 自身にも親要素にも指定がなく、値の出どころが既定値(`Default`)のままであれば、スレッドの `CurrentCulture` に従う。このとき `Language` の既定値である `en-US` は使われない。
@@ -93,53 +93,46 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
       <Setter Property="Text"
               Value="{Binding SelectedDate,
                               RelativeSource={RelativeSource AncestorType=DatePicker},
-                              StringFormat='yyyy\/MM\/dd'}" />
+                              StringFormat='yyyy\\/MM\\/dd'}" />
     </Style>
   </DatePicker.Resources>
 </DatePicker>
 ```
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="同じ日付を選択した 2 つの DatePicker。既定のものは 4/15/2026 と表示され、StringFormat を指定したものは 2026/04/15 と表示されている。" width="486" height="146" loading="lazy">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="同じ日付を選択した 2 つの DatePicker。既定のものは 4/15/2026 と表示され、StringFormat を指定したものは 2026/04/15 と表示されている。" width="501" height="146" loading="lazy">
   <figcaption>同じ <code>SelectedDate</code> を与えた 2 つの <code>DatePicker</code>。書式の差が出るよう、どちらにも <code>xml:lang="en-US"</code> を指定している。上は既定の表示で、この設定に従って <code>4/15/2026</code> になる。下は本節のスタイルを適用したもので、区切り文字と年月日の並びが指定どおりに固定される。</figcaption>
 </figure>
 
-ただし、`\/` のエスケープで固定できるのは区切り文字と並び順であって、暦そのものではない。  
-同じ `yyyy\/MM\/dd` をカルチャだけ変えて評価すると次のようになる（.NET 10 での実測値）。  
+この書式は、表示した後も保たれる。
+`xml:lang="de-DE"` で表示したあと、コードで `SelectedDate` を変えても、カレンダーで日付を選んでも、表示は指定どおりの `2026/05/20`・`2026/06/03` だった。
+`DatePickerTextBox.Text` の値の出どころは、最後までスタイルのバインドのままだった。
 
-| `xml:lang` | 表示 |
-|---|---|
-| `en-US` / `ja-JP` / `de-DE` | `2026/04/15` |
-| `th-TH`(仏暦) | `2569/04/15` |
-| `ar-SA`(ヒジュラ暦) | `1447/10/27` |
-| `fa-IR`(ペルシャ暦) | `1405/01/26` |
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.svg" alt="本節のスタイルを xml:lang が de-DE の DatePicker に当てた結果の表。表示直後は 2026/04/15、コードで SelectedDate を 2026-05-20 にすると 2026/05/20、カレンダーで 2026-06-03 を選ぶと 2026/06/03。TextBox.Text の値の出どころはどれも Style のバインド。" width="658" height="170" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、本節のスタイルを当てた <code>DatePicker</code> を表示し、日付を 2 回変えて測った結果。値の出どころは <code>DependencyPropertyHelper.GetValueSource</code> で読んだ。</figcaption>
+</figure>
+
+ただし、区切り文字のエスケープで固定できるのは区切り文字と並び順であって、暦そのものではない。区切りが保たれても、`th-TH`・`ar-SA`・`fa-IR` はそれぞれの暦の年と月で表示される。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-stringformat-escape.svg" alt="XAML の Binding の中の StringFormat の 4 通りの書き方を比べた表。'yyyy\/MM\/dd' は解析後に yyyy/MM/dd になり、en-US と ja-JP では 2026/04/15 だが de-DE では 2026.04.15 になり、ar-SA では見えない方向記号が入る。'yyyy\\/MM\\/dd' と yyyy\'/\'MM\'/\'dd は 6 つの文化圏すべてでスラッシュが残るが、th-TH・ar-SA・fa-IR は自分の暦のままになる。エスケープしない yyyy'/'MM'/'dd は XamlParseException で読み込めない。" width="1159" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、本節のスタイルをそれぞれの <code>StringFormat</code> と <code>xml:lang</code> で読み込み、<code>SelectedDate</code> を 2026-04-15 にして測った結果。ASCII 以外の文字は符号位置で示している。</figcaption>
+</figure>
 
 暦まで含めて固定したい場合は、バインドに `ConverterCulture` を指定してカルチャ自体を固定する。  
 
 ## コードビハインドによる方法
 
-コードビハインドでは、`SelectedDateChanged` イベントを購読してテキストを手動で整形する。
+`SelectedDateChanged` イベントを購読し、整形した文字列を `DatePicker.Text` に代入する方法がよく紹介される。この方法では表示は変わらない。
+`SelectedDateChanged` が発生した時点で、`Text` はすでに既定の書式で設定されている。そこへ `yyyy/MM/dd` の文字列を代入すると、`DatePicker` はその文字列を日付として解析し、代入の直後に既定の書式の文字列へ直した。ハンドラーの入口でも代入の直後でも、`Text` は `4/15/2026` だった。
 
-```csharp
-using System.Globalization;
-using System.Windows.Controls;
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="xml:lang が en-US の DatePicker で、SelectedDateChanged の中で Text を書き換えた結果の表。ハンドラーは 2 回呼ばれ、どちらも入口の Text は 4/15/2026、yyyy/MM/dd を代入した直後の Text も 4/15/2026 だった。ハンドラーの後の Text と表示も 4/15/2026。" width="929" height="110" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>SelectedDate</code> を 2026-04-15 にしたあと、ハンドラーで <code>Text</code> を不変カルチャの <code>yyyy/MM/dd</code> に書き換えて測った結果。</figcaption>
+</figure>
 
-private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
-{
-    if (datePicker.SelectedDate.HasValue)
-    {
-        datePicker.Text = datePicker.SelectedDate.Value
-            .ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
-    }
-    else
-    {
-        datePicker.Text = string.Empty;
-    }
-}
-```
-
-`CultureInfo.InvariantCulture` を渡すことで、マシンの地域設定に関わらず区切り文字を固定できる。
-これを省いた `ToString("yyyy/MM/dd")` は現在のカルチャを使うため、`/` がそのカルチャの日付区切りに従う。
+コードから書式を指定したい場合は、XAML による方法と同じ `DatePickerTextBox` のスタイルとバインドを設定するか、本体の表示はそのままにして、次節のコンバーターで併設表示を整形する。
 
 ## コンバーターによる併設表示
 
@@ -196,16 +189,14 @@ public class DateFormatConverter : IValueConverter
 ## 注意点
 
 - XAML の `StringFormat` 方式が変えるのは表示テキストだけである。基となる `SelectedDate` の値は変わらないため、日付を直接参照するバインドには影響しない。
-- `SelectedDateChanged` 方式は `Text` プロパティを手動で上書きする。ユーザーがボックスに入力し直したときも双方向の解析が成立する必要があるため、パーサーが往復変換できない形式は避ける。
-- 日付未選択のとき `string.Empty` を返すコンバーターにしておくと、`NullReferenceException` を防げる。
+- コンバーターでは、`is DateTime` の型の判定が日付未選択の場合を扱っている。`null` は判定を通らないため整形されない。そのうえで `string.Empty` を返すと、何も表示されない。
 
 ## まとめ
 
 | 方法                  | メリット                      | デメリット                          |
 | --------------------- | ----------------------------- | ----------------------------------- |
 | Style + StringFormat  | 宣言的・コード不要            | StringFormat の制約がある           |
-| SelectedDateChanged   | シンプル・明示的              | コードビハインドに依存              |
 | バリューコンバーター  | MVVM フレンドリー・再利用可能 | 本体ではなく併設表示の整形に用いる  |
 
 最適な方法はプロジェクトのアーキテクチャに依存する。
-`DatePicker` 本体の表示を変えるには Style + StringFormat かコードビハインドが必要であり、コンバーターは同じ日付を表示する併設表示が複数ある場合に適する。
+`DatePicker` 本体の表示を変えるには Style + StringFormat を使う。`SelectedDateChanged` で `Text` を書き換えても表示は変わらなかった。コンバーターは、同じ日付を表示する併設表示が複数ある場合に適する。

@@ -58,7 +58,8 @@ var counts = words.GroupBy(w => w)
 
 The invisible cost of this code is the intermediate grouping.
 `GroupBy` walks all elements up front and builds, for every key, a list of references to all elements belonging to that key.
-When only a count is needed, those lists are ultimately discarded — but not the moment `Count()` returns: they stay retained until the entire sequence returned by `GroupBy` has been enumerated (every key's group built).
+When only a count is needed, those lists are ultimately discarded — but not the moment `Count()` returns: they stay retained, as one lookup holding every group, at least until the enumeration of the sequence returned by `GroupBy` finishes and its enumerator is released.
+In the .NET 9 implementation, releasing the enumerator does not clear the reference to the lookup. On the first enumeration on the same thread, the sequence itself serves as the enumerator, so as long as the query is kept in a variable or elsewhere, the lookup remains even after the enumeration ends (see [`GroupByIterator` in `Grouping.cs`](https://github.com/dotnet/runtime/blob/v9.0.0/src/libraries/System.Linq/src/System/Linq/Grouping.cs)).
 For a million elements across ten keys, a grouping holding a million references stays in memory for the whole time it takes to produce the ten numbers.
 
 The `Index` substitute — `Select((item, index) => (index, item))` — is a different kind of problem: not cost, but intent buried in boilerplate.
@@ -240,7 +241,7 @@ namespace System.Linq
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. CountBy, AggregateBy, and Index all produce identical results, boundary cases included." width="1062" height="320" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. CountBy, AggregateBy, and Index all produce identical results, boundary cases included. With a null key in the sequence, both CountBy and AggregateBy throw ArgumentNullException on both sides." width="1062" height="380" loading="lazy">
   <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
 </figure>
 

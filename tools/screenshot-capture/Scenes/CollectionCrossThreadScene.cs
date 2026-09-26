@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,7 +26,7 @@ internal sealed class CollectionCrossThreadScene : IScene
         "バインドしていない ObservableCollection では例外にならないこと（原因が CollectionView 側にある証拠）",
         "Dispatcher.Invoke と EnableCollectionSynchronization のいずれでも例外が消えること",
         "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている",
-        "Add のあと、コレクションの Count と ItemsControl の Items.Count（CollectionView に反映された件数）が一致するか",
+        "Add のあと、コレクションの Count、ItemsControl の Items.Count、ビューが受け取った CollectionChanged の数（件数だけではビューへの反映を確かめられないため）",
         "バックグラウンドスレッドから 5,000 件を Add したときの所要時間を、Dispatcher.Invoke と EnableCollectionSynchronization で比べる",
     ];
 
@@ -48,13 +49,13 @@ internal sealed class CollectionCrossThreadScene : IScene
 
         await context.SaveTableAsync(
             "Add() from a background thread",
-            ["collection", "countermeasure", "result", "Count / Items.Count"],
+            ["collection", "countermeasure", "result", "Count / Items.Count / view notifications"],
             rows,
             "collection-cross-thread-matrix.svg");
 
         await context.SaveTableAsync(
             $"{BulkCount:N0} Add() calls from a background thread",
-            ["countermeasure", "background loop ms", "Items.Count at loop end", "until all shown ms"],
+            ["countermeasure", "background loop ms", "view notifications after await", "until all notified ms"],
             [
                 await MeasureBulkAsync(Fix.Dispatcher),
                 await MeasureBulkAsync(Fix.Synchronization),
@@ -66,8 +67,8 @@ internal sealed class CollectionCrossThreadScene : IScene
 
     /// <summary>
     /// バックグラウンドスレッドから <see cref="BulkCount"/> 件を 1 件ずつ Add し、
-    /// ループにかかった時間、ループを抜けた時点で UI に反映されていた件数、
-    /// 全件が UI に反映されるまでの時間を返す。
+    /// ループにかかった時間、await のあと UI スレッドへ戻った時点でビューが受け取っていた通知の数、
+    /// ビューが全件分の通知を受け取るまでの時間を返す。
     /// Dispatcher.Invoke は 1 件ごとに UI スレッドでの実行を待つ。
     /// </summary>
     private static async Task<IReadOnlyList<string>> MeasureBulkAsync(Fix fix)
@@ -94,6 +95,11 @@ internal sealed class CollectionCrossThreadScene : IScene
         host.Show();
         Settle(host);
 
+        // 同期を登録していないビューは件数を元のリストから読むことがあるので、Items.Count だけでは
+        // ビューへの反映を確かめられない。ビューが受け取った CollectionChanged の数も数える。
+        int viewEvents = 0;
+        ((INotifyCollectionChanged)list.Items).CollectionChanged += (_, _) => viewEvents++;
+
         Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
         var total = Stopwatch.StartNew();
         double elapsed = await Task.Run(() =>
@@ -117,16 +123,18 @@ internal sealed class CollectionCrossThreadScene : IScene
             return stopwatch.Elapsed.TotalMilliseconds;
         });
 
-        int shownAtLoopEnd = list.Items.Count;
+        // ループはワーカースレッドで回るが、ここで読むのは await のあと UI スレッドへ戻った時点の値である。
+        // その間にも UI スレッドは通知を処理できるので、「ループを抜けた瞬間」の値ではない。
+        int eventsAfterAwait = viewEvents;
 
-        // 反映は UI スレッドで非同期に進む。全件が Items に載るまで回す。
-        while (list.Items.Count < BulkCount && total.Elapsed < TimeSpan.FromSeconds(60))
+        // 反映は UI スレッドで非同期に進む。ビューが全件分の通知を受け取るまで回す。
+        while (viewEvents < BulkCount && total.Elapsed < TimeSpan.FromSeconds(60))
         {
             Settle(host);
         }
 
         total.Stop();
-        string until = list.Items.Count == BulkCount ? total.Elapsed.TotalMilliseconds.ToString("N0") : $"not reached ({list.Items.Count:N0})";
+        string until = viewEvents == BulkCount ? total.Elapsed.TotalMilliseconds.ToString("N0") : $"not reached ({viewEvents:N0})";
         host.Content = null;
         host.Close();
 
@@ -135,7 +143,7 @@ internal sealed class CollectionCrossThreadScene : IScene
             BindingOperations.DisableCollectionSynchronization(items);
         }
 
-        return [fix == Fix.Dispatcher ? "Dispatcher.Invoke per item" : "EnableCollectionSynchronization + lock", elapsed.ToString("N0"), shownAtLoopEnd.ToString("N0"), until];
+        return [fix == Fix.Dispatcher ? "Dispatcher.Invoke per item" : "EnableCollectionSynchronization + lock", elapsed.ToString("N0"), eventsAfterAwait.ToString("N0"), until];
     }
 
     private enum Bound
@@ -152,8 +160,8 @@ internal sealed class CollectionCrossThreadScene : IScene
     }
 
     /// <summary>
-    /// <c>Add</c> の結果に加えて、コレクションの件数と、ItemsControl に反映された件数を返す。
-    /// 例外になった構成で、両者が食い違うかを見る。
+    /// <c>Add</c> の結果に加えて、コレクションの件数、ItemsControl の Items.Count、ビューが受け取った通知の数を返す。
+    /// 同期のないビューは件数を元のリストから読むことがあるため、反映の確認は通知の数で行う。
     /// </summary>
     private static async Task<(string Result, string Counts)> RunDetailedAsync(Bound bound, Fix fix)
     {
@@ -161,6 +169,7 @@ internal sealed class CollectionCrossThreadScene : IScene
         var gate = new object();
         Window? host = null;
         ItemsControl? list = null;
+        int viewEvents = 0;
 
         if (fix == Fix.Synchronization)
         {
@@ -181,6 +190,7 @@ internal sealed class CollectionCrossThreadScene : IScene
             };
             host.Show();
             Settle(host);
+            ((INotifyCollectionChanged)list.Items).CollectionChanged += (_, _) => viewEvents++;
         }
 
         Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -219,7 +229,7 @@ internal sealed class CollectionCrossThreadScene : IScene
         if (host is not null)
         {
             Settle(host);
-            counts = $"{items.Count} / {list!.Items.Count}";
+            counts = $"{items.Count} / {list!.Items.Count} / {viewEvents}";
             host.Content = null;
             host.Close();
             Settle(host);

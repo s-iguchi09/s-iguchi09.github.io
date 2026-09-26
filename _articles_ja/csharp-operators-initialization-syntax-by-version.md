@@ -76,7 +76,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 | `..`（範囲） | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ BCL 型が必要（†2） |
 | `init` アクセサ | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
 | `with`（record クラス） | C# 9.0 | .NET 5 | ⚠️ BCL 型が必要（†3） |
-| `with`（struct / record struct） | C# 10.0 | .NET 6 | ✅ 言語機能のみ（†1・†5） |
+| `with`（可変な struct / 位置指定の record struct） | C# 10.0 | .NET 6 | ✅ 言語機能のみ（†1・†5） |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ 言語機能のみ（†1） |
 | `required` プロパティ | C# 11.0 | .NET 7 | ⚠️ BCL 属性が必要（†4） |
 | コレクション式 | C# 12.0 | .NET 8 | ✅ 配列と `List<T>` は言語機能のみ（†1）。Span 系は `System.Memory` が必要 |
@@ -98,7 +98,7 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、record struct への with は OK。a[^1]、a[1..3]、init、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="693" height="590" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、位置指定の record struct への with は OK。a[^1]、a[1..3]、init、readonly record struct への with、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="717" height="620" loading="lazy">
   <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
 </figure>
 
@@ -658,7 +658,7 @@ C# の演算子と初期化構文は言語バージョンとともに段階的�
 環境ごとの選択基準は以下のとおりである。
 
 - **.NET Framework 環境（コンパイラを更新しない場合）**：`??`（C# 2.0）、`?.`（C# 6.0）、`nameof`（C# 6.0）、`is` パターンマッチング（C# 7.0）が上限の目安となる。`^1` は `array[array.Length - 1]` に、`..` は LINQ に置き換えて対処する。
-- **.NET Framework 環境（LangVersion を引き上げた場合）**：`??=`、`!`、Target-typed `new`、配列や `List<T>` を作るコレクション式、プライマリコンストラクタ、struct と record struct への `with` が追加で利用可能になる（`net48` で確認済み）。一方 `^` / `..` / `init` / `init` を持つ型への `with` / `required` は BCL 側の型が不足するため、自前定義するまで使えない。
+- **.NET Framework 環境（LangVersion を引き上げた場合）**：`??=`、`!`、Target-typed `new`、配列や `List<T>` を作るコレクション式、プライマリコンストラクタ、可変な `struct` と位置指定の `record struct` への `with` が追加で利用可能になる（`net48` で確認済み）。一方 `^` / `..` / `init` / `init` を持つ型（`record` クラスや `readonly record struct`）への `with` / `required` は BCL 側の型が不足するため、自前定義するまで使えない。
 - **.NET 5〜6（C# 9〜10）**：本記事で扱う C# 9〜10 の機能は、必要な BCL 型も含めて使用可能になる。
 - **.NET 7（C# 11）以降**：`required` プロパティが利用可能になる。
 - **.NET 8（C# 12）以降**：コレクション式、プライマリコンストラクタが利用可能になる。

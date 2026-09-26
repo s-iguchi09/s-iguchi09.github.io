@@ -9,6 +9,10 @@ verifies:
   - "列の作り方ごとに SortMemberPath と CanUserSort に何が入るかを確かめる"
   - "SortMemberPath を明示しない DataGridTextColumn では Binding のパスが入ること"
   - "Binding を持たないテンプレート列では SortMemberPath が空になり、並び替えられないこと"
+  - "列ヘッダーのクリックと同じ標準の並べ替えを実行したときの、列の作り方ごとの並び（CanUserSort=False の列、SortMemberPath を明示したテンプレート列を含む）"
+  - "ListCollectionView の CustomSort を設定すると SortDescriptions が消え、SortDescriptions を足すと CustomSort が null に戻ること"
+  - "Items.Refresh() の後も SelectedItem と CurrentCell が残ること"
 images:
   - "images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png"
   - "images/articles/wpf-datagrid-sorting/datagrid-sortability.svg"
+  - "images/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.svg"

@@ -83,7 +83,7 @@ Plotted over time, they line up as follows.
 | `..` (range) | C# 8.0 | .NET Core 3.0 / .NET 5 | ⚠️ Requires BCL type (†2) |
 | `init` accessor | C# 9.0 | .NET 5 | ⚠️ Requires BCL type (†3) |
 | `with` (record class) | C# 9.0 | .NET 5 | ⚠️ Requires a BCL type (†3) |
-| `with` (struct / record struct) | C# 10.0 | .NET 6 | ✅ Language feature only (†1, †5) |
+| `with` (mutable struct / positional record struct) | C# 10.0 | .NET 6 | ✅ Language feature only (†1, †5) |
 | Target-typed `new` | C# 9.0 | .NET 5 | ✅ Language feature only (†1) |
 | `required` property | C# 11.0 | .NET 7 | ⚠️ Requires BCL attributes (†4) |
 | Collection expressions | C# 12.0 | .NET 8 | ✅ Language feature only for arrays and `List<T>` (†1); span targets need `System.Memory` |
@@ -105,7 +105,7 @@ The table below records the result of compiling each construct against `net48` w
 Whether defining the missing type makes it compile was checked the same way.
 
 <figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a record struct are OK. a[^1], a[1..3], init, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="693" height="590" loading="lazy">
+  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a positional record struct are OK. a[^1], a[1..3], init, with on a readonly record struct, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="717" height="620" loading="lazy">
   <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
 </figure>
 
@@ -678,7 +678,7 @@ Whether a feature can be used depends mainly on the compiler configuration (`Lan
 The following selection criteria are practical guidelines.
 
 - **.NET Framework without compiler updates**: `??` (C# 2.0), `?.` (C# 6.0), `nameof` (C# 6.0), and `is` pattern matching (C# 7.0) are the upper baseline.
-- **.NET Framework with `LangVersion` raised**: `??=`, `!`, target-typed `new`, collection expressions for arrays and `List<T>`, primary constructors, and `with` on a struct or record struct become available (confirmed against `net48`). `^`, `..`, `init`, `with` on a type with `init` accessors, and `required` remain unusable until the missing BCL types are defined.
+- **.NET Framework with `LangVersion` raised**: `??=`, `!`, target-typed `new`, collection expressions for arrays and `List<T>`, primary constructors, and `with` on a mutable `struct` or a positional `record struct` become available (confirmed against `net48`). `^`, `..`, `init`, `with` on a type with `init` accessors (a `record` class or a `readonly record struct`), and `required` remain unusable until the missing BCL types are defined.
 - **.NET 5 to 6 (C# 9 to 10)**: the C# 9 to 10 features covered in this article are available, including the supporting BCL types they need.
 - **.NET 7 (C# 11) and later**: `required` properties are available.
 - **.NET 8 (C# 12) and later**: collection expressions and primary constructors are available.

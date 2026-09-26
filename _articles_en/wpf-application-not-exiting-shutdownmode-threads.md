@@ -330,7 +330,7 @@ For work that must complete, the real fix is an implementation that reliably hon
   A UI thread blocked by a deadlock or a long synchronous wait also fails to reach `OnExit`.
   The stall is still at gate 1, but the cause is neither a leftover window nor `ShutdownMode`, so confirm where the UI thread is parked with `dotnet-stack report` first.
 - **A modal dialog is not a blocked UI thread.**
-  While `Window.ShowDialog()` or `MessageBox.Show` is displayed, a nested `Dispatcher` frame keeps pumping the queue and the UI thread continues to process messages.
+  While `Window.ShowDialog()` is displayed, a nested `Dispatcher` frame keeps pumping the queue. `MessageBox.Show` calls the Win32 `MessageBox` function instead, whose own modal loop dispatches the thread's messages without a nested `Dispatcher` frame. Either way the UI thread continues to process messages.
   A dialog opened with `Window.ShowDialog()` is a window left in `Application.Windows`, which the ordinary leftover-window analysis already covers.
   `MessageBox` and `CommonDialog` derivatives such as `OpenFileDialog` do not derive from `Window`, however, and never appear in that enumeration.
 - **`OnMainWindowClose` keys off the first window created.**

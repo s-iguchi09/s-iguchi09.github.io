@@ -52,6 +52,20 @@ Selecting `Error`, `Hand` and `Stop` in turn and seeing the identical dialog eac
 
 One further caveat worth knowing before you reach for it: Microsoft documents the `Question` icon as no longer recommended, on the grounds that a question mark does not identify a category of message and can be mistaken for a help affordance. It remains in the enum for backward compatibility. For a confirmation prompt, `Warning` or no icon at all is the safer choice.
 
+## Measured Behavior {#measured-behavior}
+
+The enum members, the icon names, and the default buttons on this page were measured on .NET 8.0.31 and .NET 10.0.10 / Windows 11, using [`MessageBoxSampleCreatorScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/MessageBoxSampleCreatorScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. The scene builds a small program for each runtime, calls `MessageBox.Show` without an owner as the tool does, and shows every button set with every `MessageBoxResult`. The default button was read from the dialog's buttons by their control IDs, so the result does not depend on the language of the button text. No input was sent: each dialog was closed by clicking its first button through a window message.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-messagebox-sample-creator/verification/messagebox-enums.svg" alt="Table of the MessageBox enums: .NET 8 has four MessageBoxButton members and .NET 10 seven, adding AbortRetryIgnore, RetryCancel and CancelTryContinue; MessageBoxResult has five members on .NET 8 and ten on .NET 10; MessageBoxOptions has the same five members on both; and Enum.GetValues of MessageBoxImage reads None, Hand three times, Question, Exclamation twice and Asterisk twice" width="998" height="470" loading="lazy">
+  <figcaption>The enum members behind the tool's lists. Measured on .NET 8.0.31 and .NET 10.0.10 / Windows 11.</figcaption>
+</figure>
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/wpf-messagebox-sample-creator/verification/messagebox-default-button.svg" alt="Table of the default button for each button set: a defaultResult the set contains makes that button the default, and None or a result the set does not contain makes the first button the default in 12 of 12 cases on .NET 8 and 54 of 54 on .NET 10" width="1140" height="320" loading="lazy">
+  <figcaption>The default button for each button set and <code>defaultResult</code>. Measured on .NET 8.0.31 and .NET 10.0.10 / Windows 11.</figcaption>
+</figure>
+
 ## How the Tool Is Built
 
 The **Show MessageBox.** button makes a single call, `MessageBox.Show(text, caption, button, icon, defaultResult, options)`, with the six values held by the view model. The lists for the button set, the default result, and the options are `Enum.GetValues` results bound through `ObjectDataProvider`, so they follow the enum of the runtime the build targets. That is why the .NET 10 build offers button sets that the .NET 8 build does not. The icon list is the exception described above.

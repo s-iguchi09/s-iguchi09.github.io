@@ -98,7 +98,7 @@ Fixing the count at 1,000 and varying the composition gives the following.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png" alt="A table of visual counts and layout times for 1,000 elements in a StackPanel. Label takes 199 ms, a Label whose content contains an underscore 694 ms, a Label with a ContentTemplate 249 ms and 243 ms when given an underscore, ContentPresenter 147 ms, AccessText alone 234 ms, and TextBlock 129 ms. Only the Label containing an underscore stands out as markedly slower." width="441" height="311" loading="lazy">
-  <figcaption>Measured in the same environment with 1,000 elements in a <code>StackPanel</code>. A <code>Label</code> whose <code>Content</code> contains an underscore has an <code>AccessText</code> inserted; a single additional visual raises layout time by roughly a factor of 3.5. A <code>Label</code> with a <code>TextBlock</code> in its <code>ContentTemplate</code> takes no longer when given an underscore. The <code>AccessText</code> row is for comparison.</figcaption>
+  <figcaption>Measured in the same environment with 1,000 elements in a <code>StackPanel</code>. A <code>Label</code> whose <code>Content</code> contains an underscore has an <code>AccessText</code> inserted, one more visual than without an underscore, and its layout time was roughly 3.5 times as long. How much of the increase comes from the <code>AccessText</code> itself and how much from the extra visual was not measured. A <code>Label</code> with a <code>TextBlock</code> in its <code>ContentTemplate</code> takes no longer when given an underscore. The <code>AccessText</code> row is for comparison.</figcaption>
 </figure>
 
 The visual count grows only 25%, from four to five, yet layout time rises from 199 ms to 694 ms, roughly a factor of 3.5.
@@ -263,13 +263,13 @@ An `AccessText` is constructed in this example because the access key is intenti
 
 The slowdown from placing many WPF `Label` controls stems from the rendering overhead of its general-purpose `ContentControl` features.
 Each `Label` constructs four visuals, four times that of `TextBlock`.
-Without virtualization, that translates to roughly 2x in layout time and 2.6x in memory.
+Without virtualization, that translates to roughly 2x in layout time and 2.6x in the managed heap still held after a garbage collection (measured with `GC.GetTotalMemory(true)`, not total memory use).
 
 The practical priority, however, is as follows.
 
 - **Check virtualization first.** With virtualization enabled, no practical layout-time difference remains between `Label` and `TextBlock`. This outweighs any control replacement.
 - **Move to `TextBlock` on screens that cannot virtualize.** Control choice does matter where a fixed, large number of elements is present.
-- **Use `ContentTemplate` when displaying underscore-bearing data in a `Label`.** An inserted `AccessText` adds only one visual but raises layout time by roughly a factor of 3.5.
+- **Use `ContentTemplate` when displaying underscore-bearing data in a `Label`.** With an `AccessText` inserted, the tree had one more visual and layout took roughly 3.5 times as long.
 - **Keep `Label` where `Target` and access keys are required.** At the scale of form captions, the cost is immaterial.
 
 Rather than "avoid `Label` because it is slow," first confirm whether virtualization is in effect and whether the screen genuinely renders at volume, then choose according to the requirements.

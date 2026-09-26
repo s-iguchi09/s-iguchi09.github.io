@@ -367,7 +367,7 @@ var result = new[] { 1, 2, 3, 4, 5 }.Chunk(2);
 ```
 
 Internally, each chunk is collected in a `List<TSource>` that grows as elements arrive and is copied to an array when it is complete.
-Allocating `size` elements up front looks cheaper, but it fails for a large `size` even on a short source: an earlier version of this polyfill did that, and `new[] { 1, 2, 3 }.Chunk(int.MaxValue)` threw `OutOfMemoryException` on .NET Framework while the built-in returned one chunk of three (the `Chunk(int.MaxValue)` row of the table).
+Allocating `size` elements up front looks cheaper, but it fails for a large `size` even on a short source: an earlier version of this polyfill did that, and `new[] { 1, 2, 3 }.Chunk(int.MaxValue)` threw `OutOfMemoryException` on .NET Framework while the built-in on .NET 10 returned one chunk of three (the `Chunk(int.MaxValue)` row of the table; other .NET versions were not measured).
 
 ```csharp
 var chunk = new List<TSource>(Math.Min(size, 16)) { enumerator.Current };

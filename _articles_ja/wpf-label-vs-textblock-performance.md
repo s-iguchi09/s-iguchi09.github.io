@@ -97,7 +97,7 @@ visual の数だけで所要時間が決まるわけではない。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png" alt="1,000 個を StackPanel に並べた場合の visual 数とレイアウト時間の表。Label は 199 ms、アンダーバーを含む Label は 694 ms、ContentTemplate を指定した Label は 249 ms、それにアンダーバーを含む文字列を与えても 243 ms、ContentPresenter は 147 ms、AccessText 単体は 234 ms、TextBlock は 129 ms。アンダーバーを含む Label だけが突出して遅い。" width="441" height="311" loading="lazy">
-  <figcaption>同一環境で 1,000 個を <code>StackPanel</code> に並べた場合の実測値。<code>Content</code> にアンダーバーを含む <code>Label</code> は <code>AccessText</code> が挟まり、visual が 1 個増えるだけでレイアウト時間は約 3.5 倍になる。<code>ContentTemplate</code> に <code>TextBlock</code> を指定した <code>Label</code> は、アンダーバーを含む文字列を与えてもレイアウト時間が増えない。<code>AccessText</code> 単体の行は比較のため。</figcaption>
+  <figcaption>同一環境で 1,000 個を <code>StackPanel</code> に並べた場合の実測値。<code>Content</code> にアンダーバーを含む <code>Label</code> は <code>AccessText</code> が挟まって visual がアンダーバーなしより 1 個多くなり、レイアウト時間は約 3.5 倍だった。この増分のうち、<code>AccessText</code> 自体と visual の増加がそれぞれどれだけかは測っていない。<code>ContentTemplate</code> に <code>TextBlock</code> を指定した <code>Label</code> は、アンダーバーを含む文字列を与えてもレイアウト時間が増えない。<code>AccessText</code> 単体の行は比較のため。</figcaption>
 </figure>
 
 visual 数は 4 個から 5 個へ 25% 増えるだけだが、レイアウト時間は 199 ms から 694 ms へ、約 3.5 倍に達する。
@@ -262,13 +262,13 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 
 WPF で `Label` を大量配置した場合の遅延要因は、`ContentControl` としての汎用機能に起因する描画オーバーヘッドである。
 `Label` は 1 個あたり 4 個の visual を構築し、`TextBlock` の 4 倍になる。
-非仮想化の構成では、レイアウト時間で約 2 倍、メモリで約 2.6 倍の差が出る。
+非仮想化の構成では、レイアウト時間で約 2 倍、GC を掛けても残るマネージドヒープの量で約 2.6 倍の差が出る（`GC.GetTotalMemory(true)` による値で、メモリの総使用量ではない）。
 
 ただし実務上の優先順位は次のとおりである。
 
 - **まず仮想化を確認する。** 仮想化が有効なら、`Label` と `TextBlock` のレイアウト時間に実用上の差は残らない。コントロールの置き換えより効果が大きい。
 - **仮想化できない画面では `TextBlock` に寄せる。** 要素数が固定で多い画面では、コントロール選択が効く。
-- **アンダーバーを含むデータを `Label` で表示する場合は `ContentTemplate` を使う。** `AccessText` が挟まると、visual が 1 個増えるだけでレイアウト時間は約 3.5 倍になる。
+- **アンダーバーを含むデータを `Label` で表示する場合は `ContentTemplate` を使う。** `AccessText` が挟まると、visual が 1 個多くなり、レイアウト時間は約 3.5 倍だった。
 - **`Target` とアクセスキーが必要な箇所は `Label` を維持する。** フォーム見出し程度の個数であればコストは問題にならない。
 
 「`Label` は遅いから使わない」ではなく、「仮想化が効いているか」「その画面で本当に大量に描画しているか」を先に確認したうえで、要件に応じて選ぶ。
