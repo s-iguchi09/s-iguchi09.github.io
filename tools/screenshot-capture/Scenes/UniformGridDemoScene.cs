@@ -52,15 +52,21 @@ internal sealed class UniformGridDemoScene : IScene
         return grid;
     }
 
-    /// <summary>子の矩形から行数と列数を数え、セルの大きさを添える。</summary>
+    /// <summary>
+    /// セルの大きさから UniformGrid が作ったセル配置（行数 x 列数）を求め、セルの大きさを添える。
+    /// 子のいる行の数がセル配置の行数と違う場合（空の行が残る場合）は、それも添える。
+    /// 子の位置だけを数えると、空の行を持つ配置（5 個で 3 x 3 など）を取り違えるため。
+    /// </summary>
     private static string Shape(UniformGrid grid)
     {
         var rects = grid.Children.Cast<FrameworkElement>()
             .Where(c => c.Visibility == Visibility.Visible)
             .Select(c => Bounds(c, grid)).ToList();
-        int rows = rects.Select(r => Math.Round(r.Y, 2)).Distinct().Count();
-        int columns = rects.Select(r => Math.Round(r.X, 2)).Distinct().Count();
-        return $"{rows} rows x {columns} columns, cell {D(rects[0].Width)} x {D(rects[0].Height)}";
+        int gridRows = (int)Math.Round(grid.ActualHeight / rects[0].Height);
+        int gridColumns = (int)Math.Round(grid.ActualWidth / rects[0].Width);
+        int usedRows = rects.Select(r => Math.Round(r.Y, 2)).Distinct().Count();
+        string used = usedRows == gridRows ? "" : $" (children in {usedRows} rows)";
+        return $"{gridRows} rows x {gridColumns} columns{used}, cell {D(rects[0].Width)} x {D(rects[0].Height)}";
     }
 
     private static string Cell(UniformGrid grid, int index)
