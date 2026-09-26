@@ -140,18 +140,26 @@ internal static class ValuePrecedenceMeasurements
     {
         var rows = new List<IReadOnlyList<string>>();
 
-        (string Name, Func<Func<bool>, RelayCommandBase> Create)[] implementations =
+        // 委譲型は自前のイベントを持たず、RaiseCanExecuteChanged で発火するものが無いため、その組み合わせは測らない。
+        (string Name, Func<Func<bool>, RelayCommandBase> Create, string[] Triggers)[] implementations =
         [
-            ("RequerySuggested", canExecute => new RequeryRelayCommand(canExecute)),
-            ("own event", canExecute => new ManualRelayCommand(canExecute)),
+            ("RequerySuggested", canExecute => new RequeryRelayCommand(canExecute), ["(nothing)", "InvalidateRequerySuggested", KeyInput]),
+            ("own event", canExecute => new ManualRelayCommand(canExecute), ["(nothing)", "InvalidateRequerySuggested", "RaiseCanExecuteChanged", KeyInput]),
         ];
 
-        foreach ((string name, Func<Func<bool>, RelayCommandBase> create) in implementations)
+        foreach ((string name, Func<Func<bool>, RelayCommandBase> create, string[] triggers) in implementations)
         {
-            foreach (string trigger in new[] { "(nothing)", "InvalidateRequerySuggested", "RaiseCanExecuteChanged" })
+            foreach (string trigger in triggers)
             {
                 bool allowed = false;
                 RelayCommandBase command = create(() => allowed);
+
+                if (trigger == KeyInput)
+                {
+                    rows.Add(await MeasureKeyInputAsync($"{name} / {trigger}", command, () => allowed = true));
+                    continue;
+                }
+
                 var button = new Button { Content = "Run", Command = command, Width = 80 };
 
                 rows.Add(await MeasureButtonAsync($"{name} / {trigger}", button, () =>
@@ -174,6 +182,44 @@ internal static class ValuePrecedenceMeasurements
             "Command = null", new Button { Content = "Run", Width = 80 }, () => { }));
 
         return rows;
+    }
+
+    private const string KeyInput = "key typed in a TextBox";
+
+    /// <summary>
+    /// 条件を変えたあと、何も呼ばずに隣の TextBox へ InputManager を通してキー入力（a）を送る。
+    /// ユーザーの入力を受けて WPF が再問い合わせを行うかを見る。
+    /// </summary>
+    private static async Task<IReadOnlyList<string>> MeasureKeyInputAsync(string label, RelayCommandBase command, Action change)
+    {
+        var textBox = new TextBox { Width = 120 };
+        var button = new Button { Content = "Run", Command = command, Width = 80 };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Children = { textBox, button } };
+        var window = new Window { Title = label, Content = panel, Width = 320, Height = 120 };
+
+        try
+        {
+            await Capture.ShowAndSettleAsync(window);
+            await DemoProbe.FrontAsync(panel);
+            await DemoProbe.FocusAsync(textBox);
+
+            string before = WpfProbe.Describe(button.IsEnabled);
+            change();
+            DemoProbe.TypeLetters(textBox, "a");
+            await Capture.SettleAsync(window);
+
+            if (textBox.Text != "a")
+            {
+                throw new InvalidOperationException($"キー入力が TextBox に届いていない（\"{textBox.Text}\"）。");
+            }
+
+            return [label, before, WpfProbe.Describe(button.IsEnabled)];
+        }
+        finally
+        {
+            window.Topmost = false;
+            window.Close();
+        }
     }
 
     private static async Task<IReadOnlyList<string>> MeasureButtonAsync(string label, Button button, Action change)
@@ -214,7 +260,9 @@ internal static class ValuePrecedenceMeasurements
         {
         }
 
-        public abstract void RaiseCanExecuteChanged();
+        public virtual void RaiseCanExecuteChanged()
+        {
+        }
     }
 
     /// <summary>CanExecuteChanged の購読を CommandManager.RequerySuggested へ転送する実装。</summary>
@@ -224,11 +272,6 @@ internal static class ValuePrecedenceMeasurements
         {
             add => CommandManager.RequerySuggested += value;
             remove => CommandManager.RequerySuggested -= value;
-        }
-
-        /// <summary>自前のイベントを持たないため、明示的な発火はできない。</summary>
-        public override void RaiseCanExecuteChanged()
-        {
         }
     }
 

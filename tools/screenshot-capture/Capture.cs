@@ -172,7 +172,38 @@ internal static class Capture
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using Bitmap cropped = raw.Clone(crop, PixelFormat.Format32bppArgb);
+        EnsureContentRendered(cropped);
         cropped.Save(path, ImageFormat.Png);
+    }
+
+    /// <summary>
+    /// 画面がロックされているか消灯していると、PrintWindow はタイトルバーだけを描き、中身を一色で返す。
+    /// そのまま保存すると空白の図で既存の図を上書きするため、タイトルバーより下が一色なら止める。
+    /// </summary>
+    private static void EnsureContentRendered(Bitmap image)
+    {
+        // タイトルバー（表示スケール 100% で約 31 px）と枠を除いた範囲を見る。
+        const int top = 40;
+        const int margin = 2;
+        if (image.Height <= top + margin || image.Width <= margin * 2)
+        {
+            return;
+        }
+
+        Color first = image.GetPixel(margin, top);
+        for (int y = top; y < image.Height - margin; y += 2)
+        {
+            for (int x = margin; x < image.Width - margin; x += 2)
+            {
+                if (image.GetPixel(x, y) != first)
+                {
+                    return;
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            "ウィンドウの中身が一色で撮れた。画面がロックされているか消灯している可能性がある。画面を表示した状態で撮り直す。");
     }
 
     private static RECT GetCaptureBounds(IntPtr hwnd)

@@ -182,6 +182,28 @@ internal static class DemoProbe
         });
     }
 
+    /// <summary>
+    /// フォーカスのある要素へ、英小文字を 1 文字ずつ打ち込む。
+    /// キーの押下と離しは <see cref="SendKey"/> で、文字は TextCompositionManager で、どちらも InputManager を通して送る。
+    /// OS の入力（<see cref="RealKeyboard"/>）と違い、計測用のウィンドウが OS の前面になくても送れる。
+    /// </summary>
+    public static void TypeLetters(UIElement target, string letters)
+    {
+        foreach (char letter in letters)
+        {
+            if (letter is < 'a' or > 'z')
+            {
+                throw new ArgumentException("英小文字だけを打てる。", nameof(letters));
+            }
+
+            var key = (System.Windows.Input.Key)((int)System.Windows.Input.Key.A + (letter - 'a'));
+            SendKey(key);
+            System.Windows.Input.TextCompositionManager.StartComposition(
+                new System.Windows.Input.TextComposition(System.Windows.Input.InputManager.Current, target, letter.ToString()));
+            SendKey(key, down: false);
+        }
+    }
+
     public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         int count = VisualTreeHelper.GetChildrenCount(root);
