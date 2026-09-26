@@ -218,8 +218,9 @@ internal sealed class LinqBackportNet7Scene : IScene
         new("Order(ByLength), stability", "Words.Order(new ByLength())"),
         new("Order().ThenByDescending(len)", "Words.Order().ThenByDescending(w => w.Length)"),
         new("empty.Order()", "new string[0].Order()"),
-        // カルチャ依存の比較は、比較エンジンが NLS か ICU かで結果が変わりうる。.NET 5 以降の既定は ICU だが、
-        // 設定で NLS にもできるので、ja-JP の指定だけではエンジンは決まらない。実際に使われたエンジンを記録する。
+        // カルチャ依存の比較は、比較エンジンが NLS か ICU かで結果が変わりうる。.NET 5 以降の既定は Windows の
+        // バージョンによって異なり（Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS にもできるので、
+        // ja-JP の指定だけではエンジンは決まらない。実際に使われたエンジンを記録する（計測は Windows 11 の .NET 10 と net48）。
         // 判定は .NET のドキュメント（"Determine if your app is using ICU"）の方法で、SortVersion から見る。
         new("comparison engine (NLS or ICU)",
             "(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion != 0 && System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion == BitConverter.ToInt32(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.SortId.ToByteArray(), 0)) ? \"ICU\" : \"NLS\""),

@@ -65,24 +65,7 @@ internal sealed class SceneContext(string slug, string outputDirectory)
                 await Capture.SettleAsync(window);
             }
 
-            string path = Path.Combine(OutputDirectory, fileName);
-
-            // 画面が消灯しているときなど、ウィンドウを撮れない状況で表の計測だけを行うための切り替え。
-            // 既存の図は上書きせず、撮らなかったことを出力に残す。
-            if (Environment.GetEnvironmentVariable("SCREENSHOT_SKIP_WINDOW_CAPTURE") == "1")
-            {
-                Console.WriteLine($"skipped window capture (SCREENSHOT_SKIP_WINDOW_CAPTURE=1): {path}");
-                if (File.Exists(path))
-                {
-                    // 図そのものは変えていないので、検証記録の画像一覧には残す。
-                    _saved.Add(path);
-                }
-
-                return;
-            }
-
-            Capture.SaveWindow(window, path, requireContentRendered);
-            _saved.Add(path);
+            SaveWindowOrSkip(window, Path.Combine(OutputDirectory, fileName), requireContentRendered);
         }
         finally
         {
@@ -99,7 +82,29 @@ internal sealed class SceneContext(string slug, string outputDirectory)
     public async Task SaveShownWindowAsync(Window window, string fileName, bool requireContentRendered = true)
     {
         await Capture.SettleAsync(window);
-        string path = Path.Combine(OutputDirectory, fileName);
+        SaveWindowOrSkip(window, Path.Combine(OutputDirectory, fileName), requireContentRendered);
+    }
+
+    /// <summary>
+    /// ウィンドウを PNG として保存する。撮影の経路はすべてここを通す。
+    ///
+    /// 画面が消灯しているときなど、ウィンドウを撮れない状況で表の計測だけを行うため、
+    /// SCREENSHOT_SKIP_WINDOW_CAPTURE=1 では撮影を飛ばす。既存の図は上書きせず、撮らなかったことを出力に残す。
+    /// </summary>
+    private void SaveWindowOrSkip(Window window, string path, bool requireContentRendered)
+    {
+        if (Environment.GetEnvironmentVariable("SCREENSHOT_SKIP_WINDOW_CAPTURE") == "1")
+        {
+            Console.WriteLine($"skipped window capture (SCREENSHOT_SKIP_WINDOW_CAPTURE=1): {path}");
+            if (File.Exists(path))
+            {
+                // 図そのものは変えていないので、検証記録の画像一覧には残す。
+                _saved.Add(path);
+            }
+
+            return;
+        }
+
         Capture.SaveWindow(window, path, requireContentRendered);
         _saved.Add(path);
     }

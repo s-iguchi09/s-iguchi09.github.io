@@ -37,7 +37,7 @@ The following points were confirmed in that environment:
 
 - The return value is an `IOrderedEnumerable`, so `ThenBy` can be chained onto it.
 - Elements that compare equal keep their relative order (a stable sort).
-- Culture-sensitive comparison follows the comparison engine the runtime uses (NLS on .NET Framework; on .NET 5 and later ICU by default on Windows, though NLS can be selected by configuration), and for non-comparable items the exception type differs only when the whole sequence is sorted.
+- Culture-sensitive comparison follows the comparison engine the runtime uses (NLS on .NET Framework; on .NET 5 and later the default depends on the Windows version, and NLS can also be selected by configuration), and for non-comparable items the exception type differs only when the whole sequence is sorted.
 
 ---
 
@@ -64,7 +64,7 @@ A dedicated method with the identity function baked in removes that noise, and .
 ## Implementation by Delegation
 
 The following is the complete polyfill for all four signatures.
-Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS, and .NET 5 and later use ICU by default on Windows, unless the app is configured to use NLS. On the test machine, net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
+Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS. On .NET 5 and later, the default depends on the Windows version (on Windows Server 2019, for example, ICU became the default only in .NET 7), and an app can also be configured to use NLS. On the test machine (.NET 10 on Windows 11), net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
 Add it to the project as, for example, `LinqExtensions.Net7.cs`.
 
 ```csharp
