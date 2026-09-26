@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-tray-contextmenu-close-on-focus-loss
+slug: "wpf-tray-contextmenu-close-on-focus-loss"
+scene: "TrayContextMenuScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ContextMenu.StaysOpen の既定値（依存関係プロパティのメタデータと、new した直後の値）"
+  - "Popup.StaysOpen の既定値（比較のため）"
+  - "別のウィンドウが前面のとき、このプロセスから自分のウィンドウへ SetForegroundWindow を呼んだ戻り値と、前面が切り替わったか"
+  - "自分のウィンドウが既に前面のときの SetForegroundWindow の戻り値（前面を取れない状況では測れないと記録する）"
+images:
+  - "images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg"

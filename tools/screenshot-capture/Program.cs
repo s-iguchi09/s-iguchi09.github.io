@@ -36,6 +36,7 @@ internal static class Program
         new RelayCommandCanExecuteScene(),
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),
+        new TrayContextMenuScene(),
         new DataTemplateParentBindingScene(),
         new TreeViewSelectItemScene(),
         new ValidationErrorNotDisplayedScene(),
