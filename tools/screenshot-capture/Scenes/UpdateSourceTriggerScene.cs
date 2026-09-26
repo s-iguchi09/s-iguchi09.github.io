@@ -18,6 +18,9 @@ internal sealed class UpdateSourceTriggerScene : IScene
         "プロパティごとの DefaultUpdateSourceTrigger をメタデータから読み出す",
         "TextBox.Text だけが LostFocus で、他の多くは PropertyChanged であること",
         "既定・PropertyChanged・Explicit で、ソースへ値が渡る時点が異なること",
+        "図は、各入力欄にフォーカスを移して InputManager 経由で打ち込んで撮っていること",
+        "既定のバインドのまま、フォーカスを残して Enter で既定ボタン（IsDefault）を押すと、Click の時点でソースが更新されていないこと",
+        "ErrorsChanged をバックグラウンドのスレッドから発生させてもエラーが反映されるか",
     ];
 
     public string Slug => "wpf-textbox-updatesourcetrigger-binding-timing";
@@ -45,13 +48,16 @@ internal sealed class UpdateSourceTriggerScene : IScene
 
         await context.ShootAsync(window, "updatesourcetrigger-lostfocus-vs-propertychanged.png", async _ =>
         {
-            // 入力欄にフォーカスを残したまま値を変える。
-            // 既定の LostFocus ではフォーカスが外れないためソースは更新されない。
-            defaultBox.Text = TypedText;
-            immediateBox.Text = TypedText;
-            immediateBox.Focus();
-            immediateBox.CaretIndex = TypedText.Length;
-            await Task.Delay(200);
+            // それぞれの入力欄にフォーカスを移し、WPF の入力処理（InputManager）を通して打ち込む。
+            // 既定の LostFocus は、フォーカスが外れた時点でソースを更新する。上の入力欄（既定）を後に打ち込み、
+            // フォーカスを残したまま撮る。先に打ち込む下の入力欄（PropertyChanged）は、1 文字ごとに更新される。
+            foreach (TextBox box in new[] { immediateBox, defaultBox })
+            {
+                await DemoProbe.FocusAsync(box);
+                box.SelectAll();
+                DemoProbe.TypeLetters(box, TypedText);
+                await Task.Delay(100);
+            }
         });
 
         await context.SaveTableAsync(
@@ -65,6 +71,44 @@ internal sealed class UpdateSourceTriggerScene : IScene
             ["UpdateSourceTrigger", "after input", "after LostFocus", "final"],
             await SelectionAndTriggerMeasurements.UpdateTimingAsync(),
             "updatesourcetrigger-timing.svg");
+
+        await context.SaveTableAsync(
+            "confirming without moving focus, and the thread that raises ErrorsChanged",
+            ["case", "measured"],
+            [await DefaultButtonEnterAsync(), .. await ValidationAndScopeMeasurements.ErrorsChangedThreadAsync()],
+            "updatesourcetrigger-confirm-errors.svg");
+    }
+
+    /// <summary>
+    /// 既定のバインド（LostFocus）の TextBox に打ち込み、フォーカスを残したまま Enter で既定ボタンを押す。
+    /// ボタンの Click で、ソースの値とフォーカスの位置を読む。
+    /// </summary>
+    private static async Task<IReadOnlyList<string>> DefaultButtonEnterAsync()
+    {
+        var viewModel = new UserNameViewModel();
+        var box = SceneContext.LoadXaml<TextBox>("""<TextBox Text="{Binding UserName, Mode=TwoWay}" Width="150" />""");
+        var button = new Button { Content = "Save", IsDefault = true };
+        string seen = "not clicked";
+        button.Click += (_, _) => seen = $"UserName = {viewModel.UserName}, TextBox focused {WpfProbe.Describe(box.IsKeyboardFocused)}";
+        var panel = new StackPanel { DataContext = viewModel, Children = { box, button } };
+
+        List<IReadOnlyList<string>> rows = await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "default binding, type \"sato\", then Enter on an IsDefault button",
+                panel,
+                _ => [$"in Click: {seen}"],
+                Act: async _ =>
+                {
+                    await DemoProbe.FocusAsync(box);
+                    box.SelectAll();
+                    DemoProbe.TypeLetters(box, "sato");
+                    DemoProbe.SendKey(System.Windows.Input.Key.Enter);
+                    DemoProbe.SendKey(System.Windows.Input.Key.Enter, down: false);
+                }),
+        ]);
+
+        return rows[0];
     }
 
     /// <summary>

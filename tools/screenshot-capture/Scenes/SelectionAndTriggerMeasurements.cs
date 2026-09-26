@@ -214,7 +214,7 @@ internal static class SelectionAndTriggerMeasurements
             ("CheckBox.IsChecked", CheckBox.IsCheckedProperty, typeof(CheckBox)),
             ("ComboBox.SelectedItem", ComboBox.SelectedItemProperty, typeof(ComboBox)),
             ("Slider.Value", Slider.ValueProperty, typeof(Slider)),
-            ("PasswordBox.Tag", FrameworkElement.TagProperty, typeof(PasswordBox)),
+            ("FrameworkElement.Tag (on PasswordBox)", FrameworkElement.TagProperty, typeof(PasswordBox)),
             ("TextBlock.Text", TextBlock.TextProperty, typeof(TextBlock)),
         ];
 

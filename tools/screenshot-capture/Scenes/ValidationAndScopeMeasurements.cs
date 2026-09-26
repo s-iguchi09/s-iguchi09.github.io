@@ -13,6 +13,72 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal static class ValidationAndScopeMeasurements
 {
+    /// <summary>INotifyDataErrorInfo の ErrorsChanged を、指定したスレッドから発生させられるソース。</summary>
+    private sealed class ThreadedErrors : INotifyDataErrorInfo
+    {
+        private string? _error;
+
+        public string Value { get; set; } = "value";
+
+        public bool HasErrors => _error is not null;
+
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+        public IEnumerable GetErrors(string? propertyName) =>
+            _error is not null && propertyName == nameof(Value) ? new[] { _error } : Array.Empty<string>();
+
+        public void SetError(string error)
+        {
+            _error = error;
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(Value)));
+        }
+    }
+
+    /// <summary>
+    /// ErrorsChanged を UI スレッドから発生させた場合と、バックグラウンドのスレッドから発生させた場合で、
+    /// TextBox にエラーが反映されるか（Validation.HasError）を測る。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> ErrorsChangedThreadAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+        foreach (bool background in new[] { false, true })
+        {
+            var source = new ThreadedErrors();
+            var box = new TextBox { Width = 120, DataContext = source };
+            box.SetBinding(TextBox.TextProperty, new Binding(nameof(ThreadedErrors.Value)));
+            int? raisedOn = null;
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    background ? "ErrorsChanged raised on a background thread (Task.Run)" : "ErrorsChanged raised on the UI thread",
+                    box,
+                    _ =>
+                    [
+                        $"Validation.HasError {WpfProbe.Describe(Validation.GetHasError(box))}" +
+                        (raisedOn is { } id ? $" (raised on thread {(id == Environment.CurrentManagedThreadId ? "UI" : "other than UI")})" : ""),
+                    ],
+                    Act: async _ =>
+                    {
+                        if (background)
+                        {
+                            await Task.Run(() =>
+                            {
+                                raisedOn = Environment.CurrentManagedThreadId;
+                                source.SetError("invalid");
+                            });
+                        }
+                        else
+                        {
+                            raisedOn = Environment.CurrentManagedThreadId;
+                            source.SetError("invalid");
+                        }
+                    }),
+            ]));
+        }
+
+        return rows;
+    }
+
     // ------------------------------------------------------------------
     // 入力検証のエラーが表示されない理由
     // ------------------------------------------------------------------
