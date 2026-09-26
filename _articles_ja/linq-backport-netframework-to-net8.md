@@ -191,10 +191,10 @@ namespace System.Linq
 既存メソッドへシグネチャを追加するタイプのポリフィルでは、「新しいシグネチャが既存のどの呼び出しにもマッチしない」ことを最初に確認する。
 これが崩れていると、コンパイルは通っても意図しないオーバーロードが選ばれる事故につながる。
 
-### 判断 2: 名前付き引数 `comparer:` による解決先の固定
+### 判断 2: 名前付き引数 `comparer:` による委譲先の明示
 
 パラメータなしのオーバーロードは、比較子オーバーロードへ `null` を渡して委譲する。
-このとき単に `source.ToDictionary(null)` と書くと、`null` リテラルは `IEqualityComparer<TKey>` にも `Func<...>` にも変換可能なため、コンパイラがどのオーバーロードを選ぶか曖昧になる。
+単に `source.ToDictionary(null)` と書いても、曖昧にはならない。`Func<...>` を受け取るオーバーロードは `null` から型引数を推論できず、候補から外れるためである。記事のポリフィルの `comparer: null` を `null` に書き換えても、net48 でコンパイルが通り、比較子のオーバーロードが選ばれた。名前付き引数は、どのオーバーロードへ委譲するかを明示するために使っている。
 
 ```csharp
 public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
@@ -203,8 +203,7 @@ public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(
     => source.ToDictionary(comparer: null); // 名前付き引数で比較子オーバーロードに固定
 ```
 
-`comparer:` の名前付き引数を使えば、その名前のパラメータを持つオーバーロードだけが候補になり、解決先が一意に固定される。
-オーバーロードが密集した API へ委譲する際の定石である。
+`comparer:` の名前付き引数を使うと、その名前のパラメータを持つオーバーロードだけが候補になる。今は名前付き引数が無くても解決先は同じだが、名前付き引数ならこの意図がコードに残る。
 
 ### 判断 3: `where TKey : notnull` と戻り値型の一致
 

@@ -75,6 +75,31 @@ internal static class FormatAndSortMeasurements
         return rows;
     }
 
+    /// <summary>
+    /// null を渡したときに <see cref="StrCmpLogicalW"/> が返す生の値を出す。
+    /// ドキュメントは null について書いていないため、符号に丸めずにそのまま記録する。
+    /// </summary>
+    public static List<IReadOnlyList<string>> NullComparisons()
+    {
+        (string? Left, string? Right)[] pairs =
+        [
+            (null, "a"),
+            ("a", null),
+            (null, null),
+        ];
+
+        var rows = new List<IReadOnlyList<string>>();
+        foreach ((string? left, string? right) in pairs)
+        {
+            int raw = StrCmpLogicalW(left!, right!);
+            rows.Add([$"{Show(left)} vs {Show(right)}", raw.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
+        }
+
+        return rows;
+
+        static string Show(string? value) => value is null ? "null" : $"\"{value}\"";
+    }
+
     private static string Sign(int value) => value switch
     {
         < 0 => "-1 (left first)",

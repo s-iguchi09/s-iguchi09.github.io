@@ -18,6 +18,8 @@ internal sealed class SelectableReadOnlyTextScene : IScene
         "IsReadOnly の TextBox では選択できること",
         "見た目を寄せる設定を加えても選択できること",
         "IsTabStop を切ってもフォーカス可能なままであること",
+        "IsReadOnlyCaretVisible の既定値（読み取り専用の TextBox は既定でキャレットを表示しないこと）",
+        "改行を含む文字列を読み取り専用の TextBox に表示したとき、AcceptsReturn の有無で行数と高さが変わらないこと",
     ];
 
     public string Slug => "wpf-selectable-readonly-text-display";
@@ -32,7 +34,6 @@ internal sealed class SelectableReadOnlyTextScene : IScene
             $"""
             <TextBox Text="{Message}"
                      IsReadOnly="True"
-                     IsReadOnlyCaretVisible="False"
                      Background="Transparent"
                      BorderThickness="0"
                      Padding="0"
@@ -61,5 +62,30 @@ internal sealed class SelectableReadOnlyTextScene : IScene
             ["control", "SelectAll() selects", "Focusable", "IsTabStop"],
             await SelectionAndTriggerMeasurements.SelectableTextAsync(),
             "selectable-text-matrix.svg");
+
+        await context.SaveTableAsync(
+            "read-only TextBox: caret default and AcceptsReturn with three lines of text",
+            ["case", "measured"],
+            await CaretAndAcceptsReturnAsync(),
+            "readonly-textbox-caret-acceptsreturn.svg");
+    }
+
+    private static async Task<List<IReadOnlyList<string>>> CaretAndAcceptsReturnAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>
+        {
+            new[] { "IsReadOnlyCaretVisible default", System.Windows.Controls.Primitives.TextBoxBase.IsReadOnlyCaretVisibleProperty.GetMetadata(typeof(TextBox)).DefaultValue?.ToString() ?? "null" },
+        };
+
+        foreach (bool acceptsReturn in new[] { false, true })
+        {
+            var box = new TextBox { IsReadOnly = true, AcceptsReturn = acceptsReturn, Text = "line1\nline2\nline3", Width = 200 };
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case($"IsReadOnly, AcceptsReturn={acceptsReturn}", box, _ => [$"LineCount {box.LineCount}, height {box.ActualHeight:0.##}"]),
+            ]));
+        }
+
+        return rows;
     }
 }

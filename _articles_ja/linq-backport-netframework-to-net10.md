@@ -66,8 +66,8 @@ var result = employees
 ランダム並べ替えも同様で、`OrderBy(_ => Guid.NewGuid())` は全要素へのキー生成とソートを伴い、シャッフルとしての一様性も保証されない。
 
 <figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="2 つの並びに対する LeftJoin と RightJoin の結果。LeftJoin では左に無い相手が null、RightJoin では右に無い相手が null になっている。Shuffle は順序が入れ替わっている。" width="448" height="218" loading="lazy">
-  <figcaption>左右の並びに一致しないキーがある場合の評価結果。<code>LeftJoin</code> は左を残して相手を <code>null</code> に、<code>RightJoin</code> は右を残して相手を <code>null</code> にする。<code>Shuffle</code> は順序をランダム化するため、この行は 1 回分の実行結果である。</figcaption>
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png" alt="2 つの並びに対する LeftJoin と RightJoin の結果。LeftJoin では右に相手が無い行、RightJoin では左に相手が無い行で、相手が既定値（図では null と表示）になっている。Shuffle は順序が入れ替わっている。" width="448" height="218" loading="lazy">
+  <figcaption>左右の並びに一致しないキーがある場合の評価結果。<code>LeftJoin</code> は左を残して相手を既定値に、<code>RightJoin</code> は右を残して相手を既定値にする。図は値型のタプルを使っているため、相手は <code>null</code> ではなく <code>default</code> で、図では null と表示している。<code>Shuffle</code> は順序をランダム化するため、この行は 1 回分の実行結果である。</figcaption>
 </figure>
 
 ---
@@ -190,9 +190,31 @@ namespace System.Linq
         private static Random SharedRandom => Random.Shared;
 #else
         // .NET Framework には Random.Shared が無いため、スレッドごとにインスタンスを持つ。
+        // ただし .NET Framework の new Random() は時刻から種を作るため、同時に始まったスレッドは
+        // 同じ種・同じ並びになることがある。スレッドごとの種は、ロックした 1 つのインスタンスから取る。
+        private static readonly Random SeedSource = new Random();
+
         [ThreadStatic]
         private static Random? _threadRandom;
-        private static Random SharedRandom => _threadRandom ??= new Random();
+
+        private static Random SharedRandom
+        {
+            get
+            {
+                if (_threadRandom == null)
+                {
+                    int seed;
+                    lock (SeedSource)
+                    {
+                        seed = SeedSource.Next();
+                    }
+
+                    _threadRandom = new Random(seed);
+                }
+
+                return _threadRandom;
+            }
+        }
 #endif
     }
 }
@@ -202,8 +224,8 @@ namespace System.Linq
 
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。LeftJoin・RightJoin・Shuffle のいずれも、境界値を含めて同じ結果になっている。" width="866" height="290" loading="lazy">
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。LeftJoin・RightJoin・Shuffle のいずれも、境界値を含めて同じ結果になっている。同時に始めた 8 スレッドでの Shuffle も、どちらも 8 通りの並びに分かれる。" width="1078" height="320" loading="lazy">
   <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
 </figure>
 
@@ -211,7 +233,7 @@ namespace System.Linq
 
 `LeftJoin`・`RightJoin` の結果セレクタには、本家と一致する `null` 許容注釈（`LeftJoin` は内部要素 `TInner?`、`RightJoin` は外部要素 `TOuter?`）を付けている。
 これにより「どちら側が欠けうるか」がシグネチャ上で表現され、移行前後の null 許容解析も一致する。
-`Shuffle` の乱数源は入れ子の `#if NET6_0_OR_GREATER` でさらに分岐し、`Random.Shared` の無い .NET Framework では `[ThreadStatic]` なインスタンスでスレッド安全性を確保する。
+`Shuffle` の乱数源は入れ子の `#if NET6_0_OR_GREATER` でさらに分岐し、`Random.Shared` の無い .NET Framework では `[ThreadStatic]` なインスタンスでスレッド安全性を確保する。ただし .NET Framework の `new Random()` は時刻から種を作り（[`Random` コンストラクターのリファレンス](https://learn.microsoft.com/dotnet/api/system.random.-ctor)）、近い時刻に作られたインスタンスは同じ種になり、同じ数列を返すことがある。計測では、スレッドごとに単に `new Random()` すると、同時に始めた 8 スレッドが 1 つの同じ並びを返した。上のようにロックした 1 つのインスタンスから種を取ると、8 通りの並びに分かれた（表の `8 threads` の行）。
 
 ---
 
@@ -283,7 +305,7 @@ var result = employees.RightJoin(
 ## `Shuffle` と擬似シャッフルの違い
 
 `OrderBy(_ => Guid.NewGuid())` によるランダム並べ替えは広く使われてきたが、2 つの問題を抱える。
-要素ごとに GUID を生成して $O(n \log n)$ のソートを行うため非効率であり、ソートキーとしての GUID の生成分布が並び替えの一様性を保証しない。
+要素ごとに GUID を生成して $O(n \log n)$ のソートを行うため非効率であり、GUID は一様な乱数のソートキーとして規定されていないため、並び替えが一様になる保証が無い。
 
 `Shuffle` は Fisher–Yates 法により、各順列が等確率で現れる一様なシャッフルを 1 回の走査（$O(n)$）で行う。
 
@@ -300,7 +322,7 @@ var shuffled = deck.Shuffle().ToArray();
 var query = Enumerable.Range(1, 3).Shuffle();
 
 var first = query.ToArray();  // ここでソースが列挙・並べ替えされる
-var second = query.ToArray(); // 再列挙すると別の順序になる
+var second = query.ToArray(); // 再列挙すると別の順序になり得る
 ```
 
 同じクエリを複数回列挙すると毎回異なる順序になるため、順序を固定したい場合は `ToArray` / `ToList` で一度実体化してから使い回す。
@@ -336,7 +358,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になる
 - **結合方向の対応関係**: `LeftJoin` は第 1 引数（`outer`）の全要素を、`RightJoin` は第 2 引数（`inner`）の全要素を保持する。結果セレクタで `null` 許容になるのは、`LeftJoin` では内部要素、`RightJoin` では外部要素である。参照する前に `null` 検査を行う。
 - **キーの等価比較**: `comparer` を渡さないオーバーロードは `EqualityComparer<TKey>.Default` を使う。大文字・小文字を区別しない結合などが必要な場合は `IEqualityComparer<TKey>` を渡すオーバーロードを用いる。パラメータの少ないオーバーロードから委譲する際は、`comparer:` の名前付き引数で解決先を固定している（この技法は [ToDictionary のバックポート記事](/ja/articles/linq-backport-netframework-to-net8/)でも使っている）。
 - **`Shuffle` は無限シーケンスに使えない**: 列挙開始時にソース全体をバッファリングするため、終端のないシーケンスに適用すると停止しない。
-- **C# 9 以上でコンパイルする**: 制約なし型パラメータの `null` 許容注釈（`TInner?` / `TOuter?`）を用いるため、.NET Framework 4.8 の既定 `LangVersion`（7.3）のままでは `CS8627` などでコンパイルできない。`.csproj` に `<LangVersion>9.0</LangVersion>`（または `latest`）を指定する。
+- **C# 9 以上でコンパイルする**: 制約なし型パラメータの `null` 許容注釈（`TInner?` / `TOuter?`）を用いるため、.NET Framework 4.8 の既定 `LangVersion`（7.3）のままでは `CS8370` と `CS8627` でコンパイルできず、`LangVersion` 8.0 でも `CS8627` が残る。`.csproj` に `<LangVersion>9.0</LangVersion>`（または `latest`）を指定する。
 - **名前衝突は起きない**: これらは本家 .NET Framework に存在しないシグネチャであり、既存の `Join` や `OrderBy` とはメソッド名・引数が異なるため、オーバーロード解決で衝突しない。
 
 ---
@@ -361,7 +383,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になる
 バックポートの要点は次の 3 つである。
 
 - `LeftJoin` / `RightJoin` は従来の `GroupJoin` + `SelectMany` + `DefaultIfEmpty` イディオムを内包し、`null` 許容注釈で「欠けうる側」をシグネチャに表現する
-- `Shuffle` は Fisher–Yates 法で一様なシャッフルを行い、`Guid.NewGuid()` ソートの非効率と偏りを解消する
+- `Shuffle` は Fisher–Yates 法で 1 回の走査でシャッフルし、一様性の保証が無く非効率な `Guid.NewGuid()` ソートを置き換える。.NET Framework ではスレッドごとの `Random` の種を分ける
 - ポリフィルは `Enumerable` 専用であり、`IQueryable<T>` の DB クエリに適用するとクライアント評価に落ちる。DB クエリでは従来イディオムを維持する
 
 | メソッド | 保持される側 | `null` 許容になる引数 | 評価 |
