@@ -23,7 +23,7 @@ Grid は行を `RowDefinition`、列を `ColumnDefinition` で定義し、子要
 - 残りの列・行より大きい Span は、定義された範囲で打ち切られます。3 列の Grid で `Grid.Column="1" Grid.ColumnSpan="5"` とすると、列番号 1 と 2（0 から数えるので 2 列目と 3 列目）にまたがり、2 行の Grid で `RowSpan="5"` とすると 2 行にまたがりました。
 - 定義のない Grid は 1 つのセルです。すべての子要素がセル全体に置かれて重なり、`Grid.Column="1"` を指定した子要素も、その 1 つのセルに置かれました。
 
-例外になるのは不正な数値だけで、負の番号と 0 の Span は `ArgumentException` になります。それ以外は警告なしに丸められるので、`ColumnDefinition` を削除したときは、その列を指定していた子要素を確認します。警告なしに最後の列へ移ります。
+例外になるのは不正な数値だけで、負の番号と 0 の Span は `ArgumentException` になります。それ以外は警告なしに丸められます。`Grid.Column` は `ColumnDefinition` への参照ではなく番号なので、定義を削除しても子要素の番号はそのままです。削除後にその番号を持つ列に置かれ、番号が新しい最後の列を超えていれば、上で見た丸めのとおり警告なしに最後の列へ置かれます。定義を削除したときは子要素を確認します（削除そのものは測っていません）。
 
 <figure class="article-figure">
   <img src="/images/wpf-standard-control-demo/verification/grid/grid-placement.svg" alt="300×200 の Grid での子要素の配置を示す表。行と列を指定しない子要素は最初のセルで重なり、範囲外の番号や Span は最後の列と行に丸められ、負の値と Span 0 は ArgumentException になり、定義のない Grid ではすべての子要素が 1 つのセルに置かれる" width="810" height="380" loading="lazy">

@@ -42,11 +42,11 @@ With the default `ShowsPreview="False"`, the columns change on every drag step: 
 
 `DragIncrement` rounds the drag distance to a multiple of its value; the default is 1. With `DragIncrement="20"`, drags of 9, 11, 27, and 31 moved the boundary by 0, 20, 20, and 40. `KeyboardIncrement` is how far one arrow-key press moves the boundary when the splitter has keyboard focus. The default is 10; one press of the right arrow moved the boundary by 10, and by 25 with `KeyboardIncrement="25"`. A value of 0 throws `ArgumentException` for both.
 
-To turn keyboard resizing off, set `Focusable="False"`: the splitter then did not accept focus (`Focus()` returned `False`), so it cannot receive the arrow keys. Esc cancels a drag: pressing Esc before releasing the mouse button put the columns back to their widths before the drag. `IsDragging`, read-only from `Thumb`, became `True` when the left mouse button was pressed on the splitter and `False` again when the drag was cancelled; use it in a trigger to highlight the splitter while it is dragged.
+To turn keyboard resizing off, set `Focusable="False"`: the splitter then did not accept focus (`Focus()` returned `False`), so it cannot receive the arrow keys. Esc cancels a drag: pressing Esc before releasing the mouse button put the columns back to their widths before the drag. `IsDragging`, read-only from `Thumb`, became `True` when the left mouse button was pressed on the splitter and `False` again after `CancelDrag()` was called (whether it changes after Esc was not measured); use it in a trigger to highlight the splitter while it is dragged.
 
 ## Limits, and keeping the sizes
 
-Set `MinWidth` / `MinHeight` on the panes. Dragged 1,000 to the left, the left pane shrank to 0; with `MinWidth="50"`, it stopped at 50.
+Set `MinWidth` on the `ColumnDefinition` (or `MinHeight` on the `RowDefinition`) that the splitter resizes. Dragged 1,000 to the left, the left column shrank to 0; with `MinWidth="50"` on its `ColumnDefinition`, it stopped at 50.
 
 To keep the sizes, bind `Width` with `Mode=TwoWay`. With `TwoWay`, the source property received the new width after a drag (`227.5*`) and the binding stayed. Without a mode, the first drag removed the binding and the source kept its old value.
 

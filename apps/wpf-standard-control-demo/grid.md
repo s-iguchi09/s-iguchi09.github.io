@@ -23,7 +23,7 @@ The default of `Grid.Row` and `Grid.Column` is 0, so children that omit them all
 - A span longer than the remaining columns or rows is cut short. In a three-column Grid, `Grid.Column="1" Grid.ColumnSpan="5"` covered columns 1 and 2 (numbered from 0, so the second and third columns); `RowSpan="5"` in a two-row Grid covered both rows.
 - A Grid without any definitions is one cell. Every child fills it, and a child with `Grid.Column="1"` was still placed in that single cell.
 
-Only invalid numbers are rejected: a negative index or a span of 0 throws `ArgumentException`. Because everything else is clamped silently, check the children that referred to a `ColumnDefinition` after removing it; they move into the last column without any warning.
+Only invalid numbers are rejected: a negative index or a span of 0 throws `ArgumentException`. Everything else is clamped silently. `Grid.Column` is a number, not a reference to a `ColumnDefinition`, so after a definition is removed a child keeps its number: it then sits in whichever column now has that number, or, if the number is past the new last column, in the last column without any warning (as the clamping above shows). Check the children after removing a definition; the removal itself was not measured.
 
 <figure class="article-figure">
   <img src="/images/wpf-standard-control-demo/verification/grid/grid-placement.svg" alt="Table of where children are placed in a 300 by 200 Grid: children without Grid.Row and Grid.Column overlap in the first cell, out-of-range indices and spans are clamped to the last column and row, negative values and a span of 0 throw ArgumentException, and a Grid without definitions places every child in one cell" width="810" height="380" loading="lazy">
