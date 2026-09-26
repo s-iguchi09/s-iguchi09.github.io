@@ -9,7 +9,7 @@ image: /images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-p
 
 ## 概要
 
-WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表示内容の制御方法と選択値の取得方法が変わる具体的には `DisplayMemberPath`、`ItemTemplate`、`SelectedItem`、`SelectedValue`、`SelectedValuePath` の組み合わせが、バインドするコレクションの型によって異なる。  
+WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表示内容の制御方法と選択値の取得方法が変わる。具体的には `DisplayMemberPath`、`ItemTemplate`、`SelectedItem`、`SelectedValue`、`SelectedValuePath` の組み合わせが、バインドするコレクションの型によって異なる。  
 本記事では代表的な実装パターンを整理し、それぞれの選択に関するプロパティの使い分けを示す。  
 ---
 
@@ -26,6 +26,7 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 
 - `SelectedValuePath` の有無で、`SelectedValue` の中身が変わる。
 - `DisplayMemberPath` の有無で、表示される文字列が変わる。
+- 後述の「注意点」で扱う、失敗すると言われがちな設定の結果。`DisplayMemberPath` と `ItemTemplate` の同時設定、`SelectedValue` と `SelectedValuePath` のプロパティの型の違い、`ItemsSource` より先に `SelectedValue` を設定した場合である。
 
 ---
 
@@ -45,14 +46,14 @@ WPF の `ComboBox` は `ItemsSource` に渡すデータ構造に応じて、表�
 | `SelectedValue` | `SelectedValuePath` で指定したプロパティ値 | ID など特定フィールドだけを取得する |
 | `SelectedIndex` | 選択行のインデックス（0 始まり）           | 位置だけを管理する場合              |
 
-文字列リストの場合、要素そのものが文字列であるため `SelectedItem` は `string` を返すオブジェクトのリストを使い `SelectedValuePath` を指定すると、`SelectedValue` には指定プロパティの値が返る。  
+文字列リストの場合、要素そのものが文字列であるため `SelectedItem` は `string` を返す。オブジェクトのリストを使い `SelectedValuePath` を指定すると、`SelectedValue` には指定プロパティの値が返る。  
 どのプロパティをバインドするかはデータ構造に依存するため、構造ごとに設定を合わせる必要がある。  
 ---
 
 同じ選択に対して 3 つのプロパティが何を返すかは、実際に選択して読み出せば確かめられる。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="設定を変えて 2 件目を選択したときの SelectedItem・SelectedValue・SelectedIndex と表示文字列を測った表。SelectedValuePath を設定しない場合、SelectedValue は項目そのものを返す。SelectedValuePath=Id では 20 という Int32 を返す。" width="894" height="200" loading="lazy">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="設定を変えて 2 件目を選択したときの SelectedItem・SelectedValue・SelectedIndex と表示文字列を測った表。SelectedValuePath を設定しない場合、SelectedValue は項目そのものを返す。SelectedValuePath=Id では 20 という Int32 を返す。DisplayMemberPath が無いと、項目の型が ToString をオーバーライドしていないため、閉じた ComboBox には型名が表示される。" width="1035" height="200" loading="lazy">
   <figcaption>.NET 10 / Windows 11 で、<code>Id</code> と <code>Name</code> を持つ 3 件のうち 2 件目を選択して測った結果。<code>displayed</code> は閉じた状態の <code>ComboBox</code> に表示されている文字列である。</figcaption>
 </figure>
 
@@ -164,15 +165,15 @@ public int SelectedDepartmentId
 }
 ```
 
-`SelectedValue` の型と `SelectedValuePath` で指定するプロパティの型が一致していないと、選択値が反映されない。  
+`SelectedValue` の型と `SelectedValuePath` で指定するプロパティの型が違っても、計測では選択は反映された。`Id` が `int` で、ソースが文字列型のプロパティ（値は `"20"`）でも `Id` 20 の項目が選択され、別の項目を選ぶと文字列の `"30"` が書き戻された（後述の「注意点」の表）。ただし、宣言型が `object` のプロパティに `"20"` を入れた場合は、`Int32` の 30 が書き戻され、値の型が変わった。ViewModel のプロパティはパスと同じ型にしておくほうが分かりやすい。  
 また `SelectedItem` と `SelectedValue` は同時に利用できるが、一方を変更するともう一方も自動で更新される。  
 ---
 
 ### パターン D：ItemTemplate を使ったカスタム表示
 
 1 行の表示に複数フィールドを含めたい場合や、アイコン付きの選択肢を実装したい場合は `ItemTemplate` を使う。  
-`DisplayMemberPath` と `ItemTemplate` は両方を設定できるが、表示には `ItemTemplate` が優先されて `DisplayMemberPath` は無視される。  
-そのため、カスタム表示が必要なときは `ItemTemplate` を使用し、通常は `DisplayMemberPath` を併用しない。  
+`DisplayMemberPath` と `ItemTemplate` は同時に設定できない。両方を設定すると、コードでは `InvalidOperationException`、XAML では `XamlParseException` になった。  
+カスタム表示が必要なときは `ItemTemplate` だけを使い、`DisplayMemberPath` は外す。  
 
 ```xml
 <ComboBox ItemsSource="{Binding Employees}"
@@ -229,7 +230,7 @@ public Priority SelectedPriority
           SelectedItem="{Binding SelectedPriority}" />
 ```
 
-`SelectedItem` の型は `Priority`（Enum 型）になる`SelectedValue` と `SelectedValuePath` を使って Enum の数値（基底値）だけを取得することも可能だが、明示的に `(int)SelectedPriority` でキャストした方が意図が明確である。  
+`SelectedItem` の型は `Priority`（Enum 型）になる。列挙型の値には数値を返すプロパティが無いため、`SelectedValuePath` では数値を取り出せない。`SelectedValuePath="value__"` としても `SelectedValue` は `null` だった。数値が必要なら `(int)SelectedPriority` のようにキャストする。  
 ---
 
 ## 選択の分岐点
@@ -261,13 +262,16 @@ ViewModel 側のプロパティ型と `ComboBox` の設定が対応していれ�
 
 ## 注意点
 
-- **`DisplayMemberPath` と `ItemTemplate` を同時に設定した場合の挙動**
-両方を設定すると `ItemTemplate` が優先されて `DisplayMemberPath` は無視される。  
-意図しない挙動を防ぐため、カスタム表示が必要な場合は `ItemTemplate` を使用し、`DisplayMemberPath` を併用しない。  
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.svg" alt="ComboBox の 4 つの設定を測った表。DisplayMemberPath と ItemTemplate を両方設定すると、コードでは InvalidOperationException、XAML では XamlParseException になる。SelectedValuePath が int の Id を指し、ソースが文字列型のプロパティで値が 20 でも Id 20 の項目が選択され、別の項目を選ぶと文字列の 30 が書き戻される。宣言型が object のプロパティでは Int32 の 30 が書き戻される。列挙型の項目に SelectedValuePath=value__ とすると SelectedValue は null になる。SelectedValue を ItemsSource より先に設定しても、コードでもバインドでも一致する項目が選択される。" width="1116" height="290" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、<code>Id</code> が 10・20・30 の 3 件を使って測った結果。</figcaption>
+</figure>
+
+- **`DisplayMemberPath` と `ItemTemplate` は併用できない**
+両方を設定すると `InvalidOperationException` になる（XAML では `XamlParseException` に包まれる）。カスタム表示が必要な場合は `ItemTemplate` を使い、`DisplayMemberPath` は外す。  
 - **`SelectedValue` の初期値を正しく設定する**
 `SelectedValuePath` を使う場合、ViewModel 側の初期値が `ItemsSource` 内に存在しない値だと選択状態が空になる。  
-`ItemsSource` がセットされる前に `SelectedValue` が設定されるとバインドが空振りすることがある。  
-`ItemsSource` を先に設定してから選択値を設定する順序を守る。  
+設定の順序は原因にならない。`SelectedValue` を `ItemsSource` より先に設定しても、コードで設定した場合も、バインドしてウィンドウを表示した後で `ItemsSource` を入れた場合も、項目が入った時点で該当する項目が選択された。  
 - **`SelectedItem` の一致判定は `Equals` を考慮する**
 `SelectedItem` は「常に参照比較」とは限らず、`Equals` による一致判定が関わる。  
 既定の実装では別インスタンス同士は一致しないことが多いため、同じ内容のオブジェクトを初期値として設定しても選択されない場合がある。  
@@ -278,15 +282,14 @@ ViewModel 側のプロパティ型と `ComboBox` の設定が対応していれ�
 ViewModel 側で `null` を許容する型（例: `string?`, `int?`）を使う。  
 
 ---
----
 
 ## まとめ
 
 `ComboBox` の実装パターンは `ItemsSource` に渡す型によって決まる。
 単純値なら `SelectedItem`、オブジェクトなら全体が要るか特定フィールドだけで足りるかで `SelectedItem` と `SelectedValue` を選び分ける。
 
-初期値が反映されない問題の多くは、参照比較の不一致か `ItemsSource` のセット順序に起因する。
-`SelectedValuePath` を使うか、同一インスタンスを参照するよう設計することで回避できる。
+初期値が反映されない問題の多くは、`SelectedItem` に渡した値が `ItemsSource` のどの項目とも `Equals` で一致しないことか、`ItemsSource` に無い値を初期値にしていることに起因する。
+前者は、`SelectedValuePath` で ID などの値を比べるか、`ItemsSource` の項目と同じインスタンスを渡すよう設計することで回避できる。後者は、`SelectedValuePath` を使っても一致する項目が無いため選択されない。初期値は `ItemsSource` にある値から選ぶ。
 
 ---
 

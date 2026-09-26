@@ -224,7 +224,7 @@ Ancestor type lookup therefore does not behave as intended inside a `ContextMenu
 - **Both the inherited `DataContext` and `PlacementTarget` are established as the menu opens.**
 For a `ContextMenu` assigned to `FrameworkElement.ContextMenu`, `ContextMenuService` sets `PlacementTarget` to the owning element as the menu opens.
 Before that, `PlacementTarget` and `DataContext` are both `null`, and neither is set yet at the `ContextMenuOpening` stage.
-A binding that goes through `PlacementTarget` therefore fails to resolve until the menu opens and logs one binding error.
+A binding that goes through `PlacementTarget` therefore does not resolve until the menu opens.
 Because `PlacementTarget` is a dependency property, the binding is re-evaluated once it is assigned and resolves correctly from then on.
 - **`x:Reference` carries a documented restriction.**
 `x:Reference` is XAML 2009 syntax, and the documentation states that XAML 2009 features are usable in WPF only for XAML that is not markup-compiled.

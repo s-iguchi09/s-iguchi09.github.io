@@ -28,6 +28,21 @@ internal static class Capture
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT
     {
@@ -123,8 +138,10 @@ internal static class Capture
 
     /// <summary>
     /// ウィンドウ全体（タイトルバー・枠を含む）を PNG として保存する。
+    /// <paramref name="requireContentRendered"/> が真なら、クライアント領域が一色のときに保存せず例外にする
+    /// （画面の消灯中などに空白の図で上書きしないため）。中身が一色の図を意図して撮るときだけ偽にする。
     /// </summary>
-    public static void SaveWindow(Window window, string path)
+    public static void SaveWindow(Window window, string path, bool requireContentRendered = true)
     {
         IntPtr hwnd = new WindowInteropHelper(window).Handle;
         if (hwnd == IntPtr.Zero)
@@ -172,7 +189,61 @@ internal static class Capture
 
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         using Bitmap cropped = raw.Clone(crop, PixelFormat.Format32bppArgb);
+        if (requireContentRendered)
+        {
+            EnsureContentRendered(cropped, ClientAreaIn(hwnd, bounds, cropped.Size));
+        }
+
         cropped.Save(path, ImageFormat.Png);
+    }
+
+    /// <summary>
+    /// クライアント領域の位置を、切り出した画像の座標で返す。
+    /// タイトルバーと枠の大きさは表示スケールで変わるため、固定値ではなく実際の座標から求める。
+    /// </summary>
+    private static Rectangle ClientAreaIn(IntPtr hwnd, RECT bounds, System.Drawing.Size imageSize)
+    {
+        var origin = new POINT();
+        if (!GetClientRect(hwnd, out RECT client) || !ClientToScreen(hwnd, ref origin))
+        {
+            throw new InvalidOperationException("クライアント領域の位置を取得できない。");
+        }
+
+        var area = new Rectangle(origin.X - bounds.Left, origin.Y - bounds.Top, client.Right - client.Left, client.Bottom - client.Top);
+        area.Intersect(new Rectangle(System.Drawing.Point.Empty, imageSize));
+        return area;
+    }
+
+    /// <summary>
+    /// 画面がロックされているか消灯していると、PrintWindow はタイトルバーだけを描き、中身を一色で返す。
+    /// そのまま保存すると空白の図で既存の図を上書きするため、クライアント領域が一色なら止める。
+    /// </summary>
+    private static void EnsureContentRendered(Bitmap image, Rectangle client)
+    {
+        // クライアント領域の縁は背景だけのことが多いため、内側を見る。
+        // 1 ピクセル幅の線だけの図も見落とさないよう、間引かずにすべての画素を調べる。
+        const int margin = 2;
+        client.Inflate(-margin, -margin);
+        if (client.Width <= 0 || client.Height <= 0)
+        {
+            return;
+        }
+
+        Color first = image.GetPixel(client.Left, client.Top);
+        for (int y = client.Top; y < client.Bottom; y++)
+        {
+            for (int x = client.Left; x < client.Right; x++)
+            {
+                if (image.GetPixel(x, y) != first)
+                {
+                    return;
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            "ウィンドウのクライアント領域が一色で撮れた。画面がロックされているか消灯している可能性がある。画面を表示した状態で撮り直す。" +
+            "一色の図を意図して撮る場合は requireContentRendered: false を指定する。");
     }
 
     private static RECT GetCaptureBounds(IntPtr hwnd)

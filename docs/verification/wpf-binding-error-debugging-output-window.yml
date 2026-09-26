@@ -10,5 +10,8 @@ verifies:
   - "パス解決失敗が Error 40、ConvertBack 失敗が Error 7 であること"
   - "Error 17 が、空のインデクサーだけでなくゲッターが例外を送出した場合にも出ること"
   - "DataContext 未設定は既定の Warning では何も出力されず、Information 10 であること"
+  - "Switch.Level を Error・Critical にしたときに、パス解決失敗（Error 40）が記録されるか"
+  - "DataContext 未設定のバインドに TraceLevel=High を付け、Switch.Level が Warning のときに出る番号（Warning 71 と Information 10 のどちらが出るか）"
+  - "検証エラーを出してから解消したときに記録される番号（(Validation.Errors)[0] の Error 17 が解消の時点で出るか）"
 images:
   - "images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg"

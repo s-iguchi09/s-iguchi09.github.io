@@ -28,6 +28,7 @@ The following points were confirmed in that environment:
 
 - Whether `SelectedValuePath` is set changes what `SelectedValue` holds.
 - Whether `DisplayMemberPath` is set changes the string that is displayed.
+- What happens with the settings in [Notes](#notes) that are often said to fail: setting both `DisplayMemberPath` and `ItemTemplate`, a type difference between `SelectedValue` and the property at `SelectedValuePath`, and setting `SelectedValue` before `ItemsSource`.
 
 ---
 
@@ -58,7 +59,7 @@ The appropriate binding target depends on the data structure, so the configurati
 What the three properties return for the same selection can be confirmed by selecting an item and reading them back.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="A table of SelectedItem, SelectedValue, SelectedIndex, and the displayed text after selecting the second item under varying settings. Without SelectedValuePath, SelectedValue returns the item itself. With SelectedValuePath set to Id it returns the Int32 20." width="894" height="200" loading="lazy">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="A table of SelectedItem, SelectedValue, SelectedIndex, and the displayed text after selecting the second item under varying settings. Without SelectedValuePath, SelectedValue returns the item itself. With SelectedValuePath set to Id it returns the Int32 20. Without DisplayMemberPath, the closed ComboBox shows the type name, because the item type does not override ToString." width="1035" height="200" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 by selecting the second of three items carrying an <code>Id</code> and a <code>Name</code>. <code>displayed</code> is the string shown on the closed <code>ComboBox</code>.</figcaption>
 </figure>
 
@@ -173,7 +174,7 @@ public int SelectedDepartmentId
 }
 ```
 
-If the type of `SelectedValue` does not match the type of the property named by `SelectedValuePath`, the selection will not be reflected.  
+A type difference between `SelectedValue` and the property named by `SelectedValuePath` did not break the selection in the measurement: with an `int` `Id` and a source property of type `string` holding `"20"`, the item with `Id` 20 was selected, and selecting another item wrote back the string `"30"` (see [Notes](#notes)). With a property declared as `object` holding `"20"`, however, the `Int32` value 30 was written back, changing the value's type. Keeping the ViewModel property the same type as the path is still clearer.  
 `SelectedItem` and `SelectedValue` can coexist; updating one automatically updates the other.  
 
 ---
@@ -181,8 +182,8 @@ If the type of `SelectedValue` does not match the type of the property named by 
 ### Pattern D: Custom Display with ItemTemplate
 
 When multiple fields need to appear in a single row, or when an icon is included alongside text, use `ItemTemplate`.  
-Both `DisplayMemberPath` and `ItemTemplate` can be set at the same time, but `ItemTemplate` takes precedence and `DisplayMemberPath` is ignored.  
-For custom display, use `ItemTemplate` only and avoid combining it with `DisplayMemberPath`.  
+`DisplayMemberPath` and `ItemTemplate` cannot be set together: setting both threw `InvalidOperationException` from code, and `XamlParseException` from XAML.  
+For custom display, use `ItemTemplate` only and remove `DisplayMemberPath`.  
 
 ```xml
 <ComboBox ItemsSource="{Binding Employees}"
@@ -240,7 +241,7 @@ The XAML binds `ItemsSource` and `SelectedItem` to these ViewModel properties as
 ```
 
 `SelectedItem` is of type `Priority`.  
-Retrieving the underlying integer value via `SelectedValue` and `SelectedValuePath` is possible, but an explicit cast such as `(int)SelectedPriority` expresses the intent more clearly.  
+An enum value has no property that holds its number, so `SelectedValuePath` cannot extract it: with `SelectedValuePath="value__"`, `SelectedValue` was `null`. To get the number, cast the selected value, as in `(int)SelectedPriority`.  
 
 ---
 
@@ -273,14 +274,17 @@ Keeping the ViewModel property type aligned with the `ComboBox` configuration is
 
 ## Notes
 
-- **Behavior when both `DisplayMemberPath` and `ItemTemplate` are set**
-    When both are set, `ItemTemplate` takes precedence and `DisplayMemberPath` is ignored.  
-    To prevent unintended behavior, use `ItemTemplate` when custom display is needed and do not combine it with `DisplayMemberPath`.  
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.svg" alt="A table of four ComboBox settings. Setting both DisplayMemberPath and ItemTemplate throws InvalidOperationException from code and XamlParseException from XAML. With SelectedValuePath pointing at an int Id and a string-typed source property holding 20, the item with Id 20 is selected, and selecting another item writes back the string 30; with a property declared as object, the Int32 30 is written back. With enum items and SelectedValuePath set to value__, SelectedValue is null. Setting SelectedValue before ItemsSource, from code or through a binding, still selects the matching item." width="1116" height="290" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with three items whose <code>Id</code> values are 10, 20, and 30.</figcaption>
+</figure>
+
+- **`DisplayMemberPath` and `ItemTemplate` cannot be combined**
+    Setting both throws `InvalidOperationException` (from XAML, wrapped in `XamlParseException`). Use `ItemTemplate` when custom display is needed and remove `DisplayMemberPath`.  
 
 - **Setting the initial value for `SelectedValue` correctly**
     When using `SelectedValuePath`, if the ViewModel's initial value does not exist in `ItemsSource`, the selection state will be empty.  
-    Setting `SelectedValue` before `ItemsSource` is assigned can also cause the binding to have no effect.  
-    Always assign `ItemsSource` before setting the selected value.  
+    The order is not the cause: setting `SelectedValue` before `ItemsSource`, from code or through a binding with `ItemsSource` assigned after the window was shown, still selected the matching item once the items arrived.  
 
 - **`SelectedItem` matching considers `Equals`**
     `SelectedItem` does not strictly perform reference comparison; it involves `Equals`-based matching.  
@@ -299,8 +303,8 @@ Keeping the ViewModel property type aligned with the `ComboBox` configuration is
 The implementation pattern for a `ComboBox` follows from the type passed to `ItemsSource`.
 Simple values call for `SelectedItem`; for objects, choose between `SelectedItem` and `SelectedValue` by whether the whole object is needed or one field suffices.
 
-Most cases where an initial value fails to appear come down to a reference-comparison mismatch or the order in which `ItemsSource` is assigned.
-Using `SelectedValuePath`, or designing so that the same instance is referenced, avoids both.
+Most cases where an initial value fails to appear come down to a value in `SelectedItem` that matches no item in `ItemsSource` through `Equals`, or to an initial value that is not in `ItemsSource` at all.
+The first is avoided by comparing a value such as an ID through `SelectedValuePath`, or by passing the same instance that `ItemsSource` holds. The second is not: with no matching item, `SelectedValuePath` selects nothing either, so pick the initial value from what `ItemsSource` contains.
 
 ---
 

@@ -224,7 +224,7 @@ public sealed class MeasurementListViewModel
 - **`DataContext` の継承も `PlacementTarget` の設定も、メニューが開く時点で成立する。**
 `ContextMenu` を `FrameworkElement.ContextMenu` に割り当てた場合、`ContextMenuService` が開くときに `PlacementTarget` を所有要素へ設定する。
 開く前は `PlacementTarget` も `DataContext` も `null` であり、`ContextMenuOpening` の段階でもまだ設定されていない。
-`PlacementTarget` を経由するバインドは、開くまでの間は解決できずにバインディングエラーを 1 度出力する。
+`PlacementTarget` を経由するバインドは、開くまでの間は解決できない。
 `PlacementTarget` は依存関係プロパティであるため、設定された時点でバインドは再評価され、以後は正しく解決される。
 - **`x:Reference` はドキュメント上の制約を伴う。**
 `x:Reference` は XAML 2009 の構文であり、公式ドキュメントは「WPF では XAML 2009 の機能をマークアップコンパイルされない XAML でのみ使用できる」と述べている。

@@ -24,6 +24,9 @@ internal sealed class BindingErrorTraceScene : IScene
         "パス解決失敗が Error 40、ConvertBack 失敗が Error 7 であること",
         "Error 17 が、空のインデクサーだけでなくゲッターが例外を送出した場合にも出ること",
         "DataContext 未設定は既定の Warning では何も出力されず、Information 10 であること",
+        "Switch.Level を Error・Critical にしたときに、パス解決失敗（Error 40）が記録されるか",
+        "DataContext 未設定のバインドに TraceLevel=High を付け、Switch.Level が Warning のときに出る番号（Warning 71 と Information 10 のどちらが出るか）",
+        "検証エラーを出してから解消したときに記録される番号（(Validation.Errors)[0] の Error 17 が解消の時点で出るか）",
     ];
 
     public string Slug => "wpf-binding-error-debugging-output-window";
@@ -38,10 +41,14 @@ internal sealed class BindingErrorTraceScene : IScene
         try
         {
             rows.Add(Run(listener, "path not found", SourceLevels.Warning, BuildMissingPath));
+            rows.Add(Run(listener, "path not found", SourceLevels.Error, BuildMissingPath));
+            rows.Add(Run(listener, "path not found", SourceLevels.Critical, BuildMissingPath));
             rows.Add(Run(listener, "DataContext not set", SourceLevels.Warning, BuildNullDataContext));
             rows.Add(Run(listener, "DataContext not set", SourceLevels.Information, BuildNullDataContext));
+            rows.Add(RunTraceLevelHigh(listener));
             rows.Add(Run(listener, "ConvertBack fails", SourceLevels.Warning, BuildConvertBackFailure));
             rows.Add(Run(listener, "empty (Validation.Errors)[0]", SourceLevels.Warning, BuildEmptyValidationIndexer));
+            rows.Add(RunErrorCleared(listener));
             rows.Add(Run(listener, "getter throws", SourceLevels.Warning, BuildThrowingGetter));
             rows.Add(Run(listener, "binding that resolves", SourceLevels.Warning, BuildWorkingBinding));
         }
@@ -92,6 +99,103 @@ internal sealed class BindingErrorTraceScene : IScene
         int next = rest.IndexOf("System.Windows.Data ", StringComparison.Ordinal);
         string record = next >= 0 ? rest[..next] : rest;
         return [label, level.ToString(), $"{match.Groups[1].Value} {match.Groups[2].Value}", Summarize(record)];
+    }
+
+    /// <summary>
+    /// DataContext 未設定のバインドに TraceLevel=High を付け、Switch.Level は Warning のままにする。
+    /// 記事の「TraceLevel を付ければ Information 10 が見える」を確かめるため、最初の番号ではなく
+    /// Warning 71（DataContext is null）と Information 10 がそれぞれ出たかを返す。
+    /// </summary>
+    private static IReadOnlyList<string> RunTraceLevelHigh(CollectingListener listener)
+    {
+        listener.Clear();
+        PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning;
+        var box = new TextBox();
+        var binding = new Binding("UserName");
+        PresentationTraceSources.SetTraceLevel(binding, PresentationTraceLevel.High);
+        box.SetBinding(TextBox.TextProperty, binding);
+        ShowAndClose(new Window { Content = box });
+        string text = listener.Text;
+        return
+        [
+            "DataContext not set, TraceLevel=High",
+            SourceLevels.Warning.ToString(),
+            $"Warning 71: {text.Contains("Warning: 71 :", StringComparison.Ordinal)}, Information 10: {text.Contains("Information: 10 :", StringComparison.Ordinal)}",
+            Regex.IsMatch(text, @"Warning: 71 : .*DataContext is null") ? "DataContext is null" : "-",
+        ];
+    }
+
+    /// <summary>
+    /// 検証エラーを出し、そのあと解消する。解消した時点で記録される番号だけを拾う。
+    /// 表示には (Validation.Errors)[0].ErrorContent をバインドしておく（記事の典型例）。
+    /// </summary>
+    private static IReadOnlyList<string> RunErrorCleared(CollectingListener listener)
+    {
+        PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning;
+        var source = new AgeSource();
+        var box = new TextBox { DataContext = source };
+        box.SetBinding(TextBox.TextProperty, new Binding(nameof(AgeSource.Age))
+        {
+            ValidatesOnExceptions = true,
+            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+        });
+        var text = new TextBlock();
+        text.SetBinding(TextBlock.TextProperty, new Binding("(Validation.Errors)[0].ErrorContent") { Source = box });
+        var panel = new StackPanel();
+        panel.Children.Add(box);
+        panel.Children.Add(text);
+        var window = new Window { Content = panel, Width = 240, Height = 160, ShowInTaskbar = false, ShowActivated = false };
+        listener.Clear();
+        window.Show();
+        Settle(window);
+        string shown = Numbers(listener.Text);
+        listener.Clear();
+        box.Text = "not a number";
+        Settle(window);
+        string raised = Numbers(listener.Text);
+        listener.Clear();
+        box.Text = "5";
+        Settle(window);
+        string recorded = listener.Text;
+        window.Content = null;
+        window.Close();
+        Settle(window);
+        Match match = Regex.Match(recorded, @"System\.Windows\.Data (Error|Warning|Information): (\d+)");
+        return
+        [
+            "validation error raised, then cleared",
+            SourceLevels.Warning.ToString(),
+            $"shown: {shown}; raised: {raised}; cleared: {Numbers(recorded)}",
+            match.Success ? Summarize(recorded[(match.Index + match.Length)..]) : "-",
+        ];
+    }
+
+    /// <summary>記録されたすべての番号を、出た順に重複を除いて並べる。</summary>
+    private static string Numbers(string text)
+    {
+        string[] numbers = Regex.Matches(text, @"System\.Windows\.Data (Error|Warning|Information): (\d+)")
+            .Select(m => $"{m.Groups[1].Value} {m.Groups[2].Value}")
+            .Distinct()
+            .ToArray();
+        return numbers.Length == 0 ? "nothing" : string.Join(", ", numbers);
+    }
+
+    public sealed class AgeSource
+    {
+        public int Age { get; set; } = 1;
+    }
+
+    private static void ShowAndClose(Window window)
+    {
+        window.Width = 240;
+        window.Height = 160;
+        window.ShowInTaskbar = false;
+        window.ShowActivated = false;
+        window.Show();
+        Settle(window);
+        window.Content = null;
+        window.Close();
+        Settle(window);
     }
 
     /// <summary>表に収まる長さで、メッセージの特徴的な部分だけを取り出す。</summary>

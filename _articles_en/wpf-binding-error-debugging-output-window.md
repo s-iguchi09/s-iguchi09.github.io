@@ -34,13 +34,13 @@ The goal is to make initial triage rely on trace output rather than guesswork.
 ## How Binding Errors Appear in the Output Window
 
 WPF binding emits diagnostic information through the `DataBindingSource` of `System.Diagnostics.PresentationTraceSources`.
-When a binding fails to resolve, WPF writes a warning-level message to this trace source.
+When a binding fails, WPF writes an Error or a Warning message to this trace source, depending on the failure; a path that does not resolve is `Error 40`.
 During a debug session, that message appears in the **Output window** (View → Output, or `Ctrl+Alt+O`) under "Show output from: Debug".
 
 If the Output window shows nothing, check the following.
 
 - The "Show output from" dropdown is set to "Debug".
-- Under Tools → Options → Debugging → Output Window, the WPF trace setting for "Data Binding" is set to something other than "Off".
+- Under Tools → Options → Debugging → Output Window, the WPF trace setting for "Data Binding" is `Error` or a more detailed level; the default, `Warning`, works. `Critical` hides path errors just as `Off` does: with `Switch.Level` set to `Critical`, `Error 40` was not recorded.
 
 A key point is that a binding error is **not an exception**.
 It cannot be caught with `try/catch`, and it does not stop execution.
@@ -113,9 +113,9 @@ Because detailed tracing produces a large amount of output, remove the setting o
 The wording in the Output window differs by cause.
 The table below records what actually reaches the `System.Windows.Data` trace when each pattern is evaluated.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="A table of trace output per binding failure pattern. Path resolution failure reports Error 40, a failed ConvertBack reports Error 7, and both indexing an empty Validation.Errors and a getter that throws report Error 17. An unset DataContext produces nothing at the default Warning level and appears as Information 10 with DataItem=null once the level is lowered to Information. A binding that resolves produces nothing." width="788" height="290" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>. <code>Switch.Level</code> is <code>Warning</code>, matching the default, except for the extra <code>DataContext</code> row where it is lowered to <code>Information</code>.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="A table of trace output per binding failure pattern. Path resolution failure reports Error 40 at the Warning and Error levels and nothing at Critical. A failed ConvertBack reports Error 7, and both indexing an empty Validation.Errors and a getter that throws report Error 17. An unset DataContext produces nothing at the default Warning level and appears as Information 10 with DataItem=null at the Information level; with TraceLevel=High on the binding and the level left at Warning, Warning 71, DataContext is null, appears but Information 10 does not. A validation error that is raised and then cleared records Error 7 when raised and Error 17 when cleared. A binding that resolves produces nothing." width="1141" height="410" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>, or, for the <code>TraceLevel=High</code> row and the raised-then-cleared row, the records that matter for each step. <code>Switch.Level</code> is shown for each row; <code>Warning</code> matches the default.</figcaption>
 </figure>
 
 On `.NET 10 / Windows 11`, `Error: 40` corresponds to path resolution, `Error: 7` to a `ConvertBack` conversion failure, and `Error: 17` to a failure while retrieving the value.
@@ -146,8 +146,9 @@ BindingExpression:Path=UserName; DataItem=null;
 target element is 'TextBox' (Name=''); target property is 'Text' (type 'String')
 ```
 
-The default trace covers `Error` and `Warning`, so this line never appears.
-To see it, set `PresentationTraceSources.TraceLevel` on the binding as described above, or lower `System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level` to `Information` or below.
+At the default level, `Warning`, this line does not appear.
+Setting `PresentationTraceSources.TraceLevel=High` on the binding does not bring it out by itself: with `Switch.Level` still at `Warning`, the same binding recorded `Warning 71` (`DataContext is null`) among the detailed lines, but no `Information 10`.
+To see `Information 10` itself, set `System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level` to `Information` or a more detailed level.
 
 **Note that an unset `DataContext` also suppresses the path resolution error (`Error: 40`).**
 With a `null` binding source, evaluation never reaches the stage where the property is looked up.
@@ -213,7 +214,7 @@ This code writes binding warnings to `binding-errors.log`.
 Output from `ConsoleTraceListener` appears only when a console is attached, such as when a console is allocated or a debugger is connected.
 A typical WPF GUI app has no console by default, so rely on the file listener for durable records.
 Leaving it enabled in a release build increases output volume and file size, so enable it only for diagnostic builds or during investigation.
-Also note that setting `Switch.Level` below `Warning` prevents failure traces from being recorded.
+Also note that setting `Switch.Level` to `Critical` or `Off` stops failure traces such as `Error 40` from being recorded; at `Error` they are still recorded.
 
 ---
 

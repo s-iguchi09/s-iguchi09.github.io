@@ -46,19 +46,19 @@ WPF の `DataGrid` コントロールは、列ヘッダーをクリックする�
 
 列ヘッダーを 1 回クリックで昇順、もう 1 回で降順に切り替わる。
 標準機能では未ソート状態への復帰は行われないため、解除が必要な場合はコードで明示的に制御する。
-未ソート状態へ戻す実装については [WPF DataGrid のソート状態をリセットする方法](/ja/articles/wpf-datagrid-sort-reset/) を参照する。
+未ソート状態へ戻す実装については [WPFのDataGridのソートを初期化する方法](/ja/articles/wpf-datagrid-sort-reset/) を参照する。
 
 列の作り方を変えて、`SortMemberPath` と `CanUserSort` に何が入るかを測った結果が次の図である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="列の宣言方法ごとに SortMemberPath と CanUserSort を測った表。Binding だけの DataGridTextColumn では SortMemberPath に Binding のパスが入り CanUserSort は True。SortMemberPath を明示するとそちらが使われる。CanUserSort を False にすると並び替えられない。Binding を持たないテンプレート列では SortMemberPath が空になり CanUserSort も False になる。" width="803" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、列の宣言だけを変えて測った結果。<code>order after sorting</code> は、その列の <code>SortMemberPath</code> で昇順に並べ替えた後の並びである（並べ替えられない列では元の並びのまま）。</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="列の宣言方法ごとに SortMemberPath、CanUserSort、ヘッダーのクリック後の並びを測った表。Binding だけの DataGridTextColumn では SortMemberPath に Binding のパスが入り、並び替えられる。SortMemberPath を明示するとそちらが使われる。CanUserSort を False にすると、ヘッダーをクリックしても元の並びのまま。Binding を持たないテンプレート列では SortMemberPath が空になり CanUserSort も False で並び替えられないが、SortMemberPath=Name を明示したテンプレート列は並び替えられる。" width="882" height="230" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、列の宣言だけを変えて測った結果。<code>order after a header click</code> は、その列のヘッダーのクリックで走るのと同じ並べ替えを実行した後の並びである。元の並びは carol, alice, bob。</figcaption>
 </figure>
 
 **`SortMemberPath` を書かなくても、`Binding` のパスが自動で入る。** 上の XAML で `SortMemberPath` を明示しているのは意図を明確にするためであり、省いても同じ結果になる。
 
 注目すべきは最終行である。`Binding` を持たない `DataGridTemplateColumn` では `SortMemberPath` が空になり、**`CanUserSort` も `False` になる**。
-`CanUserSortColumns` を `True` にしていても、並び替えの対象にならない。テンプレート列を並び替え可能にするには `SortMemberPath` を明示する。
+`CanUserSortColumns` を `True` にしていても、並び替えの対象にならない。テンプレート列を並び替え可能にするには `SortMemberPath` を明示する。最終行の、`SortMemberPath="Name"` を明示したテンプレート列は名前順に並んだ。
 
 ---
 
@@ -72,8 +72,9 @@ using System.ComponentModel;
 dataGrid.Items.SortDescriptions.Clear();
 dataGrid.Items.SortDescriptions.Add(
     new SortDescription(nameof(Product.Price), ListSortDirection.Descending));
-dataGrid.Items.Refresh();
 ```
+
+ビューは `SortDescription` を足した時点で並べ替えられるため、`Items.Refresh()` を呼ぶ必要はない。
 
 このとき、列ヘッダーに表示されるソートグリフ(矢印)も同期させる。
 
@@ -94,7 +95,7 @@ priceCol.SortDirection = ListSortDirection.Descending;
 
 ## ListCollectionView によるカスタムソート
 
-大文字小文字を区別しない文字列ソートや、public プロパティとして公開されていない式による並び替えなど、標準の `SortDescription` では表現できない比較規則が必要なケースでは `ListCollectionView.CustomSort` を使う（`SortDescription` は getter が値を計算する public プロパティなら並び替えできるが、プロパティとして公開されていない比較には対応できない）。
+カルチャに依存しない序数比較の文字列ソート（`SortDescription` はカルチャの規則で文字列を比べる）や、public プロパティとして公開されていない式による並び替えなど、標準の `SortDescription` では表現できない比較規則が必要なケースでは `ListCollectionView.CustomSort` を使う（`SortDescription` は getter が値を計算する public プロパティなら並び替えできるが、プロパティとして公開されていない比較には対応できない）。
 なお、複数キーによる多段ソートは `SortDescriptions` に複数の `SortDescription` を追加すれば表現できるため、`CustomSort` は不要である。
 ここで注意が必要なのは戻り値の型である。
 `CollectionViewSource.GetDefaultView` が返すのは `ICollectionView` であり、この型は `CustomSort` を公開していない。
@@ -109,13 +110,17 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 }
 ```
 
-`CustomSort` は `SortDescriptions` より優先される。
-標準の `SortDescriptions` によるソートへ戻す場合、`SortDescriptions.Clear()` だけでは `CustomSort` が残るため、先に `view.CustomSort = null` を設定してから `SortDescriptions` を構成する。
+`CustomSort` と `SortDescriptions` は重ならず、後から設定したほうだけが残る。`CustomSort` を設定すると `SortDescriptions` は消え、その後に `SortDescription` を足すと `CustomSort` は `null` に戻った。[`ListCollectionView.CustomSort` のリファレンス](https://learn.microsoft.com/dotnet/api/system.windows.data.listcollectionview.customsort)には、前半（このプロパティを設定すると `SortDescriptions` が消えること）が書かれている。そのため、`SortDescriptions` に戻すのに特別な手順は要らない。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.svg" alt="ListCollectionView の表。Name 昇順の SortDescription の後に、名前の長さで比べる CustomSort を設定すると SortDescriptions は 0 件になり bob, alice, carol の順になる。その後に Name 降順の SortDescription を足すと CustomSort は null に戻り carol, bob, alice の順になる。行を選択した状態で Items.Refresh を呼んでも、SelectedItem と CurrentCell は bob のまま。" width="882" height="200" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で、3 件のコレクションの既定のビューと、それにバインドした <code>DataGrid</code>（最終行）で測った結果。</figcaption>
+</figure>
 
 ## 注意点
 
 - `SortMemberPath` が必須になるのは、列の `Binding` パスと並び替えキーが異なる場合のみである。単純なプロパティにバインドした `DataGridTextColumn` では省略してもソートは機能するが、バインドパスが複雑な場合は明示しておくと予期しない挙動を避けられる。
-- `Items.Refresh()` はビュー全体を再構築し、現在セルや選択状態をリセットする。大きなコレクションでは処理が目立つため、可能であればグリッドにデータを流し込む前に `SortDescriptions` を設定しておく。
+- `Items.Refresh()` はビューを再構築するが、`SortDescriptions` を変えた後に呼ぶ必要はない。上の計測では、行を選択した状態で `Refresh` を呼んでも `SelectedItem` と `CurrentCell` は残った。
 - `CustomSort` は `ListCollectionView` のプロパティである。`DataView` に対して返される `BindingListCollectionView` などは `ListCollectionView` ではなく `CustomSort` を持たないため、上記のパターンマッチはこれをスキップする。この種のソースでは、`SortDescriptions` やデータソース側での並び替えなど別の手段で順序を決める。
 - ソートが変えるのは表示上の順序だけであり、元のコレクションの並びは変わらない。バインド先のコレクションを直接反復するコードは元の順序のままを見る。
 

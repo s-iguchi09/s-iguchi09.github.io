@@ -20,12 +20,14 @@ internal sealed class FluentClearButtonScene : IScene
         "ThemeMode を設定した場合と Fluent.xaml を直接マージした場合のどちらでもパーツが現れること",
         "BasedOn を書かない暗黙スタイルを同じキーに置くと、どちらの経路でもパーツが消えること",
         "BasedOn で元のスタイルを引き継いだ暗黙スタイルでは、どちらの経路でも自前の Setter が効いたままパーツが残ること",
+        "方法 1 で非表示にしたあと ThemeMode を Light から Dark に切り替えると、クリアボタンが作り直されてローカル値が消え、フォーカスで再び表示されること。切り替え後にもう一度同じ処理を呼ぶと非表示に戻ること",
     ];
 
     public string Slug => "wpf-fluent-textbox-hide-clear-button";
 
     public async Task CaptureAsync(SceneContext context)
     {
+        FluentThemeMeasurements.EnsureNotHighContrast();
         Window standard = BuildWindow(out TextBox defaultTextBox);
         await context.ShootAsync(
             standard,
@@ -47,6 +49,74 @@ internal sealed class FluentClearButtonScene : IScene
             ["window", "Style applied", "named parts present", "Padding.Left"],
             await FluentThemeMeasurements.ThemeDeliveryAsync(),
             "fluent-textbox-parts.svg");
+
+        await context.SaveTableAsync(
+            "approach 1 (local Collapsed on the part) across a ThemeMode switch",
+            ["step", "same part instance", "local Visibility", "Visibility with focus"],
+            await ThemeSwitchAsync(),
+            "fluent-clear-button-theme-switch.svg");
+    }
+
+    /// <summary>
+    /// 方法 1 で非表示にしたあと、ウィンドウの ThemeMode を Light から Dark に切り替える。
+    /// テーマの切り替えでテンプレートが作り直されると、ローカル値を持たない新しいパーツになる。
+    /// </summary>
+    private static async Task<List<IReadOnlyList<string>>> ThemeSwitchAsync()
+    {
+        Window window = BuildWindow(out TextBox textBox);
+        window.ShowActivated = true;
+        var rows = new List<IReadOnlyList<string>>();
+        try
+        {
+            await Capture.ShowAndSettleAsync(window);
+            await FocusAsync(textBox);
+            HideClearButtonPart(textBox);
+            await Capture.SettleAsync(window);
+            UIElement? first = Part(textBox);
+            rows.Add(Row("approach 1 applied (ThemeMode=Light)", first, first));
+
+#pragma warning disable WPF0001 // ThemeMode は実験的 API として公開されている。
+            window.ThemeMode = ThemeMode.Dark;
+#pragma warning restore WPF0001
+            await Capture.SettleAsync(window);
+            await FocusAsync(textBox);
+            await Capture.SettleAsync(window);
+            UIElement? second = Part(textBox);
+            rows.Add(Row("after switching to ThemeMode=Dark", first, second));
+
+            HideClearButtonPart(textBox);
+            await Capture.SettleAsync(window);
+            rows.Add(Row("approach 1 applied again", second, Part(textBox)));
+        }
+        finally
+        {
+            window.Close();
+        }
+
+        return rows;
+    }
+
+    private static UIElement? Part(TextBox textBox)
+    {
+        textBox.ApplyTemplate();
+        return ClearButtonPartNames.Select(name => textBox.Template?.FindName(name, textBox)).OfType<UIElement>().FirstOrDefault();
+    }
+
+    private static IReadOnlyList<string> Row(string step, UIElement? previous, UIElement? current)
+    {
+        if (current is null)
+        {
+            return [step, "-", "-", "(no part)"];
+        }
+
+        object local = current.ReadLocalValue(UIElement.VisibilityProperty);
+        return
+        [
+            step,
+            ReferenceEquals(previous, current) ? "yes" : "no",
+            local == DependencyProperty.UnsetValue ? "(none)" : local.ToString()!,
+            current.Visibility.ToString(),
+        ];
     }
 
     /// <summary>

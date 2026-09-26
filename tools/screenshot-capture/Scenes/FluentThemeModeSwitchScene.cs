@@ -60,6 +60,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         "Styles.xaml の中にネストした Fluent.Light.xaml は置き換わらず、ThemeMode の辞書より後ろに残るため、Dark にしても Light のブラシが使われ続けること",
         "StaticResource とコードで FindResource して代入したブラシは追従せず、DynamicResource だけが追従すること",
         "ReadLocalValue の型で、DynamicResource（ResourceReferenceExpression）かどうかを判別できること",
+        "SystemColors のキーを DynamicResource で参照した場合は、ReadLocalValue が ResourceReferenceExpression でも ThemeMode の切り替えに追従しないこと",
         "TextBlock.ForegroundProperty と Control.ForegroundProperty が同じ依存関係プロパティであること",
         "Fluent のスタイルから色が決まる Button では、Foreground のローカル値が無い（UnsetValue）こと",
         "記事の DumpThemeState が、ネストした辞書・ウィンドウの Fluent 辞書・固定されたブラシを出力に表すこと",
@@ -73,6 +74,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
+        FluentThemeMeasurements.EnsureNotHighContrast();
         Application application = Application.Current;
         ThemeMode original = application.ThemeMode;
 
@@ -319,6 +321,12 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         var codeText = new TextBlock { Text = "FindResource" };
         ((StackPanel)content.Child).Children.Add(codeText);
 
+        // SystemColors のキーを DynamicResource で参照する。参照は動的でも、SystemColors の値は
+        // ThemeMode で変わらないため追従しない、というのを測る（ReadLocalValue は DynamicResource と同じ型になる）。
+        var systemText = new TextBlock { Text = "SystemColors" };
+        systemText.SetResourceReference(TextBlock.ForegroundProperty, SystemColors.ControlTextBrushKey);
+        ((StackPanel)content.Child).Children.Add(systemText);
+
         try
         {
             await Capture.ShowAndSettleAsync(window);
@@ -331,6 +339,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
                 ("{StaticResource}", null, StaticText(window)),
                 ("{DynamicResource}", null, DynamicText(window)),
                 ("Foreground = FindResource(...)", null, codeText),
+                ("{DynamicResource SystemColors.ControlTextBrushKey}", null, systemText),
                 // Foreground を指定していない標準コントロール。色は Fluent のスタイルから来る。
                 ("Button (Fluent style)", (Control)content.FindName("SaveButton"), null),
             ];

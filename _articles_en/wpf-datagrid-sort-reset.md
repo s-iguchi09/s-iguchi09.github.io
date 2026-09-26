@@ -34,7 +34,7 @@ The following points were confirmed in that environment:
 - The sort state is held in two places: `SortDescriptions` on the `ICollectionView` and `SortDirection` on the column.
 - Clearing `SortDescriptions` alone leaves `SortDirection` on the column, so the header arrow stays.
 - Adding to `SortDescriptions` alone does not set `SortDirection` on the column.
-- Adding two entries to `SortDescriptions` produces a multi-column sort.
+- Adding two entries to `SortDescriptions` produces a multi-column sort: rows that tie on the first condition are ordered by the second.
 
 ## Problem
 
@@ -53,9 +53,9 @@ For this reason, explicit reset logic is required when an application needs dete
 
 The sort state lives in two places. The figure below records both after each operation.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="A table of the SortDescriptions count, the column SortDirection, and the row order after each operation. Adding a SortDescription from code leaves SortDirection null. Clearing SortDescriptions leaves SortDirection at Ascending. Only clearing both returns to the initial state. The last row, a column header click, updates both at once." width="827" height="290" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. <code>SortDescriptions</code> is the number of sort conditions on the view; <code>column.SortDirection</code> is the property that drives the arrow in the column header. Every row but the last operates on them directly from code.</figcaption>
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="A table of the SortDescriptions count, the column SortDirection, and the row order after each operation. Adding a SortDescription from code leaves SortDirection null. Clearing SortDescriptions leaves SortDirection at Ascending, also when the ICollectionView passed as ItemsSource is cleared. Only clearing both returns to the initial state. With a row that ties on Score, one SortDescription keeps carol before anna while a second one on Name puts anna first. The last row, a column header click, updates both at once." width="1070" height="350" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. <code>SortDescriptions</code> is the number of sort conditions on the view; <code>column.SortDirection</code> is the property that drives the arrow in the column header. Every row but the last operates on them directly from code. The two rows marked <code>with a tie</code> add a row, anna, with the same <code>Score</code> as carol.</figcaption>
 </figure>
 
 **On the row that calls `SortDescriptions.Clear()`, the order is back to its initial state while `column.SortDirection` still reads `Ascending`.**
@@ -64,7 +64,7 @@ The header keeps showing its arrow in that state, making it look as though the s
 The reverse holds on the row that only adds a `SortDescription`: the order changes while `SortDirection` stays `null`.
 **Touching one of them from code never updates the other.** Both have to be set explicitly, in either direction.
 
-The row adding two `SortDescriptions` produces a multi-column sort. Shift-clicking builds exactly that state; it does not clear anything.
+The rows marked `with a tie` show the multi-column sort: with only `Score`, carol and anna, who tie, keep their original order; adding `Name` puts anna first. Shift-clicking builds exactly that state; it does not clear anything.
 
 The last row is the contrast: the standard sort that a click on the column header runs. **That path updates `SortDescriptions` and `SortDirection` together.**
 This is why the arrow and the order never disagree when the user sorts; they diverge only once code touches one side alone.
@@ -197,7 +197,14 @@ public class RowItem
 
 Managing `SortDescriptions` in `ItemsView` improves testability and keeps view logic thin.
 
-**This `ClearSort` releases the view order only.** `DataGridColumn.SortDirection` stays on the `DataGrid` side, so the rows return to their initial order while the header arrow remains displayed (the `then SortDescriptions.Clear() only` row of the table above measures exactly that).
+**This `ClearSort` releases the view order only.** `DataGridColumn.SortDirection` stays on the `DataGrid` side, so the rows return to their initial order while the header arrow remains displayed (the `ItemsSource = ICollectionView` row of the table above measures exactly that: clearing the view's `SortDescriptions` left `SortDirection` at `Ascending`).
+This `ClearSort` also clears only `SortDescriptions`, so it does not undo sorting through `ListCollectionView.CustomSort`. Running the same steps on a view with `CustomSort` set left `CustomSort` in place and the order unchanged. On a screen that uses `CustomSort`, have `ClearSort` also assign `null` to `CustomSort`.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg" alt="A table of setting CustomSort on a ListCollectionView and then running the article's ClearSort. The initial order is 21800, 2480, 4980. With CustomSort set to Price descending it is 21800, 4980, 2480. After SortDescriptions.Clear and Refresh, CustomSort is still set and the order is still 21800, 4980, 2480. Assigning null to CustomSort and calling Refresh restores the initial order." width="756" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by applying each step in turn to a <code>ListCollectionView</code> over the sample data. The <code>SortDescriptions</code> column is the number of conditions.</figcaption>
+</figure>
+
 Clearing the arrow as well needs a separate step that sets `SortDirection` to `null` on the `DataGrid`, since the ViewModel cannot reach the column state. Folding that step into a Behavior lets a single command reset both.
 
 ```xml
@@ -300,7 +307,7 @@ One line of XAML per screen carries it across, cutting duplicated code. Provide 
 
 ## Notes
 
-- Clearing `SortDescriptions` alone can leave header arrows out of sync with actual data order.
+- Clearing `SortDescriptions` alone leaves header arrows out of sync with actual data order.
 - In the `Sorting` event example, if reset logic uses `SortMemberPath` as the key, columns without `SortMemberPath` can fail to reset as expected.
 - For multi-column sorting, requirements should define whether reset means full clear or only target-column clear.
 

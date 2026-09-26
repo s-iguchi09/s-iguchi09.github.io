@@ -3,7 +3,7 @@ layout: article-en
 title: "Customising the DatePicker Display Format in WPF"
 date: 2026-04-15
 category: WPF
-excerpt: "A practical guide to changing the WPF DatePicker date format from XAML, code-behind, and a value converter, with common format strings."
+excerpt: "Fixing the WPF DatePicker format with a DatePickerTextBox style, escape separators in XAML, why setting Text in code-behind fails, and when a converter fits."
 image: /images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png
 ---
 
@@ -28,7 +28,7 @@ The following points were confirmed in that environment:
 - Rewriting the text part inside the template does produce an arbitrary format.
 
 The techniques below rely on the default `DatePicker` control template, which contains a `DatePickerTextBox` in its visual tree.  
-A fully retemplated `DatePicker` may not expose that element, in which case changing the picker's own text relies on the code-behind approach or on handling the format inside the custom template. The converter shown later formats companion displays, not the picker itself.  
+A fully retemplated `DatePicker` may not expose that element, in which case the format has to be handled inside the custom template; setting `Text` from code-behind does not stick, as measured below. The converter shown later formats companion displays, not the picker itself.  
 
 The text a `DatePicker` actually shows can be confirmed by varying the setting and reading it back.
 
@@ -59,13 +59,13 @@ For full control, the control template's `DatePickerTextBox` must be targeted th
       <Setter Property="Text"
               Value="{Binding SelectedDate,
                               RelativeSource={RelativeSource AncestorType=DatePicker},
-                              StringFormat='yyyy\/MM\/dd'}" />
+                              StringFormat='yyyy\\/MM\\/dd'}" />
     </Style>
   </DatePicker.Resources>
 </DatePicker>
 ```
 
-The separators are escaped as `\/` so they render literally. Left unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, which would break the fixed layout the article aims for. The same effect can be achieved by quoting the separators as `'/'` (for example `yyyy'/'MM'/'dd`), the form used later in this article.  
+Unescaped, `/` is a date-separator placeholder that the binding's culture can replace with another character, so the separators have to be escaped to render literally. Inside a markup extension, however, the backslash is XAML's own escape character: `\/` alone is consumed by the XAML parser, the format becomes `yyyy/MM/dd`, and a `de-DE` picker shows `2026.04.15`. Doubling the backslash, as above, leaves `\/` in the format string. Quoting the separators also works if the quotes themselves are escaped, as in `StringFormat=yyyy\'/\'MM\'/\'dd`; written as `yyyy'/'MM'/'dd` without escaping, the XAML failed to load. The table after the next figure shows all four.  
 
 Where the default display takes its culture from depends on where the value of `Language` (`xml:lang` in XAML) comes from.  
 When neither the control nor its parents set it, so that its value source is still `Default`, the display follows the thread's `CurrentCulture`; the default `Language` value of `en-US` is not used.  
@@ -90,52 +90,46 @@ Both carry `xml:lang="en-US"` so that the comparison does not depend on the mach
       <Setter Property="Text"
               Value="{Binding SelectedDate,
                               RelativeSource={RelativeSource AncestorType=DatePicker},
-                              StringFormat='yyyy\/MM\/dd'}" />
+                              StringFormat='yyyy\\/MM\\/dd'}" />
     </Style>
   </DatePicker.Resources>
 </DatePicker>
 ```
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="Two DatePicker controls holding the same date. The default one displays 4/15/2026 while the one with StringFormat displays 2026/04/15." width="486" height="146" loading="lazy">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-default-vs-custom-format.png" alt="Two DatePicker controls holding the same date. The default one displays 4/15/2026 while the one with StringFormat displays 2026/04/15." width="501" height="146" loading="lazy">
   <figcaption>Two <code>DatePicker</code> controls given the same <code>SelectedDate</code>. Both carry <code>xml:lang="en-US"</code> so that the difference in format is visible. The upper one uses the default display, which follows that setting and renders <code>4/15/2026</code>. The lower one applies the style from this section, which fixes the separators and the year-month-day order.</figcaption>
 </figure>
 
-What escaping with `\/` fixes is the separator and the field order, not the calendar itself.  
-Evaluating the same `yyyy\/MM\/dd` with only the culture changed gives the following (measured on .NET 10).  
+The format also survives after the picker is shown.
+With `xml:lang="de-DE"`, changing `SelectedDate` in code and picking a date in the calendar both displayed the specified `2026/05/20` and `2026/06/03`.
+The value of `DatePickerTextBox.Text` kept coming from the style's binding throughout.
 
-| `xml:lang` | Rendered |
-|---|---|
-| `en-US` / `ja-JP` / `de-DE` | `2026/04/15` |
-| `th-TH` (Buddhist era) | `2569/04/15` |
-| `ar-SA` (Hijri) | `1447/10/27` |
-| `fa-IR` (Persian) | `1405/01/26` |
+<figure class="article-figure">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.svg" alt="A table of this section's style applied to a DatePicker with xml:lang de-DE. Right after display it shows 2026/04/15; after SelectedDate is set to 2026-05-20 in code it shows 2026/05/20; after 2026-06-03 is picked in the calendar it shows 2026/06/03. The value source of TextBox.Text is the Style binding every time." width="658" height="170" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by showing a <code>DatePicker</code> with this section's style and changing the date twice. The value source was read with <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
+</figure>
+
+What the escaped separator fixes is the separator and the field order, not the calendar itself: with the separators kept, `th-TH`, `ar-SA`, and `fa-IR` still show their own years and months.
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-stringformat-escape.svg" alt="A table of four ways to write StringFormat inside a XAML Binding. 'yyyy\/MM\/dd' becomes yyyy/MM/dd after parsing and shows 2026/04/15 for en-US and ja-JP but 2026.04.15 for de-DE, with invisible direction marks for ar-SA. 'yyyy\\/MM\\/dd' and yyyy\'/\'MM\'/\'dd keep the slash for all six cultures, while th-TH, ar-SA, and fa-IR still use their own calendars. yyyy'/'MM'/'dd without escaping fails to load with XamlParseException." width="1159" height="200" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by loading the style from this section with each <code>StringFormat</code> and <code>xml:lang</code>, with <code>SelectedDate</code> set to 2026-04-15. Characters outside ASCII are shown as code points.</figcaption>
+</figure>
 
 To pin the calendar as well, set `ConverterCulture` on the binding so the culture itself is fixed.  
 
 ## Setting the Format in Code-Behind
 
-In code-behind, subscribe to the `SelectedDateChanged` event and format the text manually:
+A common suggestion is to handle `SelectedDateChanged` and assign the formatted text to `DatePicker.Text`. This does not change the display.
+When `SelectedDateChanged` fires, `Text` has already been set in the default format. Assigning a `yyyy/MM/dd` string there makes `DatePicker` parse it as a date and normalize it to the default format right away: `Text` read `4/15/2026` both at the handler's entry and right after the assignment.
 
-```csharp
-using System.Globalization;
-using System.Windows.Controls;
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="A table of setting DatePicker.Text in SelectedDateChanged with xml:lang en-US: the handler ran twice; each time Text was 4/15/2026 at the entry and still 4/15/2026 right after assigning yyyy/MM/dd. After the handler, Text and the displayed text were 4/15/2026." width="929" height="110" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 with a handler that sets <code>Text</code> to <code>yyyy/MM/dd</code> in the invariant culture, after setting <code>SelectedDate</code> to 2026-04-15.</figcaption>
+</figure>
 
-private void DatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
-{
-    if (datePicker.SelectedDate.HasValue)
-    {
-        datePicker.Text = datePicker.SelectedDate.Value
-            .ToString("yyyy/MM/dd", CultureInfo.InvariantCulture);
-    }
-    else
-    {
-        datePicker.Text = string.Empty;
-    }
-}
-```
-
-Passing `CultureInfo.InvariantCulture` fixes the separator regardless of the machine's regional settings; without it, `ToString("yyyy/MM/dd")` uses the current culture and the `/` follows that culture's date separator.  
+To set the format from code, apply the same `DatePickerTextBox` style and binding as the XAML approach, or keep the picker's text as it is and format a companion display with a converter, as in the next section.
 
 ## Using a Converter for Companion Displays
 
@@ -187,16 +181,14 @@ To keep a fixed layout regardless of the machine's regional settings, pass `Cult
 ## Notes
 
 - The XAML `StringFormat` approach only affects the displayed text. The underlying `SelectedDate` value is unchanged, so bindings that read the date directly are unaffected.  
-- The `SelectedDateChanged` approach overwrites the `Text` property manually. If the user then types into the box, two-way parsing must still succeed, so avoid formats the parser cannot round-trip.  
-- Converters that return `string.Empty` for a null date prevent a `NullReferenceException` when no date is selected.  
+- In the converter, the `is DateTime` check is what handles an unselected date: a `null` value fails the check instead of being formatted. Returning `string.Empty` then simply shows nothing.  
 
 ## Summary
 
 | Method               | Pros                    | Cons                                       |
 | -------------------- | ----------------------- | ------------------------------------------ |
 | Style + StringFormat | Declarative, no code    | Limited to StringFormat syntax             |
-| SelectedDateChanged  | Simple, explicit        | Code-behind coupling                       |
 | Value Converter      | MVVM-friendly, reusable | Formats companion displays, not the picker |
 
 The appropriate approach depends on the project's architecture.  
-To change the picker's own text, the Style + StringFormat or code-behind approach is required; the converter is best for companion displays that must show the same date and grow in number.  
+To change the picker's own text, use the Style + StringFormat approach; setting `Text` in `SelectedDateChanged` did not change it. The converter is best for companion displays that must show the same date and grow in number.  

@@ -57,7 +57,8 @@ var counts = words.GroupBy(w => w)
 
 このコードの見えないコストが中間グルーピングである。
 `GroupBy` は列挙開始時に全要素を走査し、キーごとに「そのキーに属する全要素への参照リスト」を構築する。
-件数を数えるだけの用途では各グループの要素リストは最終的に捨てられるが、`Count()` を呼んだ直後に解放されるわけではなく、`GroupBy` が返すシーケンス全体の列挙が完了する（全キーのグループを構築し終える）まで内部に保持され続ける。
+件数を数えるだけの用途では各グループの要素リストは最終的に捨てられるが、`Count()` を呼んだ直後に解放されるわけではなく、全グループを持つ 1 つの Lookup として、少なくとも `GroupBy` が返すシーケンスの列挙が終わって列挙子が破棄されるまでは内部に保持され続ける。
+.NET 9 の実装では、列挙子を破棄しても Lookup への参照は消されない。同じスレッドで最初に列挙した場合はシーケンス自体が列挙子を兼ねるため、クエリを変数などで持ち続けている間は、列挙を終えた後も Lookup が残る（[`Grouping.cs` の `GroupByIterator`](https://github.com/dotnet/runtime/blob/v9.0.0/src/libraries/System.Linq/src/System/Linq/Grouping.cs)）。
 要素数 100 万件・キー数 10 件のデータであれば、10 件の結果を得る間ずっと、100 万件分の参照を保持するグルーピングがメモリ上に残る。
 
 `Index` の代替も同様に、`Select((item, index) => (index, item))` という定型記述を毎回書くことになる。
@@ -240,7 +241,7 @@ namespace System.Linq
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。CountBy・AggregateBy・Index のいずれも、境界値を含めて同じ結果になっている。" width="1062" height="320" loading="lazy">
+  <img src="/images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。CountBy・AggregateBy・Index のいずれも、境界値を含めて同じ結果になっている。キーに null を含む並びでは、CountBy と AggregateBy のどちらも両方で ArgumentNullException になる。" width="1062" height="380" loading="lazy">
   <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
 </figure>
 

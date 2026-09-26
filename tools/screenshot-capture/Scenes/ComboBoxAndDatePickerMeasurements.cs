@@ -19,7 +19,133 @@ internal static class ComboBoxAndDatePickerMeasurements
 
         public required string Name { get; init; }
 
-        public override string ToString() => Name;
+        // ToString はオーバーライドしない。オーバーライドすると DisplayMemberPath が無くても
+        // Name が表示され、DisplayMemberPath の有無による違いが表に出なくなる。
+    }
+
+    private enum Priority
+    {
+        Low = 1,
+        High = 5,
+    }
+
+    /// <summary>
+    /// 記事の注意点に書く 4 つの挙動を測る。
+    /// DisplayMemberPath と ItemTemplate の同時設定、SelectedValue とパスの型の違い、
+    /// 列挙型の数値を SelectedValuePath で取れるか、SelectedValue を ItemsSource より先に設定したとき。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> PitfallsAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        rows.Add(["DisplayMemberPath + ItemTemplate (code)", Throws(() => new ComboBox { DisplayMemberPath = "Name", ItemTemplate = new DataTemplate() })]);
+        rows.Add(["DisplayMemberPath + ItemTemplate (XAML)", Throws(() => System.Windows.Markup.XamlReader.Parse(
+            "<ComboBox xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" DisplayMemberPath=\"Name\"><ComboBox.ItemTemplate><DataTemplate /></ComboBox.ItemTemplate></ComboBox>"))]);
+
+        // 型の違い: SelectedValuePath の Id は int、バインドしたソースは文字列型のプロパティで値は "20"。
+        var typed = new StringHolder { Value = "20" };
+        var typedCombo = new ComboBox { ItemsSource = Items, SelectedValuePath = nameof(Item.Id), DisplayMemberPath = nameof(Item.Name), DataContext = typed };
+        typedCombo.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty, new System.Windows.Data.Binding(nameof(StringHolder.Value)) { Mode = System.Windows.Data.BindingMode.TwoWay });
+        string typedInitial = "";
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "SelectedValuePath=Id (int), source string property \"20\"",
+                typedCombo,
+                _ => [$"shown: SelectedIndex {typedInitial}; after selecting index 2, source = {typed.Value} ({typed.Value?.GetType().Name})"],
+                Act: _ =>
+                {
+                    typedInitial = typedCombo.SelectedIndex.ToString();
+                    typedCombo.SelectedIndex = 2;
+                    return Task.CompletedTask;
+                }),
+        ]));
+
+        // 同じ値を、宣言型が object のプロパティに入れた場合。書き戻しで型が変わる。
+        var mismatch = new ValueHolder { Value = "20" };
+        var mismatchCombo = new ComboBox { ItemsSource = Items, SelectedValuePath = nameof(Item.Id), DisplayMemberPath = nameof(Item.Name), DataContext = mismatch };
+        mismatchCombo.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty, new System.Windows.Data.Binding(nameof(ValueHolder.Value)) { Mode = System.Windows.Data.BindingMode.TwoWay });
+        string mismatchInitial = "";
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "SelectedValuePath=Id (int), source object property holding \"20\"",
+                mismatchCombo,
+                _ => [$"shown: SelectedIndex {mismatchInitial}; after selecting index 2, source = {mismatch.Value} ({mismatch.Value?.GetType().Name})"],
+                Act: _ =>
+                {
+                    mismatchInitial = mismatchCombo.SelectedIndex.ToString();
+                    mismatchCombo.SelectedIndex = 2;
+                    return Task.CompletedTask;
+                }),
+        ]));
+
+        var enumCombo = new ComboBox { ItemsSource = Enum.GetValues<Priority>(), SelectedValuePath = "value__" };
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "enum items, SelectedValuePath=value__",
+                enumCombo,
+                _ => [$"SelectedItem {enumCombo.SelectedItem}, SelectedValue {WpfProbe.Describe(enumCombo.SelectedValue)}"],
+                Act: _ =>
+                {
+                    enumCombo.SelectedIndex = 1;
+                    return Task.CompletedTask;
+                }),
+        ]));
+
+        // SelectedValue をコードで先に設定し、あとから ItemsSource を入れる。
+        var codeFirst = new ComboBox { SelectedValuePath = nameof(Item.Id), DisplayMemberPath = nameof(Item.Name) };
+        codeFirst.SelectedValue = 20;
+        codeFirst.ItemsSource = Items;
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case("SelectedValue = 20 set before ItemsSource (code)", codeFirst, _ => [$"SelectedIndex {codeFirst.SelectedIndex}"]),
+        ]));
+
+        // SelectedValue をバインドし、表示した後で ItemsSource を入れる。
+        var bound = new ValueHolder { Value = 30 };
+        var boundFirst = new ComboBox { SelectedValuePath = nameof(Item.Id), DisplayMemberPath = nameof(Item.Name), DataContext = bound };
+        boundFirst.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty, new System.Windows.Data.Binding(nameof(ValueHolder.Value)) { Mode = System.Windows.Data.BindingMode.TwoWay });
+        rows.AddRange(await WpfProbe.MeasureAsync(
+        [
+            new WpfProbe.Case(
+                "SelectedValue bound to 30, ItemsSource assigned after display",
+                boundFirst,
+                _ => [$"SelectedIndex {boundFirst.SelectedIndex}, source {bound.Value}"],
+                Act: _ =>
+                {
+                    boundFirst.ItemsSource = Items;
+                    return Task.CompletedTask;
+                }),
+        ]));
+
+        return rows;
+    }
+
+    private sealed class ValueHolder
+    {
+        public object? Value { get; set; }
+    }
+
+    private sealed class StringHolder
+    {
+        public string? Value { get; set; }
+    }
+
+    private static string Throws(Action action)
+    {
+        try
+        {
+            action();
+            return "no exception";
+        }
+        catch (Exception e)
+        {
+            // 文言は OS の言語で変わるため、型だけを出す。XAML では XamlParseException に包まれるので内側の型も出す。
+            Exception inner = e.InnerException ?? e;
+            return e == inner ? e.GetType().Name : $"{e.GetType().Name} (inner {inner.GetType().Name})";
+        }
     }
 
     private static Item[] Items =>
@@ -80,7 +206,8 @@ internal static class ComboBoxAndDatePickerMeasurements
                         object value => $"{value} ({value.GetType().Name})",
                     },
                     combo.SelectedIndex.ToString(),
-                    DisplayedText(combo) ?? "(nothing)",
+                    // ToString をオーバーライドしていないため、DisplayMemberPath が無いと型の完全名が出る。長いので言い換える。
+                    DisplayedText(combo) is string shown && shown == typeof(Item).FullName ? "type name (Item.ToString())" : DisplayedText(combo) ?? "(nothing)",
                 ],
                 Act: _ =>
                 {

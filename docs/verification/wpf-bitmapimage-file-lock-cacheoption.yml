@@ -10,5 +10,8 @@ verifies:
   - "BitmapImage(Uri) の後に CacheOption を設定しても効かないこと"
   - "IgnoreImageCache ではファイルのロックを回避できないこと"
   - "既定の読み込み方でも参照を手放して GC が走れば解放されること"
+  - "読み込み方ごとに、直後の上書き（File.Copy で上書き）とリネーム（File.Move）が成功するか"
+  - "UriSource をバインドした BitmapImage の XAML を読み込んだとき（DataContext なし、DataContext に有効なパスがあるテンプレートの中）"
 images:
   - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg"
+  - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-urisource-binding.svg"

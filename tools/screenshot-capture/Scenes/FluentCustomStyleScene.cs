@@ -35,6 +35,7 @@ internal sealed class FluentCustomStyleScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
+        FluentThemeMeasurements.EnsureNotHighContrast();
         Application application = Application.Current;
 
 #pragma warning disable WPF0001 // ThemeMode は実験的 API として公開されている。
