@@ -221,6 +221,7 @@ internal static class Capture
     private static void EnsureContentRendered(Bitmap image, Rectangle client)
     {
         // クライアント領域の縁は背景だけのことが多いため、内側を見る。
+        // 1 ピクセル幅の線だけの図も見落とさないよう、間引かずにすべての画素を調べる。
         const int margin = 2;
         client.Inflate(-margin, -margin);
         if (client.Width <= 0 || client.Height <= 0)
@@ -229,9 +230,9 @@ internal static class Capture
         }
 
         Color first = image.GetPixel(client.Left, client.Top);
-        for (int y = client.Top; y < client.Bottom; y += 2)
+        for (int y = client.Top; y < client.Bottom; y++)
         {
-            for (int x = client.Left; x < client.Right; x += 2)
+            for (int x = client.Left; x < client.Right; x++)
             {
                 if (image.GetPixel(x, y) != first)
                 {
