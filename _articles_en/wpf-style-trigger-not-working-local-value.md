@@ -40,19 +40,22 @@ The following points were confirmed in that environment:
 Consider a `Style` with a `DataTrigger` that changes the background of a frame according to a validation state.
 
 ```xml
-<Window.Resources>
-    <Style x:Key="StatusBox" TargetType="Border">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding HasError}" Value="True">
-                <Setter Property="Background" Value="#FFD4D4" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <Style x:Key="StatusBox" TargetType="Border">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="#FFD4D4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-<Border Style="{StaticResource StatusBox}" Background="White">
-    <TextBlock Text="HasError = True" />
-</Border>
+    <Border Style="{StaticResource StatusBox}" Background="White">
+        <TextBlock Text="HasError = True" />
+    </Border>
+</Window>
 ```
 
 When `HasError` becomes `true`, the background of this `Border` stays `White`.
@@ -124,31 +127,34 @@ The following markup places two `Border` elements one above the other under the 
 Both reference the same `StatusBox` style, and the relevant difference is whether `Background` is present as a local value (the `Margin` on the lower one only separates the two vertically and has no bearing on the trigger).
 
 ```xml
-<Window.Resources>
-    <Style x:Key="StatusBox" TargetType="Border">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="#9AA4B2" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="18,6" />
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding HasError}" Value="True">
-                <Setter Property="Background" Value="#FFD4D4" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <Style x:Key="StatusBox" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#9AA4B2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="18,6" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="#FFD4D4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-<StackPanel>
-    <!-- The local value remains, so the trigger background is not applied -->
-    <Border Style="{StaticResource StatusBox}" Background="White">
-        <TextBlock Text="HasError = True" />
-    </Border>
+    <StackPanel>
+        <!-- The local value remains, so the trigger background is not applied -->
+        <Border Style="{StaticResource StatusBox}" Background="White">
+            <TextBlock Text="HasError = True" />
+        </Border>
 
-    <!-- The default moved into the setter, so the trigger background is applied -->
-    <Border Style="{StaticResource StatusBox}" Margin="0,12,0,0">
-        <TextBlock Text="HasError = True" />
-    </Border>
-</StackPanel>
+        <!-- The default moved into the setter, so the trigger background is applied -->
+        <Border Style="{StaticResource StatusBox}" Margin="0,12,0,0">
+            <TextBlock Text="HasError = True" />
+        </Border>
+    </StackPanel>
+</Window>
 ```
 
 The `HasError` used in the trigger condition is a property on the view model assigned to `DataContext`.
@@ -205,7 +211,13 @@ border.ClearValue(Border.BackgroundProperty);
 `SetCurrentValue` is a special assignment that does not appear in the precedence list: it changes the current value without overwriting the source of the value.
 It suits cases where a temporary value is needed without discarding an existing binding or trigger.
 It only avoids creating a local value, however, and does not remove one that is already set.
-While a local value remains on the target property the effective value does not change, so it has to be removed with `ClearValue` first.
+Called on a property that has a local value, `SetCurrentValue` does change the effective value, but the value source stays the local value, so a trigger that fires afterward still does not take effect (see the table below). To let the trigger apply, remove the local value with `ClearValue` first.
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg" alt="A table of SetCurrentValue, assignment to a bound property, and the theme style. On a Border with a local Red, SetCurrentValue(White) makes the effective value White while the source stays Local, and it stays White (Local) after Tag is set to on to satisfy the trigger. Without a local value, the trigger turns it green (StyleTrigger) after SetCurrentValue(White). Assigning TextBox.Text in code removes a OneWay binding and keeps a TwoWay binding (the source has not changed yet). On a Button with an explicit style that sets only Foreground, Template still comes from DefaultStyle." width="865" height="290" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11. The trigger is a style trigger that turns <code>Background</code> green when <code>Tag</code> is <code>on</code>. The default <code>UpdateSourceTrigger</code> of <code>TextBox.Text</code> is <code>LostFocus</code>, so even with TwoWay the source has not changed at the moment of the assignment.</figcaption>
+</figure>
+
 `ClearValue` removes only the local value, so whichever remaining input ranks highest — a theme style, for instance — becomes the effective value.
 
 ---
@@ -217,10 +229,11 @@ Calling it on a property that carries only a binding, with no literal local valu
 To supply a default through a binding, write the `Binding` in the `Value` of a `Setter` instead of on the element.
 To express the trigger condition itself through a binding, use the `Binding` property of a `DataTrigger`, which is of type `BindingBase`.
 A `Binding` is accepted in that condition binding and in `Setter.Value`, but not in the `Value` of a `Trigger` or `DataTrigger`, which holds the value being compared against.
-- **Assigning a local value replaces a binding.**
-A plain assignment to a property that holds a binding replaces the deferred value outright.
+- **Assigning to a property with a OneWay binding replaces the binding.**
+A plain assignment to a property that holds a OneWay binding removed the binding and replaced it with the assigned local value.
 A later `ClearValue` call does not restore the binding.
-Updating a dependency property of a `UserControl` from inside the control with a plain assignment triggers the same replacement and detaches the binding set by the caller, whereas `SetCurrentValue` preserves it (see [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)).
+A TwoWay binding survives the assignment, and the assigned value is written back to the source according to `UpdateSourceTrigger` (see the table above).
+Updating a dependency property of a `UserControl` from inside the control with a plain assignment likewise detaches the caller's binding when it is OneWay, whereas `SetCurrentValue` preserves it (see [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)).
 - **Triggers in a theme style, and in its `ControlTemplate`, lose to local values as well.**
 Setting `Foreground` as a local value on a `Button` suppresses the trigger that greys out the text when the button is disabled.
 Depending on how the default theme is implemented, that trigger sits at rank 7 (template triggers) or rank 9 (theme styles), but either way it ranks below a local value at rank 3.
@@ -234,7 +247,7 @@ A `Mode=TwoWay` binding in the setter is the exception: the binding survives and
 The concrete impact on `IsSelected` and `IsExpanded` of `TreeViewItem` is covered in [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/).
 - **The same precedence does not apply to the `Style` property itself.**
 A `Style` written on the element is an explicit style with local-value precedence (rank 3), while a style applied from a resource whose key matches the element type is an implicit style at rank 5.
-When neither is present, the default (theme) style applies at rank 9.
+The default (theme) style applies at rank 9 regardless of whether an explicit or implicit style is present: on a `Button` with an explicit style that sets only `Foreground`, `Template` still came from `DefaultStyle` (see the table above).
 An implicit style is not applied to an element that already has an explicit style.
 - **Resource evaluation timing is a separate issue.**
 A `StaticResource` that is swapped at runtime and never updates is a matter of evaluation timing rather than precedence (see [Why StaticResource Changes Are Not Reflected in WPF and How to Fix It](/articles/wpf-staticresource-vs-dynamicresource/)).
@@ -267,7 +280,7 @@ This has the fewest side effects and should be considered first.
 - **The value changes at runtime from code-behind:**
 use `SetCurrentValue` instead of a plain assignment.
 Because it does not overwrite the value source, a trigger that fires later still applies.
-It has no effect on a property that already carries a local value, so clear that with `ClearValue` first.
+On a property that already carries a local value the effective value changes but the trigger still cannot apply, so clear that with `ClearValue` first.
 - **A local value is already in place:**
 clear it with `ClearValue`, keeping in mind that any binding goes with it.
 Supply the default from a `Setter` if one is needed.

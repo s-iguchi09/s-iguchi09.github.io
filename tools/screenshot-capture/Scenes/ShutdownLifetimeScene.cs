@@ -114,7 +114,9 @@ internal sealed class ShutdownLifetimeScene : IScene
         catch (OperationCanceledException)
         {
             timedOut = true;
+            // Kill は終了を待たない。残ったプロセスが次の計測に影響しないよう、終わるまで待つ。
             process.Kill(entireProcessTree: true);
+            process.WaitForExit();
         }
 
         stopwatch.Stop();

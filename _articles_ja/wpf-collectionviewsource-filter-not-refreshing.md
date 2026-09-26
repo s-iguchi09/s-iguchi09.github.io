@@ -251,19 +251,24 @@ XAML 側で組み立てる場合は `CollectionViewSource` の `IsLiveFilteringR
 ビューを画面ごとに独立させたい場合もこの形になる。
 
 ```xml
-<Window.Resources>
-  <CollectionViewSource x:Key="InStockProducts"
-                        Source="{Binding Products}"
-                        Filter="OnProductFilter"
-                        IsLiveFilteringRequested="True">
-    <CollectionViewSource.LiveFilteringProperties>
-      <sys:String>Stock</sys:String>
-    </CollectionViewSource.LiveFilteringProperties>
-  </CollectionViewSource>
-</Window.Resources>
+<Window x:Class="SampleApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <Window.Resources>
+    <CollectionViewSource x:Key="InStockProducts"
+                          Source="{Binding Products}"
+                          Filter="OnProductFilter"
+                          IsLiveFilteringRequested="True">
+      <CollectionViewSource.LiveFilteringProperties>
+        <sys:String>Stock</sys:String>
+      </CollectionViewSource.LiveFilteringProperties>
+    </CollectionViewSource>
+  </Window.Resources>
 
-<ListBox ItemsSource="{Binding Source={StaticResource InStockProducts}}"
-         DisplayMemberPath="Name" />
+  <ListBox ItemsSource="{Binding Source={StaticResource InStockProducts}}"
+           DisplayMemberPath="Name" />
+</Window>
 ```
 
 `sys` 接頭辞は `xmlns:sys="clr-namespace:System;assembly=mscorlib"` で宣言する（`assembly=System.Runtime` も .NET / .NET Framework の双方で解決できる）。
