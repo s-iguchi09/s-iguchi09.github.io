@@ -110,7 +110,27 @@ internal static class ValuePrecedenceMeasurements
             new WpfProbe.Case("StaticResource, after swap", BuildResourceCase("StaticResource"), ReadBackground, SwapResourceAsync),
             new WpfProbe.Case("DynamicResource, before swap", BuildResourceCase("DynamicResource"), ReadBackground),
             new WpfProbe.Case("DynamicResource, after swap", BuildResourceCase("DynamicResource"), ReadBackground, SwapResourceAsync),
+            new WpfProbe.Case("StaticResource, brush.Color changed", BuildResourceCase("StaticResource"), ReadBackgroundAndFrozen, ChangeBrushColorAsync),
+            new WpfProbe.Case("DynamicResource, brush.Color changed", BuildResourceCase("DynamicResource"), ReadBackgroundAndFrozen, ChangeBrushColorAsync),
         ]);
+
+    private static bool s_wasFrozen;
+
+    private static IReadOnlyList<string> ReadBackgroundAndFrozen(FrameworkElement root) =>
+        [$"{WpfProbe.Describe(TargetBorder(root).Background)} (brush was frozen: {WpfProbe.Describe(s_wasFrozen)})"];
+
+    /// <summary>リソースを差し替えず、同じブラシの Color を書き換える。Freeze されていなければ書き換えられる。</summary>
+    private static Task ChangeBrushColorAsync(FrameworkElement root)
+    {
+        var brush = (SolidColorBrush)root.Resources["PanelBrush"];
+        s_wasFrozen = brush.IsFrozen;
+        if (!brush.IsFrozen)
+        {
+            brush.Color = Colors.Red;
+        }
+
+        return Task.CompletedTask;
+    }
 
     private static IReadOnlyList<string> ReadBackground(FrameworkElement root) =>
         [WpfProbe.Describe(TargetBorder(root).Background)];

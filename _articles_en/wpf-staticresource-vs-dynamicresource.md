@@ -11,7 +11,7 @@ image: /images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-
 ## Overview
 
 WPF provides two resource reference mechanisms: `StaticResource` and `DynamicResource`.
-When a resource is modified in code at runtime and the UI does not update, the root cause is the difference in when each mechanism resolves its value.
+When a resource referenced with `StaticResource` is replaced with another object in code at runtime and the UI does not update, the root cause is the difference in when each mechanism resolves its value.
 This article explains the internal behavior of both mechanisms and provides criteria for choosing between them.
 
 ---
@@ -67,7 +67,8 @@ The critical difference between `StaticResource` and `DynamicResource` lies in *
 
 `StaticResource` resolves the resource exactly once, at the moment the XAML is parsed (loaded).
 The resolved value is written directly to the property, after which no reference between the property and the resource dictionary is retained.
-Consequently, any subsequent change to the dictionary entry is invisible to the property.
+Consequently, replacing the dictionary entry with another object afterward is invisible to the property.
+What the property received, however, is the brush or other object itself. Changing the `Color` of the same brush, when it is not frozen, does change what the `StaticResource` side shows (the last two rows of the table below).
 
 Because XAML is parsed top-to-bottom, a resource referenced via `StaticResource` must be defined **before** its reference site in the markup.
 Violating this order raises a `XamlParseException` at load time.
@@ -90,8 +91,8 @@ Whenever the corresponding entry in the resource dictionary changes at runtime, 
 The difference can be confirmed by replacing the resource at run time and reading the property back.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="A table of Border.Background before and after the resource is replaced from white to red. StaticResource stays white in both; DynamicResource is white before and red after." width="433" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by replacing the value behind the same key <code>PanelBrush</code> from white to red at run time and reading <code>Border.Background</code> before and after. Nothing differs between the two rows except how the resource is referenced.</figcaption>
+  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="A table of Border.Background before and after the resource changes from white to red. Replacing the entry leaves StaticResource white while DynamicResource turns red. Changing the Color of the same brush to red without replacing the entry turns both StaticResource and DynamicResource red when the brush is not frozen." width="637" height="260" loading="lazy">
+  <figcaption>Measured on .NET 10 / Windows 11 by reading <code>Border.Background</code> after replacing the entry behind the same key <code>PanelBrush</code> with a red brush at run time, and after changing the same brush's <code>Color</code> to red without replacing the entry. Nothing else differs between the rows except how the resource is referenced and changed.</figcaption>
 </figure>
 
 Both hold the same value before the swap. The two diverge only afterwards, where the `StaticResource` side stays white.
@@ -143,7 +144,8 @@ For application-wide light/dark theme switching, a common pattern is to separate
 Theme file (`Themes/Light.xaml`):
 
 ```xml
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="Background" Color="White" />
     <SolidColorBrush x:Key="Foreground" Color="Black" />
 </ResourceDictionary>
@@ -152,7 +154,8 @@ Theme file (`Themes/Light.xaml`):
 Theme file (`Themes/Dark.xaml`):
 
 ```xml
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="Background" Color="#1E1E1E" />
     <SolidColorBrush x:Key="Foreground" Color="White" />
 </ResourceDictionary>
@@ -204,7 +207,7 @@ Errors in these cases surface at runtime rather than compile time, so runtime te
 
 ## Summary
 
-`StaticResource` fixes the property value at XAML load time; resource dictionary changes made after that point have no effect on the bound property.
+`StaticResource` fixes the property value at XAML load time; replacing a resource dictionary entry after that point has no effect on the property.
 When the value must change at runtime, `DynamicResource` is required.
 
 Selection criteria:
