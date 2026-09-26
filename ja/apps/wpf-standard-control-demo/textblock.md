@@ -9,7 +9,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 ## Text と Inlines は思われているようには混ざらない
 
-**TextBlock** は `Control` ではなく `FrameworkElement` を継承しているので、テンプレートを持ちません。フォーカスは受け取らず（`Focusable` は `False`）、文字を選択することもできません。選択できる読み取り専用の文字の表示方法は、下にリンクした記事で扱っています。
+**TextBlock** は `Control` ではなく `FrameworkElement` を継承しているので、テンプレートを持ちません。既定ではフォーカスを受け取らず（`Focusable` は `False`）、文字を選択することもできません。選択できる読み取り専用の文字の表示方法は、下にリンクした記事で扱っています。
 
 文字の与え方は 2 通りあり、1 つの文字列の `Text` か、書式付きの文にする `Run`・`Bold`・`Hyperlink` などの `Inlines` です。最初のレイアウトの前に `Inlines`（`Run` と `Bold`）で内容を作った TextBlock の `Text` は、レイアウトの前も後も空文字でした。このように作った TextBlock の `Text` には頼れません。そのあと `Text` を設定しても例外にはならず、書式付きの並びが 1 つの並びに置き換わりました。
 

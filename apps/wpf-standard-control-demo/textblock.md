@@ -9,7 +9,7 @@ description: "WPF TextBlock measured on .NET 10: Text versus Inlines, how each T
 
 ## Text and Inlines do not mix as one might expect
 
-**TextBlock** derives from `FrameworkElement`, not from `Control`, so it has no template. It does not take the focus (`Focusable` was `False`), and its text cannot be selected; the article linked below shows how to display selectable read-only text.
+**TextBlock** derives from `FrameworkElement`, not from `Control`, so it has no template. By default it does not take the focus (`Focusable` was `False`), and its text cannot be selected; the article linked below shows how to display selectable read-only text.
 
 Text can be given in two ways: `Text` as one string, or `Inlines` such as `Run`, `Bold`, and `Hyperlink` for formatted sentences. A TextBlock whose `Inlines` (a `Run` and a `Bold`) were added before its first layout returned an empty `Text`, before and after layout, so do not rely on `Text` of a TextBlock built that way. Setting `Text` on it afterwards threw no exception; it replaced the formatted runs with a single one.
 
