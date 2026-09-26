@@ -78,7 +78,7 @@ The implementation below guards those two with an extra `#if !NET471_OR_GREATER`
 **That guard only works while the SDK's implicit defines are in effect, though.** `NET471_OR_GREATER` is a symbol an SDK-style project defines implicitly from `TargetFramework`, and a legacy-format project — one specifying `TargetFrameworkVersion` — does not define it.
 The figure below builds the same source in several configurations.
 
-<figure class="article-figure">
+<figure class="article-figure article-figure--wide">
   <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="A table of whether NET471_OR_GREATER is defined and what the build produces, per project format, for one and the same source. The SDK-style project defines the symbol, skips the polyfill, and builds. An SDK-style project with DisableImplicitFrameworkDefines, and the legacy format, do not define it, compile the polyfill in, and fail with CS0121. Defining the symbol through DefineConstants makes the legacy format build." width="1047" height="200" loading="lazy">
   <figcaption>The polyfill placed in <code>namespace System.Linq</code> as the article does, with a call to <code>Append</code>, built in four configurations. The <code>symbol</code> column is not inferred from whether the build succeeded: it comes from which branch of a <code>#warning</code> placed in the source fired.</figcaption>
 </figure>
