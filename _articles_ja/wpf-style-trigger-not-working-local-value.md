@@ -204,7 +204,13 @@ border.ClearValue(Border.BackgroundProperty);
 `SetCurrentValue` は優先順位の一覧に現れない特別な代入で、値の出どころを上書きせずに現在の値だけを変更する。
 既存のバインディングやトリガーを壊さずに一時的な値を入れたい場合に適する。
 ただしローカル値を作らないだけであり、既に設定されているローカル値を取り除く効果は無い。
-対象プロパティにローカル値が残っている状態では実効値は変わらないため、先に `ClearValue` で取り除く必要がある。
+ローカル値があるプロパティに `SetCurrentValue` を呼ぶと、実効値そのものは変わるが、値の出どころはローカル値のままである。そのため、後からトリガーが作動してもトリガーの値にはならない（下の表）。トリガーを効かせたいなら、先に `ClearValue` でローカル値を取り除く必要がある。
+
+<figure class="article-figure">
+  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg" alt="SetCurrentValue、バインドのあるプロパティへの代入、テーマスタイルを測った表。ローカル値 Red がある Border で SetCurrentValue(White) を呼ぶと、実効値は White で出どころは Local のまま。その後に Tag を on にしてトリガーの条件を満たしても White（Local）のまま。ローカル値が無い場合は、SetCurrentValue(White) の後にトリガーが作動すると緑（StyleTrigger）になる。TextBox.Text にコードで代入すると、OneWay のバインドは外れ、TwoWay のバインドは残る（ソースはまだ変わらない）。Foreground だけを設定した明示スタイルの Button でも、Template の出どころは DefaultStyle。" width="865" height="290" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。トリガーは <code>Tag</code> が <code>on</code> のとき <code>Background</code> を緑にするスタイルのトリガーである。<code>TextBox.Text</code> の既定の <code>UpdateSourceTrigger</code> は <code>LostFocus</code> のため、TwoWay でも代入した時点ではソースは変わっていない。</figcaption>
+</figure>
+
 `ClearValue` はローカル値のみを取り除くため、テーマスタイルなど他の入力元が残っていればその値が実効値となる。
 
 ---
@@ -216,10 +222,11 @@ border.ClearValue(Border.BackgroundProperty);
 既定値をバインディングで与えたい場合は、要素側ではなく `Setter` の `Value` に `Binding` を書く。
 トリガーの条件をバインディングで指定する場合は、`DataTrigger` の `Binding`（`BindingBase` 型）を使う。
 `Binding` を書けるのはこの条件のバインディングと値側の `Setter.Value` であり、比較値である `Trigger` / `DataTrigger` の `Value` には書けない。
-- **ローカル値を代入するとバインディングが置き換わる。**
-バインディングを設定したプロパティへ通常の代入を行うと、遅延評価されていた値ではなく代入したローカル値に完全に差し替わる。
+- **OneWay のバインディングを設定したプロパティへ代入すると、バインディングが置き換わる。**
+OneWay のバインディングを設定したプロパティへ通常の代入を行うと、バインディングは外れ、代入したローカル値に差し替わった。
 その後に `ClearValue` を呼んでもバインディングは復元されない。
-`UserControl` の依存関係プロパティを内部から通常の代入で更新する場合も同じ差し替えが起き、利用側が設定したバインディングが外れる（`SetCurrentValue` を使えば維持される）（[WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計](/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)）。
+TwoWay のバインディングは代入しても残り、代入した値は `UpdateSourceTrigger` に従ってソースへ書き戻される（前掲の表）。
+`UserControl` の依存関係プロパティを内部から通常の代入で更新する場合も、利用側のバインディングが OneWay なら同じ差し替えが起きて外れる（`SetCurrentValue` を使えば維持される）（[WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計](/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)）。
 - **テーマスタイル（およびその `ControlTemplate`）のトリガーもローカル値に負ける。**
 例として `Button` の `Foreground` をローカル値で指定すると、無効化時に文字をグレー表示にするトリガーが効かなくなる。
 このトリガーは既定テーマの実装によって 7（テンプレートのトリガー）と 9（テーマスタイル）のどちらに置かれることもあるが、いずれもローカル値（3）より下位である点は変わらない。
@@ -233,7 +240,7 @@ border.ClearValue(Border.BackgroundProperty);
 `TreeViewItem` の `IsSelected` / `IsExpanded` を例にした具体的な影響は [WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由](/ja/articles/wpf-treeview-select-item-programmatically/) で扱っている。
 - **`Style` プロパティ自体には同じ優先順位が適用されない。**
 要素に直接書いた `Style` は明示スタイルとしてローカル値相当（3）、型に一致するリソースから適用される暗黙スタイルは 5 として扱われる。
-どちらも無い場合は、既定（テーマ）スタイルが 9 相当で適用される。
+既定（テーマ）スタイルは、明示スタイルや暗黙スタイルの有無にかかわらず 9 相当で適用される。`Foreground` だけを設定した明示スタイルの `Button` でも、`Template` の出どころは `DefaultStyle` だった（前掲の表）。
 明示スタイルを書いた要素に暗黙スタイルは適用されない。
 - **リソースの評価タイミングとは別問題である。**
 `StaticResource` を実行時に差し替えても反映されない現象は、優先順位ではなく評価タイミングに起因する（[WPF で StaticResource を変更しても画面が更新されない原因と解決方法](/ja/articles/wpf-staticresource-vs-dynamicresource/)）。
@@ -266,7 +273,7 @@ border.ClearValue(Border.BackgroundProperty);
 - **コードビハインドで実行時に値を変える場合:**
 通常の代入ではなく `SetCurrentValue` を使う。
 値の出どころを上書きしないため、後からトリガーが作動しても正しく反映される。
-既にローカル値があるプロパティには効かないため、その場合は先に `ClearValue` で取り除く。
+既にローカル値があるプロパティでは、実効値は変わってもトリガーが効かないままなので、その場合は先に `ClearValue` で取り除く。
 - **既にローカル値が設定されてしまっている場合:**
 `ClearValue` で取り除く。
 ただしバインディングごと解除される点を踏まえ、既定値が必要なら `Setter` 側で与える。
