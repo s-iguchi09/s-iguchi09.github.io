@@ -356,7 +356,7 @@ Allowing `Ctrl + A` or wide `Shift` selections without pairing it with `Selectio
 
 ### 5. Small Lists Are Fine with Plain SelectedItems
 
-At a scale where every container is realized — as many items as fit in the visible range; a `ListBox` 600 high realized 31 in this article's measurements — none of these asymmetries surface.
+At a scale where every container is realized — as many items as fit in the visible range plus the cache area before and after it set by `VirtualizingPanel.CacheLength`; a `ListBox` 600 high realized 31 in this article's measurements — none of these asymmetries surface.
 Reading `ListBox.SelectedItems` directly is sufficient.
 The configuration in this article becomes necessary only at item counts where virtualization actually engages.
 

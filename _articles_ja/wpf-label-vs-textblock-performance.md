@@ -114,7 +114,7 @@ visual 数は 4 個から 5 個へ 25% 増えるだけだが、レイアウト�
 
 ここまでは `StackPanel` に直接並べた、仮想化されない構成での比較である。
 UI 仮想化が有効な `ItemsControl` では前提が変わる。
-画面に見えている範囲のコンテナだけが実体化されるため、コレクションの件数がいくら多くても、同時に存在する visual の数は一定に保たれる。
+画面に見えている範囲と、その前後の [`VirtualizingPanel.CacheLength`](https://learn.microsoft.com/dotnet/api/system.windows.controls.virtualizingpanel.cachelength) で決まるキャッシュ領域のコンテナだけが実体化されるため、コレクションの件数がいくら多くても、同時に存在する visual の数は一定に保たれる。
 
 仮想化を有効にした `ListBox` に 10,000 件を流し、`ItemTemplate` の中身だけを入れ替えて比較した結果が次の表である。
 
