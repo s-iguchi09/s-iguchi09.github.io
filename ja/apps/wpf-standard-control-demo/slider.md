@@ -11,7 +11,7 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 
 **Slider** は `RangeBase` を継承しており、`ProgressBar` と `ScrollBar` も同じ `RangeBase` の派生です。`Minimum`・`Maximum`・`Value`・`SmallChange`・`LargeChange` は `RangeBase` のプロパティです。新しく作った Slider の範囲は 0〜10 で、`Value` は `double`、既定値は 0 です。
 
-`Value` は常に範囲内に収まり、例外は出ません。0〜100 の Slider に 150 を設定すると 100 になりました。その後 `Maximum` を 200 に上げると、`Value` は 150 に戻りました。設定した値は保持されているためです。`Maximum` は `Minimum` 以上に補正され、`Minimum="50"` の後に `Maximum="10"` を設定すると、実際の `Maximum` は 50 になりました。このため、2 つを変える順序は結果に影響しません。範囲を 0〜10 から 100〜200 に変えた場合、どちらを先に設定しても同じ状態になりました。
+測ったどの場合も、`Value` は範囲内に収まり、例外は出ませんでした。0〜100 の Slider に 150 を設定すると 100 になりました。その後 `Maximum` を 200 に上げると、`Value` は 150 に戻りました。設定した値は保持されているためです。`Maximum` は `Minimum` 以上に補正され、`Minimum="50"` の後に `Maximum="10"` を設定すると、実際の `Maximum` は 50 になりました。このため、2 つを変える順序は結果に影響しません。範囲を 0〜10 から 100〜200 に変えた場合、どちらを先に設定しても同じ状態になりました。
 
 補正した値はソースへは書き戻されません。0〜100 の Slider に値 150 のソースを TwoWay でバインドすると、Slider の表示は 100 でしたが、ソースは 150 のままでした。ソースの値は自分で範囲内に収めないと、Slider に表示されていない値が残ります。
 
@@ -38,14 +38,14 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 
 ## 目盛り、選択範囲、ツールチップ
 
-範囲を割り切れない間隔でも、`Minimum` と `Maximum` には必ず目盛りが描かれます。0〜100 の Slider で `TickFrequency="30"` とすると、目盛りは 0・30・60・90・100 に描かれ、0〜10 の Slider の `Ticks="1,3,5,7,9"` では 0・1・3・5・7・9・10 に描かれました。`IsDirectionReversed` では目盛りも反転し、0〜10 の Slider に `Ticks="1,2"` を設定すると、目盛りはトラックの右端側に移りました。手で並べ直す必要があるのは、Slider の横に自分で置いたラベルだけです。`TickPlacement` の既定値は `None` で、目盛りの分だけ高さが増えます。水平の Slider の高さは `None` で 18、`BottomRight` で 24、`Both` で 30 になりました。
+測った場合では、範囲を割り切れない間隔でも、`Minimum` と `Maximum` に目盛りが描かれました。0〜100 の Slider で `TickFrequency="30"` とすると、目盛りは 0・30・60・90・100 に描かれ、0〜10 の Slider の `Ticks="1,3,5,7,9"` では 0・1・3・5・7・9・10 に描かれました。`IsDirectionReversed` では目盛りも反転し、0〜10 の Slider に `Ticks="1,2"` を設定すると、目盛りはトラックの右端側に移りました。手で並べ直す必要があるのは、Slider の横に自分で置いたラベルだけです。`TickPlacement` の既定値は `None` で、目盛りの分だけ高さが増えます。水平の Slider の高さは `None` で 18、`BottomRight` で 24、`Both` で 30 になりました。
 
 `SelectionStart` と `SelectionEnd` は、トラックの一部を強調表示します。0〜10 の Slider で 2〜8 を指定すると、既定値の `IsSelectionRangeEnabled="False"` のあいだは表示されず、`True` にするとトラックの 2 から 8 までを覆いました。選択範囲は `Value` を制限せず、範囲外の 9.5 も設定できました。
 
 `AutoToolTipPlacement` は、つまみのドラッグ中に現在値のツールチップを表示します。既定値の `None` では表示されません。表示されるのは数値だけです。Slider には書式を指定するプロパティがなく、関係するのは `AutoToolTipPlacement` と `AutoToolTipPrecision` だけです。数値は現在のカルチャに従い、1234.56 を小数 1 桁で表示すると、en-US では `1,234.6`、de-DE では `1.234,6` になりました。既定値が 0 の `AutoToolTipPrecision` は、切り捨てではなく四捨五入します。0 のとき、33.6 は `34`、33.4 は `33` と表示されました。2 のとき、33.456 は `33.46` と表示されました。丸められるのはツールチップの表示だけで、`Value` は元の精度のままです。「%」などの単位を付けたい場合は、`StringFormat` を使った別の `TextBlock` で値を表示します。
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="目盛り、選択範囲、自動ツールチップを示す表。目盛りは Minimum と Maximum に必ず描かれ、IsDirectionReversed で反転し、TickPlacement で高さが変わり、選択範囲は有効なときだけ表示されて Value を制限せず、ツールチップは AutoToolTipPrecision の桁で四捨五入される" width="1046" height="590" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="目盛り、選択範囲、自動ツールチップを示す表。目盛りは 測った場合では Minimum と Maximum に描かれ、IsDirectionReversed で反転し、TickPlacement で高さが変わり、選択範囲は有効なときだけ表示されて Value を制限せず、ツールチップは AutoToolTipPrecision の桁で四捨五入される" width="1046" height="590" loading="lazy">
   <figcaption>目盛りの位置（左から順に、値に換算）、高さ、選択範囲、自動ツールチップの文字列。.NET 10 / Windows 11 で計測。</figcaption>
 </figure>
 

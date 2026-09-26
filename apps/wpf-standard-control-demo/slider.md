@@ -11,7 +11,7 @@ description: "WPF Slider measured on .NET 10: range coercion, snapping, keys and
 
 **Slider** derives from `RangeBase`, as do `ProgressBar` and `ScrollBar`. `Minimum`, `Maximum`, `Value`, `SmallChange`, and `LargeChange` come from `RangeBase`. A new Slider runs from 0 to 10, `Value` is a `double`, and its default is 0.
 
-`Value` always stays inside the range, without exceptions. Setting 150 on a 0–100 Slider gave 100. When `Maximum` was later raised to 200, `Value` went back to 150, because the value that was set is remembered. `Maximum` is kept at or above `Minimum`: setting `Minimum="50"` and then `Maximum="10"` gave an effective `Maximum` of 50. Because of this, the order in which you change the two does not matter: moving the range from 0–10 to 100–200 ended in the same state whichever was set first.
+In every case measured, `Value` was kept inside the range, without exceptions. Setting 150 on a 0–100 Slider gave 100. When `Maximum` was later raised to 200, `Value` went back to 150, because the value that was set is remembered. `Maximum` is kept at or above `Minimum`: setting `Minimum="50"` and then `Maximum="10"` gave an effective `Maximum` of 50. Because of this, the order in which you change the two does not matter: moving the range from 0–10 to 100–200 ended in the same state whichever was set first.
 
 The correction is not written back to a source: a source value of 150, bound two-way to a 0–100 Slider, stayed 150 while the Slider showed 100. Keep the source inside the range yourself, or it holds a value the Slider does not show.
 
@@ -38,14 +38,14 @@ Drawing tick marks does not snap to them: with only `TickPlacement="BottomRight"
 
 ## Tick marks, the selection range, and the tooltip
 
-Tick marks are always drawn at `Minimum` and `Maximum`, even when the frequency does not divide the range: with `TickFrequency="30"` on 0–100, marks were drawn at 0, 30, 60, 90, and 100, and `Ticks="1,3,5,7,9"` on 0–10 drew marks at 0, 1, 3, 5, 7, 9, and 10. `IsDirectionReversed` reverses the tick marks as well: with `Ticks="1,2"` on 0–10, the marks moved to the right end of the track. Only labels you draw yourself next to the Slider have to be reordered by hand. `TickPlacement` defaults to `None`, and tick marks take space: a horizontal Slider was 18 high with `None`, 24 with `BottomRight`, and 30 with `Both`.
+In the cases measured, tick marks were drawn at `Minimum` and `Maximum` even when the frequency did not divide the range: with `TickFrequency="30"` on 0–100, marks were drawn at 0, 30, 60, 90, and 100, and `Ticks="1,3,5,7,9"` on 0–10 drew marks at 0, 1, 3, 5, 7, 9, and 10. `IsDirectionReversed` reverses the tick marks as well: with `Ticks="1,2"` on 0–10, the marks moved to the right end of the track. Only labels you draw yourself next to the Slider have to be reordered by hand. `TickPlacement` defaults to `None`, and tick marks take space: a horizontal Slider was 18 high with `None`, 24 with `BottomRight`, and 30 with `Both`.
 
 `SelectionStart` and `SelectionEnd` highlight a part of the track. With 2 to 8 on 0–10, the highlight was hidden while `IsSelectionRangeEnabled` was `False`, its default. With `True`, it covered the track from 2 to 8. The selection does not limit `Value`: a value of 9.5 could still be set.
 
 `AutoToolTipPlacement` shows a tooltip with the current value while the thumb is dragged; the default `None` shows none. The text is a plain number. Slider has no property for its format, as the only related properties are `AutoToolTipPlacement` and `AutoToolTipPrecision`. The number follows the current culture: 1234.56 with one decimal was shown as `1,234.6` with en-US and as `1.234,6` with de-DE. `AutoToolTipPrecision`, whose default is 0, rounds rather than truncates: with 0, a value of 33.6 was shown as `34` and 33.4 as `33`. With 2, 33.456 was shown as `33.46`. Only the tooltip is rounded; `Value` keeps its full precision. For units such as "%", show the value in a separate `TextBlock` with a `StringFormat`.
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="Table of tick marks, selection range, and automatic tooltip: tick marks are always drawn at Minimum and Maximum and are mirrored by IsDirectionReversed, tick placement changes the height, the selection range is shown only when enabled, and the tooltip rounds the value to AutoToolTipPrecision" width="1046" height="590" loading="lazy">
+  <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="Table of tick marks, selection range, and automatic tooltip: tick marks were drawn at Minimum and Maximum in the cases measured and are mirrored by IsDirectionReversed, tick placement changes the height, the selection range is shown only when enabled, and the tooltip rounds the value to AutoToolTipPrecision" width="1046" height="590" loading="lazy">
   <figcaption>Tick marks (as values, left to right), heights, the selection range, and the automatic tooltip text. Measured on .NET 10 / Windows 11.</figcaption>
 </figure>
 
