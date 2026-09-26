@@ -80,7 +80,9 @@ internal sealed class TrayContextMenuScene : IScene
         {
             if (!helper.HasExited)
             {
+                // Kill は終了を待たない。TopMost の補助フォームが残って次の撮影に写らないよう、終わるまで待つ。
                 helper.Kill(entireProcessTree: true);
+                helper.WaitForExit();
             }
         }
     }

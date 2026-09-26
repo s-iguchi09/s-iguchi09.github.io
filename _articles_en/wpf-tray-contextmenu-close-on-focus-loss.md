@@ -99,7 +99,8 @@ _notifyIcon.MouseClick += (_, e) =>
 ```
 
 This execution order normalizes foreground state first, then opens the menu.  
-In TreePaste, switching to this order from a configuration that only set `IsOpen = true` made the menu close.  
+The snippet, like TreePaste, ignores the return value of `SetForegroundWindow`. When the call fails, the menu still opens without the window in the foreground, as in the top lane of the diagram; check the return value if you need a fallback such as logging or retrying.  
+In TreePaste, the menu started to close after one change that added both this call and the `StaysOpen = false` setting shown next, replacing a configuration that only set `IsOpen = true`. TreePaste did not separate the effect of each.  
 
 Next, configure the tray menu to close on outside interaction.  
 The following snippet is from TreePaste `CreateTrayContextMenu()`.  

@@ -55,7 +55,7 @@ internal sealed class UpdateSourceTriggerScene : IScene
             {
                 await DemoProbe.FocusAsync(box);
                 box.SelectAll();
-                DemoProbe.TypeLetters(box, TypedText);
+                DemoProbe.TypeInto(box, TypedText);
                 await Task.Delay(100);
             }
         });
@@ -102,7 +102,7 @@ internal sealed class UpdateSourceTriggerScene : IScene
                 {
                     await DemoProbe.FocusAsync(box);
                     box.SelectAll();
-                    DemoProbe.TypeLetters(box, "sato");
+                    DemoProbe.TypeInto(box, "sato");
                     DemoProbe.SendKey(System.Windows.Input.Key.Enter);
                     DemoProbe.SendKey(System.Windows.Input.Key.Enter, down: false);
                 }),

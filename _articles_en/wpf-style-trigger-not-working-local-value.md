@@ -40,19 +40,22 @@ The following points were confirmed in that environment:
 Consider a `Style` with a `DataTrigger` that changes the background of a frame according to a validation state.
 
 ```xml
-<Window.Resources>
-    <Style x:Key="StatusBox" TargetType="Border">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding HasError}" Value="True">
-                <Setter Property="Background" Value="#FFD4D4" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <Style x:Key="StatusBox" TargetType="Border">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="#FFD4D4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-<Border Style="{StaticResource StatusBox}" Background="White">
-    <TextBlock Text="HasError = True" />
-</Border>
+    <Border Style="{StaticResource StatusBox}" Background="White">
+        <TextBlock Text="HasError = True" />
+    </Border>
+</Window>
 ```
 
 When `HasError` becomes `true`, the background of this `Border` stays `White`.
@@ -124,31 +127,34 @@ The following markup places two `Border` elements one above the other under the 
 Both reference the same `StatusBox` style, and the relevant difference is whether `Background` is present as a local value (the `Margin` on the lower one only separates the two vertically and has no bearing on the trigger).
 
 ```xml
-<Window.Resources>
-    <Style x:Key="StatusBox" TargetType="Border">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="#9AA4B2" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="18,6" />
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding HasError}" Value="True">
-                <Setter Property="Background" Value="#FFD4D4" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <Style x:Key="StatusBox" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#9AA4B2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="18,6" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="#FFD4D4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-<StackPanel>
-    <!-- The local value remains, so the trigger background is not applied -->
-    <Border Style="{StaticResource StatusBox}" Background="White">
-        <TextBlock Text="HasError = True" />
-    </Border>
+    <StackPanel>
+        <!-- The local value remains, so the trigger background is not applied -->
+        <Border Style="{StaticResource StatusBox}" Background="White">
+            <TextBlock Text="HasError = True" />
+        </Border>
 
-    <!-- The default moved into the setter, so the trigger background is applied -->
-    <Border Style="{StaticResource StatusBox}" Margin="0,12,0,0">
-        <TextBlock Text="HasError = True" />
-    </Border>
-</StackPanel>
+        <!-- The default moved into the setter, so the trigger background is applied -->
+        <Border Style="{StaticResource StatusBox}" Margin="0,12,0,0">
+            <TextBlock Text="HasError = True" />
+        </Border>
+    </StackPanel>
+</Window>
 ```
 
 The `HasError` used in the trigger condition is a property on the view model assigned to `DataContext`.

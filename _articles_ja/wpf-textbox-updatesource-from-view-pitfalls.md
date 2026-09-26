@@ -153,7 +153,7 @@ static void UpdateAllTextSources(DependencyObject root)
 `BindingGroupName` を指定しない暗黙参加では、`StackPanel` の `DataContext` がそれらのバインディングのソースと同一オブジェクトである必要がある。
 一方、`BindingGroupName` を明示的に指定したバインディングは、`DataContext` が異なっていても同名の `BindingGroup` へ参加できる。
 コードビハインドからは `UpdateSources()` を 1 回呼ぶだけでよい。
-このメソッドは各バインディングの `ValidationRule`（検証ステップが `RawProposedValue`・`ConvertedProposedValue`・`UpdatedValue` のもの）を実行し、すべて成功した場合に `true` を返す。
+このメソッドは各バインディングの `ValidationRule`（検証ステップが `RawProposedValue`・`ConvertedProposedValue`・`UpdatedValue` のもの）を実行し、すべて成功した場合に `true` を返す。ドキュメントによれば、グループ自体に設定したルール（`BindingGroup.ValidationRules`）も実行される。本記事の計測では、個々のバインディングに設定したルールを使った。
 
 ```csharp
 // すべての参加バインディングを検証し、成功時のみまとめて書き戻す
@@ -315,7 +315,7 @@ XAML では親に `BindingGroup` を置き、各 `TextBox` を通常どおりバ
 
 - **`null` を握りつぶさない**: `?.` は例外を防ぐが、本来バインドされているはずの要素で `null` が返る場合は設定ミス（`MultiBinding` の取得メソッド違い、`TemplateBinding` による接続、名前解決の失敗）を示す。デバッグ時は `null` 分岐でログを残す。
 - **`Mode` の制約**: `UpdateSource()` は `TwoWay` / `OneWayToSource` 以外では黙って無視される。反映されないときはまず `Mode` を確認する。
-- **デタッチ済みバインディング**: `ClearBinding` やローカル値の代入でバインディングが外れた後に、先に取得しておいた式で呼ぶと `InvalidOperationException` になる。要素をツリーから外しただけではバインディングは外れず、呼んでも例外にならない。`DataContext` を失って `Status` が `PathError` になり、ソースは更新されない（前掲の表）。
+- **デタッチ済みバインディング**: `ClearBinding` やローカル値の代入でバインディングが外れた後に、先に取得しておいた式で呼ぶと `InvalidOperationException` になる。要素をツリーから外しただけではバインディングは外れず、呼んでも例外にならない。計測では `TextBox` が外したパネルから `DataContext` を継承していたため、`DataContext` を失って `Status` が `PathError` になり、ソースは更新されなかった（前掲の表）。`Source` を明示した場合や要素自身に `DataContext` を設定した場合など、ソースがツリーに依存しないバインディングは測っていない。
 - **一括更新の範囲**: `VisualTreeHelper` の走査は生成済み要素のみが対象で、仮想化で未生成の項目は書き戻されない。`TabControl` の非アクティブタブなど、未実体化の領域にも注意する。
 - **`BindingGroup` は検証と一体**: `UpdateSources()` は `ValidationRule` を走らせ、失敗時は `false` を返す（`UpdatedValue` の段階のルールの失敗では、ソースへの書き込みは済んでいる）。単純な一括書き戻しのつもりで使うと、検証失敗で無反応に見えることがある。
 - **`UpdateSource` と `UpdateTarget` の方向**: 前者はターゲット→ソース、後者はソース→ターゲットである。用途（確定か破棄か）に応じて選ぶ。

@@ -15,6 +15,8 @@ verifies:
   - "コンテナが生成されていないノードとの間では排他にならず、ViewModel に true が 2 つ残ること"
   - "ItemContainerStyle の IsSelected が TwoWay と OneWay のとき、コンテナへ代入した後の値の出どころと、ViewModel から選択を戻したときの反映"
   - "選択中の項目の背景が、SystemColors のどのブラシと一致するか（フォーカスあり・なし）"
+  - "IsSelected を true にしてもスクロール位置は変わらず、BringIntoView で初めて動くこと（200 ノード、仮想化なし）"
+  - "仮想化を有効にすると、コンテナの無いノードを ViewModel から選んでも、スクロールで生成されるまで SelectedItem に届かないこと"
 images:
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png"
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg"

@@ -14,7 +14,7 @@ Jumping to a folder returned by a search, restoring the node selected in the pre
 Writing `treeView.SelectedItem = node;` — the pattern that works for `ListBox` and `DataGrid` — fails to compile, and binding the property in XAML breaks the build in an ordinary project.
 
 This article explains how the restriction follows from the way `TreeView` stores its selection, and presents two ways to request a selection from code, combined with an attached behavior that controls scroll position and focus.
-Every behavior and exception type reported here was observed by running the code on .NET 10 / Windows 11 (collected in the tables in the figures).
+The behaviors and exception types summarized in the tables in the figures were all observed by running the code on .NET 10 / Windows 11.
 
 ---
 
@@ -327,7 +327,7 @@ Running the XAML and the code above and calling `SelectAndReveal` on `drivers`, 
 
 - **Selecting a node does not scroll it into view.**
 In a `TreeView` holding 200 nodes, selecting one near the end left the `ScrollViewer`'s `VerticalOffset` at `0`.
-Unlike selection through the keyboard or the mouse, changing `IsSelected` has no effect on the scroll position, so `BringIntoView` must be called explicitly.
+Unlike selection through the keyboard or the mouse, changing `IsSelected` has no effect on the scroll position, so `BringIntoView` must be called explicitly; it moved the offset to `3051.05` (see the table below).
 - **Selection has no effect while ancestors stay collapsed.**
 Setting `IsSelected` to `true` on a leaf whose ancestors were collapsed left `TreeView.SelectedItem` at `null`, because no container existed for the setter to apply to.
 Expanding the ancestors generates the container and applies the selection at that moment.
@@ -348,14 +348,14 @@ When levels of the tree use different types, declare `IsSelected` and `IsExpande
 Bindings that fail to resolve are reported in the Output window; reading those messages is covered in [Reading WPF Binding Errors and Diagnosing Them with the Output Window](/articles/wpf-binding-error-debugging-output-window/).
 - **Nodes outside the viewport cannot be selected as is once virtualization is enabled.**
 In a `TreeView` with `VirtualizingStackPanel.IsVirtualizing="True"`, setting `IsSelected` on an off-screen node left `TreeView.SelectedItem` at `null`.
-No container exists yet; the selection is applied once scrolling materializes that node.
+No container exists yet; the selection is applied once scrolling materializes that node: after scrolling to the end, the container existed and `SelectedItem` was that node (see the table below).
 With the `ItemContainerGenerator` approach, `ContainerFromItem` returns `null`, so the container is out of reach.
 It can be reached by assigning a custom `VirtualizingStackPanel` that exposes `BringIndexIntoView` as the `ItemsPanel` of both the `TreeView` and its `TreeViewItem` containers, realizing each level in turn.
 That comes at the cost of a substantially larger implementation.
 Related interactions between virtualization and selection state are covered in [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/).
 
 <figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="A table of selection behavior measured with the article's XAML. Selecting Program Files and then Users, both with generated containers, leaves only Users True in the view model. Selecting C: and then drivers, whose ancestors are collapsed so it has no container, leaves both True in the view model with SelectedItem at C:. With IsSelected bound TwoWay, the value source after assigning the container is Style, and setting false from the view model makes the container False too; with OneWay it becomes Local, and the container stays True after the view model sets false. The selected item's background is SystemColors.HighlightColor while it has focus and SystemColors.InactiveSelectionHighlightBrush otherwise." width="967" height="260" loading="lazy">
+  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="A table of selection behavior measured with the article's XAML. Selecting Program Files and then Users, both with generated containers, leaves only Users True in the view model. Selecting C: and then drivers, whose ancestors are collapsed so it has no container, leaves both True in the view model with SelectedItem at C:. With IsSelected bound TwoWay, the value source after assigning the container is Style, and setting false from the view model makes the container False too; with OneWay it becomes Local, and the container stays True after the view model sets false. The selected item's background is SystemColors.HighlightColor while it has focus and SystemColors.InactiveSelectionHighlightBrush otherwise. With 200 nodes, selecting the last one leaves the vertical offset at 0 until BringIntoView moves it to 3051.05. With IsVirtualizing, selecting the last node from the view model gives no container and a null SelectedItem until scrolling to the end creates the container and SelectedItem becomes Folder 200." width="1053" height="320" loading="lazy">
   <figcaption>Measured on .NET 10 / Windows 11 with the article's XAML and view model as they are. The background is the <code>Background</code> of <code>Bd</code> in the default template.</figcaption>
 </figure>
 

@@ -201,7 +201,7 @@ This applies to `IDataErrorInfo` and, as in the implementation below, to an `INo
 The latter follows `ErrorsChanged` on the view model, but in that arrangement the event is raised by the property setter, and the setter is invoked by the source update.
 With `UpdateSourceTrigger=Explicit` the effect is stronger: in the same arrangement the validation state did not change until `UpdateSource` was called.
 An implementation that raises `ErrorsChanged` independently of the source update, such as one that reports when an asynchronous lookup completes, is not bound by this.
-To report results while the user is still typing, specify `UpdateSourceTrigger=PropertyChanged` on the `TextBox.Text` binding.
+To report results while the user is still typing, specify `UpdateSourceTrigger=PropertyChanged` on the `TextBox.Text` binding. This applies to a binding that updates its source, that is `TwoWay` (the default for `TextBox.Text`) or `OneWayToSource`; with `Mode=OneWay` the input never reaches the source and the setter does not validate it.
 
 ---
 
@@ -460,7 +460,7 @@ Start from the value of `Validation.GetHasError` when an error fails to appear.
 
 - **`false`** — either no validation rule is associated with the binding, or the typed input has not reached the source yet.
 Check `ValidatesOnDataErrors="True"` for `IDataErrorInfo`, and the entry in `ValidationRules` for a custom rule.
-Specify `UpdateSourceTrigger=PropertyChanged` to react while the user types.
+Specify `UpdateSourceTrigger=PropertyChanged` to react while the user types (it has no effect with `Mode=OneWay`, which never sends input to the source).
 - **`true` with nothing on screen** — the rendering surface is missing.
 Include `AdornerDecorator` if the `Window` template has been replaced.
 - **A red border but no message** — that is the behavior of the default `ErrorTemplate`.

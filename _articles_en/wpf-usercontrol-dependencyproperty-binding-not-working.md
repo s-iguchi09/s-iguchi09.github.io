@@ -333,7 +333,7 @@ Local values and dependency property value precedence are covered in [Why WPF St
 - **From inside a `ContextMenu`, neither `RelativeSource` nor `ElementName` reaches the surrounding `UserControl`.**
 Both fail, but for different reasons.
 Ancestor search with `RelativeSource` follows the parent chain, and a `ContextMenu` is attached through the `FrameworkElement.ContextMenu` property rather than as a child in the element tree, so that chain does not continue outward.
-`ElementName` looks a name up in a XAML name scope, and a `ContextMenu` carries its own name scope, so the `Root` registered on the `UserControl` side is not visible from it.
+`ElementName` looks a name up in a XAML name scope, found through the element tree. The menu is shown in a `Popup` outside the `UserControl`'s element tree, so in this setup the lookup did not reach the name scope where `Root` is registered. The measured menu was created in code, where WPF does not create a name scope automatically, so the failure is not due to a name scope of the menu's own.
 In the measured run, a `ContextMenu` attached to a `Button` inside the `UserControl` produced `System.Windows.Data Error: 4` for both `AncestorType=UserControl` and `ElementName=Root`, leaving `MenuItem.Header` as `null` (see the table below).
 `DataContext`, on the other hand, is inherited from the placement site through a path separate from that parent chain, so the plain `{Binding Title}` resolved under option 3 once the menu was open.
 That inheritance holds only after the menu opens and is associated with its placement site, not before it opens or during `ContextMenuOpening`.

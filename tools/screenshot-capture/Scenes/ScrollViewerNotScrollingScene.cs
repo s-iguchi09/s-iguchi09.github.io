@@ -22,7 +22,8 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
         "Grid や DockPanel では高さが制約され、スクロールできること",
         "StackPanel でも高さを明示すればスクロールできること（Height と MaxHeight の両方）",
         "ListBox の ScrollViewer.CanContentScroll が True になる出どころ（既定スタイルか）",
-        "ListBox の仮想化が失われる条件（CanContentScroll=False のほか、外側の ScrollViewer・StackPanel、IsVirtualizing=False、グループ化）",
+        "ListBox の仮想化が失われる条件（CanContentScroll=False のほか、外側の ScrollViewer・StackPanel、IsVirtualizing=False）",
+        "グループ化したときに仮想化が保たれるか（この計測では保たれた）",
     ];
 
     public string Slug => "wpf-scrollviewer-not-scrolling";

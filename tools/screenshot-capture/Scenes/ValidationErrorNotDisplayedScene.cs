@@ -297,7 +297,7 @@ internal sealed class ValidationErrorNotDisplayedScene : IScene
                     {
                         atStart = WpfProbe.Describe(Validation.GetHasError(box));
                         await DemoProbe.FocusAsync(box);
-                        DemoProbe.TypeLetters(box, "abc");
+                        DemoProbe.TypeInto(box, "abc");
                         await Task.Delay(100);
                         afterTyping = WpfProbe.Describe(Validation.GetHasError(box));
                         holder.Name = "abc";

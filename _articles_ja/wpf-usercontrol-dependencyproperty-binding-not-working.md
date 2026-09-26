@@ -336,7 +336,7 @@ public static readonly DependencyProperty TitleProperty =
 - **`ContextMenu` の中からは、外側の `UserControl` を `RelativeSource` でも `ElementName` でも指せない。**
 両者は失敗するが、理由は別である。
 `RelativeSource` の祖先探索は親チェーンをたどるが、`ContextMenu` は要素ツリーの子ではなく `FrameworkElement.ContextMenu` プロパティとして付くため、チェーンが外側へつながらない。
-`ElementName` は名前スコープから名前付き要素を探すが、`ContextMenu` は独自の名前スコープを持つため、`UserControl` 側に登録された `Root` が見えない。
+`ElementName` は、要素ツリーを通して見つけた XAML の名前スコープから名前付き要素を探す。メニューは `UserControl` の要素ツリーの外にある `Popup` に表示されるため、この構成では `Root` を登録した名前スコープまで探索が届かなかった。計測したメニューはコードで作ったもので、その場合 WPF は名前スコープを自動では作らないので、メニュー独自の名前スコープが原因ではない。
 実測では、`UserControl` 内の `Button` に付けた `ContextMenu` の中で `AncestorType=UserControl` と `ElementName=Root` の双方が `System.Windows.Data Error: 4` となり、`MenuItem.Header` は `null` のままであった（後掲の表）。
 一方、`DataContext` はこの親チェーンとは別の経路で配置元から継承されるため、前述の 3 の構成ではメニューを開いた状態で素の `{Binding Title}` が解決した。
 この継承が成立するのはメニューが開いて配置元と結び付いた後であり、開く前や `ContextMenuOpening` の時点では成立しない。

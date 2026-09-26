@@ -38,11 +38,14 @@ Replacing an entry in a `ResourceDictionary` at runtime does not always cause th
 For example, the following XAML defines a `SolidColorBrush` as a `StaticResource`, and the code-behind replaces it at runtime.
 
 ```xml
-<Window.Resources>
-    <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
+    </Window.Resources>
 
-<Button Background="{StaticResource ThemeColor}" Content="Button" />
+    <Button Background="{StaticResource ThemeColor}" Content="Button" />
+</Window>
 ```
 
 ```csharp
@@ -113,14 +116,18 @@ The following example switches the button background color on each button click 
 Because `DynamicResource` is used, the assignment propagates to the `Background` property immediately.
 
 ```xml
-<Window.Resources>
-    <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
-</Window.Resources>
+<Window x:Class="SampleApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
+    </Window.Resources>
 
-<StackPanel>
-    <Button Background="{DynamicResource ThemeColor}" Content="Target Button" />
-    <Button Content="Toggle Theme" Click="OnThemeToggleClick" />
-</StackPanel>
+    <StackPanel>
+        <Button Background="{DynamicResource ThemeColor}" Content="Target Button" />
+        <Button Content="Toggle Theme" Click="OnThemeToggleClick" />
+    </StackPanel>
+</Window>
 ```
 
 ```csharp

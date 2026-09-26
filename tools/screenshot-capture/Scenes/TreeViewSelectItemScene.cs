@@ -52,6 +52,8 @@ internal sealed class TreeViewSelectItemScene : IScene
         "コンテナが生成されていないノードとの間では排他にならず、ViewModel に true が 2 つ残ること",
         "ItemContainerStyle の IsSelected が TwoWay と OneWay のとき、コンテナへ代入した後の値の出どころと、ViewModel から選択を戻したときの反映",
         "選択中の項目の背景が、SystemColors のどのブラシと一致するか（フォーカスあり・なし）",
+        "IsSelected を true にしてもスクロール位置は変わらず、BringIntoView で初めて動くこと（200 ノード、仮想化なし）",
+        "仮想化を有効にすると、コンテナの無いノードを ViewModel から選んでも、スクロールで生成されるまで SelectedItem に届かないこと",
     ];
 
     public string Slug => "wpf-treeview-select-item-programmatically";
@@ -221,6 +223,120 @@ internal sealed class TreeViewSelectItemScene : IScene
                         var container = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(root);
                         root.IsSelected = true;
                         await DemoProbe.FocusAsync(focused ? container : other);
+                    }),
+            ]));
+        }
+
+        rows.AddRange(await ScrollAndVirtualizationAsync());
+        return rows;
+    }
+
+    /// <summary>
+    /// 注意点の 2 つを測る。IsSelected を変えてもスクロールしないこと（BringIntoView で初めて動く）と、
+    /// 仮想化を有効にしたとき、コンテナの無いノードの選択はスクロールで生成されるまで TreeView に届かないこと。
+    /// ノードは表示範囲を大きく超える 200 個を最上位に並べ、最後のノードを選ぶ。
+    /// </summary>
+    private static async Task<List<IReadOnlyList<string>>> ScrollAndVirtualizationAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        static ExplorerViewModel ManyRoots(out FolderNode last)
+        {
+            var roots = Enumerable.Range(1, 200).Select(i => new FolderNode($"Folder {i}")).ToArray();
+            last = roots[^1];
+            return new ExplorerViewModel(roots);
+        }
+
+        static ScrollViewer FindScrollViewer(DependencyObject root)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(root, i);
+                if (child is ScrollViewer viewer)
+                {
+                    return viewer;
+                }
+
+                if (FindScrollViewerOrNull(child) is { } found)
+                {
+                    return found;
+                }
+            }
+
+            throw new InvalidOperationException("ScrollViewer が見つからない。");
+        }
+
+        static ScrollViewer? FindScrollViewerOrNull(DependencyObject root)
+        {
+            try
+            {
+                return FindScrollViewer(root);
+            }
+            catch (InvalidOperationException)
+            {
+                return null;
+            }
+        }
+
+        // 既定（仮想化なし）: IsSelected を true にしてもスクロール位置は変わらず、BringIntoView で初めて動くか。
+        {
+            var content = SceneContext.LoadXaml<DockPanel>(ContentXaml);
+            var viewModel = ManyRoots(out FolderNode last);
+            content.DataContext = viewModel;
+            string afterSelect = "";
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    "last of 200 nodes: IsSelected, then BringIntoView",
+                    content,
+                    _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        double offset = FindScrollViewer(tree).VerticalOffset;
+                        return [$"{afterSelect} -> {offset:0.##}"];
+                    },
+                    Act: async _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        ScrollViewer viewer = FindScrollViewer(tree);
+                        last.IsSelected = true;
+                        await Task.Delay(100);
+                        afterSelect = $"selected {(tree.SelectedItem as FolderNode)?.Name ?? "null"}, offset {viewer.VerticalOffset:0.##}";
+                        var container = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(last);
+                        container.BringIntoView();
+                        await Task.Delay(100);
+                    }),
+            ]));
+        }
+
+        // 仮想化あり: コンテナの無いノードを ViewModel から選ぶと、スクロールで生成されるまで SelectedItem に届かないか。
+        {
+            var content = SceneContext.LoadXaml<DockPanel>(ContentXaml.Replace(
+                "<TreeView x:Name=\"Tree\" ItemsSource=\"{Binding Roots}\">",
+                "<TreeView x:Name=\"Tree\" ItemsSource=\"{Binding Roots}\" VirtualizingPanel.IsVirtualizing=\"True\">"));
+            var viewModel = ManyRoots(out FolderNode last);
+            content.DataContext = viewModel;
+            string beforeScroll = "";
+            rows.AddRange(await WpfProbe.MeasureAsync(
+            [
+                new WpfProbe.Case(
+                    "IsVirtualizing: last of 200 selected in ViewModel",
+                    content,
+                    _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        bool container = tree.ItemContainerGenerator.ContainerFromItem(last) is not null;
+                        return [$"{beforeScroll} -> scrolled: {(container ? "container" : "no container")}, {(tree.SelectedItem as FolderNode)?.Name ?? "null"}"];
+                    },
+                    Act: async _ =>
+                    {
+                        var tree = (TreeView)content.FindName("Tree");
+                        last.IsSelected = true;
+                        await Task.Delay(100);
+                        bool container = tree.ItemContainerGenerator.ContainerFromItem(last) is not null;
+                        beforeScroll = $"SelectedItem: {(container ? "container" : "no container")}, {(tree.SelectedItem as FolderNode)?.Name ?? "null"}";
+                        FindScrollViewer(tree).ScrollToEnd();
+                        await Task.Delay(300);
                     }),
             ]));
         }

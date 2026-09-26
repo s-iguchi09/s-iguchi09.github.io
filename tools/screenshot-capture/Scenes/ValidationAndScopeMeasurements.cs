@@ -550,7 +550,7 @@ internal static class ValidationAndScopeMeasurements
             {
                 await DemoProbe.FocusAsync(box);
                 box.SelectAll();
-                DemoProbe.TypeLetters(box, "xyz");
+                DemoProbe.TypeInto(box, "xyz");
             });
         });
 
@@ -600,7 +600,7 @@ internal static class ValidationAndScopeMeasurements
                             case "inner TwoWay write-back":
                                 await DemoProbe.FocusAsync(box);
                                 box.SelectAll();
-                                DemoProbe.TypeLetters(box, "x");
+                                DemoProbe.TypeInto(box, "x");
                                 break;
                             default:
                                 card.Title = "x";

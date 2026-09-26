@@ -204,6 +204,19 @@ internal static class DemoProbe
         }
     }
 
+    /// <summary>
+    /// <see cref="TypeLetters"/> で打ち込み、文字が TextBox に届いたことを確かめる。
+    /// 入力が成立しないまま次の操作に進むと、更新されていない値を計測してしまうので、届かなければ計測を止める。
+    /// </summary>
+    public static void TypeInto(System.Windows.Controls.TextBox box, string letters)
+    {
+        TypeLetters(box, letters);
+        if (!box.Text.EndsWith(letters, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"キー入力が TextBox に届いていない（Text = \"{box.Text}\"、打った文字 = \"{letters}\"）。");
+        }
+    }
+
     public static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {
         int count = VisualTreeHelper.GetChildrenCount(root);

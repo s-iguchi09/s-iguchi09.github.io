@@ -97,7 +97,8 @@ _notifyIcon.MouseClick += (_, e) =>
 ```
 
 この順序により、メニューを開く直前のウィンドウ状態を明示的に整えられる。  
-TreePaste では、`IsOpen = true` だけを実行していた構成からこの順序に変えたことで、メニューが閉じるようになった。  
+この例は TreePaste と同じく `SetForegroundWindow` の戻り値を見ていない。呼び出しに失敗すると、図の上段と同じく、ウィンドウが前面にないままメニューが開く。記録や再試行などの対処が要るなら、戻り値を確かめる。  
+TreePaste では、`IsOpen = true` だけを実行していた構成から、この呼び出しと次に示す `StaysOpen = false` の設定を 1 度の変更で加えたところ、メニューが閉じるようになった。それぞれ単独の効果は TreePaste では切り分けていない。  
 
 次に、`ContextMenu` 側で `StaysOpen = false` を明示する。  
 以下は TreePaste の `CreateTrayContextMenu()` で返却している構成である。  

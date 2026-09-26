@@ -202,7 +202,7 @@ WPF の入力検証は、次の 3 段階が独立して成立して初めて画�
 後者は ViewModel の `ErrorsChanged` に追随するが、この構成でそのイベントを起こすのはプロパティの setter であり、setter を呼ぶのがソース更新だからである。
 `UpdateSourceTrigger=Explicit` の場合はさらに顕著で、同じ構成では `UpdateSource` を呼ぶまで検証結果が変化しなかった。
 逆に、`ErrorsChanged` をソース更新とは独立に発生させる構成、たとえば非同期の照会が完了した時点で通知する実装は、この制約を受けない。
-入力の途中で検証結果を出したい場合は、対象の `TextBox.Text` バインディングに `UpdateSourceTrigger=PropertyChanged` を指定する。
+入力の途中で検証結果を出したい場合は、対象の `TextBox.Text` バインディングに `UpdateSourceTrigger=PropertyChanged` を指定する。これはソースを更新するバインディング、つまり `TwoWay`（`TextBox.Text` の既定）か `OneWayToSource` に効く。`Mode=OneWay` では入力がソースに届かず、setter による検証も起きない。
 
 ---
 
@@ -467,7 +467,7 @@ ViewModel の基底クラスが `INotifyDataErrorInfo` を実装していると�
 
 - **`false` の場合** — 検証ルールがバインディングに関連付いていないか、入力した内容がまだソースへ転送されていない。
 `IDataErrorInfo` なら `ValidatesOnDataErrors="True"` を、自作ルールなら `ValidationRules` への追加を確認する。
-入力中に反応させるには `UpdateSourceTrigger=PropertyChanged` を指定する。
+入力中に反応させるには `UpdateSourceTrigger=PropertyChanged` を指定する（`Mode=OneWay` ではソースへ転送されないので効かない）。
 - **`true` なのに何も出ない場合** — 描画先が無い。
 `Window` のテンプレートを差し替えているなら `AdornerDecorator` を含める。
 - **赤枠は出るがメッセージが出ない場合** — 既定の `ErrorTemplate` の仕様である。

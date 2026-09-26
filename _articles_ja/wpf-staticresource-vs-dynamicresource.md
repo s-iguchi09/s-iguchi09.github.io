@@ -38,11 +38,14 @@ WPF のリソース参照には `StaticResource` と `DynamicResource` の2種�
 たとえば、以下のように `Window.Resources` に定義した `SolidColorBrush` をコードから差し替えても、ボタンの背景色は変化しない。
 
 ```xml
-<Window.Resources>
-    <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
+    </Window.Resources>
 
-<Button Background="{StaticResource ThemeColor}" Content="ボタン" />
+    <Button Background="{StaticResource ThemeColor}" Content="ボタン" />
+</Window>
 ```
 
 ```csharp
@@ -110,14 +113,18 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 以下の例では、ボタンのクリック時にリソースディクショナリのブラシを差し替え、対象ボタンの背景色を切り替える。
 
 ```xml
-<Window.Resources>
-    <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
-</Window.Resources>
+<Window x:Class="SampleApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <SolidColorBrush x:Key="ThemeColor" Color="SkyBlue" />
+    </Window.Resources>
 
-<StackPanel>
-    <Button Background="{DynamicResource ThemeColor}" Content="対象ボタン" />
-    <Button Content="テーマ切り替え" Click="OnThemeToggleClick" />
-</StackPanel>
+    <StackPanel>
+        <Button Background="{DynamicResource ThemeColor}" Content="対象ボタン" />
+        <Button Content="テーマ切り替え" Click="OnThemeToggleClick" />
+    </StackPanel>
+</Window>
 ```
 
 ```csharp

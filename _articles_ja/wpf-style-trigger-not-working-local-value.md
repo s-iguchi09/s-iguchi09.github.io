@@ -39,19 +39,22 @@ WPF で `Style.Triggers` に定義した `Trigger` や `DataTrigger` が、条�
 入力の検証状態に応じて枠の背景色を変えるため、`Style` に `DataTrigger` を定義したとする。
 
 ```xml
-<Window.Resources>
-    <Style x:Key="StatusBox" TargetType="Border">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding HasError}" Value="True">
-                <Setter Property="Background" Value="#FFD4D4" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <Style x:Key="StatusBox" TargetType="Border">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="#FFD4D4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-<Border Style="{StaticResource StatusBox}" Background="White">
-    <TextBlock Text="HasError = True" />
-</Border>
+    <Border Style="{StaticResource StatusBox}" Background="White">
+        <TextBlock Text="HasError = True" />
+    </Border>
+</Window>
 ```
 
 `HasError` が `true` になっても、この `Border` の背景は `White` のまま変わらない。
@@ -123,31 +126,34 @@ WPF の依存関係プロパティは、ローカル値・スタイル・テン�
 どちらも同一の `StatusBox` スタイルを参照しており、動作に関係する違いは `Background` をローカル値として持つかどうかだけである（下段の `Margin` は 2 つを縦に離して配置するためのもので、トリガーの挙動には関係しない）。
 
 ```xml
-<Window.Resources>
-    <Style x:Key="StatusBox" TargetType="Border">
-        <Setter Property="Background" Value="White" />
-        <Setter Property="BorderBrush" Value="#9AA4B2" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="18,6" />
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding HasError}" Value="True">
-                <Setter Property="Background" Value="#FFD4D4" />
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
-</Window.Resources>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Window.Resources>
+        <Style x:Key="StatusBox" TargetType="Border">
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#9AA4B2" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="18,6" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding HasError}" Value="True">
+                    <Setter Property="Background" Value="#FFD4D4" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-<StackPanel>
-    <!-- ローカル値が残っているため、トリガーの背景色が反映されない -->
-    <Border Style="{StaticResource StatusBox}" Background="White">
-        <TextBlock Text="HasError = True" />
-    </Border>
+    <StackPanel>
+        <!-- ローカル値が残っているため、トリガーの背景色が反映されない -->
+        <Border Style="{StaticResource StatusBox}" Background="White">
+            <TextBlock Text="HasError = True" />
+        </Border>
 
-    <!-- 既定値を Setter に移したため、トリガーの背景色が反映される -->
-    <Border Style="{StaticResource StatusBox}" Margin="0,12,0,0">
-        <TextBlock Text="HasError = True" />
-    </Border>
-</StackPanel>
+        <!-- 既定値を Setter に移したため、トリガーの背景色が反映される -->
+        <Border Style="{StaticResource StatusBox}" Margin="0,12,0,0">
+            <TextBlock Text="HasError = True" />
+        </Border>
+    </StackPanel>
+</Window>
 ```
 
 トリガーの条件に使う `HasError` は、`DataContext` に設定した ViewModel のプロパティである。
