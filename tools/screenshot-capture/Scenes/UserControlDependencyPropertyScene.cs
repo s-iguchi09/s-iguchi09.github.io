@@ -82,6 +82,7 @@ internal sealed class UserControlDependencyPropertyScene : IScene
         "ContextMenu の中からは AncestorType=UserControl と ElementName=Root が届かず、DataContext の委譲では届くこと",
         "インラインの Popup、インラインの DataTemplate、UserControl.Resources の DataTemplate からの参照が届くか",
         "別の UserControl の内側で AncestorType=UserControl を評価すると、内側のコントロールが選ばれること",
+        "本文と注意点の残りの実測（同名プロパティ・DataContext の無い親・委譲・BindsTwoWayByDefault・DataContext = this・差し替え・OneWay の破壊・SetCurrentValue・同じ x:Name）と、そのときのバインドのトレース",
     ];
 
     public string Slug => "wpf-usercontrol-dependencyproperty-binding-not-working";
@@ -132,6 +133,12 @@ internal sealed class UserControlDependencyPropertyScene : IScene
             ["reference", "result"],
             await ValidationAndScopeMeasurements.UserControlResolutionAsync(),
             "usercontrol-dp-resolution.svg");
+
+        await context.SaveTableAsync(
+            "the other measured runs in this article",
+            ["case", "measured"],
+            await ValidationAndScopeMeasurements.UserControlMoreAsync(),
+            "usercontrol-dp-more.svg");
     }
 
     /// <summary>

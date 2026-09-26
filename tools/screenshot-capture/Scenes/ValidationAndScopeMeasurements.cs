@@ -376,6 +376,264 @@ internal static class ValidationAndScopeMeasurements
         return (card, root);
     }
 
+    /// <summary>BindsTwoWayByDefault を付けて Title を登録した InfoCard。記事の対処の 1 つと同じ。</summary>
+    private sealed class TwoWayInfoCard : UserControl
+    {
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(TwoWayInfoCard),
+                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+        public string Title
+        {
+            get => (string)GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
+        }
+    }
+
+    /// <summary>値を書き換えられ、変更を通知する利用側の ViewModel。Title を持つかどうかを選べる。</summary>
+    private sealed class EditablePage : INotifyPropertyChanged
+    {
+        private string _headerText = "from PageViewModel";
+
+        public string HeaderText
+        {
+            get => _headerText;
+            set
+            {
+                _headerText = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HeaderText)));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
+
+    private sealed class PageWithTitle
+    {
+        public string HeaderText { get; } = "VM-TITLE";
+
+        public string Title { get; } = "VM-OWN-TITLE";
+    }
+
+    private sealed class Detail
+    {
+        public string Title { get; } = "from Detail.Title";
+    }
+
+    private sealed class DetailWithoutTitle
+    {
+        public string Name { get; } = "no Title here";
+    }
+
+    /// <summary>データバインドのトレースのうち、System.Windows.Data Error の行を番号ごとに数える。</summary>
+    private sealed class BindingErrorCounter : System.Diagnostics.TraceListener
+    {
+        private readonly List<string> _codes = [];
+
+        public string Summary => _codes.Count == 0 ? "0 errors" : string.Join(", ", _codes.GroupBy(c => c).Select(g => $"Error {g.Key} x{g.Count()}"));
+
+        public override void Write(string? message) => Count(message);
+
+        public override void WriteLine(string? message) => Count(message);
+
+        private void Count(string? message)
+        {
+            var match = message is null ? null : System.Text.RegularExpressions.Regex.Match(message, @"System\.Windows\.Data Error: (\d+)");
+            if (match is { Success: true })
+            {
+                _codes.Add(match.Groups[1].Value);
+            }
+        }
+    }
+
+    /// <summary>計測の間だけデータバインドのトレースを数える。</summary>
+    private static async Task<(T Result, string Errors)> WithBindingTraceAsync<T>(Func<Task<T>> body)
+    {
+        var counter = new BindingErrorCounter();
+        System.Diagnostics.PresentationTraceSources.Refresh();
+        System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Warning;
+        System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Add(counter);
+        try
+        {
+            T result = await body();
+            return (result, counter.Summary);
+        }
+        finally
+        {
+            System.Diagnostics.PresentationTraceSources.DataBindingSource.Listeners.Remove(counter);
+        }
+    }
+
+    private static string Shown(TextBlock text) => text.Text.Length == 0 ? "(empty)" : text.Text;
+
+    /// <summary>
+    /// 記事の本文と注意点に書いた、残りの「実測では」を測る。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<string>>> UserControlMoreAsync()
+    {
+        var rows = new List<IReadOnlyList<string>>();
+
+        // 要素の組み立てもトレースを数える範囲に入れる。DataContext をローカルに持つ要素では、
+        // SetBinding の時点でバインドが働き、表示より前にエラーが出るためである。
+        async Task Add(string label, Func<(FrameworkElement Content, Func<string> Read, Func<Task>? Act)> build)
+        {
+            (List<IReadOnlyList<string>> measured, string errors) = await WithBindingTraceAsync(() =>
+            {
+                (FrameworkElement content, Func<string> read, Func<Task>? act) = build();
+                return WpfProbe.MeasureAsync(
+                [
+                    new WpfProbe.Case(label, content, _ => [read()], act is null ? null : _ => act()),
+                ]);
+            });
+            rows.Add([label, $"{measured[0][1]}; {errors}"]);
+        }
+
+        TextBlock InnerTitle()
+        {
+            var inner = new TextBlock();
+            inner.SetBinding(TextBlock.TextProperty, new Binding(nameof(InfoCard.Title)));
+            return inner;
+        }
+
+        // 1. 利用側が Title をバインドし、内部は素の {Binding Title}。
+        await Add("caller Title={Binding HeaderText}, inner {Binding Title}", () =>
+        {
+            TextBlock inner = InnerTitle();
+            var card = new InfoCard { Content = inner };
+            card.SetBinding(InfoCard.TitleProperty, new Binding(nameof(PageViewModel.HeaderText)));
+            return (Host(card), () => $"Title {card.Title}, inner {Shown(inner)}", null);
+        });
+
+        // 2. 利用側の ViewModel が同名の Title を持つ。
+        await Add("caller's view model also has Title", () =>
+        {
+            TextBlock inner = InnerTitle();
+            var card = new InfoCard { Content = inner };
+            card.SetBinding(InfoCard.TitleProperty, new Binding(nameof(PageWithTitle.HeaderText)));
+            return (new Grid { DataContext = new PageWithTitle(), Children = { card } }, () => $"Title {card.Title}, inner {Shown(inner)}", null);
+        });
+
+        // 3. DataContext の無い親に置く。
+        await Add("parent without DataContext, Title set", () =>
+        {
+            TextBlock inner = InnerTitle();
+            var card = new InfoCard { Title = "set directly", Content = inner };
+            return (new Grid { Children = { card } }, () => $"inner {Shown(inner)}", null);
+        });
+
+        // 4. 内側のルート要素へ DataContext を委譲。5. そこから利用側の DataContext へ届くか。
+        await Add("DataContext delegated to the inner Grid", () =>
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(delegateDataContext: true);
+            TextBlock inner = InnerTitle();
+            root.Children.Add(inner);
+            return (Host(card), () => $"inner sees {inner.DataContext?.GetType().Name}, card keeps {card.DataContext?.GetType().Name}", null);
+        });
+        await Add("delegated, DataContext.HeaderText via AncestorType", () =>
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(delegateDataContext: true);
+            var outer = new TextBlock();
+            outer.SetBinding(TextBlock.TextProperty, new Binding("DataContext.HeaderText") { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(InfoCard) } });
+            root.Children.Add(outer);
+            return (Host(card), () => Shown(outer), null);
+        });
+
+        // 6. BindsTwoWayByDefault の Title を、内部の TextBox から書き換える。
+        await Add("BindsTwoWayByDefault, type xyz inside", () =>
+        {
+            var page = new EditablePage();
+            var box = new TextBox { Width = 120 };
+            box.SetBinding(TextBox.TextProperty, new Binding(nameof(TwoWayInfoCard.Title)) { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(UserControl) }, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+            var card = new TwoWayInfoCard { Content = box };
+            card.SetBinding(TwoWayInfoCard.TitleProperty, new Binding(nameof(EditablePage.HeaderText)));
+            return (new Grid { DataContext = page, Children = { card } }, () => $"HeaderText {page.HeaderText}", async () =>
+            {
+                await DemoProbe.FocusAsync(box);
+                box.SelectAll();
+                DemoProbe.TypeLetters(box, "xyz");
+            });
+        });
+
+        // 7. コンストラクタで DataContext = this にした場合の、利用側のバインド。
+        await Add("DataContext = this, caller binds Title", () =>
+        {
+            TextBlock inner = InnerTitle();
+            var card = new InfoCard { Content = inner };
+            card.DataContext = card;
+            card.SetBinding(InfoCard.TitleProperty, new Binding(nameof(PageViewModel.HeaderText)));
+            return (Host(card), () => $"Title {card.Title}", null);
+        });
+
+        // 8. DataContext = this の後に、利用側が DataContext を差し替える。
+        foreach ((string name, object detail) in new (string, object)[] { ("lacks Title", new DetailWithoutTitle()), ("has Title", new Detail()) })
+        {
+            await Add($"DataContext = this, caller's DataContext {name}", () =>
+            {
+                TextBlock inner = InnerTitle();
+                var card = new InfoCard { Content = inner };
+                card.DataContext = card;
+                card.DataContext = detail;
+                return (Host(card), () => $"inner {Shown(inner)}", null);
+            });
+        }
+
+        // 9〜11. 外側が OneWay のまま内部から値を変える。代入・内部の TwoWay・SetCurrentValue。
+        foreach (string way in new[] { "Title = x", "inner TwoWay write-back", "SetCurrentValue" })
+        {
+            await Add($"caller OneWay, inside {way}", () =>
+            {
+                var page = new EditablePage();
+                var box = new TextBox { Width = 120 };
+                box.SetBinding(TextBox.TextProperty, new Binding(nameof(InfoCard.Title)) { RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor) { AncestorType = typeof(UserControl) }, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
+                var card = new InfoCard { Content = box };
+                card.SetBinding(InfoCard.TitleProperty, new Binding(nameof(EditablePage.HeaderText)));
+                return (
+                    new Grid { DataContext = page, Children = { card } },
+                    () => $"binding {(BindingOperations.GetBindingExpression(card, InfoCard.TitleProperty) is null ? "removed" : "kept")}; HeaderText=new -> Title {card.Title}",
+                    async () =>
+                    {
+                        switch (way)
+                        {
+                            case "SetCurrentValue":
+                                card.SetCurrentValue(InfoCard.TitleProperty, "x");
+                                break;
+                            case "inner TwoWay write-back":
+                                await DemoProbe.FocusAsync(box);
+                                box.SelectAll();
+                                DemoProbe.TypeLetters(box, "x");
+                                break;
+                            default:
+                                card.Title = "x";
+                                break;
+                        }
+
+                        await Task.Delay(50);
+                        page.HeaderText = "new";
+                    });
+            });
+        }
+
+        // 12. 利用側にも Root という名前の要素がある。
+        await Add("caller also names an element Root", () =>
+        {
+            (InfoCard card, Grid root) = BuildNamedCard(false);
+            card.Tag = "the card";
+            var inner = new TextBlock();
+            inner.SetBinding(TextBlock.TextProperty, new Binding(nameof(FrameworkElement.Tag)) { ElementName = "Root" });
+            root.Children.Add(inner);
+
+            var consumerRoot = new Border { Tag = "caller's Root" };
+            var outer = new TextBlock();
+            outer.SetBinding(TextBlock.TextProperty, new Binding(nameof(FrameworkElement.Tag)) { ElementName = "Root" });
+            var page = new StackPanel { Children = { consumerRoot, outer, card } };
+            NameScope.SetNameScope(page, new NameScope());
+            page.RegisterName("Root", consumerRoot);
+            return (page, () => $"inside -> {Shown(inner)}, caller -> {Shown(outer)}", null);
+        });
+
+        return rows;
+    }
+
     /// <summary>利用側の ViewModel を DataContext に持つ親の下にカードを置く。</summary>
     private static Grid Host(InfoCard card) => new() { DataContext = new PageViewModel(), Children = { card } };
 

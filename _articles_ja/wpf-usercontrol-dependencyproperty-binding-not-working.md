@@ -20,7 +20,7 @@ image: /images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/u
 
 本記事では、値が届いていることと表示されないことが両立する理由を分解し、内部から自身の依存関係プロパティを参照する 3 つの書き方を比較する。
 広く出回る `DataContext = this` という対処が、なぜ利用側の書き方によって効いたり効かなかったりするのかも併せて扱う。
-本記事に「実測」と記した値は、すべて後述の環境で実際に動かして得た結果である。
+本記事に「実測」と記した値は、すべて後述の環境で実際に動かして得た結果である（注意点の末尾の 2 つの表にまとめた）。
 
 ---
 
@@ -360,6 +360,11 @@ XAML の解析とバインディングは、`Title` の setter ではなく `Set
 - **`x:Name` の重複は問題にならない。**
 `UserControl` のルートに付けた `x:Name="Root"` は、そのコントロールの名前スコープに閉じる。
 実測でも、利用側に同じ名前の要素を置いた状態で双方が別の要素として解決し、エラーは出なかった。
+
+<figure class="article-figure article-figure--wide">
+  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.svg" alt="本文と注意点の実測をまとめた表。利用側が Title をバインドすると Title には値が届くが、内部の素の Binding は空で Error 40 が 1 件出る。利用側の ViewModel が同名の Title を持つと、内部には VM-OWN-TITLE が表示され、エラーは出ない。DataContext の無い親では内部は空でエラーも出ない。DataContext を内側の Grid へ委譲すると、内部は InfoCard を見て、カード自身は PageViewModel のままで、AncestorType から DataContext.HeaderText にも届く。BindsTwoWayByDefault では内部の TextBox に打ち込んだ xyz が HeaderText まで届く。DataContext = this では利用側のバインドが Error 40 になり Title は既定値のまま。そこへ利用側が DataContext を差し替えると、Title の無いオブジェクトでは内部が空で Error 40、Title のあるオブジェクトではその値がエラーなしで表示される。外側が OneWay のまま内部で代入するか内部の TwoWay で書き戻すとバインドが外れ、後の HeaderText の変更が届かない。SetCurrentValue ではバインドが残り、後の変更で上書きされる。利用側にも Root という名前の要素があっても、内部と利用側はそれぞれ別の要素に解決し、エラーは出ない。" width="951" height="470" loading="lazy">
+  <figcaption>.NET 10 / Windows 11 で実測。右端はデータバインドのトレースに出た <code>System.Windows.Data Error</code> の件数である。入力は WPF の入力処理（<code>InputManager</code>）を通して送った。</figcaption>
+</figure>
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.svg" alt="参照の書き方と置き場所ごとに、InfoCard.Title へ届いたかを測った表。内側の TextBlock からの ElementName=Root と、内側のルート要素へ DataContext を委譲した {Binding Title} は届く。ContextMenu の MenuItem.Header では AncestorType=UserControl と ElementName=Root が null で、DataContext を委譲した {Binding Title} は届く。インラインの Popup、インラインの DataTemplate、UserControl.Resources の DataTemplate では、AncestorType=UserControl と ElementName=Root の両方が届く。カードの中に入れ子にした UserControl から AncestorType=UserControl を評価すると、内側の UserControl が選ばれる。" width="786" height="440" loading="lazy">
