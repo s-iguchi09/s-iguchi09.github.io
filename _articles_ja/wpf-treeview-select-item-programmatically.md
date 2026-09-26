@@ -367,7 +367,7 @@ UI 上の操作と同じ扱いになるだけで、以後の ViewModel 側の変
 
 <figure class="article-figure article-figure--wide">
   <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="記事の XAML で選択の振る舞いを測った表。コンテナが生成済みの Program Files と Users を順に選ぶと、ViewModel では Users だけが True になる。C: を選んでから、祖先が閉じていてコンテナの無い drivers を選ぶと、ViewModel では両方が True のまま、SelectedItem は C:。IsSelected が TwoWay ではコンテナへ代入した後の値の出どころは Style で、ViewModel から false にするとコンテナも False になる。OneWay では Local になり、ViewModel から false にしてもコンテナは True のまま。選択中の項目の背景は、フォーカスがあると SystemColors.HighlightColor、無いと SystemColors.InactiveSelectionHighlightBrush。200 個のノードで最後のノードを選んでも縦のスクロール位置は 0 のままで、BringIntoView で 3051.05 まで動く。仮想化を有効にして ViewModel から最後のノードを選ぶと、コンテナは無く SelectedItem は null で、末尾までスクロールしてコンテナが生成されると SelectedItem が Folder 200 になる。" width="1053" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、記事の XAML と ViewModel をそのまま使って測った結果。背景は、既定テンプレートの <code>Bd</code> の <code>Background</code> を読んだ。</figcaption>
+  <figcaption>.NET 10 / Windows 11 で、記事の XAML を基本の構成として測った結果。OneWay の行では <code>IsSelected</code> のバインドのモードを変え、スクロールと仮想化の行では最上位のノードを 200 個持つ ViewModel を使った（仮想化の行では <code>VirtualizingPanel.IsVirtualizing</code> も <code>True</code> にした）。背景は、既定テンプレートの <code>Bd</code> の <code>Background</code> を読んだ。</figcaption>
 </figure>
 
 ---

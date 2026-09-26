@@ -85,7 +85,8 @@ Whenever the corresponding entry in the resource dictionary changes at runtime, 
 | Aspect | StaticResource | DynamicResource |
 | --- | --- | --- |
 | Resolution timing | XAML load time (once only) | Load time + re-evaluated on every change |
-| Runtime changes | Not reflected | Reflected immediately |
+| Replacing the entry at run time | Not reflected | Reflected immediately |
+| Changing the same brush (not frozen) at run time | Reflected | Reflected |
 | Definition order | Must be defined before the reference | Order is unrestricted |
 | Performance | High (no change monitoring) | Lower (change listener overhead) |
 
