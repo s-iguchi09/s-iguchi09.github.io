@@ -219,7 +219,7 @@ The latter hands a new `ImageSource` to the control on every change, so the `Bit
 
 ## Measured Results by Loading Method
 
-The table below records the result of deleting the file with `File.Delete`, overwriting it with `File.Copy`, and renaming it with `File.Move` immediately after loading the image each way described in this article. The last row is the exception: it loads the image the default way, releases the `BitmapImage` reference, and forces a garbage collection before trying.
+The table below records the result of deleting the file with `File.Delete`, overwriting it with `File.Copy`, and renaming it with `File.Move` immediately after loading the image each way described in this article. Each of the three operations was tried on its own file, loaded just before the operation. The last row is the exception: it loads the image the default way, releases the `BitmapImage` reference, and forces a garbage collection before trying.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="A table comparing File.Delete, overwriting with File.Copy, and renaming with File.Move per loading method. new BitmapImage(uri), setting CacheOption after that constructor, BeginInit alone, adding IgnoreImageCache, and ImageSourceConverter raise IOException for all three. Specifying OnLoad on CacheOption and StreamSource plus OnLoad allow all three. The default method allows deletion after dropping the reference and forcing garbage collection." width="863" height="320" loading="lazy">

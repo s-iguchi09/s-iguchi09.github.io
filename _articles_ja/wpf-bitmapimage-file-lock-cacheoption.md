@@ -218,7 +218,7 @@ private static BitmapImage LoadFromStream(string path)
 
 ## 読み込み方ごとの実測
 
-本記事で挙げた読み込み方それぞれについて、画像を読み込んだ直後に `File.Delete`（削除）、`File.Copy` による上書き、`File.Move` によるリネームを試みた結果が次の表である。最終行だけは、既定の読み込み方で読み込んだあと、`BitmapImage` への参照を手放し、ガベージコレクションを強制してから試した結果である。
+本記事で挙げた読み込み方それぞれについて、画像を読み込んだ直後に `File.Delete`（削除）、`File.Copy` による上書き、`File.Move` によるリネームを試みた結果が次の表である。3 つの操作は、操作ごとに別のファイルを用意して、それぞれ読み込んだ直後に試している。最終行だけは、既定の読み込み方で読み込んだあと、`BitmapImage` への参照を手放し、ガベージコレクションを強制してから試した結果である。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg" alt="読み込み方ごとに、File.Delete、File.Copy による上書き、File.Move によるリネームの可否を比較した表。new BitmapImage(uri)、その後に CacheOption を設定した場合、BeginInit だけの場合、IgnoreImageCache を付けた場合、ImageSourceConverter は 3 つとも IOException。CacheOption に OnLoad を指定した場合と StreamSource + OnLoad は 3 つとも成功する。既定のまま参照を捨てて GC を実行した場合も削除できる。" width="863" height="320" loading="lazy">
