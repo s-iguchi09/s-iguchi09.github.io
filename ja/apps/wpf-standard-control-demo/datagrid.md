@@ -40,7 +40,7 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 ## 画面上の行：仮想化、列の固定、1 行おきの背景
 
-`EnableRowVirtualization` と `EnableColumnVirtualization` は、表示範囲外の行・列を作らないかどうかです。既定値は行が `True`、列が `False` です。幅 360、高さ 200 の DataGrid に 1,000 行を入れると、`DataGridRow` は 11 個でした。既定では `VirtualizingPanel.IsVirtualizingWhenGrouping` が `False` なので、グループ化すると行の仮想化は止まり、`GroupStyle` を付けてグループ化すると 1,000 行すべてが作られました。同じ DataGrid でこれを `True` にすると、作られた行は 18 個でした。グループ化する表には設定します。
+`EnableRowVirtualization` は、表示範囲外の `DataGridRow` のコンテナーを作らないかどうかです。`EnableColumnVirtualization` は `DataGridColumn` の定義には関わらず（定義は常に保たれる）、表示範囲外の列のセルと列見出しを作らないかどうかを決めます（列の仮想化はここでは測っていません）。既定値は行が `True`、列が `False` です。幅 360、高さ 200 の DataGrid に 1,000 行を入れると、`DataGridRow` は 11 個でした。既定では `VirtualizingPanel.IsVirtualizingWhenGrouping` が `False` なので、グループ化すると行の仮想化は止まり、`GroupStyle` を付けてグループ化すると 1,000 行すべてが作られました。同じ DataGrid でこれを `True` にすると、作られた行は 18 個でした。グループ化する表には設定します。
 
 `FrozenColumnCount` は、横スクロールのときに動かさない、左端からの列の数です。既定値は 0 です。幅 200 の DataGrid に幅 100 の列を 4 つ並べて右へ 60 スクロールすると、1 列目は x = 7 から -53 へ動きました。`FrozenColumnCount="1"` では 1 列目は 7 のままで、2 列目だけが動きました。2 列に 3 を設定しても例外は出ず、2 に補正されました。
 
