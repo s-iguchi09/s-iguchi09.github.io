@@ -267,8 +267,8 @@ function absolutize(body) {
     .replace(/\b((?:src|href)\s*=\s*)(["']?)\/(?!\/)/gi, `$1$2${SITE}/`)
     // Markdown のインラインのリンクと画像。( の後の空白（改行を含む）と、山括弧で囲んだ URL も対象にする。
     .replace(/\]\((\s*)(<)?\/(?!\/)/g, (_, space, angle = '') => `](${space}${angle}${SITE}/`)
-    // Markdown の参照形式のリンク定義（[id]: /path）。URL が次の行にある書き方も対象にする。
-    .replace(/^( {0,3}\[[^\]\n]+\]:[ \t]*(?:\r?\n[ \t]*)?)(<)?\/(?!\/)/gm, (_, head, angle = '') => `${head}${angle}${SITE}/`));
+    // Markdown の参照形式のリンク定義（[id]: /path）。ラベルの途中の改行（空行は除く）と、URL が次の行にある書き方も対象にする。
+    .replace(/^( {0,3}\[(?:[^\]\n]|\n(?![ \t]*\r?\n))+\]:[ \t]*(?:\r?\n[ \t]*)?)(<)?\/(?!\/)/gm, (_, head, angle = '') => `${head}${angle}${SITE}/`));
 }
 
 /**
@@ -283,7 +283,9 @@ function mapOutsideCode(body, convert) {
   const flush = () => {
     if (prose.length === 0) return;
     const spans = [];
-    const masked = prose.join('\n').replace(/(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g, (m) => {
+    // 開始のバッククォート列は、前後がバッククォートでない同じ長さの列で閉じる（長い列の途中からは始めない）。
+    // コードは段落をまたがないので、空行を越えて閉じない。
+    const masked = prose.join('\n').replace(/(?<!`)(`+)(?!`)(?:(?!\n[ \t]*\r?\n)[\s\S])*?(?<!`)\1(?!`)/g, (m) => {
       spans.push(m);
       return `\u0000${spans.length - 1}\u0000`;
     });
@@ -291,7 +293,9 @@ function mapOutsideCode(body, convert) {
     prose = [];
   };
   for (const line of lines) {
-    const marker = line.match(/^ {0,3}(`{3,}|~{3,})/);
+    // バッククォートのフェンスは、info string にバッククォートを含む行を開始行と認めない（CommonMark）。
+    const found = line.match(/^ {0,3}(?:(`{3,})(?![^`]*`)|(~{3,}))/);
+    const marker = found && [found[0], found[1] || found[2]];
     if (fence) {
       out.push(line);
       if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && /^ {0,3}(`+|~+)\s*\r?$/.test(line)) fence = null;
@@ -426,12 +430,14 @@ function buildExport(slug) {
   const title = fm.title;
   const head = [
     '---',
-    `title: "${title.replace(/"/g, '\\"')}"`,
+    // YAML の二重引用符の中では \ と " をエスケープする（splitFrontMatter で戻した値を書き出すため）。
+    `title: "${title.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`,
     'published: false',
     `tags: ${TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS}`,
     // SVG は dev.to の画像プロキシが変換できず表示が壊れる（replaceSvgFigures と同じ理由）ので、
     // カバー画像にしない。
-    fm.image && !/\.svg$/i.test(fm.image) ? `cover_image: ${SITE}${fm.image}` : null,
+    // 拡張子はクエリとフラグメントを除いて判定する。
+    fm.image && !/\.svg$/i.test(fm.image.replace(/[?#].*$/, '')) ? `cover_image: ${SITE}${fm.image}` : null,
     `canonical_url: ${SITE}/articles/${slug}/`,
     '---',
     '',
