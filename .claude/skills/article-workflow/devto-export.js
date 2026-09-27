@@ -433,23 +433,27 @@ async function fetchDevtoPosts() {
  * 文字のまま出てしまうので取り除く。
  */
 function expandTableIncludes(body) {
-  return body
+  // コードブロックとインラインのコードに書かれた include と属性リストは、書き方の例なので触らない。
+  return mapOutsideCode(body, (text) => text
     .replace(/\{%\s*include\s+(tables\/[^\s%]+\.md)\s*%\}/g, (_, include) => {
       const file = path.join(REPO, '_includes', include);
       if (!fs.existsSync(file)) throw new Error(`include する表が見つからない: ${file}`);
       return fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n').trimEnd();
     })
-    .replace(/^\{:\s*\.table-caption\s*\}[ \t]*\r?\n?/gm, '');
+    .replace(/^\{:\s*\.table-caption\s*\}[ \t]*\r?\n?/gm, ''));
 }
 
 function replaceSvgFigures(body, slug) {
-  return body.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/g, (block) => {
-    const img = block.match(/<img\b[^>]*>/);
-    if (!img || !/\bsrc="[^"]*\.svg"/i.test(img[0])) return block;
+  // コードブロックとインラインのコードに書かれた figure は、書き方の例なので置き換えない。
+  return mapOutsideCode(body, (text) => text.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/gi, (block) => {
+    const img = block.match(/<img\b[^>]*>/i);
+    // src の引用符の有無と種類、クエリとフラグメントを問わず、拡張子が .svg なら置き換える。
+    if (!img || !/\bsrc\s*=\s*(["']?)[^"'\s>]*?\.svg(?:[?#][^"'\s>]*)?\1(?=[\s>/])/i.test(img[0])) return block;
 
     // alt も caption も、改行が残っていると 2 行目以降に "> " が付かず
     // 引用ブロックの外へ出てしまう。どちらも 1 行へ潰す。
-    const alt = ((img[0].match(/\balt="([^"]*)"/) || [])[1] || '').replace(/\s+/g, ' ').trim();
+    const altMatch = img[0].match(/\balt\s*=\s*(?:"([^"]*)"|'([^']*)')/i) || [];
+    const alt = (altMatch[1] ?? altMatch[2] ?? '').replace(/\s+/g, ' ').trim();
     const caption = ((block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/) || [])[1] || '')
       .replace(/\s+/g, ' ').trim();
 
@@ -458,7 +462,7 @@ function replaceSvgFigures(body, slug) {
     if (caption) lines.push('', caption);
     lines.push('', `The diagram is rendered in the [original article](${SITE}/articles/${slug}/).`);
     return lines.map((l) => (l ? `> ${l}` : '>')).join('\n');
-  });
+  }));
 }
 
 function buildExport(slug) {
