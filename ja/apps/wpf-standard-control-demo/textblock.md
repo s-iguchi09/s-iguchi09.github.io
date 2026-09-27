@@ -19,7 +19,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 `TextWrapping` の既定値は `NoWrap` です。1 語だけで幅 100 を超える語を含む「Say Supercalifragilisticexpialidocious now」を幅 100 に置くと、`NoWrap` は 1 行で 100 の位置で切れました。`Wrap` は長い語そのものを折って 4 行になりました。`WrapWithOverflow` は語を分けずに 3 行になり、その語が 100 を超えてそこで切れました。端からはみ出させたくないなら `Wrap` を使います。
 
-`TextTrimming` を `CharacterEllipsis` か `WordEllipsis` にすると、幅の決まった列の名前のように、収まらない文字の末尾が省略記号になります。既定値の `None` では省略されません。幅が限られているときだけ働きます。`CharacterEllipsis` の長い文字は、幅 100 の Grid では幅 100 になりました。幅に制限のない横の StackPanel では本来の幅 220.43 になり、省略されませんでした。
+`TextTrimming` を `CharacterEllipsis` か `WordEllipsis` にすると、幅の決まった列の名前のように、収まらない文字の末尾が省略記号になります。既定値の `None` では省略されません。計測では、幅を限る Grid の中では省略され、幅を限らない横の StackPanel の中では省略されませんでした。高さの制限は測っていません。`CharacterEllipsis` の長い文字は、幅 100 の Grid では幅 100 になりました。幅に制限のない横の StackPanel では本来の幅 220.43 になり、省略されませんでした。
 
 `Padding` の既定値は 0 です。`Padding="10"` では、TextBlock が縦横それぞれ 20 大きくなり、61.57 × 15.96 から 81.57 × 35.96 になりました。
 

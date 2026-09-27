@@ -19,7 +19,7 @@ To combine binding and formatting, bind the `Text` of a `Run` instead: a bound `
 
 `TextWrapping` defaults to `NoWrap`. With "Say Supercalifragilisticexpialidocious now" in a width of 100, whose long word alone is wider than 100, `NoWrap` gave one line cut off at 100. `Wrap` gave 4 lines, breaking the long word itself. `WrapWithOverflow` gave 3 lines and kept the word whole, so it ran past 100 and was cut off there. Use `Wrap` when nothing may run past the edge.
 
-`TextTrimming` set to `CharacterEllipsis` or `WordEllipsis` ends text that does not fit with an ellipsis, as for a name in a column of fixed width; with the default, `None`, nothing is trimmed. It only works when the width is limited. With `CharacterEllipsis`, a long text was 100 wide in a Grid 100 wide. In a horizontal StackPanel, which gives unlimited width, it took its full width of 220.43, so nothing was trimmed.
+`TextTrimming` set to `CharacterEllipsis` or `WordEllipsis` ends text that does not fit with an ellipsis, as for a name in a column of fixed width; with the default, `None`, nothing is trimmed. In the measurement, it trimmed in a Grid that limited the width and did nothing in a horizontal StackPanel that did not; limits on the height were not measured. With `CharacterEllipsis`, a long text was 100 wide in a Grid 100 wide. In a horizontal StackPanel, which gives unlimited width, it took its full width of 220.43, so nothing was trimmed.
 
 `Padding` defaults to 0. With `Padding="10"`, the TextBlock grew by 20 in each direction, from 61.57 × 15.96 to 81.57 × 35.96.
 

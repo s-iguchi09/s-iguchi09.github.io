@@ -9,7 +9,7 @@ description: "WPF DataGrid measured on .NET 10: generated columns, sorting, edit
 
 ## Which columns are generated
 
-**DataGrid** derives from `MultiSelector`, `Selector`, and `ItemsControl`. With the default `AutoGenerateColumns="True"`, it creates one column per public property it can bind to, in the order the properties are declared: a class with `Zeta`, `Alpha`, and `Mid` gave the columns in that order, not alphabetically. A property without a setter became a read-only column.
+**DataGrid** derives from `MultiSelector`, `Selector`, and `ItemsControl`. With the default `AutoGenerateColumns="True"`, it creates one column per public property it can bind to. In the measured class, which declares `Zeta`, `Alpha`, and `Mid` in that order, the columns appeared in declaration order, not alphabetically; the order is what was observed, not something the documentation guarantees. A property without a setter became a read-only column.
 
 In the measured item types, every public property became a column, while the indexer `this[string columnName]` did not. The demo app's items implement `IDataErrorInfo`, so the generated columns were `Name`, `Value`, and a read-only `Error` column taken from the interface. When the item type has members that should not be shown, set `AutoGenerateColumns` to `False` and declare the columns as `DataGridTextColumn`, `DataGridCheckBoxColumn`, `DataGridComboBoxColumn`, and so on. In edit mode their cells hold a `TextBox`, a `CheckBox`, and a `ComboBox`.
 
@@ -40,7 +40,7 @@ Grouping comes from the collection view, and the DataGrid shows groups only when
 
 ## Rows on screen: virtualization, frozen columns, and alternating rows
 
-`EnableRowVirtualization` and `EnableColumnVirtualization` decide whether rows and columns outside the view are created. The defaults are `True` for rows and `False` for columns. With 1,000 rows, 11 `DataGridRow`s existed. By default, grouping turns row virtualization off, because `VirtualizingPanel.IsVirtualizingWhenGrouping` is `False`: grouped with a `GroupStyle`, all 1,000 rows were created. With it set to `True`, 18 rows were created. Set it on grouped grids.
+`EnableRowVirtualization` and `EnableColumnVirtualization` decide whether rows and columns outside the view are created. The defaults are `True` for rows and `False` for columns. With 1,000 rows in a DataGrid 360 wide and 200 high, 11 `DataGridRow`s existed. By default, grouping turns row virtualization off, because `VirtualizingPanel.IsVirtualizingWhenGrouping` is `False`: grouped with a `GroupStyle`, all 1,000 rows were created. With it set to `True`, 18 rows were created in the same DataGrid. Set it on grouped grids.
 
 `FrozenColumnCount` is the number of leftmost columns that stay in place during horizontal scrolling; the default is 0. With four 100-wide columns in a DataGrid 200 wide, scrolling 60 to the right moved the first column from x = 7 to -53. With `FrozenColumnCount="1"`, it stayed at 7 while the second column moved. A value of 3 with two columns raised no exception and was reduced to 2.
 
