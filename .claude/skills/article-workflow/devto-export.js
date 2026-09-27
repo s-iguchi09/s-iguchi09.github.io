@@ -230,12 +230,19 @@ function splitFrontMatter(raw) {
   const fm = {};
   for (const line of m[1].split(/\r?\n/)) {
     const kv = line.match(/^([a-z_]+):\s*(.*)$/);
-    if (kv) fm[kv[1]] = kv[2].trim();
+    // 値の引用符はここで外し、使う側では外した後の値として扱う。
+    if (kv) fm[kv[1]] = unquote(kv[2].trim());
   }
   return { fm, body: m[2] };
 }
 
-const unquote = (s) => (s && s.startsWith('"') && s.endsWith('"') ? s.slice(1, -1) : s);
+// front matter の値の引用符を外す。YAML の二重引用符では \" と \\ を、単引用符では '' を元の文字に戻す。
+const unquote = (s) => {
+  if (!s || s.length < 2) return s;
+  if (s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1).replace(/\\(["\\])/g, '$1');
+  if (s.startsWith("'") && s.endsWith("'")) return s.slice(1, -1).replace(/''/g, "'");
+  return s;
+};
 
 function readArticle(slug, lang) {
   const file = path.join(REPO, `_articles_${lang}`, `${slug}.md`);
@@ -254,13 +261,50 @@ function readArticle(slug, lang) {
  * `//` で始まるプロトコル相対 URL は別ドメインなので触らない。
  */
 function absolutize(body) {
-  return body
-    // HTML 属性は = の前後の空白と、どちらの引用符も許す。
-    .replace(/\b(src|href)(\s*=\s*)(['"])\/(?!\/)/g, `$1$2$3${SITE}/`)
-    // Markdown のインラインのリンクと画像。山括弧で囲んだ URL（](</path>)）も対象にする。
-    .replace(/\]\((<)?\/(?!\/)/g, (_, angle = '') => `](${angle}${SITE}/`)
-    // Markdown の参照形式のリンク定義（[id]: /path）。
-    .replace(/^( {0,3}\[[^\]\n]+\]:[ \t]*)(<)?\/(?!\/)/gm, (_, head, angle = '') => `${head}${angle}${SITE}/`);
+  // コードブロックとインラインのコードに書かれた URL は例なので書き換えない。
+  return mapOutsideCode(body, (text) => text
+    // HTML の src / href。属性名の大文字小文字、= の前後の空白、引用符の有無と種類を問わない。
+    .replace(/\b((?:src|href)\s*=\s*)(["']?)\/(?!\/)/gi, `$1$2${SITE}/`)
+    // Markdown のインラインのリンクと画像。( の後の空白（改行を含む）と、山括弧で囲んだ URL も対象にする。
+    .replace(/\]\((\s*)(<)?\/(?!\/)/g, (_, space, angle = '') => `](${space}${angle}${SITE}/`)
+    // Markdown の参照形式のリンク定義（[id]: /path）。URL が次の行にある書き方も対象にする。
+    .replace(/^( {0,3}\[[^\]\n]+\]:[ \t]*(?:\r?\n[ \t]*)?)(<)?\/(?!\/)/gm, (_, head, angle = '') => `${head}${angle}${SITE}/`));
+}
+
+/**
+ * フェンスで囲んだコードブロックとインラインのコードを除いた部分にだけ convert を適用する。
+ * インラインのコードは、書き換えの間だけ置き換え用の文字列に退避して元に戻す。
+ */
+function mapOutsideCode(body, convert) {
+  const lines = body.split('\n');
+  const out = [];
+  let prose = [];
+  let fence = null;
+  const flush = () => {
+    if (prose.length === 0) return;
+    const spans = [];
+    const masked = prose.join('\n').replace(/(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g, (m) => {
+      spans.push(m);
+      return `\u0000${spans.length - 1}\u0000`;
+    });
+    out.push(convert(masked).replace(/\u0000(\d+)\u0000/g, (_, i) => spans[Number(i)]));
+    prose = [];
+  };
+  for (const line of lines) {
+    const marker = line.match(/^ {0,3}(`{3,}|~{3,})/);
+    if (fence) {
+      out.push(line);
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && /^ {0,3}(`+|~+)\s*\r?$/.test(line)) fence = null;
+    } else if (marker) {
+      flush();
+      fence = marker[1];
+      out.push(line);
+    } else {
+      prose.push(line);
+    }
+  }
+  flush();
+  return out.join('\n');
 }
 
 function linkedSlugs(text) {
@@ -379,7 +423,7 @@ function replaceSvgFigures(body, slug) {
 
 function buildExport(slug) {
   const { fm, body } = readArticle(slug, 'en');
-  const title = unquote(fm.title);
+  const title = fm.title;
   const head = [
     '---',
     `title: "${title.replace(/"/g, '\\"')}"`,
@@ -387,7 +431,7 @@ function buildExport(slug) {
     `tags: ${TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS}`,
     // SVG は dev.to の画像プロキシが変換できず表示が壊れる（replaceSvgFigures と同じ理由）ので、
     // カバー画像にしない。
-    fm.image && !/\.svg$/i.test(unquote(fm.image)) ? `cover_image: ${SITE}${unquote(fm.image)}` : null,
+    fm.image && !/\.svg$/i.test(fm.image) ? `cover_image: ${SITE}${fm.image}` : null,
     `canonical_url: ${SITE}/articles/${slug}/`,
     '---',
     '',
@@ -486,7 +530,7 @@ async function main() {
   console.log('\n=== dev.to からのリンク ===\n');
   for (const slug of active) {
     const { fm } = readArticle(slug, 'en');
-    const title = unquote(fm.title);
+    const title = fm.title;
     const tags = TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS;
 
     if (!posts) {
