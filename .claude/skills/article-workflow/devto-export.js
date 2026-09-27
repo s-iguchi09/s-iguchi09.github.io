@@ -246,12 +246,17 @@ function readArticle(slug, lang) {
 /**
  * サイトルート基準の相対パスを絶対 URL にする。
  * dev.to は別ドメインなので、相対のままでは画像もリンクも壊れる。
+ *
+ * 先頭のディレクトリで絞らず、`/` で始まるパスはすべて対象にする。
+ * 以前は images・articles・en だけを直していたため、記事の関連リンクに足した
+ * デモページ（/apps/...）や日本語版（/ja/...）へのリンクが相対のまま残り、
+ * dev.to 上でリンク切れになった（2026-09-27 JST）。
+ * `//` で始まるプロトコル相対 URL は別ドメインなので触らない。
  */
 function absolutize(body) {
   return body
-    .replace(/src="\/(images|articles|en)\//g, `src="${SITE}/$1/`)
-    .replace(/href="\/(images|articles|en)\//g, `href="${SITE}/$1/`)
-    .replace(/\]\(\/(images|articles|en)\//g, `](${SITE}/$1/`);
+    .replace(/\b(src|href)="\/(?!\/)/g, `$1="${SITE}/`)
+    .replace(/\]\(\/(?!\/)/g, `](${SITE}/`);
 }
 
 function linkedSlugs(text) {
@@ -376,7 +381,9 @@ function buildExport(slug) {
     `title: "${title.replace(/"/g, '\\"')}"`,
     'published: false',
     `tags: ${TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS}`,
-    fm.image ? `cover_image: ${SITE}${fm.image}` : null,
+    // SVG は dev.to の画像プロキシが変換できず表示が壊れる（replaceSvgFigures と同じ理由）ので、
+    // カバー画像にしない。
+    fm.image && !/\.svg$/i.test(unquote(fm.image)) ? `cover_image: ${SITE}${unquote(fm.image)}` : null,
     `canonical_url: ${SITE}/articles/${slug}/`,
     '---',
     '',
