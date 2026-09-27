@@ -297,3 +297,4 @@ private static BitmapImage LoadFromStream(string path)
 
 <!-- 関連記事 -->
 - [WPF で ObservableCollection をバックグラウンドスレッドから更新するとクロススレッド例外が発生する問題の解決方法](/ja/articles/wpf-observablecollection-cross-thread-update/)
+- [Image | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/image.html)：パスをバインドしたときのファイルのロックと `BitmapCacheOption.OnLoad` を、`Stretch` ごとの大きさとあわせて実測したページ

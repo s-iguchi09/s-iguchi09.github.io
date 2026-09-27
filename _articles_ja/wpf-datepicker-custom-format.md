@@ -200,3 +200,8 @@ public class DateFormatConverter : IValueConverter
 
 最適な方法はプロジェクトのアーキテクチャに依存する。
 `DatePicker` 本体の表示を変えるには Style + StringFormat を使う。`SelectedDateChanged` で `Text` を書き換えても表示は変わらなかった。コンバーターは、同じ日付を表示する併設表示が複数ある場合に適する。
+
+---
+
+<!-- 関連記事 -->
+- [DatePicker | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/datepicker.html)：`Text` がカルチャで解析される様子と、`SelectedDateFormat` などスタイルから来る既定値を実測したページ

@@ -444,3 +444,8 @@ public static bool SelectByPath(TreeView treeView, IReadOnlyList<object> path)
 - **仮想化を有効にする場合:**
 画面外のノードはコンテナを持たないため、コンテナへの直接操作を前提とした実装はそのままでは成立しない。
 双方向バインドの方式に統一する。
+
+---
+
+<!-- 関連記事 -->
+- [TreeView | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/treeview.html)：`IsSelected`、展開ボタンで外れる `IsExpanded` のバインド、仮想化を実測したページ

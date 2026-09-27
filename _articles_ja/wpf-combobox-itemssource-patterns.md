@@ -295,5 +295,6 @@ ViewModel 側で `null` を許容する型（例: `string?`, `int?`）を使う�
 
 <!-- 関連記事 -->
 - [WPF で RadioButton を enum にバインドすると初期選択が表示されない問題と GroupName の役割](/ja/articles/wpf-radiobutton-enum-binding/)
+- [ComboBox | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/combobox.html)：同じ項目で `Text`・`SelectedValue`・`SelectedItem` が何を表すかを実測したページ
 <!-- - [WPF DataGrid の並び替えを実装する方法](/articles/wpf-datagrid-sorting) -->
 <!-- - [英語版: WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/en/articles/wpf-combobox-itemssource-patterns) -->

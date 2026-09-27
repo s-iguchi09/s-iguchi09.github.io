@@ -433,3 +433,8 @@ Being independent of how selection is requested, it combines with either approac
 - **Virtualized trees:**
 Off-screen nodes have no containers, so an implementation that assumes direct container access does not work without extra machinery.
 Standardize on the two-way binding approach.
+
+---
+
+<!-- Related articles -->
+- [TreeView | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/treeview.html): measures `IsSelected`, the `IsExpanded` binding that the expander removes, and virtualization

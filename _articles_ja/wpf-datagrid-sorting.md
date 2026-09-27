@@ -134,3 +134,8 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 
 業務アプリの多くはデフォルト機能で対応できる。
 `CustomSort` は `SortDescription` では表現できない特殊な並び替えが必要なときだけ使用するのが運用上の目安である。
+
+---
+
+<!-- 関連記事 -->
+- [DataGrid | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しのクリックで並ぶ順序と、セルの編集中にコードから並べ替えると失敗する理由を実測したページ

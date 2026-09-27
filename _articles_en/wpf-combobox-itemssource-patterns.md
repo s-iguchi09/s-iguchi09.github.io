@@ -310,3 +310,4 @@ The first is avoided by comparing a value such as an ID through `SelectedValuePa
 
 <!-- Related articles -->
 - [Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — The Role of GroupName](/articles/wpf-radiobutton-enum-binding/)
+- [ComboBox | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/combobox.html): measures what `Text`, `SelectedValue`, and `SelectedItem` show for the same items

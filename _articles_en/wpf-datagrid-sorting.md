@@ -128,4 +128,9 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 | Custom sort logic     | `ListCollectionView.CustomSort`             |
 
 For most line-of-business apps the default mechanism covers the common cases.  
-Reach for `CustomSort` only when the data requires special ordering that `SortDescription` cannot express.  
+Reach for `CustomSort` only when the data requires special ordering that `SortDescription` cannot express.
+
+---
+
+<!-- Related articles -->
+- [DataGrid | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/datagrid.html): measures the order produced by header clicks and why sorting from code fails while a cell is being edited

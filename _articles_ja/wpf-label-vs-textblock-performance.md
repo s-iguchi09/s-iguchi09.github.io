@@ -278,3 +278,5 @@ WPF で `Label` を大量配置した場合の遅延要因は、`ContentControl`
 <!-- 関連記事 -->
 - [WPF の Label でアンダーバーが消える理由と回避方法](/ja/articles/wpf-label-underscore-issue/)
 - [WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法](/ja/articles/wpf-listbox-virtualization-selecteditems/)
+- [Label | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/label.html)：Label の既定値と、アクセスキーがフォーカスをどこへ移すかを実測したページ
+- [TextBlock | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/textblock.html)：`Text` と `Inlines` の関係と、テンプレートを持たない TextBlock の折り返しと省略を実測したページ
