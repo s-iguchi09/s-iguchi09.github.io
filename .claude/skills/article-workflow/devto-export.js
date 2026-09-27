@@ -230,12 +230,37 @@ function splitFrontMatter(raw) {
   const fm = {};
   for (const line of m[1].split(/\r?\n/)) {
     const kv = line.match(/^([a-z_]+):\s*(.*)$/);
-    if (kv) fm[kv[1]] = kv[2].trim();
+    // 値の引用符はここで外し、使う側では外した後の値として扱う。
+    if (kv) fm[kv[1]] = unquote(kv[2].trim());
   }
   return { fm, body: m[2] };
 }
 
-const unquote = (s) => (s && s.startsWith('"') && s.endsWith('"') ? s.slice(1, -1) : s);
+// YAML 1.2 の二重引用符のエスケープ（1 文字のもの）。\x・\u・\U は unquote の中で扱う。
+const YAML_ESCAPES = {
+  '0': '\0', a: '\x07', b: '\b', t: '\t', '\t': '\t', n: '\n', v: '\v', f: '\f', r: '\r', e: '\x1b',
+  ' ': ' ', '"': '"', '/': '/', '\\': '\\', N: '\x85', _: '\xa0', L: '\u2028', P: '\u2029',
+};
+
+// front matter の値の引用符を外す。
+// 二重引用符はエスケープ（\n・\" ・\\・\uXXXX など）を元の文字に戻し、単引用符は '' を ' に戻す。
+const unquote = (s) => {
+  if (!s || s.length < 2) return s;
+  if (s.startsWith('"') && s.endsWith('"')) {
+    return s.slice(1, -1).replace(/\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|[\s\S])/g, (all, e) => {
+      if (e.length > 1) return String.fromCodePoint(parseInt(e.slice(1), 16));
+      return Object.prototype.hasOwnProperty.call(YAML_ESCAPES, e) ? YAML_ESCAPES[e] : all;
+    });
+  }
+  if (s.startsWith("'") && s.endsWith("'")) return s.slice(1, -1).replace(/''/g, "'");
+  return s;
+};
+
+// 文字列を YAML の二重引用符のスカラーとして書き出す。\ と " と制御文字をエスケープする。
+const yamlDoubleQuoted = (s) => `"${s.replace(/[\\"\x00-\x1f\x7f\x85\u2028\u2029]/g, (c) => {
+  const named = { '\\': '\\\\', '"': '\\"', '\n': '\\n', '\t': '\\t', '\r': '\\r' }[c];
+  return named || `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`;
+})}"`;
 
 function readArticle(slug, lang) {
   const file = path.join(REPO, `_articles_${lang}`, `${slug}.md`);
@@ -246,12 +271,62 @@ function readArticle(slug, lang) {
 /**
  * サイトルート基準の相対パスを絶対 URL にする。
  * dev.to は別ドメインなので、相対のままでは画像もリンクも壊れる。
+ *
+ * 先頭のディレクトリで絞らず、`/` で始まるパスはすべて対象にする。
+ * 以前は images・articles・en だけを直していたため、記事の関連リンクに足した
+ * デモページ（/apps/...）や日本語版（/ja/...）へのリンクが相対のまま残り、
+ * dev.to 上でリンク切れになった（2026-09-27 JST）。
+ * `//` で始まるプロトコル相対 URL は別ドメインなので触らない。
  */
 function absolutize(body) {
-  return body
-    .replace(/src="\/(images|articles|en)\//g, `src="${SITE}/$1/`)
-    .replace(/href="\/(images|articles|en)\//g, `href="${SITE}/$1/`)
-    .replace(/\]\(\/(images|articles|en)\//g, `](${SITE}/$1/`);
+  // コードブロックとインラインのコードに書かれた URL は例なので書き換えない。
+  return mapOutsideCode(body, (text) => text
+    // HTML の src / href。属性名の大文字小文字、= の前後の空白、引用符の有無と種類を問わない。
+    .replace(/\b((?:src|href)\s*=\s*)(["']?)\/(?!\/)/gi, `$1$2${SITE}/`)
+    // Markdown のインラインのリンクと画像。( の後の空白（改行を含む）と、山括弧で囲んだ URL も対象にする。
+    .replace(/\]\((\s*)(<)?\/(?!\/)/g, (_, space, angle = '') => `](${space}${angle}${SITE}/`)
+    // Markdown の参照形式のリンク定義（[id]: /path）。ラベルの途中の改行（空行は除く）と、URL が次の行にある書き方も対象にする。
+    .replace(/^( {0,3}\[(?:[^\]\n]|\n(?![ \t]*\r?\n))+\]:[ \t]*(?:\r?\n[ \t]*)?)(<)?\/(?!\/)/gm, (_, head, angle = '') => `${head}${angle}${SITE}/`));
+}
+
+/**
+ * フェンスで囲んだコードブロックとインラインのコードを除いた部分にだけ convert を適用する。
+ * インラインのコードは、書き換えの間だけ置き換え用の文字列に退避して元に戻す。
+ */
+function mapOutsideCode(body, convert) {
+  const lines = body.split('\n');
+  const out = [];
+  let prose = [];
+  let fence = null;
+  const flush = () => {
+    if (prose.length === 0) return;
+    const spans = [];
+    // 開始のバッククォート列は、前後がバッククォートでない同じ長さの列で閉じる（長い列の途中からは始めない）。
+    // コードは段落をまたがないので、空行を越えて閉じない。
+    const masked = prose.join('\n').replace(/(?<!`)(`+)(?!`)(?:(?!\n[ \t]*\r?\n)[\s\S])*?(?<!`)\1(?!`)/g, (m) => {
+      spans.push(m);
+      return `\u0000${spans.length - 1}\u0000`;
+    });
+    out.push(convert(masked).replace(/\u0000(\d+)\u0000/g, (_, i) => spans[Number(i)]));
+    prose = [];
+  };
+  for (const line of lines) {
+    // バッククォートのフェンスは、info string にバッククォートを含む行を開始行と認めない（CommonMark）。
+    const found = line.match(/^ {0,3}(?:(`{3,})(?![^`]*`)|(~{3,}))/);
+    const marker = found && [found[0], found[1] || found[2]];
+    if (fence) {
+      out.push(line);
+      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length && /^ {0,3}(`+|~+)\s*\r?$/.test(line)) fence = null;
+    } else if (marker) {
+      flush();
+      fence = marker[1];
+      out.push(line);
+    } else {
+      prose.push(line);
+    }
+  }
+  flush();
+  return out.join('\n');
 }
 
 function linkedSlugs(text) {
@@ -388,13 +463,17 @@ function replaceSvgFigures(body, slug) {
 
 function buildExport(slug) {
   const { fm, body } = readArticle(slug, 'en');
-  const title = unquote(fm.title);
+  const title = fm.title;
   const head = [
     '---',
-    `title: "${title.replace(/"/g, '\\"')}"`,
+    // splitFrontMatter でエスケープを戻した値なので、YAML の二重引用符として書き出し直す。
+    `title: ${yamlDoubleQuoted(title)}`,
     'published: false',
     `tags: ${TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS}`,
-    fm.image ? `cover_image: ${SITE}${fm.image}` : null,
+    // SVG は dev.to の画像プロキシが変換できず表示が壊れる（replaceSvgFigures と同じ理由）ので、
+    // カバー画像にしない。
+    // 拡張子はクエリとフラグメントを除いて判定する。
+    fm.image && !/\.svg$/i.test(fm.image.replace(/[?#].*$/, '')) ? `cover_image: ${SITE}${fm.image}` : null,
     `canonical_url: ${SITE}/articles/${slug}/`,
     '---',
     '',
@@ -493,7 +572,7 @@ async function main() {
   console.log('\n=== dev.to からのリンク ===\n');
   for (const slug of active) {
     const { fm } = readArticle(slug, 'en');
-    const title = unquote(fm.title);
+    const title = fm.title;
     const tags = TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS;
 
     if (!posts) {
