@@ -255,8 +255,12 @@ function readArticle(slug, lang) {
  */
 function absolutize(body) {
   return body
-    .replace(/\b(src|href)="\/(?!\/)/g, `$1="${SITE}/`)
-    .replace(/\]\(\/(?!\/)/g, `](${SITE}/`);
+    // HTML 属性は = の前後の空白と、どちらの引用符も許す。
+    .replace(/\b(src|href)(\s*=\s*)(['"])\/(?!\/)/g, `$1$2$3${SITE}/`)
+    // Markdown のインラインのリンクと画像。山括弧で囲んだ URL（](</path>)）も対象にする。
+    .replace(/\]\((<)?\/(?!\/)/g, (_, angle = '') => `](${angle}${SITE}/`)
+    // Markdown の参照形式のリンク定義（[id]: /path）。
+    .replace(/^( {0,3}\[[^\]\n]+\]:[ \t]*)(<)?\/(?!\/)/gm, (_, head, angle = '') => `${head}${angle}${SITE}/`);
 }
 
 function linkedSlugs(text) {
