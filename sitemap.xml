@@ -1796,6 +1796,32 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-input-limits-not-applied-to-code/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-input-limits-not-applied-to-code/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-input-limits-not-applied-to-code/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-input-limits-not-applied-to-code/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.svg</image:loc></image:image>
+    <lastmod>2026-09-27T13:33:53Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-input-limits-not-applied-to-code/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-input-limits-not-applied-to-code/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-input-limits-not-applied-to-code/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-input-limits-not-applied-to-code/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.svg</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.svg</image:loc></image:image>
+    <lastmod>2026-09-27T13:33:53Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-label-underscore-issue/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-label-underscore-issue/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-underscore-issue/" />
