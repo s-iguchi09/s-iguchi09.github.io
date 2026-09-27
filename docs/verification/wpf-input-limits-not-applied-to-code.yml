@@ -1,0 +1,23 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-input-limits-not-applied-to-code
+slug: "wpf-input-limits-not-applied-to-code"
+scene: "InputLimitsFromCodeScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TextBox の MaxLength は利用者の入力だけを切り詰め、コードからの Text とバインドした値は切り詰めないこと"
+  - "TextBox の CharacterCasing は利用者の入力だけを変換し、コードからの Text とバインドした値は変換しないこと"
+  - "PasswordBox の MaxLength は利用者の入力だけを切り詰め、コードからの Password は切り詰めないこと。PasswordBox には PasswordProperty が無く、Password をバインドできないこと"
+  - "DatePicker の DisplayDateStart / DisplayDateEnd はカレンダーの範囲外の日付ボタンを無効にするが、テキスト欄への入力・コード・バインドからの範囲外の日付は受け付けること。受け付けた後は 3 つの経路とも DisplayDateStart がその日付まで下がり、コードから設定した後はカレンダーの範囲外の日付ボタンが有効になること"
+  - "DisplayDateStart を既定（TwoWay）でバインドしても、範囲外の日付で下がった値はソースへ書き戻されず、バインドは残ってソースの変更に追従すること。OneWay でも同じであること。DisplayDateStart と DisplayDateEnd を読み取り専用のプロパティへ既定でバインドすると、Source を指定した場合は SetBinding で、DataContext 経由では表示中の DatePicker に DataContext を設定した時点で、表示前に DataContext を設定した場合は（DatePicker 自身に設定しても、親の要素に設定して継承させても）ウィンドウを表示する処理の中で、読み取り専用のプロパティを理由とする InvalidOperationException になること"
+  - "Slider の IsSnapToTickEnabled は矢印キーの操作だけを目盛りに合わせ、コードとバインドからの値は合わせないこと"
+  - "Slider の Maximum は Value を補正し（Maximum を広げると設定した値に戻る）、コードとバインドからの値を画面上で範囲に収めるが、補正した値はバインドしたソースへ書き戻されないこと。End キーでは上限に止まること"
+  - "IsEnabled=False の TabItem は UI オートメーションの Select では選べないが、コードの SelectedIndex とバインドした SelectedIndex では選ばれ、その内容が SelectedContent になること"
+  - "INotifyDataErrorInfo で長さを検証するビューモデルは、コードからの長すぎる値に検証エラーを出し、TextBox にも Validation.HasError が立つこと。入力では MaxLength が先に切り詰めるため、エラーにならないこと。上限を超えた値を読み込んだ後は、末尾に文字を打っても入らず、1 文字消してもエラーが残ること"
+  - "保存ボタンの IsEnabled を HasErrors の反転にバインドすると、コードからの値でも Backspace での編集でも HasErrors の変化に追従すること"
+  - "setter で範囲と刻みに丸めるビューモデルは、コードからの値も、目盛り合わせの無い Slider がキー操作で送った値も丸め、Slider とソースの値が一致すること"
+images:
+  - "images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.svg"
+  - "images/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.svg"
+  - "images/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.svg"

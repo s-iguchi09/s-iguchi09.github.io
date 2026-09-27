@@ -44,6 +44,7 @@ internal static class Program
         new UserControlDependencyPropertyScene(),
         new RadioButtonEnumBindingScene(),
         new NaturalSortScene(),
+        new InputLimitsFromCodeScene(),
         new CollectionViewFilterRefreshScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
