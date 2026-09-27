@@ -160,6 +160,87 @@ internal static class DemoLayout
     }
 
     /// <summary>
+    /// 実測値の表を、記事に include で読み込む GFM の表として組み立てる。
+    ///
+    /// 横に広い表を SVG にすると、本文の幅に縮めたときに文字が読めない大きさになる
+    /// （2026-09-28 JST。幅 1266px の表が本文では約 7 割に縮み、13px の文字が約 9px になった）。
+    /// 表を本文のテキストとして出せば、縮まずに横スクロールでき、検索・翻訳・読み上げにも載る。
+    ///
+    /// セルの文字は Liquid と kramdown に解釈させないようエスケープする。
+    /// 実測値は文字どおりに見せたいので、kramdown の記号の置き換え（引用符・ダッシュ・三点リーダー）も止める。
+    /// include した内容は Liquid が展開してから kramdown が変換するため、
+    /// <c>{</c> は Liquid の、<c>|</c> や <c>_</c> などは Markdown の記号として扱われうる。
+    /// </summary>
+    public static string BuildTableMarkdown(IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string>> rows)
+    {
+        var builder = new System.Text.StringBuilder();
+        builder.Append("| ").Append(string.Join(" | ", headers.Select(EscapeMarkdownCell))).Append(" |\n");
+        builder.Append('|').Append(string.Concat(headers.Select(_ => "---|"))).Append('\n');
+        foreach (IReadOnlyList<string> row in rows)
+        {
+            IEnumerable<string> cells = Enumerable.Range(0, headers.Count)
+                .Select(column => column < row.Count ? EscapeMarkdownCell(row[column]) : string.Empty);
+            builder.Append("| ").Append(string.Join(" | ", cells)).Append(" |\n");
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>表のセル 1 つ分の文字を、Markdown と Liquid の記号として解釈されない形にする。</summary>
+    private static string EscapeMarkdownCell(string text)
+    {
+        string source = text.Trim();
+        var builder = new System.Text.StringBuilder(source.Length);
+        for (int i = 0; i < source.Length; i++)
+        {
+            char c = source[i];
+            switch (c)
+            {
+                // Markdown の記号。表の区切り（|）と強調・コード・リンク・見出し・数式。
+                // 引用符は、kramdown が曲がった引用符に変えないようにエスケープする。
+                // いずれも kramdown と CommonMark の両方でバックスラッシュのエスケープが効く文字である。
+                case '\\' or '|' or '*' or '_' or '`' or '[' or ']' or '#' or '$' or '"' or '\'':
+                    builder.Append('\\').Append(c);
+                    break;
+                // 取り消し線の ~ は kramdown ではバックスラッシュでエスケープできない（\ が残る）ので文字参照にする。
+                case '~':
+                    builder.Append("&#126;");
+                    break;
+                // 2 つ以上続く - と . は、kramdown がダッシュや三点リーダーに変えないようにエスケープする。
+                case '-' or '.' when (i > 0 && source[i - 1] == c) || (i + 1 < source.Length && source[i + 1] == c):
+                    builder.Append('\\').Append(c);
+                    break;
+                // HTML として解釈されないよう文字参照にする。
+                case '<':
+                    builder.Append("&lt;");
+                    break;
+                case '>':
+                    builder.Append("&gt;");
+                    break;
+                case '&':
+                    builder.Append("&amp;");
+                    break;
+                // Liquid のタグ（{{ }} と {% %}）と kramdown の属性リスト（{: }）を作らないよう、波かっこは文字参照にする。
+                case '{':
+                    builder.Append("&#123;");
+                    break;
+                case '}':
+                    builder.Append("&#125;");
+                    break;
+                // 表の行は 1 行に収める。
+                case '\r' or '\n':
+                    builder.Append(' ');
+                    break;
+                default:
+                    builder.Append(c);
+                    break;
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
     /// 実測値の表を SVG として組み立てる。
     ///
     /// 表は文字と罫線だけで構成されるため、ウィンドウを撮影せずに直接描ける。

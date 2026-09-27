@@ -271,6 +271,15 @@ h2 {
   color: #5b6673;
 }
 
+/* 実測値の表（_includes/tables/ を include した Markdown の表）の直後に置く説明文。
+   図の figcaption と同じ見た目にし、表に寄せて置く。 */
+.table-caption {
+  margin-top: -0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: #5b6673;
+}
+
 /* 本文幅より横に広い図は、画面幅に合わせて縮めると文字が判読できなくなる。
    本文と同じく、狭い画面では図の内側だけを横スクロールさせる
    （min-width は max-width より優先されるため、縮小を打ち切れる）。 */

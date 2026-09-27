@@ -21,3 +21,7 @@ images:
   - "images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.svg"
   - "images/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.svg"
   - "images/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.svg"
+tables:
+  - "_includes/tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.md"
+  - "_includes/tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.md"
+  - "_includes/tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.md"

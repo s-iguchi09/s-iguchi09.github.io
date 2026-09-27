@@ -83,7 +83,9 @@ comm -23 \
    - `CaptureAsync` で図を保存する。実行中のウィンドウを見せる図は
      `SceneContext.ShootAsync(window, fileName)` で PNG として保存する。
    - フォーカスやテンプレートパーツの操作など、表示後に行う処理は `ShootAsync` の `beforeCapture` に渡す。
-   - **実測値の表は `SceneContext.SaveTableAsync(title, headers, rows, fileName)` で SVG として保存する。**
+   - **実測値の表は `SceneContext.SaveTableAsync(title, headers, rows, fileName)` で保存する。**
+     `ImageDirectory` に SVG を、`_includes/tables/` の下（`images/` 以下と同じ階層）に同じ内容の Markdown の表を書き出す。
+     記事は Markdown の表を `{% include tables/... %}` で読み込む（`docs/rules/article/guidelines.md` §11.4）。
      ウィンドウを作らないため `ShootAsync` の手順は当てはまらない。ディスプレイの電源状態にも影響されない。
    - 実行結果で記事の主張を確かめている場合は、`Verifies` にその内容を書く。
 2. `Program.cs` の `AllScenes` に登録する。
