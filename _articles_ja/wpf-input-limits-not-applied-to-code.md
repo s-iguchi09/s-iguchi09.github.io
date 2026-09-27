@@ -341,8 +341,8 @@ XAML は「問題」の節の `Slider` のままでよい。
 
 ## まとめ
 
-`MaxLength`・`CharacterCasing`・`DisplayDateStart`・`IsSnapToTickEnabled`・`TabItem.IsEnabled` は、いずれも利用者の操作を制限する仕組みであり、プロパティの値そのものを制約しない。
-コードからの代入とバインドした値はこれらをすり抜け、`DatePicker` はテキスト欄からの入力さえ止めない。
+`TextBox.MaxLength`・`CharacterCasing`・`PasswordBox.MaxLength`・`DisplayDateStart`・`IsSnapToTickEnabled`・`TabItem.IsEnabled` は、いずれも利用者の操作を制限する仕組みであり、プロパティの値そのものを制約しない。
+コードからの代入はこれらすべてをすり抜け、バインドできるものはバインドした値もすり抜け、`DatePicker` はテキスト欄からの入力さえ止めない。
 表の中で唯一、コードからの値を画面上で範囲に収めた `Slider.Maximum` の補正も、バインドしたソースへは書き戻されなかった。
 
 守るべき値の範囲は、次のように置き分ける。

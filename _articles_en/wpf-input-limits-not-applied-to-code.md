@@ -343,8 +343,8 @@ Read-only properties were tried with both `DisplayDateStart` and `DisplayDateEnd
 
 ## Summary
 
-`MaxLength`, `CharacterCasing`, `DisplayDateStart`, `IsSnapToTickEnabled`, and `TabItem.IsEnabled` all restrict what the user does; none of them constrains the property value itself.
-Assignment from code and bound values get past them, and the `DatePicker` does not even stop input from its text box.
+`TextBox.MaxLength`, `CharacterCasing`, `PasswordBox.MaxLength`, `DisplayDateStart`, `IsSnapToTickEnabled`, and `TabItem.IsEnabled` all restrict what the user does; none of them constrains the property value itself.
+Assignment from code gets past all of them, bound values get past the ones that can be bound, and the `DatePicker` does not even stop input from its text box.
 The `Slider`'s `Maximum` coercion, the only one in the table that brought values from code into range on the screen, was not written back to the bound source.
 
 The responsibility for a value's range is split as follows.
