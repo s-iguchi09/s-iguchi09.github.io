@@ -53,6 +53,8 @@ jobs:
         id: sitemap
         env:
           DEPLOY_KEY: ${{ secrets.SITEMAP_DEPLOY_KEY }}
+          # api.github.com/meta を認証付きで呼ぶための読み取り専用トークン（permissions: contents: read）。
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
@@ -63,7 +65,11 @@ jobs:
           # ssh-keyscan は取得したホスト鍵を検証しないため使わない。
           # GitHub が公開している SSH ホスト鍵を HTTPS（＝証明書で認証された経路）で
           # 取得して登録する。鍵がローテーションされても追従できる。
-          curl -fsSL https://api.github.com/meta \
+          # 認証なしの呼び出しは共有ランナーの IP ごとの制限で 403 になることがあった（2026-09-27）。
+          # トークンを付けて呼び、一時的な失敗は数回やり直す。
+          curl -fsSL --retry 4 --retry-delay 5 --retry-all-errors \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            https://api.github.com/meta \
             | jq -r '.ssh_keys[] | "github.com " + .' > ~/.ssh/known_hosts
           test -s ~/.ssh/known_hosts
           export GIT_SSH_COMMAND="ssh -i ~/.ssh/sitemap_deploy -o IdentitiesOnly=yes"
