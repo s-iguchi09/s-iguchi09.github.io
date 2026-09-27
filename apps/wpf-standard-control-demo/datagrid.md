@@ -9,9 +9,9 @@ description: "WPF DataGrid measured on .NET 10: generated columns, sorting, edit
 
 ## Which columns are generated
 
-**DataGrid** derives from `MultiSelector`, `Selector`, and `ItemsControl`. With the default `AutoGenerateColumns="True"`, it creates one column per public property, in the order the properties are declared: a class with `Zeta`, `Alpha`, and `Mid` gave the columns in that order, not alphabetically. A property without a setter became a read-only column.
+**DataGrid** derives from `MultiSelector`, `Selector`, and `ItemsControl`. With the default `AutoGenerateColumns="True"`, it creates one column per public property it can bind to, in the order the properties are declared: a class with `Zeta`, `Alpha`, and `Mid` gave the columns in that order, not alphabetically. A property without a setter became a read-only column.
 
-Every public property of the measured item types became a column. The demo app's items implement `IDataErrorInfo`, so the generated columns were `Name`, `Value`, and a read-only `Error` column taken from the interface. When the item type has members that should not be shown, set `AutoGenerateColumns` to `False` and declare the columns as `DataGridTextColumn`, `DataGridCheckBoxColumn`, `DataGridComboBoxColumn`, and so on. In edit mode their cells hold a `TextBox`, a `CheckBox`, and a `ComboBox`.
+In the measured item types, every public property became a column, while the indexer `this[string columnName]` did not. The demo app's items implement `IDataErrorInfo`, so the generated columns were `Name`, `Value`, and a read-only `Error` column taken from the interface. When the item type has members that should not be shown, set `AutoGenerateColumns` to `False` and declare the columns as `DataGridTextColumn`, `DataGridCheckBoxColumn`, `DataGridComboBoxColumn`, and so on. In edit mode their cells hold a `TextBox`, a `CheckBox`, and a `ComboBox`.
 
 ## Adding, deleting, and read-only grids
 
@@ -63,7 +63,7 @@ Grouping comes from the collection view, and the DataGrid shows groups only when
 
 ![The DataGrid page of the demo app, with the control list on the left and the first section, AlternatingRowBackground](/images/wpf-standard-control-demo/datagrid.png){: .screenshot-img}
 
-The DataGrid page of the demo app has a section for each of its twenty property groups, including all the properties above. The data holds items with `Name` and `Value` that implement `IDataErrorInfo`, and the `FrozenColumnCount` slider goes up to 3 for two columns. The "Show Code" link under each section displays its XAML. The following XAML is the `FrozenColumnCount` section (`DataGridUsageControl.xaml`), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. `Items` holds items with `Name` and `Value`:
+The DataGrid page of the demo app has a section for each of its twenty property groups, including all the properties above. The data holds items with `Name` and `Value` that implement `IDataErrorInfo`, and the `FrozenColumnCount` slider goes up to 3 for two columns. The "Show Code" link under each section displays its XAML. The following XAML is the `FrozenColumnCount` section (`DataGridUsageControl.xaml`), with the styles and the surrounding GroupBoxes left out and the namespace declarations added. `Items` holds items with `Name` and `Value`. The snippet relies on the `DataContext` it inherits: in the demo app, `DataGridUsageControl` sets its view model, which has `Items`, as the `DataContext`, so set a matching `DataContext` when you use the snippet by itself:
 
 ```xml
 <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

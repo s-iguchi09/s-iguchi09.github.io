@@ -19,7 +19,7 @@ To combine binding and formatting, bind the `Text` of a `Run` instead: a bound `
 
 `TextWrapping` defaults to `NoWrap`. With "Say Supercalifragilisticexpialidocious now" in a width of 100, whose long word alone is wider than 100, `NoWrap` gave one line cut off at 100. `Wrap` gave 4 lines, breaking the long word itself. `WrapWithOverflow` gave 3 lines and kept the word whole, so it ran past 100 and was cut off there. Use `Wrap` when nothing may run past the edge.
 
-`TextTrimming`, whose default is `None`, ends text that does not fit with an ellipsis, as for a name in a column of fixed width. It only works when the width is limited. With `CharacterEllipsis`, a long text was 100 wide in a Grid 100 wide. In a horizontal StackPanel, which gives unlimited width, it took its full width of 220.43, so nothing was trimmed.
+`TextTrimming` set to `CharacterEllipsis` or `WordEllipsis` ends text that does not fit with an ellipsis, as for a name in a column of fixed width; with the default, `None`, nothing is trimmed. It only works when the width is limited. With `CharacterEllipsis`, a long text was 100 wide in a Grid 100 wide. In a horizontal StackPanel, which gives unlimited width, it took its full width of 220.43, so nothing was trimmed.
 
 `Padding` defaults to 0. With `Padding="10"`, the TextBlock grew by 20 in each direction, from 61.57 × 15.96 to 81.57 × 35.96.
 
@@ -71,6 +71,6 @@ The TextBlock page of the demo app has sections for `Text`, `TextWrapping`, `Tex
 
 ## Source code and how it was measured
 
-Every behavior on this page was measured by running it on .NET 10 / Windows 11, using [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. The TextBlocks were laid out with `Measure` and `Arrange`. Line counts are the height divided by the height of one line, and "clipped" means WPF's layout clip cut the TextBlock at the width it was given. Sizes depend on the font and display scaling; they are the values on the measuring machine.
+The defaults, `Inlines`, the bound `Run`, wrapping, trimming, `Padding`, and `LineHeight` on this page were measured by running them on .NET 10 / Windows 11 (that the text cannot be selected and the `TextAlignment` values shown in the demo app were not), using [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} in this site's screenshot tool. The TextBlocks were laid out with `Measure` and `Arrange`. Line counts are the height divided by the height of one line, and "clipped" means WPF's layout clip cut the TextBlock at the width it was given. Sizes depend on the font and display scaling; they are the values on the measuring machine.
 
 [View TextBlock source code on GitHub →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage){: target="_blank" rel="noopener noreferrer"}

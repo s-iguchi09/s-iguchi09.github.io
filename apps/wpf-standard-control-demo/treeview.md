@@ -73,7 +73,7 @@ The TreeView page of the demo app has sections for `IsExpanded`, `IsSelected` an
 ## Related controls and articles
 
 - [Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only](/articles/wpf-treeview-select-item-programmatically/) — selecting nodes from code and when their containers exist.
-- [ListBox](/apps/wpf-standard-control-demo/listbox.html) — a flat list, virtualized by default.
+- [ListBox](/apps/wpf-standard-control-demo/listbox.html) — a flat list, virtualized by default when its items come from `ItemsSource` (not when `ListBoxItem`s are added directly).
 - [Expander](/apps/wpf-standard-control-demo/expander.html) — a single collapsible section.
 
 ## Source code and how it was measured

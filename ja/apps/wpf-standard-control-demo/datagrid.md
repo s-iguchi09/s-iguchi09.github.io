@@ -9,9 +9,9 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 ## 自動で作られる列
 
-**DataGrid** は `MultiSelector`・`Selector`・`ItemsControl` を継承しています。既定の `AutoGenerateColumns="True"` では、公開プロパティごとに 1 列を、プロパティを宣言した順に作ります。`Zeta`・`Alpha`・`Mid` の順に宣言したクラスでは、アルファベット順ではなくこの順に列ができました。セッターのないプロパティは読み取り専用の列になりました。
+**DataGrid** は `MultiSelector`・`Selector`・`ItemsControl` を継承しています。既定の `AutoGenerateColumns="True"` では、バインドできる公開プロパティごとに 1 列を、プロパティを宣言した順に作ります。`Zeta`・`Alpha`・`Mid` の順に宣言したクラスでは、アルファベット順ではなくこの順に列ができました。セッターのないプロパティは読み取り専用の列になりました。
 
-計測した項目の型では、公開プロパティがすべて列になりました。デモアプリの項目は `IDataErrorInfo` を実装しているため、自動で作られた列は `Name`・`Value` と、インターフェイスから来た読み取り専用の `Error` 列でした。見せたくないメンバーがある型では、`AutoGenerateColumns` を `False` にし、`DataGridTextColumn`・`DataGridCheckBoxColumn`・`DataGridComboBoxColumn` などで列を宣言します。編集中のセルには、それぞれ `TextBox`・`CheckBox`・`ComboBox` が入りました。
+計測した項目の型では、公開プロパティはすべて列になり、インデクサー `this[string columnName]` は列になりませんでした。デモアプリの項目は `IDataErrorInfo` を実装しているため、自動で作られた列は `Name`・`Value` と、インターフェイスから来た読み取り専用の `Error` 列でした。見せたくないメンバーがある型では、`AutoGenerateColumns` を `False` にし、`DataGridTextColumn`・`DataGridCheckBoxColumn`・`DataGridComboBoxColumn` などで列を宣言します。編集中のセルには、それぞれ `TextBox`・`CheckBox`・`ComboBox` が入りました。
 
 ## 行の追加・削除と、読み取り専用の表
 
@@ -63,7 +63,7 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 ![デモアプリの DataGrid のページ。左にコントロールの一覧、右に最初の節の AlternatingRowBackground](/images/wpf-standard-control-demo/datagrid.png){: .screenshot-img}
 
-デモアプリの DataGrid のページには、ここまでのプロパティをすべて含む 20 のプロパティのまとまりごとに欄があります。データは `Name` と `Value` を持ち、`IDataErrorInfo` を実装した項目です。`FrozenColumnCount` のスライダーは、列が 2 つなのに 3 まで選べます。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。次の XAML は、`FrozenColumnCount` の欄（`DataGridUsageControl.xaml`）から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。`Items` は `Name` と `Value` を持つ項目のコレクションです。
+デモアプリの DataGrid のページには、ここまでのプロパティをすべて含む 20 のプロパティのまとまりごとに欄があります。データは `Name` と `Value` を持ち、`IDataErrorInfo` を実装した項目です。`FrozenColumnCount` のスライダーは、列が 2 つなのに 3 まで選べます。各欄の下の「Show Code」リンクで、その欄の XAML を表示できます。次の XAML は、`FrozenColumnCount` の欄（`DataGridUsageControl.xaml`）から、スタイルと周囲の GroupBox を省き、名前空間の宣言を加えたものです。`Items` は `Name` と `Value` を持つ項目のコレクションです。この断片は継承した `DataContext` を前提にしています。デモアプリでは `DataGridUsageControl` が `Items` を持つビューモデルを `DataContext` に設定しているので、断片だけで使う場合は、対応する `DataContext` を設定します。
 
 ```xml
 <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

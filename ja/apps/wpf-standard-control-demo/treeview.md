@@ -73,7 +73,7 @@ TreeViewItem の `IsExpanded` は、ノードが子を表示しているかど�
 ## 関連するコントロールと記事
 
 - [WPF TreeView で任意のノードをコードから選択・展開する方法と SelectedItem が読み取り専用である理由](/ja/articles/wpf-treeview-select-item-programmatically/) — コードからの選択と、コンテナーが作られるタイミングを扱います。
-- [ListBox](/ja/apps/wpf-standard-control-demo/listbox.html) — 階層のない一覧で、既定で仮想化されます。
+- [ListBox](/ja/apps/wpf-standard-control-demo/listbox.html) — 階層のない一覧で、`ItemsSource` から項目を与えた場合は既定で仮想化されます（`ListBoxItem` を直接追加した場合は除く）。
 - [Expander](/ja/apps/wpf-standard-control-demo/expander.html) — 1 つだけの折りたたみ可能な領域です。
 
 ## ソースコードと計測の方法

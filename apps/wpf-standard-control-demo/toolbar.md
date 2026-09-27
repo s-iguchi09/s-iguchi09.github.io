@@ -28,7 +28,7 @@ The toolbar's own `Background` can be changed directly: set to `LightYellow`, it
 
 ## What a ToolBarTray adds: bands, dragging, and locking
 
-`Band` is the row of a ToolBarTray the toolbar is in, and `BandIndex` its order in that row. With bands 0, 0, 1, 1 and indexes 0, 1, 0, 1, the toolbars were placed at (0, 0), (147.79, 0), (0, 30.96), and (147.79, 30.96). Dragging a toolbar by its thumb changes them: the toolbar at band 1, index 0, dragged 250 to the right and 30 upward, moved to band 0, index 0. Save `Band` and `BandIndex` to restore a user's layout.
+`Band` is the band of a ToolBarTray the toolbar is in, and `BandIndex` its order in that band. In a horizontal tray, as measured, a band is a row; in a vertical tray it is a column, according to the WPF source (not measured). With bands 0, 0, 1, 1 and indexes 0, 1, 0, 1, the toolbars were placed at (0, 0), (147.79, 0), (0, 30.96), and (147.79, 30.96). Dragging a toolbar by its thumb changes them: the toolbar at band 1, index 0, dragged 250 to the right and 30 upward, moved to band 0, index 0. Save `Band` and `BandIndex` to restore a user's layout.
 
 `IsLocked` on the tray is inherited by its toolbars. With `True`, each toolbar's thumb was collapsed, so the toolbars cannot be dragged; set it to fix the layout.
 

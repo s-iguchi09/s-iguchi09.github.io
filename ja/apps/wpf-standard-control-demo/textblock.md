@@ -19,7 +19,7 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 `TextWrapping` の既定値は `NoWrap` です。1 語だけで幅 100 を超える語を含む「Say Supercalifragilisticexpialidocious now」を幅 100 に置くと、`NoWrap` は 1 行で 100 の位置で切れました。`Wrap` は長い語そのものを折って 4 行になりました。`WrapWithOverflow` は語を分けずに 3 行になり、その語が 100 を超えてそこで切れました。端からはみ出させたくないなら `Wrap` を使います。
 
-既定値が `None` の `TextTrimming` は、幅の決まった列の名前のように、収まらない文字の末尾を省略記号にします。幅が限られているときだけ働きます。`CharacterEllipsis` の長い文字は、幅 100 の Grid では幅 100 になりました。幅に制限のない横の StackPanel では本来の幅 220.43 になり、省略されませんでした。
+`TextTrimming` を `CharacterEllipsis` か `WordEllipsis` にすると、幅の決まった列の名前のように、収まらない文字の末尾が省略記号になります。既定値の `None` では省略されません。幅が限られているときだけ働きます。`CharacterEllipsis` の長い文字は、幅 100 の Grid では幅 100 になりました。幅に制限のない横の StackPanel では本来の幅 220.43 になり、省略されませんでした。
 
 `Padding` の既定値は 0 です。`Padding="10"` では、TextBlock が縦横それぞれ 20 大きくなり、61.57 × 15.96 から 81.57 × 35.96 になりました。
 
@@ -71,6 +71,6 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 ## ソースコードと計測の方法
 
-このページの挙動の記述は、すべて .NET 10 / Windows 11 で実際に動かして確かめたものです。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「clipped」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
+このページの既定値、`Inlines`、バインドした `Run`、折り返し、省略、`Padding`、`LineHeight` の記述は、.NET 10 / Windows 11 で実際に動かして確かめたものです（文字を選択できないことと、デモアプリで示す `TextAlignment` の値は測っていません）。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「clipped」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
 
 [GitHub で TextBlock のソースコードを見る →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage){: target="_blank" rel="noopener noreferrer"}
