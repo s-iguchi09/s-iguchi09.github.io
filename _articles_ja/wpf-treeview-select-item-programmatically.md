@@ -448,4 +448,4 @@ public static bool SelectByPath(TreeView treeView, IReadOnlyList<object> path)
 ---
 
 <!-- 関連記事 -->
-- [TreeView | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/treeview.html)：`IsSelected`、展開ボタンで外れる `IsExpanded` のバインド、仮想化を実測したページ
+- [TreeView（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/treeview.html)：`IsSelected`、展開ボタンで外れる `IsExpanded` のバインド、仮想化を実測したページ

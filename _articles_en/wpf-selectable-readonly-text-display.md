@@ -168,4 +168,4 @@ This configuration is a suitable default pattern for any screen that displays te
 ---
 
 <!-- Related articles -->
-- [TextBox | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/textbox.html): measures that `IsReadOnly` ignores typing but still allows selecting and copying
+- [TextBox (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/textbox.html): measures that `IsReadOnly` ignores typing but still allows selecting and copying

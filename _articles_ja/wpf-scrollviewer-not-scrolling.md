@@ -187,4 +187,4 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 
 <!-- 関連記事 -->
 - [WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法](/ja/articles/wpf-listbox-virtualization-selecteditems/)
-- [ScrollViewer | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/scrollviewer.html)：4 つのスクロールバーの設定、`CanContentScroll`、大きさが決まる時点を実測したページ
+- [ScrollViewer（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/scrollviewer.html)：4 つのスクロールバーの設定、`CanContentScroll`、大きさが決まる時点を実測したページ

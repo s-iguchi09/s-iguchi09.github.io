@@ -389,4 +389,4 @@ How that default affects the timing of input reaching the source is covered in [
 - [WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/articles/wpf-combobox-itemssource-patterns/)
 - [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/)
 - [Reading WPF Binding Errors and Diagnosing Them with the Output Window](/articles/wpf-binding-error-debugging-output-window/)
-- [RadioButton | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/radiobutton.html): measures which buttons form a group and how `IsChecked` bound to `bool` properties behaves
+- [RadioButton (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/radiobutton.html): measures which buttons form a group and how `IsChecked` bound to `bool` properties behaves

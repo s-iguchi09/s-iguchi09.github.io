@@ -196,4 +196,4 @@ To change the picker's own text, use the Style + StringFormat approach; setting 
 ---
 
 <!-- Related articles -->
-- [DatePicker | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/datepicker.html): measures how `Text` is parsed with the culture and which defaults, such as `SelectedDateFormat`, come from the style
+- [DatePicker (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/datepicker.html): measures how `Text` is parsed with the culture and which defaults, such as `SelectedDateFormat`, come from the style

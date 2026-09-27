@@ -250,4 +250,4 @@ Raising every notification on the UI thread and keeping `CanExecute` lightweight
 
 <!-- Related articles -->
 - [Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF](/articles/wpf-observablecollection-cross-thread-update/)
-- [Button | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/button.html): measures what enables a button with a `Command` and when `CanExecute` is asked again
+- [Button (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/button.html): measures what enables a button with a `Command` and when `CanExecute` is asked again

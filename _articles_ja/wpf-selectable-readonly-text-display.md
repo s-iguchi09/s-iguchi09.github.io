@@ -161,4 +161,4 @@ WPF で、編集は不可としつつテキストの選択・コピーを可能�
 ---
 
 <!-- 関連記事 -->
-- [TextBox | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/textbox.html)：`IsReadOnly` が入力を無視しても、選択とコピーはできることを実測したページ
+- [TextBox（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/textbox.html)：`IsReadOnly` が入力を無視しても、選択とコピーはできることを実測したページ

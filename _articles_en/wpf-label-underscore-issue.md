@@ -343,4 +343,4 @@ On screens handling dynamic data, Workaround 3 is the default choice, addressing
 
 <!-- Related articles -->
 - [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/)
-- [Label | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/label.html): measures where the access key moves the focus, with and without `Target`
+- [Label (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/label.html): measures where the access key moves the focus, with and without `Target`

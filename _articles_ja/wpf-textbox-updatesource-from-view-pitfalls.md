@@ -358,4 +358,4 @@ MVVM を保ったまま送信ボタンで複数入力を一括確定するには
 ---
 
 <!-- 関連記事 -->
-- [TextBox | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/textbox.html)：`UpdateSourceTrigger` ごとに、文字がいつソースへ届くかを実測したページ
+- [TextBox（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/textbox.html)：`UpdateSourceTrigger` ごとに、文字がいつソースへ届くかを実測したページ

@@ -327,4 +327,4 @@ WPF `DataGrid` のソート状態は `ICollectionView.SortDescriptions` と `Dat
 ## 関連記事
 
 - [WPF DataGrid の並び替えを実装する方法](/ja/articles/wpf-datagrid-sorting/)
-- [DataGrid | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しの 3 回目のクリックでも並べ替えが解除されないことと、コードから並べ替える前に編集を終える方法を実測したページ
+- [DataGrid（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しの 3 回目のクリックでも並べ替えが解除されないことと、コードから並べ替える前に編集を終える方法を実測したページ

@@ -168,4 +168,4 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 - [WPF DataGrid の並び替えを実装する方法](/ja/articles/wpf-datagrid-sorting/)
 - [WPF DatePicker で表示形式をカスタマイズする方法](/ja/articles/wpf-datepicker-custom-format/)
 - [WPF ComboBox の ItemsSource 設計パターン](/ja/articles/wpf-combobox-itemssource-patterns/)
-- [DataGrid | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/datagrid.html)：F2・Esc・Enter での編集と、セルの編集中の並べ替えを実測したページ
+- [DataGrid（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/datagrid.html)：F2・Esc・Enter での編集と、セルの編集中の並べ替えを実測したページ

@@ -133,4 +133,4 @@ Reach for `CustomSort` only when the data requires special ordering that `SortDe
 ---
 
 <!-- Related articles -->
-- [DataGrid | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/datagrid.html): measures the order produced by header clicks and why sorting from code fails while a cell is being edited
+- [DataGrid (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/datagrid.html): measures the order produced by header clicks and why sorting from code fails while a cell is being edited
