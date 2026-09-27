@@ -306,3 +306,8 @@ public sealed class MeasurementListViewModel
 
 構成として最も安定するのは、アイテムに対する操作をアイテム自身の ViewModel が持つ形にすることである。
 親のコマンドへ到達する記述が増えている場合は、そのコマンドをアイテムの ViewModel へ移せないかを先に検討する。
+
+---
+
+<!-- 関連記事 -->
+- [TreeView | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/treeview.html)：`ItemContainerStyle` に置いた `ContextMenu` が、開いている間だけノードのデータを受け取ることを実測したページ

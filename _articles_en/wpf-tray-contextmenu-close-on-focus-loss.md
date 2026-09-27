@@ -151,4 +151,9 @@ This P/Invoke bridge allows the WPF app to coordinate tray menu activation with 
 
 For the TreePaste tray menu issue, combining `StaysOpen = false` and `SetForegroundWindow()` resolved the persistent menu display problem.  
 The result is a context menu that opens in a foreground-aligned state and closes when focus moves away, matching standard user expectations.  
-For WPF tray menus, designing both menu policy and foreground transition together is the most reliable approach.  
+For WPF tray menus, designing both menu policy and foreground transition together is the most reliable approach.
+
+---
+
+<!-- Related articles -->
+- [Popup | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/popup.html): measures `StaysOpen` and which clicks close a popup

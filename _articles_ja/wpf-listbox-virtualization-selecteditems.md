@@ -388,3 +388,4 @@ WPF の `ListBox` で仮想化を有効にした場合、選択状態をコン�
 
 <!-- 関連記事 -->
 - [WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針](/ja/articles/wpf-label-vs-textblock-performance/)
+- [ListBox | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/listbox.html)：`Equals` による選択の照合と、仮想化で作られるコンテナーを実測したページ

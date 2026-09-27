@@ -298,3 +298,4 @@ Any implementation that relies on `OnLoad` must therefore use the parameterless 
 
 <!-- Related articles -->
 - [Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF](/articles/wpf-observablecollection-cross-thread-update/)
+- [Image | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/image.html): measures the file lock of a bound path and `BitmapCacheOption.OnLoad`, along with the size for each `Stretch`

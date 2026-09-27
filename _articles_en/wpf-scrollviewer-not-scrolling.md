@@ -186,3 +186,4 @@ In every case, the key is a layout that passes a finite height to the `ScrollVie
 
 <!-- Related articles -->
 - [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/)
+- [ScrollViewer | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/scrollviewer.html): measures the four scroll bar settings, `CanContentScroll`, and when the sizes are known

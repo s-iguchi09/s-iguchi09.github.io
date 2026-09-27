@@ -194,4 +194,5 @@ For the pitfalls of the `UpdateSource()` call itself when writing an `Explicit` 
 
 <!-- Related articles -->
 - [Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — The Role of GroupName](/articles/wpf-radiobutton-enum-binding/)
+- [TextBox | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/textbox.html): compares the three `UpdateSourceTrigger` settings side by side and measures what applies only to typing
 <!-- - [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/) -->

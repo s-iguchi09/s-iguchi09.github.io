@@ -191,4 +191,9 @@ To keep a fixed layout regardless of the machine's regional settings, pass `Cult
 | Value Converter      | MVVM-friendly, reusable | Formats companion displays, not the picker |
 
 The appropriate approach depends on the project's architecture.  
-To change the picker's own text, use the Style + StringFormat approach; setting `Text` in `SelectedDateChanged` did not change it. The converter is best for companion displays that must show the same date and grow in number.  
+To change the picker's own text, use the Style + StringFormat approach; setting `Text` in `SelectedDateChanged` did not change it. The converter is best for companion displays that must show the same date and grow in number.
+
+---
+
+<!-- Related articles -->
+- [DatePicker | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/datepicker.html): measures how `Text` is parsed with the culture and which defaults, such as `SelectedDateFormat`, come from the style

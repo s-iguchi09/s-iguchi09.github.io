@@ -164,3 +164,8 @@ This configuration is a suitable default pattern for any screen that displays te
 
 <!-- Related articles -->
 <!-- - [How to Implement DataGrid Sorting in WPF](/articles/wpf-datagrid-sorting.html) -->
+
+---
+
+<!-- Related articles -->
+- [TextBox | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/textbox.html): measures that `IsReadOnly` ignores typing but still allows selecting and copying

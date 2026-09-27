@@ -279,3 +279,5 @@ Rather than "avoid `Label` because it is slow," first confirm whether virtualiza
 <!-- Related articles -->
 - [Why WPF Label Hides Underscores and How to Fix It](/articles/wpf-label-underscore-issue/)
 - [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/)
+- [Label | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/label.html): measures Label's defaults and where its access key moves the focus
+- [TextBlock | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/textblock.html): measures how `Text` and `Inlines` relate, and wrapping and trimming without a template

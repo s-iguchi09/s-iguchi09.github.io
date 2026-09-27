@@ -249,3 +249,4 @@ UI 操作なら `CommandManager.RequerySuggested` へ委譲し、ViewModel の�
 
 <!-- 関連記事 -->
 - [WPF で ObservableCollection をバックグラウンドスレッドから更新するとクロススレッド例外が発生する問題の解決方法](/ja/articles/wpf-observablecollection-cross-thread-update/)
+- [Button | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/button.html)：`Command` を設定したボタンが何で有効になり、`CanExecute` がいつ問い合わされ直すかを実測したページ

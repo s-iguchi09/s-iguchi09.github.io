@@ -389,3 +389,4 @@ private void Raise(string propertyName)
 - [WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法](/ja/articles/wpf-combobox-itemssource-patterns/)
 - [WPF TextBox の UpdateSourceTrigger で入力がソースへ反映されるタイミングを制御する](/ja/articles/wpf-textbox-updatesourcetrigger-binding-timing/)
 - [WPF バインディングエラーの読み方と出力ウィンドウを使った原因特定](/ja/articles/wpf-binding-error-debugging-output-window/)
+- [RadioButton | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/radiobutton.html)：どのボタンがグループになるかと、`bool` のプロパティにバインドした `IsChecked` を実測したページ

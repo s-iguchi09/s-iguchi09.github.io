@@ -355,3 +355,8 @@ The separate question of *when* the update fires (choosing among `LostFocus` / `
 
 <!-- Related articles -->
 <!-- - [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/) -->
+
+---
+
+<!-- Related articles -->
+- [TextBox | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/textbox.html): measures when the text reaches the bound source for each `UpdateSourceTrigger`

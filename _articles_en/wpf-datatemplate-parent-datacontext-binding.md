@@ -305,3 +305,8 @@ It is a XAML 2009 feature and falls outside what the documentation guarantees, s
 
 The most stable structure is to give each item its own view model that owns the operations performed on it.
 When the markup accumulates bindings that reach up to parent commands, the first thing to evaluate is whether those commands belong on the item view model instead.
+
+---
+
+<!-- Related articles -->
+- [TreeView | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/treeview.html): measures that a `ContextMenu` set in `ItemContainerStyle` gets the node's data only while it is open

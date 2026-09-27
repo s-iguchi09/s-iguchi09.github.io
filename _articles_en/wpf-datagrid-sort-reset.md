@@ -324,3 +324,4 @@ Use the explicit clear for a button-driven reset, the `Sorting` event to keep it
 
 - [Implementing Column Sorting in WPF DataGrid](/articles/wpf-datagrid-sorting/)
 - [Using DataGridTemplateColumn for Display and Edit Templates in WPF](/articles/wpf-datagrid-cell-editing-template/)
+- [DataGrid | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/datagrid.html): measures that a third header click keeps the sort, and how to end an edit before sorting from code

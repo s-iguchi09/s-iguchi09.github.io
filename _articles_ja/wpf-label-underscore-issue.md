@@ -343,3 +343,4 @@ WPF の `Label` でアンダーバーが消えるのは、既定テンプレー�
 
 <!-- 関連記事 -->
 - [WPF で Label を大量配置すると遅い原因と TextBlock への置き換え指針](/ja/articles/wpf-label-vs-textblock-performance/)
+- [Label | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/label.html)：`Target` の有無で、アクセスキーがフォーカスをどこへ移すかを実測したページ
