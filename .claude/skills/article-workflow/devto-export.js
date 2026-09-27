@@ -236,13 +236,31 @@ function splitFrontMatter(raw) {
   return { fm, body: m[2] };
 }
 
-// front matter の値の引用符を外す。YAML の二重引用符では \" と \\ を、単引用符では '' を元の文字に戻す。
+// YAML 1.2 の二重引用符のエスケープ（1 文字のもの）。\x・\u・\U は unquote の中で扱う。
+const YAML_ESCAPES = {
+  '0': '\0', a: '\x07', b: '\b', t: '\t', '\t': '\t', n: '\n', v: '\v', f: '\f', r: '\r', e: '\x1b',
+  ' ': ' ', '"': '"', '/': '/', '\\': '\\', N: '\x85', _: '\xa0', L: '\u2028', P: '\u2029',
+};
+
+// front matter の値の引用符を外す。
+// 二重引用符はエスケープ（\n・\" ・\\・\uXXXX など）を元の文字に戻し、単引用符は '' を ' に戻す。
 const unquote = (s) => {
   if (!s || s.length < 2) return s;
-  if (s.startsWith('"') && s.endsWith('"')) return s.slice(1, -1).replace(/\\(["\\])/g, '$1');
+  if (s.startsWith('"') && s.endsWith('"')) {
+    return s.slice(1, -1).replace(/\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|[\s\S])/g, (all, e) => {
+      if (e.length > 1) return String.fromCodePoint(parseInt(e.slice(1), 16));
+      return Object.prototype.hasOwnProperty.call(YAML_ESCAPES, e) ? YAML_ESCAPES[e] : all;
+    });
+  }
   if (s.startsWith("'") && s.endsWith("'")) return s.slice(1, -1).replace(/''/g, "'");
   return s;
 };
+
+// 文字列を YAML の二重引用符のスカラーとして書き出す。\ と " と制御文字をエスケープする。
+const yamlDoubleQuoted = (s) => `"${s.replace(/[\\"\x00-\x1f\x7f\x85\u2028\u2029]/g, (c) => {
+  const named = { '\\': '\\\\', '"': '\\"', '\n': '\\n', '\t': '\\t', '\r': '\\r' }[c];
+  return named || `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`;
+})}"`;
 
 function readArticle(slug, lang) {
   const file = path.join(REPO, `_articles_${lang}`, `${slug}.md`);
@@ -430,8 +448,8 @@ function buildExport(slug) {
   const title = fm.title;
   const head = [
     '---',
-    // YAML の二重引用符の中では \ と " をエスケープする（splitFrontMatter で戻した値を書き出すため）。
-    `title: "${title.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`,
+    // splitFrontMatter でエスケープを戻した値なので、YAML の二重引用符として書き出し直す。
+    `title: ${yamlDoubleQuoted(title)}`,
     'published: false',
     `tags: ${TAGS_BY_CATEGORY[fm.category] || DEFAULT_TAGS}`,
     // SVG は dev.to の画像プロキシが変換できず表示が壊れる（replaceSvgFigures と同じ理由）ので、
