@@ -356,7 +356,7 @@ This applies to values from any path: code, a binding, or user input.
 Control limits such as `MaxLength` stay, so that the user cannot type a value out of range.
 The limit should match the view model's constant.
 - **When the control alone is enough:**
-Only input fields where the user of that control is the only writer and no code puts a value in.
+Only input fields where the user of that control is the only writer, no code puts a value in, and the control is not one like `DatePicker`, whose limit covers only part of the user input.
 
 ---
 
