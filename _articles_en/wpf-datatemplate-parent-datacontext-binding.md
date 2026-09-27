@@ -309,4 +309,4 @@ When the markup accumulates bindings that reach up to parent commands, the first
 ---
 
 <!-- Related articles -->
-- [TreeView | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/treeview.html): measures that a `ContextMenu` set in `ItemContainerStyle` gets the node's data only while it is open
+- [TreeView (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/treeview.html): measures that a `ContextMenu` set in `ItemContainerStyle` gets the node's data only while it is open

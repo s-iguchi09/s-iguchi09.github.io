@@ -193,5 +193,5 @@ be.UpdateSource();
 
 <!-- 関連記事 -->
 - [WPF で RadioButton を enum にバインドすると初期選択が表示されない問題と GroupName の役割](/ja/articles/wpf-radiobutton-enum-binding/)
-- [TextBox | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/textbox.html)：3 つの `UpdateSourceTrigger` を並べて比べ、入力にだけ働くものを実測したページ
+- [TextBox（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/textbox.html)：3 つの `UpdateSourceTrigger` を並べて比べ、入力にだけ働くものを実測したページ
 <!-- - [WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/) -->

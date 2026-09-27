@@ -169,4 +169,4 @@ For plain text editing with no special interaction, standard `DataGrid` columns 
 - [How to Implement Sorting in WPF DataGrid](/articles/wpf-datagrid-sorting/)
 - [Customising the DatePicker Display Format in WPF](/articles/wpf-datepicker-custom-format/)
 - [WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/articles/wpf-combobox-itemssource-patterns/)
-- [DataGrid | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/datagrid.html): measures editing with F2, Esc, and Enter, and sorting while a cell is being edited
+- [DataGrid (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/datagrid.html): measures editing with F2, Esc, and Enter, and sorting while a cell is being edited

@@ -388,4 +388,4 @@ For small lists with few selections and no need for virtualization, using the st
 
 <!-- Related articles -->
 - [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/)
-- [ListBox | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/listbox.html): measures selection matched by `Equals` and which containers exist under virtualization
+- [ListBox (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/listbox.html): measures selection matched by `Equals` and which containers exist under virtualization

@@ -138,4 +138,4 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 ---
 
 <!-- 関連記事 -->
-- [DataGrid | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しのクリックで並ぶ順序と、セルの編集中にコードから並べ替えると失敗する理由を実測したページ
+- [DataGrid（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しのクリックで並ぶ順序と、セルの編集中にコードから並べ替えると失敗する理由を実測したページ

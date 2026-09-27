@@ -156,4 +156,4 @@ For WPF tray menus, designing both menu policy and foreground transition togethe
 ---
 
 <!-- Related articles -->
-- [Popup | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/popup.html): measures `StaysOpen` and which clicks close a popup
+- [Popup (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/popup.html): measures `StaysOpen` and which clicks close a popup

@@ -154,4 +154,4 @@ TreePaste で発生したタスクトレイ `ContextMenu` の閉じ残りは、`
 ---
 
 <!-- 関連記事 -->
-- [Popup | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/popup.html)：`StaysOpen` と、どのクリックでポップアップが閉じるかを実測したページ
+- [Popup（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/popup.html)：`StaysOpen` と、どのクリックでポップアップが閉じるかを実測したページ

@@ -204,4 +204,4 @@ public class DateFormatConverter : IValueConverter
 ---
 
 <!-- 関連記事 -->
-- [DatePicker | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/datepicker.html)：`Text` がカルチャで解析される様子と、`SelectedDateFormat` などスタイルから来る既定値を実測したページ
+- [DatePicker（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/datepicker.html)：`Text` がカルチャで解析される様子と、`SelectedDateFormat` などスタイルから来る既定値を実測したページ

@@ -437,4 +437,4 @@ Standardize on the two-way binding approach.
 ---
 
 <!-- Related articles -->
-- [TreeView | WPF Standard Control Demo App](/apps/wpf-standard-control-demo/treeview.html): measures `IsSelected`, the `IsExpanded` binding that the expander removes, and virtualization
+- [TreeView (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/treeview.html): measures `IsSelected`, the `IsExpanded` binding that the expander removes, and virtualization

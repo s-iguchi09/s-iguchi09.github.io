@@ -310,4 +310,4 @@ public sealed class MeasurementListViewModel
 ---
 
 <!-- 関連記事 -->
-- [TreeView | WPF 標準コントロールデモアプリ](/ja/apps/wpf-standard-control-demo/treeview.html)：`ItemContainerStyle` に置いた `ContextMenu` が、開いている間だけノードのデータを受け取ることを実測したページ
+- [TreeView（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/treeview.html)：`ItemContainerStyle` に置いた `ContextMenu` が、開いている間だけノードのデータを受け取ることを実測したページ
