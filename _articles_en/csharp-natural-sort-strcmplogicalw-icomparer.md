@@ -25,7 +25,9 @@ It also summarizes the pros and cons of this approach and compares it with the a
 - Use case: APIs that accept an `IComparer<string>`, such as `List<T>.Sort` and LINQ `OrderBy`
 - Verification environment: .NET 10 / Windows 11
 
-The figures and tables in this article come from sorting the same input with each comparer in the environment above and comparing the resulting orders.
+The figure and tables in this article were measured in the environment above.
+The figure and the order table come from sorting the same input with each comparer.
+The pair table comes from passing two strings at a time to each comparer and reading the sign of the result.
 The following points were confirmed in that environment:
 
 - Under the default culture of the verification environment, both ordinal and culture-sensitive comparison place `item10` before `item2`.
