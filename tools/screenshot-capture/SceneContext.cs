@@ -37,15 +37,24 @@ internal interface IScene
 /// <summary>
 /// シーンから使う保存・生成ユーティリティ。
 /// </summary>
-internal sealed class SceneContext(string slug, string outputDirectory)
+internal sealed class SceneContext(string slug, string outputDirectory, string tableDirectory)
 {
     private readonly List<string> _saved = [];
+    private readonly List<string> _savedTables = [];
 
     public string Slug { get; } = slug;
 
     public string OutputDirectory { get; } = outputDirectory;
 
+    /// <summary>
+    /// 記事に include する Markdown の表の出力先。<c>_includes/tables/</c> の下に、
+    /// <see cref="OutputDirectory"/> の <c>images/</c> 以下と同じ階層を作る。
+    /// </summary>
+    public string TableDirectory { get; } = tableDirectory;
+
     public IReadOnlyList<string> SavedFiles => _saved;
+
+    public IReadOnlyList<string> SavedTables => _savedTables;
 
     /// <summary>
     /// ウィンドウを表示し、描画が安定してから PNG として保存して閉じる。
@@ -110,7 +119,7 @@ internal sealed class SceneContext(string slug, string outputDirectory)
     }
 
     /// <summary>
-    /// 実測値の表を SVG として保存する。
+    /// 実測値の表を SVG と、記事に include する Markdown の表（<see cref="TableDirectory"/> の下）として保存する。
     ///
     /// 表は文字と罫線だけなので、ウィンドウを撮影せず直接描く。
     /// 拡大しても文字がぼやけず、差分でも値の変化が読める。
@@ -122,10 +131,18 @@ internal sealed class SceneContext(string slug, string outputDirectory)
         IEnumerable<IReadOnlyList<string>> rows,
         string fileName)
     {
-        string svg = DemoLayout.BuildTableSvg(title, headers, rows);
+        var body = rows.ToList();
+        string svg = DemoLayout.BuildTableSvg(title, headers, body);
         string path = Path.Combine(OutputDirectory, fileName);
         await File.WriteAllTextAsync(path, svg, new UTF8Encoding(false));
         _saved.Add(path);
+
+        // 同じ値を、記事の本文に include する Markdown の表としても書き出す。
+        // 横に広い表は SVG のままだと本文の幅に縮められて読めないため、記事では Markdown の表を使う。
+        Directory.CreateDirectory(TableDirectory);
+        string tablePath = Path.Combine(TableDirectory, Path.ChangeExtension(fileName, ".md"));
+        await File.WriteAllTextAsync(tablePath, DemoLayout.BuildTableMarkdown(headers, body), new UTF8Encoding(false));
+        _savedTables.Add(tablePath);
     }
 
     /// <summary>

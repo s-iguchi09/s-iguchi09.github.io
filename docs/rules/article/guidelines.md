@@ -224,7 +224,9 @@
 - 本文からの参照は **`/images/articles/<slug>/<file>` の形式のサイト絶対パス**にする。相対パスにすると `sitemap.xml` の `<image:image>` に収集されない。
 - **形式は原則 SVG とする。** 拡大しても文字がぼやけず、ファイルが小さく、差分で値の変化が読める。
 - **PNG を使うのは、実行中のウィンドウそのものを見せる図に限る。** コントロールの描画結果を示す図は、実際のウィンドウをキャプチャした PNG でなければ意味がない（§11.1 のとおり、作図で代用しない）。
-- 実測値の表は SVG にする。表は文字と罫線だけで構成されるため、ウィンドウを撮影せずに直接描ける。`SceneContext.SaveTableAsync` が実測値から SVG を生成する。ウィンドウを表示しないため、ディスプレイの電源状態にも影響されない。
+- **実測値の表は、本文に Markdown の表として載せる**（§11.4）。`SceneContext.SaveTableAsync` が実測値から、`_includes/tables/` の下の Markdown の表と、同じ内容の SVG を書き出す。ウィンドウを表示しないため、ディスプレイの電源状態にも影響されない。
+  - 以前は表も SVG の図にしていたが、横に広い表は本文の幅に縮められて文字が読めなくなった（2026-09-28 JST。幅 1266px の表で 13px の文字が約 9px になり、スマホでは約 7px になった）。本文のテキストにすれば縮まずに横スクロールでき、検索・翻訳・読み上げにも載る。dev.to にもそのまま表として転載できる。
+  - SVG は、front matter の `image`（構造化データ）に使う場合と、検証記録のために書き出し続ける。
 - 幅は 880px 以下を目安にする。
 
 ### 11.4 本文への埋め込み
@@ -257,6 +259,20 @@
 - 記事を代表する図がある場合は、front matter に `image: /images/articles/<slug>/<file>` を設定する。構造化データの `image` として出力される。
   - Google の Article 構造化データは、`image` に **Google 画像検索がサポートする形式**を求める。その一覧には BMP・GIF・JPEG・PNG・WebP・**SVG**・AVIF が含まれるため、SVG を指定してよい（[Article](https://developers.google.com/search/docs/appearance/structured-data/article) / [Google 画像検索](https://developers.google.com/search/docs/appearance/google-images#supported-image-formats)）。
   - 実行画面のキャプチャがある記事ではそれを選ぶ。記事の内容を最も端的に示すためである。無い場合は実測値の表など主要な図を指定する。
+
+実測値の表は `figure` を使わず、シーンが書き出した Markdown の表を include し、直後の段落に説明を書く。
+表の値は手で書き写さない（§12）。シーンを実行し直せば、記事の表も同じ値に揃う。
+
+```markdown
+{% include tables/articles/<slug>/<file>.md %}
+
+（表が何を示しているかの説明。測定した環境と、結果を左右する条件を含める。）
+{: .table-caption}
+```
+
+- include と説明文の前後には空行を置く。`{: .table-caption}` は説明文の段落に付ける kramdown の属性で、図の `figcaption` と同じ見た目になる。
+- 表は本文の表と同じく、本文の幅に収まらなければ表の内側だけが横スクロールする。縮めないので文字の大きさは変わらない。
+- 日英で同じ表を include し、説明文だけを各言語で書く。表の見出しとセルは、シーンが出す英語のままにする。
 
 ---
 

@@ -424,14 +424,49 @@ async function fetchDevtoPosts() {
  * 外部リンクを得るという転載の目的にも沿う。PNG はプロキシが正しく変換する
  * ので手を触れない。
  */
+/**
+ * 実測値の表の include（{% include tables/... %}）を、表の Markdown そのものに置き換える。
+ *
+ * 表は tools/screenshot-capture が _includes/tables/ に書き出す GFM の表で、
+ * dev.to もそのまま表として描画する。Liquid は dev.to では動かないので、ここで展開しておく。
+ * 表の直後の説明文に付けた kramdown の属性リスト（{: .table-caption}）は dev.to では
+ * 文字のまま出てしまうので取り除く。
+ */
+function expandTableIncludes(body) {
+  // コードブロックとインラインのコードに書かれた include と属性リストは、書き方の例なので触らない。
+  return mapOutsideCode(body, (text) => text
+    .replace(/\{%\s*include\s+(tables\/[^\s%]+\.md)\s*%\}/g, (_, include) => {
+      // _includes/tables の外を指すパスは、読む前に拒否する。
+      // まず ../ などを文字列として解決して判定し、ファイルがあればシンボリックリンクを
+      // たどった実体のパスでもう一度判定する。読むのは判定した実体のほうである。
+      const inside = (root, target) => {
+        const relative = path.relative(root, target);
+        return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
+      };
+      const root = path.join(REPO, '_includes', 'tables');
+      const file = path.resolve(REPO, '_includes', include);
+      if (!inside(root, file)) throw new Error(`include のパスが _includes/tables の外を指している: ${include}`);
+      if (!fs.existsSync(file)) throw new Error(`include する表が見つからない: ${file}`);
+      const realFile = fs.realpathSync(file);
+      if (!inside(fs.realpathSync(root), realFile)) {
+        throw new Error(`include の実体が _includes/tables の外にある: ${include} -> ${realFile}`);
+      }
+      return fs.readFileSync(realFile, 'utf8').replace(/\r\n/g, '\n').trimEnd();
+    })
+    .replace(/^\{:\s*\.table-caption\s*\}[ \t]*\r?\n?/gm, ''));
+}
+
 function replaceSvgFigures(body, slug) {
-  return body.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/g, (block) => {
-    const img = block.match(/<img\b[^>]*>/);
-    if (!img || !/\bsrc="[^"]*\.svg"/i.test(img[0])) return block;
+  // コードブロックとインラインのコードに書かれた figure は、書き方の例なので置き換えない。
+  return mapOutsideCode(body, (text) => text.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/gi, (block) => {
+    const img = block.match(/<img\b[^>]*>/i);
+    // src の引用符の有無と種類、クエリとフラグメントを問わず、拡張子が .svg なら置き換える。
+    if (!img || !/\bsrc\s*=\s*(["']?)[^"'\s>]*?\.svg(?:[?#][^"'\s>]*)?\1(?=[\s>/])/i.test(img[0])) return block;
 
     // alt も caption も、改行が残っていると 2 行目以降に "> " が付かず
     // 引用ブロックの外へ出てしまう。どちらも 1 行へ潰す。
-    const alt = ((img[0].match(/\balt="([^"]*)"/) || [])[1] || '').replace(/\s+/g, ' ').trim();
+    const altMatch = img[0].match(/\balt\s*=\s*(?:"([^"]*)"|'([^']*)')/i) || [];
+    const alt = (altMatch[1] ?? altMatch[2] ?? '').replace(/\s+/g, ' ').trim();
     const caption = ((block.match(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/) || [])[1] || '')
       .replace(/\s+/g, ' ').trim();
 
@@ -440,7 +475,7 @@ function replaceSvgFigures(body, slug) {
     if (caption) lines.push('', caption);
     lines.push('', `The diagram is rendered in the [original article](${SITE}/articles/${slug}/).`);
     return lines.map((l) => (l ? `> ${l}` : '>')).join('\n');
-  });
+  }));
 }
 
 function buildExport(slug) {
@@ -468,7 +503,7 @@ function buildExport(slug) {
   // CRLF が 1 つでも混ざると dev.to は front matter を解釈せず、先頭の --- が
   // 水平線に、末尾の --- が直前行を h2 にする setext heading になる。
   // canonical_url が効かないまま公開されるので、必ず LF に揃える。
-  const converted = replaceSvgFigures(absolutize(body), slug);
+  const converted = replaceSvgFigures(absolutize(expandTableIncludes(body)), slug);
   return (head + converted.trim() + '\n').replace(/\r\n/g, '\n');
 }
 

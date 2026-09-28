@@ -15,7 +15,7 @@ image: /images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-pat
 
 本記事では、代表的な入力制限 7 つを「利用者の操作」「コードからの代入」「バインドした値」の 3 つの経路で試し、どの経路で効くのかを表にまとめる。
 そのうえで、制限を超えた値を確実に止めるために、検証と丸めをビューモデルに置く実装を示す。
-図の値は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である。
+表の値は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である。
 
 ---
 
@@ -46,7 +46,7 @@ image: /images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-pat
 ```
 
 名前は 50 文字まで、配送日は期間内、音量は 0〜100 の 10 刻み、という意図である。
-`DisplayDateStart` と `DisplayDateEnd` は既定で双方向にバインドされ、受付期間を読み取り専用のプロパティで持つと、既定のバインドは、`DataContext` を設定した時点か、ウィンドウを表示した時点の遅いほうで `InvalidOperationException` になる（3 つ目の図、注意点の節）。
+`DisplayDateStart` と `DisplayDateEnd` は既定で双方向にバインドされ、受付期間を読み取り専用のプロパティで持つと、既定のバインドは、`DataContext` を設定した時点か、ウィンドウを表示した時点の遅いほうで `InvalidOperationException` になる（3 つ目の表、注意点の節）。
 そのため、ビューモデルから渡すだけの受付期間には `Mode=OneWay` を指定している。
 キーボードやカレンダーで操作している限り、この画面はおおむね意図どおりに動く。
 51 文字目は入らず、期間外の日付はカレンダーで選べず、スライダーは 10 刻みで動く。
@@ -92,10 +92,10 @@ Microsoft Learn の [`TextBox.MaxLength` のリファレンス](https://learn.mi
 カレンダーは範囲外の日付ボタンが有効かどうかを読み、タブの選択は支援技術が使う UI オートメーションの `Select` を呼んで試した。
 コードからの代入とバインドした値は、いずれもウィンドウに表示したコントロールに対して設定した。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.svg" alt="入力制限を 3 つの経路で試した表。MaxLength が 5 の TextBox は、abcdefgh を入力すると abcde になるが、コードから設定しても、バインドしても abcdefgh のまま。CharacterCasing が Upper の TextBox は、hello を入力すると HELLO になるが、コードとバインドでは hello のまま。MaxLength が 8 の PasswordBox は、10 文字を入力すると 8 文字になるが、コードから Password に設定すると 10 文字のままで、PasswordBox にはバインドできる PasswordProperty が無い。表示範囲を 4 月 10 日から 20 日にした DatePicker では、カレンダーの 4 月 5 日のボタンは無効だが、テキスト欄に 4/5/2026 を入力すると 2026-04-05 が選ばれ、コードとバインドでも 2026-04-05 になる。その後の DisplayDateStart は、どの経路でも 2026-04-05 に下がり、コードから設定した後のカレンダーでは範囲外の 4 月 7 日のボタンが有効になる。10 刻みの目盛りに合わせる Slider は、50 から右矢印キーで 60 になるが、コードとバインドの 23.4 は 23.4 のまま。Maximum が 100 の Slider は、End キーで 100、コードの 150 も 100 になり、その後 Maximum を 200 にすると 150 に戻る。バインドした 150 は Slider が 100 でソースは 150 のまま。IsEnabled が False の 2 番目の TabItem は、UI オートメーションの Select で ElementNotEnabledException になり選択は 0 のまま、コードの SelectedIndex とバインドでは 1 が選ばれて Page 2 が表示される。" width="1266" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。利用者の操作は InputManager と TextCompositionManager で送ったキーと文字で、カレンダーは日付ボタンの有効・無効を読み、タブは UI オートメーションの Select を呼んだ。DatePicker は en-US の表示で試した。DisplayDateStart afterwards の行は、上の行で範囲外の日付が入った後の状態で、04-07 のボタンはコードから設定した後だけを確かめた。キー操作では上限を超える値を作れないため、Slider の Maximum の行の End キーは上限で止まることだけを示す。この行のバインドは Mode=TwoWay を指定した。</figcaption>
-</figure>
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.md %}
+
+.NET 10 / Windows 11 での実測結果。利用者の操作は InputManager と TextCompositionManager で送ったキーと文字で、カレンダーは日付ボタンの有効・無効を読み、タブは UI オートメーションの Select を呼んだ。DatePicker は en-US の表示で試した。DisplayDateStart afterwards の行は、上の行で範囲外の日付が入った後の状態で、04-07 のボタンはコードから設定した後だけを確かめた。キー操作では上限を超える値を作れないため、Slider の Maximum の行の End キーは上限で止まることだけを示す。この行のバインドは Mode=TwoWay を指定した。
+{: .table-caption}
 
 **コードとバインドから入る値を画面上で範囲に収めたのは、`Slider` の `Maximum` だけだった。**
 コードからの代入は、7 つのうち 6 つで制限をすり抜けた。
@@ -201,7 +201,7 @@ public sealed class CustomerViewModel : INotifyPropertyChanged, INotifyDataError
 
 長すぎる値を切り詰めずにエラーとして残すのは、読み込んだデータを黙って書き換えないためである。
 どこを直すかは利用者が決め、保存は `HasErrors` が `false` のときだけ許す。
-`HasErrors` の変化も `PropertyChanged` で通知しているため、保存ボタンの `IsEnabled` を `HasErrors` から決めるバインドなら、ボタンも追従する（2 つ目の図の 3 行目）。
+`HasErrors` の変化も `PropertyChanged` で通知しているため、保存ボタンの `IsEnabled` を `HasErrors` から決めるバインドなら、ボタンも追従する（2 つ目の表の 3 行目）。
 WPF には bool を反転する標準のコンバーターが無いため、次のようなコンバーターを用意する。
 
 ```csharp
@@ -281,19 +281,19 @@ XAML は「問題」の節の `Slider` のままでよい。
 ### 両方の経路で確かめる
 
 この 2 つのビューモデルを、コードからの代入と利用者の操作の両方で試した。
-図の検証では、名前の上限を 5 文字に変えている。
+表の検証では、名前の上限を 5 文字に変えている。
 `Slider` は、ビューモデルの規則だけを確かめるために、範囲を 0〜200 に広げて目盛り合わせを外し、`SmallChange` を 5 にした。
 `Slider` 自身は値を丸めないので、ソースと画面の値が丸まっていれば、丸めたのはビューモデルである。
 `Slider` がキー操作でソースへ送った値を見るため、計測用に、setter が受け取った値を記録する処理を足した（実装例には含めていない）。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.svg" alt="ビューモデルで検証した結果の表。長さを INotifyDataErrorInfo で 5 文字までに検証するビューモデルに、コードから abcdefgh を設定すると、HasErrors も TextBox の Validation.HasError も True になる。MaxLength が 5 の TextBox に abcdefgh を入力すると abcde になり、HasErrors は False。abcdefgh を読み込んだ後は HasErrors が True で、末尾に x を打っても abcdefgh のまま入らず、Backspace で 1 文字消しても HasErrors は True のまま。IsEnabled を HasErrors の反転にバインドした保存ボタンは、コードから abcdefgh を設定すると False、abcde にすると True になり、読み込んだ abcdefgh を Backspace 3 回で abcde にすると False から True になる。0 から 100 に収めるビューモデルは、コードの 150 でソースも Slider も 100、End キーで Slider が送った 200 も両方 100。10 刻みに丸めるビューモデルは、コードの 23.4 でソースも Slider も 20、50 から右矢印キーで Slider が送った 55 も両方 60。" width="1254" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。名前の行は、上限を 5 文字にしたビューモデルと MaxLength 5 の TextBox を UpdateSourceTrigger=PropertyChanged でバインドし、ValidatesOnNotifyDataErrors は指定していない。保存ボタンの行は、IsEnabled を bool を反転するコンバーター経由で HasErrors にバインドした。Slider は Minimum 0・Maximum 200・目盛り合わせ無し・SmallChange 5 で、Volume に TwoWay でバインドした。sent は、setter が丸める前に受け取った値を計測用に記録したもので、記事の実装例には無い処理である。</figcaption>
-</figure>
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.md %}
+
+.NET 10 / Windows 11 での実測結果。名前の行は、上限を 5 文字にしたビューモデルと MaxLength 5 の TextBox を UpdateSourceTrigger=PropertyChanged でバインドし、ValidatesOnNotifyDataErrors は指定していない。保存ボタンの行は、IsEnabled を bool を反転するコンバーター経由で HasErrors にバインドした。Slider は Minimum 0・Maximum 200・目盛り合わせ無し・SmallChange 5 で、Volume に TwoWay でバインドした。sent は、setter が丸める前に受け取った値を計測用に記録したもので、記事の実装例には無い処理である。
+{: .table-caption}
 
 **丸めは、コードから入った値にも、`Slider` の操作から届いた値にも掛かった。**
 `150` と `23.4` はそれぞれ `100` と `20` に、End キーで届いた `200` と右矢印キーで届いた `55` は `100` と `60` になり、いずれもソースと `Slider` の値が一致した。
-1 つ目の図で `Slider` の `Maximum` だけに頼ったときの、ソース `150`・画面 `100` という食い違いは起きていない。
+1 つ目の表で `Slider` の `Maximum` だけに頼ったときの、ソース `150`・画面 `100` という食い違いは起きていない。
 長すぎる名前は、コードから入ると `HasErrors` が `True` になり、`TextBox` の `Validation.HasError` も `True` になった。
 保存ボタンは、コードからの値でも利用者の編集でも、`HasErrors` の変化に追従した。
 
@@ -303,14 +303,14 @@ XAML は「問題」の節の `Slider` のままでよい。
 
 - **上限内の値から入力する限り、検証エラーは出ない。**
 `MaxLength` を残すと、入力は上限で止まり、ビューモデルに長すぎる値は届かない。
-2 つ目の図の 1 行目のとおり、`HasErrors` は `False` のままであり、エラーの表示で上限を知らせることはできない。
+2 つ目の表の 1 行目のとおり、`HasErrors` は `False` のままであり、エラーの表示で上限を知らせることはできない。
 上限は画面の文言で示しておく。
 - **上限を超えた値を読み込んだ後は、文字を打ち足せない。**
-2 つ目の図の 2 行目のとおり、上限を超えた状態の `TextBox` では末尾に文字を打っても入らず、1 文字消しただけではエラーが残る。
+2 つ目の表の 2 行目のとおり、上限を超えた状態の `TextBox` では末尾に文字を打っても入らず、1 文字消しただけではエラーが残る。
 上限まで削らないと保存できないことを、エラーの文言で伝える。
 - **`PasswordBox.Password` はバインドできない。**
 `PasswordBox` にはバインドの対象になる `PasswordProperty` が無い。
-コードから設定した `Password` には `MaxLength` が効かず、1 つ目の図では 10 文字のまま残った。
+コードから設定した `Password` には `MaxLength` が効かず、1 つ目の表では 10 文字のまま残った。
 長さの確認は、`Password` を読み出すコードの側で行う。
 - **`DatePicker` の範囲は、ビューモデルで検証する。**
 テキスト欄から範囲外の日付が入り、一度入るとカレンダーの範囲も広がる。
@@ -332,10 +332,10 @@ XAML は「問題」の節の `Slider` のままでよい。
 既定の双方向と `OneWay` は `DisplayDateStart` で試した。
 読み取り専用のプロパティは、`DisplayDateStart` と `DisplayDateEnd` のそれぞれで、`Source` の指定・表示中の `DataContext` の設定・表示前の `DataContext` の設定・表示前の親の要素への `DataContext` の設定の 4 通りを試した。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.svg" alt="DisplayDateStart と DisplayDateEnd をビューモデルにバインドした結果の表。2026-04-10 のソースに DisplayDateStart を既定の TwoWay でバインドした場合も、Mode=OneWay の場合も、コードから SelectedDate を 2026-04-05 にすると DisplayDateStart は 2026-04-05 に下がり、ソースは 2026-04-10 のまま、バインドは残り、ソースを 04-12 にすると DisplayDateStart は 2026-04-12 になる。読み取り専用のプロパティへの既定のバインドは、DisplayDateStart と DisplayDateEnd のどちらも、Source を指定すると SetBinding で、表示中の DatePicker に DataContext を設定するとその時点で、表示前に DataContext を設定すると、DatePicker 自身に設定しても親の要素に設定して継承させても、設定の時点では例外にならずウィンドウを表示した時点で、読み取り専用のプロパティを理由とする InvalidOperationException になる。" width="1305" height="380" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。上の 2 行は、コードから SelectedDate を 2026-04-05 にした後の値である。source set to 04-12 の値は、SelectedDate を null に戻してからソースを 2026-04-12 にした後の DisplayDateStart である。read-only property は、例外のメッセージが読み取り専用のプロパティを理由に挙げていたことを示す。parent's DataContext の行は、DatePicker を置いた親の要素に DataContext を設定して継承させた。それ以外の行は DatePicker 自身に設定した。</figcaption>
-</figure>
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.md %}
+
+.NET 10 / Windows 11 での実測結果。上の 2 行は、コードから SelectedDate を 2026-04-05 にした後の値である。source set to 04-12 の値は、SelectedDate を null に戻してからソースを 2026-04-12 にした後の DisplayDateStart である。read-only property は、例外のメッセージが読み取り専用のプロパティを理由に挙げていたことを示す。parent's DataContext の行は、DatePicker を置いた親の要素に DataContext を設定して継承させた。それ以外の行は DatePicker 自身に設定した。
+{: .table-caption}
 
 ---
 

@@ -1,0 +1,6 @@
+{
+  // markdownlint-cli2 の設定。ルールそのものは .markdownlint.json に置く。
+  // _includes/tables/ は tools/screenshot-capture が書き出す表だけのファイルで、
+  // 記事に include して使うため見出しで始まらない（MD041 に掛かる）。
+  "ignores": ["_includes/tables/**"]
+}

@@ -496,6 +496,10 @@ GitHub の Website 欄・Qiita・Zenn・X はいずれも `nofollow` を付け�
 >
 > 同じ理由で、front matter の `image` が SVG の記事は `cover_image` を出さない。
 
+実測値の表を `{% include tables/... %}` で載せている記事は、`devto-export.js` が include を展開して
+Markdown の表のまま転載する（dev.to は表を描画できる）。表の直後の `{: .table-caption}` は
+dev.to では文字のまま出てしまうので取り除く。
+
 #### リンクの扱い
 
 `devto-export.js` は、`/` で始まるサイト内のパスをすべて絶対 URL に直す。

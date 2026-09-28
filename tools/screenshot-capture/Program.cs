@@ -146,10 +146,18 @@ internal static class Program
             string outputDirectory = Path.Combine(repositoryRoot, scene.ImageDirectory);
             Directory.CreateDirectory(outputDirectory);
 
-            var context = new SceneContext(scene.Slug, outputDirectory);
+            // Markdown の表は _includes/tables/ の下に、images/ 以下と同じ階層で置く。
+            string imageRelative = Path.GetRelativePath("images", scene.ImageDirectory);
+            if (imageRelative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(imageRelative))
+            {
+                throw new InvalidOperationException($"ImageDirectory が images/ の下に無い: {scene.ImageDirectory}");
+            }
+
+            string tableDirectory = Path.Combine(repositoryRoot, "_includes", "tables", imageRelative);
+            var context = new SceneContext(scene.Slug, outputDirectory, tableDirectory);
             await scene.CaptureAsync(context);
 
-            foreach (string file in context.SavedFiles)
+            foreach (string file in context.SavedFiles.Concat(context.SavedTables))
             {
                 Console.WriteLine(Path.GetRelativePath(repositoryRoot, file).Replace('\\', '/'));
             }
@@ -212,6 +220,16 @@ internal static class Program
         foreach (string file in context.SavedFiles)
         {
             builder.AppendLine($"  - {Yaml(Path.GetRelativePath(repositoryRoot, file).Replace('\\', '/'))}");
+        }
+
+        // 表を書き出したシーンだけ、記事に include する Markdown の表を記録する。
+        if (context.SavedTables.Count > 0)
+        {
+            builder.AppendLine("tables:");
+            foreach (string file in context.SavedTables)
+            {
+                builder.AppendLine($"  - {Yaml(Path.GetRelativePath(repositoryRoot, file).Replace('\\', '/'))}");
+            }
         }
 
         File.WriteAllText(path, builder.ToString(), new UTF8Encoding(false));

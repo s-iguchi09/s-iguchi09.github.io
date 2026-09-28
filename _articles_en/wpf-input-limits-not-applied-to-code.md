@@ -18,7 +18,7 @@ Yet when saved data is loaded, or when values imported from a file flow in throu
 This article tries seven common input limits on three paths: user input, assignment from code, and a bound value.
 A table shows which path each limit applies to.
 It then shows an implementation that moves validation and rounding into the view model, so that values beyond the limits are stopped reliably.
-All values in the figures were measured by running the code on .NET 10 / Windows 11.
+All values in the tables were measured by running the code on .NET 10 / Windows 11.
 
 ---
 
@@ -49,7 +49,7 @@ The screen has these input limits.
 ```
 
 The intent is a name of at most 50 characters, a delivery date within the period, and a volume from 0 to 100 in steps of 10.
-`DisplayDateStart` and `DisplayDateEnd` bind two-way by default, and when the period is held in read-only properties, the default binding throws `InvalidOperationException` when the `DataContext` is set or when the window is shown, whichever comes later (the third figure, under Notes).
+`DisplayDateStart` and `DisplayDateEnd` bind two-way by default, and when the period is held in read-only properties, the default binding throws `InvalidOperationException` when the `DataContext` is set or when the window is shown, whichever comes later (the third table, under Notes).
 The bindings that only pass the period from the view model therefore specify `Mode=OneWay`.
 As long as the user works with the keyboard and the calendar, the screen mostly behaves as intended.
 The 51st character is not accepted, dates outside the period cannot be picked in the calendar, and the slider moves in steps of 10.
@@ -95,10 +95,10 @@ For user input, keyboard focus was moved to the control, and keys were sent thro
 For the calendar, the test read whether the day button outside the range was enabled, and tab selection was tried by calling `Select` through UI Automation, the interface that assistive technologies use.
 Values from code and from bindings were set on controls shown in a window.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.svg" alt="Table of input limits tried on three paths. A TextBox with MaxLength 5 becomes abcde when abcdefgh is typed, but stays abcdefgh when set from code or bound. A TextBox with CharacterCasing Upper becomes HELLO when hello is typed, but stays hello from code and from a binding. A PasswordBox with MaxLength 8 keeps 8 characters when 10 are typed, but keeps all 10 when Password is set from code, and PasswordBox has no PasswordProperty to bind. A DatePicker whose display range is April 10 to 20 disables the April 5 button in the calendar, but typing 4/5/2026 in the text box selects 2026-04-05, and code and a binding also give 2026-04-05. Afterwards DisplayDateStart drops to 2026-04-05 on every path, and after the date is set from code the April 7 button outside the range is enabled in the calendar. A Slider that snaps to ticks of 10 goes from 50 to 60 with the Right arrow key, but 23.4 from code and from a binding stays 23.4. A Slider with Maximum 100 goes to 100 with the End key, 150 from code becomes 100 and returns to 150 when Maximum is raised to 200, and a bound 150 shows 100 on the Slider while the source stays 150. The second TabItem with IsEnabled False throws ElementNotEnabledException on UI Automation Select and the selection stays 0, but SelectedIndex from code and from a binding selects 1 and shows Page 2." width="1266" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. User input is keys and characters sent through InputManager and TextCompositionManager; for the calendar, the enabled state of the day button was read, and for the tab, UI Automation's Select was called. The DatePicker was tried with the en-US culture. The DisplayDateStart afterwards row shows the state after the out-of-range date in the row above came in, and the April 7 button was checked only after setting the date from code. Keys cannot produce a value above the maximum, so the End key in the Slider Maximum row only shows that the value stops at the maximum. The binding in that row specifies Mode=TwoWay.</figcaption>
-</figure>
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.md %}
+
+Measured on .NET 10 / Windows 11. User input is keys and characters sent through InputManager and TextCompositionManager; for the calendar, the enabled state of the day button was read, and for the tab, UI Automation's Select was called. The DatePicker was tried with the en-US culture. The DisplayDateStart afterwards row shows the state after the out-of-range date in the row above came in, and the April 7 button was checked only after setting the date from code. Keys cannot produce a value above the maximum, so the End key in the Slider Maximum row only shows that the value stops at the maximum. The binding in that row specifies Mode=TwoWay.
+{: .table-caption}
 
 **Only the `Slider`'s `Maximum` brought values from code and bindings into range on the screen.**
 Assignment from code got past six of the seven limits.
@@ -203,7 +203,7 @@ public sealed class CustomerViewModel : INotifyPropertyChanged, INotifyDataError
 
 A value that is too long is kept as an error rather than truncated, so that loaded data is not changed silently.
 The user decides what to fix, and saving is allowed only while `HasErrors` is `false`.
-Changes to `HasErrors` are also raised through `PropertyChanged`, so a Save button whose `IsEnabled` is bound to the inverse of `HasErrors` follows it (third row of the second figure).
+Changes to `HasErrors` are also raised through `PropertyChanged`, so a Save button whose `IsEnabled` is bound to the inverse of `HasErrors` follows it (third row of the second table).
 WPF has no built-in converter that inverts a bool, so a converter like the following is needed.
 
 ```csharp
@@ -283,19 +283,19 @@ The XAML can stay as the `Slider` in "Problem".
 ### Checking both paths
 
 Both view models were tried with assignment from code and with user input.
-For the figure, the maximum length of the name was changed to 5.
+For the table, the maximum length of the name was changed to 5.
 To check the view model's rule alone, the `Slider` was widened to 0–200, snapping was turned off, and `SmallChange` was set to 5.
 The `Slider` itself does not round the value, so if the source and the screen show a rounded value, the view model rounded it.
 To see the value the `Slider` sent to the source on each key, the setter was given extra code, for the measurement only, that records the value it received (it is not in the implementation above).
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.svg" alt="Table of the view model checks. A view model that validates the length to at most 5 with INotifyDataErrorInfo gives HasErrors True and Validation.HasError True on the TextBox when abcdefgh is set from code. Typing abcdefgh into a TextBox with MaxLength 5 gives abcde and HasErrors False. After abcdefgh is loaded, HasErrors is True, typing x at the end leaves abcdefgh unchanged, and after one Backspace HasErrors is still True. A Save button whose IsEnabled is bound to the inverse of HasErrors is False when abcdefgh is set from code and True after abcde, and goes from False to True when a loaded abcdefgh is cut to abcde with three Backspaces. A view model that clamps to 0 to 100 gives 100 on both the source and the Slider for 150 from code, and 100 on both when the End key sends 200 from the Slider. A view model that rounds to steps of 10 gives 20 on both for 23.4 from code, and 60 on both when the Right arrow key from 50 sends 55." width="1254" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. In the name rows, a view model with a limit of 5 characters is bound to a TextBox with MaxLength 5 using UpdateSourceTrigger=PropertyChanged, without setting ValidatesOnNotifyDataErrors. In the Save button row, IsEnabled is bound to HasErrors through a converter that inverts a bool. The Slider has Minimum 0, Maximum 200, no snapping, and SmallChange 5, and is bound TwoWay to Volume. The sent value is what the setter received before rounding, recorded for the measurement only; the implementation in this article does not record it.</figcaption>
-</figure>
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.md %}
+
+Measured on .NET 10 / Windows 11. In the name rows, a view model with a limit of 5 characters is bound to a TextBox with MaxLength 5 using UpdateSourceTrigger=PropertyChanged, without setting ValidatesOnNotifyDataErrors. In the Save button row, IsEnabled is bound to HasErrors through a converter that inverts a bool. The Slider has Minimum 0, Maximum 200, no snapping, and SmallChange 5, and is bound TwoWay to Volume. The sent value is what the setter received before rounding, recorded for the measurement only; the implementation in this article does not record it.
+{: .table-caption}
 
 **The rounding applied both to values from code and to values sent by the `Slider`'s key operations.**
 `150` and `23.4` became `100` and `20`; the `200` sent by the End key and the `55` sent by the Right arrow key became `100` and `60`; in every case the source and the `Slider` agreed.
-The mismatch seen in the first figure when relying on the `Slider`'s `Maximum` alone, with the source at `150` and the screen at `100`, did not occur.
+The mismatch seen in the first table when relying on the `Slider`'s `Maximum` alone, with the source at `150` and the screen at `100`, did not occur.
 A name that was too long, set from code, gave `HasErrors` `True`, and `Validation.HasError` on the `TextBox` was `True` as well.
 The Save button followed the changes of `HasErrors`, both for values from code and for the user's edits.
 
@@ -305,14 +305,14 @@ The Save button followed the changes of `HasErrors`, both for values from code a
 
 - **As long as typing starts from a value within the limit, no validation error appears.**
 With `MaxLength` kept, typing stops at the limit and a value that is too long never reaches the view model.
-As the first row of the second figure shows, `HasErrors` stays `False`, so the error display cannot tell the user about the limit.
+As the first row of the second table shows, `HasErrors` stays `False`, so the error display cannot tell the user about the limit.
 The limit should be stated in the screen's text.
 - **After a value beyond the limit is loaded, characters cannot be added.**
-As the second row of the second figure shows, typing at the end of a `TextBox` holding text beyond the limit adds nothing, and deleting one character leaves the error in place.
+As the second row of the second table shows, typing at the end of a `TextBox` holding text beyond the limit adds nothing, and deleting one character leaves the error in place.
 The error message should say that the value cannot be saved until it is cut down to the limit.
 - **`PasswordBox.Password` cannot be bound.**
 `PasswordBox` has no `PasswordProperty` to bind to.
-`MaxLength` does not apply to a `Password` set from code; in the first figure all 10 characters remained.
+`MaxLength` does not apply to a `Password` set from code; in the first table all 10 characters remained.
 The length should be checked in the code that reads `Password`.
 - **The `DatePicker` range should be validated in the view model.**
 Out-of-range dates come in through the text box, and once one is in, the calendar's range widens too.
@@ -330,14 +330,14 @@ Through `DataContext`, the same exception was thrown when the `DataContext` of a
 Setting the `DataContext` on a parent element before showing, so that the `DatePicker` inherits it, also threw while the window was being shown.
 With a settable property, the source was not changed even when an out-of-range date lowered `DisplayDateStart`, and the result was the same as `OneWay`.
 
-The following figure shows the results of binding the period.
+The following table shows the results of binding the period.
 The default two-way binding and `OneWay` were tried with `DisplayDateStart`.
 Read-only properties were tried with both `DisplayDateStart` and `DisplayDateEnd` in four ways: setting the source directly, setting the `DataContext` while shown, setting the `DataContext` before showing, and setting the `DataContext` on a parent element before showing.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.svg" alt="Table of DisplayDateStart and DisplayDateEnd bound to a view model. With DisplayDateStart bound to a source of 2026-04-10 by the default TwoWay binding and with Mode=OneWay, setting SelectedDate to 2026-04-05 from code lowers DisplayDateStart to 2026-04-05, the source stays 2026-04-10, the binding is kept, and setting the source to 04-12 makes DisplayDateStart 2026-04-12. The default binding of either DisplayDateStart or DisplayDateEnd to a read-only property throws InvalidOperationException naming the read-only property: in SetBinding when the source is set directly, at the moment the DataContext is set on a shown DatePicker, and, when the DataContext is set before showing, whether on the DatePicker itself or on a parent element that it inherits from, not at that moment but when the window is shown." width="1305" height="380" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The first two rows are the values after SelectedDate is set to 2026-04-05 from code. The value after the source is set to 04-12 is DisplayDateStart after SelectedDate is reset to null and the source is set to 2026-04-12. "read-only property" means the exception message named the read-only property as the reason. In the parent's DataContext rows, the DataContext was set on a parent element and inherited by the DatePicker; in the other rows, it was set on the DatePicker itself.</figcaption>
-</figure>
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.md %}
+
+Measured on .NET 10 / Windows 11. The first two rows are the values after SelectedDate is set to 2026-04-05 from code. The value after the source is set to 04-12 is DisplayDateStart after SelectedDate is reset to null and the source is set to 2026-04-12. "read-only property" means the exception message named the read-only property as the reason. In the parent's DataContext rows, the DataContext was set on a parent element and inherited by the DatePicker; in the other rows, it was set on the DatePicker itself.
+{: .table-caption}
 
 ---
 
