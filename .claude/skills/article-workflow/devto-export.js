@@ -436,15 +436,22 @@ function expandTableIncludes(body) {
   // コードブロックとインラインのコードに書かれた include と属性リストは、書き方の例なので触らない。
   return mapOutsideCode(body, (text) => text
     .replace(/\{%\s*include\s+(tables\/[^\s%]+\.md)\s*%\}/g, (_, include) => {
-      // ../ などで _includes/tables の外を指すパスは、読む前に拒否する。
+      // _includes/tables の外を指すパスは、読む前に拒否する。
+      // まず ../ などを文字列として解決して判定し、ファイルがあればシンボリックリンクを
+      // たどった実体のパスでもう一度判定する。読むのは判定した実体のほうである。
+      const inside = (root, target) => {
+        const relative = path.relative(root, target);
+        return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
+      };
       const root = path.join(REPO, '_includes', 'tables');
       const file = path.resolve(REPO, '_includes', include);
-      const relative = path.relative(root, file);
-      if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
-        throw new Error(`include のパスが _includes/tables の外を指している: ${include}`);
-      }
+      if (!inside(root, file)) throw new Error(`include のパスが _includes/tables の外を指している: ${include}`);
       if (!fs.existsSync(file)) throw new Error(`include する表が見つからない: ${file}`);
-      return fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n').trimEnd();
+      const realFile = fs.realpathSync(file);
+      if (!inside(fs.realpathSync(root), realFile)) {
+        throw new Error(`include の実体が _includes/tables の外にある: ${include} -> ${realFile}`);
+      }
+      return fs.readFileSync(realFile, 'utf8').replace(/\r\n/g, '\n').trimEnd();
     })
     .replace(/^\{:\s*\.table-caption\s*\}[ \t]*\r?\n?/gm, ''));
 }
