@@ -168,10 +168,10 @@ namespace System.Linq
 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Both the KeyValuePair and the tuple overload of ToDictionary produce identical results, boundary cases included." width="890" height="320" loading="lazy">
-  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.en.md %}
+
+The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+{: .table-caption}
 
 The two sides agree down to raising `ArgumentException` on a duplicate key. Passing `OrdinalIgnoreCase` as the comparer makes keys that differ only in case count as duplicates, producing the same exception.
 

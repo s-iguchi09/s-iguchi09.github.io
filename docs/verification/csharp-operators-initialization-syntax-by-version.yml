@@ -17,3 +17,8 @@ verifies:
 images:
   - "images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg"
   - "images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg"
+tables:
+  - "_includes/tables/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.en.md"
+  - "_includes/tables/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.ja.md"
+  - "_includes/tables/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.en.md"
+  - "_includes/tables/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.ja.md"

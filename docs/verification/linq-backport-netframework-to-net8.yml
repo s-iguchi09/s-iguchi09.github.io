@@ -12,3 +12,6 @@ verifies:
 images:
   - "images/articles/linq-backport-netframework-to-net8/linq-todictionary-without-selectors.png"
   - "images/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.svg"
+tables:
+  - "_includes/tables/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.en.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.ja.md"

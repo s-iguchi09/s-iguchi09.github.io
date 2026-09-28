@@ -15,10 +15,10 @@ excerpt: "C# 14 の extension ブロックで Directory のような静的クラ
 
 合わせて、インスタンス形式で呼び出したい場合の代替手段と、C# 3.0 から C# 14 にかけての拡張メンバー機能の変遷についても述べる。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-form-matrix.svg" alt="静的クラス Directory に対する extension ブロックの可否を示す表。レシーバーが型だけの場合、静的メンバーはコンパイルが通り、インスタンスメンバーは CS9303 になる。レシーバーにパラメーター名を付けた場合はブロックの時点で CS0721 になる。" width="880" height="322" loading="lazy">
-  <figcaption>静的クラスを対象にした <code>extension</code> ブロックの可否。.NET SDK 10.0.302 / <code>LangVersion 14.0</code> で実際にビルドして確認したもの。レシーバーに名前を付けた時点で、後続のメンバーの種類にかかわらず <code>CS0721</code> になる。</figcaption>
-</figure>
+{% include tables/articles/csharp14-extension-members-static-class-limitation/extension-receiver-form-matrix.ja.md %}
+
+静的クラスを対象にした <code>extension</code> ブロックの可否。.NET SDK 10.0.302 / <code>LangVersion 14.0</code> で実際にビルドして確認したもの。レシーバーに名前を付けた時点で、後続のメンバーの種類にかかわらず <code>CS0721</code> になる。
+{: .table-caption}
 
 ---
 
@@ -153,10 +153,10 @@ extension(Directory)
 
 レシーバーの書き方とメンバーの種類をすべて組み合わせて、実際にコンパイルした結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg" alt="レシーバーの書き方とメンバーの種類を組み合わせてコンパイルした結果の表。extension(Directory) に静的メンバーはコンパイルが通り、インスタンスメンバーは CS9303 になる。extension(Directory directory) はメンバーの種類によらず CS0721 になる。対照として extension(DirectoryInfo info) にインスタンスメンバーを置いた場合はコンパイルが通る。" width="524" height="230" loading="lazy">
-  <figcaption>.NET SDK 10.0.302 / <code>LangVersion 14.0</code> で <code>net10.0</code> を対象にコンパイルした結果。最終行は対照で、静的でない型（<code>DirectoryInfo</code>）であれば名前付きレシーバーにインスタンスメンバーを置けることを示す。</figcaption>
-</figure>
+{% include tables/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.ja.md %}
+
+.NET SDK 10.0.302 / <code>LangVersion 14.0</code> で <code>net10.0</code> を対象にコンパイルした結果。最終行は対照で、静的でない型（<code>DirectoryInfo</code>）であれば名前付きレシーバーにインスタンスメンバーを置けることを示す。
+{: .table-caption}
 
 **`extension(Directory directory)` の行は、メンバーの種類によらず `CS0721` になる。**
 `CS0721` はレシーバーに名前を付けた時点で決まり、ブロックの中のメンバーの種類は結果を変えない。ただし中のメンバーも検査はされる。静的型を引数に取るメソッドとインデクサーも置くと、2 件目の `CS0721` と `CS9282` も報告された。

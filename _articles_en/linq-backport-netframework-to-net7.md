@@ -123,10 +123,10 @@ namespace System.Linq
 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Order and OrderDescending produce identical results, boundary cases included, except for three rows: the comparison engine is ICU on net10.0 and NLS on net48, and a ja-JP comparer orders strings with a hyphen and an underscore differently, and for non-comparable items Order().ToList() throws InvalidOperationException on net10.0 but ArgumentException on net48. Order().First() throws ArgumentException on both." width="1023" height="410" loading="lazy">
-  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.en.md %}
+
+The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+{: .table-caption}
 
 The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. Both are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
 

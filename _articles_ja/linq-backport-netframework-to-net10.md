@@ -224,10 +224,10 @@ namespace System.Linq
 
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。LeftJoin・RightJoin・Shuffle のいずれも、境界値を含めて同じ結果になっている。同時に始めた 8 スレッドでの Shuffle も、どちらも 8 通りの並びに分かれる。" width="1078" height="320" loading="lazy">
-  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.ja.md %}
+
+上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+{: .table-caption}
 
 `Shuffle` は乱数を使うため、整列し直したうえで比較している。相手が居ない行に既定値が渡る点も一致している。
 

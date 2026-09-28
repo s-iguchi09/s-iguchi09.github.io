@@ -22,10 +22,10 @@ internal static class LinqBackportParity
     private const string ModernTarget = "net10.0";
 
     /// <summary>1 つの検証項目。<paramref name="Expression"/> は両方の環境で評価される。</summary>
-    internal sealed record Probe(string Label, string Expression);
+    internal sealed record Probe(Loc Label, string Expression);
 
     /// <summary>記事のポリフィルを両環境で走らせ、表の行を返す。</summary>
-    public static async Task<List<IReadOnlyList<string>>> MeasureAsync(
+    public static async Task<List<IReadOnlyList<Loc>>> MeasureAsync(
         string slug,
         IReadOnlyList<Probe> probes,
         string sampleSource)
@@ -40,16 +40,21 @@ internal static class LinqBackportParity
         Dictionary<string, string> legacyByLabel = Parse(legacy);
         Dictionary<string, string> modernByLabel = Parse(modern);
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
+        Loc noOutput = Loc.Of("(no output)", "（出力なし）");
         foreach (Probe probe in probes)
         {
-            string built = modernByLabel.GetValueOrDefault(probe.Label, "(no output)");
-            string back = legacyByLabel.GetValueOrDefault(probe.Label, "(no output)");
-            rows.Add([probe.Label, built, back, built == back ? "same" : "DIFFERS"]);
+            Loc built = modernByLabel.TryGetValue(probe.Label.En, out string? b) ? Result(b) : noOutput;
+            Loc back = legacyByLabel.TryGetValue(probe.Label.En, out string? l) ? Result(l) : noOutput;
+            rows.Add([probe.Label, built, back, built == back ? Loc.Of("same", "一致") : Loc.Of("DIFFERS", "不一致")]);
         }
 
         return rows;
     }
+
+    /// <summary>ドライバーの出力 1 件。例外の "throws 型名" だけは日本語の表で "型名 が発生" にする。</summary>
+    private static Loc Result(string output) =>
+        output.StartsWith("throws ", StringComparison.Ordinal) ? Loc.Of(output, output["throws ".Length..] + " が発生") : output;
 
     /// <summary>
     /// メソッドが BCL 側に存在するターゲットフレームワークを、実際にコンパイルして調べる。
@@ -59,22 +64,22 @@ internal static class LinqBackportParity
     /// そこに含まれるメソッドは 4.7.1 以降で使える。ポリフィルを無条件に足すと
     /// BCL 側と衝突して CS0121 になるため、どこから使えるのかを確かめる必要がある。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> MeasureAvailabilityAsync(
+    public static async Task<List<IReadOnlyList<Loc>>> MeasureAvailabilityAsync(
         string slug,
         IReadOnlyList<string> targetFrameworks,
         IReadOnlyList<Probe> methods)
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (Probe method in methods)
         {
-            var cells = new List<string> { method.Label };
+            var cells = new List<Loc> { method.Label };
 
             foreach (string tfm in targetFrameworks)
             {
                 string workspace = Path.Combine(
-                    Path.GetTempPath(), "linq-bcl-availability", slug, method.Label, tfm);
-                cells.Add(await CompilesAsync(workspace, tfm, method.Expression) ? "yes" : "no");
+                    Path.GetTempPath(), "linq-bcl-availability", slug, method.Label.En, tfm);
+                cells.Add(await CompilesAsync(workspace, tfm, method.Expression) ? Loc.Of("yes", "使える") : Loc.Of("no", "使えない"));
             }
 
             rows.Add(cells);
@@ -195,7 +200,7 @@ internal static class LinqBackportParity
         foreach (Probe probe in probes)
         {
             // ラベルは文字列リテラルとして埋め込むため、引用符とバックスラッシュを逃がす。
-            string label = probe.Label.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            string label = probe.Label.En.Replace("\\", "\\\\").Replace("\"", "\\\"");
             emits.AppendLine($"        Emit(\"{label}\", () => Fmt({probe.Expression}));");
         }
 

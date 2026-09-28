@@ -13,3 +13,6 @@ verifies:
 images:
   - "images/articles/linq-backport-netframework-to-net9/linq-countby-aggregateby-index.png"
   - "images/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.svg"
+tables:
+  - "_includes/tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.en.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.ja.md"

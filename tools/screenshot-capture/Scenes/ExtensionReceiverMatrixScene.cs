@@ -24,6 +24,7 @@ internal sealed class ExtensionReceiverMatrixScene : IScene
         "extension(Directory) + 静的メンバーが通り、インスタンスメンバーが CS9303 になること",
         "extension(Directory directory) がメンバーの種類によらず CS0721 になること",
         "静的でない型なら名前付きレシーバーにインスタンスメンバーを置けること",
+        "記事の DeleteIfExists の形でも、extension(Directory) の静的メンバーが通り、インスタンスメンバーが CS9303、extension(Directory dir) が CS0721 になること",
     ];
 
     public string Slug => "csharp14-extension-members-static-class-limitation";
@@ -34,27 +35,109 @@ internal sealed class ExtensionReceiverMatrixScene : IScene
         Directory.CreateDirectory(workspace);
         WriteProject(workspace);
 
-        (string Receiver, string Member, string Body)[] cases =
+        Loc staticMember = Loc.Of("static member", "静的メンバー");
+        Loc instanceMember = Loc.Of("instance member", "インスタンスメンバー");
+        (string Receiver, Loc Member, string Body)[] cases =
         [
-            ("extension(Directory)", "static member", StaticOnTypeOnly),
-            ("extension(Directory)", "instance member", InstanceOnTypeOnly),
-            ("extension(Directory directory)", "static member", StaticOnNamedReceiver),
-            ("extension(Directory directory)", "instance member", InstanceOnNamedReceiver),
-            ("extension(DirectoryInfo info)", "instance member", InstanceOnInstanceType),
+            ("extension(Directory)", staticMember, StaticOnTypeOnly),
+            ("extension(Directory)", instanceMember, InstanceOnTypeOnly),
+            ("extension(Directory directory)", staticMember, StaticOnNamedReceiver),
+            ("extension(Directory directory)", instanceMember, InstanceOnNamedReceiver),
+            ("extension(DirectoryInfo info)", instanceMember, InstanceOnInstanceType),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
-        foreach ((string receiver, string member, string body) in cases)
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach ((string receiver, Loc member, string body) in cases)
         {
-            rows.Add([receiver, member, await CompileAsync(workspace, body)]);
+            string result = await CompileAsync(workspace, body);
+            rows.Add([receiver, member, result == Compiles ? Loc.Of("compiles", "コンパイルが通る") : result]);
         }
 
         await context.SaveTableAsync(
             $"extension block, {TargetFramework}, LangVersion={LanguageVersion}",
-            ["receiver", "member kind", "result"],
+            [Loc.Of("receiver", "レシーバー"), Loc.Of("member kind", "メンバーの種類"), Loc.Of("result", "結果")],
             rows,
             "extension-receiver-matrix.svg");
+
+        // 記事の冒頭の表。記事のコード例と同じ DeleteIfExists の形でコンパイルし、呼び出し方か失敗の理由を添える。
+        (string Receiver, string Member, string Body)[] forms =
+        [
+            ("extension(Directory)", "public static void DeleteIfExists(string path)", DeleteIfExistsStatic),
+            ("extension(Directory)", "public void DeleteIfExists()", DeleteIfExistsInstance),
+            ("extension(Directory dir)", "public static void DeleteIfExists(string path)", DeleteIfExistsNamedReceiver),
+        ];
+
+        var formRows = new List<IReadOnlyList<Loc>>();
+        foreach ((string receiver, string member, string body) in forms)
+        {
+            string result = await CompileAsync(workspace, body);
+            formRows.Add([
+                receiver,
+                member,
+                result == Compiles ? Loc.Of("✓ compiles", "✓ コンパイルが通る") : $"✕ {result}",
+                result switch
+                {
+                    Compiles => "Directory.DeleteIfExists(path)",
+                    "CS9303" => Loc.Of("instance member needs a named receiver parameter", "インスタンスメンバーには名前付きのレシーバーが要る"),
+                    "CS0721" => Loc.Of("static types cannot be used as parameters", "静的な型は引数に使えない"),
+                    _ => result,
+                },
+            ]);
+        }
+
+        await context.SaveTableAsync(
+            $"extension block on a static class, {TargetFramework}, LangVersion={LanguageVersion}",
+            [Loc.Of("receiver", "レシーバー"), Loc.Of("member declaration", "メンバーの宣言"), Loc.Of("result", "結果"), Loc.Of("call or reason", "呼び出し方・理由")],
+            formRows,
+            "extension-receiver-form-matrix.svg");
     }
+
+    private const string Compiles = "compiles";
+
+    /// <summary>記事と同じ、型だけを書いたレシーバーの静的な DeleteIfExists。</summary>
+    private const string DeleteIfExistsStatic = """
+        using System.IO;
+
+        public static class DirectoryExtensions
+        {
+            extension(Directory)
+            {
+                public static void DeleteIfExists(string path)
+                {
+                    if (Directory.Exists(path)) Directory.Delete(path, true);
+                }
+            }
+        }
+        """;
+
+    /// <summary>型だけを書いたレシーバーに、インスタンスの DeleteIfExists を置く。</summary>
+    private const string DeleteIfExistsInstance = """
+        using System.IO;
+
+        public static class DirectoryExtensions
+        {
+            extension(Directory)
+            {
+                public void DeleteIfExists() { }
+            }
+        }
+        """;
+
+    /// <summary>名前付きのレシーバーに、静的な DeleteIfExists を置く。</summary>
+    private const string DeleteIfExistsNamedReceiver = """
+        using System.IO;
+
+        public static class DirectoryExtensions
+        {
+            extension(Directory dir)
+            {
+                public static void DeleteIfExists(string path)
+                {
+                    if (Directory.Exists(path)) Directory.Delete(path, true);
+                }
+            }
+        }
+        """;
 
     /// <summary>型だけを書いたレシーバーに静的メンバーを置く。</summary>
     private const string StaticOnTypeOnly = """
@@ -163,7 +246,7 @@ internal sealed class ExtensionReceiverMatrixScene : IScene
 
         if (process.ExitCode == 0)
         {
-            return "compiles";
+            return Compiles;
         }
 
         var codes = Regex.Matches(output, @"error (CS\d+)")

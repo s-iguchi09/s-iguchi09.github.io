@@ -16,10 +16,10 @@ Which of the two you get is decided by the receiver form — whether you write t
 
 The article also covers the alternatives when instance-style calls are required, and the evolution of extension member support from C# 3.0 to C# 14.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-form-matrix.svg" alt="A table showing which extension block declarations are accepted for the static class Directory. With a type-only receiver, a static member compiles and an instance member fails with CS9303. With a named receiver parameter, the block itself fails with CS0721." width="880" height="322" loading="lazy">
-  <figcaption>What an <code>extension</code> block can declare when the target is a static class, verified by building against .NET SDK 10.0.302 with <code>LangVersion 14.0</code>. Once the receiver has a name, the block fails with <code>CS0721</code> regardless of the members that follow.</figcaption>
-</figure>
+{% include tables/articles/csharp14-extension-members-static-class-limitation/extension-receiver-form-matrix.en.md %}
+
+What an <code>extension</code> block can declare when the target is a static class, verified by building against .NET SDK 10.0.302 with <code>LangVersion 14.0</code>. Once the receiver has a name, the block fails with <code>CS0721</code> regardless of the members that follow.
+{: .table-caption}
 
 ---
 
@@ -154,10 +154,10 @@ Caught between these two errors, there is no way to write an instance-style exte
 
 Every combination of receiver form and member kind was compiled.
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.svg" alt="A table of compilation results per receiver form and member kind. A static member in extension(Directory) compiles, an instance member reports CS9303. extension(Directory directory) reports CS0721 regardless of member kind. As a control, an instance member in extension(DirectoryInfo info) compiles." width="524" height="230" loading="lazy">
-  <figcaption>Compiled against <code>net10.0</code> with .NET SDK 10.0.302 and <code>LangVersion 14.0</code>. The last row is a control showing that a named receiver can carry an instance member as long as the type is not static (<code>DirectoryInfo</code>).</figcaption>
-</figure>
+{% include tables/articles/csharp14-extension-members-static-class-limitation/extension-receiver-matrix.en.md %}
+
+Compiled against <code>net10.0</code> with .NET SDK 10.0.302 and <code>LangVersion 14.0</code>. The last row is a control showing that a named receiver can carry an instance member as long as the type is not static (<code>DirectoryInfo</code>).
+{: .table-caption}
 
 **The `extension(Directory directory)` rows report `CS0721` regardless of member kind.**
 Naming the receiver is enough for `CS0721`, and the member kinds inside the block do not change that. The members are still checked: a block that also held a method with a static-type parameter and an indexer reported a second `CS0721` and `CS9282` as well.

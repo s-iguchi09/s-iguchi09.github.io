@@ -65,24 +65,24 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 | `TakeLast<T>` | .NET Core 2.0 / .NET Standard 2.1 | シーケンスの末尾から指定数の要素を取得する |
 | `SkipLast<T>` | .NET Core 2.0 / .NET Standard 2.1 | シーケンスの末尾から指定数の要素を除外する |
 
-これら 4 つが .NET Framework 側の BCL に存在するかを、ターゲットフレームワークを変えて実際にコンパイルして調べた結果が次の図である。
+これら 4 つが .NET Framework 側の BCL に存在するかを、ターゲットフレームワークを変えて実際にコンパイルして調べた結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.svg" alt="4 メソッドがポリフィル無しでコンパイルできるかをターゲットフレームワーク別に調べた表。Append と Prepend は net471 以降で yes。TakeLast と SkipLast は .NET Framework のどのバージョンでも no で、net10.0 のみ yes。" width="475" height="200" loading="lazy">
-  <figcaption>ポリフィルを足さずに各メソッドを呼ぶコードをコンパイルし、通ったかどうかを記録した結果。<code>yes</code> はその TFM の BCL にメソッドが存在することを示す。.NET SDK 10.0.302 で測定した。</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.ja.md %}
+
+ポリフィルを足さずに各メソッドを呼ぶコードをコンパイルし、通ったかどうかを記録した結果。「使える」はその TFM の BCL にメソッドが存在することを示す。.NET SDK 10.0.302 で測定した。
+{: .table-caption}
 
 **`Append` と `Prepend` は .NET Framework 4.7.1 以降で使える。** [`Enumerable.Append`](https://learn.microsoft.com/dotnet/api/system.linq.enumerable.append) の「適用対象」には .NET Framework 4.7.1 以降が挙がっており、この版からフレームワーク自身に含まれている。
 したがって、4.8 を対象にしながらこの 2 つをポリフィルとして無条件に定義すると、BCL 側の定義と衝突して `CS0121`（あいまいな呼び出し）でコンパイルできない。
 後述の実装コードでは、この 2 つを `#if !NET471_OR_GREATER` で追加ガードしている。
 
 **ただし、このガードは SDK による暗黙定義が効いている場合しか働かない。** `NET471_OR_GREATER` は SDK 形式のプロジェクトで `TargetFramework` から暗黙に定義されるシンボルであり、
-`TargetFrameworkVersion` で対象を指定する従来形式のプロジェクトでは定義されない。同じソースを構成を変えてビルドして確かめた結果が次の図である。
+`TargetFrameworkVersion` で対象を指定する従来形式のプロジェクトでは定義されない。同じソースを構成を変えてビルドして確かめた結果が次の表である。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="同じソースをプロジェクト形式別にビルドし、NET471_OR_GREATER の定義状況とビルド結果を調べた表。SDK 形式ではシンボルが定義されポリフィルが無効になりビルドが通る。DisableImplicitFrameworkDefines を立てた SDK 形式と従来形式では定義されず、ポリフィルが有効になり CS0121 になる。従来形式でも DefineConstants でシンボルを定義すればビルドが通る。" width="1047" height="200" loading="lazy">
-  <figcaption>ポリフィルを記事と同じく <code>namespace System.Linq</code> に置き、<code>Append</code> を呼ぶコードを 4 通りの構成でビルドした結果。<code>symbol</code> 列はビルドの成否からの推定ではなく、ソースに置いた <code>#warning</code> がどちらの分岐から出たかで判定している。</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net5/linq-net5-project-format.ja.md %}
+
+ポリフィルを記事と同じく <code>namespace System.Linq</code> に置き、<code>Append</code> を呼ぶコードを 4 通りの構成でビルドした結果。「シンボル」の列はビルドの成否からの推定ではなく、ソースに置いた <code>#warning</code> がどちらの分岐から出たかで判定している。
+{: .table-caption}
 
 従来形式では `NET471_OR_GREATER` が定義されず、ガードが常に成立してポリフィルが取り込まれ、BCL 側の `Append` と衝突して `CS0121` になる。
 2 行目のとおり、SDK 形式であっても `DisableImplicitFrameworkDefines` を立てて暗黙定義を切れば同じ結果になる。
@@ -237,12 +237,12 @@ namespace System.Linq
 
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Append、Prepend、TakeLast、SkipLast の通常ケースに加え、0・要素数超過・負数・空の並びを渡した場合も、すべて同じ結果になっている。SkipLast(0) はどちらも元の配列ではなく新しいイテレーターを返す。" width="615" height="440" loading="lazy">
-  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。境界値（<code>0</code>・要素数超過・負数・空の並び）も含めて一致している。.NET SDK 10.0.302 で測定した。</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.ja.md %}
 
-境界値を含めて一致することが、この図の要点である。
+上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。境界値（<code>0</code>・要素数超過・負数・空の並び）も含めて一致している。.NET SDK 10.0.302 で測定した。
+{: .table-caption}
+
+境界値を含めて一致することが、この表の要点である。
 `TakeLast(-1)` が空を返し、`SkipLast(-1)` が全件を返すといった挙動は、シグネチャを揃えるだけでは自動的には揃わない。
 
 すべてのメソッドが「引数検証を行う public メソッド」と「`yield return` を含む private イテレータ」の 2 段構えになっている点、および `TakeLast` / `SkipLast` が `Queue<T>` を使っている点が、以降で説明する設計原則の実体である。

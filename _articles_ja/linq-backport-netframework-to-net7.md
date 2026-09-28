@@ -122,10 +122,10 @@ namespace System.Linq
 
 この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.svg" alt="同じ呼び出しコードを net48 のポリフィルと net10.0 の組み込みで実行し、出力を比較した表。Order・OrderDescending は境界値を含めて同じ結果になるが、3 つの行が異なる。比較エンジンは net10.0 が ICU、net48 が NLS で、ja-JP の比較子では、ハイフンとアンダースコアを含む文字列の並びが変わる。比較できない要素では、Order().ToList() が net10.0 では InvalidOperationException、net48 では ArgumentException になる。Order().First() はどちらも ArgumentException。" width="1023" height="410" loading="lazy">
-  <figcaption>上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.ja.md %}
+
+上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+{: .table-caption}
 
 比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。食い違うのは、ランタイムの比較そのものに由来する 3 行（比較エンジン、カルチャ依存の並び、全体を並べたときの例外の型）で、その理由は後述する。`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
 

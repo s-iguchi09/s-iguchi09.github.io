@@ -97,10 +97,10 @@ C# の言語バージョンはターゲットフレームワークとは独立�
 各構文を `net48` へ `LangVersion=latest` でコンパイルした結果が次の表である。
 不足する型を自前定義した場合に通るようになるかも、同じ手順で確かめている。
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="各構文を net48 へコンパイルした結果の表。??=、!、new()、コレクション式、プライマリコンストラクタ、可変な struct への with、位置指定の record struct への with は OK。a[^1]、a[1..3]、init、readonly record struct への with、record への with、required + init、required + set は NG で、不足する型名が示され、ポリフィルを足すといずれも OK になっている。required + init は 3 つ、required + set は 2 つの型を要する。record に required を持たせた場合と SetsRequiredMembers を付けたコンストラクタの場合は、3 つの属性では NG のままで、SetsRequiredMembersAttribute を足した 4 つで OK になる。" width="717" height="620" loading="lazy">
-  <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。<code>missing type</code> はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。<code>+ polyfill</code> はその型を自前定義したうえで再コンパイルした結果である。</figcaption>
-</figure>
+{% include tables/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.ja.md %}
+
+.NET SDK 10.0.302 で <code>net48</code> を対象に <code>LangVersion=latest</code> でコンパイルした結果。「不足する型」はコンパイラが不足を報告した型で、複数ある場合は先頭 1 件と残りの件数を示す。「ポリフィルを足すと」はその型を自前定義したうえで再コンパイルした結果である。
+{: .table-caption}
 
 読み取れることは 4 点ある。
 
@@ -128,12 +128,12 @@ Target-typed `new`、プライマリコンストラクタ、配列や `List<T>` 
 `record` クラスは C# 9.0 から使えるが、`struct` と `record struct` は C# 10.0 からである。
 `LangVersion` を 9.0 に設定して `struct` へ `with` を書くと `CS8773` になる。
 
-構文ごとに、通る最小の `LangVersion` を求めた結果が次の図である。
+構文ごとに、通る最小の `LangVersion` を求めた結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg" alt="構文ごとに net48 で通る最小の LangVersion を測った表。LangVersion を指定しない既定ではいずれも NG。最小値は ??= が 8.0、new() と record class への with が 9.0、struct と record struct への with が 10.0、コレクション式が 12.0 である。" width="603" height="260" loading="lazy">
-  <figcaption>.NET SDK 10.0.302 で <code>net48</code> を対象に、<code>LangVersion</code> を 7.3 から順に上げながらコンパイルし、最初に通った値を記録した結果。BCL 型が要る構文にはポリフィルを適用したうえで測っている。</figcaption>
-</figure>
+{% include tables/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.ja.md %}
+
+.NET SDK 10.0.302 で <code>net48</code> を対象に、<code>LangVersion</code> を 7.3 から順に上げながらコンパイルし、最初に通った値を記録した結果。BCL 型が要る構文にはポリフィルを適用したうえで測っている。
+{: .table-caption}
 
 **`LangVersion` を指定しない列がすべて NG である点に注意する。** .NET Framework をターゲットにしたプロジェクトの既定は C# 7.3 のままであり、SDK や Visual Studio を更新しても自動的には上がらない。
 `.csproj` に `LangVersion` を明示する必要がある。

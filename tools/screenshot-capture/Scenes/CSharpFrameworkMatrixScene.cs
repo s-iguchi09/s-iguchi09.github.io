@@ -240,13 +240,13 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
 
         await context.SaveTableAsync(
             $"compiled against {TargetFramework}, LangVersion=latest",
-            ["", TargetFramework, "missing type", "+ polyfill"],
+            ["", TargetFramework, Loc.Of("missing type", "不足する型"), Loc.Of("+ polyfill", "ポリフィルを足すと")],
             rows,
             "csharp-net-framework-matrix.svg");
 
         await context.SaveTableAsync(
             $"minimum LangVersion that compiles against {TargetFramework} (polyfills applied)",
-            ["", "default (no LangVersion)", "minimum LangVersion"],
+            ["", Loc.Of("default (no LangVersion)", "既定（LangVersion なし）"), Loc.Of("minimum LangVersion", "通る最小の LangVersion")],
             await MeasureLangVersionsAsync(workspace),
             "csharp-langversion-matrix.svg");
     }
@@ -289,11 +289,11 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
     /// 「LangVersion を上げれば使える」という説明は、どこまで上げれば足りるのかを
     /// 示さなければ実用にならない。既定のままではどうなるかも併せて測る。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureLangVersionsAsync(string workspace)
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureLangVersionsAsync(string workspace)
     {
         string[] candidates = ["7.3", "8.0", "9.0", "10.0", "11.0", "12.0"];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (Case item in LangVersionCases)
         {
@@ -303,7 +303,7 @@ internal sealed class CSharpFrameworkMatrixScene : IScene
             WriteProject(workspace, langVersion: null);
             CompileResult bare = await CompileAsync(workspace, code);
 
-            string minimum = "(none of them)";
+            Loc minimum = Loc.Of("(none of them)", "（どれでも通らない）");
             foreach (string candidate in candidates)
             {
                 WriteProject(workspace, candidate);

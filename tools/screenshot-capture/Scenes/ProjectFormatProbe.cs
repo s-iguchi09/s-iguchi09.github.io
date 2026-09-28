@@ -24,7 +24,7 @@ internal static class ProjectFormatProbe
     /// 同じソースを SDK 形式と従来形式の両方でビルドし、シンボルの定義状況と
     /// ポリフィルを重ねたときの結果を突き合わせる。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> SymbolAvailabilityAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> SymbolAvailabilityAsync()
     {
         string msbuild = FindMsBuild();
         string root = Path.Combine(Path.GetTempPath(), "project-format-probe-" + Guid.NewGuid().ToString("N"));
@@ -54,7 +54,7 @@ internal static class ProjectFormatProbe
     }
 
     /// <summary>SDK 形式。TFM から <c>NET471_OR_GREATER</c> が自動で定義される。</summary>
-    private static async Task<IReadOnlyList<string>> MeasureSdkStyleAsync(
+    private static async Task<IReadOnlyList<Loc>> MeasureSdkStyleAsync(
         string root, string variant, bool disableImplicitDefines)
     {
         string workspace = Path.Combine(root, "sdk-style-" + variant);
@@ -84,9 +84,9 @@ internal static class ProjectFormatProbe
 
         (int exitCode, string output) = await RunAsync("dotnet", "build -c Release -v m --nologo", workspace);
 
-        string label = disableImplicitDefines
-            ? "SDK-style + <DisableImplicitFrameworkDefines>true"
-            : "SDK-style, <TargetFramework>net48</TargetFramework>";
+        Loc label = disableImplicitDefines
+            ? Loc.Of("SDK-style + <DisableImplicitFrameworkDefines>true", "SDK 形式 + <DisableImplicitFrameworkDefines>true")
+            : Loc.Of("SDK-style, <TargetFramework>net48</TargetFramework>", "SDK 形式、<TargetFramework>net48</TargetFramework>");
 
         return [label, .. Interpret(exitCode, output)];
     }
@@ -95,7 +95,7 @@ internal static class ProjectFormatProbe
     /// 従来形式。<c>TargetFrameworkVersion</c> で対象を指定するため、
     /// TFM 由来のシンボルは定義されない。
     /// </summary>
-    private static async Task<IReadOnlyList<string>> MeasureLegacyStyleAsync(
+    private static async Task<IReadOnlyList<Loc>> MeasureLegacyStyleAsync(
         string root, string msbuild, string variant, string? defineConstants)
     {
         string workspace = Path.Combine(root, "legacy-style-" + variant);
@@ -138,9 +138,9 @@ internal static class ProjectFormatProbe
         (int exitCode, string output) = await RunAsync(
             msbuild, "legacy-style.csproj /t:Build /p:Configuration=Release /nologo /v:m", workspace);
 
-        string label = defineConstants is null
-            ? "legacy (non-SDK), <TargetFrameworkVersion>v4.8"
-            : $"legacy (non-SDK) + <DefineConstants>{defineConstants}";
+        Loc label = defineConstants is null
+            ? Loc.Of("legacy (non-SDK), <TargetFrameworkVersion>v4.8", "従来形式（非 SDK）、<TargetFrameworkVersion>v4.8")
+            : Loc.Of($"legacy (non-SDK) + <DefineConstants>{defineConstants}", $"従来形式（非 SDK）+ <DefineConstants>{defineConstants}");
 
         return [label, .. Interpret(exitCode, output)];
     }
@@ -152,7 +152,7 @@ internal static class ProjectFormatProbe
     /// <c>#warning</c> がどちらの分岐から出たかで判定する。
     /// ビルドが通った理由は他にもありうるためである。
     /// </summary>
-    private static IReadOnlyList<string> Interpret(int exitCode, string output)
+    private static IReadOnlyList<Loc> Interpret(int exitCode, string output)
     {
         bool defined = output.Contains("PROBE_SYMBOL_DEFINED", StringComparison.Ordinal);
         bool notDefined = output.Contains("PROBE_SYMBOL_NOT_DEFINED", StringComparison.Ordinal);
@@ -163,12 +163,14 @@ internal static class ProjectFormatProbe
                 $"シンボルの定義状況を判定できない。{Environment.NewLine}{output}");
         }
 
-        string symbol = defined ? $"{Symbol} defined" : $"{Symbol} not defined";
-        string polyfill = defined ? "skipped" : "compiled in";
-        string result = exitCode == 0
-            ? "build succeeded"
+        Loc symbol = defined
+            ? Loc.Of($"{Symbol} defined", $"{Symbol} が定義される")
+            : Loc.Of($"{Symbol} not defined", $"{Symbol} が定義されない");
+        Loc polyfill = defined ? Loc.Of("skipped", "除外される") : Loc.Of("compiled in", "コンパイルされる");
+        Loc result = exitCode == 0
+            ? Loc.Of("build succeeded", "ビルド成功")
             : output.Contains("CS0121", StringComparison.Ordinal)
-                ? "CS0121 (ambiguous call)"
+                ? Loc.Of("CS0121 (ambiguous call)", "CS0121（呼び出しがあいまい）")
                 : throw new InvalidOperationException(
                     $"想定しないビルド失敗。CS0121 ではない。{Environment.NewLine}{output}");
 
