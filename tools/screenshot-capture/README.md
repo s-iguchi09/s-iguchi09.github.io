@@ -84,7 +84,9 @@ comm -23 \
      `SceneContext.ShootAsync(window, fileName)` で PNG として保存する。
    - フォーカスやテンプレートパーツの操作など、表示後に行う処理は `ShootAsync` の `beforeCapture` に渡す。
    - **実測値の表は `SceneContext.SaveTableAsync(title, headers, rows, fileName)` で保存する。**
-     `ImageDirectory` に SVG を、`_includes/tables/` の下（`images/` 以下と同じ階層）に同じ内容の Markdown の表を書き出す。
+     `ImageDirectory` に SVG を、`_includes/tables/` の下（`images/` 以下と同じ階層）に同じ内容の Markdown の表を
+     `<名前>.en.md` と `<名前>.ja.md` の 2 つ書き出す。見出しとセルを英語と日本語の組（`Loc`）で渡すと
+     日本語の表は日本語になり、文字列で渡すと両方とも同じ表になる。SVG は英語で描く。
      記事は Markdown の表を `{% include tables/... %}` で読み込む（`docs/rules/article/guidelines.md` §11.4）。
      ウィンドウを作らないため `ShootAsync` の手順は当てはまらない。ディスプレイの電源状態にも影響されない。
    - 実行結果で記事の主張を確かめている場合は、`Verifies` にその内容を書く。
