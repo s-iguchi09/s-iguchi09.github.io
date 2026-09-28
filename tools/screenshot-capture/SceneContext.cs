@@ -136,6 +136,18 @@ internal sealed class SceneContext(string slug, string outputDirectory, string t
             rows.Select(row => (IReadOnlyList<Loc>)row.Select(cell => (Loc)cell).ToList()),
             fileName);
 
+    /// <summary>見出しだけを日英の組で渡し、セルは識別子や値だけで言語に依存しない表の版。</summary>
+    public Task SaveTableAsync(
+        string title,
+        IReadOnlyList<Loc> headers,
+        IEnumerable<IReadOnlyList<string>> rows,
+        string fileName) =>
+        SaveTableAsync(
+            title,
+            headers,
+            rows.Select(row => (IReadOnlyList<Loc>)row.Select(cell => (Loc)cell).ToList()),
+            fileName);
+
     /// <summary>
     /// 見出しとセルを日英の組（<see cref="Loc"/>）で受け取る版。
     /// SVG は英語で描き、Markdown の表は <c>&lt;名前&gt;.en.md</c> と <c>&lt;名前&gt;.ja.md</c> の 2 つを書き出す。

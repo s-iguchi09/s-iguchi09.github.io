@@ -66,22 +66,22 @@ The additions from that window include `ToHashSet` (.NET Core 2.0) among others,
 
 Whether these four exist in the .NET Framework BCL is settled by compiling against each target framework in turn.
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.svg" alt="A table of whether each of the four methods compiles without a polyfill, per target framework. Append and Prepend are yes from net471 onward. TakeLast and SkipLast are no on every .NET Framework version and yes only on net10.0." width="475" height="200" loading="lazy">
-  <figcaption>Code calling each method without a polyfill, compiled and recorded as to whether it built. <code>yes</code> means the method exists in the BCL of that TFM. Measured with .NET SDK 10.0.302.</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.en.md %}
+
+Code calling each method without a polyfill, compiled and recorded as to whether it built. <code>yes</code> means the method exists in the BCL of that TFM. Measured with .NET SDK 10.0.302.
+{: .table-caption}
 
 **`Append` and `Prepend` are available from .NET Framework 4.7.1 onward**: the "Applies to" list of [`Enumerable.Append`](https://learn.microsoft.com/dotnet/api/system.linq.enumerable.append) names .NET Framework 4.7.1 and later, where the methods are part of the framework itself.
 Defining them unconditionally as a polyfill while targeting 4.8 therefore collides with the BCL definitions and fails to compile with `CS0121` (ambiguous call).
 The implementation below guards those two with an extra `#if !NET471_OR_GREATER`.
 
 **That guard only works while the SDK's implicit defines are in effect, though.** `NET471_OR_GREATER` is a symbol an SDK-style project defines implicitly from `TargetFramework`, and a legacy-format project — one specifying `TargetFrameworkVersion` — does not define it.
-The figure below builds the same source in several configurations.
+The table below builds the same source in several configurations.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg" alt="A table of whether NET471_OR_GREATER is defined and what the build produces, per project format, for one and the same source. The SDK-style project defines the symbol, skips the polyfill, and builds. An SDK-style project with DisableImplicitFrameworkDefines, and the legacy format, do not define it, compile the polyfill in, and fail with CS0121. Defining the symbol through DefineConstants makes the legacy format build." width="1047" height="200" loading="lazy">
-  <figcaption>The polyfill placed in <code>namespace System.Linq</code> as the article does, with a call to <code>Append</code>, built in four configurations. The <code>symbol</code> column is not inferred from whether the build succeeded: it comes from which branch of a <code>#warning</code> placed in the source fired.</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net5/linq-net5-project-format.en.md %}
+
+The polyfill placed in <code>namespace System.Linq</code> as the article does, with a call to <code>Append</code>, built in four configurations. The <code>symbol</code> column is not inferred from whether the build succeeded: it comes from which branch of a <code>#warning</code> placed in the source fired.
+{: .table-caption}
 
 In the legacy format `NET471_OR_GREATER` is undefined, so the guard always holds, the polyfill is compiled in, and it collides with the BCL `Append` as `CS0121`.
 As the second row shows, an SDK-style project reaches the same result once `DisableImplicitFrameworkDefines` switches the implicit defines off.
@@ -239,10 +239,10 @@ Two structural traits carry the design principles explained below: every method 
 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
-<figure class="article-figure">
-  <img src="/images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. Append, Prepend, TakeLast, and SkipLast all produce identical results, boundary cases included. SkipLast(0) returns a new iterator, not the source array, on both." width="615" height="440" loading="lazy">
-  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. The boundary cases — <code>0</code>, a count past the end, a negative count, and an empty sequence — agree as well. Measured with .NET SDK 10.0.302.</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.en.md %}
+
+The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. The boundary cases — <code>0</code>, a count past the end, a negative count, and an empty sequence — agree as well. Measured with .NET SDK 10.0.302.
+{: .table-caption}
 
 ---
 

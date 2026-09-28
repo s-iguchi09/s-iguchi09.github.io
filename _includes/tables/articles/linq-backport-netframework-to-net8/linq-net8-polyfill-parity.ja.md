@@ -1,0 +1,10 @@
+| 式 | net10.0（組み込み） | net48（ポリフィル） |  |
+|---|---|---|---|
+| Pairs.ToDictionary() | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | 一致 |
+| Tuples.ToDictionary() | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | 一致 |
+| Pairs.ToDictionary(cmp) | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | 一致 |
+| Tuples.ToDictionary(cmp) | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | \[\[apple, 2\], \[fig, 3\], \[pear, 1\]\] | 一致 |
+| duplicate key | throws ArgumentException | throws ArgumentException | 一致 |
+| case variants, ordinal | \[\[pear, 1\], \[PEAR, 2\]\] | \[\[pear, 1\], \[PEAR, 2\]\] | 一致 |
+| case variants, ignore case | throws ArgumentException | throws ArgumentException | 一致 |
+| empty.ToDictionary() | \[\] | \[\] | 一致 |

@@ -24,7 +24,7 @@ Windows エクスプローラーでファイル名を並べると、`item1` `ite
 - 用途: `List<T>.Sort` / LINQ の `OrderBy` など、`IComparer<string>` を受け取る API
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で同じ入力を比較器ごとに実際に並べ替え、結果の並びを比べて得たものである。
+本記事の図と表は、上記の環境で同じ入力を比較器ごとに実際に並べ替え、結果の並びを比べて得たものである。
 この環境で確認しているのは次の点である。
 
 - 検証環境の既定カルチャでは、序数比較でもカルチャ比較でも `item10` が `item2` より前に来る。
@@ -69,20 +69,20 @@ files.Sort();
 
 同じ入力を比較器ごとに並べ替えると、この違いがそのまま現れる。
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.svg" alt="同じ入力を比較器ごとに並べ替えた結果の表。Ordinal・CurrentCulture・OrdinalIgnoreCase はいずれも Item1, item10, item2, item20, item3 の順になる。StrCmpLogicalW だけが Item1, item2, item3, item10, item20 の順になる。" width="488" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>item10, item2, Item1, item20, item3</code> を各比較器で並べ替えた結果。</figcaption>
-</figure>
+{% include tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.ja.md %}
+
+.NET 10 / Windows 11 で、<code>item10, item2, Item1, item20, item3</code> を各比較器で並べ替えた結果。
+{: .table-caption}
 
 **序数・カルチャ・大文字小文字を無視した序数のいずれでも、結果は同じである。** 大文字小文字の扱いは問題の本質ではない。
 `StrCmpLogicalW` だけが数字をまとめて数値として比較し、期待する並びになる。
 
 個々の組で何を返すかも確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.svg" alt="文字列の組ごとに StrCmpLogicalW と CompareOrdinal の戻り値を比べた表。item2 と item10 では符号が逆になる。Item2 と item2 は StrCmpLogicalW では 0 だが CompareOrdinal では -1 になる。" width="508" height="260" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、各組を <code>StrCmpLogicalW</code> と <code>string.CompareOrdinal</code> に渡した結果。符号だけを示している。</figcaption>
-</figure>
+{% include tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.ja.md %}
+
+.NET 10 / Windows 11 で、各組を <code>StrCmpLogicalW</code> と <code>string.CompareOrdinal</code> に渡した結果。符号だけを示している。
+{: .table-caption}
 
 **`"Item2"` と `"item2"` の行が `0` になっている。** `StrCmpLogicalW` は大文字小文字を区別しないため、この 2 つを等価と判断する。
 `"item02"` と `"item2"` は等価にならず、`0` 詰めの側が前になる。数値としては同じでも、桁数の違いで順序が決まる。

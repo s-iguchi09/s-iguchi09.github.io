@@ -83,19 +83,19 @@ internal sealed class LinqBackportNet5Scene : IScene
 
         await context.SaveTableAsync(
             "available in the BCL without a polyfill? (compiled per target framework)",
-            ["method", .. Frameworks],
+            [Loc.Of("method", "メソッド"), .. Frameworks.Select(f => (Loc)f)],
             await LinqBackportParity.MeasureAvailabilityAsync(Slug, Frameworks, BclProbes),
             "linq-net5-bcl-availability.svg");
 
         await context.SaveTableAsync(
             "polyfill on net48 vs built-in on net10.0 — same source, same driver",
-            ["expression", "net10.0 (built-in)", "net48 (polyfill)", ""],
+            [Loc.Of("expression", "式"), Loc.Of("net10.0 (built-in)", "net10.0（組み込み）"), Loc.Of("net48 (polyfill)", "net48（ポリフィル）"), ""],
             await LinqBackportParity.MeasureAsync(Slug, Probes, Sample),
             "linq-net5-polyfill-parity.svg");
 
         await context.SaveTableAsync(
             "is NET471_OR_GREATER defined? (same source, four project configurations)",
-            ["project format", "symbol", "polyfill", "build result"],
+            [Loc.Of("project format", "プロジェクトの形式"), Loc.Of("symbol", "シンボル"), Loc.Of("polyfill", "ポリフィル"), Loc.Of("build result", "ビルドの結果")],
             await ProjectFormatProbe.SymbolAvailabilityAsync(),
             "linq-net5-project-format.svg");
     }
@@ -176,7 +176,7 @@ internal sealed class LinqBackportNet6Scene : IScene
 
         await context.SaveTableAsync(
             "polyfill on net48 vs built-in on net10.0 — same source, same driver",
-            ["expression", "net10.0 (built-in)", "net48 (polyfill)", ""],
+            [Loc.Of("expression", "式"), Loc.Of("net10.0 (built-in)", "net10.0（組み込み）"), Loc.Of("net48 (polyfill)", "net48（ポリフィル）"), ""],
             await LinqBackportParity.MeasureAsync(Slug, Probes, Sample),
             "linq-net6-polyfill-parity.svg");
     }
@@ -248,7 +248,7 @@ internal sealed class LinqBackportNet7Scene : IScene
 
         await context.SaveTableAsync(
             "polyfill on net48 vs built-in on net10.0 — same source, same driver",
-            ["expression", "net10.0 (built-in)", "net48 (polyfill)", ""],
+            [Loc.Of("expression", "式"), Loc.Of("net10.0 (built-in)", "net10.0（組み込み）"), Loc.Of("net48 (polyfill)", "net48（ポリフィル）"), ""],
             await LinqBackportParity.MeasureAsync(Slug, Probes, Sample),
             "linq-net7-polyfill-parity.svg");
     }
@@ -328,7 +328,7 @@ internal sealed class LinqBackportNet8Scene : IScene
 
         await context.SaveTableAsync(
             "polyfill on net48 vs built-in on net10.0 — same source, same driver",
-            ["expression", "net10.0 (built-in)", "net48 (polyfill)", ""],
+            [Loc.Of("expression", "式"), Loc.Of("net10.0 (built-in)", "net10.0（組み込み）"), Loc.Of("net48 (polyfill)", "net48（ポリフィル）"), ""],
             await LinqBackportParity.MeasureAsync(Slug, Probes, Sample),
             "linq-net8-polyfill-parity.svg");
     }
@@ -386,7 +386,7 @@ internal sealed class LinqBackportNet9Scene : IScene
 
         await context.SaveTableAsync(
             "polyfill on net48 vs built-in on net10.0 — same source, same driver",
-            ["expression", "net10.0 (built-in)", "net48 (polyfill)", ""],
+            [Loc.Of("expression", "式"), Loc.Of("net10.0 (built-in)", "net10.0（組み込み）"), Loc.Of("net48 (polyfill)", "net48（ポリフィル）"), ""],
             await LinqBackportParity.MeasureAsync(Slug, Probes, Sample),
             "linq-net9-polyfill-parity.svg");
     }
@@ -496,7 +496,7 @@ internal sealed class LinqBackportNet10Scene : IScene
 
         await context.SaveTableAsync(
             "polyfill on net48 vs built-in on net10.0 — same source, same driver",
-            ["expression", "net10.0 (built-in)", "net48 (polyfill)", ""],
+            [Loc.Of("expression", "式"), Loc.Of("net10.0 (built-in)", "net10.0（組み込み）"), Loc.Of("net48 (polyfill)", "net48（ポリフィル）"), ""],
             await LinqBackportParity.MeasureAsync(Slug, Probes, Sample),
             "linq-net10-polyfill-parity.svg");
     }

@@ -52,7 +52,7 @@ internal static class FormatAndSortMeasurements
     /// <see cref="StrCmpLogicalW"/> が個々の組でどう答えるかを出す。
     /// 大文字小文字を区別しないという性質も、ここで確かめられる。
     /// </summary>
-    public static List<IReadOnlyList<string>> LogicalComparisons()
+    public static List<IReadOnlyList<Loc>> LogicalComparisons()
     {
         (string Left, string Right)[] pairs =
         [
@@ -64,22 +64,25 @@ internal static class FormatAndSortMeasurements
             ("a", "B"),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach ((string left, string right) in pairs)
         {
             int logical = StrCmpLogicalW(left, right);
             int ordinal = Math.Sign(string.CompareOrdinal(left, right));
-            rows.Add([$"\"{left}\" vs \"{right}\"", Sign(logical), Sign(ordinal)]);
+            rows.Add([Pair($"\"{left}\"", $"\"{right}\""), Sign(logical), Sign(ordinal)]);
         }
 
         return rows;
     }
 
+    /// <summary>比べた 2 つの値の組。</summary>
+    private static Loc Pair(string left, string right) => Loc.Of($"{left} vs {right}", $"{left} と {right}");
+
     /// <summary>
     /// null を渡したときに <see cref="StrCmpLogicalW"/> が返す生の値を出す。
     /// ドキュメントは null について書いていないため、符号に丸めずにそのまま記録する。
     /// </summary>
-    public static List<IReadOnlyList<string>> NullComparisons()
+    public static List<IReadOnlyList<Loc>> NullComparisons()
     {
         (string? Left, string? Right)[] pairs =
         [
@@ -88,11 +91,11 @@ internal static class FormatAndSortMeasurements
             (null, null),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach ((string? left, string? right) in pairs)
         {
             int raw = StrCmpLogicalW(left!, right!);
-            rows.Add([$"{Show(left)} vs {Show(right)}", raw.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
+            rows.Add([Pair(Show(left), Show(right)), raw.ToString(System.Globalization.CultureInfo.InvariantCulture)]);
         }
 
         return rows;
@@ -100,11 +103,11 @@ internal static class FormatAndSortMeasurements
         static string Show(string? value) => value is null ? "null" : $"\"{value}\"";
     }
 
-    private static string Sign(int value) => value switch
+    private static Loc Sign(int value) => value switch
     {
-        < 0 => "-1 (left first)",
-        > 0 => "+1 (right first)",
-        _ => "0 (equal)",
+        < 0 => Loc.Of("-1 (left first)", "-1（左が先）"),
+        > 0 => Loc.Of("+1 (right first)", "+1（右が先）"),
+        _ => Loc.Of("0 (equal)", "0（等しい）"),
     };
 
     // ------------------------------------------------------------------

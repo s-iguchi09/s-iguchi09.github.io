@@ -45,19 +45,19 @@ internal sealed class NaturalSortScene : IScene
 
         await context.SaveTableAsync(
             "same input sorted by each comparer",
-            ["comparer", "resulting order"],
+            [Loc.Of("comparer", "比較器"), Loc.Of("resulting order", "並べ替えた結果")],
             FormatAndSortMeasurements.SortOrders(),
             "natural-sort-orders.svg");
 
         await context.SaveTableAsync(
             "comparison result per pair",
-            ["pair", "StrCmpLogicalW", "CompareOrdinal"],
+            [Loc.Of("pair", "比べた組"), "StrCmpLogicalW", "CompareOrdinal"],
             FormatAndSortMeasurements.LogicalComparisons(),
             "natural-sort-pairs.svg");
 
         await context.SaveTableAsync(
             "raw return value with null arguments",
-            ["pair", "StrCmpLogicalW"],
+            [Loc.Of("pair", "比べた組"), "StrCmpLogicalW"],
             FormatAndSortMeasurements.NullComparisons(),
             "natural-sort-null.svg");
     }

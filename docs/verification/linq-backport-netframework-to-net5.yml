@@ -18,3 +18,10 @@ images:
   - "images/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.svg"
   - "images/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.svg"
   - "images/articles/linq-backport-netframework-to-net5/linq-net5-project-format.svg"
+tables:
+  - "_includes/tables/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.en.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net5/linq-net5-bcl-availability.ja.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.en.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.ja.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net5/linq-net5-project-format.en.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net5/linq-net5-project-format.ja.md"

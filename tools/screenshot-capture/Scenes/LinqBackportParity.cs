@@ -25,7 +25,7 @@ internal static class LinqBackportParity
     internal sealed record Probe(string Label, string Expression);
 
     /// <summary>記事のポリフィルを両環境で走らせ、表の行を返す。</summary>
-    public static async Task<List<IReadOnlyList<string>>> MeasureAsync(
+    public static async Task<List<IReadOnlyList<Loc>>> MeasureAsync(
         string slug,
         IReadOnlyList<Probe> probes,
         string sampleSource)
@@ -40,12 +40,13 @@ internal static class LinqBackportParity
         Dictionary<string, string> legacyByLabel = Parse(legacy);
         Dictionary<string, string> modernByLabel = Parse(modern);
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
+        Loc noOutput = Loc.Of("(no output)", "（出力なし）");
         foreach (Probe probe in probes)
         {
-            string built = modernByLabel.GetValueOrDefault(probe.Label, "(no output)");
-            string back = legacyByLabel.GetValueOrDefault(probe.Label, "(no output)");
-            rows.Add([probe.Label, built, back, built == back ? "same" : "DIFFERS"]);
+            Loc built = modernByLabel.TryGetValue(probe.Label, out string? b) ? b : noOutput;
+            Loc back = legacyByLabel.TryGetValue(probe.Label, out string? l) ? l : noOutput;
+            rows.Add([probe.Label, built, back, built == back ? Loc.Of("same", "一致") : Loc.Of("DIFFERS", "不一致")]);
         }
 
         return rows;
@@ -59,22 +60,22 @@ internal static class LinqBackportParity
     /// そこに含まれるメソッドは 4.7.1 以降で使える。ポリフィルを無条件に足すと
     /// BCL 側と衝突して CS0121 になるため、どこから使えるのかを確かめる必要がある。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> MeasureAvailabilityAsync(
+    public static async Task<List<IReadOnlyList<Loc>>> MeasureAvailabilityAsync(
         string slug,
         IReadOnlyList<string> targetFrameworks,
         IReadOnlyList<Probe> methods)
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (Probe method in methods)
         {
-            var cells = new List<string> { method.Label };
+            var cells = new List<Loc> { method.Label };
 
             foreach (string tfm in targetFrameworks)
             {
                 string workspace = Path.Combine(
                     Path.GetTempPath(), "linq-bcl-availability", slug, method.Label, tfm);
-                cells.Add(await CompilesAsync(workspace, tfm, method.Expression) ? "yes" : "no");
+                cells.Add(await CompilesAsync(workspace, tfm, method.Expression) ? Loc.Of("yes", "使える") : Loc.Of("no", "使えない"));
             }
 
             rows.Add(cells);

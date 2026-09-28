@@ -225,10 +225,10 @@ namespace System.Linq
 
 Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg" alt="A table comparing the output of the same calling code run against the net48 polyfill and the net10.0 built-in. LeftJoin, RightJoin, and Shuffle all produce identical results, boundary cases included. Eight threads started together also get eight different Shuffle orders on both." width="1078" height="320" loading="lazy">
-  <figcaption>The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.</figcaption>
-</figure>
+{% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.en.md %}
+
+The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+{: .table-caption}
 
 `Shuffle` draws on randomness, so its output is re-sorted before the comparison. The two sides also agree on the default value handed to a row that has no counterpart.
 

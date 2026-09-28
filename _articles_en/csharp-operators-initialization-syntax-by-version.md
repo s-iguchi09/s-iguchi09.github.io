@@ -104,10 +104,10 @@ The next section shows this classification as actual compiler output.
 The table below records the result of compiling each construct against `net48` with `LangVersion=latest`.
 Whether defining the missing type makes it compile was checked the same way.
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.svg" alt="A table of compilation results against net48. ??=, !, new(), collection expressions, primary constructors, with on a mutable struct, and with on a positional record struct are OK. a[^1], a[1..3], init, with on a readonly record struct, with on a record, required with init, and required with set are NG with the missing types named, and all become OK once a polyfill is added. required with init needs three types while required with set needs two. A record holding a required member, and a constructor marked SetsRequiredMembers, stay NG with the three attributes and become OK once SetsRequiredMembersAttribute makes four." width="717" height="620" loading="lazy">
-  <figcaption>Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.</figcaption>
-</figure>
+{% include tables/articles/csharp-operators-initialization-syntax-by-version/csharp-net-framework-matrix.en.md %}
+
+Compiled with .NET SDK 10.0.302 against <code>net48</code> at <code>LangVersion=latest</code>. <code>missing type</code> is the type the compiler reported as absent; when several are missing, the first is named along with the count of the rest. <code>+ polyfill</code> is the result of recompiling after defining those types locally.
+{: .table-caption}
 
 Four things follow from the table.
 
@@ -135,12 +135,12 @@ The same applies to setting `required` members from a constructor explicitly mar
 A `record` class works from C# 9.0, but a `struct` and a `record struct` require C# 10.0.
 Writing `with` against a `struct` at `LangVersion` 9.0 fails with `CS8773`.
 
-The figure below records the lowest `LangVersion` that compiles for each construct.
+The table below records the lowest `LangVersion` that compiles for each construct.
 
-<figure class="article-figure">
-  <img src="/images/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.svg" alt="A table of the lowest LangVersion that compiles on net48 per construct. With no LangVersion set, every row fails. The minimum is 8.0 for ??=, 9.0 for new() and with on a record class, 10.0 for with on a struct and a record struct, and 12.0 for collection expressions." width="603" height="260" loading="lazy">
-  <figcaption>Measured with .NET SDK 10.0.302 against <code>net48</code>, raising <code>LangVersion</code> from 7.3 upward and recording the first value that compiles. Constructs needing BCL types were measured with their polyfill applied.</figcaption>
-</figure>
+{% include tables/articles/csharp-operators-initialization-syntax-by-version/csharp-langversion-matrix.en.md %}
+
+Measured with .NET SDK 10.0.302 against <code>net48</code>, raising <code>LangVersion</code> from 7.3 upward and recording the first value that compiles. Constructs needing BCL types were measured with their polyfill applied.
+{: .table-caption}
 
 **Note that every row fails in the column with no `LangVersion` set.** A project targeting .NET Framework stays on C# 7.3 by default and does not move off it when the SDK or Visual Studio is updated.
 `LangVersion` has to be stated explicitly in the `.csproj`.

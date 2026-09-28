@@ -15,3 +15,10 @@ images:
   - "images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.svg"
   - "images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.svg"
   - "images/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-null.svg"
+tables:
+  - "_includes/tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.en.md"
+  - "_includes/tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-orders.ja.md"
+  - "_includes/tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.en.md"
+  - "_includes/tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-pairs.ja.md"
+  - "_includes/tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-null.en.md"
+  - "_includes/tables/articles/csharp-natural-sort-strcmplogicalw-icomparer/natural-sort-null.ja.md"

@@ -13,3 +13,6 @@ verifies:
 images:
   - "images/articles/linq-backport-netframework-to-net10/linq-leftjoin-rightjoin-shuffle.png"
   - "images/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.svg"
+tables:
+  - "_includes/tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.en.md"
+  - "_includes/tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.ja.md"
