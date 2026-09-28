@@ -95,7 +95,7 @@ For user input, keyboard focus was moved to the control, and keys were sent thro
 For the calendar, the test read whether the day button outside the range was enabled, and tab selection was tried by calling `Select` through UI Automation, the interface that assistive technologies use.
 Values from code and from bindings were set on controls shown in a window.
 
-{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.md %}
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.en.md %}
 
 Measured on .NET 10 / Windows 11. User input is keys and characters sent through InputManager and TextCompositionManager; for the calendar, the enabled state of the day button was read, and for the tab, UI Automation's Select was called. The DatePicker was tried with the en-US culture. The DisplayDateStart afterwards row shows the state after the out-of-range date in the row above came in, and the April 7 button was checked only after setting the date from code. Keys cannot produce a value above the maximum, so the End key in the Slider Maximum row only shows that the value stops at the maximum. The binding in that row specifies Mode=TwoWay.
 {: .table-caption}
@@ -288,7 +288,7 @@ To check the view model's rule alone, the `Slider` was widened to 0–200, snapp
 The `Slider` itself does not round the value, so if the source and the screen show a rounded value, the view model rounded it.
 To see the value the `Slider` sent to the source on each key, the setter was given extra code, for the measurement only, that records the value it received (it is not in the implementation above).
 
-{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.md %}
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.en.md %}
 
 Measured on .NET 10 / Windows 11. In the name rows, a view model with a limit of 5 characters is bound to a TextBox with MaxLength 5 using UpdateSourceTrigger=PropertyChanged, without setting ValidatesOnNotifyDataErrors. In the Save button row, IsEnabled is bound to HasErrors through a converter that inverts a bool. The Slider has Minimum 0, Maximum 200, no snapping, and SmallChange 5, and is bound TwoWay to Volume. The sent value is what the setter received before rounding, recorded for the measurement only; the implementation in this article does not record it.
 {: .table-caption}
@@ -334,7 +334,7 @@ The following table shows the results of binding the period.
 The default two-way binding and `OneWay` were tried with `DisplayDateStart`.
 Read-only properties were tried with both `DisplayDateStart` and `DisplayDateEnd` in four ways: setting the source directly, setting the `DataContext` while shown, setting the `DataContext` before showing, and setting the `DataContext` on a parent element before showing.
 
-{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.md %}
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.en.md %}
 
 Measured on .NET 10 / Windows 11. The first two rows are the values after SelectedDate is set to 2026-04-05 from code. The value after the source is set to 04-12 is DisplayDateStart after SelectedDate is reset to null and the source is set to 2026-04-12. "read-only property" means the exception message named the read-only property as the reason. In the parent's DataContext rows, the DataContext was set on a parent element and inherited by the DatePicker; in the other rows, it was set on the DatePicker itself.
 {: .table-caption}

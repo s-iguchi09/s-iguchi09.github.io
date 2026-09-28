@@ -92,9 +92,9 @@ Microsoft Learn の [`TextBox.MaxLength` のリファレンス](https://learn.mi
 カレンダーは範囲外の日付ボタンが有効かどうかを読み、タブの選択は支援技術が使う UI オートメーションの `Select` を呼んで試した。
 コードからの代入とバインドした値は、いずれもウィンドウに表示したコントロールに対して設定した。
 
-{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.md %}
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-by-path.ja.md %}
 
-.NET 10 / Windows 11 での実測結果。利用者の操作は InputManager と TextCompositionManager で送ったキーと文字で、カレンダーは日付ボタンの有効・無効を読み、タブは UI オートメーションの Select を呼んだ。DatePicker は en-US の表示で試した。DisplayDateStart afterwards の行は、上の行で範囲外の日付が入った後の状態で、04-07 のボタンはコードから設定した後だけを確かめた。キー操作では上限を超える値を作れないため、Slider の Maximum の行の End キーは上限で止まることだけを示す。この行のバインドは Mode=TwoWay を指定した。
+.NET 10 / Windows 11 での実測結果。利用者の操作は InputManager と TextCompositionManager で送ったキーと文字で、カレンダーは日付ボタンの有効・無効を読み、タブは UI オートメーションの Select を呼んだ。DatePicker は en-US の表示で試した。「その後の DisplayDateStart」の行は、上の行で範囲外の日付が入った後の状態で、04-07 のボタンはコードから設定した後だけを確かめた。キー操作では上限を超える値を作れないため、Slider の Maximum の行の End キーは上限で止まることだけを示す。この行のバインドは Mode=TwoWay を指定した。
 {: .table-caption}
 
 **コードとバインドから入る値を画面上で範囲に収めたのは、`Slider` の `Maximum` だけだった。**
@@ -286,9 +286,9 @@ XAML は「問題」の節の `Slider` のままでよい。
 `Slider` 自身は値を丸めないので、ソースと画面の値が丸まっていれば、丸めたのはビューモデルである。
 `Slider` がキー操作でソースへ送った値を見るため、計測用に、setter が受け取った値を記録する処理を足した（実装例には含めていない）。
 
-{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.md %}
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-viewmodel.ja.md %}
 
-.NET 10 / Windows 11 での実測結果。名前の行は、上限を 5 文字にしたビューモデルと MaxLength 5 の TextBox を UpdateSourceTrigger=PropertyChanged でバインドし、ValidatesOnNotifyDataErrors は指定していない。保存ボタンの行は、IsEnabled を bool を反転するコンバーター経由で HasErrors にバインドした。Slider は Minimum 0・Maximum 200・目盛り合わせ無し・SmallChange 5 で、Volume に TwoWay でバインドした。sent は、setter が丸める前に受け取った値を計測用に記録したもので、記事の実装例には無い処理である。
+.NET 10 / Windows 11 での実測結果。名前の行は、上限を 5 文字にしたビューモデルと MaxLength 5 の TextBox を UpdateSourceTrigger=PropertyChanged でバインドし、ValidatesOnNotifyDataErrors は指定していない。保存ボタンの行は、IsEnabled を bool を反転するコンバーター経由で HasErrors にバインドした。Slider は Minimum 0・Maximum 200・目盛り合わせ無し・SmallChange 5 で、Volume に TwoWay でバインドした。「送った値」は、setter が丸める前に受け取った値を計測用に記録したもので、記事の実装例には無い処理である。
 {: .table-caption}
 
 **丸めは、コードから入った値にも、`Slider` の操作から届いた値にも掛かった。**
@@ -332,9 +332,9 @@ XAML は「問題」の節の `Slider` のままでよい。
 既定の双方向と `OneWay` は `DisplayDateStart` で試した。
 読み取り専用のプロパティは、`DisplayDateStart` と `DisplayDateEnd` のそれぞれで、`Source` の指定・表示中の `DataContext` の設定・表示前の `DataContext` の設定・表示前の親の要素への `DataContext` の設定の 4 通りを試した。
 
-{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.md %}
+{% include tables/articles/wpf-input-limits-not-applied-to-code/input-limits-displaydate-binding.ja.md %}
 
-.NET 10 / Windows 11 での実測結果。上の 2 行は、コードから SelectedDate を 2026-04-05 にした後の値である。source set to 04-12 の値は、SelectedDate を null に戻してからソースを 2026-04-12 にした後の DisplayDateStart である。read-only property は、例外のメッセージが読み取り専用のプロパティを理由に挙げていたことを示す。parent's DataContext の行は、DatePicker を置いた親の要素に DataContext を設定して継承させた。それ以外の行は DatePicker 自身に設定した。
+.NET 10 / Windows 11 での実測結果。上の 2 行は、コードから SelectedDate を 2026-04-05 にした後の値である。「ソースを 04-12 にすると」の値は、SelectedDate を null に戻してからソースを 2026-04-12 にした後の DisplayDateStart である。「読み取り専用のプロパティ」は、例外のメッセージが読み取り専用のプロパティを理由に挙げていたことを示す。「親の DataContext」の行は、DatePicker を置いた親の要素に DataContext を設定して継承させた。それ以外の行は DatePicker 自身に設定した。
 {: .table-caption}
 
 ---

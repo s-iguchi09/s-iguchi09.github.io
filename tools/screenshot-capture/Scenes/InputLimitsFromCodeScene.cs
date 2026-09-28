@@ -49,26 +49,29 @@ internal sealed class InputLimitsFromCodeScene : IScene
     {
         await context.SaveTableAsync(
             "input restrictions: which path they apply to",
-            ["restriction", "user input", "value from code", "value from a binding"],
+            [T("restriction", "制限"), T("user input", "利用者の操作"), T("value from code", "コードからの代入"), T("value from a binding", "バインドした値")],
             await PathsAsync(),
             "input-limits-by-path.svg");
 
         await context.SaveTableAsync(
             "checking in the view model: both paths",
-            ["view model", "value from code", "user input"],
+            [T("view model", "ビューモデル"), T("value from code", "コードからの代入"), T("user input", "利用者の操作")],
             await ViewModelAsync(),
             "input-limits-viewmodel.svg");
 
         await context.SaveTableAsync(
             "DisplayDateStart / DisplayDateEnd bound to the view model",
-            ["binding", "result"],
+            [T("binding", "バインド"), T("result", "結果")],
             await DisplayDateBindingAsync(),
             "input-limits-displaydate-binding.svg");
     }
 
-    private static async Task<List<IReadOnlyList<string>>> PathsAsync()
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static async Task<List<IReadOnlyList<Loc>>> PathsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // TextBox.MaxLength
         {
@@ -78,7 +81,7 @@ internal sealed class InputLimitsFromCodeScene : IScene
             var bound = new TextBox { MaxLength = 5 };
             bound.SetBinding(TextBox.TextProperty, new Binding(nameof(Holder<string>.Value)) { Source = source });
             string viaBinding = await ShownAsync(bound, _ => source.Value = "abcdefgh", b => Quote(b.Text));
-            rows.Add(["TextBox MaxLength=5, \"abcdefgh\"", Quote(typed), code, viaBinding]);
+            rows.Add([T("TextBox MaxLength=5, \"abcdefgh\"", "TextBox MaxLength=5、\"abcdefgh\""), Quote(typed), code, viaBinding]);
         }
 
         // TextBox.CharacterCasing
@@ -89,23 +92,25 @@ internal sealed class InputLimitsFromCodeScene : IScene
             var bound = new TextBox { CharacterCasing = CharacterCasing.Upper };
             bound.SetBinding(TextBox.TextProperty, new Binding(nameof(Holder<string>.Value)) { Source = source });
             string viaBinding = await ShownAsync(bound, _ => source.Value = "hello", b => Quote(b.Text));
-            rows.Add(["TextBox CharacterCasing=Upper, \"hello\"", Quote(typed), code, viaBinding]);
+            rows.Add([T("TextBox CharacterCasing=Upper, \"hello\"", "TextBox CharacterCasing=Upper、\"hello\""), Quote(typed), code, viaBinding]);
         }
 
         // PasswordBox.MaxLength。Password には依存関係プロパティの識別子が無いため、バインドの対象にできない。
         {
             var typedBox = new PasswordBox { MaxLength = 8 };
-            string typed = "";
+            Loc typed = "";
             await ShowAsync(typedBox, async () =>
             {
                 await FocusAsync(typedBox);
                 TypeLetters(typedBox, "abcdefghij");
-                typed = $"{typedBox.Password.Length} characters";
+                typed = Characters(typedBox.Password.Length);
             });
-            string code = await ShownAsync(new PasswordBox { MaxLength = 8 }, b => b.Password = "abcdefghij", b => $"{b.Password.Length} characters");
+            Loc code = await ShownAsync(new PasswordBox { MaxLength = 8 }, b => b.Password = "abcdefghij", b => Characters(b.Password.Length));
             bool hasProperty = typeof(PasswordBox).GetField("PasswordProperty", BindingFlags.Public | BindingFlags.Static) is not null;
-            string viaBinding = hasProperty ? "PasswordProperty exists" : "no PasswordProperty to bind";
-            rows.Add(["PasswordBox MaxLength=8, 10 letters", typed, code, viaBinding]);
+            Loc viaBinding = hasProperty
+                ? T("PasswordProperty exists", "PasswordProperty がある")
+                : T("no PasswordProperty to bind", "バインドできる PasswordProperty が無い");
+            rows.Add([T("PasswordBox MaxLength=8, 10 letters", "PasswordBox MaxLength=8、10 文字"), typed, code, viaBinding]);
         }
 
         // DatePicker.DisplayDateStart / DisplayDateEnd（2026-04-10 〜 04-20）に対して 2026-04-05
@@ -113,7 +118,7 @@ internal sealed class InputLimitsFromCodeScene : IScene
             var outside = new DateTime(2026, 4, 5);
 
             DatePicker calendarPicker = RangedPicker();
-            string calendar = "";
+            Loc calendar = "";
             await ShowAsync(calendarPicker, async () =>
             {
                 calendarPicker.IsDropDownOpen = true;
@@ -121,12 +126,14 @@ internal sealed class InputLimitsFromCodeScene : IScene
                 var popup = (Popup)calendarPicker.Template.FindName("PART_Popup", calendarPicker);
                 var button = Descendants((System.Windows.Controls.Calendar)popup.Child).OfType<CalendarDayButton>()
                     .First(b => b.DataContext is DateTime d && d.Date == outside);
-                calendar = button.IsEnabled ? "calendar: day enabled" : "calendar: day disabled";
+                calendar = button.IsEnabled
+                    ? T("calendar: day enabled", "カレンダー: 日付ボタンは有効")
+                    : T("calendar: day disabled", "カレンダー: 日付ボタンは無効");
                 calendarPicker.IsDropDownOpen = false;
             });
 
             DatePicker typedPicker = RangedPicker();
-            string typed = "";
+            Loc typed = "";
             await ShowAsync(typedPicker, async () =>
             {
                 var box = (DatePickerTextBox)typedPicker.Template.FindName("PART_TextBox", typedPicker);
@@ -139,12 +146,12 @@ internal sealed class InputLimitsFromCodeScene : IScene
 
                 Press(Key.Enter);
                 await Capture.SettleAsync(Window.GetWindow(typedPicker)!);
-                typed = $"typed: {Date(typedPicker.SelectedDate)}";
+                typed = T($"typed: {Date(typedPicker.SelectedDate)}", $"入力: {Date(typedPicker.SelectedDate)}");
             });
 
             DatePicker fromCode = RangedPicker();
             string code = "";
-            string loadedCalendar = "";
+            Loc loadedCalendar = "";
             await ShowAsync(fromCode, async () =>
             {
                 fromCode.SelectedDate = outside;
@@ -155,19 +162,28 @@ internal sealed class InputLimitsFromCodeScene : IScene
                 var popup = (Popup)fromCode.Template.FindName("PART_Popup", fromCode);
                 var button = Descendants((System.Windows.Controls.Calendar)popup.Child).OfType<CalendarDayButton>()
                     .First(b => b.DataContext is DateTime d && d.Date == new DateTime(2026, 4, 7));
-                loadedCalendar = button.IsEnabled ? "04-07 day enabled" : "04-07 day disabled";
+                loadedCalendar = button.IsEnabled
+                    ? T("04-07 day enabled", "04-07 の日付ボタンは有効")
+                    : T("04-07 day disabled", "04-07 の日付ボタンは無効");
                 fromCode.IsDropDownOpen = false;
             });
             var source = new Holder<DateTime?> { Value = null };
             DatePicker bound = RangedPicker();
             bound.SetBinding(DatePicker.SelectedDateProperty, new Binding(nameof(Holder<DateTime?>.Value)) { Source = source });
             string viaBinding = await ShownAsync(bound, _ => source.Value = outside, p => Date(p.SelectedDate));
-            rows.Add(["DatePicker 04-10 to 04-20, 04-05", $"{calendar}, {typed}", code, viaBinding]);
+            rows.Add([
+                T("DatePicker 04-10 to 04-20, 04-05", "DatePicker 04-10〜04-20、04-05"),
+                T($"{calendar.En}, {typed.En}", $"{calendar.Ja}、{typed.Ja}"),
+                code,
+                viaBinding]);
 
             // 範囲外の日付が入った後の DisplayDateStart（設定したのは 04-10）
-            rows.Add(["DatePicker, DisplayDateStart afterwards",
-                $"after typing: {Date(typedPicker.DisplayDateStart)}",
-                $"{Date(fromCode.DisplayDateStart)}, {loadedCalendar}",
+            string afterTyping = Date(typedPicker.DisplayDateStart);
+            string afterCode = Date(fromCode.DisplayDateStart);
+            rows.Add([
+                T("DatePicker, DisplayDateStart afterwards", "DatePicker、その後の DisplayDateStart"),
+                T($"after typing: {afterTyping}", $"入力の後: {afterTyping}"),
+                T($"{afterCode}, {loadedCalendar.En}", $"{afterCode}、{loadedCalendar.Ja}"),
                 Date(bound.DisplayDateStart)]);
         }
 
@@ -175,80 +191,88 @@ internal sealed class InputLimitsFromCodeScene : IScene
         {
             Slider keyed = SnappingSlider();
             keyed.Value = 50;
-            string typed = "";
+            Loc typed = "";
             await ShowAsync(keyed, async () =>
             {
                 await FocusAsync(keyed);
                 Press(Key.Right);
-                typed = $"50, Right arrow: {D(keyed.Value)}";
+                typed = T($"50, Right arrow: {D(keyed.Value)}", $"50 から右矢印キー: {D(keyed.Value)}");
             });
             string code = await ShownAsync(SnappingSlider(), s => s.Value = 23.4, s => $"23.4: {D(s.Value)}");
             var source = new Holder<double> { Value = 0 };
             Slider bound = SnappingSlider();
             bound.SetBinding(RangeBase.ValueProperty, new Binding(nameof(Holder<double>.Value)) { Source = source });
             string viaBinding = await ShownAsync(bound, _ => source.Value = 23.4, s => $"23.4: {D(s.Value)}");
-            rows.Add(["Slider snap to ticks of 10", typed, code, viaBinding]);
+            rows.Add([T("Slider snap to ticks of 10", "Slider 10 刻みの目盛りに合わせる"), typed, code, viaBinding]);
         }
 
         // Slider.Maximum。値そのものを範囲に収める補正（coerce）なので、Maximum を広げると設定した値に戻る。
         // 補正はコードとバインドにも効くが、補正した値はソースへ書き戻されない。
         {
             Slider keyed = new() { Minimum = 0, Maximum = 100, Value = 50 };
-            string typed = "";
+            Loc typed = "";
             await ShowAsync(keyed, async () =>
             {
                 await FocusAsync(keyed);
                 Press(Key.End);
-                typed = $"End key: {D(keyed.Value)}";
+                typed = T($"End key: {D(keyed.Value)}", $"End キー: {D(keyed.Value)}");
             });
             var fromCode = new Slider { Minimum = 0, Maximum = 100 };
-            string code = "";
+            Loc code = "";
             await ShowAsync(fromCode, async () =>
             {
                 fromCode.Value = 150;
                 await Capture.SettleAsync(Window.GetWindow(fromCode)!);
                 string clamped = D(fromCode.Value);
                 fromCode.Maximum = 200;
-                code = $"150: {clamped}, Maximum 200: {D(fromCode.Value)}";
+                string widened = D(fromCode.Value);
+                code = T($"150: {clamped}, Maximum 200: {widened}", $"150: {clamped}、Maximum を 200 にすると {widened}");
             });
             var source = new Holder<double> { Value = 0 };
             var bound = new Slider { Minimum = 0, Maximum = 100 };
             bound.SetBinding(RangeBase.ValueProperty, new Binding(nameof(Holder<double>.Value)) { Source = source, Mode = BindingMode.TwoWay });
-            string viaBinding = await ShownAsync(bound, _ => source.Value = 150, s => $"150: Slider {D(s.Value)}, source {D(source.Value)}");
+            Loc viaBinding = await ShownAsync(bound, _ => source.Value = 150, s => T(
+                $"150: Slider {D(s.Value)}, source {D(source.Value)}",
+                $"150: Slider {D(s.Value)}、ソース {D(source.Value)}"));
             rows.Add(["Slider Maximum=100", typed, code, viaBinding]);
         }
 
         // TabItem.IsEnabled=False
         {
             TabControl uiaTabs = Tabs();
-            string uia = "";
+            Loc uia = "";
             await ShowAsync(uiaTabs, async () =>
             {
                 var peer = UIElementAutomationPeer.CreatePeerForElement(uiaTabs)
                     .GetChildren().OfType<TabItemAutomationPeer>().ElementAt(1);
                 string thrown = Throws(() => ((ISelectionItemProvider)peer).Select());
                 await Capture.SettleAsync(Window.GetWindow(uiaTabs)!);
-                uia = $"UIA Select(): {thrown}, index {uiaTabs.SelectedIndex}";
+                uia = T($"UIA Select(): {thrown}, index {uiaTabs.SelectedIndex}", $"UIA Select(): {thrown}、選択 {uiaTabs.SelectedIndex}");
             });
 
-            string code = await ShownAsync(Tabs(), t => t.SelectedIndex = 1, TabState);
+            Loc code = await ShownAsync(Tabs(), t => t.SelectedIndex = 1, TabState);
             TabControl boundTabs = Tabs();
             var source = new Holder<int> { Value = 0 };
             boundTabs.SetBinding(Selector.SelectedIndexProperty, new Binding(nameof(Holder<int>.Value)) { Source = source });
-            string viaBinding = await ShownAsync(boundTabs, _ => source.Value = 1, TabState);
-            rows.Add(["2nd TabItem IsEnabled=False", uia, code, viaBinding]);
+            Loc viaBinding = await ShownAsync(boundTabs, _ => source.Value = 1, TabState);
+            rows.Add([T("2nd TabItem IsEnabled=False", "2 番目の TabItem IsEnabled=False"), uia, code, viaBinding]);
         }
 
         return rows;
     }
 
     /// <summary>選ばれているタブの番号と、表示している内容（SelectedContent）。</summary>
-    private static string TabState(TabControl tabs) => $"index {tabs.SelectedIndex}, \"{tabs.SelectedContent}\"";
+    private static Loc TabState(TabControl tabs) => T(
+        $"index {tabs.SelectedIndex}, \"{tabs.SelectedContent}\"",
+        $"選択 {tabs.SelectedIndex}、\"{tabs.SelectedContent}\"");
+
+    /// <summary>文字数。PasswordBox の長さに使う。</summary>
+    private static Loc Characters(int count) => T($"{count} characters", $"{count} 文字");
 
     /// <summary>コントロールを表示してから値を設定し、レイアウトが落ち着いた後に読んだ結果を返す。</summary>
-    private static async Task<string> ShownAsync<T>(T control, Action<T> set, Func<T, string> read) where T : FrameworkElement
+    private static async Task<TResult> ShownAsync<T, TResult>(T control, Action<T> set, Func<T, TResult> read) where T : FrameworkElement
     {
-        string result = "";
+        TResult result = default!;
         await ShowAsync(control, async () =>
         {
             set(control);
@@ -258,55 +282,67 @@ internal sealed class InputLimitsFromCodeScene : IScene
         return result;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> ViewModelAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> ViewModelAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 長さを INotifyDataErrorInfo で検証するビューモデル。TextBox の MaxLength は入力の補助として残す。
         {
             var fromCode = new NameViewModel();
             TextBox codeBox = BoundNameBox(fromCode);
-            string code = "";
+            Loc code = "";
             await ShowAsync(codeBox, async () =>
             {
                 fromCode.Name = "abcdefgh";
                 await Capture.SettleAsync(Window.GetWindow(codeBox)!);
-                code = $"\"abcdefgh\": HasErrors {WpfProbe.Describe(fromCode.HasErrors)}, Validation.HasError {WpfProbe.Describe(Validation.GetHasError(codeBox))}";
+                string hasErrors = WpfProbe.Describe(fromCode.HasErrors);
+                string validation = WpfProbe.Describe(Validation.GetHasError(codeBox));
+                code = T(
+                    $"\"abcdefgh\": HasErrors {hasErrors}, Validation.HasError {validation}",
+                    $"\"abcdefgh\": HasErrors {hasErrors}、Validation.HasError {validation}");
             });
 
             var typedVm = new NameViewModel();
             await TypedTextAsync(BoundNameBox(typedVm), "abcdefgh");
-            rows.Add(["INotifyDataErrorInfo, at most 5", code,
-                $"typed \"abcdefgh\": {Quote(typedVm.Name)}, HasErrors {WpfProbe.Describe(typedVm.HasErrors)}"]);
+            string typedName = Quote(typedVm.Name);
+            string typedErrors = WpfProbe.Describe(typedVm.HasErrors);
+            rows.Add([
+                T("INotifyDataErrorInfo, at most 5", "INotifyDataErrorInfo、5 文字まで"),
+                code,
+                T($"typed \"abcdefgh\": {typedName}, HasErrors {typedErrors}", $"\"abcdefgh\" を入力: {typedName}、HasErrors {typedErrors}")]);
         }
 
         // 上限を超えた値を読み込んだ後に、利用者が編集する。キャレットは末尾で、選択範囲は無い。
         {
             var loaded = new NameViewModel();
             TextBox box = BoundNameBox(loaded);
-            string code = "";
-            string edited = "";
+            Loc code = "";
+            Loc edited = "";
             await ShowAsync(box, async () =>
             {
                 loaded.Name = "abcdefgh";
                 await Capture.SettleAsync(Window.GetWindow(box)!);
-                code = $"\"abcdefgh\" loaded: HasErrors {WpfProbe.Describe(loaded.HasErrors)}";
+                string loadedErrors = WpfProbe.Describe(loaded.HasErrors);
+                code = T($"\"abcdefgh\" loaded: HasErrors {loadedErrors}", $"\"abcdefgh\" を読み込む: HasErrors {loadedErrors}");
                 await FocusAsync(box);
                 box.CaretIndex = box.Text.Length;
                 TypeLetters(box, "x");
-                string afterX = box.Text;
+                string afterX = Quote(box.Text);
                 Press(Key.Back);
                 await Capture.SettleAsync(Window.GetWindow(box)!);
-                edited = $"x at the end: {Quote(afterX)}; Backspace: HasErrors {WpfProbe.Describe(loaded.HasErrors)}";
+                string afterBack = WpfProbe.Describe(loaded.HasErrors);
+                edited = T(
+                    $"x at the end: {afterX}; Backspace: HasErrors {afterBack}",
+                    $"末尾に x: {afterX}、Backspace: HasErrors {afterBack}");
             });
-            rows.Add(["INotifyDataErrorInfo, loaded over the limit", code, edited]);
+            rows.Add([T("INotifyDataErrorInfo, loaded over the limit", "INotifyDataErrorInfo、上限を超えた値を読み込む"), code, edited]);
         }
 
         // 保存ボタンの IsEnabled を HasErrors の反転にバインドし、PropertyChanged(HasErrors) で追従するかを見る。
         {
             var codeVm = new NameViewModel();
             Button codeSave = SaveButton(codeVm);
-            string code = "";
+            Loc code = "";
             await ShowAsync(codeSave, async () =>
             {
                 codeVm.Name = "abcdefgh";
@@ -314,14 +350,15 @@ internal sealed class InputLimitsFromCodeScene : IScene
                 string tooLong = WpfProbe.Describe(codeSave.IsEnabled);
                 codeVm.Name = "abcde";
                 await Capture.SettleAsync(Window.GetWindow(codeSave)!);
-                code = $"\"abcdefgh\": {tooLong}; \"abcde\": {WpfProbe.Describe(codeSave.IsEnabled)}";
+                string fixedName = WpfProbe.Describe(codeSave.IsEnabled);
+                code = T($"\"abcdefgh\": {tooLong}; \"abcde\": {fixedName}", $"\"abcdefgh\": {tooLong}、\"abcde\": {fixedName}");
             });
 
             var editedVm = new NameViewModel();
             TextBox box = BoundNameBox(editedVm);
             Button editedSave = SaveButton(editedVm);
             var panel = new StackPanel { Children = { box, editedSave } };
-            string edited = "";
+            Loc edited = "";
             await ShowAsync(panel, async () =>
             {
                 editedVm.Name = "abcdefgh";
@@ -333,20 +370,24 @@ internal sealed class InputLimitsFromCodeScene : IScene
                 Press(Key.Back);
                 Press(Key.Back);
                 await Capture.SettleAsync(Window.GetWindow(panel)!);
-                edited = $"loaded: {before}; 3 Backspaces to {Quote(editedVm.Name)}: {WpfProbe.Describe(editedSave.IsEnabled)}";
+                string name = Quote(editedVm.Name);
+                string after = WpfProbe.Describe(editedSave.IsEnabled);
+                edited = T(
+                    $"loaded: {before}; 3 Backspaces to {name}: {after}",
+                    $"読み込み後: {before}、Backspace 3 回で {name}: {after}");
             });
-            rows.Add(["Save button, IsEnabled bound to !HasErrors", code, edited]);
+            rows.Add([T("Save button, IsEnabled bound to !HasErrors", "保存ボタン、IsEnabled を !HasErrors にバインド"), code, edited]);
         }
 
         // 範囲と刻みを setter で丸めるビューモデル。Slider には TwoWay でバインドする。
         // ビューモデルの規則だけを確かめるため、Slider は 0〜200・目盛り合わせ無し・SmallChange 5 にし、
         // Slider 自身の制限では値が丸まらないようにする。Slider が送った値は LastRequested に記録する。
-        rows.Add(["setter clamps to 0-100",
+        rows.Add([T("setter clamps to 0-100", "setter で 0〜100 に収める"),
             await VolumeFromCodeAsync(150),
-            await VolumeFromKeyAsync(50, Key.End, "End key")]);
-        rows.Add(["setter rounds to 10",
+            await VolumeFromKeyAsync(50, Key.End, T("End key", "End キー"))]);
+        rows.Add([T("setter rounds to 10", "setter で 10 刻みに丸める"),
             await VolumeFromCodeAsync(23.4),
-            await VolumeFromKeyAsync(50, Key.Right, "50, Right arrow")]);
+            await VolumeFromKeyAsync(50, Key.Right, T("50, Right arrow", "50 から右矢印キー"))]);
 
         return rows;
     }
@@ -355,9 +396,9 @@ internal sealed class InputLimitsFromCodeScene : IScene
     /// DisplayDateStart をビューモデルにバインドした場合。範囲外の SelectedDate をコードから入れた後の、
     /// DisplayDateStart・ソース・バインドの状態を読む。既定（TwoWay）・OneWay・読み取り専用プロパティへの既定のバインドを比べる。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> DisplayDateBindingAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> DisplayDateBindingAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         var outside = new DateTime(2026, 4, 5);
 
         foreach (BindingMode? mode in new BindingMode?[] { null, BindingMode.OneWay })
@@ -371,19 +412,25 @@ internal sealed class InputLimitsFromCodeScene : IScene
             }
 
             picker.SetBinding(DatePicker.DisplayDateStartProperty, binding);
-            string result = "";
+            Loc result = "";
             await ShowAsync(picker, async () =>
             {
                 picker.SelectedDate = outside;
                 await Capture.SettleAsync(Window.GetWindow(picker)!);
                 bool attached = BindingOperations.GetBindingExpression(picker, DatePicker.DisplayDateStartProperty) is not null;
-                result = $"DisplayDateStart {Date(picker.DisplayDateStart)}, source {Date(period.Value)}, binding {(attached ? "kept" : "removed")}";
+                string start = Date(picker.DisplayDateStart);
+                string sourceValue = Date(period.Value);
                 picker.SelectedDate = null;
                 period.Value = new DateTime(2026, 4, 12);
                 await Capture.SettleAsync(Window.GetWindow(picker)!);
-                result += $"; source set to 04-12: {Date(picker.DisplayDateStart)}";
+                string followed = Date(picker.DisplayDateStart);
+                result = T(
+                    $"DisplayDateStart {start}, source {sourceValue}, binding {(attached ? "kept" : "removed")}; source set to 04-12: {followed}",
+                    $"DisplayDateStart {start}、ソース {sourceValue}、バインドは{(attached ? "残る" : "外れる")}。ソースを 04-12 にすると {followed}");
             });
-            rows.Add([mode is null ? "DisplayDateStart, default (TwoWay)" : "DisplayDateStart, Mode=OneWay", result]);
+            rows.Add([
+                mode is null ? T("DisplayDateStart, default (TwoWay)", "DisplayDateStart、既定（TwoWay）") : T("DisplayDateStart, Mode=OneWay", "DisplayDateStart、Mode=OneWay"),
+                result]);
         }
 
         // 読み取り専用のプロパティへの既定のバインド。Source を指定する場合と、記事の XAML と同じ DataContext 経由の場合。
@@ -394,12 +441,12 @@ internal sealed class InputLimitsFromCodeScene : IScene
         })
         {
             var withSource = new DatePicker();
-            string bySource = ThrowsReadOnly(() => withSource.SetBinding(property, new Binding(path) { Source = new ReadOnlyPeriod() }));
+            Loc bySource = ThrowsReadOnly(() => withSource.SetBinding(property, new Binding(path) { Source = new ReadOnlyPeriod() }));
 
             // 記事の XAML と同じく DataContext 経由でバインドし、ウィンドウに表示した状態で DataContext を設定する。
             var viaContext = new DatePicker { Width = 200 };
             viaContext.SetBinding(property, new Binding(path));
-            string byContext = "";
+            Loc byContext = "";
             await ShowAsync(viaContext, async () =>
             {
                 byContext = ThrowsReadOnly(() => viaContext.DataContext = new ReadOnlyPeriod());
@@ -408,33 +455,38 @@ internal sealed class InputLimitsFromCodeScene : IScene
             // 表示する前に DataContext を設定し、その後に表示する（InitializeComponent の後に DataContext を設定してから Show する形）。
             var beforeShow = new DatePicker { Width = 200 };
             beforeShow.SetBinding(property, new Binding(path));
-            string atContext = ThrowsReadOnly(() => beforeShow.DataContext = new ReadOnlyPeriod());
-            string atShow = await ShowThrowsReadOnlyAsync(beforeShow);
+            Loc atContext = ThrowsReadOnly(() => beforeShow.DataContext = new ReadOnlyPeriod());
+            Loc atShow = await ShowThrowsReadOnlyAsync(beforeShow);
 
-            rows.Add([$"{name}, get-only, Source set", $"SetBinding: {bySource}"]);
-            rows.Add([$"{name}, get-only, DataContext set while shown", byContext]);
-            rows.Add([$"{name}, get-only, DataContext set before showing", $"at DataContext: {atContext}; at Show: {atShow}"]);
+            rows.Add([T($"{name}, get-only, Source set", $"{name}、読み取り専用、Source を指定"), T($"SetBinding: {bySource.En}", $"SetBinding: {bySource.Ja}")]);
+            rows.Add([T($"{name}, get-only, DataContext set while shown", $"{name}、読み取り専用、表示中に DataContext を設定"), byContext]);
+            rows.Add([T($"{name}, get-only, DataContext set before showing", $"{name}、読み取り専用、表示前に DataContext を設定"), WhenSet(atContext, atShow)]);
 
             // 実務で多い形。DatePicker を置いた親の要素に表示前に DataContext を設定し、継承させてから表示する。
             var inherited = new DatePicker { Width = 200 };
             inherited.SetBinding(property, new Binding(path));
             var host = new StackPanel { Children = { inherited } };
-            string atParent = ThrowsReadOnly(() => host.DataContext = new ReadOnlyPeriod());
-            string atParentShow = await ShowThrowsReadOnlyAsync(host);
+            Loc atParent = ThrowsReadOnly(() => host.DataContext = new ReadOnlyPeriod());
+            Loc atParentShow = await ShowThrowsReadOnlyAsync(host);
 
-            rows.Add([$"{name}, get-only, parent's DataContext before showing", $"at DataContext: {atParent}; at Show: {atParentShow}"]);
+            rows.Add([T($"{name}, get-only, parent's DataContext before showing", $"{name}、読み取り専用、表示前に親の DataContext を設定"), WhenSet(atParent, atParentShow)]);
         }
 
         return rows;
     }
 
+    /// <summary>DataContext を設定したときと、表示したときの結果を 1 つのセルにする。</summary>
+    private static Loc WhenSet(Loc atContext, Loc atShow) => T(
+        $"at DataContext: {atContext.En}; at Show: {atShow.En}",
+        $"DataContext の設定時: {atContext.Ja}、表示時: {atShow.Ja}");
+
     /// <summary>例外の型と、メッセージが読み取り専用のプロパティを理由に挙げているか（CannotWriteToReadOnly）。</summary>
-    private static string ThrowsReadOnly(Action action)
+    private static Loc ThrowsReadOnly(Action action)
     {
         try
         {
             action();
-            return "no exception";
+            return NoException;
         }
         catch (Exception ex)
         {
@@ -443,12 +495,12 @@ internal sealed class InputLimitsFromCodeScene : IScene
     }
 
     /// <summary>表示し、表示の処理の中で出た例外を ThrowsReadOnly と同じ形で返す。</summary>
-    private static async Task<string> ShowThrowsReadOnlyAsync(FrameworkElement content)
+    private static async Task<Loc> ShowThrowsReadOnlyAsync(FrameworkElement content)
     {
         try
         {
             await ShowAsync(content, async () => await Capture.SettleAsync(Window.GetWindow(content)!));
-            return "no exception";
+            return NoException;
         }
         catch (Exception ex)
         {
@@ -456,14 +508,16 @@ internal sealed class InputLimitsFromCodeScene : IScene
         }
     }
 
+    private static Loc NoException => T("no exception", "例外なし");
+
     /// <summary>
     /// 例外の型と、メッセージが読み取り専用のプロパティを理由に挙げているか（CannotWriteToReadOnly）。
     /// メッセージは OS の表示言語でローカライズされるため、英語と日本語の両方の文言で判定する。
     /// どちらにも当たらなければ、判別できるようメッセージをそのまま出す。
     /// </summary>
-    private static string DescribeReadOnly(Exception ex) =>
+    private static Loc DescribeReadOnly(Exception ex) =>
         ex.Message.Contains("read-only property", StringComparison.Ordinal) || ex.Message.Contains("読み取り専用プロパティ", StringComparison.Ordinal)
-            ? $"{ex.GetType().Name} (read-only property)"
+            ? T($"{ex.GetType().Name} (read-only property)", $"{ex.GetType().Name}（読み取り専用のプロパティ）")
             : $"{ex.GetType().Name}: {ex.Message}";
 
     private static Button SaveButton(NameViewModel vm)
@@ -480,31 +534,35 @@ internal sealed class InputLimitsFromCodeScene : IScene
         return box;
     }
 
-    private static async Task<string> VolumeFromCodeAsync(double value)
+    private static async Task<Loc> VolumeFromCodeAsync(double value)
     {
         var vm = new VolumeViewModel();
         Slider slider = BoundVolumeSlider(vm);
-        string result = "";
+        Loc result = "";
         await ShowAsync(slider, async () =>
         {
             vm.Volume = value;
             await Capture.SettleAsync(Window.GetWindow(slider)!);
-            result = $"{D(value)}: source {D(vm.Volume)}, Slider {D(slider.Value)}";
+            result = T(
+                $"{D(value)}: source {D(vm.Volume)}, Slider {D(slider.Value)}",
+                $"{D(value)}: ソース {D(vm.Volume)}、Slider {D(slider.Value)}");
         });
         return result;
     }
 
-    private static async Task<string> VolumeFromKeyAsync(double start, Key key, string label)
+    private static async Task<Loc> VolumeFromKeyAsync(double start, Key key, Loc label)
     {
         var vm = new VolumeViewModel { Volume = start };
         Slider slider = BoundVolumeSlider(vm);
-        string result = "";
+        Loc result = "";
         await ShowAsync(slider, async () =>
         {
             await FocusAsync(slider);
             Press(key);
             await Capture.SettleAsync(Window.GetWindow(slider)!);
-            result = $"{label}: sent {D(vm.LastRequested)}, source {D(vm.Volume)}, Slider {D(slider.Value)}";
+            result = T(
+                $"{label.En}: sent {D(vm.LastRequested)}, source {D(vm.Volume)}, Slider {D(slider.Value)}",
+                $"{label.Ja}: 送った値 {D(vm.LastRequested)}、ソース {D(vm.Volume)}、Slider {D(slider.Value)}");
         });
         return result;
     }

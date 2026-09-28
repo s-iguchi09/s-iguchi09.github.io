@@ -125,24 +125,49 @@ internal sealed class SceneContext(string slug, string outputDirectory, string t
     /// 拡大しても文字がぼやけず、差分でも値の変化が読める。
     /// 実行して得た値を描く点は <see cref="ShootAsync"/> と変わらない。
     /// </summary>
-    public async Task SaveTableAsync(
+    public Task SaveTableAsync(
         string title,
         IReadOnlyList<string> headers,
         IEnumerable<IReadOnlyList<string>> rows,
+        string fileName) =>
+        SaveTableAsync(
+            title,
+            headers.Select(header => (Loc)header).ToList(),
+            rows.Select(row => (IReadOnlyList<Loc>)row.Select(cell => (Loc)cell).ToList()),
+            fileName);
+
+    /// <summary>
+    /// 見出しとセルを日英の組（<see cref="Loc"/>）で受け取る版。
+    /// SVG は英語で描き、Markdown の表は <c>&lt;名前&gt;.en.md</c> と <c>&lt;名前&gt;.ja.md</c> の 2 つを書き出す。
+    /// 記事は自分の言語の表を include する。
+    /// </summary>
+    public async Task SaveTableAsync(
+        string title,
+        IReadOnlyList<Loc> headers,
+        IEnumerable<IReadOnlyList<Loc>> rows,
         string fileName)
     {
         var body = rows.ToList();
-        string svg = DemoLayout.BuildTableSvg(title, headers, body);
+        string svg = DemoLayout.BuildTableSvg(
+            title,
+            headers.Select(header => header.En).ToList(),
+            body.Select(row => (IReadOnlyList<string>)row.Select(cell => cell.En).ToList()));
         string path = Path.Combine(OutputDirectory, fileName);
         await File.WriteAllTextAsync(path, svg, new UTF8Encoding(false));
         _saved.Add(path);
 
-        // 同じ値を、記事の本文に include する Markdown の表としても書き出す。
+        // 同じ値を、記事の本文に include する Markdown の表として、言語ごとに書き出す。
         // 横に広い表は SVG のままだと本文の幅に縮められて読めないため、記事では Markdown の表を使う。
         Directory.CreateDirectory(TableDirectory);
-        string tablePath = Path.Combine(TableDirectory, Path.ChangeExtension(fileName, ".md"));
-        await File.WriteAllTextAsync(tablePath, DemoLayout.BuildTableMarkdown(headers, body), new UTF8Encoding(false));
-        _savedTables.Add(tablePath);
+        foreach (string language in new[] { "en", "ja" })
+        {
+            string tablePath = Path.Combine(TableDirectory, $"{Path.GetFileNameWithoutExtension(fileName)}.{language}.md");
+            string markdown = DemoLayout.BuildTableMarkdown(
+                headers.Select(header => header.In(language)).ToList(),
+                body.Select(row => (IReadOnlyList<string>)row.Select(cell => cell.In(language)).ToList()));
+            await File.WriteAllTextAsync(tablePath, markdown, new UTF8Encoding(false));
+            _savedTables.Add(tablePath);
+        }
     }
 
     /// <summary>
