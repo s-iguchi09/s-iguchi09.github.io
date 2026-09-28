@@ -11,4 +11,4 @@
 | Numbers.SkipLast(10) | \[\] | \[\] | 一致 |
 | Numbers.SkipLast(-1) | \[1, 2, 3, 4, 5\] | \[1, 2, 3, 4, 5\] | 一致 |
 | empty.TakeLast(2) | \[\] | \[\] | 一致 |
-| SkipLast(0) is source | False | False | 一致 |
+| SkipLast(0) が元のシーケンスそのものか | False | False | 一致 |

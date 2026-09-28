@@ -63,7 +63,7 @@ internal sealed class LinqBackportNet5Scene : IScene
         new("empty.TakeLast(2)", "new int[0].TakeLast(2)"),
         // 本家は 0 でも別のイテレーターを返す（入力は空でない Numbers。空の配列はこのプローブの対象外）。
         // 元の配列そのものを返すと、キャストして書き換えられてしまう。
-        new("SkipLast(0) is source", "ReferenceEquals(Numbers.SkipLast(0), Numbers)"),
+        new(Loc.Of("SkipLast(0) is source", "SkipLast(0) が元のシーケンスそのものか"), "ReferenceEquals(Numbers.SkipLast(0), Numbers)"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -151,8 +151,8 @@ internal sealed class LinqBackportNet6Scene : IScene
         new("Numbers.Chunk(0)", "Numbers.Chunk(0).ToArray()"),
         new("Items.MaxBy(Price)", "Items.MaxBy(x => x.Price)"),
         new("Items.MinBy(Price)", "Items.MinBy(x => x.Price)"),
-        new("empty int[].MaxBy", "new int[0].MaxBy(x => x)"),
-        new("empty Item[].MaxBy", "new Item[0].MaxBy(x => x.Price)"),
+        new(Loc.Of("empty int[].MaxBy", "空の int[] の MaxBy"), "new int[0].MaxBy(x => x)"),
+        new(Loc.Of("empty Item[].MaxBy", "空の Item[] の MaxBy"), "new Item[0].MaxBy(x => x.Price)"),
         new("Items.DistinctBy(Category)", "Items.DistinctBy(x => x.Category)"),
         new("Words.DistinctBy(Length)", "Words.DistinctBy(w => w.Length)"),
     ];
@@ -215,21 +215,21 @@ internal sealed class LinqBackportNet7Scene : IScene
         new("Words.OrderDescending()", "Words.OrderDescending()"),
         new("Order(OrdinalIgnoreCase)", "Words.Order(StringComparer.OrdinalIgnoreCase)"),
         new("OrderDescending(ByLength)", "Words.OrderDescending(new ByLength())"),
-        new("Order(ByLength), stability", "Words.Order(new ByLength())"),
+        new(Loc.Of("Order(ByLength), stability", "Order(ByLength)、安定性"), "Words.Order(new ByLength())"),
         new("Order().ThenByDescending(len)", "Words.Order().ThenByDescending(w => w.Length)"),
         new("empty.Order()", "new string[0].Order()"),
         // カルチャ依存の比較は、比較エンジンが NLS か ICU かで結果が変わりうる。.NET 5 以降の既定は Windows の
         // バージョンによって異なり（Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS にもできるので、
         // ja-JP の指定だけではエンジンは決まらない。実際に使われたエンジンを記録する（計測は Windows 11 の .NET 10 と net48）。
         // 判定は .NET のドキュメント（"Determine if your app is using ICU"）の方法で、SortVersion から見る。
-        new("comparison engine (NLS or ICU)",
+        new(Loc.Of("comparison engine (NLS or ICU)", "比較エンジン（NLS か ICU か）"),
             "(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion != 0 && System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.FullVersion == BitConverter.ToInt32(System.Globalization.CultureInfo.InvariantCulture.CompareInfo.Version.SortId.ToByteArray(), 0)) ? \"ICU\" : \"NLS\""),
         // ja-JP を明示して、既定のカルチャの違いには左右されないようにする（エンジンの違いは上の行で見る）。
-        new("Order(ja-JP comparer), hyphen and underscore",
+        new(Loc.Of("Order(ja-JP comparer), hyphen and underscore", "Order(ja-JP の比較子)、ハイフンとアンダースコア"),
             "new[] { \"coop\", \"co-op\", \"Co-op\", \"co_op\" }.Order(StringComparer.Create(new System.Globalization.CultureInfo(\"ja-JP\"), false))"),
         // 比較できない要素。全体を並べる ToList と、全体を並べない First で例外の型が分かれるかを見る。
-        new("non-comparable items: Order().ToList()", "new[] { new object(), new object() }.Order().ToList()"),
-        new("non-comparable items: Order().First()", "new[] { new object(), new object() }.Order().First()"),
+        new(Loc.Of("non-comparable items: Order().ToList()", "比較できない要素: Order().ToList()"), "new[] { new object(), new object() }.Order().ToList()"),
+        new(Loc.Of("non-comparable items: Order().First()", "比較できない要素: Order().First()"), "new[] { new object(), new object() }.Order().First()"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -301,9 +301,9 @@ internal sealed class LinqBackportNet8Scene : IScene
         new("Tuples.ToDictionary()", "Tuples.ToDictionary().OrderBy(kv => kv.Key)"),
         new("Pairs.ToDictionary(cmp)", "Pairs.ToDictionary(StringComparer.OrdinalIgnoreCase).OrderBy(kv => kv.Key)"),
         new("Tuples.ToDictionary(cmp)", "Tuples.ToDictionary(StringComparer.OrdinalIgnoreCase).OrderBy(kv => kv.Key)"),
-        new("duplicate key", "Duplicated.ToDictionary().OrderBy(kv => kv.Key)"),
-        new("case variants, ordinal", "CaseVariants.ToDictionary().OrderBy(kv => kv.Key)"),
-        new("case variants, ignore case", "CaseVariants.ToDictionary(StringComparer.OrdinalIgnoreCase).OrderBy(kv => kv.Key)"),
+        new(Loc.Of("duplicate key", "キーの重複"), "Duplicated.ToDictionary().OrderBy(kv => kv.Key)"),
+        new(Loc.Of("case variants, ordinal", "大文字小文字だけ違うキー、序数比較"), "CaseVariants.ToDictionary().OrderBy(kv => kv.Key)"),
+        new(Loc.Of("case variants, ignore case", "大文字小文字だけ違うキー、大文字小文字を区別しない"), "CaseVariants.ToDictionary(StringComparer.OrdinalIgnoreCase).OrderBy(kv => kv.Key)"),
         new("empty.ToDictionary()", "new KeyValuePair<string, int>[0].ToDictionary().OrderBy(kv => kv.Key)"),
     ];
 
@@ -356,14 +356,14 @@ internal sealed class LinqBackportNet9Scene : IScene
     [
         new("CountBy(w => w)", "Words.CountBy(w => w)"),
         new("CountBy(w => w.Length)", "Words.CountBy(w => w.Length)"),
-        new("CountBy(w => w, ignore case)", "Words.CountBy(w => w, StringComparer.OrdinalIgnoreCase)"),
+        new(Loc.Of("CountBy(w => w, ignore case)", "CountBy(w => w)、大文字小文字を区別しない"), "Words.CountBy(w => w, StringComparer.OrdinalIgnoreCase)"),
         new("AggregateBy(len, 0, +1)", "Words.AggregateBy(w => w.Length, 0, (acc, w) => acc + 1)"),
         new("AggregateBy(w, \"\", concat)", "Words.AggregateBy(w => w.Length, string.Empty, (acc, w) => acc + w[0])"),
         new("Index()", "Words.Index()"),
         new("empty.Index()", "new string[0].Index()"),
         new("empty.CountBy()", "new string[0].CountBy(w => w)"),
-        new("CountBy, a null key", "WithNull.CountBy(w => w)"),
-        new("AggregateBy, a null key", "WithNull.AggregateBy(w => w, 0, (acc, w) => acc + 1)"),
+        new(Loc.Of("CountBy, a null key", "CountBy、null のキー"), "WithNull.CountBy(w => w)"),
+        new(Loc.Of("AggregateBy, a null key", "AggregateBy、null のキー"), "WithNull.AggregateBy(w => w, 0, (acc, w) => acc + 1)"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -459,15 +459,15 @@ internal sealed class LinqBackportNet10Scene : IScene
             "RightJoin",
             "Left.RightJoin(Right, l => l.Id, r => r.Id, (l, r) => (l.Name ?? \"-\") + \":\" + r.Note)"),
         new(
-            "LeftJoin, no match at all",
+            Loc.Of("LeftJoin, no match at all", "LeftJoin、一致が 1 件も無い"),
             "Left.LeftJoin(new (int Id, string Note)[0], l => l.Id, r => r.Id, (l, r) => l.Name + \":\" + (r.Note ?? \"-\"))"),
         new(
-            "RightJoin, empty right",
+            Loc.Of("RightJoin, empty right", "RightJoin、右側が空"),
             "Left.RightJoin(new (int Id, string Note)[0], l => l.Id, r => r.Id, (l, r) => (l.Name ?? \"-\") + \":\" + r.Note)"),
-        new("Shuffle, sorted back", "Left.Select(l => l.Name).Shuffle().OrderBy(n => n)"),
-        new("Shuffle, count", "Left.Shuffle().Count()"),
+        new(Loc.Of("Shuffle, sorted back", "Shuffle、並べ直した結果"), "Left.Select(l => l.Name).Shuffle().OrderBy(n => n)"),
+        new(Loc.Of("Shuffle, count", "Shuffle、要素数"), "Left.Shuffle().Count()"),
         new("empty.Shuffle()", "new int[0].Shuffle()"),
-        new("Shuffle, 8 threads started together: distinct orders", "ShuffleAcrossThreads()"),
+        new(Loc.Of("Shuffle, 8 threads started together: distinct orders", "Shuffle、8 スレッドを同時に開始: 異なる順序の数"), "ShuffleAcrossThreads()"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
