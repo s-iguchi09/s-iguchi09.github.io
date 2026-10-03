@@ -23,7 +23,8 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で高さ 200 の親の中に `ScrollViewer` を置き、親のレイアウトと `ScrollViewer` 自身の高さ指定を変えながら実際に画面を表示し、`ExtentHeight` / `ViewportHeight` / `ScrollableHeight` を読み出して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - 高さ 200 の `StackPanel` の中では、`ScrollableHeight` が 0 のままでスクロールバーが出ない。
@@ -72,10 +73,10 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 
 この違いは、親のレイアウトだけを変えて `ScrollViewer` の高さを読めば確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.svg" alt="親のレイアウト別に ScrollViewer の Extent・Viewport・Scrollable の各高さとスクロールバーの表示状態を測った表。StackPanel の中では Viewport が Extent と同じ 800 で Scrollable が 0、スクロールバーは Collapsed。Grid と DockPanel、StackPanel の中でも ScrollViewer に Height か MaxHeight を与えた場合は、Viewport が 200、Scrollable が 600 でスクロールバーは Visible。" width="674" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、高さ 20px の行を 40 個（合計 800px）持つ <code>ScrollViewer</code> を、高さ 200px に制約した親の中へ置いて測った結果。親のレイアウト以外の条件は同一である。</figcaption>
-</figure>
+{% include tables/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、高さ 20px の行を 40 個（合計 800px）持つ <code>ScrollViewer</code> を、高さ 200px に制約した親の中へ置いて測った結果。親のレイアウト以外の条件は同一である。
+{: .table-caption}
 
 **`StackPanel` の中では `ViewportHeight` が `ExtentHeight` と同じ 800 になっている。** 200px に制約されたはずの親の中にいながら、内容全体が収まる高さを確保している。
 その結果 `ScrollableHeight` は 0 となり、スクロールバーは `Collapsed` のまま現れない。
@@ -149,12 +150,12 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 - **物理スクロールと論理スクロールの違い:** `ScrollViewer.CanContentScroll` の既定値は `false` で、ピクセル単位の物理スクロールとなる。
   `true` のときは項目単位の論理スクロールとなる。
   ただし `ListBox` の既定スタイルが `true` を設定するため（値の出どころは `DefaultStyle`）、データバインドした `ListBox` は論理スクロールで動作し、`VirtualizingStackPanel` が項目を仮想化する。
-  仮想化が失われるのは `CanContentScroll` を `false` にした場合だけではない。2,000 件の `ListBox` で実体化された `ListBoxItem` を数えると、`VirtualizingPanel.IsVirtualizing` を `false` にした場合と、`ListBox` を外側の `ScrollViewer` や `StackPanel` の中に置いた場合も、2,000 個すべてが実体化された。外側がスクロールを引き受けたり高さを制約しなかったりすると、`ListBox` にはすべての項目を並べる高さが渡るためである。グループ化した場合は、この計測では仮想化されたままだった。
+  仮想化が失われるのは `CanContentScroll` を `false` にした場合だけではない。2,000 件の `ListBox` で実体化された `ListBoxItem` を数えると、`VirtualizingPanel.IsVirtualizing` を `false` にした場合と、`ListBox` を外側の `ScrollViewer` や `StackPanel` の中に置いた場合も、2,000 個すべてが実体化された。外側がスクロールを引き受けたり高さを制約しなかったりすると、`ListBox` にはすべての項目を並べる高さが渡るためである。`CollectionView` に `GroupDescriptions` を付けた場合は、`GroupStyle` を付けなければ仮想化されたままだった。`GroupStyle` を付けると、2,000 個すべてが実体化され、`CanContentScroll` もテンプレートのトリガーで `false` になった。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.svg" alt="2,000 件の ListBox で実体化された ListBoxItem の数と CanContentScroll の値の出どころを測った表。高さ 180 の ListBox は 10 個で、CanContentScroll は True（DefaultStyle）。CanContentScroll を False にすると 2,000 個。IsVirtualizing を False にすると 2,000 個。グループ化すると 10 個。外側の ScrollViewer の中と StackPanel の中では 2,000 個。" width="838" height="260" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、2,000 件を持つ <code>ListBox</code> を条件ごとに表示し、実体化された <code>ListBoxItem</code> を数えた結果。外側の <code>ScrollViewer</code> と <code>StackPanel</code> には高さ 180 を与え、<code>ListBox</code> 自体には高さを与えていない。</figcaption>
-</figure>
+{% include tables/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.ja.md %}
+
+.NET 10 / Windows 11 で、2,000 件を持つ <code>ListBox</code> を条件ごとに表示し、実体化された <code>ListBoxItem</code> を数えた結果。外側の <code>ScrollViewer</code> と <code>StackPanel</code> には高さ 180 を与え、<code>ListBox</code> 自体には高さを与えていない。
+{: .table-caption}
 
 ---
 

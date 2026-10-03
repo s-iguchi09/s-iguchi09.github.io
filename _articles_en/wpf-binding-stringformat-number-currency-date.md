@@ -29,7 +29,7 @@ The format supplied to `Binding.StringFormat` is the same format string passed t
 Therefore, standard specifiers such as `C` (currency), `N` (number), and `P` (percent), as well as custom specifiers such as `#,0.##`, are used directly.
 That concerns what the format means; writing it in XAML carries separate syntax constraints. In the `{Binding ...}` shorthand a comma separates arguments, so `#,0.##` has to be quoted, and a format that begins with `{` needs a leading `{}` escape. Both are covered below.
 
-The figures in this article come from reading the default value of `FrameworkElement.Language` and `CultureInfo.CurrentCulture` in the environment above and comparing them against the formatted output.
+The table in this article comes from reading the default value of `FrameworkElement.Language` and `CultureInfo.CurrentCulture` in the environment above and comparing them against the formatted output.
 The following points were confirmed in that environment:
 
 - While the target element's `Language` keeps its default, formatting without `ConverterCulture` uses `en-US` rather than the regional settings of the OS.
@@ -160,10 +160,10 @@ The value of each child `Binding` is assigned in order to the placeholder with t
 
 The outcome can be confirmed by displaying the elements and reading the text that was actually rendered.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.svg" alt="A table of formatting results. FrameworkElement.Language defaults to en-us while CultureInfo.CurrentCulture is ja-JP. Without ConverterCulture the values render as a dollar amount and M/d/yyyy; with ja-JP they render as a yen amount and yyyy/MM/dd. Label.Content with StringFormat renders 1234.5 unformatted, while ContentStringFormat formats it." width="665" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with Japanese regional settings, reading the rendered string out of the visual tree. <code>rendered text</code> is the string as displayed.</figcaption>
-</figure>
+{% include tables/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 with Japanese regional settings, reading the rendered string out of the visual tree. <code>rendered text</code> is the string as displayed.
+{: .table-caption}
 
 **The mismatch between the first two rows is the cause of this problem.**
 `CultureInfo.CurrentCulture` follows the OS regional settings and reads `ja-JP`, while `FrameworkElement.Language` still defaults to `en-us`.

@@ -23,7 +23,8 @@ This article explains that the behavior comes from how the layout system measure
 - Architecture: applicable to both MVVM and code-behind
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from placing the `ScrollViewer` inside a parent 200 units tall in the environment above, varying the parent layout and whether the `ScrollViewer` itself is given a height, and reading `ExtentHeight`, `ViewportHeight`, and `ScrollableHeight`.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - Inside a `StackPanel` 200 units tall, `ScrollableHeight` stays at 0 and no scrollbar appears.
@@ -72,10 +73,10 @@ The root of the problem is therefore not the `ScrollViewer` but the surrounding 
 
 The difference can be confirmed by changing only the parent layout and reading the heights off the `ScrollViewer`.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.svg" alt="A table of the ScrollViewer's extent, viewport, and scrollable heights and scrollbar state per parent layout. Inside a StackPanel, the viewport equals the extent at 800, scrollable is 0, and the scrollbar is Collapsed. In a Grid or DockPanel, and inside a StackPanel when the ScrollViewer is given Height or MaxHeight, the viewport is 200, scrollable is 600, and the scrollbar is Visible." width="674" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with a <code>ScrollViewer</code> holding 40 rows of 20px each (800px total) inside a parent constrained to 200px. Nothing differs between the rows except the parent layout.</figcaption>
-</figure>
+{% include tables/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 with a <code>ScrollViewer</code> holding 40 rows of 20px each (800px total) inside a parent constrained to 200px. Nothing differs between the rows except the parent layout.
+{: .table-caption}
 
 **Inside the `StackPanel`, `ViewportHeight` equals `ExtentHeight` at 800.** Although the parent is constrained to 200px, the `ScrollViewer` still claims the height its full content needs.
 `ScrollableHeight` is therefore 0 and the scrollbar stays `Collapsed`.
@@ -148,12 +149,12 @@ The last child without a `DockPanel.Dock` value fills the remaining area, so the
   A `ListBox` already scrolls internally, so it is better given a height-constrained layout, such as a `*` row of a `Grid`, than wrapped in an outer `ScrollViewer`.
 - **Physical versus logical scrolling:** `ScrollViewer.CanContentScroll` defaults to `false`, giving physical, pixel-based scrolling; when it is `true`, scrolling is logical, by item.
   The `ListBox` default style sets it to `true` (the value source is `DefaultStyle`), so a data-bound `ListBox` scrolls logically and its `VirtualizingStackPanel` virtualizes items.
-  Forcing `CanContentScroll` to `false` is not the only way to lose that virtualization. Counting the realized `ListBoxItem`s of a `ListBox` with 2,000 items, all 2,000 were also realized with `VirtualizingPanel.IsVirtualizing` set to `false`, and with the `ListBox` placed inside an outer `ScrollViewer` or a `StackPanel`: when the outer element takes over scrolling or leaves the height unconstrained, the `ListBox` receives enough height to lay out every item. With grouping, virtualization remained in this measurement.
+  Forcing `CanContentScroll` to `false` is not the only way to lose that virtualization. Counting the realized `ListBoxItem`s of a `ListBox` with 2,000 items, all 2,000 were also realized with `VirtualizingPanel.IsVirtualizing` set to `false`, and with the `ListBox` placed inside an outer `ScrollViewer` or a `StackPanel`: when the outer element takes over scrolling or leaves the height unconstrained, the `ListBox` receives enough height to lay out every item. With `GroupDescriptions` on the `CollectionView`, virtualization remained as long as no `GroupStyle` was set. With a `GroupStyle`, all 2,000 were realized, and a template trigger set `CanContentScroll` to `false`.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.svg" alt="A table of realized ListBoxItems and the value source of CanContentScroll for a ListBox with 2,000 items. A ListBox 180 high realizes 10, with CanContentScroll True from DefaultStyle. CanContentScroll False realizes 2,000. IsVirtualizing False realizes 2,000. Grouping realizes 10. Inside an outer ScrollViewer and inside a StackPanel, 2,000." width="838" height="260" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by showing a <code>ListBox</code> with 2,000 items under each condition and counting the realized <code>ListBoxItem</code>s. The outer <code>ScrollViewer</code> and <code>StackPanel</code> are 180 high; the <code>ListBox</code> itself has no height in those rows.</figcaption>
-</figure>
+{% include tables/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.en.md %}
+
+Measured on .NET 10 / Windows 11 by showing a <code>ListBox</code> with 2,000 items under each condition and counting the realized <code>ListBoxItem</code>s. The outer <code>ScrollViewer</code> and <code>StackPanel</code> are 180 high; the <code>ListBox</code> itself has no height in those rows.
+{: .table-caption}
 
 ---
 

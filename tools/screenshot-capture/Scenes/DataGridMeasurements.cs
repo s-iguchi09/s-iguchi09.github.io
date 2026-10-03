@@ -21,6 +21,9 @@ internal static class DataGridMeasurements
         public required int Score { get; init; }
     }
 
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static ObservableCollection<Row> Sample() =>
     [
         new Row { Name = "carol", Score = 20 },
@@ -56,13 +59,13 @@ internal static class DataGridMeasurements
     /// 記事の要点は「<c>SortDescriptions</c> を消しただけではヘッダーの矢印が残る」ことなので、
     /// ビューの並び順と列の <c>SortDirection</c> を別々に出す。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> SortStateAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> SortStateAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(await MeasureAsync("initial", (_, _) => { }));
+        rows.Add(await MeasureAsync(T("initial", "最初"), (_, _) => { }));
 
-        rows.Add(await MeasureAsync("SortDescriptions.Add only", (grid, _) =>
+        rows.Add(await MeasureAsync(T("SortDescriptions.Add only", "SortDescriptions.Add だけ"), (grid, _) =>
         {
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
             grid.Items.Refresh();
@@ -75,7 +78,7 @@ internal static class DataGridMeasurements
             column.SortDirection = ListSortDirection.Ascending;
         }));
 
-        rows.Add(await MeasureAsync("then SortDescriptions.Clear() only", (grid, column) =>
+        rows.Add(await MeasureAsync(T("then SortDescriptions.Clear() only", "続けて SortDescriptions.Clear() だけ"), (grid, column) =>
         {
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
             grid.Items.Refresh();
@@ -85,7 +88,7 @@ internal static class DataGridMeasurements
             grid.Items.Refresh();
         }));
 
-        rows.Add(await MeasureAsync("+ clear column.SortDirection", (grid, column) =>
+        rows.Add(await MeasureAsync(T("+ clear column.SortDirection", "+ column.SortDirection も消す"), (grid, column) =>
         {
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
             grid.Items.Refresh();
@@ -98,14 +101,14 @@ internal static class DataGridMeasurements
 
         // 複数列ソートの確認には、1 つ目の条件（Score）が同点の行が要る。同点が無いと 2 つ目の条件（Name）が
         // 効いているかどうかが並びに現れない。ほかの行と共有するデータは変えず、この 2 行でだけ同点の行を足す。
-        rows.Add(await MeasureAsync("one SortDescription (Score desc), with a tie", (grid, _) =>
+        rows.Add(await MeasureAsync(T("one SortDescription (Score desc), with a tie", "SortDescription 1 つ（Score の降順）、同点あり"), (grid, _) =>
         {
             AddTie(grid);
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Score), ListSortDirection.Descending));
             grid.Items.Refresh();
         }));
 
-        rows.Add(await MeasureAsync("two SortDescriptions (Score desc, Name asc), with a tie", (grid, _) =>
+        rows.Add(await MeasureAsync(T("two SortDescriptions (Score desc, Name asc), with a tie", "SortDescription 2 つ（Score の降順、Name の昇順）、同点あり"), (grid, _) =>
         {
             AddTie(grid);
             grid.Items.SortDescriptions.Add(new SortDescription(nameof(Row.Score), ListSortDirection.Descending));
@@ -114,7 +117,7 @@ internal static class DataGridMeasurements
         }));
 
         // 記事の ViewModel の ClearSort と同じく、ItemsSource に渡した ICollectionView の SortDescriptions を消す。
-        rows.Add(await MeasureAsync("ItemsSource = ICollectionView; view.SortDescriptions.Clear()", (grid, column) =>
+        rows.Add(await MeasureAsync(T("ItemsSource = ICollectionView; view.SortDescriptions.Clear()", "ItemsSource = ICollectionView、view.SortDescriptions.Clear()"), (grid, column) =>
         {
             ICollectionView view = CollectionViewSource.GetDefaultView(grid.ItemsSource);
             grid.ItemsSource = view;
@@ -125,7 +128,7 @@ internal static class DataGridMeasurements
 
         // ここまでの行はすべてコードから直接操作している。
         // 列ヘッダー経由の標準ソートでは 2 か所が同時に変わるため、その対照を置く。
-        rows.Add(await MeasureAsync("column header click (standard sort)", (grid, column) =>
+        rows.Add(await MeasureAsync(T("column header click (standard sort)", "列ヘッダーをクリック（標準の並べ替え）"), (grid, column) =>
             ClickColumnHeader(grid, column)));
 
         return rows;
@@ -160,17 +163,17 @@ internal static class DataGridMeasurements
     private static void AddTie(DataGrid grid)
         => ((ObservableCollection<Row>)grid.ItemsSource).Add(new Row { Name = "anna", Score = 20 });
 
-    private static async Task<IReadOnlyList<string>> MeasureAsync(
-        string label, Action<DataGrid, DataGridTextColumn> operate)
+    private static async Task<IReadOnlyList<Loc>> MeasureAsync(
+        Loc label, Action<DataGrid, DataGridTextColumn> operate)
     {
         DataGrid grid = BuildGrid(out DataGridTextColumn nameColumn);
 
         var host = new Grid();
         host.Children.Add(grid);
 
-        List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+        List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 label,
                 host,
                 _ =>
@@ -193,17 +196,17 @@ internal static class DataGridMeasurements
     /// <summary>
     /// 表示中と編集中で、セルに置かれる要素が入れ替わることを測る。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> EditingTemplateAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> EditingTemplateAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(await MeasureCellAsync("display (not editing)", beginEdit: false));
-        rows.Add(await MeasureCellAsync("editing (BeginEdit)", beginEdit: true));
+        rows.Add(await MeasureCellAsync(T("display (not editing)", "表示中（編集していない）"), beginEdit: false));
+        rows.Add(await MeasureCellAsync(T("editing (BeginEdit)", "編集中（BeginEdit）"), beginEdit: true));
 
         return rows;
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureCellAsync(string label, bool beginEdit)
+    private static async Task<IReadOnlyList<Loc>> MeasureCellAsync(Loc label, bool beginEdit)
     {
         var items = Sample();
 
@@ -239,9 +242,9 @@ internal static class DataGridMeasurements
         var host = new Grid();
         host.Children.Add(grid);
 
-        List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+        List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 label,
                 host,
                 _ =>
@@ -286,14 +289,14 @@ internal static class DataGridMeasurements
     /// SortMemberPath を明示しない場合に何が入るのか、
     /// テンプレート列のように Binding を持たない場合はどうなるのかを確かめる。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> SortabilityAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> SortabilityAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(await MeasureColumnAsync("DataGridTextColumn, Binding only", () =>
+        rows.Add(await MeasureColumnAsync(T("DataGridTextColumn, Binding only", "DataGridTextColumn、Binding だけ"), () =>
             new DataGridTextColumn { Header = "Name", Binding = new Binding(nameof(Row.Name)) }));
 
-        rows.Add(await MeasureColumnAsync("+ explicit SortMemberPath=Score", () =>
+        rows.Add(await MeasureColumnAsync(T("+ explicit SortMemberPath=Score", "+ SortMemberPath=Score を明示"), () =>
             new DataGridTextColumn
             {
                 Header = "Name",
@@ -309,7 +312,7 @@ internal static class DataGridMeasurements
                 CanUserSort = false,
             }));
 
-        rows.Add(await MeasureColumnAsync("DataGridTemplateColumn, no SortMemberPath", () =>
+        rows.Add(await MeasureColumnAsync(T("DataGridTemplateColumn, no SortMemberPath", "DataGridTemplateColumn、SortMemberPath なし"), () =>
             new DataGridTemplateColumn { Header = "Name", CellTemplate = new DataTemplate() }));
 
         rows.Add(await MeasureColumnAsync("DataGridTemplateColumn + SortMemberPath=Name", () =>
@@ -318,7 +321,7 @@ internal static class DataGridMeasurements
         return rows;
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureColumnAsync(string label, Func<DataGridColumn> build)
+    private static async Task<IReadOnlyList<Loc>> MeasureColumnAsync(Loc label, Func<DataGridColumn> build)
     {
         DataGridColumn column = build();
         var grid = new DataGrid
@@ -333,9 +336,9 @@ internal static class DataGridMeasurements
         var host = new Grid();
         host.Children.Add(grid);
 
-        List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+        List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 label,
                 host,
                 _ =>
@@ -365,21 +368,21 @@ internal static class DataGridMeasurements
     /// <summary>
     /// ListCollectionView の CustomSort と SortDescriptions の関係、Items.Refresh と選択の関係を測る。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> CustomSortAndRefreshAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> CustomSortAndRefreshAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         ObservableCollection<Row> source = Sample();
         var view = (ListCollectionView)CollectionViewSource.GetDefaultView(source);
         string Order() => string.Join(", ", view.OfType<Row>().Select(row => row.Name));
 
         view.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Ascending));
-        rows.Add(["SortDescriptions: Name asc", view.SortDescriptions.Count.ToString(), "null", Order()]);
+        rows.Add([T("SortDescriptions: Name asc", "SortDescriptions: Name の昇順"), view.SortDescriptions.Count.ToString(), "null", Order()]);
 
         view.CustomSort = new ByNameLength();
-        rows.Add(["then CustomSort = by name length", view.SortDescriptions.Count.ToString(), "set", Order()]);
+        rows.Add([T("then CustomSort = by name length", "続けて CustomSort = 名前の長さ順"), view.SortDescriptions.Count.ToString(), T("set", "設定あり"), Order()]);
 
         view.SortDescriptions.Add(new SortDescription(nameof(Row.Name), ListSortDirection.Descending));
-        rows.Add(["then SortDescriptions.Add(Name desc)", view.SortDescriptions.Count.ToString(), view.CustomSort is null ? "null" : "set", Order()]);
+        rows.Add([T("then SortDescriptions.Add(Name desc)", "続けて SortDescriptions.Add(Name の降順)"), view.SortDescriptions.Count.ToString(), view.CustomSort is null ? "null" : T("set", "設定あり"), Order()]);
 
         // 選択と現在セルを決めてから Items.Refresh を呼ぶ。
         view.SortDescriptions.Clear();
@@ -387,8 +390,8 @@ internal static class DataGridMeasurements
         string selection = "";
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "Items.Refresh() with a row selected",
+            new WpfProbe.LocCase(
+                T("Items.Refresh() with a row selected", "行を選んだ状態で Items.Refresh()"),
                 grid,
                 _ => [ "-", "-", selection ],
                 Act: _ =>

@@ -63,7 +63,7 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 ## 委譲による実装
 
 以下は 4 シグネチャのポリフィル実装一式である。
-実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS で比べる。.NET 5 以降の既定は Windows のバージョンによって異なり（たとえば Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS を使うようにもできる。計測した環境（Windows 11 の .NET 10）では net48 が NLS、net10.0 が ICU で（表の `comparison engine` の行）、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の `ja-JP comparer` の行）。
+実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS で比べる。.NET 5 以降の既定は Windows のバージョンによって異なり（たとえば Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS を使うようにもできる。計測した環境（Windows 11 の .NET 10）では net48 が NLS、net10.0 が ICU で（表の「比較エンジン」の行）、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の「ja-JP の比較子」の行）。
 プロジェクトに `LinqExtensions.Net7.cs` などの名前でそのまま追加して使用できる。
 
 ```csharp

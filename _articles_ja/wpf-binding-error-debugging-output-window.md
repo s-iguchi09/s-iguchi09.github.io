@@ -111,10 +111,10 @@ XAML でトレースの名前空間を宣言し、対象の `Binding` に `Trace
 出力ウィンドウのメッセージは、原因ごとに現れる文言が異なる。
 代表的なパターンについて、実際にそのバインドを評価させ、`System.Windows.Data` のトレースに何が記録されるかを確認した結果が次の表である。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="バインドの失敗パターンごとにトレース出力を記録した表。パス解決失敗は Warning と Error のレベルで Error 40 になり、Critical では何も出ない。ConvertBack の失敗は Error 7、空の Validation.Errors へのインデクサーアクセスとゲッターが例外を送出した場合はいずれも Error 17 になる。DataContext 未設定は既定の Warning レベルでは何も出ず、Information レベルでは Information 10 として DataItem=null が現れる。バインドに TraceLevel=High を付けてレベルを Warning のままにすると、Warning 71 の DataContext is null は出るが Information 10 は出ない。検証エラーを出してから解消すると、発生時に Error 7、解消時に Error 17 が記録される。解決できるバインドは何も出力しない。" width="1141" height="410" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>TraceLevel=High</code> の行と、エラーを出してから解消する行は、段階ごとに記録された番号を示す。<code>Switch.Level</code> は行ごとに示し、<code>Warning</code> が既定に相当する。</figcaption>
-</figure>
+{% include tables/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、各パターンのバインドを実際に評価させ、<code>PresentationTraceSources.DataBindingSource</code> に流れた最初のレコードを記録した結果。<code>TraceLevel=High</code> の行と、エラーを出してから解消する行は、段階ごとに記録された番号を示す。<code>Switch.Level</code> は行ごとに示し、<code>Warning</code> が既定に相当する。
+{: .table-caption}
 
 `.NET 10 / Windows 11` で確認した範囲では、`Error: 40` がパス解決失敗、`Error: 7` が `ConvertBack` の変換失敗、`Error: 17` が値の取得に失敗した場合に対応する。
 これらの番号は `System.Windows.Data` トレースの内部実装が付ける識別子であり、公開 API の契約として全バージョンで固定されることは保証されていない。番号だけに頼らず、併記されるメッセージ本文も読む。

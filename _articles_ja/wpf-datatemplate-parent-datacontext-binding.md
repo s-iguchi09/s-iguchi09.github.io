@@ -91,12 +91,12 @@ target property is 'Command' (type 'ICommand')
 
 ---
 
-書き方を変えて、テンプレート内の `Command` が解決されるかを測った結果が次の図である。
+書き方を変えて、テンプレート内の `Command` が解決されるかを測った結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.svg" alt="DataTemplate 内の Button.Command が解決されるかを書き方別に測った表。素の Binding では Command が null、RelativeSource と ElementName では解決される。いずれの場合も IsEnabled は True のままである。" width="555" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>ItemsControl</code> の <code>ItemTemplate</code> に置いた <code>Button</code> の <code>Command</code> を読んだ結果。バインドの書き方以外の条件は同一である。</figcaption>
-</figure>
+{% include tables/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.ja.md %}
+
+.NET 10 / Windows 11 で、<code>ItemsControl</code> の <code>ItemTemplate</code> に置いた <code>Button</code> の <code>Command</code> を読んだ結果。バインドの書き方以外の条件は同一である。
+{: .table-caption}
 
 **`IsEnabled` の列に注目する。** `Command` が `null` の行でも `True` のままである。
 解決に失敗しても見た目は変わらないため、画面を見ているだけでは気付けない。

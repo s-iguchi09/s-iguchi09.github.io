@@ -55,13 +55,13 @@ internal sealed class DataGridSortingScene : IScene
 
         await context.SaveTableAsync(
             "sortability by how the column is declared",
-            ["column", "SortMemberPath", "CanUserSort", "order after a header click"],
+            [Loc.Of("column", "列"), "SortMemberPath", "CanUserSort", Loc.Of("order after a header click", "見出しをクリックした後の並び順")],
             await DataGridMeasurements.SortabilityAsync(),
             "datagrid-sortability.svg");
 
         await context.SaveTableAsync(
             "CustomSort and SortDescriptions on a ListCollectionView, and Items.Refresh",
-            ["operation", "SortDescriptions", "CustomSort", "order / selection"],
+            [Loc.Of("operation", "操作"), "SortDescriptions", "CustomSort", Loc.Of("order / selection", "並び順 / 選択")],
             await DataGridMeasurements.CustomSortAndRefreshAsync(),
             "datagrid-customsort-refresh.svg");
     }

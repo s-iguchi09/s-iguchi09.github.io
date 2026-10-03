@@ -92,7 +92,7 @@ internal sealed class DataTemplateParentBindingScene : IScene
 
         await context.SaveTableAsync(
             "Button.Command inside a DataTemplate",
-            ["binding written in the template", "Command", "IsEnabled"],
+            [Loc.Of("binding written in the template", "テンプレートに書いたバインド"), "Command", "IsEnabled"],
             await ViewAndTemplateMeasurements.TemplateBindingScopeAsync(),
             "datatemplate-binding-scope.svg");
     }

@@ -14,3 +14,6 @@ images:
   - "images/articles/wpf-binding-stringformat-number-currency-date/stringformat-converterculture.png"
   - "images/articles/wpf-binding-stringformat-number-currency-date/stringformat-contentcontrol.png"
   - "images/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.svg"
+tables:
+  - "_includes/tables/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.en.md"
+  - "_includes/tables/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.ja.md"

@@ -163,10 +163,10 @@ Only that first evaluation is implicit, which makes the view look as though it k
 
 Counting how many times the filter predicate runs per operation shows the asymmetry directly.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.svg" alt="A table of filter predicate calls, CollectionChanged occurrences, and the item count in the view per operation. Adding an item calls the predicate once, removing calls it zero times, and an item PropertyChanged calls it zero times with no CollectionChanged. Refresh calls it 1000 times." width="701" height="260" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 against a view over 1,000 items, half of which pass the filter. Each operation was performed once and the predicate calls counted; the initial evaluation performed when the filter is assigned is excluded.</figcaption>
-</figure>
+{% include tables/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.en.md %}
+
+Measured on .NET 10 / Windows 11 against a view over 1,000 items, half of which pass the filter. Each operation was performed once and the predicate calls counted; the initial evaluation performed when the filter is assigned is excluded.
+{: .table-caption}
 
 **On an item `PropertyChanged`, the predicate does not run at all and no `CollectionChanged` is raised.** The item count in the view is unchanged.
 On an add or a remove, only the item the notification points at is evaluated — once for an add, and not at all for a remove.

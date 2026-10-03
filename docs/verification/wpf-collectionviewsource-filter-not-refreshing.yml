@@ -13,3 +13,6 @@ verifies:
 images:
   - "images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-refresh.png"
   - "images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.svg"
+tables:
+  - "_includes/tables/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.en.md"
+  - "_includes/tables/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.ja.md"

@@ -23,7 +23,8 @@ This article covers the essentials and explores patterns for each of those requi
 
 The examples assume the grid is bound to an observable collection of a `Product` type that exposes `Name` and `Price` properties.  
 
-The figures in this article come from displaying a `DataGrid` in the environment above, varying only the column declarations, and reading `SortMemberPath` and `CanUserSort` on each column.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - A `DataGridTextColumn` without an explicit `SortMemberPath` picks up the path from its `Binding`.
@@ -47,12 +48,12 @@ By default, every column in a `DataGrid` is sortable as long as its `SortMemberP
 Clicking the **Name** header once sorts ascending, and clicking again reverses to descending.  
 The default behavior does not return to an unsorted state, so clear logic must be implemented explicitly when needed — see [How to Reset DataGrid Sorting in WPF](/articles/wpf-datagrid-sort-reset/) for that pattern.  
 
-The figure below records what lands in `SortMemberPath` and `CanUserSort` for each way of declaring a column.
+The table below records what lands in `SortMemberPath` and `CanUserSort` for each way of declaring a column.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="A table of SortMemberPath, CanUserSort, and the order after a header click per column declaration. A DataGridTextColumn with only a Binding takes the binding path as its SortMemberPath and sorts. An explicit SortMemberPath takes precedence. With CanUserSort set to False, the header click leaves the original order. A template column with no binding ends up with an empty SortMemberPath and CanUserSort False and does not sort, while a template column with SortMemberPath set to Name sorts." width="882" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11, varying only the column declaration. <code>order after a header click</code> is the order after running the same sort that a click on that column's header runs; the original order is carol, alice, bob.</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sorting/datagrid-sortability.en.md %}
+
+Measured on .NET 10 / Windows 11, varying only the column declaration. <code>order after a header click</code> is the order after running the same sort that a click on that column's header runs; the original order is carol, alice, bob.
+{: .table-caption}
 
 **`SortMemberPath` is filled in from the `Binding` path even when it is not written.** Stating it in the XAML above makes the intent explicit; omitting it produces the same result.
 
@@ -107,10 +108,10 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 
 `CustomSort` and `SortDescriptions` do not stack; the one set last replaces the other. Setting `CustomSort` cleared `SortDescriptions`, and adding a `SortDescription` afterward reset `CustomSort` to `null`. The reference for [`ListCollectionView.CustomSort`](https://learn.microsoft.com/dotnet/api/system.windows.data.listcollectionview.customsort) states the first half: setting the property clears `SortDescriptions`. Switching back to `SortDescriptions` therefore needs no extra step.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.svg" alt="A table of a ListCollectionView. After a Name ascending SortDescription, setting CustomSort to a comparer by name length leaves zero SortDescriptions and orders bob, alice, carol. Adding a Name descending SortDescription then resets CustomSort to null and orders carol, bob, alice. After Items.Refresh with a row selected, SelectedItem and CurrentCell are still bob." width="882" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 on the default view of a three-item collection, and on a <code>DataGrid</code> bound to it for the last row.</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.en.md %}
+
+Measured on .NET 10 / Windows 11 on the default view of a three-item collection, and on a <code>DataGrid</code> bound to it for the last row.
+{: .table-caption}
 
 ## Notes
 

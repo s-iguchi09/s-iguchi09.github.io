@@ -20,7 +20,8 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 - その他制約: 一覧表示時の視認性と編集時の入力効率を両立する構成を想定
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で `DataGrid` のセルに実際に置かれた要素の型を読み出して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - 表示中は `CellTemplate`、編集中は `CellEditingTemplate` の要素がセルに置かれる。
@@ -39,10 +40,10 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 
 表示中と編集中で、セルに置かれる要素が実際に入れ替わることは測って確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.svg" alt="表示中と編集中でセルに置かれる要素を測った表。表示中は TextBlock で cell.IsEditing は False、BeginEdit を呼ぶと ComboBox に変わり cell.IsEditing が True になる。" width="532" height="140" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>CellTemplate</code> に <code>TextBlock</code>、<code>CellEditingTemplate</code> に <code>ComboBox</code> を置いた <code>DataGridTemplateColumn</code> を測った結果。要素の型は visual ツリーから読み取っている。</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.ja.md %}
+
+.NET 10 / Windows 11 で、<code>CellTemplate</code> に <code>TextBlock</code>、<code>CellEditingTemplate</code> に <code>ComboBox</code> を置いた <code>DataGridTemplateColumn</code> を測った結果。要素の型は visual ツリーから読み取っている。
+{: .table-caption}
 
 **要素そのものが差し替わっている。** 同じコントロールの見た目が変わるのではなく、`CellTemplate` の内容が破棄されて `CellEditingTemplate` の内容が生成される。
 このため、編集用テンプレートに重いコントロールを置いても、表示中はその生成コストがかからない。
@@ -134,10 +135,10 @@ WPF の `DataGrid` でセルの表示状態と編集状態に異なるコント�
 ルート要素の前に置くと、`Setter` の `TargetName` が参照する `display` がまだ現れていないため、ビルドではマークアップ コンパイラーのエラー MC4111 になり、`XamlReader` で読み込むと `NullReferenceException` になった。
 `Grid` の中に置いた場合は、読み込みは成功した。XAML の読み取りは読み込みの時点で行われるが、テンプレートの要素はセルに表示するときに生成され、その時点で `XamlParseException` になった。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.svg" alt="単一テンプレートの例を DataGrid のセルに使った結果の表。DataTemplate.Triggers を Grid の中に置くと、読み込みは成功するが表示で XamlParseException になる。DataTemplate の直下で Grid の後ろに置くと、BeginEdit の前は TextBlock が表示されて TextBox が隠れ、後はその逆になる。DataTemplate の直下で Grid の前に置くと、XamlReader では NullReferenceException、dotnet build では MC4111（ターゲット display は Setter より前に必要）になる。" width="1250" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、それぞれのテンプレートを <code>DataGridTemplateColumn</code> の <code>CellTemplate</code> にして <code>BeginEdit</code> を呼んだ結果。最終行は、同じテンプレートを .xaml ファイルに書いた一時プロジェクトを <code>dotnet build</code> した結果である。</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.ja.md %}
+
+.NET 10 / Windows 11 で、それぞれのテンプレートを <code>DataGridTemplateColumn</code> の <code>CellTemplate</code> にして <code>BeginEdit</code> を呼んだ結果。最終行は、同じテンプレートを .xaml ファイルに書いた一時プロジェクトを <code>dotnet build</code> した結果である。
+{: .table-caption}
 
 この方法は一部の特殊要件で有効だが、基本方針は `CellTemplate` と `CellEditingTemplate` の分離を優先する。
 保守性、再利用性、デバッグ容易性の点で差が出る。

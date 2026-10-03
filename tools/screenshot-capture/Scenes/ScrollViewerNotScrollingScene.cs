@@ -23,10 +23,23 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
         "StackPanel でも高さを明示すればスクロールできること（Height と MaxHeight の両方）",
         "ListBox の ScrollViewer.CanContentScroll が True になる出どころ（既定スタイルか）",
         "ListBox の仮想化が失われる条件（CanContentScroll=False のほか、外側の ScrollViewer・StackPanel、IsVirtualizing=False）",
-        "グループ化したときに仮想化が保たれるか（この計測では保たれた）",
+        "GroupDescriptions だけで GroupStyle を付けない場合は仮想化が保たれ、GroupStyle を付けると全件が実体化されること",
     ];
 
     public string Slug => "wpf-scrollviewer-not-scrolling";
+
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("inside an outer ScrollViewer (Height=180)", "外側の ScrollViewer の中（Height=180）"),
+        ("inside a StackPanel (Height=180)", "StackPanel の中（Height=180）"),
+        ("CollectionView.GroupDescriptions + GroupStyle", "CollectionView.GroupDescriptions + GroupStyle"),
+        ("CollectionView.GroupDescriptions only, no GroupStyle", "CollectionView.GroupDescriptions だけ（GroupStyle なし）"),
+        ("inside DockPanel (LastChildFill)", "DockPanel の中（LastChildFill）"),
+        ("inside StackPanel", "StackPanel の中"),
+        ("inside Grid", "Grid の中"),
+        ("StackPanel + explicit Height", "StackPanel + Height を明示"),
+    ];
 
     public async Task CaptureAsync(SceneContext context)
     {
@@ -41,14 +54,14 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
 
         await context.SaveTableAsync(
             "ScrollViewer with 40 rows of 20px, parent constrained to 200px",
-            ["parent layout", "Extent", "Viewport", "Scrollable", "scrollbar"],
-            await ViewAndTemplateMeasurements.ScrollViewerHeightAsync(),
+            [Loc.Of("parent layout", "親のレイアウト"), "Extent", "Viewport", "Scrollable", Loc.Of("scrollbar", "スクロールバー")],
+            LocTable.Translate(await ViewAndTemplateMeasurements.ScrollViewerHeightAsync(), Words),
             "scrollviewer-height-matrix.svg");
 
         await context.SaveTableAsync(
             "ListBox with 2,000 items: realized ListBoxItem",
-            ["configuration", "ListBoxItem realized", "CanContentScroll (value source)"],
-            await VirtualizationLossAsync(),
+            [Loc.Of("configuration", "構成"), Loc.Of("ListBoxItem realized", "実体化した ListBoxItem"), Loc.Of("CanContentScroll (value source)", "CanContentScroll（値の出どころ）")],
+            LocTable.Translate(await VirtualizationLossAsync(), Words),
             "listbox-virtualization-loss.svg");
     }
 
@@ -71,11 +84,19 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
                 VirtualizingPanel.SetIsVirtualizing(listBox, false);
                 return listBox;
             }),
-            Case("grouped (CollectionView.GroupDescriptions)", listBox =>
+            Case("CollectionView.GroupDescriptions only, no GroupStyle", listBox =>
             {
                 var view = new System.Windows.Data.ListCollectionView(Enumerable.Range(0, 2000).Select(i => new Row(i)).ToList());
                 view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(Row.Group)));
                 listBox.ItemsSource = view;
+                return listBox;
+            }),
+            Case("CollectionView.GroupDescriptions + GroupStyle", listBox =>
+            {
+                var view = new System.Windows.Data.ListCollectionView(Enumerable.Range(0, 2000).Select(i => new Row(i)).ToList());
+                view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(Row.Group)));
+                listBox.ItemsSource = view;
+                listBox.GroupStyle.Add(new GroupStyle());
                 return listBox;
             }),
             Case("inside an outer ScrollViewer (Height=180)", listBox =>

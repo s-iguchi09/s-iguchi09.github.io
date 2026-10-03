@@ -165,10 +165,10 @@ _keyword = "Nut";
 
 操作ごとにフィルタ述語の呼び出し回数を数えると、この非対称性がそのまま現れる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.svg" alt="操作ごとのフィルタ述語の呼び出し回数と CollectionChanged の発生回数、ビューの件数を測った表。項目の追加は 1 回、削除は 0 回、項目の PropertyChanged は 0 回で CollectionChanged も起きない。Refresh は 1000 回で全件が評価し直される。" width="701" height="260" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、1,000 件（うち半数がフィルタを通る）のビューに対して各操作を 1 回行い、フィルタ述語が呼ばれた回数を数えた結果。フィルタ設定時の初回評価は数から外している。</figcaption>
-</figure>
+{% include tables/articles/wpf-collectionviewsource-filter-not-refreshing/collectionview-filter-calls.ja.md %}
+
+.NET 10 / Windows 11 で、1,000 件（うち半数がフィルタを通る）のビューに対して各操作を 1 回行い、フィルタ述語が呼ばれた回数を数えた結果。フィルタ設定時の初回評価は数から外している。
+{: .table-caption}
 
 **項目の `PropertyChanged` では述語が 1 回も呼ばれず、`CollectionChanged` も発生していない。** ビューの件数も変わらない。
 追加と削除では、通知が指す項目のぶんしか評価されていない（追加で 1 回、削除で 0 回）。

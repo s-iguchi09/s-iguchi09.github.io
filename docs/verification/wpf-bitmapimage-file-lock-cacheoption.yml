@@ -15,3 +15,8 @@ verifies:
 images:
   - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.svg"
   - "images/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-urisource-binding.svg"
+tables:
+  - "_includes/tables/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.en.md"
+  - "_includes/tables/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-file-lock-matrix.ja.md"
+  - "_includes/tables/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-urisource-binding.en.md"
+  - "_includes/tables/articles/wpf-bitmapimage-file-lock-cacheoption/bitmapimage-urisource-binding.ja.md"

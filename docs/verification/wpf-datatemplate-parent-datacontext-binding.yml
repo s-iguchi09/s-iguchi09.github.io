@@ -12,3 +12,6 @@ verifies:
 images:
   - "images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-parent-binding.png"
   - "images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.svg"
+tables:
+  - "_includes/tables/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.en.md"
+  - "_includes/tables/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate-binding-scope.ja.md"
