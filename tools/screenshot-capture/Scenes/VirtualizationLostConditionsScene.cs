@@ -14,8 +14,8 @@ namespace ScreenshotCapture.Scenes;
 /// 条件はコントロールの既定値・配置・設定の 3 つに分け、記事の対処を当てた場合も測る。
 ///
 /// 値は記事の切り分け用のコード（<see cref="Report"/>）で読む。記事に載せたコードと同じ方法で数えるためである。
-/// 実体化したコンテナーは ItemContainerGenerator.ContainerFromItem で数える。グループ化した場合も
-/// 項目のコンテナーだけを数えられ、ComboBox のようにポップアップの中に項目がある場合も同じ方法で数えられる。
+/// 実体化したコンテナーは ItemContainerGenerator.ContainerFromIndex で位置ごとに数える。グループ化した場合も
+/// 項目のコンテナーを数えられ、ComboBox のようにポップアップの中に項目がある場合も同じ方法で数えられる。
 /// </summary>
 internal sealed class VirtualizationLostConditionsScene : IScene
 {
@@ -33,7 +33,7 @@ internal sealed class VirtualizationLostConditionsScene : IScene
         "GroupStyle を付けてグループ化した ListBox は、最上位の項目のパネルが StackPanel に、CanContentScroll が False になり、1,000 個すべてのコンテナーを作ること。GroupStyle を付けなければ、GroupDescriptions があっても IsGrouping は False で、仮想化は保たれること",
         "DataGrid の EnableRowVirtualization=False は、1,000 個すべての行を作り、IsVirtualizing が False になること",
         "VirtualizingPanel.ScrollUnit=Pixel は仮想化を保つこと",
-        "ListBoxItem を 1,000 個 Items に直接追加した ListBox は、ContainerFromItem で数えたコンテナーも、項目のパネルの子要素も 11 個で、データを渡した場合と同じになること。IsItemItsOwnContainer が true の項目は、直接追加では 1,000 個、設定の表のデータを渡した行では 0 個であること",
+        "ListBoxItem を 1,000 個、Items に直接追加した ListBox と ItemsSource で渡した ListBox は、いずれも、数えたコンテナーと項目のパネルの子要素が 11 個で、データを渡した場合と同じになること。IsItemItsOwnContainer が true の項目は、この 2 つでは 1,000 個、設定の表のデータを渡した行では 0 個であること",
         "ListBox は VirtualizingPanel.CacheLength=0 にするとコンテナーが 11 個から 10 個に、VirtualizingPanel.CacheLengthUnit=Page にすると 20 個になること",
         "VirtualizingPanel.IsVirtualizing=True の TreeView は、VirtualizingPanel.CacheLength=0 にするとコンテナーが 25 個から 13 個になること",
         "TreeView に VirtualizingPanel.IsVirtualizing=True を指定すると、項目のパネルが VirtualizingStackPanel に、CanContentScroll が True になり、仮想化されること",
@@ -263,6 +263,11 @@ internal sealed class VirtualizationLostConditionsScene : IScene
 
             yield return new Case(T("ListBoxItem added directly to Items (1,000)", "ListBoxItem を Items に直接追加（1,000 個）"), Area(list), list);
         }
+
+        {
+            var list = new ListBox { ItemsSource = Rows().Select(row => new ListBoxItem { Content = row.Text }).ToList() };
+            yield return new Case(T("ListBoxItem passed through ItemsSource (1,000)", "ListBoxItem を ItemsSource で渡す（1,000 個）"), Area(list), list);
+        }
     }
 
     /// <summary>記事の「原因別の対処」の XAML。読み込んだ要素をそのまま測る。</summary>
@@ -443,8 +448,9 @@ internal sealed class VirtualizationLostConditionsScene : IScene
     {
         public static Report Of(ItemsControl items)
         {
-            int realized = items.Items.Cast<object>()
-                .Count(item => items.ItemContainerGenerator.ContainerFromItem(item) is not null);
+            // 位置で数える。ContainerFromItem は等しい項目を同じコンテナーに対応させるため、重複した値があると数え違える。
+            int realized = Enumerable.Range(0, items.Items.Count)
+                .Count(index => items.ItemContainerGenerator.ContainerFromIndex(index) is not null);
 
             // ComboBox の項目はポップアップの中にあり、ComboBox の visual ツリーの外になる。
             DependencyObject root = items is ComboBox combo && combo.Template.FindName("PART_Popup", combo) is Popup { Child: { } child }

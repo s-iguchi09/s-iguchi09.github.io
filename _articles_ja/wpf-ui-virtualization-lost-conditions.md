@@ -16,7 +16,7 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 
 仮想化が外れる主な原因は 3 系統ある。
 置き場所が高さを制約していない、項目のパネルかテンプレートが仮想化に対応していない、仮想化または論理スクロールの設定が切られている、の 3 つで、直し方はそれぞれ違う。
-このほか、コンテナーを `Items` に直接追加している場合は、コンテナーの数だけでは、データを渡した場合と見分けられない。
+このほか、`ListBoxItem` などのコンテナーを項目として渡している場合は、コンテナーの数だけでは、データを渡した場合と見分けられない。
 本記事では、1,000 件を高さ 200 の領域に表示して実体化したコンテナーを数え、どの条件で仮想化が外れるかを実測した結果を示す。
 あわせて、手元のアプリで原因を切り分ける手順と、原因ごとの直し方を示す。
 
@@ -28,7 +28,7 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 - 対象: `ItemsControl` を継承するコントロール（`ListBox`・`ListView`・`DataGrid`・`TreeView`・`ComboBox`・`ItemsControl`）
 - 関係する API: `VirtualizingStackPanel`、`VirtualizingPanel.IsVirtualizing`、`VirtualizingPanel.IsVirtualizingWhenGrouping`、`VirtualizingPanel.ScrollUnit`、`VirtualizingPanel.CacheLength`、`VirtualizingPanel.CacheLengthUnit`、`ScrollViewer.CanContentScroll`、`DataGrid.EnableRowVirtualization`、`ItemsControl.IsGrouping`、`ItemsControl.IsItemItsOwnContainer`
 - 検証環境: .NET 10 / Windows 11（既定のテーマ）
-- 計測方法: 1,000 件の項目を、幅 300・高さ 200 の領域に表示し、レイアウトが済むのを待ってから、`ItemContainerGenerator.ContainerFromItem` が返したコンテナーの数を数えた。この計測は `tools/screenshot-capture` のシーンとして実装している。
+- 計測方法: 1,000 件の項目を、幅 300・高さ 200 の領域に表示し、レイアウトが済むのを待ってから、`ItemContainerGenerator.ContainerFromIndex` で、位置ごとにコンテナーがあるかを数えた。この計測は `tools/screenshot-capture` のシーンとして実装している。
 
 コンテナーの数は、項目の高さ（フォントと表示スケールで変わる）によって変わる。
 本文では、仮想化が効いているかを「表示範囲とキャッシュの分だけか、1,000 個すべてか」で読む。
@@ -66,7 +66,8 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 テンプレートの中の `ScrollViewer` の表示範囲が限られていること、項目のパネルが `VirtualizingStackPanel` であること、`IsVirtualizing` と `CanContentScroll` が `True` であることである。
 この 3 つは、項目をデータとして渡した場合の条件である。
 `ListBoxItem` などのコンテナーを `Items` に直接追加した場合は仮想化されないと、公式ドキュメントは述べている（[コントロールのパフォーマンスを最適化する](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-controls#displaying-large-data-sets)）。
-この場合の見分け方は、後掲の設定の表の後で示す。
+`ItemsSource` で `ListBoxItem` を渡した場合も、後掲の設定の表では同じ結果だった。
+これらの場合の見分け方は、後掲の設定の表の後で示す。
 
 3 つの条件のどれが欠けているかは、次の値で読み分けられる。
 
@@ -86,7 +87,7 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 ## 切り分けの手順
 
 1. 表示範囲とキャッシュを大きく超える件数で一覧を表示し、レイアウトが済んだ後に、後述の実装例の `VirtualizationReport.Write` を呼ぶ。件数が少ないと、仮想化が効いていてもコンテナーの数は件数と同じになる（この計測では、1,000 件に対して表示範囲は 10 個前後である）。
-2. 実体化したコンテナーの数と、自分自身がコンテナーの項目（出力の `own containers`）を見る。`own containers` が 0 でなければ、コンテナーを `Items` に直接追加している（原因別の対処の「コンテナーを `Items` に直接追加している」）。0 で、コンテナーの数が件数より少なければ、仮想化は効いており、ここで終わる。
+2. 実体化したコンテナーの数と、自分自身がコンテナーの項目（出力の `own containers`）を見る。`own containers` が 0 でなければ、`ListBoxItem` などのコンテナーを項目として渡している（原因別の対処の「コンテナーを項目として渡している」）。0 で、コンテナーの数が件数より少なければ、仮想化は効いており、ここで終わる。
 3. 件数と同じなら、上の表と行の順に照らし合わせる。
 4. 当てはまる行が複数あれば、そのすべてを直す。直したら 1 から測り直す。
 
@@ -99,7 +100,7 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 
 {% include tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-placement.ja.md %}
 
-.NET 10 / Windows 11（既定のテーマ）で、1,000 件を持つ `ListBox` を幅 300・高さ 200 の領域の中で、置く場所だけを変えて表示した結果。レイアウトが済んだ後に `ItemContainerGenerator.ContainerFromItem` でコンテナーを数えた。「高さ」は `ListBox` の `ActualHeight`、`CanContentScroll` は `ListBox` のテンプレートの中の `ScrollViewer` の値である。
+.NET 10 / Windows 11（既定のテーマ）で、1,000 件を持つ `ListBox` を幅 300・高さ 200 の領域の中で、置く場所だけを変えて表示した結果。レイアウトが済んだ後に `ItemContainerGenerator.ContainerFromIndex` でコンテナーを数えた。「高さ」は `ListBox` の `ActualHeight`、`CanContentScroll` は `ListBox` のテンプレートの中の `ScrollViewer` の値である。
 {: .table-caption}
 
 縦の `StackPanel`・`ScrollViewer`・`Height=Auto` の `Grid` の行に置くと、`ListBox` の高さが全項目分まで伸び、1,000 個すべてを作った。
@@ -109,11 +110,11 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 `Expander` の中は、`Expander` 自体がどこに置かれているかで決まる。
 `Grid` の中なら仮想化され、縦の `StackPanel` の中なら全件を作った。
 
-次に、置き場所は `Grid` のままで、設定を変えた結果である（`DataGrid` の行はコントロールを、最後の行は項目の渡し方を替えた）。
+次に、置き場所は `Grid` のままで、設定を変えた結果である（`DataGrid` の行はコントロールを、最後の 2 行は項目の渡し方を替えた）。
 
 {% include tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-settings.ja.md %}
 
-.NET 10 / Windows 11（既定のテーマ）で、1,000 件を持つ `ListBox` を幅 300・高さ 200 の `Grid` に置き、設定を 1 つずつ変えて測った結果。`DataGrid` の行だけは、`ListBox` の代わりに `DataGrid` を置いた。「グループ化」の 2 行は、`ListCollectionView` の `GroupDescriptions` で 100 件ずつ 10 グループに分けている。最後の行だけは、`ItemsSource` ではなく `Items` に `ListBoxItem` を直接追加した。項目のパネルはコントロールの最上位のパネル、`IsGrouping` はコントロールの `ItemsControl.IsGrouping` の値である。「項目のパネルの子要素」は最上位のパネルの子要素の数で、`GroupStyle` を付けたグループ化ではグループ（`GroupItem`）の数になる。「自分自身がコンテナーの項目」は、`ItemsControl.IsItemItsOwnContainer` が `true` になる項目の数である。
+.NET 10 / Windows 11（既定のテーマ）で、1,000 件を持つ `ListBox` を幅 300・高さ 200 の `Grid` に置き、設定を 1 つずつ変えて測った結果。`DataGrid` の行だけは、`ListBox` の代わりに `DataGrid` を置いた。「グループ化」の 2 行は、`ListCollectionView` の `GroupDescriptions` で 100 件ずつ 10 グループに分けている。最後の 2 行は、データの代わりに `ListBoxItem` を、`Items` への直接追加と `ItemsSource` で渡した。項目のパネルはコントロールの最上位のパネル、`IsGrouping` はコントロールの `ItemsControl.IsGrouping` の値である。「項目のパネルの子要素」は最上位のパネルの子要素の数で、`GroupStyle` を付けたグループ化ではグループ（`GroupItem`）の数になる。「自分自身がコンテナーの項目」は、`ItemsControl.IsItemItsOwnContainer` が `true` になる項目の数である。
 {: .table-caption}
 
 高さはどの行も 200 のままである。
@@ -135,8 +136,8 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 既定の `ListBox` は、表示範囲の 10 個の先に 1 個を余分に作っていたことになる。
 `CacheLengthUnit=Page` にすると 20 個になり、表示範囲 1 ページ分が先に作られた。
 
-表の最後の行は、`ListBoxItem` を 1,000 個作り、`ItemsSource` ではなく `Items` に直接追加した結果である。
-`ContainerFromItem` で数えたコンテナーも、項目のパネルの子要素も 11 個で、データを渡した `ListBox` と同じだった。
+表の最後の 2 行は、`ListBoxItem` を 1,000 個作り、`Items` に直接追加した場合と、`ItemsSource` で渡した場合である。
+どちらも、数えたコンテナーも、項目のパネルの子要素も 11 個で、データを渡した `ListBox` と同じだった。
 パネルに載せる数は、表示範囲とキャッシュの分に絞られている。
 省けないのは、アプリが作った 1,000 個の `ListBoxItem` そのものである。
 公式ドキュメントは、コンテナーを作って追加する場合は `VirtualizingStackPanel` に `StackPanel` より性能上の利点が無いとしている（[VirtualizingStackPanel](https://learn.microsoft.com/dotnet/api/system.windows.controls.virtualizingstackpanel)）。
@@ -144,7 +145,7 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 時間とメモリは測っていない。
 
 この場合は、コンテナーの数でも、パネルの子要素の数でも、データを渡した場合と見分けられない。
-見分けられるのは、`ItemsControl.IsItemItsOwnContainer` が `true` になる項目の数で、直接追加した行だけが 1,000 個、設定の表のデータを渡した行はすべて 0 個だった（[ItemsControl.IsItemItsOwnContainer](https://learn.microsoft.com/dotnet/api/system.windows.controls.itemscontrol.isitemitsowncontainer)）。
+見分けられるのは、`ItemsControl.IsItemItsOwnContainer` が `true` になる項目の数で、`ListBoxItem` を渡した 2 行だけが 1,000 個、設定の表のデータを渡した行はすべて 0 個だった（[ItemsControl.IsItemItsOwnContainer](https://learn.microsoft.com/dotnet/api/system.windows.controls.itemscontrol.isitemitsowncontainer)）。
 
 最後に、コントロールの既定値の違いである。
 
@@ -274,11 +275,13 @@ image: /images/articles/wpf-ui-virtualization-lost-conditions/virtualization-pla
 `DataGrid` の `EnableRowVirtualization="False"` も同じで、外せば既定の `DataGrid` と同じく仮想化される。
 `CanContentScroll="False"` を、ピクセル単位でスクロールさせる目的で書いている場合は、代わりに `VirtualizingPanel.ScrollUnit="Pixel"` を使う。
 
-### コンテナーを `Items` に直接追加している
+### コンテナーを項目として渡している
 
-手順 2 で `own containers` が 0 でなければ、`ListBoxItem` などのコンテナーを `Items` に直接追加している。
-パネルが `VirtualizingStackPanel` のままでも、アプリが作ったコンテナーは減らない（前掲の設定の表の最後の行）。
-コンテナーではなくデータを渡す形（通常は `ItemsSource` へのバインド）に替える。
+手順 2 で `own containers` が 0 でなければ、`ListBoxItem` などのコンテナーを項目として渡している。
+`Items` への直接追加でも、`ItemsSource` でも同じである。
+どこでコンテナーを作っているかは、項目を渡しているコードで確かめる。
+パネルが `VirtualizingStackPanel` のままでも、アプリが作ったコンテナーは減らない（前掲の設定の表の最後の 2 行）。
+`ListBoxItem` を作らず、データのコレクションを `ItemsSource` に渡す形に替える。
 
 ### 対処後の実測
 
@@ -310,11 +313,12 @@ public static class VirtualizationReport
 {
     public static void Write(ItemsControl items)
     {
-        // 実体化したコンテナーの数。グループ化していても項目のコンテナーだけを数えられる。
-        int realized = items.Items.Cast<object>()
-            .Count(item => items.ItemContainerGenerator.ContainerFromItem(item) != null);
+        // 実体化したコンテナーの数。位置ごとにコンテナーがあるかを数える。
+        // グループ化していても項目のコンテナーを数えられる。
+        int realized = Enumerable.Range(0, items.Items.Count)
+            .Count(index => items.ItemContainerGenerator.ContainerFromIndex(index) != null);
 
-        // 自分自身がコンテナーの項目（Items に直接追加した ListBoxItem など）の数。
+        // 自分自身がコンテナーの項目（項目として渡した ListBoxItem など）の数。
         int ownContainers = items.Items.Cast<object>().Count(items.IsItemItsOwnContainer);
 
         // ComboBox の項目はポップアップの中にあり、ComboBox の visual ツリーの外にある。
@@ -385,7 +389,7 @@ VirtualizationReport.Write(OrdersList);
 
 - **件数が少ないうちは気付きにくい。** 仮想化が外れても、コンテナーの数は件数と同じになるだけで、例外は出ない。開発中のサンプルデータが少ないと、件数の多いデータで初めて表に出る。件数を増やした状態で `VirtualizationReport` を一度呼んでおくと、早く気付ける。
 - **`IsVirtualizing` が `True` でも仮想化されているとは限らない。** パネルが `VirtualizingStackPanel` でないか、テンプレートの中で論理スクロールする `ScrollViewer` に包まれていなければ働かない。判断はコンテナーの数で行う。
-- **コンテナーを `Items` に直接追加している場合は、コンテナーの数では見分けられない。** パネルに載るのは表示範囲とキャッシュの分だけだが、コンテナーはアプリがすべて作っている。出力の `own containers` が 0 でないかを見て、コンテナーではなくデータを渡す形に替える。
+- **コンテナーを項目として渡している場合は、コンテナーの数では見分けられない。** パネルに載るのは表示範囲とキャッシュの分だけだが、コンテナーはアプリがすべて作っている。出力の `own containers` が 0 でないかを見て、コンテナーではなくデータを渡す形に替える。
 - **`ComboBox` は、ドロップダウンを一度開くと全件のコンテナーを持ち続ける。** 既定の項目のパネルが `StackPanel` のためである。候補が多いなら、`ItemsPanel` を替えるか、候補を絞り込める入力欄に置き換える。
 - **仮想化を有効にすると、画面外の項目にはコンテナーが無い。** コンテナーの状態（`IsSelected` など）に頼る処理は、データ側に状態を持たせる。`ListBox` の選択については [WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法](/ja/articles/wpf-listbox-virtualization-selecteditems/) で扱っている。
 - **コンテナーの数は環境で変わる。** 表の 10〜25 個という値は、項目の高さで決まる表示範囲と、キャッシュの大きさによるもので、フォントや表示スケールでも変わる。`ComboBox` のドロップダウンでは、`MaxDropDownHeight` の既定値を通して画面の高さでも変わる。`ListBox` と `TreeView` では、キャッシュを外すと 10 個と 13 個になり、残りがキャッシュの分であることを確かめた。
@@ -397,7 +401,7 @@ VirtualizationReport.Write(OrdersList);
 仮想化が外れたときは、まず実体化したコンテナーの数と `own containers` を見て、次に高さ・パネル・`CanContentScroll` の「-」・`IsVirtualizing` と `CanContentScroll` の値の順に読む。
 当てはまるものが複数あれば、すべてを直す。
 
-- **`own containers` が 0 でない**ときは、コンテナーを `Items` に直接追加している。コンテナーではなくデータを渡す形に替える。
+- **`own containers` が 0 でない**ときは、コンテナーを項目として渡している。コンテナーではなくデータを渡す形に替える。
 - **高さが表示領域より大きい**ときは、置き場所が原因である。`Grid` の `*` の行や `DockPanel` の最後の子へ移す。移せない場合は `MaxHeight` を指定する。
 - **パネルが `VirtualizingStackPanel`（またはその派生）でない**ときは、項目のパネルが原因である。`TreeView` には `IsVirtualizing="True"`、`ItemsControl` にはパネルとテンプレートの差し替え、`ComboBox` には `ItemsPanel` の差し替え、`GroupStyle` 付きのグループ化には `IsVirtualizingWhenGrouping="True"` を当てる。
 - **`CanContentScroll` が「-」**のときは、テンプレートが原因で、論理スクロールする `ScrollViewer` が無い。`ItemsControl` なら、パネルとあわせてテンプレートを差し替える。

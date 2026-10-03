@@ -11,3 +11,4 @@
 | VirtualizingPanel.CacheLength=0 | 10 | VirtualizingStackPanel | True | True | True | 200 | False | 10 | 0 |
 | VirtualizingPanel.CacheLengthUnit=Page | 20 | VirtualizingStackPanel | True | True | True | 200 | False | 20 | 0 |
 | ListBoxItem added directly to Items (1,000) | 11 | VirtualizingStackPanel | True | True | True | 200 | False | 11 | 1,000 |
+| ListBoxItem passed through ItemsSource (1,000) | 11 | VirtualizingStackPanel | True | True | True | 200 | False | 11 | 1,000 |
