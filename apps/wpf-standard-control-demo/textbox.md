@@ -20,10 +20,10 @@ Several properties act only on what the user types. Treat them as input aids, no
 - **`AcceptsReturn`:** with the default `False`, Enter did not change the text; with `True`, it inserted a line break (`\r\n`).
 - **`IsReadOnly`:** typed text was ignored, but `SelectAll()` still selected the text; with the text selected, Copy could execute while Cut and Paste could not. This suits logs or error details the user may need to copy. The default template has no trigger on `IsReadOnly`, and the background and border stayed the same colors as an editable TextBox. Add your own style trigger if users need to see the difference. [How to Display Selectable, Copyable Read-Only Text in WPF](/articles/wpf-selectable-readonly-text-display/) compares this with other ways to show copyable text.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="Table comparing typed input with text set from code or a binding: MaxLength 5 cuts typed text to ABCDE but not text from code or a binding, CharacterCasing Upper converts typed text but not text from code, IsReadOnly ignores typed text but allows selection, Enter inserts a line break only with AcceptsReturn, PropertyChanged writes the source on every typed character while the default waits for the focus to leave, and a read-only TextBox ignores typing while Copy can still execute" width="975" height="440" loading="lazy">
-  <figcaption>Typed input compared with text set from code or a binding. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textbox/textbox-input.en.md %}
+
+Typed input compared with text set from code or a binding. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Wrapping, alignment, and decorations
 
@@ -43,10 +43,10 @@ A multiline TextBox shows no scroll bar by default, because `VerticalScrollBarVi
 
 `ScrollToEnd()` on the UI thread scrolled to the bottom (`VerticalOffset` 101.6, equal to the scrollable height). Called from a worker thread it threw `InvalidOperationException`; call it through the `Dispatcher` when text is appended from another thread.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg" alt="Table of TextBox layout results: line counts and overflow for NoWrap, Wrap, and WrapWithOverflow, heights for MinLines and MaxLines including MinLines having no effect until the text changes after display, scroll bars for a 60-high multiline TextBox, text alignment positions, combined text decorations, and ScrollToEnd from a worker thread throwing InvalidOperationException" width="1116" height="920" loading="lazy">
-  <figcaption>Wrapping, line limits, scroll bars, alignment, and <code>ScrollToEnd</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textbox/textbox-layout.en.md %}
+
+Wrapping, line limits, scroll bars, alignment, and <code>ScrollToEnd</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

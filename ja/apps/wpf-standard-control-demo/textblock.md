@@ -23,19 +23,19 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 `Padding` の既定値は 0 です。`Padding="10"` では、TextBlock が縦横それぞれ 20 大きくなり、61.57 × 15.96 から 81.57 × 35.96 になりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="TextBlock の計測結果の表。FrameworkElement を継承しフォーカスを受けず既定の余白はなく、最初のレイアウトの前に Inlines で作った内容では Text は空で、設定すると例外なく置き換わり、長い語は NoWrap で 1 行で切れ、Wrap で 4 行、WrapWithOverflow で 3 行ではみ出して切れ、省略は幅 100 の Grid では効くが StackPanel では効かず、Padding 10 で縦横 20 大きくなる" width="1022" height="290" loading="lazy">
-  <figcaption>文字と Inlines、折り返し、省略、余白。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textblock/textblock-behavior.ja.md %}
+
+文字と Inlines、折り返し、省略、余白。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで行が重なる理由：LineHeight と LineStackingStrategy
 
 `LineHeight` は各行の高さ、`LineStackingStrategy` はその当てはめ方です。デモアプリは `LineHeight` 5 と、コンボボックスの最初の値の `BlockLineHeight` で始まります。4 行の文字でこの設定だと、高さは 63.84 ではなく 20 になり、行が重なります。`MaxHeight` では行が文字より低くならず、5 でも高さは 63.84 のままでした。30 ではどちらも 120 でした。行が重ならないよう、`LineStackingStrategy="MaxHeight"` か文字より大きい `LineHeight` を使います。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg" alt="デモアプリの 4 行の文字の高さの表。LineHeight なしで 63.84、LineHeight 5 では BlockLineHeight で 20、MaxHeight で 63.84、LineHeight 30 ではどちらも 120" width="406" height="170" loading="lazy">
-  <figcaption><code>LineHeight</code> と <code>LineStackingStrategy</code> ごとの、デモアプリの 4 行の高さ。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textblock/textblock-lineheight.ja.md %}
+
+<code>LineHeight</code> と <code>LineStackingStrategy</code> ごとの、デモアプリの 4 行の高さ。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 
@@ -71,6 +71,6 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 ## ソースコードと計測の方法
 
-このページの既定値、`Inlines`、バインドした `Run`、折り返し、省略、`Padding`、`LineHeight` の記述は、.NET 10 / Windows 11 で実際に動かして確かめたものです（文字を選択できないことと、デモアプリで示す `TextAlignment` の値は測っていません）。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「clipped」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
+このページの既定値、`Inlines`、バインドした `Run`、折り返し、省略、`Padding`、`LineHeight` の記述は、.NET 10 / Windows 11 で実際に動かして確かめたものです（文字を選択できないことと、デモアプリで示す `TextAlignment` の値は測っていません）。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「切り取られる」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
 
 [GitHub で TextBlock のソースコードを見る →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage){: target="_blank" rel="noopener noreferrer"}

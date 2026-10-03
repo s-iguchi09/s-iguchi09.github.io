@@ -35,11 +35,14 @@ internal sealed class UniformGridDemoScene : IScene
     {
         await context.SaveTableAsync(
             "UniformGrid: rows, columns, FirstColumn and cell size (the demo's labels)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             Measure(),
             "uniformgrid-behavior.svg");
         await Task.CompletedTask;
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static UniformGrid DemoGrid(int count)
     {
@@ -52,12 +55,29 @@ internal sealed class UniformGridDemoScene : IScene
         return grid;
     }
 
+    /// <summary>行と列の数（子が使っている行の数が違えば添える）。</summary>
+    private static Loc Head(UniformGrid grid)
+    {
+        (int rows, int columns, int used, _) = Measure(grid);
+        return T(
+            $"{rows} rows x {columns} columns{(used == rows ? "" : $" (children in {used} rows)")}",
+            $"{rows} 行 x {columns} 列{(used == rows ? "" : $"（子は {used} 行）")}");
+    }
+
+    /// <summary>行と列の数とセルの大きさ。</summary>
+    private static Loc ShapeL(UniformGrid grid)
+    {
+        (_, _, _, string cell) = Measure(grid);
+        Loc head = Head(grid);
+        return T($"{head.En}, cell {cell}", $"{head.Ja}、セル {cell}");
+    }
+
     /// <summary>
-    /// セルの大きさから UniformGrid が作ったセル配置（行数 x 列数）を求め、セルの大きさを添える。
-    /// 子のいる行の数がセル配置の行数と違う場合（空の行が残る場合）は、それも添える。
+    /// セルの大きさから UniformGrid が作ったセル配置（行数・列数）を求め、子のいる行の数とセルの大きさと合わせて返す。
+    /// 子のいる行の数がセル配置の行数と違えば、空の行が残っている。
     /// 子の位置だけを数えると、空の行を持つ配置（5 個で 3 x 3 など）を取り違えるため。
     /// </summary>
-    private static string Shape(UniformGrid grid)
+    private static (int Rows, int Columns, int UsedRows, string Cell) Measure(UniformGrid grid)
     {
         var rects = grid.Children.Cast<FrameworkElement>()
             .Where(c => c.Visibility == Visibility.Visible)
@@ -65,8 +85,7 @@ internal sealed class UniformGridDemoScene : IScene
         int gridRows = (int)Math.Round(grid.ActualHeight / rects[0].Height);
         int gridColumns = (int)Math.Round(grid.ActualWidth / rects[0].Width);
         int usedRows = rects.Select(r => Math.Round(r.Y, 2)).Distinct().Count();
-        string used = usedRows == gridRows ? "" : $" (children in {usedRows} rows)";
-        return $"{gridRows} rows x {gridColumns} columns{used}, cell {D(rects[0].Width)} x {D(rects[0].Height)}";
+        return (gridRows, gridColumns, usedRows, $"{D(rects[0].Width)} x {D(rects[0].Height)}");
     }
 
     private static string Cell(UniformGrid grid, int index)
@@ -81,20 +100,20 @@ internal sealed class UniformGridDemoScene : IScene
         return grid;
     }
 
-    private static List<IReadOnlyList<string>> Measure()
+    private static List<IReadOnlyList<Loc>> Measure()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new UniformGrid();
-        rows.Add(["namespace / defaults: Rows, Columns, FirstColumn",
+        rows.Add([T("namespace / defaults: Rows, Columns, FirstColumn", "名前空間 / 既定値: Rows、Columns、FirstColumn"),
             $"{typeof(UniformGrid).Namespace} / {defaults.Rows}, {defaults.Columns}, {defaults.FirstColumn}"]);
 
-        foreach ((string label, int r, int c) in new[] { ("Columns=1 (demo start)", 0, 1), ("Columns=2", 0, 2), ("Rows=1 (demo start)", 1, 0), ("Rows=2", 2, 0), ("neither set", 0, 0) })
+        foreach ((Loc label, int r, int c) in new (Loc, int, int)[] { (T("Columns=1 (demo start)", "Columns=1（デモの初期値）"), 0, 1), ("Columns=2", 0, 2), (T("Rows=1 (demo start)", "Rows=1（デモの初期値）"), 1, 0), ("Rows=2", 2, 0), (T("neither set", "どちらも指定なし"), 0, 0) })
         {
             UniformGrid grid = DemoGrid(5);
             grid.Rows = r;
             grid.Columns = c;
-            rows.Add([$"5 labels, 300 x 200, {label}", Shape(Laid(grid))]);
+            rows.Add([T($"5 labels, 300 x 200, {label.En}", $"Label 5 個、300 x 200、{label.Ja}"), ShapeL(Laid(grid))]);
         }
 
         {
@@ -102,7 +121,7 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Rows = 2;
             grid.Columns = 2;
             Laid(grid);
-            rows.Add(["5 labels, Rows=2, Columns=2 (4 cells), 300 x 200: 4th / 5th label at",
+            rows.Add([T("5 labels, Rows=2, Columns=2 (4 cells), 300 x 200: 4th / 5th label at", "Label 5 個、Rows=2、Columns=2（セル 4 つ）、300 x 200: 4 個目 / 5 個目の位置"),
                 $"{Cell(grid, 3)} / {Cell(grid, 4)}"]);
         }
 
@@ -111,8 +130,8 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 3;
             grid.FirstColumn = 1;
             Laid(grid);
-            rows.Add(["demo FirstColumn=1, Columns=3, 9 labels: Item1 / Item3 at, shape",
-                $"{Cell(grid, 0)} / {Cell(grid, 2)}, {Shape(grid).Split(',')[0]}"]);
+            rows.Add([T("demo FirstColumn=1, Columns=3, 9 labels: Item1 / Item3 at, shape", "デモの FirstColumn=1、Columns=3、Label 9 個: Item1 / Item3 の位置、形"),
+                T($"{Cell(grid, 0)} / {Cell(grid, 2)}, {Head(grid).En}", $"{Cell(grid, 0)} / {Cell(grid, 2)}、{Head(grid).Ja}")]);
         }
 
         foreach (int first in new[] { 3, 4 })
@@ -121,8 +140,8 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 3;
             grid.FirstColumn = first;
             Laid(grid);
-            rows.Add([$"FirstColumn={first}, Columns=3: Item1 at, shape; FirstColumn after layout",
-                $"{Cell(grid, 0)}, {Shape(grid).Split(',')[0]}; {grid.FirstColumn}"]);
+            rows.Add([T($"FirstColumn={first}, Columns=3: Item1 at, shape; FirstColumn after layout", $"FirstColumn={first}、Columns=3: Item1 の位置、形、レイアウト後の FirstColumn"),
+                T($"{Cell(grid, 0)}, {Head(grid).En}; {grid.FirstColumn}", $"{Cell(grid, 0)}、{Head(grid).Ja}、{grid.FirstColumn}")]);
         }
 
         {
@@ -132,11 +151,12 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 3;
             grid.SetBinding(UniformGrid.FirstColumnProperty, new Binding(nameof(TextBox.Text)) { Source = box });
             Laid(grid);
-            string after = $"{grid.FirstColumn}, binding {(BindingOperations.GetBindingExpression(grid, UniformGrid.FirstColumnProperty) is null ? "removed" : "kept")}";
+            bool removed = BindingOperations.GetBindingExpression(grid, UniformGrid.FirstColumnProperty) is null;
+            Loc after = removed ? T($"{grid.FirstColumn}, binding removed", $"{grid.FirstColumn}、バインドは外れる") : T($"{grid.FirstColumn}, binding kept", $"{grid.FirstColumn}、バインドは残る");
             box.Text = "1";
             grid.UpdateLayout();
-            rows.Add(["bound to text \"4\" (demo): FirstColumn, binding; text then \"1\": FirstColumn, Item1 at",
-                $"{after}; {grid.FirstColumn}, {Cell(grid, 0)}"]);
+            rows.Add([T("bound to text \"4\" (demo): FirstColumn, binding; text then \"1\": FirstColumn, Item1 at", "文字列 \"4\" にバインド（デモ）: FirstColumn、バインド、続けて文字列を \"1\" に: FirstColumn、Item1 の位置"),
+                T($"{after.En}; {grid.FirstColumn}, {Cell(grid, 0)}", $"{after.Ja}、{grid.FirstColumn}、{Cell(grid, 0)}")]);
         }
 
         {
@@ -144,7 +164,7 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 2;
             grid.Children[1].Visibility = Visibility.Collapsed;
             Laid(grid);
-            rows.Add(["5 labels, Columns=2, Item2 Collapsed: Item3 at / shape", $"{Cell(grid, 2)} / {Shape(grid)}"]);
+            rows.Add([T("5 labels, Columns=2, Item2 Collapsed: Item3 at / shape", "Label 5 個、Columns=2、Item2 が Collapsed: Item3 の位置 / 形"), T($"{Cell(grid, 2)} / {ShapeL(grid).En}", $"{Cell(grid, 2)} / {ShapeL(grid).Ja}")]);
         }
 
         {
@@ -152,14 +172,14 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 3;
             grid.Children.Add(new Border { Name = "Wide", Width = 150, Height = 20 });
             Laid(grid, 300, 100);
-            string stretched = Shape(grid);
+            string stretched = Measure(grid).Cell;
             UniformGrid auto = DemoGrid(2);
             auto.Columns = 3;
             auto.Children.Add(new Border { Name = "Wide", Width = 150, Height = 20 });
             var host = new StackPanel { Orientation = Orientation.Horizontal, Children = { auto } };
             Layout(host, 600, 100);
-            rows.Add(["Columns=3 with a child 150 wide: stretched to 300 / sized to content",
-                $"{stretched.Split(", cell ")[1]} / {Shape(auto).Split(", cell ")[1]}"]);
+            rows.Add([T("Columns=3 with a child 150 wide: stretched to 300 / sized to content", "Columns=3、幅 150 の子: 300 に広げる / 内容に合わせる"),
+                $"{stretched} / {Measure(auto).Cell}"]);
         }
 
         foreach ((string label, Brush? background) in new (string, Brush?)[] { ("null", null), ("Transparent", Brushes.Transparent) })
@@ -170,7 +190,7 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Background = background;
             var host = new Grid { Children = { grid } };
             Layout(host, 300, 60);
-            rows.Add([$"Columns=2 with one label, Background={label}: hit test in the empty cell", HitName(host, new Point(225, 30))]);
+            rows.Add([T($"Columns=2 with one label, Background={label}: hit test in the empty cell", $"Columns=2 に Label 1 個、Background={label}: 空いたセルのヒットテスト"), HitName(host, new Point(225, 30))]);
         }
 
         foreach ((int first, int second) in new[] { (1, 2), (3, 2) })
@@ -186,7 +206,7 @@ internal sealed class UniformGridDemoScene : IScene
             Panel.SetZIndex(item2, second);
             Laid(grid, 300, 60);
             Rect overlap = Rect.Intersect(Bounds(item1, grid), Bounds(item2, grid));
-            rows.Add([$"demo ZIndex labels (Item2 top margin -15), ZIndex {first} and {second}: on top",
+            rows.Add([T($"demo ZIndex labels (Item2 top margin -15), ZIndex {first} and {second}: on top", $"デモの ZIndex の Label（Item2 の上の Margin -15）、ZIndex {first} と {second}: 上にあるもの"),
                 HitName(grid, new Point(overlap.X + overlap.Width / 2, overlap.Y + overlap.Height / 2))]);
         }
 

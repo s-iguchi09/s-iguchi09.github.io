@@ -15,10 +15,10 @@ description: "WPF の ProgressBar を .NET 10 で実測して解説。塗りの�
 
 `Orientation="Vertical"` では、レベル表示のように塗りが下から伸びます。幅 20、高さ 200 のバーで `Value` 75 のとき、塗りは y=50 から下端まで、高さ 150 でした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/progressbar/progressbar-range.svg" alt="ProgressBar の範囲の計測結果の表。RangeBase を継承し既定値は 0・100・0、幅 200 のバーで 0〜100 の 30 は塗り 60、20〜120 の 70 は 100、空の範囲や Minimum より小さい Maximum では満タンになり、Value 150 は 100 と読めて Maximum を 200 にすると 150 に戻り、縦向きのバーは下から塗られる" width="1022" height="320" loading="lazy">
-  <figcaption>範囲、塗り、向き。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/progressbar/progressbar-range.ja.md %}
+
+範囲、塗り、向き。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 不定モードのアニメーションが動く条件
 
@@ -30,10 +30,10 @@ UI スレッドで作った ProgressBar は、別のスレッドからは更新�
 
 UI オートメーションからは、読み取り専用の範囲に見えます。`RangeValue` パターンは値 30、`IsReadOnly` `True` を報告しました。不定モードではこのパターンがサポートされず、支援技術には値が伝わりません。数値も文字で表示します。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/progressbar/progressbar-modes.svg" alt="ProgressBar のモードの計測結果の表。不定モードでは塗りがバー全体を覆い Indeterminate の状態になり、アニメーションは表示中だけ動いて Collapsed で止まり、ワーカースレッドから Value を設定すると InvalidOperationException になり、Progress&lt;double&gt; のコールバックは UI スレッドで動き、UI オートメーションは読み取り専用の範囲を報告して不定モードではサポートしない" width="1179" height="230" loading="lazy">
-  <figcaption>不定モード、スレッド、UI オートメーション。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/progressbar/progressbar-modes.ja.md %}
+
+不定モード、スレッド、UI オートメーション。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

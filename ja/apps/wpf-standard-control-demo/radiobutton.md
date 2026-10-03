@@ -19,10 +19,10 @@ description: "WPF の RadioButton を .NET 10 で実測して解説。GroupName 
 
 グループはウィンドウの外へは広がりません。別のウィンドウと `Popup` の中の同じ名前のボタンは別のグループになり、3 つともチェックされたままでした。同じ名前でウィンドウやポップアップをまたいでつなげることはできません。名前のあるボタンとないボタンも互いに影響しません。同じ親の中で名前のないボタンをチェックしても、`GroupName="1"` のボタンのチェックは外れませんでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.svg" alt="どの RadioButton が同じグループになるかの計測結果の表。チェック済みのボタンはクリックしても外れず、GroupName なしのボタンは親ごとにまとまり、Border で包んだボタンや ItemTemplate で作ったボタンはすべてチェックでき、名前のあるボタンとないボタンは影響し合わず、同じ GroupName は別々の GroupBox をつなぎ、別のウィンドウと Popup はつながない" width="959" height="350" loading="lazy">
-  <figcaption>どのボタンが互いのチェックを外すか。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.ja.md %}
+
+どのボタンが互いのチェックを外すか。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## IsChecked を bool のプロパティにバインドする
 
@@ -34,10 +34,10 @@ description: "WPF の RadioButton を .NET 10 で実測して解説。GroupName 
 
 1 つ目のボタンをチェックしてフォーカスを置き、下矢印キーを押すと、フォーカスは 2 つ目へ移りましたが、チェックは 1 つ目に残りました。<kbd>Tab</kbd> キーも、次のグループではなく同じグループの次のボタンへ移りました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg" alt="RadioButton のバインドとキーの計測結果の表。IsChecked を 3 つの bool にバインドして B をクリックすると A と C は false になりバインドは残り、ソースで C を true にすると B が外れ、下矢印キーはフォーカスだけを移してチェックは移さず、Tab は次のボタンへ移り、VerticalContentAlignment の既定値は Top で、Center では記号とラベルが RadioButton の中央に置かれ、記号が 3 行のラベルの中央に揃う" width="1061" height="320" loading="lazy">
-  <figcaption>バインドした <code>IsChecked</code>、キーボード、<code>VerticalContentAlignment</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.ja.md %}
+
+バインドした <code>IsChecked</code>、キーボード、<code>VerticalContentAlignment</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 折り返すラベルと記号をそろえる
 

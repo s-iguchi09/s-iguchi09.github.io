@@ -15,10 +15,10 @@ description: "WPF の ToolBar のオーバーフロー、OverflowMode、ToolBarT
 
 `HasOverflowItems` はツールバーのオーバーフローに項目があるかどうかを、添付プロパティの `ToolBar.IsOverflowItem` は個々の項目がオーバーフローにあるかどうかを表し、どちらも読み取り専用です。`IsOverflowOpen` はオーバーフローのポップアップが開いているかどうかです。オーバーフローに何もないとき（幅 400）も、オーバーフローボタンは表示されたまま無効になっていました。この状態で `IsOverflowOpen = true` にすると、表示する項目のないポップアップが開きました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.svg" alt="ToolBarTray に入れない ToolBar で、デモアプリの対象のボタンがどこへ行くかを示す表。幅 100 では AsNeeded と Always でオーバーフローへ、Never でツールバーに残り、幅 200 と 400 では Always 以外はツールバーに残る" width="882" height="170" loading="lazy">
-  <figcaption>デモアプリのオーバーフローの欄の対象ボタンの行き先（ツールバーの幅と <code>OverflowMode</code> ごと）。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.ja.md %}
+
+デモアプリのオーバーフローの欄の対象ボタンの行き先（ツールバーの幅と <code>OverflowMode</code> ごと）。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## ツールバーの中の項目に当たるスタイル
 
@@ -34,10 +34,10 @@ ToolBar に置いた項目には、ツールバー用のスタイルが当たり
 
 トレイの `Orientation` がツールバーの向きを決めます。`ToolBar.Orientation` は読み取り専用で、縦向きのトレイでは `Vertical`、トレイの外では `Horizontal` になり、設定しようとすると `InvalidOperationException` が発生しました。2 つの向きが食い違うことはありません。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/toolbar/toolbar-tray.svg" alt="ToolBar のスタイルと ToolBarTray の計測結果の表。項目には ToolBar のスタイルキーのスタイルが当たり、ToolBar に設定した Background はテンプレートに反映され、バンドでツールバーが行に分かれ、つまみのドラッグで Band が変わり、IsLocked でつまみが非表示になり、ToolBar.Orientation はトレイに従い設定できない" width="1093" height="380" loading="lazy">
-  <figcaption>項目のスタイル、背景、バンド、ロック、向き。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/toolbar/toolbar-tray.ja.md %}
+
+項目のスタイル、背景、バンド、ロック、向き。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

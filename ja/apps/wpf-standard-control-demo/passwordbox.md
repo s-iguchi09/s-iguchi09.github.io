@@ -17,10 +17,10 @@ ViewModel へ値を渡すには、`PasswordChanged` か添付ビヘイビアを�
 
 `PasswordChar` は `Password` と違って依存関係プロパティです。メタデータの既定値は `*` ですが、既定のスタイルが `●`（U+25CF）を設定するため、画面にはこちらが表示されます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-defaults.svg" alt="PasswordBox の型と既定値を示す表。基底クラスは Control、PasswordProperty はなく PasswordCharProperty はあり、PasswordChar のメタデータの既定値はアスタリスクで既定のスタイルは黒丸、内部は SecureString で保持され、SecurePassword は呼ぶたびに新しいインスタンスを返す" width="967" height="410" loading="lazy">
-  <figcaption>型、プロパティ、既定値、パスワードの保持のしかた。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/passwordbox/passwordbox-defaults.ja.md %}
+
+型、プロパティ、既定値、パスワードの保持のしかた。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## MaxLength、コピー、IsSelectionActive が実際にすること
 
@@ -30,10 +30,10 @@ ViewModel へ値を渡すには、`PasswordChanged` か添付ビヘイビアを�
 
 `IsSelectionActive` は読み取り専用で、名前に反して、文字が選択されているかどうかは表しません。フォーカスを得た時点で、何も選択していなくても `True` になり、すべてを選択しても `True` のままでした。フォーカスが別のコントロールへ移ると、選択は残っていても `False` になりました。キーボードフォーカスに従うので、選択の有無の判定には使いません。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.svg" alt="PasswordBox の挙動を示す表。MaxLength 8 は入力を切り詰めるがコードからの Password は切らず、PasswordChanged は入力した 1 文字ごとに 1 回、Password の設定と Clear でそれぞれ 1 回発生し、コピーと切り取りは実行できず貼り付けはでき、IsSelectionActive は選択ではなくキーボードフォーカスに従う" width="936" height="350" loading="lazy">
-  <figcaption>入力、イベント、クリップボードのコマンド、<code>IsSelectionActive</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.ja.md %}
+
+入力、イベント、クリップボードのコマンド、<code>IsSelectionActive</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## キャレットと選択範囲の強調表示
 

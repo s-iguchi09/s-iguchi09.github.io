@@ -14,3 +14,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg"
   - "images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.ja.md"

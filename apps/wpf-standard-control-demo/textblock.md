@@ -23,19 +23,19 @@ To combine binding and formatting, bind the `Text` of a `Run` instead: a bound `
 
 `Padding` defaults to 0. With `Padding="10"`, the TextBlock grew by 20 in each direction, from 61.57 × 15.96 to 81.57 × 35.96.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg" alt="Table of TextBlock results: it derives from FrameworkElement, is not focusable, and has no padding by default, Text is empty for inlines added before the first layout and setting it replaces them without an exception, a long word gives one clipped line with NoWrap, 4 lines with Wrap, and 3 clipped lines with WrapWithOverflow, trimming limits the width to 100 in a Grid but not in a StackPanel, and Padding 10 adds 20 in each direction" width="1022" height="290" loading="lazy">
-  <figcaption>Text and inlines, wrapping, trimming, and padding. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textblock/textblock-behavior.en.md %}
+
+Text and inlines, wrapping, trimming, and padding. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Why the demo's lines overlap: LineHeight and LineStackingStrategy
 
 `LineHeight` sets the height of each line, and `LineStackingStrategy` how it is applied. The demo app starts at `LineHeight` 5 with `BlockLineHeight`, the first value of its combo box. With its four lines, that gave a height of 20 instead of 63.84, so the lines overlap. `MaxHeight` does not let a line be lower than its text: with 5, the height stayed 63.84. With 30, both gave 120. Use `LineStackingStrategy="MaxHeight"` or a `LineHeight` larger than the text to avoid overlapping lines.
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg" alt="Table of the height of the demo's four lines: 63.84 without LineHeight, 20 with LineHeight 5 and BlockLineHeight but 63.84 with MaxHeight, and 120 with LineHeight 30 for both strategies" width="406" height="170" loading="lazy">
-  <figcaption>Height of the demo's four lines by <code>LineHeight</code> and <code>LineStackingStrategy</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textblock/textblock-lineheight.en.md %}
+
+Height of the demo's four lines by <code>LineHeight</code> and <code>LineStackingStrategy</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

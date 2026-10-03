@@ -23,10 +23,10 @@ description: "WPF の ListBox の選択モード、SelectedItem・SelectedValue�
 
 `DisplayMemberPath` は、各項目のどのプロパティを文字として表示するかです。`DisplayMemberPath="Name"` では、各項目は "Desktop" と表示する `TextBlock` で表示されました。存在しないパスを指定すると、例外は出ず、`TextBlock` は空になりました。`ItemTemplate` とは併用できず、両方を設定すると `InvalidOperationException` が発生しました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/listbox/listbox-values.svg" alt="ListBox の選択の値を示す表。範囲外の SelectedIndex は無視され、-1 で選択が外れ、Equals を上書きしないクラスの新しいインスタンスでは何も選ばれないがレコード型では選ばれ、ItemsSource より前に設定した SelectedValue は後から反映され、存在しない DisplayMemberPath は空の文字列になり、ItemTemplate との併用は InvalidOperationException になる" width="1077" height="350" loading="lazy">
-  <figcaption>SelectedIndex・SelectedItem・SelectedValue・DisplayMemberPath。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/listbox/listbox-values.ja.md %}
+
+SelectedIndex・SelectedItem・SelectedValue・DisplayMemberPath。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 仮想化：何が作られ、何がスクロールするか
 
@@ -38,10 +38,10 @@ description: "WPF の ListBox の選択モード、SelectedItem・SelectedValue�
 
 スクロールバーは添付プロパティ `ScrollViewer.HorizontalScrollBarVisibility` と `ScrollViewer.VerticalScrollBarVisibility` で決まり、既定のスタイルがどちらも `Auto` に設定しています。1,000 項目では、`Auto` で縦のスクロールバーが表示されました。`Disabled` ではスクロールバーは消えましたが、スクロールは止まりませんでした。スクロールできる範囲は同じ 996 項目分のままで、下矢印キーを 20 回押すと `Auto` と同じ位置までスクロールしました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/listbox/listbox-scrolling.svg" alt="1,000 項目の ListBox のスクロールを示す表。コンテナーは 6 個作られ、コードから 500 番目を選んでも ScrollIntoView を呼ぶまでスクロールせず、縦のスクロールバーを Disabled にしてもキー操作ではスクロールする" width="1022" height="230" loading="lazy">
-  <figcaption>高さ 100 の一覧に 1,000 項目を入れたときの仮想化とスクロール。位置の単位は項目。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/listbox/listbox-scrolling.ja.md %}
+
+高さ 100 の一覧に 1,000 項目を入れたときの仮想化とスクロール。位置の単位は項目。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 
