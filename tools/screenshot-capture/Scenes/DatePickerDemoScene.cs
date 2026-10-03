@@ -130,7 +130,7 @@ internal sealed class DatePickerDemoScene : IScene
         rows.Add([T("base class of the text part (DatePickerTextBox)", "テキスト部分の基底クラス（DatePickerTextBox）"), typeof(DatePickerTextBox).BaseType!.Name]);
 
         var picker = new DatePicker();
-        rows.Add([T("DisplayDate of a new DatePicker (today is " + Date(DateTime.Today) + ")", "新しい DatePicker の DisplayDate（今日は " + Date(DateTime.Today) + "）"), Date(picker.DisplayDate)]);
+        rows.Add([T("DisplayDate of a new DatePicker (measured on " + Date(DateTime.Today) + ")", "新しい DatePicker の DisplayDate（計測日 " + Date(DateTime.Today) + "）"), Date(picker.DisplayDate)]);
         rows.Add([T("IsTodayHighlighted of a new DatePicker / metadata default", "新しい DatePicker の IsTodayHighlighted / メタデータの既定値"),
             $"{picker.IsTodayHighlighted} / {DatePicker.IsTodayHighlightedProperty.GetMetadata(typeof(DatePicker)).DefaultValue}"]);
         rows.Add([T("IsTodayHighlighted of a new Calendar / metadata default", "新しい Calendar の IsTodayHighlighted / メタデータの既定値"),

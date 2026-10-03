@@ -4,7 +4,7 @@
 | Text: BindsTwoWayByDefault | False |
 | IsDropDownOpen: BindsTwoWayByDefault | True |
 | base class of the text part (DatePickerTextBox) | TextBox |
-| DisplayDate of a new DatePicker (today is 2026-09-23) | 2026-09-23 |
+| DisplayDate of a new DatePicker (measured on 2026-10-03) | 2026-10-03 |
 | IsTodayHighlighted of a new DatePicker / metadata default | False / False |
 | IsTodayHighlighted of a new Calendar / metadata default | True / True |
 | FirstDayOfWeek of a new DatePicker, CurrentCulture en-US | Sunday (culture\'s own: Sunday) |

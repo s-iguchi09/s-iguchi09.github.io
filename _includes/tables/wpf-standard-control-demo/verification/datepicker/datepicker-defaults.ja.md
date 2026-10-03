@@ -4,7 +4,7 @@
 | Text: BindsTwoWayByDefault | False |
 | IsDropDownOpen: BindsTwoWayByDefault | True |
 | テキスト部分の基底クラス（DatePickerTextBox） | TextBox |
-| 新しい DatePicker の DisplayDate（今日は 2026-09-23） | 2026-09-23 |
+| 新しい DatePicker の DisplayDate（計測日 2026-10-03） | 2026-10-03 |
 | 新しい DatePicker の IsTodayHighlighted / メタデータの既定値 | False / False |
 | 新しい Calendar の IsTodayHighlighted / メタデータの既定値 | True / True |
 | 新しい DatePicker の FirstDayOfWeek、CurrentCulture en-US | Sunday（カルチャ自身の値: Sunday） |
