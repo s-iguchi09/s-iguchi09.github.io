@@ -35,7 +35,7 @@ internal sealed class TextBlockDemoScene : IScene
     {
         await context.SaveTableAsync(
             "TextBlock: text and inlines, wrapping, trimming, padding",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             Measure(),
             "textblock-behavior.svg");
 
@@ -47,18 +47,21 @@ internal sealed class TextBlockDemoScene : IScene
         await Task.CompletedTask;
     }
 
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static TextBlock Laid(TextBlock text, double width = 100)
     {
         Layout(new Grid { Children = { text } }, width, 1000);
         return text;
     }
 
-    private static List<IReadOnlyList<string>> Measure()
+    private static List<IReadOnlyList<Loc>> Measure()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new TextBlock();
-        rows.Add(["base class / Focusable / Padding / TextWrapping, TextTrimming",
+        rows.Add([T("base class / Focusable / Padding / TextWrapping, TextTrimming", "基底クラス / Focusable / Padding / TextWrapping、TextTrimming"),
             $"{typeof(TextBlock).BaseType!.Name} / {defaults.Focusable} / {defaults.Padding} / {defaults.TextWrapping}, {defaults.TextTrimming}"]);
 
         {
@@ -69,9 +72,9 @@ internal sealed class TextBlockDemoScene : IScene
             Laid(text, 300);
             string laidOut = text.Text;
             string thrown = Throws(() => text.Text = "Replaced");
-            rows.Add(["Inlines \"Hello \" + Bold \"world\": Text before / after layout",
+            rows.Add([T("Inlines \"Hello \" + Bold \"world\": Text before / after layout", "Inlines に \"Hello \" + Bold \"world\": レイアウト前の Text / レイアウト後"),
                 $"\"{before}\" / \"{laidOut}\""]);
-            rows.Add(["  then Text = \"Replaced\": exception / Inlines count", $"{thrown} / {text.Inlines.Count}"]);
+            rows.Add([T("  then Text = \"Replaced\": exception / Inlines count", "  続けて Text = \"Replaced\": 例外 / Inlines の数"), $"{thrown} / {text.Inlines.Count}"]);
         }
 
         {
@@ -85,7 +88,7 @@ internal sealed class TextBlockDemoScene : IScene
             Laid(text, 300);
             string first = run.Text;
             source.Text = "changed";
-            rows.Add(["Run with bound Text after Bold \"Name: \": Run.Text / after change",
+            rows.Add([T("Run with bound Text after Bold \"Name: \": Run.Text / after change", "Bold \"Name: \" の後の Text をバインドした Run: Run.Text / 変更後"),
                 $"\"{first}\" / \"{run.Text}\""]);
         }
 
@@ -93,15 +96,15 @@ internal sealed class TextBlockDemoScene : IScene
             const string sentence = "Say Supercalifragilisticexpialidocious now";
             var single = Laid(new TextBlock { Text = "Visit", VerticalAlignment = VerticalAlignment.Top });
             double line = single.ActualHeight;
-            var heights = new List<string>();
+            var heights = new List<Loc>();
             foreach (TextWrapping wrapping in new[] { TextWrapping.NoWrap, TextWrapping.Wrap, TextWrapping.WrapWithOverflow })
             {
                 var text = Laid(new TextBlock { Text = sentence, TextWrapping = wrapping, VerticalAlignment = VerticalAlignment.Top });
                 Geometry? clip = LayoutInformation.GetLayoutClip(text);
-                heights.Add($"{wrapping} {Math.Round(text.ActualHeight / line)}{(clip is null ? "" : ", clipped")}");
+                heights.Add(T($"{wrapping} {Math.Round(text.ActualHeight / line)}{(clip is null ? "" : ", clipped")}", $"{wrapping} {Math.Round(text.ActualHeight / line)}{(clip is null ? "" : "、切り取られる")}"));
             }
 
-            rows.Add([$"\"{sentence}\", width 100: lines", string.Join(" / ", heights)]);
+            rows.Add([T($"\"{sentence}\", width 100: lines", $"\"{sentence}\"、幅 100: 行数"), T(string.Join(" / ", heights.Select(h => h.En)), string.Join(" / ", heights.Select(h => h.Ja)))]);
         }
 
         {
@@ -109,28 +112,28 @@ internal sealed class TextBlockDemoScene : IScene
             var inGrid = Laid(new TextBlock { Text = longText, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Top });
             var free = new TextBlock { Text = longText, TextTrimming = TextTrimming.CharacterEllipsis };
             Layout(new StackPanel { Orientation = Orientation.Horizontal, Children = { free } }, 100, 100);
-            rows.Add(["CharacterEllipsis: width in Grid 100 / horizontal StackPanel 100",
+            rows.Add([T("CharacterEllipsis: width in Grid 100 / horizontal StackPanel 100", "CharacterEllipsis: 幅 100 の Grid の中の幅 / 横の StackPanel 100"),
                 $"{D(inGrid.ActualWidth)} / {D(free.ActualWidth)}"]);
         }
 
         {
             var plain = Laid(new TextBlock { Text = "TEXTBLOCK", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top }, 300);
             var padded = Laid(new TextBlock { Text = "TEXTBLOCK", Padding = new Thickness(10), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top }, 300);
-            rows.Add(["Padding=10: size without / with",
+            rows.Add([T("Padding=10: size without / with", "Padding=10: 大きさ なし / あり"),
                 $"{D(plain.ActualWidth)} x {D(plain.ActualHeight)} / {D(padded.ActualWidth)} x {D(padded.ActualHeight)}"]);
         }
 
         return rows;
     }
 
-    private static List<IReadOnlyList<string>> LineHeightRows()
+    private static List<IReadOnlyList<Loc>> LineHeightRows()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         // デモアプリの LineHeight 欄と同じ 4 行の文字。
         const string text = "TEXTBLOCK\nTEXTBLOCK\nTEXTBLOCK\nTEXTBLOCK";
         foreach (double lineHeight in new[] { double.NaN, 5, 30 })
         {
-            var cells = new List<string> { double.IsNaN(lineHeight) ? "not set (NaN)" : D(lineHeight) + (lineHeight == 5 ? " (demo start)" : "") };
+            var cells = new List<Loc> { double.IsNaN(lineHeight) ? T("not set (NaN)", "指定なし（NaN）") : lineHeight == 5 ? T(D(lineHeight) + " (demo start)", D(lineHeight) + "（デモの初期値）") : D(lineHeight) };
             foreach (LineStackingStrategy strategy in new[] { LineStackingStrategy.BlockLineHeight, LineStackingStrategy.MaxHeight })
             {
                 var block = Laid(new TextBlock { Text = text, LineHeight = lineHeight, LineStackingStrategy = strategy, VerticalAlignment = VerticalAlignment.Top }, 300);

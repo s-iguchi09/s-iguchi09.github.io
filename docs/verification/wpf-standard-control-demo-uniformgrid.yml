@@ -16,3 +16,6 @@ verifies:
   - "デモアプリと同じ重なり（2 つ目の Label の上余白 -15）で、ZIndex による上下"
 images:
   - "images/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.ja.md"

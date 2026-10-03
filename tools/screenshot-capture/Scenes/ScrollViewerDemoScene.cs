@@ -33,18 +33,21 @@ internal sealed class ScrollViewerDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ScrollViewer 200 x 100: 2 items (fit) and 9 items (overflow)",
-            ["VerticalScrollBarVisibility", "items", "Computed...", "ViewportWidth", "ExtentHeight", "offset after scrolling to 50"],
+            ["VerticalScrollBarVisibility", T("items", "項目数"), "Computed...", "ViewportWidth", "ExtentHeight", T("offset after scrolling to 50", "50 までスクロールした後の位置")],
             MeasureVisibility(),
             "scrollviewer-visibility.svg");
 
         await context.SaveTableAsync(
             "ScrollViewer: CanContentScroll, deferred scrolling and ScrollViewers inside controls",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureScrollingAsync(),
             "scrollviewer-scrolling.svg");
     }
 
     /// <summary>デモアプリと同じ、枠付きの Label を並べた StackPanel。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static StackPanel Items(int count)
     {
         var panel = new StackPanel();
@@ -65,9 +68,9 @@ internal sealed class ScrollViewerDemoScene : IScene
         Layout(host, 200, 100);
     }
 
-    private static List<IReadOnlyList<string>> MeasureVisibility()
+    private static List<IReadOnlyList<Loc>> MeasureVisibility()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (ScrollBarVisibility visibility in new[] { ScrollBarVisibility.Disabled, ScrollBarVisibility.Auto, ScrollBarVisibility.Hidden, ScrollBarVisibility.Visible })
         {
@@ -87,12 +90,12 @@ internal sealed class ScrollViewerDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureScrollingAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureScrollingAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new ScrollViewer();
-        rows.Add(["defaults: VerticalScrollBarVisibility / HorizontalScrollBarVisibility",
+        rows.Add([T("defaults: VerticalScrollBarVisibility / HorizontalScrollBarVisibility", "既定値: VerticalScrollBarVisibility / HorizontalScrollBarVisibility"),
             $"{defaults.VerticalScrollBarVisibility} / {defaults.HorizontalScrollBarVisibility}"]);
 
         foreach (bool canContentScroll in new[] { false, true })
@@ -100,11 +103,11 @@ internal sealed class ScrollViewerDemoScene : IScene
             ScrollViewer viewer = Viewer(9, ScrollBarVisibility.Auto);
             viewer.CanContentScroll = canContentScroll;
             Settle(viewer);
-            string sizes = $"extent {D(viewer.ExtentHeight)}, viewport {D(viewer.ViewportHeight)}";
+            Loc sizes = T($"extent {D(viewer.ExtentHeight)}, viewport {D(viewer.ViewportHeight)}", $"内容 {D(viewer.ExtentHeight)}、表示 {D(viewer.ViewportHeight)}");
             viewer.LineDown();
             Settle(viewer);
-            rows.Add([$"demo items, CanContentScroll={canContentScroll}: sizes / offset after LineDown",
-                $"{sizes} / {D(viewer.VerticalOffset)}"]);
+            rows.Add([T($"demo items, CanContentScroll={canContentScroll}: sizes / offset after LineDown", $"デモの項目、CanContentScroll={canContentScroll}: 大きさ / LineDown の後の位置"),
+                T($"{sizes.En} / {D(viewer.VerticalOffset)}", $"{sizes.Ja} / {D(viewer.VerticalOffset)}")]);
         }
 
         foreach (bool canContentScroll in new[] { true, false })
@@ -114,7 +117,7 @@ internal sealed class ScrollViewerDemoScene : IScene
             var host = new Grid { Children = { list } };
             Layout(host, 200, 200);
             int realized = Descendants(list).OfType<ListBoxItem>().Count();
-            rows.Add([$"ListBox, 1000 items, CanContentScroll={canContentScroll}: items created", realized.ToString()]);
+            rows.Add([T($"ListBox, 1000 items, CanContentScroll={canContentScroll}: items created", $"ListBox、1000 項目、CanContentScroll={canContentScroll}: 作られた項目の数"), realized.ToString()]);
         }
 
         foreach (bool deferred in new[] { false, true })
@@ -131,8 +134,8 @@ internal sealed class ScrollViewerDemoScene : IScene
                 string during = $"{D(viewer.VerticalOffset)} / {D(viewer.ContentVerticalOffset)}";
                 thumb.RaiseEvent(new DragCompletedEventArgs(0, 30, false));
                 await Capture.SettleAsync(Window.GetWindow(viewer)!, 20);
-                rows.Add([$"IsDeferredScrollingEnabled={deferred}: offset / content offset, dragging; released",
-                    $"{during}; {D(viewer.VerticalOffset)} / {D(viewer.ContentVerticalOffset)}"]);
+                rows.Add([T($"IsDeferredScrollingEnabled={deferred}: offset / content offset, dragging; released", $"IsDeferredScrollingEnabled={deferred}: 位置 / 内容の位置、ドラッグ中、離した後"),
+                    T($"{during}; {D(viewer.VerticalOffset)} / {D(viewer.ContentVerticalOffset)}", $"{during}、{D(viewer.VerticalOffset)} / {D(viewer.ContentVerticalOffset)}")]);
             });
         }
 
@@ -152,10 +155,10 @@ internal sealed class ScrollViewerDemoScene : IScene
             {
                 string Inner(Control control) => Descendants(control).OfType<ScrollViewer>().FirstOrDefault() is { } inner
                     ? inner.HorizontalScrollBarVisibility.ToString()
-                    : "no ScrollViewer";
-                rows.Add(["HorizontalScrollBarVisibility inside ListBox / TextBox / TreeView / DataGrid",
+                    : "(no ScrollViewer)";
+                rows.Add([T("HorizontalScrollBarVisibility inside ListBox / TextBox / TreeView / DataGrid", "ListBox / TextBox / TreeView / DataGrid の中の HorizontalScrollBarVisibility"),
                     $"{Inner(list)} / {Inner(text)} / {Inner(tree)} / {Inner(grid)}"]);
-                rows.Add(["inside ListBox: attached Disabled / outer ScrollViewer Disabled",
+                rows.Add([T("inside ListBox: attached Disabled / outer ScrollViewer Disabled", "ListBox の中: 添付プロパティで Disabled / 外側の ScrollViewer を Disabled"),
                     $"{Inner(attached)} / {Inner(wrappedList)}"]);
                 await Task.CompletedTask;
             });
@@ -165,7 +168,7 @@ internal sealed class ScrollViewerDemoScene : IScene
             ScrollViewer viewer = Viewer(9, ScrollBarVisibility.Auto);
             string before = $"{D(viewer.ExtentHeight)} / {D(viewer.ViewportHeight)}";
             Settle(viewer);
-            rows.Add(["ExtentHeight / ViewportHeight before layout; after layout", $"{before}; {D(viewer.ExtentHeight)} / {D(viewer.ViewportHeight)}"]);
+            rows.Add([T("ExtentHeight / ViewportHeight before layout; after layout", "レイアウト前の ExtentHeight / ViewportHeight、レイアウト後"), T($"{before}; {D(viewer.ExtentHeight)} / {D(viewer.ViewportHeight)}", $"{before}、{D(viewer.ExtentHeight)} / {D(viewer.ViewportHeight)}")]);
         }
 
         return rows;

@@ -16,3 +16,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.svg"
   - "images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.ja.md"

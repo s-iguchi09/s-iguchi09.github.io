@@ -20,10 +20,10 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 - **`AcceptsReturn`** — 既定値の `False` では、Enter キーを押しても文字列は変わりませんでした。`True` では改行（`\r\n`）が入りました。
 - **`IsReadOnly`** — 入力した文字は無視されましたが、`SelectAll()` で文字列を選択でき、選択した状態ではコピーは実行でき、切り取りと貼り付けは実行できませんでした。ユーザーがコピーする可能性のあるログやエラーの詳細の表示に向きます。既定のテンプレートには `IsReadOnly` のトリガーがなく、背景と枠線は編集可能な TextBox と同じ色のままでした。編集できないことを見た目で示したい場合は、自分でスタイルのトリガーを加えます。コピーできる文字列を表示する他の方法との比較は、[WPFで編集不可のままテキストを選択・コピー可能に表示する方法](/ja/articles/wpf-selectable-readonly-text-display/)で扱っています。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-input.svg" alt="キー入力と、コードやバインドで設定した文字列を比べた表。MaxLength 5 は入力を ABCDE で止めるがコードやバインドの文字列は切らず、CharacterCasing Upper は入力を大文字にするがコードの文字列は変えず、IsReadOnly は入力を無視するが選択はでき、Enter キーは AcceptsReturn のときだけ改行を入れる。PropertyChanged では入力の 1 文字ごとにソースへ書き込み、既定ではフォーカスが移るまで書き込まず、読み取り専用の TextBox は入力を受け付けずコピーは実行できる" width="975" height="440" loading="lazy">
-  <figcaption>キー入力と、コードやバインドで設定した文字列の比較。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textbox/textbox-input.ja.md %}
+
+キー入力と、コードやバインドで設定した文字列の比較。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 折り返し・配置・装飾
 
@@ -43,10 +43,10 @@ description: "WPF の TextBox を .NET 10 で実測して解説します。MaxLe
 
 `ScrollToEnd()` は、UI スレッドから呼ぶと末尾までスクロールしました（`VerticalOffset` 101.6、スクロールできる高さと同じ）。ワーカースレッドから呼ぶと `InvalidOperationException` が発生しました。別のスレッドから文字列を追加する場合は、`Dispatcher` を通して呼びます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg" alt="TextBox のレイアウトの計測結果の表。NoWrap・Wrap・WrapWithOverflow の行数とはみ出し、MinLines と MaxLines による高さ（MinLines は表示後に文字列が変わるまで効かない）、高さ 60 の複数行 TextBox のスクロールバー、TextAlignment の位置、TextDecorations の組み合わせ、ワーカースレッドからの ScrollToEnd で InvalidOperationException が発生すること" width="1116" height="920" loading="lazy">
-  <figcaption>折り返し、行数の制限、スクロールバー、配置、<code>ScrollToEnd</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/textbox/textbox-layout.ja.md %}
+
+折り返し、行数の制限、スクロールバー、配置、<code>ScrollToEnd</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

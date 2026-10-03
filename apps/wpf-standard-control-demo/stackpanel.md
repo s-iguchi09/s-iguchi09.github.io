@@ -27,10 +27,10 @@ The demo app shows an empty StackPanel 30 high. With the default `Background` of
 
 Where children overlap, `Panel.ZIndex` decides which one is drawn on top. In the demo app, the second label overlaps the first by 15. With `ZIndex` 1 and 2, the second label was on top at the overlap; with 3 and 2, the first. It only orders children of the same panel: a child of an inner panel with `ZIndex="100"` stayed under a sibling of that inner panel whose `ZIndex` was 0.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.svg" alt="Table of StackPanel results: Vertical by default with no Spacing property, children measured with infinite size in the stacking direction and stretched across it, overflowing labels cut off at the panel's edge by the layout clip, all 1000 children measured in a ScrollViewer, a 1000-item ListBox that stops scrolling and creates every item inside a StackPanel, an empty area hit only with a Background, the demo's overlapping labels ordered by ZIndex, and ZIndex not reaching outside the child's own panel" width="1077" height="500" loading="lazy">
-  <figcaption>Sizes given to children, overflow, background, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.en.md %}
+
+Sizes given to children, overflow, background, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

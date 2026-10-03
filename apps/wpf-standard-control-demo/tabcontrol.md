@@ -11,10 +11,10 @@ description: "WPF TabControl measured on .NET 10: where each TabStripPlacement p
 
 `TabStripPlacement` decides the edge a **TabControl** puts its tabs on; the default is `Top`. In a TabControl 300 × 150, `Top` and `Bottom` put the two tabs side by side, with the content area 294 wide below or above them. `Left` and `Right` stacked the tabs, each about 37 wide and 20 high, with their text still horizontal. The content area narrowed to 255.34.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg" alt="Table of tab header and content positions in a TabControl 300 by 150: Top and Bottom place the two headers side by side above or below a content area 294 wide, and Left and Right stack them on one side of a content area 255.34 wide" width="945" height="200" loading="lazy">
-  <figcaption>Tab headers and the content area for each <code>TabStripPlacement</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.en.md %}
+
+Tab headers and the content area for each <code>TabStripPlacement</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Which tab is selected, and what is ignored
 
@@ -30,10 +30,10 @@ The keyboard moves the selection with the focus: with the focus on the first tab
 
 `SelectedContent` and `SelectedContentStringFormat` are read-only and give the content and the format of the selected page. With the first tab selected, they were `Item1`, the content before formatting, and `"Format: {0}."`. With no tab selected, `SelectedContent` was `null`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="Table of TabControl results: it derives from Selector with Top as the default while the demo starts at Left, the first tab is selected when shown, the demo format shows Format: Item1., a tab's own format applies when selected first but not after switching, an index past the last tab and a foreign SelectedItem are ignored while -2 throws ArgumentException, -1 shows nothing, removing the selected tab selects the next one, mixing Items and ItemsSource throws, and the right arrow selects the next tab" width="1077" height="440" loading="lazy">
-  <figcaption>String format, selection, items, and the keyboard. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.en.md %}
+
+String format, selection, items, and the keyboard. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

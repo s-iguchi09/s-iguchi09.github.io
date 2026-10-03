@@ -13,10 +13,10 @@ description: "WPF Viewbox measured on .NET 10: the scale for each Stretch and St
 
 The defaults are `Stretch="Uniform"` and `StretchDirection="Both"`. The demo app does not start there: its combo boxes start at the first value of each enumeration, `None` and `UpOnly`, so the label is not scaled until a `Stretch` other than `None` is chosen.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg" alt="Table of Viewbox results: it derives from Decorator with Uniform and Both as defaults while the demo starts at None and UpOnly, the child is measured with infinite size and the label is 72.34 by 57.96, UniformToFill cuts off what does not fit at the Viewbox's layout height, and a Viewbox in a horizontal StackPanel scales by the height only" width="1108" height="230" loading="lazy">
-  <figcaption>Type, defaults, measuring, and clipping. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.en.md %}
+
+Type, defaults, measuring, and clipping. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## The scale for each Stretch
 
@@ -28,10 +28,10 @@ With `UniformToFill`, the part that does not fit is cut off. In a Viewbox 300 ×
 
 `StretchDirection` decides whether the child may be enlarged, reduced, or both. In the area 300 × 100, where the label is enlarged, `DownOnly` kept every `Stretch` at 1. In an area 40 × 20, where it is reduced, `UpOnly` kept every `Stretch` at 1, and the label was larger than the area. `Both` gave the same scale as the direction that applies. Use `DownOnly` to shrink but never enlarge, for example to keep text from growing in a large window.
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg" alt="Table of the demo label's scale for each Stretch and StretchDirection in areas 300 by 100 and 40 by 20: None always 1, Fill 4.15 by 1.73 or 0.55 by 0.35, Uniform 1.73 or 0.35, UniformToFill 4.15 or 0.55, with UpOnly keeping 1 in the small area and DownOnly keeping 1 in the large area" width="572" height="320" loading="lazy">
-  <figcaption>Scale (x, y) by <code>Stretch</code>, area, and <code>StretchDirection</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.en.md %}
+
+Scale (x, y) by <code>Stretch</code>, area, and <code>StretchDirection</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## It needs a limited size to scale to
 

@@ -17,3 +17,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg"
   - "images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.ja.md"

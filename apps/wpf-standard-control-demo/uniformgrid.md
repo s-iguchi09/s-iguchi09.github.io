@@ -31,10 +31,10 @@ Every cell has the same size. Stretched to 300 wide with three columns, the cell
 
 With two columns and one label, a hit test in the empty cell found nothing with the default `Background` of `null`, and found the grid with `Transparent`. Where children overlap, `Panel.ZIndex` decides the order. In the demo app, the second label has a top margin of -15 and overlaps the first. With `ZIndex` 1 and 2, the second was on top; with 3 and 2, the first.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.svg" alt="Table of UniformGrid results: in the Primitives namespace with Rows, Columns, and FirstColumn 0, the demo's five labels in 5 by 1, 3 by 2, 1 by 5, and 2 by 3 layouts and, with neither set, a 3 by 3 layout whose third row is empty, a fifth child placed below a 2 by 2 grid, FirstColumn 1 starting in the second cell and FirstColumn 3 or 4 reset to 0 with 3 columns, removing a binding on it, a collapsed child taking no cell, cells 100 wide when stretched and 150 when sized to a 150-wide child, empty cells hit only with a Background, and ZIndex ordering the demo's overlapping labels" width="1187" height="590" loading="lazy">
-  <figcaption>Rows, columns, <code>FirstColumn</code>, and cell size. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/uniformgrid/uniformgrid-behavior.en.md %}
+
+Rows, columns, <code>FirstColumn</code>, and cell size. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

@@ -23,3 +23,10 @@ images:
   - "images/wpf-standard-control-demo/verification/textbox/textbox-defaults.svg"
   - "images/wpf-standard-control-demo/verification/textbox/textbox-input.svg"
   - "images/wpf-standard-control-demo/verification/textbox/textbox-layout.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/textbox/textbox-defaults.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textbox/textbox-defaults.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textbox/textbox-input.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textbox/textbox-input.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textbox/textbox-layout.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textbox/textbox-layout.ja.md"

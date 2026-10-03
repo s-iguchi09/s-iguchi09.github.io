@@ -19,10 +19,10 @@ Buttons with the same `GroupName` form one group even under different parents: t
 
 The group does not reach beyond the window. The same name in another window and in a `Popup` formed separate groups, and all three buttons stayed checked, so do not rely on a name to link windows or popups. Named and unnamed buttons do not affect each other either: under the same parent, checking the unnamed ones did not uncheck the one with `GroupName="1"`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.svg" alt="Table of which RadioButtons form a group: a checked button stays checked when clicked, buttons without GroupName group by parent, buttons wrapped in Borders or created by an ItemTemplate can all be checked, unnamed and named buttons do not affect each other, the same GroupName links two GroupBoxes, and the same GroupName in another window and in a Popup does not" width="959" height="350" loading="lazy">
-  <figcaption>Which buttons uncheck each other. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.en.md %}
+
+Which buttons uncheck each other. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Binding IsChecked to bool properties
 
@@ -34,10 +34,10 @@ Binding the buttons to one enum property through a converter is another way. The
 
 With the first button checked and focused, the Down arrow moved the focus to the second button, but the first stayed checked. <kbd>Tab</kbd> also went to the next button of the same group, not to the next group.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg" alt="Table of RadioButton bindings and keys: with IsChecked bound to three bools, clicking B sets A and C to false and keeps the bindings, setting C in the source unchecks B, the Down arrow moves the focus but not the check, Tab goes to the next button, VerticalContentAlignment defaults to Top, and Center centers the mark and the label in the RadioButton, lining the mark up with the middle of a three-line label" width="1061" height="320" loading="lazy">
-  <figcaption>Bound <code>IsChecked</code>, the keyboard, and <code>VerticalContentAlignment</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.en.md %}
+
+Bound <code>IsChecked</code>, the keyboard, and <code>VerticalContentAlignment</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Lining the mark up with a label that wraps
 

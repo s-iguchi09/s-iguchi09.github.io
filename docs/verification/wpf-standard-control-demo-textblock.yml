@@ -16,3 +16,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/textblock/textblock-behavior.svg"
   - "images/wpf-standard-control-demo/verification/textblock/textblock-lineheight.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/textblock/textblock-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textblock/textblock-behavior.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textblock/textblock-lineheight.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/textblock/textblock-lineheight.ja.md"

@@ -27,10 +27,10 @@ StackPanel 自体も仮想化しません。高さ 200 の ScrollViewer の中�
 
 子が重なったときは、`Panel.ZIndex` でどれを上に描くかが決まります。デモアプリでは 2 つ目のラベルが 1 つ目に 15 重なっています。`ZIndex` が 1 と 2 では重なった部分で 2 つ目が上に、3 と 2 では 1 つ目が上になりました。順序が決まるのは同じパネルの子どうしだけです。内側のパネルの子に `ZIndex="100"` を付けても、その内側のパネルの兄弟（`ZIndex` 0）より下のままでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.svg" alt="StackPanel の計測結果の表。既定値は Vertical で Spacing プロパティはなく、子は並べる方向に無限の大きさで測られて交差する方向に引き伸ばされ、はみ出したラベルはレイアウトの切り抜きでパネルの端で切れ、ScrollViewer の中の 1000 個の子はすべて測られ、StackPanel の中の 1000 項目の ListBox はスクロールしなくなってすべての項目を作り、空いた場所は Background があるときだけ当たり、デモアプリの重なったラベルは ZIndex で順序が決まり、ZIndex は自分のパネルの外には効かない" width="1077" height="500" loading="lazy">
-  <figcaption>子に渡す大きさ、はみ出し、背景、<code>ZIndex</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.ja.md %}
+
+子に渡す大きさ、はみ出し、背景、<code>ZIndex</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

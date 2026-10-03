@@ -43,19 +43,19 @@ internal sealed class TextBoxDemoScene : IScene
     {
         await context.SaveTableAsync(
             "TextBox: type and defaults",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             Defaults(),
             "textbox-defaults.svg");
 
         await context.SaveTableAsync(
             "TextBox: typed input vs. text set from code or a binding",
-            ["case", "Text after"],
+            [T("case", "条件"), T("Text after", "操作後の Text")],
             await InputAsync(),
             "textbox-input.svg");
 
         await context.SaveTableAsync(
             "TextBox: wrapping, lines, alignment and scrolling",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await LayoutAsync(),
             "textbox-layout.svg");
     }
@@ -87,7 +87,7 @@ internal sealed class TextBoxDemoScene : IScene
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 
-    private static List<IReadOnlyList<string>> Defaults()
+    private static List<IReadOnlyList<Loc>> Defaults()
     {
         var box = new TextBox();
         var text = (FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(typeof(TextBox));
@@ -99,7 +99,7 @@ internal sealed class TextBoxDemoScene : IScene
 
         return
         [
-            ["base types", string.Join(" > ", chain)],
+            [T("base types", "基底の型"), string.Join(" > ", chain)],
             ["Text: BindsTwoWayByDefault / DefaultUpdateSourceTrigger", $"{text.BindsTwoWayByDefault} / {text.DefaultUpdateSourceTrigger}"],
             ["TextWrapping / TextAlignment / CharacterCasing", $"{box.TextWrapping} / {box.TextAlignment} / {box.CharacterCasing}"],
             ["AcceptsReturn / IsReadOnly / MaxLength", $"{box.AcceptsReturn} / {box.IsReadOnly} / {box.MaxLength}"],
@@ -107,17 +107,24 @@ internal sealed class TextBoxDemoScene : IScene
             ["VerticalScrollBarVisibility / HorizontalScrollBarVisibility",
                 $"{box.VerticalScrollBarVisibility} / {box.HorizontalScrollBarVisibility}"],
             ["SelectionOpacity", D(box.SelectionOpacity)],
-            ["TextBox has TextTrimming / PlaceholderText property",
+            [T("TextBox has TextTrimming / PlaceholderText property", "TextBox に TextTrimming / PlaceholderText プロパティがあるか"),
                 $"{typeof(TextBox).GetProperty("TextTrimming") is not null} / {typeof(TextBox).GetProperty("PlaceholderText") is not null}"],
             ["MaxLength = -1", Throws(() => new TextBox().MaxLength = -1)],
         ];
     }
 
-    private static async Task<List<IReadOnlyList<string>>> InputAsync()
-    {
-        var rows = new List<IReadOnlyList<string>>();
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
-        async Task Typed(string label, Action<TextBox> configure, string typed, string initial = "")
+    /// <summary>2 つの計測値を 1 つのセルに並べる。</summary>
+    private static Loc Pair(string first, string second) => T($"{first}; {second}", $"{first}、{second}");
+
+    private static Loc Height(double value) => T($"height {D(value)}", $"高さ {D(value)}");
+
+    private static async Task<List<IReadOnlyList<Loc>>> InputAsync()
+    {
+        var rows = new List<IReadOnlyList<Loc>>();
+
+        async Task Typed(Loc label, Action<TextBox> configure, string typed, string initial = "")
         {
             var box = new TextBox { Width = 200, Text = initial };
             configure(box);
@@ -130,11 +137,11 @@ internal sealed class TextBoxDemoScene : IScene
             }, activate: true);
         }
 
-        await Typed("MaxLength=5, typed \"ABCDEFGH\"", b => b.MaxLength = 5, "ABCDEFGH");
+        await Typed(T("MaxLength=5, typed \"ABCDEFGH\"", "MaxLength=5、\"ABCDEFGH\" を入力"), b => b.MaxLength = 5, "ABCDEFGH");
         {
             var box = new TextBox { MaxLength = 5 };
             box.Text = "ABCDEFGH";
-            rows.Add(["MaxLength=5, Text = \"ABCDEFGH\" from code", $"\"{box.Text}\""]);
+            rows.Add([T("MaxLength=5, Text = \"ABCDEFGH\" from code", "MaxLength=5、コードから Text = \"ABCDEFGH\""), $"\"{box.Text}\""]);
         }
 
         {
@@ -143,17 +150,17 @@ internal sealed class TextBoxDemoScene : IScene
             var box = new TextBox { MaxLength = 5 };
             box.SetBinding(TextBox.TextProperty, new Binding(nameof(Source.Text)) { Source = source });
             source.Text = "ABCDEFGH";
-            rows.Add(["MaxLength=5, Text bound to a source set to \"ABCDEFGH\"", $"\"{box.Text}\""]);
+            rows.Add([T("MaxLength=5, Text bound to a source set to \"ABCDEFGH\"", "MaxLength=5、\"ABCDEFGH\" にしたソースへ Text をバインド"), $"\"{box.Text}\""]);
         }
 
-        await Typed("CharacterCasing=Upper, typed \"hello\"", b => b.CharacterCasing = CharacterCasing.Upper, "hello");
+        await Typed(T("CharacterCasing=Upper, typed \"hello\"", "CharacterCasing=Upper、\"hello\" を入力"), b => b.CharacterCasing = CharacterCasing.Upper, "hello");
         {
             var box = new TextBox { CharacterCasing = CharacterCasing.Upper };
             box.Text = "hello";
-            rows.Add(["CharacterCasing=Upper, Text = \"hello\" from code", $"\"{box.Text}\""]);
+            rows.Add([T("CharacterCasing=Upper, Text = \"hello\" from code", "CharacterCasing=Upper、コードから Text = \"hello\""), $"\"{box.Text}\""]);
         }
 
-        await Typed("IsReadOnly=True, typed \"xyz\" after \"abc\"", b => b.IsReadOnly = true, "xyz", "abc");
+        await Typed(T("IsReadOnly=True, typed \"xyz\" after \"abc\"", "IsReadOnly=True、\"abc\" の後に \"xyz\" を入力"), b => b.IsReadOnly = true, "xyz", "abc");
 
         {
             var box = new TextBox { IsReadOnly = true, Text = "abc" };
@@ -161,7 +168,7 @@ internal sealed class TextBoxDemoScene : IScene
             {
                 box.Focus();
                 box.SelectAll();
-                rows.Add(["IsReadOnly=True, SelectAll(): SelectedText", $"\"{box.SelectedText}\""]);
+                rows.Add([T("IsReadOnly=True, SelectAll(): SelectedText", "IsReadOnly=True、SelectAll() の後の SelectedText"), $"\"{box.SelectedText}\""]);
                 await Task.CompletedTask;
             }, activate: true);
         }
@@ -175,7 +182,7 @@ internal sealed class TextBoxDemoScene : IScene
                 box.CaretIndex = 1;
                 PressKey(box, Key.Enter);
                 await Capture.SettleAsync(Window.GetWindow(box)!);
-                rows.Add([$"AcceptsReturn={accepts}, Enter between \"a\" and \"b\"",
+                rows.Add([T($"AcceptsReturn={accepts}, Enter between \"a\" and \"b\"", $"AcceptsReturn={accepts}、\"a\" と \"b\" の間で Enter"),
                     $"\"{box.Text.Replace("\r", "\\r").Replace("\n", "\\n")}\""]);
             }, activate: true);
         }
@@ -198,8 +205,8 @@ internal sealed class TextBoxDemoScene : IScene
                 await Capture.SettleAsync(window, 50);
                 string whileTyping = $"{writes} ({WpfProbe.Describe(source.Text)})";
                 await FocusAsync(other);
-                rows.Add([$"{trigger}: \"abc\" typed: source writes while typing; after focus leaves",
-                    $"{whileTyping}; {writes} ({WpfProbe.Describe(source.Text)})"]);
+                rows.Add([T($"{trigger}: \"abc\" typed: source writes while typing; after focus leaves", $"{trigger}: \"abc\" を入力。入力中のソースへの書き込み、フォーカスが移った後"),
+                    T($"{whileTyping}; {writes} ({WpfProbe.Describe(source.Text)})", $"{whileTyping}、{writes} ({WpfProbe.Describe(source.Text)})")]);
             }, activate: true);
         }
 
@@ -212,26 +219,27 @@ internal sealed class TextBoxDemoScene : IScene
                 Type(box, "x");
                 await Capture.SettleAsync(Window.GetWindow(box)!, 50);
                 box.SelectAll();
-                rows.Add(["IsReadOnly: text after typing \"x\"; all selected: Copy / Cut / Paste can execute",
-                    $"{WpfProbe.Describe(box.Text)}; {ApplicationCommands.Copy.CanExecute(null, box)} / {ApplicationCommands.Cut.CanExecute(null, box)} / {ApplicationCommands.Paste.CanExecute(null, box)}"]);
+                rows.Add([T("IsReadOnly: text after typing \"x\"; all selected: Copy / Cut / Paste can execute", "IsReadOnly: \"x\" を入力した後の Text、全選択で Copy / Cut / Paste が実行できるか"),
+                    Pair(WpfProbe.Describe(box.Text), $"{ApplicationCommands.Copy.CanExecute(null, box)} / {ApplicationCommands.Cut.CanExecute(null, box)} / {ApplicationCommands.Paste.CanExecute(null, box)}")]);
             }, activate: true);
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> LayoutAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> LayoutAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (TextWrapping wrapping in new[] { TextWrapping.NoWrap, TextWrapping.Wrap, TextWrapping.WrapWithOverflow })
         {
             var box = new TextBox { Width = 150, Text = WrapText, TextWrapping = wrapping };
             await ShowAsync(box, async () =>
             {
-                rows.Add([$"TextWrapping={wrapping}, width 150, demo text",
-                    $"{box.LineCount} lines, line 1 has {box.GetLineText(0).TrimEnd().Length} chars, " +
-                    $"extent {D(box.ExtentWidth)} / viewport {D(box.ViewportWidth)}"]);
+                int firstLine = box.GetLineText(0).TrimEnd().Length;
+                rows.Add([T($"TextWrapping={wrapping}, width 150, demo text", $"TextWrapping={wrapping}、幅 150、デモの文字列"),
+                    T($"{box.LineCount} lines, line 1 has {firstLine} chars, extent {D(box.ExtentWidth)} / viewport {D(box.ViewportWidth)}",
+                      $"{box.LineCount} 行、1 行目は {firstLine} 文字、内容の幅 {D(box.ExtentWidth)} / 表示幅 {D(box.ViewportWidth)}")]);
                 await Task.CompletedTask;
             });
         }
@@ -248,17 +256,17 @@ internal sealed class TextBoxDemoScene : IScene
             };
             await ShowAsync(box, async () =>
             {
-                rows.Add([$"MinLines={minLines}, empty", $"height {D(box.ActualHeight)}"]);
+                rows.Add([T($"MinLines={minLines}, empty", $"MinLines={minLines}、空"), Height(box.ActualHeight)]);
                 await Task.CompletedTask;
             });
         }
 
         // MinLines が効く条件を切り分ける。
-        foreach ((string label, Func<TextBox> build, bool inGrid) in new (string, Func<TextBox>, bool)[]
+        foreach ((Loc label, Func<TextBox> build, bool inGrid) in new (Loc, Func<TextBox>, bool)[]
         {
-            ("MinLines=4, TextWrapping=Wrap, empty", () => new TextBox { Width = 150, MinLines = 4, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Top }, false),
-            ("MinLines=4, one line of text", () => new TextBox { Width = 150, MinLines = 4, AcceptsReturn = true, Text = "a", VerticalAlignment = VerticalAlignment.Top }, false),
-            ("MinLines=4, empty, in a 150 x 300 Grid, Top", () => new TextBox { MinLines = 4, AcceptsReturn = true, VerticalAlignment = VerticalAlignment.Top }, true),
+            (T("MinLines=4, TextWrapping=Wrap, empty", "MinLines=4、TextWrapping=Wrap、空"), () => new TextBox { Width = 150, MinLines = 4, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Top }, false),
+            (T("MinLines=4, one line of text", "MinLines=4、1 行の文字列"), () => new TextBox { Width = 150, MinLines = 4, AcceptsReturn = true, Text = "a", VerticalAlignment = VerticalAlignment.Top }, false),
+            (T("MinLines=4, empty, in a 150 x 300 Grid, Top", "MinLines=4、空、150 x 300 の Grid の中で Top"), () => new TextBox { MinLines = 4, AcceptsReturn = true, VerticalAlignment = VerticalAlignment.Top }, true),
         })
         {
             TextBox box = build();
@@ -272,7 +280,7 @@ internal sealed class TextBoxDemoScene : IScene
 
             await ShowAsync(content, async () =>
             {
-                rows.Add([label, $"height {D(box.ActualHeight)}"]);
+                rows.Add([label, Height(box.ActualHeight)]);
                 await Task.CompletedTask;
             });
         }
@@ -286,7 +294,7 @@ internal sealed class TextBoxDemoScene : IScene
                 """);
             await ShowAsync(box, async () =>
             {
-                rows.Add(["MinLines=\"4\" written in XAML (the demo app's markup), empty", $"height {D(box.ActualHeight)}"]);
+                rows.Add([T("MinLines=\"4\" written in XAML (the demo app's markup), empty", "XAML に MinLines=\"4\"（デモアプリのマークアップ）、空"), Height(box.ActualHeight)]);
 
                 // 表示後に別のプロパティを変えると、MinLines が効き始めるか。
                 box.Text = "typed";
@@ -294,7 +302,7 @@ internal sealed class TextBoxDemoScene : IScene
                 string afterText = D(box.ActualHeight);
                 box.FontSize += 1;
                 box.UpdateLayout();
-                rows.Add(["  then Text changed / then FontSize changed", $"height {afterText} / {D(box.ActualHeight)}"]);
+                rows.Add([T("  then Text changed / then FontSize changed", "  続けて Text を変更 / FontSize を変更"), T($"height {afterText} / {D(box.ActualHeight)}", $"高さ {afterText} / {D(box.ActualHeight)}")]);
                 await Task.CompletedTask;
             });
         }
@@ -310,16 +318,16 @@ internal sealed class TextBoxDemoScene : IScene
                 string after = D(box.ActualHeight);
                 box.MaxLines = 10;
                 box.UpdateLayout();
-                rows.Add(["MinLines=4 set after showing: height before / after / + MaxLines=10",
+                rows.Add([T("MinLines=4 set after showing: height before / after / + MaxLines=10", "表示後に MinLines=4 を設定: 設定前 / 設定後 / MaxLines=10 を足した後の高さ"),
                     $"{before} / {after} / {D(box.ActualHeight)}"]);
                 await Task.CompletedTask;
             });
         }
 
-        foreach ((string label, string minLinesInXaml) in new[]
+        foreach ((Loc label, string minLinesInXaml) in new (Loc, string)[]
         {
-            ("MinLines=4 set in a Loaded handler, not in XAML: height", ""),
-            ("MinLines=\"4\" in XAML, and 4 set again in a Loaded handler: height", " MinLines=\"4\""),
+            (T("MinLines=4 set in a Loaded handler, not in XAML: height", "XAML ではなく Loaded ハンドラーで MinLines=4: 高さ"), ""),
+            (T("MinLines=\"4\" in XAML, and 4 set again in a Loaded handler: height", "XAML に MinLines=\"4\"、Loaded ハンドラーでも 4 を設定: 高さ"), " MinLines=\"4\""),
         })
         {
             // Loaded のハンドラーで MinLines を設定する。XAML に同じ値があると、値が変わらないので効かない可能性がある。
@@ -346,7 +354,8 @@ internal sealed class TextBoxDemoScene : IScene
             await ShowAsync(box, async () =>
             {
                 var viewer = (ScrollViewer)box.Template.FindName("PART_ContentHost", box);
-                rows.Add([$"MaxLines={maxLines}, 10 lines", $"height {D(box.ActualHeight)}, vertical bar {viewer.ComputedVerticalScrollBarVisibility}"]);
+                rows.Add([T($"MaxLines={maxLines}, 10 lines", $"MaxLines={maxLines}、10 行"),
+                    T($"height {D(box.ActualHeight)}, vertical bar {viewer.ComputedVerticalScrollBarVisibility}", $"高さ {D(box.ActualHeight)}、縦のバー {viewer.ComputedVerticalScrollBarVisibility}")]);
                 await Task.CompletedTask;
             });
         }
@@ -362,8 +371,8 @@ internal sealed class TextBoxDemoScene : IScene
             await ShowAsync(box, async () =>
             {
                 var viewer = (ScrollViewer)box.Template.FindName("PART_ContentHost", box);
-                rows.Add([$"Height=60, 10 lines, VerticalScrollBarVisibility {(visibility is null ? "not set" : visibility.ToString())}",
-                    $"bar {viewer.ComputedVerticalScrollBarVisibility}, extent {D(box.ExtentHeight)} / viewport {D(box.ViewportHeight)}"]);
+                rows.Add([T($"Height=60, 10 lines, VerticalScrollBarVisibility {(visibility is null ? "not set" : visibility.ToString())}", $"Height=60、10 行、VerticalScrollBarVisibility {(visibility is null ? "指定なし" : visibility.ToString())}"),
+                    T($"bar {viewer.ComputedVerticalScrollBarVisibility}, extent {D(box.ExtentHeight)} / viewport {D(box.ViewportHeight)}", $"バー {viewer.ComputedVerticalScrollBarVisibility}、内容の高さ {D(box.ExtentHeight)} / 表示の高さ {D(box.ViewportHeight)}")]);
                 await Task.CompletedTask;
             });
         }
@@ -374,7 +383,7 @@ internal sealed class TextBoxDemoScene : IScene
             panel.Children.Add(box);
             await ShowAsync(panel, async () =>
             {
-                rows.Add(["AcceptsReturn, 10 lines, inside a StackPanel (no height limit)", $"height {D(box.ActualHeight)}"]);
+                rows.Add([T("AcceptsReturn, 10 lines, inside a StackPanel (no height limit)", "AcceptsReturn、10 行、StackPanel の中（高さの制限なし）"), Height(box.ActualHeight)]);
                 await Task.CompletedTask;
             });
         }
@@ -384,7 +393,8 @@ internal sealed class TextBoxDemoScene : IScene
             var box = new TextBox { Width = 200, Text = "123", TextAlignment = alignment };
             await ShowAsync(box, async () =>
             {
-                rows.Add([$"TextAlignment={alignment}, \"123\" in width 200", $"first character at x {D(box.GetRectFromCharacterIndex(0).X)}"]);
+                double x = box.GetRectFromCharacterIndex(0).X;
+                rows.Add([T($"TextAlignment={alignment}, \"123\" in width 200", $"TextAlignment={alignment}、幅 200 に \"123\""), T($"first character at x {D(x)}", $"1 文字目の x 座標 {D(x)}")]);
                 await Task.CompletedTask;
             });
         }
@@ -392,8 +402,9 @@ internal sealed class TextBoxDemoScene : IScene
         {
             var decorations = (System.Windows.TextDecorationCollection)new TextDecorationCollectionConverter()
                 .ConvertFromInvariantString("Underline, Strikethrough")!;
+            string locations = string.Join(", ", decorations.Select(d => d.Location));
             rows.Add(["TextDecorations=\"Underline, Strikethrough\"",
-                $"{decorations.Count} decorations: {string.Join(", ", decorations.Select(d => d.Location))}"]);
+                T($"{decorations.Count} decorations: {locations}", $"装飾 {decorations.Count} 個: {locations}")]);
         }
 
         {
@@ -412,11 +423,11 @@ internal sealed class TextBoxDemoScene : IScene
                         thrown = ex;
                     }
                 });
-                rows.Add(["ScrollToEnd() from a worker thread", thrown?.GetType().Name ?? "no exception"]);
+                rows.Add([T("ScrollToEnd() from a worker thread", "ワーカースレッドから ScrollToEnd()"), thrown is null ? T("no exception", "例外なし") : thrown.GetType().Name]);
 
                 box.ScrollToEnd();
                 box.UpdateLayout();
-                rows.Add(["ScrollToEnd() on the UI thread: VerticalOffset / scrollable height",
+                rows.Add([T("ScrollToEnd() on the UI thread: VerticalOffset / scrollable height", "UI スレッドで ScrollToEnd(): VerticalOffset / スクロールできる高さ"),
                     $"{D(box.VerticalOffset)} / {D(box.ExtentHeight - box.ViewportHeight)}"]);
             });
         }
@@ -431,8 +442,9 @@ internal sealed class TextBoxDemoScene : IScene
             var readOnly = new TextBox { IsReadOnly = true };
             host.Children.Add(readOnly);
             Layout(host, 200, 50);
-            rows.Add(["default template: IsReadOnly triggers / Background, BorderBrush",
-                $"{readOnlyTriggers} / {box.Background} {box.BorderBrush} (normal), {readOnly.Background} {readOnly.BorderBrush} (read-only)"]);
+            rows.Add([T("default template: IsReadOnly triggers / Background, BorderBrush", "既定のテンプレート: IsReadOnly のトリガー数 / Background、BorderBrush"),
+                T($"{readOnlyTriggers} / {box.Background} {box.BorderBrush} (normal), {readOnly.Background} {readOnly.BorderBrush} (read-only)",
+                  $"{readOnlyTriggers} / {box.Background} {box.BorderBrush}（通常）、{readOnly.Background} {readOnly.BorderBrush}（読み取り専用）")]);
         }
 
         return rows;

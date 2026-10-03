@@ -18,10 +18,10 @@ description: "WPF ScrollViewer measured on .NET 10: the four scroll bar settings
 
 `ComputedVerticalScrollBarVisibility`, which tells whether the bar is actually shown, was `Visible` only for `Auto` with 9 labels and for `Visible`; in every other case it was `Collapsed`. These values were measured for the vertical bar. `HorizontalScrollBarVisibility` accepts the same four values; the horizontal direction was not measured.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.svg" alt="Table of the four VerticalScrollBarVisibility values with 2 and 9 labels in a ScrollViewer 200 by 100: Disabled shows no bar, gives the content a height of 100, and does not scroll; Auto shows the bar only for 9 labels; Hidden shows no bar but scrolls to 50; Visible always shows the bar, and the bar reduces the viewport width from 200 to 183" width="946" height="320" loading="lazy">
-  <figcaption>Each <code>VerticalScrollBarVisibility</code> value with content that fits and content that overflows. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.en.md %}
+
+Each <code>VerticalScrollBarVisibility</code> value with content that fits and content that overflows. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Defaults, and changing the ScrollViewer inside a control
 
@@ -41,10 +41,10 @@ In a list it also affects virtualization. A ListBox with default settings, 1000 
 
 The size properties are known only after layout. `ExtentHeight` and `ViewportHeight` were 0 before the first layout and 251.64 and 100 after it. Why a ScrollViewer sometimes does not scroll at all, for example inside a StackPanel, is covered in the article linked below.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg" alt="Table of ScrollViewer scrolling: the defaults are Visible and Disabled, CanContentScroll False scrolls 16 pixels and True one item, a ListBox of 1000 items creates 10 containers with CanContentScroll True and 1000 with False, deferred scrolling keeps both VerticalOffset and ContentVerticalOffset at 0 until the thumb is released, ListBox, TreeView, and DataGrid have Auto and TextBox Hidden inside, an attached property reaches the ListBox's ScrollViewer and an outer ScrollViewer does not, and the sizes are 0 before layout" width="936" height="380" loading="lazy">
-  <figcaption><code>CanContentScroll</code>, deferred scrolling, and the ScrollViewers inside controls. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.en.md %}
+
+<code>CanContentScroll</code>, deferred scrolling, and the ScrollViewers inside controls. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

@@ -11,10 +11,10 @@ description: "WPF の TabControl を .NET 10 で実測して解説。TabStripPla
 
 `TabStripPlacement` は、**TabControl** がタブを置く辺で、既定値は `Top` です。300 × 150 の TabControl では、`Top` と `Bottom` で 2 つのタブが横に並び、その下か上に幅 294 の内容の領域がありました。`Left` と `Right` ではタブが縦に積まれ、それぞれ幅約 37、高さ約 20 で、文字は横書きのままでした。内容の領域の幅は 255.34 に狭まりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.svg" alt="300 × 150 の TabControl のタブの見出しと内容の位置の表。Top と Bottom では 2 つの見出しが横に並び、その下か上に幅 294 の内容の領域があり、Left と Right では見出しが片側に縦に積まれ、内容の領域の幅は 255.34" width="945" height="200" loading="lazy">
-  <figcaption><code>TabStripPlacement</code> ごとのタブの見出しと内容の領域。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-placement.ja.md %}
+
+<code>TabStripPlacement</code> ごとのタブの見出しと内容の領域。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## どのタブが選ばれ、何が無視されるか
 
@@ -30,10 +30,10 @@ TabControl は `Selector` を継承しています。作ったばかりの TabCo
 
 読み取り専用の `SelectedContent` と `SelectedContentStringFormat` は、選択中のページの内容と書式です。最初のタブを選んでいるときは、書式を適用する前の `Item1` と `"Format: {0}."` でした。どのタブも選んでいないとき、`SelectedContent` は `null` でした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.svg" alt="TabControl の計測結果の表。Selector を継承し既定値は Top だがデモアプリは Left で始まり、表示すると最初のタブが選ばれ、デモアプリの書式で Format: Item1. と表示され、タブ自身の書式は最初から選んだときは使われるが切り替えたときは使われず、項目数以上のインデックスと一覧にない SelectedItem は無視され -2 は ArgumentException になり、-1 では何も表示されず、選択中のタブを取り除くと次のタブが選ばれ、Items と ItemsSource を混ぜると例外になり、右矢印キーで次のタブが選ばれる" width="1077" height="440" loading="lazy">
-  <figcaption>書式、選択、項目、キーボード。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabcontrol/tabcontrol-behavior.ja.md %}
+
+書式、選択、項目、キーボード。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

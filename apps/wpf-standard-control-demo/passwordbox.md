@@ -17,10 +17,10 @@ Internally, the text is held in a `SecureString` field of a `PasswordTextContain
 
 `PasswordChar`, unlike `Password`, is a dependency property. Its metadata default is `*`, but the default style sets `●` (U+25CF), so that is what you see.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-defaults.svg" alt="Table of PasswordBox type and defaults: base class Control, no PasswordProperty but a PasswordCharProperty, PasswordChar metadata default asterisk and default style bullet, internal SecureString storage, and SecurePassword returning a new instance on each call" width="967" height="410" loading="lazy">
-  <figcaption>Type, properties, defaults, and how the password is held. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/passwordbox/passwordbox-defaults.en.md %}
+
+Type, properties, defaults, and how the password is held. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## What MaxLength, Copy, and IsSelectionActive actually do
 
@@ -30,10 +30,10 @@ With all text selected, the Copy and Cut commands could not be executed, while P
 
 `IsSelectionActive` is read-only and, despite its name, does not report whether text is selected. It was `True` as soon as the PasswordBox had focus with nothing selected, still `True` with all text selected, and `False` after focus moved to another control even though the selection was kept. It follows keyboard focus, so do not use it to detect a selection.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.svg" alt="Table of PasswordBox behavior: MaxLength 8 cuts typed input but not Password set from code, PasswordChanged is raised once per typed character and once each for setting Password and Clear, Copy and Cut cannot execute while Paste can, and IsSelectionActive follows keyboard focus rather than the selection" width="936" height="350" loading="lazy">
-  <figcaption>Input, events, clipboard commands, and <code>IsSelectionActive</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/passwordbox/passwordbox-behavior.en.md %}
+
+Input, events, clipboard commands, and <code>IsSelectionActive</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## The caret and the selection highlight
 
