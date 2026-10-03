@@ -25,10 +25,10 @@ With `LastChildFill="False"` and one child on the left, a hit test in the empty 
 
 Where children overlap, `Panel.ZIndex` decides which one is on top. In the demo app, the second label has a left margin of -30 and overlaps the first. With `ZIndex` 1 and 2, the second label was on top at the overlap; with 3 and 2, the first.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.svg" alt="Table of DockPanel results: LastChildFill is True by default and an undocked child goes Left, the demo's second label stretches only with LastChildFill True, a last child's Dock Top is ignored when it fills, the demo's single label takes full height at Left and Right and full width at Top and Bottom, a left child written first runs the full height, the empty area is hit only with a Background, and ZIndex orders the demo's overlapping labels" width="1210" height="500" loading="lazy">
-  <figcaption>Docking, <code>LastChildFill</code>, the order of children, background, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.en.md %}
+
+Docking, <code>LastChildFill</code>, the order of children, background, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

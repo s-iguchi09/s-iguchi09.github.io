@@ -23,10 +23,10 @@ A `DisplayDateStart` later than the selected date does not take effect either: w
 
 Use `BlackoutDates` for days that must not be selected. Unlike the range, blackout dates are enforced: setting `SelectedDate` to one from code threw `ArgumentOutOfRangeException` and kept the previous date, and the popup marked the day as blacked out.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg" alt="Table of DatePicker results with a range of April 10 to 20, 2026: out-of-range dates set from code, through Text, or typed with Enter are accepted, unparsable typed text raises DateValidationError and keeps the previous date, out-of-range day buttons are disabled, blackout dates throw ArgumentOutOfRangeException from code, and a later DisplayDateStart is pulled back to the selected date" width="1226" height="560" loading="lazy">
-  <figcaption>Range, blackout dates, and input, with <code>xml:lang="en-US"</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.en.md %}
+
+Range, blackout dates, and input, with <code>xml:lang="en-US"</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Setting Text versus typing into the box
 

@@ -19,10 +19,10 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 `IsReadOnly` は表全体の編集を止めます。`IsReadOnly="True"` にすると、`CanUserAddRows` は `False` になりました。列の側から編集を許すことはできません。列に `IsReadOnly="False"` を明示すると、列の値は `False` のままでしたが、そのセルで `BeginEdit()` を呼ぶと `False` が返り、編集は始まりませんでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.svg" alt="DataGrid の列と行の計測結果の表。自動生成の列は宣言順でデモのデータでは Error 列も作られ、読み取り専用の表では IsReadOnly False の列も編集できず、新規行は List と ObservableCollection では表示されるが配列と引数なしのコンストラクターのない型では表示されず、行の検証には DataErrorValidationRule が必要で、Delete キーで選んだ行が削除される" width="1218" height="440" loading="lazy">
-  <figcaption>列、読み取り専用の設定、検証、行の追加と削除。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.ja.md %}
+
+列、読み取り専用の設定、検証、行の追加と削除。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 行の検証には規則が要る
 
@@ -46,10 +46,10 @@ description: "WPF の DataGrid の列の自動生成、並べ替え、編集、�
 
 `AlternatingRowBackground` は 1 行おきの背景です。このプロパティだけを設定すれば足ります。`AlternationCount` は 2 になり、4 行が白と指定したブラシで交互になりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg" alt="DataGrid の挙動の表。F2・Esc・Enter で編集の開始・取り消し・確定ができ、列の種類ごとに編集用の要素が変わり、見出しの 3 回のクリックで昇順・降順・昇順になり、編集中の並べ替えは CommitEdit() や CancelEdit() の後でも InvalidOperationException になるが行の編集を終えた後はならず、AlternatingRowBackground だけで AlternationCount が 2 になり、GroupStyle 付きのグループ化では既定で 1,000 行すべて、IsVirtualizingWhenGrouping では 18 行が作られ、固定した 1 列目はスクロールしても動かない" width="1203" height="590" loading="lazy">
-  <figcaption>編集、並べ替え、1 行おきの背景、仮想化、列の固定。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.ja.md %}
+
+編集、並べ替え、1 行おきの背景、仮想化、列の固定。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## そのほかの切り替えの既定値
 

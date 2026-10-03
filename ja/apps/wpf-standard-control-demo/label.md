@@ -19,10 +19,10 @@ description: "WPF の Label を .NET 10 で実測して解説。アクセスキ�
 
 名前は別に付けます。入力欄の `AutomationProperties.LabeledBy` に Label を設定すると効き、Age のテキストボックスの名前は「Age(Press Alt+A)」になりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Label の計測結果の表。ContentControl を継承しフォーカスもタブ移動も受けず、余白は 5 で内容は Left と Top、Tab は Label を飛ばし、デモアプリのアクセスキー N と A で Name と Age のテキストボックスへフォーカスが移り、Target のない Label では動かず、ToolBar の中の Target にも移り、対象の TextBox には UI オートメーションの名前も LabeledBy も付かず、手動で設定した AutomationProperties.LabeledBy では名前が付き、改行で 2 行の高さになる。Target が ComboBox ならそれ自体に、編集可能な ComboBox と DatePicker なら中のテキストボックスにフォーカスが移る" width="1108" height="380" loading="lazy">
-  <figcaption>既定値、アクセスキー、<code>Target</code>、UI オートメーション。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/label/label-behavior.ja.md %}
+
+既定値、アクセスキー、<code>Target</code>、UI オートメーション。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 見出しそのもの
 

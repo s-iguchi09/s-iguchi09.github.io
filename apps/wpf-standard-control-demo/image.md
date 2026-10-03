@@ -13,10 +13,10 @@ description: "WPF Image measured on .NET 10: the size for each Stretch and Stret
 
 `StretchDirection` decides whether the picture may be enlarged, reduced, or both; the default is `Both`. `UpOnly` kept the 600 × 300 picture at 600 × 300 in every mode, and `DownOnly` kept the 100 × 50 picture at 100 × 50. Use `DownOnly` for icons that should never be enlarged past their own size.
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/image/image-matrix.svg" alt="Table of Image sizes in a 300 by 200 area: None keeps 100 by 50 and 600 by 300, Fill, Uniform and UniformToFill give 300 by 200, 300 by 150 and 400 by 200 unless UpOnly keeps the large picture or DownOnly keeps the small one" width="690" height="320" loading="lazy">
-  <figcaption>Displayed size for each <code>Stretch</code> and <code>StretchDirection</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/image/image-matrix.en.md %}
+
+Displayed size for each <code>Stretch</code> and <code>StretchDirection</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Where UniformToFill and None cut the picture
 
@@ -34,10 +34,10 @@ A path string bound to `Source` is converted to an image: the `Source` became a 
 
 A file shown through a path is locked. While a PNG bound that way was shown, deleting the file failed with an `IOException`, and it still failed after `Source` was set to `null`; it succeeded only after a garbage collection. A `BitmapImage` with `CacheOption` set to `OnLoad` reads the file at once, and its file could be deleted while the image was shown. Load files that may change that way.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/image/image-behavior.svg" alt="Table of Image results: it derives from FrameworkElement and is not focusable with Uniform and Both as defaults, UniformToFill and None cut the picture from the top-left unless centered, 72 DPI enlarges it, a bound path gives BitmapFrameDecode while missing and SVG files give null, the bound file stays locked until a garbage collection, OnLoad does not lock, DecodePixelWidth 100 gives 100 by 50, and the demo's start picture is 3840 by 2400 at 96 DPI" width="1140" height="440" loading="lazy">
-  <figcaption>Type, cropping, DPI, paths, file locks, and decoding. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/image/image-behavior.en.md %}
+
+Type, cropping, DPI, paths, file locks, and decoding. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

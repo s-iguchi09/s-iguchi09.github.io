@@ -17,3 +17,6 @@ verifies:
   - "ListBox の ItemsPanel を WrapPanel にしたときに作られる項目の数（1000 項目）"
 images:
   - "images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.ja.md"

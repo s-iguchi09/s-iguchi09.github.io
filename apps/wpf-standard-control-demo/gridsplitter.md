@@ -19,10 +19,10 @@ The default `HorizontalAlignment` of GridSplitter is `Right`, not `Stretch`, so 
 
 In the demo app the splitter sits in its own `Auto` column. There, only `PreviousAndNext` resized the two panes in all nine combinations of star, `Auto`, and fixed neighbors. `CurrentAndNext` widened the splitter's own column. `PreviousAndCurrent` widened the previous column, except when that column was a star column; then it did nothing.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.svg" alt="Table of column widths after dragging a GridSplitter 30 to the right in its own Auto column of a 400-wide Grid, for nine combinations of star, Auto, and 200-wide neighboring columns and the four ResizeBehavior values: PreviousAndNext moves the boundary between the neighbors, BasedOnAlignment and CurrentAndNext widen the splitter's own column to 35, and PreviousAndCurrent does nothing when the previous column is a star column" width="977" height="350" loading="lazy">
-  <figcaption>Widths (left / splitter / right) after a 30-unit drag, for each <code>ResizeBehavior</code>. Contents are 60 wide. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.en.md %}
+
+Widths (left / splitter / right) after a 30-unit drag, for each <code>ResizeBehavior</code>. Contents are 60 wide. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Columns or rows
 

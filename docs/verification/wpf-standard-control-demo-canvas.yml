@@ -16,3 +16,6 @@ verifies:
   - "デモアプリと同じ、空文字の TextBox を FallbackValue=NaN で Canvas.Right にバインドしたときの値"
 images:
   - "images/wpf-standard-control-demo/verification/canvas/canvas-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/canvas/canvas-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/canvas/canvas-behavior.ja.md"

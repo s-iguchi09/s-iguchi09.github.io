@@ -13,10 +13,10 @@ description: "WPF の Image を .NET 10 で実測して解説。Stretch と Stre
 
 `StretchDirection` は、拡大だけ・縮小だけ・両方のどれを許すかで、既定値は `Both` です。`UpOnly` では、600 × 300 の画像はどの Stretch でも 600 × 300 のままで、`DownOnly` では 100 × 50 の画像が 100 × 50 のままでした。原寸より大きくしたくないアイコンには `DownOnly` を使います。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/image/image-matrix.svg" alt="300 x 200 の領域での Image の大きさの表。None は 100 x 50 と 600 x 300 のまま、Fill・Uniform・UniformToFill は 300 x 200・300 x 150・400 x 200 になり、ただし UpOnly では大きい画像が、DownOnly では小さい画像がそのままの大きさ" width="690" height="320" loading="lazy">
-  <figcaption><code>Stretch</code> と <code>StretchDirection</code> ごとの表示の大きさ。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/image/image-matrix.ja.md %}
+
+<code>Stretch</code> と <code>StretchDirection</code> ごとの表示の大きさ。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## UniformToFill と None で切れる場所
 
@@ -34,10 +34,10 @@ description: "WPF の Image を .NET 10 で実測して解説。Stretch と Stre
 
 パスで表示したファイルはロックされます。そうしてバインドした PNG を表示している間、ファイルの削除は `IOException` で失敗し、`Source` を `null` にした後も失敗しました。削除できたのはガベージコレクションの後でした。`CacheOption` を `OnLoad` にした `BitmapImage` はファイルをすぐに読み込み、表示している間でもファイルを削除できました。変わる可能性のあるファイルは、この方法で読み込みます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/image/image-behavior.svg" alt="Image の計測結果の表。FrameworkElement から派生してフォーカスを受け取らず、既定値は Uniform と Both、UniformToFill と None は中央に揃えなければ左上から切り取られ、72 DPI では大きくなり、バインドしたパスは BitmapFrameDecode、存在しないファイルと SVG は null になり、バインドしたファイルはガベージコレクションまでロックされ、OnLoad はロックせず、DecodePixelWidth 100 では 100 x 50 になり、デモアプリの初期の画像は 3840 x 2400・96 DPI" width="1140" height="440" loading="lazy">
-  <figcaption>型、切り取り、DPI、パス、ファイルのロック、デコード。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/image/image-behavior.ja.md %}
+
+型、切り取り、DPI、パス、ファイルのロック、デコード。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

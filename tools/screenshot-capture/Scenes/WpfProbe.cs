@@ -30,6 +30,63 @@ internal static class WpfProbe
         Func<FrameworkElement, Task>? Act = null);
 
     /// <summary>
+    /// 見出しと読み取った値を日英の組（<see cref="Loc"/>）で持つ条件。記事の言語ごとの表を書き出すシーンで使う。
+    /// 識別子や値だけのセルは文字列から暗黙に変換できる。
+    /// </summary>
+    internal sealed record LocCase(
+        Loc Label,
+        FrameworkElement Content,
+        Func<FrameworkElement, IReadOnlyList<Loc>> Read,
+        Func<FrameworkElement, Task>? Act = null);
+
+    /// <summary>
+    /// 各条件を実際に表示し、値を読んで表の行にする（日英の組の版）。
+    /// </summary>
+    public static async Task<List<IReadOnlyList<Loc>>> MeasureAsync(IEnumerable<LocCase> cases)
+    {
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach (LocCase probe in cases)
+        {
+            IReadOnlyList<Loc>? read = null;
+            await MeasureOneAsync(probe.Label.En, probe.Content, probe.Act, content => read = probe.Read(content));
+            rows.Add([probe.Label, .. read!]);
+        }
+
+        return rows;
+    }
+
+    /// <summary>1 つの条件をウィンドウに表示し、操作してから値を読む。</summary>
+    private static async Task MeasureOneAsync(string title, FrameworkElement content, Func<FrameworkElement, Task>? act, Action<FrameworkElement> read)
+    {
+        var window = new Window
+        {
+            Title = title,
+            Content = content,
+            Width = 320,
+            Height = 240,
+            // 条件を順に開いていくため、フォーカスを奪わない。
+            ShowActivated = false,
+        };
+
+        try
+        {
+            await Capture.ShowAndSettleAsync(window);
+
+            if (act is not null)
+            {
+                await act(content);
+                await Capture.SettleAsync(window);
+            }
+
+            read(content);
+        }
+        finally
+        {
+            window.Close();
+        }
+    }
+
+    /// <summary>
     /// 各条件を実際に表示し、値を読んで表の行にする。
     /// </summary>
     public static async Task<List<IReadOnlyList<string>>> MeasureAsync(IEnumerable<Case> cases)

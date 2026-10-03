@@ -29,10 +29,10 @@ Canvas 自身は大きさを求めません。(20, 20) に四角形を置いた 
 
 デモアプリの初期値は、四角形 A の `ZIndex` が 0、B が 1 で、重なった (85, 85) では B が上でした。A を 2 にすると A が上に、両方 0 では後の子の B が上になりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/canvas/canvas-behavior.svg" alt="Canvas の計測結果の表。子は無限の大きさで測られて伸びず、子を持つ Canvas は 0 × 0 を求めて ClipToBounds は False、Left と Top が Right と Bottom より優先されて子は伸びず、Right と Bottom は大きさ 0 も含めて Canvas の実際の大きさから測られ、位置のない子は (0, 0)、Canvas の外の子は切り抜かないときだけ当たり、ZIndex がデモアプリの四角形の順序を決めて等しければ後の子が上、空のテキストをバインドすると NaN になる" width="1179" height="470" loading="lazy">
-  <figcaption>大きさ、位置、切り抜き、<code>ZIndex</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/canvas/canvas-behavior.ja.md %}
+
+大きさ、位置、切り抜き、<code>ZIndex</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

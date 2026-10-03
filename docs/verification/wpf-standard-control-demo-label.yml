@@ -16,3 +16,6 @@ verifies:
   - "ComboBox・編集可能な ComboBox・DatePicker を Target にした Label のアクセスキーで、フォーカスが移る要素"
 images:
   - "images/wpf-standard-control-demo/verification/label/label-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/label/label-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/label/label-behavior.ja.md"

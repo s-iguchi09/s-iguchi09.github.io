@@ -17,3 +17,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/image/image-matrix.svg"
   - "images/wpf-standard-control-demo/verification/image/image-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/image/image-matrix.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/image/image-matrix.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/image/image-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/image/image-behavior.ja.md"

@@ -25,10 +25,10 @@ description: "WPF の DockPanel を .NET 10 で実測して解説。Dock ごと�
 
 子が重なったときは、`Panel.ZIndex` でどれを上にするかが決まります。デモアプリでは 2 つ目のラベルの左余白が -30 で、1 つ目に重なっています。`ZIndex` が 1 と 2 では重なった部分で 2 つ目が、3 と 2 では 1 つ目が上になりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.svg" alt="DockPanel の計測結果の表。LastChildFill の既定値は True で Dock を設定しない子は Left、デモアプリの 2 つ目のラベルは LastChildFill が True のときだけ伸び、埋める最後の子の Dock Top は無視され、デモアプリの 1 つのラベルは Left と Right で高さいっぱい、Top と Bottom で幅いっぱいになり、先に書いた左の子は高さいっぱいに伸び、空いた場所は Background があるときだけ当たり、ZIndex がデモアプリの重なったラベルの順序を決める" width="1210" height="500" loading="lazy">
-  <figcaption>端への配置、<code>LastChildFill</code>、子の順序、背景、<code>ZIndex</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.ja.md %}
+
+端への配置、<code>LastChildFill</code>、子の順序、背景、<code>ZIndex</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Markup;
 
@@ -176,10 +177,47 @@ internal sealed class SceneContext(string slug, string outputDirectory, string t
             string tablePath = Path.Combine(TableDirectory, $"{Path.GetFileNameWithoutExtension(fileName)}.{language}.md");
             string markdown = DemoLayout.BuildTableMarkdown(
                 headers.Select(header => header.In(language)).ToList(),
-                body.Select(row => (IReadOnlyList<string>)row.Select(cell => cell.In(language)).ToList()));
+                body.Select(row => (IReadOnlyList<string>)row.Select(cell => Localize(cell, language)).ToList()));
             await File.WriteAllTextAsync(tablePath, markdown, new UTF8Encoding(false));
             _savedTables.Add(tablePath);
         }
+    }
+
+    /// <summary>
+    /// 共通の補助関数（DemoProbe.HitName・DemoProbe.Throws・WpfProbe.BindingState など）が返す英語の言葉の日本語。
+    /// シーンごとに訳さなくても日本語の表に出ないようにする。どれも紛れのない言い回しなので、セルの中に出てきても置き換える（英語の語の直後に続くものは、英語の文の一部として残す）。
+    /// </summary>
+    private static readonly Dictionary<string, string> CommonJapanese = new(StringComparer.Ordinal)
+    {
+        ["(nothing)"] = "（なし）",
+        ["(none)"] = "（なし）",
+        ["no exception"] = "例外なし",
+        ["no binding"] = "バインドなし",
+        ["not found"] = "見つからない",
+    };
+
+    /// <summary>
+    /// セルを指定した言語の文字にする。日本語では、共通の部品が出す英語の言葉
+    /// （<see cref="CommonJapanese"/> の言葉と、WpfProbe.Describe の "(empty)"）を置き換える。
+    /// </summary>
+    private static string Localize(Loc cell, string language)
+    {
+        if (language != "ja")
+        {
+            return cell.En;
+        }
+
+        string text = cell.Ja;
+        foreach ((string english, string japanese) in CommonJapanese)
+        {
+            // "property not found" のように英語の文の一部になっているもの（引用した WPF のメッセージなど）は置き換えない。
+            string pattern = char.IsLetter(english[0])
+                ? $@"(?<![A-Za-z] ?){Regex.Escape(english)}(?![A-Za-z])"
+                : Regex.Escape(english);
+            text = Regex.Replace(text, pattern, japanese.Replace("$", "$$"));
+        }
+
+        return text.Replace("((empty))", "(空)", StringComparison.Ordinal).Replace("(empty)", "（空）", StringComparison.Ordinal);
     }
 
     /// <summary>

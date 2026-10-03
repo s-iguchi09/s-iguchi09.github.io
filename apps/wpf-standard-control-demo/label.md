@@ -19,10 +19,10 @@ The documentation of the `Label` class says that setting the target makes UI Aut
 
 Name the field separately. Setting `AutomationProperties.LabeledBy` to the Label on the field did work: the Age TextBox was then named "Age(Press Alt+A)".
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/label/label-behavior.svg" alt="Table of Label results: it derives from ContentControl, is not focusable or a tab stop, has padding 5 and Left and Top content alignment, Tab skips it, the demo's access keys N and A move the focus to the Name and Age text boxes, a Label without Target moves nothing, a Target inside a ToolBar receives the focus, the target TextBox gets no UI Automation name or LabeledBy while AutomationProperties.LabeledBy set by hand names it, a line break makes the Label two lines high, and a Target that is a ComboBox receives the focus itself while an editable ComboBox or a DatePicker passes it to the text box inside" width="1108" height="380" loading="lazy">
-  <figcaption>Defaults, access keys, <code>Target</code>, and UI Automation. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/label/label-behavior.en.md %}
+
+Defaults, access keys, <code>Target</code>, and UI Automation. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## The caption itself
 

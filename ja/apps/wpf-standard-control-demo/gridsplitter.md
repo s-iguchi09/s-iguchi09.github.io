@@ -19,10 +19,10 @@ GridSplitter の `HorizontalAlignment` の既定値は `Stretch` ではなく `R
 
 デモアプリではスプリッターが専用の `Auto` 列にあります。この配置で、両隣の列（`*`・`Auto`・固定幅）の 9 通りすべてについて両側のペインを変えたのは `PreviousAndNext` だけでした。`CurrentAndNext` はスプリッターの列そのものを広げました。`PreviousAndCurrent` は前の列を広げましたが、前の列が `*` 列の場合は何も変えませんでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.svg" alt="幅 400 の Grid で専用の Auto 列に置いた GridSplitter を右へ 30 ドラッグした後の列幅を、両隣の列が *・Auto・200 の 9 通りと ResizeBehavior の 4 値について示す表。PreviousAndNext は両隣の境界を動かし、BasedOnAlignment と CurrentAndNext はスプリッターの列を 35 に広げ、PreviousAndCurrent は前の列が * 列のとき何も変えない" width="977" height="350" loading="lazy">
-  <figcaption><code>ResizeBehavior</code> ごとの、30 ドラッグした後の列幅（左 / スプリッター / 右）。内容の幅は 60。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/gridsplitter/gridsplitter-resize-behavior.ja.md %}
+
+<code>ResizeBehavior</code> ごとの、30 ドラッグした後の列幅（左 / スプリッター / 右）。内容の幅は 60。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 列を変えるか、行を変えるか
 

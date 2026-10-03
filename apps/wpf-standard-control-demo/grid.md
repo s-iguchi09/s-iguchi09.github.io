@@ -25,10 +25,10 @@ The default of `Grid.Row` and `Grid.Column` is 0, so children that omit them all
 
 Only invalid numbers are rejected: a negative index or a span of 0 throws `ArgumentException`. Everything else is clamped silently. `Grid.Column` is a number, not a reference to a `ColumnDefinition`, so after a definition is removed a child keeps its number: it then sits in whichever column now has that number, or, if the number is past the new last column, in the last column without any warning (as the clamping above shows). Check the children after removing a definition; the removal itself was not measured.
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/grid/grid-placement.svg" alt="Table of where children are placed in a 300 by 200 Grid: children without Grid.Row and Grid.Column overlap in the first cell, out-of-range indices and spans are clamped to the last column and row, negative values and a span of 0 throw ArgumentException, and a Grid without definitions places every child in one cell" width="810" height="380" loading="lazy">
-  <figcaption>Where children end up in a 300 &times; 200 Grid (x, y, width, height). Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/grid/grid-placement.en.md %}
+
+Where children end up in a 300 &times; 200 Grid (x, y, width, height). Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## When star columns keep their ratio
 
@@ -40,10 +40,10 @@ Star columns keep their ratio only when the Grid has a finite width to divide. T
 
 Rows behave the same way vertically. Putting `Auto` rows inside a `ScrollViewer` is not a problem: three 100-high `Auto` rows in a 120-high ScrollViewer made the Grid 300 high, and the vertical scroll bar appeared.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/grid/grid-unbounded.svg" alt="Table of the widths of 1-star and 2-star columns holding 60-wide and 30-wide content in different containers: content widths 60 and 30 in a horizontal StackPanel, a 1 to 2 ratio in a vertical StackPanel and in a wide ScrollViewer, and in a 60-wide ScrollViewer either content widths with a scroll bar or a 20 to 40 ratio without one" width="964" height="320" loading="lazy">
-  <figcaption>Star columns and rows by container. None of them collapse to zero. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/grid/grid-unbounded.en.md %}
+
+Star columns and rows by container. None of them collapse to zero. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Aligning columns across separate Grids
 

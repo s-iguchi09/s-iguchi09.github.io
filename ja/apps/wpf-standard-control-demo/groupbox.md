@@ -25,10 +25,10 @@ description: "WPF の GroupBox を .NET 10 で実測して解説。HeaderStringF
 
 フォントの各プロパティと `Foreground` は、見出しと内容の両方の文字に届きます。GroupBox に `FontSize="20"` を設定すると、見出しの文字も内容の TextBlock も 20 になりました。`Background` は、見出しの中ほどから下の、枠の内側を塗ります。見出しが上から 1〜27.6 にある GroupBox で、塗られた範囲は 13.8 から始まりました。見出しの上半分は塗られる範囲の外に出ます。内容はこの範囲の中にあるので、内容の後ろにも背景が見えます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.svg" alt="GroupBox の計測結果の表。HeaderedContentControl を継承し枠は #FFD5DFE5 の幅 1 で余白はなく、null の見出しは高さを取らず、HeaderStringFormat は文字列の見出しには効くが TextBlock には効かず、改行を含む見出しは 2 行の高さになり、Padding 20 で内容が 20 下がり、FontSize と Foreground は見出しと内容に届き、Background は見出しの中ほどから塗られて内容の範囲も覆い、UI オートメーションは見出しを名前とする Group を報告し、見出しのアクセスキーで中の最初の TextBox にフォーカスが移る" width="1077" height="470" loading="lazy">
-  <figcaption>見出し、余白、引き継がれるプロパティ、アクセスキー。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.ja.md %}
+
+見出し、余白、引き継がれるプロパティ、アクセスキー。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

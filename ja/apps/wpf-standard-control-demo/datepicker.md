@@ -23,10 +23,10 @@ description: "WPF の DatePicker を .NET 10 で実測して解説します。Di
 
 選ばせたくない日は `BlackoutDates` に入れます。範囲と違い、BlackoutDates は守られます。コードから該当日を `SelectedDate` に設定すると `ArgumentOutOfRangeException` が発生して元の日付のままになり、ポップアップではその日が選択不可（IsBlackedOut）として示されました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg" alt="2026 年 4 月 10 日から 20 日の範囲を設定した DatePicker の結果を示す表。コード・Text・入力と Enter で与えた範囲外の日付は受け付けられ、解析できない入力は DateValidationError を発生させて元の日付に戻り、範囲外の日付ボタンは無効になり、BlackoutDates の日付をコードから設定すると ArgumentOutOfRangeException が発生し、選択中の日付より後の DisplayDateStart は引き戻される" width="1226" height="560" loading="lazy">
-  <figcaption><code>xml:lang="en-US"</code> での範囲、BlackoutDates、入力の結果。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.ja.md %}
+
+<code>xml:lang="en-US"</code> での範囲、BlackoutDates、入力の結果。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## Text の設定と、テキスト欄への入力の違い
 
