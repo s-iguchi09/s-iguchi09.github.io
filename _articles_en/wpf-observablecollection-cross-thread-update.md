@@ -179,7 +179,7 @@ When control returned to the UI thread after the loop, though, the view had rece
 
 {% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.en.md %}
 
-Measured on .NET 10 / Windows 11 by adding 5,000 items one at a time from inside <code>Task.Run</code> to a collection bound to a virtualized <code>ListBox</code>. The third column is the number of <code>CollectionChanged</code> notifications the view had received when control returned to the UI thread after the loop, and the last column is the time from the start of the loop until the view had received 5,000.
+Measured on .NET 10 / Windows 11 by adding 5,000 items one at a time from inside <code>Task.Run</code> to a collection bound to a virtualized <code>ListBox</code>. The third column is the number of <code>CollectionChanged</code> notifications the view had received when control returned to the UI thread after the loop, and the last column is the time from just before <code>Task.Run</code> was called (including the wait for the task to start) until the view had received 5,000.
 {: .table-caption}
 
 **A custom synchronization mechanism such as a semaphore calls for the callback overload.**

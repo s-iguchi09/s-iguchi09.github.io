@@ -179,7 +179,7 @@ private async Task LoadAsync(string path)
 
 {% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.ja.md %}
 
-.NET 10 / Windows 11 で、仮想化した <code>ListBox</code> にバインドしたコレクションへ、<code>Task.Run</code> の中から 5,000 件を 1 件ずつ <code>Add</code> した結果。3 列目は、ループのあと UI スレッドへ戻った時点でビューが受け取っていた <code>CollectionChanged</code> の通知の数、右端の列は、ループの開始からビューが 5,000 件分の通知を受け取るまでの時間である。
+.NET 10 / Windows 11 で、仮想化した <code>ListBox</code> にバインドしたコレクションへ、<code>Task.Run</code> の中から 5,000 件を 1 件ずつ <code>Add</code> した結果。3 列目は、ループのあと UI スレッドへ戻った時点でビューが受け取っていた <code>CollectionChanged</code> の通知の数、右端の列は、<code>Task.Run</code> を呼ぶ直前（タスクが始まるまでの待ちを含む）から、ビューが 5,000 件分の通知を受け取るまでの時間である。
 {: .table-caption}
 
 **セマフォなど独自の同期機構が既にあるなら、コールバック版のオーバーロード。**
