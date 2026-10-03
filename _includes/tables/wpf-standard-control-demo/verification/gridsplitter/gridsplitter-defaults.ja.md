@@ -1,17 +1,17 @@
-| item | value |
+| 項目 | 値 |
 |---|---|
-| base types | Thumb &gt; Control |
-| drag events (declared on Thumb) | DragStarted (Thumb), DragDelta (Thumb), DragCompleted (Thumb) |
-| IsDragging read-only | True |
+| 基底の型 | Thumb &gt; Control |
+| ドラッグのイベント（Thumb で宣言） | DragStarted (Thumb), DragDelta (Thumb), DragCompleted (Thumb) |
+| IsDragging が読み取り専用か | True |
 | ResizeDirection | Auto |
 | ResizeBehavior | BasedOnAlignment |
 | ShowsPreview | False |
 | DragIncrement | 1 |
 | KeyboardIncrement | 10 |
 | PreviewStyle | null |
-| PreviewStyle after the default style is applied (value source) | System.Windows.Style (DefaultStyle) |
-| HorizontalAlignment (value source) | Right (Default) |
-| VerticalAlignment (value source) | Stretch (Default) |
+| 既定のスタイルが当たった後の PreviewStyle（値の出どころ） | System.Windows.Style (DefaultStyle) |
+| HorizontalAlignment（値の出どころ） | Right (Default) |
+| VerticalAlignment（値の出どころ） | Stretch (Default) |
 | Focusable | True |
 | DragIncrement = 0 | ArgumentException |
 | KeyboardIncrement = 0 | ArgumentException |

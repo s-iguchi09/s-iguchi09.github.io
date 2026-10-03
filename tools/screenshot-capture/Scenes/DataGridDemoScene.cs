@@ -45,7 +45,7 @@ internal sealed class DataGridDemoScene : IScene
     {
         await context.SaveTableAsync(
             "DataGrid: type and defaults",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             await DefaultsAsync(),
             "datagrid-defaults.svg");
 
@@ -148,7 +148,7 @@ internal sealed class DataGridDemoScene : IScene
             chain.Add(type.Name);
         }
 
-        rows.Add(["base types", string.Join(" > ", chain)]);
+        rows.Add([T("base types", "基底の型"), string.Join(" > ", chain)]);
 
         DataGrid grid = NewGrid(People());
         await ShowAsync(grid, async () =>

@@ -1,6 +1,6 @@
-| item | value |
+| 項目 | 値 |
 |---|---|
-| base types | MultiSelector &gt; Selector &gt; ItemsControl |
+| 基底の型 | MultiSelector &gt; Selector &gt; ItemsControl |
 | AutoGenerateColumns / IsReadOnly | True / False |
 | SelectionMode / SelectionUnit | Extended / FullRow |
 | ColumnWidth / MinColumnWidth / MaxColumnWidth | SizeToHeader / 20 / Infinity |

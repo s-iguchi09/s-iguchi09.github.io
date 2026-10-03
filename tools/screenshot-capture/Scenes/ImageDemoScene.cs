@@ -177,7 +177,8 @@ internal sealed class ImageDemoScene : IScene
             Rect bounds = Bounds(image, host);
             Geometry? clip = LayoutInformation.GetLayoutClip(image);
             rows.Add([T($"large image, {stretch} / {direction}{(center ? ", aligned Center" : "")} in 300 x 200: size; top-left; clip", $"大きい画像、{stretch} / {direction}{(center ? "、Center に配置" : "")}、300 x 200 の中: 大きさ、左上の位置、クリップ"),
-                $"{Size(image)}; {D(bounds.X)}, {D(bounds.Y)}; " + (clip is null ? T("none", "なし") : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")]);
+                T($"{Size(image)}; {D(bounds.X)}, {D(bounds.Y)}; {(clip is null ? "none" : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")}",
+                  $"{Size(image)}、{D(bounds.X)}, {D(bounds.Y)}、{(clip is null ? "なし" : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")}")]);
         }
 
         {

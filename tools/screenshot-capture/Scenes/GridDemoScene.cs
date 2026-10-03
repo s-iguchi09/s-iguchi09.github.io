@@ -39,7 +39,7 @@ internal sealed class GridDemoScene : IScene
 
         await context.SaveTableAsync(
             "Grid: column widths and row heights",
-            ["case", "sizes"],
+            [T("case", "条件"), T("sizes", "大きさ")],
             Sizing(),
             "grid-sizing.svg");
 
@@ -51,7 +51,7 @@ internal sealed class GridDemoScene : IScene
 
         await context.SaveTableAsync(
             "Grid: hit testing and ZIndex",
-            ["case", "element hit"],
+            [T("case", "条件"), T("element hit", "当たった要素")],
             HitTesting(),
             "grid-hit-testing.svg");
 
@@ -126,7 +126,7 @@ internal sealed class GridDemoScene : IScene
             Grid.SetRow(child, 5);
             grid.Children.Add(child);
             Layout(grid, 300, 200);
-            rows.Add(["2x2, Grid.Column=5, Grid.Row=5", Format(Bounds(child, grid))]);
+            rows.Add([T("2x2, Grid.Column=5, Grid.Row=5", "2x2、Grid.Column=5、Grid.Row=5"), Format(Bounds(child, grid))]);
         }
 
         {
@@ -135,7 +135,7 @@ internal sealed class GridDemoScene : IScene
             Grid.SetColumnSpan(child, 5);
             grid.Children.Add(child);
             Layout(grid, 300, 200);
-            rows.Add(["3x2, Grid.ColumnSpan=5", Format(Bounds(child, grid))]);
+            rows.Add([T("3x2, Grid.ColumnSpan=5", "3x2、Grid.ColumnSpan=5"), Format(Bounds(child, grid))]);
         }
 
         {
@@ -145,7 +145,7 @@ internal sealed class GridDemoScene : IScene
             Grid.SetColumnSpan(child, 5);
             grid.Children.Add(child);
             Layout(grid, 300, 200);
-            rows.Add(["3x2, Grid.Column=1, ColumnSpan=5", Format(Bounds(child, grid))]);
+            rows.Add([T("3x2, Grid.Column=1, ColumnSpan=5", "3x2、Grid.Column=1、ColumnSpan=5"), Format(Bounds(child, grid))]);
         }
 
         {
@@ -154,7 +154,7 @@ internal sealed class GridDemoScene : IScene
             Grid.SetRowSpan(child, 5);
             grid.Children.Add(child);
             Layout(grid, 300, 200);
-            rows.Add(["3x2, Grid.RowSpan=5", Format(Bounds(child, grid))]);
+            rows.Add([T("3x2, Grid.RowSpan=5", "3x2、Grid.RowSpan=5"), Format(Bounds(child, grid))]);
         }
 
         rows.Add(["Grid.SetColumn(child, -1)", Throws(() => Grid.SetColumn(new Border(), -1))]);
@@ -203,40 +203,40 @@ internal sealed class GridDemoScene : IScene
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
             new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
 
-        rows.Add(["Auto | 80 | 1* | 2*  (Grid width 440, children 60 wide)", Widths(Layout(Mixed(), 440, 100))]);
+        rows.Add([T("Auto | 80 | 1* | 2*  (Grid width 440, children 60 wide)", "Auto | 80 | 1* | 2*（Grid の幅 440、子の幅 60）"), Widths(Layout(Mixed(), 440, 100))]);
 
         Grid resized = Layout(Mixed(), 440, 100);
         Layout(resized, 740, 100);
-        rows.Add(["same Grid resized to 740", Widths(resized)]);
+        rows.Add([T("same Grid resized to 740", "同じ Grid を幅 740 に広げる"), Widths(resized)]);
 
-        rows.Add(["1* (MinWidth 200) | 1*  (width 300)", Widths(Layout(SizingGrid(
+        rows.Add([T("1* (MinWidth 200) | 1*  (width 300)", "1*（MinWidth 200） | 1*（Grid の幅 300）"), Widths(Layout(SizingGrid(
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 200 },
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }), 300, 100))]);
 
-        rows.Add(["1* (MaxWidth 50) | 1*  (width 300)", Widths(Layout(SizingGrid(
+        rows.Add([T("1* (MaxWidth 50) | 1*  (width 300)", "1*（MaxWidth 50） | 1*（Grid の幅 300）"), Widths(Layout(SizingGrid(
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MaxWidth = 50 },
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }), 300, 100))]);
 
-        rows.Add(["Auto (MaxWidth 30) | 1*  (width 300)", Widths(Layout(SizingGrid(
+        rows.Add([T("Auto (MaxWidth 30) | 1*  (width 300)", "Auto（MaxWidth 30） | 1*（Grid の幅 300）"), Widths(Layout(SizingGrid(
             new ColumnDefinition { Width = GridLength.Auto, MaxWidth = 30 },
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }), 300, 100))]);
 
         // デモアプリの初期値（Width=25, MinWidth=30, MaxWidth=100）と同じ指定。
-        rows.Add(["1* | 25 (MinWidth 30, MaxWidth 100) | 1*  (width 300)", Widths(Layout(SizingGrid(
+        rows.Add([T("1* | 25 (MinWidth 30, MaxWidth 100) | 1*  (width 300)", "1* | 25（MinWidth 30、MaxWidth 100） | 1*（Grid の幅 300）"), Widths(Layout(SizingGrid(
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
             new ColumnDefinition { Width = new GridLength(25), MinWidth = 30, MaxWidth = 100 },
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }), 300, 100))]);
 
-        rows.Add(["1* (MinWidth 100, MaxWidth 50) | 1*  (width 300)", Widths(Layout(SizingGrid(
+        rows.Add([T("1* (MinWidth 100, MaxWidth 50) | 1*  (width 300)", "1*（MinWidth 100、MaxWidth 50） | 1*（Grid の幅 300）"), Widths(Layout(SizingGrid(
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star), MinWidth = 100, MaxWidth = 50 },
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }), 300, 100))]);
 
         // 行も同じ規則で決まるか。デモアプリの初期値（Height=20, MinHeight=10, MaxHeight=100）を含める。
-        foreach ((string label, RowDefinition definition) in new (string, RowDefinition)[]
+        foreach ((Loc label, RowDefinition definition) in new (Loc, RowDefinition)[]
         {
-            ("rows 1* | 20 (MinHeight 10, MaxHeight 100) | 1*", new RowDefinition { Height = new GridLength(20), MinHeight = 10, MaxHeight = 100 }),
-            ("rows 1* | 5 (MinHeight 10) | 1*", new RowDefinition { Height = new GridLength(5), MinHeight = 10 }),
-            ("rows 1* | Auto (MaxHeight 15), content 40 | 1*", new RowDefinition { Height = GridLength.Auto, MaxHeight = 15 }),
+            (T("rows 1* | 20 (MinHeight 10, MaxHeight 100) | 1*", "行 1* | 20（MinHeight 10、MaxHeight 100） | 1*"), new RowDefinition { Height = new GridLength(20), MinHeight = 10, MaxHeight = 100 }),
+            (T("rows 1* | 5 (MinHeight 10) | 1*", "行 1* | 5（MinHeight 10） | 1*"), new RowDefinition { Height = new GridLength(5), MinHeight = 10 }),
+            (T("rows 1* | Auto (MaxHeight 15), content 40 | 1*", "行 1* | Auto（MaxHeight 15）、内容 40 | 1*"), new RowDefinition { Height = GridLength.Auto, MaxHeight = 15 }),
         })
         {
             var grid = new Grid();
@@ -247,7 +247,7 @@ internal sealed class GridDemoScene : IScene
             Grid.SetRow(child, 1);
             grid.Children.Add(child);
             Layout(grid, 100, 120);
-            rows.Add([$"{label}  (height 120)",
+            rows.Add([T($"{label.En}  (height 120)", $"{label.Ja}（Grid の高さ 120）"),
                 string.Join(" / ", grid.RowDefinitions.Select(r => D(r.ActualHeight)))]);
         }
 
@@ -355,7 +355,7 @@ internal sealed class GridDemoScene : IScene
             root.Children.Add(new Border { Name = "Behind", Background = Brushes.White });
             root.Children.Add(new Grid { Name = "Front", Background = background });
             Layout(root, 200, 100);
-            rows.Add([$"front Grid Background={(background is null ? "null" : "Transparent")}, empty area",
+            rows.Add([T($"front Grid Background={(background is null ? "null" : "Transparent")}, empty area", $"手前の Grid の Background={(background is null ? "null" : "Transparent")}、何も無い所"),
                 HitName(root, new Point(100, 50))]);
         }
 
@@ -366,11 +366,11 @@ internal sealed class GridDemoScene : IScene
             root.Children.Add(a);
             root.Children.Add(b);
             Layout(root, 200, 100);
-            rows.Add(["same cell, no ZIndex (First added first)", HitName(root, new Point(100, 50))]);
+            rows.Add([T("same cell, no ZIndex (First added first)", "同じセル、ZIndex なし（First を先に追加）"), HitName(root, new Point(100, 50))]);
 
             Panel.SetZIndex(a, 1);
             Layout(root, 200, 100);
-            rows.Add(["same cell, First ZIndex=1", HitName(root, new Point(100, 50))]);
+            rows.Add([T("same cell, First ZIndex=1", "同じセル、First の ZIndex=1"), HitName(root, new Point(100, 50))]);
         }
 
         foreach (int nestedZIndex in new[] { 0, 1 })
@@ -385,7 +385,7 @@ internal sealed class GridDemoScene : IScene
             root.Children.Add(nested);
             root.Children.Add(new Border { Name = "Outer", Background = Brushes.Blue });
             Layout(root, 200, 100);
-            rows.Add([$"Inner (ZIndex=100) in nested Grid (ZIndex={nestedZIndex}) vs later sibling Outer",
+            rows.Add([T($"Inner (ZIndex=100) in nested Grid (ZIndex={nestedZIndex}) vs later sibling Outer", $"入れ子の Grid（ZIndex={nestedZIndex}）の中の Inner（ZIndex=100）と、後から足した兄弟の Outer"),
                 HitName(root, new Point(100, 50))]);
         }
 
@@ -419,7 +419,7 @@ internal sealed class GridDemoScene : IScene
             panel.Children.Add(first);
             panel.Children.Add(second);
             Layout(panel, 400, 100);
-            rows.Add([$"IsSharedSizeScope={scope}, shared column Width={label}",
+            rows.Add([T($"IsSharedSizeScope={scope}, shared column Width={label}", $"IsSharedSizeScope={scope}、共有する列の Width={label}"),
                 $"{D(first.ColumnDefinitions[0].ActualWidth)} / {D(second.ColumnDefinitions[0].ActualWidth)}"]);
         }
 
@@ -431,13 +431,13 @@ internal sealed class GridDemoScene : IScene
             Layout(grid, 200, 100);
             var visuals = Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(grid))
                 .Select(i => VisualTreeHelper.GetChild(grid, i).GetType().Name);
-            rows.Add([$"ShowGridLines={show}, one child", $"visual children: {string.Join(", ", visuals)}"]);
+            rows.Add([T($"ShowGridLines={show}, one child", $"ShowGridLines={show}、子は 1 つ"), T($"visual children: {string.Join(", ", visuals)}", $"visual の子: {string.Join(", ", visuals)}")]);
         }
 
         IEnumerable<string> lineProperties = typeof(Grid).GetProperties()
             .Where(p => p.Name.Contains("Line", StringComparison.OrdinalIgnoreCase))
             .Select(p => p.Name);
-        rows.Add(["public Grid properties named *Line*", string.Join(", ", lineProperties)]);
+        rows.Add([T("public Grid properties named *Line*", "名前に Line を含む Grid の public プロパティ"), string.Join(", ", lineProperties)]);
 
         return rows;
     }
@@ -482,7 +482,8 @@ internal sealed class GridDemoScene : IScene
             }
 
             Layout(grid, 300, 200);
-            rows.Add([$"2x2 {label}", "measure calls " + string.Join(" / ", counters.Select(c => c.MeasureCount))]);
+            string calls = string.Join(" / ", counters.Select(c => c.MeasureCount));
+            rows.Add([T($"2x2 {label}", $"2x2 {label.Replace("columns ", "列 ").Replace("rows ", "行 ")}"), T("measure calls " + calls, "測定の回数 " + calls)]);
         }
 
         const int rowCount = 50;
@@ -565,11 +566,11 @@ internal sealed class GridDemoScene : IScene
 
         // どれも「平坦な Grid」と交互に測り、平坦な Grid に対する比を出す。
         // 1 回の比は実行ごとに 1 割ほど揺れるため、3 回繰り返して範囲を示す。
-        foreach ((string label, Func<UIElement> build) in new (string, Func<UIElement>)[]
+        foreach ((Loc label, Func<UIElement> build) in new (Loc, Func<UIElement>)[]
         {
-            ("each row in a nested Grid (+50 Grids)", Nested),
-            ("each TextBlock in 3 nested Grids (+1,500)", Wrapped),
-            ("Auto columns instead of 1*", FlatAuto),
+            (T("each row in a nested Grid (+50 Grids)", "行ごとに入れ子の Grid（+50 個）"), Nested),
+            (T("each TextBlock in 3 nested Grids (+1,500)", "TextBlock ごとに 3 重の入れ子の Grid（+1,500 個）"), Wrapped),
+            (T("Auto columns instead of 1*", "1* の代わりに Auto の列"), FlatAuto),
         })
         {
             var ratios = new List<string>();
@@ -579,7 +580,7 @@ internal sealed class GridDemoScene : IScene
                 ratios.Add($"x{other / flat:0.00}");
             }
 
-            rows.Add([$"500 TextBlocks, vs flat Grid: {label}", string.Join(", ", ratios)]);
+            rows.Add([T($"500 TextBlocks, vs flat Grid: {label.En}", $"TextBlock 500 個、平坦な Grid との比: {label.Ja}"), string.Join(", ", ratios)]);
         }
 
         return rows;

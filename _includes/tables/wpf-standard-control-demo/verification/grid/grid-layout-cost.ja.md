@@ -1,9 +1,9 @@
 | 条件 | 計測値 |
 |---|---|
-| 2x2 columns 100,100 / rows 50,50 | measure calls 1 / 1 / 1 / 1 |
-| 2x2 columns Auto,Auto / rows Auto,Auto | measure calls 1 / 1 / 1 / 1 |
-| 2x2 columns 1\*,1\* / rows 1\*,1\* | measure calls 1 / 1 / 1 / 1 |
-| 2x2 columns Auto,1\* / rows 1\*,Auto | measure calls 2 / 1 / 1 / 1 |
-| 500 TextBlocks, vs flat Grid: each row in a nested Grid (+50 Grids) | x1.04, x1.08, x1.01 |
-| 500 TextBlocks, vs flat Grid: each TextBlock in 3 nested Grids (+1,500) | x1.10, x1.16, x1.15 |
-| 500 TextBlocks, vs flat Grid: Auto columns instead of 1\* | x1.03, x1.01, x1.02 |
+| 2x2 列 100,100 / 行 50,50 | 測定の回数 1 / 1 / 1 / 1 |
+| 2x2 列 Auto,Auto / 行 Auto,Auto | 測定の回数 1 / 1 / 1 / 1 |
+| 2x2 列 1\*,1\* / 行 1\*,1\* | 測定の回数 1 / 1 / 1 / 1 |
+| 2x2 列 Auto,1\* / 行 1\*,Auto | 測定の回数 2 / 1 / 1 / 1 |
+| TextBlock 500 個、平坦な Grid との比: 行ごとに入れ子の Grid（+50 個） | x1.05, x1.01, x1.00 |
+| TextBlock 500 個、平坦な Grid との比: TextBlock ごとに 3 重の入れ子の Grid（+1,500 個） | x1.25, x1.08, x1.18 |
+| TextBlock 500 個、平坦な Grid との比: 1\* の代わりに Auto の列 | x1.00, x1.00, x0.97 |

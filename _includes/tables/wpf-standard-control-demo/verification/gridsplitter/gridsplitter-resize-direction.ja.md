@@ -1,5 +1,5 @@
-| ResizeDirection | vertical splitter dragged | horizontal splitter dragged |
+| ResizeDirection | 縦のスプリッターをドラッグ | 横のスプリッターをドラッグ |
 |---|---|---|
-| Auto | columns 177.5 / 5 / 117.5, rows 47.5 / 5 / 47.5 | columns 147.5 / 5 / 147.5, rows 67.5 / 5 / 27.5 |
-| Columns | columns 177.5 / 5 / 117.5, rows 47.5 / 5 / 47.5 | columns 147.5 / 5 / 147.5, rows 47.5 / 5 / 47.5 |
-| Rows | columns 147.5 / 5 / 147.5, rows 47.5 / 5 / 47.5 | columns 147.5 / 5 / 147.5, rows 67.5 / 5 / 27.5 |
+| Auto | 列 177.5 / 5 / 117.5、行 47.5 / 5 / 47.5 | 列 147.5 / 5 / 147.5、行 67.5 / 5 / 27.5 |
+| Columns | 列 177.5 / 5 / 117.5、行 47.5 / 5 / 47.5 | 列 147.5 / 5 / 147.5、行 47.5 / 5 / 47.5 |
+| Rows | 列 147.5 / 5 / 147.5、行 47.5 / 5 / 47.5 | 列 147.5 / 5 / 147.5、行 67.5 / 5 / 27.5 |

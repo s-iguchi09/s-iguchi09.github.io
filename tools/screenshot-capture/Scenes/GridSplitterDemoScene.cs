@@ -41,7 +41,7 @@ internal sealed class GridSplitterDemoScene : IScene
     {
         await context.SaveTableAsync(
             "GridSplitter: type and defaults",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             Defaults(),
             "gridsplitter-defaults.svg");
 
@@ -53,19 +53,19 @@ internal sealed class GridSplitterDemoScene : IScene
 
         await context.SaveTableAsync(
             "GridSplitter: which columns move (Grid 400 wide, dragged 30 to the right)",
-            ["case", "widths before", "widths after"],
+            [T("case", "条件"), T("widths before", "ドラッグ前の幅"), T("widths after", "ドラッグ後の幅")],
             Placement(),
             "gridsplitter-placement.svg");
 
         await context.SaveTableAsync(
             "GridSplitter: ResizeDirection, the demo app's cross layout (300 x 100), each splitter dragged by (30, 20)",
-            ["ResizeDirection", "vertical splitter dragged", "horizontal splitter dragged"],
+            ["ResizeDirection", T("vertical splitter dragged", "縦のスプリッターをドラッグ"), T("horizontal splitter dragged", "横のスプリッターをドラッグ")],
             await DirectionAsync(),
             "gridsplitter-resize-direction.svg");
 
         await context.SaveTableAsync(
             "GridSplitter: preview, increments, keyboard, limits and binding",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await BehaviorsAsync(),
             "gridsplitter-behaviors.svg");
     }
@@ -136,11 +136,11 @@ internal sealed class GridSplitterDemoScene : IScene
 
         return
         [
-            ["base types", string.Join(" > ", chain)],
-            ["drag events (declared on Thumb)", string.Join(", ",
+            [T("base types", "基底の型"), string.Join(" > ", chain)],
+            [T("drag events (declared on Thumb)", "ドラッグのイベント（Thumb で宣言）"), string.Join(", ",
                 new[] { Thumb.DragStartedEvent, Thumb.DragDeltaEvent, Thumb.DragCompletedEvent }
                     .Select(e => $"{e.Name} ({e.OwnerType.Name})"))],
-            ["IsDragging read-only", Thumb.IsDraggingProperty.ReadOnly.ToString()],
+            [T("IsDragging read-only", "IsDragging が読み取り専用か"), Thumb.IsDraggingProperty.ReadOnly.ToString()],
             ["ResizeDirection", splitter.ResizeDirection.ToString()],
             ["ResizeBehavior", splitter.ResizeBehavior.ToString()],
             ["ShowsPreview", splitter.ShowsPreview.ToString()],
@@ -148,9 +148,9 @@ internal sealed class GridSplitterDemoScene : IScene
             ["KeyboardIncrement", D(splitter.KeyboardIncrement)],
             ["PreviewStyle", WpfProbe.Describe(splitter.PreviewStyle)],
             // 既定のスタイルが適用された後の値と、その出どころ。
-            ["PreviewStyle after the default style is applied (value source)", StyledValue(GridSplitter.PreviewStyleProperty)],
-            ["HorizontalAlignment (value source)", StyledValue(FrameworkElement.HorizontalAlignmentProperty)],
-            ["VerticalAlignment (value source)", StyledValue(FrameworkElement.VerticalAlignmentProperty)],
+            [T("PreviewStyle after the default style is applied (value source)", "既定のスタイルが当たった後の PreviewStyle（値の出どころ）"), StyledValue(GridSplitter.PreviewStyleProperty)],
+            [T("HorizontalAlignment (value source)", "HorizontalAlignment（値の出どころ）"), StyledValue(FrameworkElement.HorizontalAlignmentProperty)],
+            [T("VerticalAlignment (value source)", "VerticalAlignment（値の出どころ）"), StyledValue(FrameworkElement.VerticalAlignmentProperty)],
             ["Focusable", splitter.Focusable.ToString()],
             ["DragIncrement = 0", Throws(() => new GridSplitter().DragIncrement = 0)],
             ["KeyboardIncrement = 0", Throws(() => new GridSplitter().KeyboardIncrement = 0)],
@@ -222,7 +222,7 @@ internal sealed class GridSplitterDemoScene : IScene
             Relayout(grid);
             string before = Widths(grid);
             Drag(splitter, 30, 0);
-            rows.Add([$"own Auto column, HorizontalAlignment={alignment}", before, Widths(Relayout(grid))]);
+            rows.Add([T($"own Auto column, HorizontalAlignment={alignment}", $"専用の Auto の列、HorizontalAlignment={alignment}"), before, Widths(Relayout(grid))]);
         }
 
         // 内容と同じ列（0 列目）に置く。Microsoft Learn の例に多い置き方。
@@ -238,7 +238,7 @@ internal sealed class GridSplitterDemoScene : IScene
             Relayout(grid);
             string before = Widths(grid);
             Drag(splitter, 30, 0);
-            rows.Add([$"in column 0 with content, HorizontalAlignment={alignment}", before, Widths(Relayout(grid))]);
+            rows.Add([T($"in column 0 with content, HorizontalAlignment={alignment}", $"内容のある 0 列目、HorizontalAlignment={alignment}"), before, Widths(Relayout(grid))]);
         }
 
         // 3 列の真ん中（1 列目）に内容と一緒に置く。Left と Right で変わる列の組が分かる。
@@ -254,7 +254,7 @@ internal sealed class GridSplitterDemoScene : IScene
             Relayout(grid);
             string before = Widths(grid);
             Drag(splitter, 30, 0);
-            rows.Add([$"in column 1 with content, HorizontalAlignment={alignment}", before, Widths(Relayout(grid))]);
+            rows.Add([T($"in column 1 with content, HorizontalAlignment={alignment}", $"内容のある 1 列目、HorizontalAlignment={alignment}"), before, Widths(Relayout(grid))]);
         }
 
         // 前の列が無い位置に PreviousAndNext で置く。
@@ -267,7 +267,7 @@ internal sealed class GridSplitterDemoScene : IScene
             Relayout(grid);
             string before = Widths(grid);
             string thrown = Throws(() => Drag(splitter, 30, 0));
-            rows.Add([$"column 0 of 2, PreviousAndNext (no previous column): {thrown}", before, Widths(Relayout(grid))]);
+            rows.Add([T($"column 0 of 2, PreviousAndNext (no previous column): {thrown}", $"2 列のうち 0 列目、PreviousAndNext（前の列が無い）: {thrown}"), before, Widths(Relayout(grid))]);
         }
 
         // Grid の外に置く。
@@ -278,9 +278,9 @@ internal sealed class GridSplitterDemoScene : IScene
             panel.Children.Add(splitter);
             Layout(panel, 400, 40);
             string thrown = Throws(() => Drag(splitter, 30, 0));
-            rows.Add([$"in a StackPanel instead of a Grid: {thrown}",
-                $"first child {D(((FrameworkElement)panel.Children[0]).ActualWidth)}",
-                $"first child {D(((FrameworkElement)Layout(panel, 400, 40).Children[0]).ActualWidth)}"]);
+            rows.Add([T($"in a StackPanel instead of a Grid: {thrown}", $"Grid ではなく StackPanel の中: {thrown}"),
+                T($"first child {D(((FrameworkElement)panel.Children[0]).ActualWidth)}", $"最初の子 {D(((FrameworkElement)panel.Children[0]).ActualWidth)}"),
+                T($"first child {D(((FrameworkElement)Layout(panel, 400, 40).Children[0]).ActualWidth)}", $"最初の子 {D(((FrameworkElement)panel.Children[0]).ActualWidth)}")]);
         }
 
         return rows;
@@ -327,7 +327,9 @@ internal sealed class GridSplitterDemoScene : IScene
 
                 string thrown = Throws(() => Drag(vertical ? verticalSplitter : horizontalSplitter, 30, 20));
                 Relayout(grid);
-                cells.Add($"columns {Widths(grid)}, rows {Heights(grid)}" + (thrown == "no exception" ? "" : $" ({thrown})"));
+                cells.Add(T(
+                    $"columns {Widths(grid)}, rows {Heights(grid)}" + (thrown == "no exception" ? "" : $" ({thrown})"),
+                    $"列 {Widths(grid)}、行 {Heights(grid)}" + (thrown == "no exception" ? "" : $"（{thrown}）")));
             }
 
             rows.Add(cells);
@@ -373,18 +375,19 @@ internal sealed class GridSplitterDemoScene : IScene
                     // プレビューとして装飾層に置かれた要素と、その中身を読む。
                     AdornerLayer? layer = AdornerLayer.GetAdornerLayer(grid);
                     List<Control> controls = layer is null ? [] : Descendants(layer).OfType<Control>().ToList();
-                    rows.Add(["ShowsPreview=True: preview element in the adorner layer",
-                        string.Join(", ", controls.Select(c =>
-                            $"{c.GetType().Name} (Style is the splitter's PreviewStyle: {ReferenceEquals(c.Style, splitter.PreviewStyle)})"))]);
-                    rows.Add(["ShowsPreview=True: visuals inside the preview element",
+                    rows.Add([T("ShowsPreview=True: preview element in the adorner layer", "ShowsPreview=True: 装飾レイヤーに置かれたプレビューの要素"),
+                        T(
+                            string.Join(", ", controls.Select(c => $"{c.GetType().Name} (Style is the splitter's PreviewStyle: {ReferenceEquals(c.Style, splitter.PreviewStyle)})")),
+                            string.Join(", ", controls.Select(c => $"{c.GetType().Name}（Style がスプリッターの PreviewStyle か: {ReferenceEquals(c.Style, splitter.PreviewStyle)}）")))]);
+                    rows.Add([T("ShowsPreview=True: visuals inside the preview element", "ShowsPreview=True: プレビューの要素の中の visual"),
                         string.Join(", ", controls.SelectMany(c => Descendants(c)).Select(DescribeVisual))]);
                 }
 
                 splitter.RaiseEvent(new DragCompletedEventArgs(40, 0, false));
                 grid.UpdateLayout();
-                rows.Add([$"ShowsPreview={preview}: before / during drag / after release",
+                rows.Add([T($"ShowsPreview={preview}: before / during drag / after release", $"ShowsPreview={preview}: 前 / ドラッグ中 / 離した後"),
                     $"{before}  |  {during}  |  {Widths(grid)}"]);
-                rows.Add([$"ShowsPreview={preview}: re-measures of left content over 10 drag steps",
+                rows.Add([T($"ShowsPreview={preview}: re-measures of left content over 10 drag steps", $"ShowsPreview={preview}: 10 回のドラッグの間に左の内容が測り直された回数"),
                     measuresDuring.ToString()]);
                 await Task.CompletedTask;
             });
@@ -399,8 +402,8 @@ internal sealed class GridSplitterDemoScene : IScene
             double left = grid.ColumnDefinitions[0].ActualWidth;
             Drag(splitter, drag, 0);
             Relayout(grid);
-            rows.Add([$"DragIncrement={D(increment)}, dragged {D(drag)}",
-                $"left column moved by {D(grid.ColumnDefinitions[0].ActualWidth - left)}"]);
+            rows.Add([T($"DragIncrement={D(increment)}, dragged {D(drag)}", $"DragIncrement={D(increment)}、{D(drag)} ドラッグ"),
+                T($"left column moved by {D(grid.ColumnDefinitions[0].ActualWidth - left)}", $"左の列の移動量 {D(grid.ColumnDefinitions[0].ActualWidth - left)}")]);
         }
 
         // KeyboardIncrement: 右矢印キー 1 回。Focusable の既定値と False の場合のフォーカス。
@@ -417,8 +420,8 @@ internal sealed class GridSplitterDemoScene : IScene
                 double left = grid.ColumnDefinitions[0].ActualWidth;
                 PressKey(splitter, Key.Right);
                 grid.UpdateLayout();
-                rows.Add([$"KeyboardIncrement={(increment is null ? "default" : D(increment.Value))}, Right arrow once",
-                    $"left column moved by {D(grid.ColumnDefinitions[0].ActualWidth - left)}"]);
+                rows.Add([T($"KeyboardIncrement={(increment is null ? "default" : D(increment.Value))}, Right arrow once", $"KeyboardIncrement={(increment is null ? "既定値" : D(increment.Value))}、右矢印キーを 1 回"),
+                    T($"left column moved by {D(grid.ColumnDefinitions[0].ActualWidth - left)}", $"左の列の移動量 {D(grid.ColumnDefinitions[0].ActualWidth - left)}")]);
                 await Task.CompletedTask;
             });
         }
@@ -447,7 +450,7 @@ internal sealed class GridSplitterDemoScene : IScene
 
             Relayout(grid);
             Drag(splitter, -1000, 0);
-            rows.Add([$"left MinWidth={(minWidth is null ? "none" : D(minWidth.Value))}, dragged -1000",
+            rows.Add([T($"left MinWidth={(minWidth is null ? "none" : D(minWidth.Value))}, dragged -1000", $"左の MinWidth={(minWidth is null ? "なし" : D(minWidth.Value))}、-1000 ドラッグ"),
                 Widths(Relayout(grid))]);
         }
 
@@ -461,7 +464,7 @@ internal sealed class GridSplitterDemoScene : IScene
                 string during = Widths(grid);
                 PressKey(splitter, Key.Escape);
                 grid.UpdateLayout();
-                rows.Add(["dragged 40, then Esc before release: before / during / after",
+                rows.Add([T("dragged 40, then Esc before release: before / during / after", "40 ドラッグし、離す前に Esc: 前 / 途中 / 後"),
                     $"{before}  |  {during}  |  {Widths(grid)}"]);
                 await Task.CompletedTask;
             });
@@ -479,7 +482,7 @@ internal sealed class GridSplitterDemoScene : IScene
             Relayout(grid);
             Drag(splitter, 30, 0);
             Relayout(grid);
-            rows.Add([$"{label}: ColumnDefinition.Width after drag",
+            rows.Add([T($"{label}: ColumnDefinition.Width after drag", $"{label}: ドラッグした後の ColumnDefinition.Width"),
                 $"{grid.ColumnDefinitions[0].Width} | {grid.ColumnDefinitions[2].Width}"]);
         }
 
@@ -498,8 +501,8 @@ internal sealed class GridSplitterDemoScene : IScene
             Drag(splitter, 30, 0);
             Relayout(grid);
             bool kept = BindingOperations.GetBindingExpression(grid.ColumnDefinitions[0], ColumnDefinition.WidthProperty) is not null;
-            rows.Add([$"Width bound to a source property, Mode={(mode is null ? "not set" : mode.ToString())}: source after drag / binding",
-                $"{source.Left} / {(kept ? "kept" : "removed")}"]);
+            rows.Add([T($"Width bound to a source property, Mode={(mode is null ? "not set" : mode.ToString())}: source after drag / binding", $"Width をソースのプロパティにバインド、Mode={(mode is null ? "指定なし" : mode.ToString())}: ドラッグ後のソース / バインド"),
+                T($"{source.Left} / {(kept ? "kept" : "removed")}", $"{source.Left} / {(kept ? "残る" : "外れる")}")]);
         }
 
         // IsDragging: 実際にマウスの左ボタンを押したときの Thumb の経路を通す。
@@ -514,7 +517,7 @@ internal sealed class GridSplitterDemoScene : IScene
                 });
                 bool pressed = splitter.IsDragging;
                 splitter.CancelDrag();
-                rows.Add(["IsDragging: before / after left button down / after CancelDrag()",
+                rows.Add([T("IsDragging: before / after left button down / after CancelDrag()", "IsDragging: 前 / 左ボタンを押した後 / CancelDrag() の後"),
                     $"{before} / {pressed} / {splitter.IsDragging}"]);
                 await Task.CompletedTask;
             }, activate: true);

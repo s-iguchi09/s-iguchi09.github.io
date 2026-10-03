@@ -49,7 +49,7 @@ internal sealed class DatePickerDemoScene : IScene
     {
         await context.SaveTableAsync(
             "DatePicker: metadata and defaults",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             Defaults(),
             "datepicker-defaults.svg");
 
@@ -61,7 +61,7 @@ internal sealed class DatePickerDemoScene : IScene
 
         await context.SaveTableAsync(
             "DatePicker: calendar popup and bindings",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await CalendarAndBindingAsync(),
             "datepicker-calendar-binding.svg");
     }
@@ -92,11 +92,11 @@ internal sealed class DatePickerDemoScene : IScene
     /// 日付ボタンのテンプレートが今日の強調表示をどう切り替えているかを読む。
     /// 表示状態のグループの現在の状態と、今日の印の要素の不透明度を返す。
     /// </summary>
-    private static string TodayMarker(CalendarDayButton button)
+    private static Loc TodayMarker(CalendarDayButton button)
     {
         if (System.Windows.Media.VisualTreeHelper.GetChildrenCount(button) == 0)
         {
-            return "no template";
+            return T("no template", "テンプレートなし");
         }
 
         var root = (FrameworkElement)System.Windows.Media.VisualTreeHelper.GetChild(button, 0);
@@ -104,8 +104,13 @@ internal sealed class DatePickerDemoScene : IScene
         string states = string.Join(", ", groups.Where(g => g.Name == "DayStates")
             .Select(g => $"{g.Name}={g.CurrentState?.Name ?? "(none)"}"));
         var marker = button.Template.FindName("TodayBackground", button) as UIElement;
-        return $"{states}, TodayBackground opacity {(marker is null ? "n/a" : D(marker.Opacity))}";
+        return T(
+            $"{states}, TodayBackground opacity {(marker is null ? "n/a" : D(marker.Opacity))}",
+            $"{states}、TodayBackground の不透明度 {(marker is null ? "なし" : D(marker.Opacity))}");
     }
+
+    /// <summary>識別子と値だけの前置きに、日英の組の続きをつなぐ。</summary>
+    private static Loc Prefixed(string prefix, Loc rest) => T(prefix + rest.En, prefix + rest.Ja);
 
     private static List<IReadOnlyList<Loc>> Defaults()
     {
@@ -122,13 +127,13 @@ internal sealed class DatePickerDemoScene : IScene
             rows.Add([$"{name}: BindsTwoWayByDefault", metadata.BindsTwoWayByDefault.ToString()]);
         }
 
-        rows.Add(["base class of the text part (DatePickerTextBox)", typeof(DatePickerTextBox).BaseType!.Name]);
+        rows.Add([T("base class of the text part (DatePickerTextBox)", "テキスト部分の基底クラス（DatePickerTextBox）"), typeof(DatePickerTextBox).BaseType!.Name]);
 
         var picker = new DatePicker();
-        rows.Add(["DisplayDate of a new DatePicker (today is " + Date(DateTime.Today) + ")", Date(picker.DisplayDate)]);
-        rows.Add(["IsTodayHighlighted of a new DatePicker / metadata default",
+        rows.Add([T("DisplayDate of a new DatePicker (today is " + Date(DateTime.Today) + ")", "新しい DatePicker の DisplayDate（今日は " + Date(DateTime.Today) + "）"), Date(picker.DisplayDate)]);
+        rows.Add([T("IsTodayHighlighted of a new DatePicker / metadata default", "新しい DatePicker の IsTodayHighlighted / メタデータの既定値"),
             $"{picker.IsTodayHighlighted} / {DatePicker.IsTodayHighlightedProperty.GetMetadata(typeof(DatePicker)).DefaultValue}"]);
-        rows.Add(["IsTodayHighlighted of a new Calendar / metadata default",
+        rows.Add([T("IsTodayHighlighted of a new Calendar / metadata default", "新しい Calendar の IsTodayHighlighted / メタデータの既定値"),
             $"{new Calendar().IsTodayHighlighted} / {Calendar.IsTodayHighlightedProperty.GetMetadata(typeof(Calendar)).DefaultValue}"]);
 
         CultureInfo saved = CultureInfo.CurrentCulture;
@@ -138,8 +143,8 @@ internal sealed class DatePickerDemoScene : IScene
             {
                 CultureInfo.CurrentCulture = new CultureInfo(culture);
                 var created = new DatePicker();
-                rows.Add([$"FirstDayOfWeek of a new DatePicker, CurrentCulture {culture}",
-                    $"{created.FirstDayOfWeek} (culture's own: {CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek})"]);
+                rows.Add([T($"FirstDayOfWeek of a new DatePicker, CurrentCulture {culture}", $"新しい DatePicker の FirstDayOfWeek、CurrentCulture {culture}"),
+                    T($"{created.FirstDayOfWeek} (culture's own: {CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek})", $"{created.FirstDayOfWeek}（カルチャ自身の値: {CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek}）")]);
             }
         }
         finally
@@ -307,8 +312,8 @@ internal sealed class DatePickerDemoScene : IScene
             {
                 picker.SelectedDate = null;
                 BindingExpression? expression = BindingOperations.GetBindingExpression(picker, DatePicker.SelectedDateProperty);
-                rows.Add(["bound to a DateTime (not nullable); SelectedDate = null",
-                    $"source {Date(source.Date)}, HasError {expression?.HasError}, Validation.HasError {Validation.GetHasError(picker)}"]);
+                rows.Add([T("bound to a DateTime (not nullable); SelectedDate = null", "null を許さない DateTime にバインド、SelectedDate = null"),
+                    T($"source {Date(source.Date)}, HasError {expression?.HasError}, Validation.HasError {Validation.GetHasError(picker)}", $"ソース {Date(source.Date)}、HasError {expression?.HasError}、Validation.HasError {Validation.GetHasError(picker)}")]);
                 await Task.CompletedTask;
             });
         }
@@ -323,7 +328,7 @@ internal sealed class DatePickerDemoScene : IScene
                 {
                     await Capture.SettleAsync(Window.GetWindow(picker)!);
                     var popup = (Popup)picker.Template.FindName("PART_Popup", picker);
-                    rows.Add(["IsDropDownOpen = True before showing: IsDropDownOpen / Popup.IsOpen",
+                    rows.Add([T("IsDropDownOpen = True before showing: IsDropDownOpen / Popup.IsOpen", "表示する前に IsDropDownOpen = True: IsDropDownOpen / Popup.IsOpen"),
                         $"{picker.IsDropDownOpen} / {popup.IsOpen}"]);
                     picker.IsDropDownOpen = false;
                 });
@@ -333,7 +338,7 @@ internal sealed class DatePickerDemoScene : IScene
                 thrown = ex.GetType().Name;
             }
 
-            rows.Add(["  exception while showing", thrown]);
+            rows.Add([T("  exception while showing", "  表示中の例外"), thrown]);
         }
 
         foreach (bool? highlighted in new bool?[] { null, true, false })
@@ -351,11 +356,12 @@ internal sealed class DatePickerDemoScene : IScene
                 Calendar calendar = CalendarOf(picker);
                 CalendarDayButton? today = DayButton(calendar, DateTime.Today);
                 string label = highlighted is null ? "not set" : highlighted.Value.ToString();
-                rows.Add([$"IsTodayHighlighted {label}: DatePicker / popup Calendar value (source)",
+                string labelJa = highlighted is null ? "指定なし" : highlighted.Value.ToString();
+                rows.Add([T($"IsTodayHighlighted {label}: DatePicker / popup Calendar value (source)", $"IsTodayHighlighted {labelJa}: DatePicker / ポップアップの Calendar の値（出どころ）"),
                     $"{WpfProbe.ValueAndSource(picker, DatePicker.IsTodayHighlightedProperty)} / " +
                     WpfProbe.ValueAndSource(calendar, Calendar.IsTodayHighlightedProperty)]);
-                rows.Add(["  today's day button: IsToday / IsEnabled / today marker",
-                    today is null ? "not found" : $"{today.IsToday} / {today.IsEnabled} / {TodayMarker(today)}"]);
+                rows.Add([T("  today's day button: IsToday / IsEnabled / today marker", "  今日の日付のボタン: IsToday / IsEnabled / 今日の印"),
+                    today is null ? "not found" : Prefixed($"{today.IsToday} / {today.IsEnabled} / ", TodayMarker(today))]);
                 picker.IsDropDownOpen = false;
             });
         }
@@ -368,7 +374,7 @@ internal sealed class DatePickerDemoScene : IScene
                 picker.IsDropDownOpen = true;
                 await Capture.SettleAsync(Window.GetWindow(picker)!);
                 Calendar calendar = CalendarOf(picker);
-                rows.Add([$"FirstDayOfWeek={first}: the popup Calendar's FirstDayOfWeek", calendar.FirstDayOfWeek.ToString()]);
+                rows.Add([T($"FirstDayOfWeek={first}: the popup Calendar's FirstDayOfWeek", $"FirstDayOfWeek={first}: ポップアップの Calendar の FirstDayOfWeek"), calendar.FirstDayOfWeek.ToString()]);
                 picker.IsDropDownOpen = false;
             });
         }

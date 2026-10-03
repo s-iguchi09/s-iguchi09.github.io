@@ -1,26 +1,26 @@
-| case | measured |
+| 条件 | 計測値 |
 |---|---|
-| ShowsPreview=False: before / during drag / after release | 197.5 / 5 / 197.5  \|  237.5 / 5 / 157.5  \|  237.5 / 5 / 157.5 |
-| ShowsPreview=False: re-measures of left content over 10 drag steps | 10 |
-| ShowsPreview=True: preview element in the adorner layer | Control (Style is the splitter\'s PreviewStyle: True) |
-| ShowsPreview=True: visuals inside the preview element | Rectangle Fill=\#80000000 Opacity=1 |
-| ShowsPreview=True: before / during drag / after release | 197.5 / 5 / 197.5  \|  197.5 / 5 / 197.5  \|  237.5 / 5 / 157.5 |
-| ShowsPreview=True: re-measures of left content over 10 drag steps | 0 |
-| DragIncrement=1, dragged 27 | left column moved by 27 |
-| DragIncrement=20, dragged 9 | left column moved by 0 |
-| DragIncrement=20, dragged 11 | left column moved by 20 |
-| DragIncrement=20, dragged 27 | left column moved by 20 |
-| DragIncrement=20, dragged 31 | left column moved by 40 |
-| KeyboardIncrement=default, Right arrow once | left column moved by 10 |
-| KeyboardIncrement=25, Right arrow once | left column moved by 25 |
+| ShowsPreview=False: 前 / ドラッグ中 / 離した後 | 197.5 / 5 / 197.5  \|  237.5 / 5 / 157.5  \|  237.5 / 5 / 157.5 |
+| ShowsPreview=False: 10 回のドラッグの間に左の内容が測り直された回数 | 10 |
+| ShowsPreview=True: 装飾レイヤーに置かれたプレビューの要素 | Control（Style がスプリッターの PreviewStyle か: True） |
+| ShowsPreview=True: プレビューの要素の中の visual | Rectangle Fill=\#80000000 Opacity=1 |
+| ShowsPreview=True: 前 / ドラッグ中 / 離した後 | 197.5 / 5 / 197.5  \|  197.5 / 5 / 197.5  \|  237.5 / 5 / 157.5 |
+| ShowsPreview=True: 10 回のドラッグの間に左の内容が測り直された回数 | 0 |
+| DragIncrement=1、27 ドラッグ | 左の列の移動量 27 |
+| DragIncrement=20、9 ドラッグ | 左の列の移動量 0 |
+| DragIncrement=20、11 ドラッグ | 左の列の移動量 20 |
+| DragIncrement=20、27 ドラッグ | 左の列の移動量 20 |
+| DragIncrement=20、31 ドラッグ | 左の列の移動量 40 |
+| KeyboardIncrement=既定値、右矢印キーを 1 回 | 左の列の移動量 10 |
+| KeyboardIncrement=25、右矢印キーを 1 回 | 左の列の移動量 25 |
 | Focusable=True: Focus() / IsKeyboardFocused | True / True |
 | Focusable=False: Focus() / IsKeyboardFocused | False / False |
-| left MinWidth=none, dragged -1000 | 0 / 5 / 395 |
-| left MinWidth=50, dragged -1000 | 50 / 5 / 345 |
-| dragged 40, then Esc before release: before / during / after | 197.5 / 5 / 197.5  \|  237.5 / 5 / 157.5  \|  197.5 / 5 / 197.5 |
-| \* \| \*: ColumnDefinition.Width after drag | 227.5\* \| 167.5\* |
-| 200 \| \*: ColumnDefinition.Width after drag | 230 \| \* |
-| Auto \| \*: ColumnDefinition.Width after drag | 90 \| \* |
-| Width bound to a source property, Mode=not set: source after drag / binding | \* / removed |
-| Width bound to a source property, Mode=TwoWay: source after drag / binding | 227.5\* / kept |
-| IsDragging: before / after left button down / after CancelDrag() | False / True / False |
+| 左の MinWidth=なし、-1000 ドラッグ | 0 / 5 / 395 |
+| 左の MinWidth=50、-1000 ドラッグ | 50 / 5 / 345 |
+| 40 ドラッグし、離す前に Esc: 前 / 途中 / 後 | 197.5 / 5 / 197.5  \|  237.5 / 5 / 157.5  \|  197.5 / 5 / 197.5 |
+| \* \| \*: ドラッグした後の ColumnDefinition.Width | 227.5\* \| 167.5\* |
+| 200 \| \*: ドラッグした後の ColumnDefinition.Width | 230 \| \* |
+| Auto \| \*: ドラッグした後の ColumnDefinition.Width | 90 \| \* |
+| Width をソースのプロパティにバインド、Mode=指定なし: ドラッグ後のソース / バインド | \* / 外れる |
+| Width をソースのプロパティにバインド、Mode=TwoWay: ドラッグ後のソース / バインド | 227.5\* / 残る |
+| IsDragging: 前 / 左ボタンを押した後 / CancelDrag() の後 | False / True / False |
