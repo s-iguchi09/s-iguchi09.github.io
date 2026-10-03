@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1743 380" width="1743" height="380" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1743" height="380" />
+  <text class="title" x="12" y="24">1,000 items in a 200-high area: after the fixes in the article</text>
+  <rect class="head" x="12" y="38" width="1719" height="30" />
+  <text class="cell" x="26" y="57.5">condition</text>
+  <text class="cell" x="941" y="57.5" text-anchor="end">containers realized</text>
+  <text class="cell" x="1142" y="57.5" text-anchor="end">items panel</text>
+  <text class="cell" x="1350" y="57.5" text-anchor="end">VirtualizingStackPanel?</text>
+  <text class="cell" x="1488" y="57.5" text-anchor="end">IsVirtualizing</text>
+  <text class="cell" x="1642" y="57.5" text-anchor="end">CanContentScroll</text>
+  <text class="cell" x="1717" y="57.5" text-anchor="end">height</text>
+  <text class="cell" x="26" y="87.5">TreeView: VirtualizingPanel.IsVirtualizing=True</text>
+  <text class="cell" x="941" y="87.5" text-anchor="end">25</text>
+  <text class="cell" x="1142" y="87.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="87.5" text-anchor="end">200</text>
+  <text class="cell" x="26" y="117.5">TreeView: VirtualizingPanel.IsVirtualizing=True, CacheLength=0</text>
+  <text class="cell" x="941" y="117.5" text-anchor="end">13</text>
+  <text class="cell" x="1142" y="117.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="117.5" text-anchor="end">200</text>
+  <text class="cell" x="26" y="147.5">ItemsControl: VirtualizingStackPanel + ScrollViewer in the template</text>
+  <text class="cell" x="941" y="147.5" text-anchor="end">14</text>
+  <text class="cell" x="1142" y="147.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="147.5" text-anchor="end">200</text>
+  <text class="cell" x="26" y="177.5">ItemsControl: VirtualizingStackPanel only, in an outer ScrollViewer with CanContentScroll=True</text>
+  <text class="cell" x="941" y="177.5" text-anchor="end">1,000</text>
+  <text class="cell" x="1142" y="177.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="177.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="177.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="177.5" text-anchor="end">-</text>
+  <text class="cell" x="1717" y="177.5" text-anchor="end">15,960</text>
+  <text class="cell" x="26" y="207.5">ItemsControl: VirtualizingStackPanel only, directly in the 200-high Grid</text>
+  <text class="cell" x="941" y="207.5" text-anchor="end">1,000</text>
+  <text class="cell" x="1142" y="207.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="207.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="207.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="207.5" text-anchor="end">-</text>
+  <text class="cell" x="1717" y="207.5" text-anchor="end">200</text>
+  <text class="cell" x="26" y="237.5">ComboBox: ItemsPanel = VirtualizingStackPanel, drop-down open</text>
+  <text class="cell" x="941" y="237.5" text-anchor="end">19</text>
+  <text class="cell" x="1142" y="237.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="237.5" text-anchor="end">21.96</text>
+  <text class="cell" x="26" y="267.5">grouped with GroupStyle: VirtualizingPanel.IsVirtualizingWhenGrouping=True</text>
+  <text class="cell" x="941" y="267.5" text-anchor="end">19</text>
+  <text class="cell" x="1142" y="267.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="267.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="267.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="267.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="267.5" text-anchor="end">200</text>
+  <text class="cell" x="26" y="297.5">search box: TextBox in an Auto row, ListBox in a * row</text>
+  <text class="cell" x="941" y="297.5" text-anchor="end">10</text>
+  <text class="cell" x="1142" y="297.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="297.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="297.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="297.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="297.5" text-anchor="end">182.04</text>
+  <text class="cell" x="26" y="327.5">search box: TextBox docked at the top, ListBox as the last child of a DockPanel</text>
+  <text class="cell" x="941" y="327.5" text-anchor="end">10</text>
+  <text class="cell" x="1142" y="327.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="327.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="327.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="327.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="327.5" text-anchor="end">182.04</text>
+  <text class="cell" x="26" y="357.5">vertical StackPanel: ListBox MaxHeight=200</text>
+  <text class="cell" x="941" y="357.5" text-anchor="end">11</text>
+  <text class="cell" x="1142" y="357.5" text-anchor="end">VirtualizingStackPanel</text>
+  <text class="cell" x="1350" y="357.5" text-anchor="end">True</text>
+  <text class="cell" x="1488" y="357.5" text-anchor="end">True</text>
+  <text class="cell" x="1642" y="357.5" text-anchor="end">True</text>
+  <text class="cell" x="1717" y="357.5" text-anchor="end">200</text>
+  <line class="line" x1="12" y1="38" x2="1731" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1731" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1731" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1731" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1731" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1731" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1731" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1731" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1731" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1731" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1731" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1731" y2="368" />
+  <line class="line" x1="12" y1="38" x2="12" y2="368" />
+  <line class="line" x1="778" y1="38" x2="778" y2="368" />
+  <line class="line" x1="955" y1="38" x2="955" y2="368" />
+  <line class="line" x1="1156" y1="38" x2="1156" y2="368" />
+  <line class="line" x1="1364" y1="38" x2="1364" y2="368" />
+  <line class="line" x1="1502" y1="38" x2="1502" y2="368" />
+  <line class="line" x1="1656" y1="38" x2="1656" y2="368" />
+  <line class="line" x1="1731" y1="38" x2="1731" y2="368" />
+</svg>
