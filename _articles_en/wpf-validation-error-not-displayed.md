@@ -206,12 +206,12 @@ To report results while the user is still typing, specify `UpdateSourceTrigger=P
 ---
 
 Which stage a case stops at can be told apart by reading `Validation.HasError`, the `Validation.Errors` count, and the number of adorners separately.
-The figure below records those for a `TextBox` bound to a source that always reports an error.
+The table below records those for a `TextBox` bound to a source that always reports an error.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-validation-error-not-displayed/validation-stages.svg" alt="A table of HasError, the Errors count, and the adorner count per validation setup. IDataErrorInfo alone gives False and 0 errors. Turning on ValidatesOnDataErrors gives True, 1, and 1. INotifyDataErrorInfo gives True, 1, and 1 by default. ValidationRules gives True, 1, and 1. Setting ErrorTemplate to null keeps True and 1 but drops the adorner count to 0." width="615" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with a <code>TextBox</code> bound to a source that always reports an error. <code>adorners</code> is the count returned by <code>AdornerLayer.GetAdorners</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-validation-error-not-displayed/validation-stages.en.md %}
+
+Measured on .NET 10 / Windows 11 with a <code>TextBox</code> bound to a source that always reports an error. <code>adorners</code> is the count returned by <code>AdornerLayer.GetAdorners</code>.
+{: .table-caption}
 
 **The first row shows 0 errors.** Implementing `IDataErrorInfo` is not enough to reach stage 1 without `ValidatesOnDataErrors`.
 The second row turns it on: one error appears, and one adorner is drawn.
@@ -419,10 +419,10 @@ Whether results appear while typing or after focus leaves is a decision about up
 The differences between the values are covered in [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/).
 Driving the update from the view when `Explicit` is chosen is covered in [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/).
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-validation-error-not-displayed/validation-pitfalls.svg" alt="A table of the behaviors in the notes. For an INotifyDataErrorInfo validating in its setter, LostFocus leaves HasError False after clearing the box by typing and turns it True once focus leaves; Explicit stays False after focus leaves and turns True on UpdateSource. With OneWay and a rule, HasError is True at the start, still True after typing, and False once the source is fixed. Assigning from code under OneWay and OneTime removes the binding and gives False; SetCurrentValue keeps the binding and stays True. Raising ErrorsChanged with Namee leaves Validation.HasError False although HasErrors is True; with Name it is True. Validation.Error is raised 0 times with NotifyOnValidationError False and 2 times with True. A binding to the ErrorContent of the first element of Validation.Errors by index traces Error 17 once when the error clears; the current-item /ErrorContent traces none. ErrorsChanged gives True whether raised from the UI thread or a background thread." width="1218" height="500" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. Typing and key presses were sent through WPF's input processing (<code>InputManager</code>). <code>Error 17</code> is the number of entries recorded in the data binding trace.</figcaption>
-</figure>
+{% include tables/articles/wpf-validation-error-not-displayed/validation-pitfalls.en.md %}
+
+Measured on .NET 10 / Windows 11. Typing and key presses were sent through WPF's input processing (<code>InputManager</code>). <code>Error 17</code> is the number of entries recorded in the data binding trace.
+{: .table-caption}
 
 ---
 

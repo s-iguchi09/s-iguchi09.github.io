@@ -21,3 +21,10 @@ images:
   - "images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.svg"
   - "images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.svg"
   - "images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-datacontext-this.png"
+tables:
+  - "_includes/tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.en.md"
+  - "_includes/tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.ja.md"
+  - "_includes/tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.en.md"
+  - "_includes/tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.ja.md"
+  - "_includes/tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.en.md"
+  - "_includes/tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.ja.md"

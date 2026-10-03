@@ -24,6 +24,15 @@ internal sealed class SelectableReadOnlyTextScene : IScene
 
     public string Slug => "wpf-selectable-readonly-text-display";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("no selection API", "選択の API が無い"),
+        ("+ borderless, transparent", "+ 枠なし、背景を透明に"),
+        ("IsReadOnlyCaretVisible default", "IsReadOnlyCaretVisible の既定値"),
+        (", height ", "、高さ "),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         var textBlock = SceneContext.LoadXaml<TextBlock>(
@@ -59,14 +68,14 @@ internal sealed class SelectableReadOnlyTextScene : IScene
 
         await context.SaveTableAsync(
             "can the text be selected, and how does it take focus?",
-            ["control", "SelectAll() selects", "Focusable", "IsTabStop"],
-            await SelectionAndTriggerMeasurements.SelectableTextAsync(),
+            [Loc.Of("control", "コントロール"), Loc.Of("SelectAll() selects", "SelectAll() で選択されるもの"), "Focusable", "IsTabStop"],
+            LocTable.Translate(await SelectionAndTriggerMeasurements.SelectableTextAsync(), Words),
             "selectable-text-matrix.svg");
 
         await context.SaveTableAsync(
             "read-only TextBox: caret default and AcceptsReturn with three lines of text",
-            ["case", "measured"],
-            await CaretAndAcceptsReturnAsync(),
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
+            LocTable.Translate(await CaretAndAcceptsReturnAsync(), Words),
             "readonly-textbox-caret-acceptsreturn.svg");
     }
 

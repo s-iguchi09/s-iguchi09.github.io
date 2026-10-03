@@ -17,3 +17,10 @@ images:
   - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg"
   - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg"
   - "images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.svg"
+tables:
+  - "_includes/tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.en.md"
+  - "_includes/tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.ja.md"
+  - "_includes/tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.en.md"
+  - "_includes/tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.ja.md"
+  - "_includes/tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.en.md"
+  - "_includes/tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.ja.md"

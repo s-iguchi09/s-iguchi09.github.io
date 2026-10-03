@@ -105,6 +105,37 @@ internal sealed class ValidationErrorNotDisplayedScene : IScene
 
     public string Slug => "wpf-validation-error-not-displayed";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("INotifyDataErrorInfo only", "INotifyDataErrorInfo だけ"),
+        ("IDataErrorInfo only", "IDataErrorInfo だけ"),
+        ("setter validation, LostFocus: cleared by typing", "setter で検証、LostFocus: 入力で空にする"),
+        ("setter validation, Explicit: cleared by typing", "setter で検証、Explicit: 入力で空にする"),
+        ("HasError: while focused ", "HasError: フォーカス中 "),
+        ("; after focus leaves ", "、フォーカスが外れた後 "),
+        ("; after UpdateSource ", "、UpdateSource の後 "),
+        (" (Text \"\")", "（Text \"\"）"),
+        ("OneWay + rule, source empty", "OneWay + 規則、ソースは空"),
+        ("HasError: start ", "HasError: 最初 "),
+        ("; typed \"abc\" ", "、\"abc\" と入力 "),
+        ("; source \"abc\" ", "、ソースを \"abc\" に "),
+        (", Text = \"x\" in code", "、コードで Text = \"x\""),
+        ("binding removed, ", "バインドは外れる、"),
+        ("binding kept, ", "バインドは残る、"),
+        ("error added, ", "エラーを追加、"),
+        (", path Name", "、パスは Name"),
+        ("Validation.Error handler, ", "Validation.Error のハンドラー、"),
+        ("Validation.Error raised ", "Validation.Error の発生 "),
+        (" times", " 回"),
+        (", error cleared", "、エラーを解消"),
+        (" traced ", " の記録 "),
+        ("ErrorsChanged raised on a background thread", "バックグラウンドスレッドで ErrorsChanged を発生させる"),
+        ("ErrorsChanged raised on the UI thread", "UI スレッドで ErrorsChanged を発生させる"),
+        (" (raised on thread other than UI)", "（UI 以外のスレッドで発生）"),
+        (" (raised on thread UI)", "（UI スレッドで発生）"),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         await CaptureActivationAsync(context);
@@ -176,14 +207,14 @@ internal sealed class ValidationErrorNotDisplayedScene : IScene
 
         await context.SaveTableAsync(
             "TextBox bound to an always-invalid source",
-            ["configuration", "HasError", "Errors", "adorners"],
-            await ValidationAndScopeMeasurements.ValidationStagesAsync(),
+            [Loc.Of("configuration", "構成"), "HasError", "Errors", Loc.Of("adorners", "装飾（adorner）の数")],
+            LocTable.Translate(await ValidationAndScopeMeasurements.ValidationStagesAsync(), Words),
             "validation-stages.svg");
 
         await context.SaveTableAsync(
             "pitfalls: OneWay, assignment, property name, Validation.Error, Errors[0], thread",
-            ["case", "measured"],
-            [.. await PitfallsAsync(), .. await ValidationAndScopeMeasurements.ErrorsChangedThreadAsync()],
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
+            LocTable.Translate([.. await PitfallsAsync(), .. await ValidationAndScopeMeasurements.ErrorsChangedThreadAsync()], Words),
             "validation-pitfalls.svg");
     }
 

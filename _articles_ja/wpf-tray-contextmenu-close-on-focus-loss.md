@@ -35,10 +35,10 @@ excerpt: "TreePaste の開発で発生した、タスクトレイから表示し
 - 自分のウィンドウが既に前面にあるときに `SetForegroundWindow` を呼ぶと `true` が返り、前面のままだった。
 - 別のプロセスのウィンドウが前面にある状態で、このプロセスから自分のウィンドウへ `SetForegroundWindow` を呼ぶと `false` が返り、前面は切り替わらなかった。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg" alt="ContextMenu.StaysOpen と SetForegroundWindow を測った表。ContextMenu.StaysOpen のメタデータの既定値と new した直後の値はどちらも True、Popup.StaysOpen の既定値も True。自分のウィンドウが既に前面のときの SetForegroundWindow は True を返し、前面のまま。別のプロセスが前面のときは False を返し、前面は切り替わらない。" width="810" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。別のプロセスが前面の行は、補助の PowerShell のプロセスに小さなフォームを出させて前面を渡し、そのあとで呼んだ結果である。</figcaption>
-</figure>
+{% include tables/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.ja.md %}
+
+.NET 10 / Windows 11 で実測。別のプロセスが前面の行は、補助の PowerShell のプロセスに小さなフォームを出させて前面を渡し、そのあとで呼んだ結果である。
+{: .table-caption}
 
 `ContextMenu` が閉じるかどうかそのものは、上記の理由から自動化して確認できていない。
 

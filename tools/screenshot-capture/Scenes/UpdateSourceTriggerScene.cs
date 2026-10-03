@@ -25,6 +25,19 @@ internal sealed class UpdateSourceTriggerScene : IScene
 
     public string Slug => "wpf-textbox-updatesourcetrigger-binding-timing";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("default binding, type \"sato\", then Enter on an IsDefault button", "既定のバインド、\"sato\" と入力し、IsDefault のボタンで Enter"),
+        ("in Click: ", "Click の中: "),
+        (", TextBox focused ", "、TextBox のフォーカス "),
+        ("FrameworkElement.Tag (on PasswordBox)", "FrameworkElement.Tag（PasswordBox）"),
+        ("ErrorsChanged raised on a background thread", "バックグラウンドスレッドで ErrorsChanged を発生させる"),
+        ("ErrorsChanged raised on the UI thread", "UI スレッドで ErrorsChanged を発生させる"),
+        (" (raised on thread other than UI)", "（UI 以外のスレッドで発生）"),
+        (" (raised on thread UI)", "（UI スレッドで発生）"),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         var defaultViewModel = new UserNameViewModel();
@@ -62,20 +75,20 @@ internal sealed class UpdateSourceTriggerScene : IScene
 
         await context.SaveTableAsync(
             "DefaultUpdateSourceTrigger read from property metadata",
-            ["dependency property", "DefaultUpdateSourceTrigger", "BindsTwoWayByDefault"],
-            SelectionAndTriggerMeasurements.DefaultUpdateSourceTriggers(),
+            [Loc.Of("dependency property", "依存関係プロパティ"), "DefaultUpdateSourceTrigger", "BindsTwoWayByDefault"],
+            LocTable.Translate(SelectionAndTriggerMeasurements.DefaultUpdateSourceTriggers(), Words),
             "updatesourcetrigger-defaults.svg");
 
         await context.SaveTableAsync(
             "source value after one keystroke, then after focus moves away",
-            ["UpdateSourceTrigger", "after input", "after LostFocus", "final"],
-            await SelectionAndTriggerMeasurements.UpdateTimingAsync(),
+            ["UpdateSourceTrigger", Loc.Of("after input", "入力の後"), Loc.Of("after LostFocus", "LostFocus の後"), Loc.Of("final", "最後")],
+            LocTable.Translate(await SelectionAndTriggerMeasurements.UpdateTimingAsync(), Words),
             "updatesourcetrigger-timing.svg");
 
         await context.SaveTableAsync(
             "confirming without moving focus, and the thread that raises ErrorsChanged",
-            ["case", "measured"],
-            [await DefaultButtonEnterAsync(), .. await ValidationAndScopeMeasurements.ErrorsChangedThreadAsync()],
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
+            LocTable.Translate([await DefaultButtonEnterAsync(), .. await ValidationAndScopeMeasurements.ErrorsChangedThreadAsync()], Words),
             "updatesourcetrigger-confirm-errors.svg");
     }
 

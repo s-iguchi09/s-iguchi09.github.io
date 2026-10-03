@@ -16,3 +16,8 @@ images:
   - "images/articles/wpf-selectable-readonly-text-display/selectable-readonly-text.png"
   - "images/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.svg"
   - "images/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.svg"
+tables:
+  - "_includes/tables/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.en.md"
+  - "_includes/tables/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.ja.md"
+  - "_includes/tables/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.en.md"
+  - "_includes/tables/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.ja.md"

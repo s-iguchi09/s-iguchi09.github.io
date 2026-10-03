@@ -16,3 +16,8 @@ verifies:
 images:
   - "images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg"
   - "images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.svg"
+tables:
+  - "_includes/tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.en.md"
+  - "_includes/tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.ja.md"
+  - "_includes/tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.en.md"
+  - "_includes/tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.ja.md"

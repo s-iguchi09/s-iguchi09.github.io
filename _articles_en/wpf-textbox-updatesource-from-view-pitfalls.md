@@ -59,10 +59,10 @@ Calling it while the binding is detached from its target throws an `InvalidOpera
 
 The conditions above were verified by running them.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="A table of GetBindingExpression and UpdateSource results per way of setting Text. A literal, a MultiBinding and a TemplateBinding all yield null. OneTime and OneWay do nothing on an intact binding and raise InvalidOperationException once Text has been assigned. OneWayToSource and TwoWay update the source when called after Text is assigned. Typing through TextInput leaves the binding alive in every mode, with UpdateSource never called and the source unchanged. Even with TwoWay, calling the previously retrieved expression after ClearBinding raises InvalidOperationException." width="976" height="410" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. The <code>GetBindingExpression state</code> column is read at a different moment per row: before <code>Text</code> is modified on the first seven rows, after the keystroke on the next three (<code>typed via TextInput</code>), and before <code>ClearBinding</code> on the last row (<code>TwoWay, then ClearBinding</code>). <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text / after typing</code> doubles as the result of calling <code>UpdateSource()</code> after an assignment and as the source value after typing. The three <code>typed via TextInput</code> rows type one character through the <code>TextInput</code> event instead of assigning. <code>no change</code> means the source value was left unchanged.</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 by varying how <code>Text</code> is set and then calling <code>GetBindingExpression</code> and <code>UpdateSource()</code>. The <code>GetBindingExpression state</code> column is read at a different moment per row: before <code>Text</code> is modified on the first seven rows, after the keystroke on the next three (<code>typed via TextInput</code>), and before <code>ClearBinding</code> on the last row (<code>TwoWay, then ClearBinding</code>). <code>UpdateSource() as-is</code> is the call made immediately after establishing the binding; <code>after editing Text / after typing</code> doubles as the result of calling <code>UpdateSource()</code> after an assignment and as the source value after typing. The three <code>typed via TextInput</code> rows type one character through the <code>TextInput</code> event instead of assigning. <code>no change</code> means the source value was left unchanged.
+{: .table-caption}
 
 **The two columns disagree for `OneWay` and `OneTime`, and that difference matters.**
 
@@ -164,10 +164,10 @@ bool committed = formPanel.BindingGroup.UpdateSources();
 `UpdateSources()` returns `false` if even one validation fails.
 A rule at a step that runs before the write-back (such as `RawProposedValue`) keeps the source untouched when it fails, but a rule at the `UpdatedValue` step runs after the write-back, so the value has already been written to the source even though `false` is returned (see the table below).
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.svg" alt="A table of further conditions. Removing a TwoWay TextBox from the tree and then calling UpdateSource raises no exception, leaves Status at PathError, and keeps the source at before. Changing the source of a OneTime binding leaves Text unchanged, but UpdateTarget turns it into changed. BindingGroup.UpdateSources returns True with the source at after when there is no rule. A rule failing at the RawProposedValue step returns False and keeps the source at before. A rule failing at the UpdatedValue step returns False, yet the source has already been written to after." width="1046" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The <code>BindingGroup</code> rows assign <code>after</code> to <code>Text</code> and then call <code>UpdateSources()</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.en.md %}
+
+Measured on .NET 10 / Windows 11. The <code>BindingGroup</code> rows assign <code>after</code> to <code>Text</code> and then call <code>UpdateSources()</code>.
+{: .table-caption}
 
 It does not end the `IEditableObject` edit transaction, so use `CommitEdit()` to commit fully.
 

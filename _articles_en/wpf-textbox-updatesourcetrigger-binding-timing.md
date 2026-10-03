@@ -28,7 +28,8 @@ Working from the design reason behind that default, this article walks through h
 `UpdateSourceTrigger` is meaningful only on `TwoWay` or `OneWayToSource` bindings.
 It determines the *timing* at which a value is written back from the target (`TextBox.Text`) to the source (the ViewModel); it does not affect the source-to-target display update.
 
-The figures in this article come from reading `DefaultUpdateSourceTrigger` from the metadata of each property in the environment above, and measuring when the value reaches the source.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - Among the bindings in the table, `TextBox.Text` is the only one that defaults to `LostFocus`; the rest default to `PropertyChanged`.
@@ -84,20 +85,20 @@ No source update occurs unless focus moves away.
 
 Reading the metadata and listing it side by side shows that `TextBox.Text` is the outlier.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg" alt="A table of DefaultUpdateSourceTrigger per dependency property. Only TextBox.Text is LostFocus; CheckBox.IsChecked, ComboBox.SelectedItem, Slider.Value, FrameworkElement.Tag read on the PasswordBox type, and TextBlock.Text are all PropertyChanged." width="760" height="260" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by reading <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> from <code>DependencyProperty.GetMetadata</code>. <code>BindsTwoWayByDefault</code> is shown alongside.</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.en.md %}
+
+Measured on .NET 10 / Windows 11 by reading <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> from <code>DependencyProperty.GetMetadata</code>. <code>BindsTwoWayByDefault</code> is shown alongside.
+{: .table-caption}
 
 **`TextBox.Text` is the only one at `LostFocus`.** The others default to `PropertyChanged` and update the source right after the input or interaction.
 That single row of difference is why "the binding is set up but no value arrives" happens mostly on `TextBox`.
 
 When the value actually reaches the source can be measured too, separating the keystroke from the focus change.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg" alt="A table of the source value right after one keystroke and after focus moves away, per UpdateSourceTrigger. Default is empty after input and holds the value after focus leaves. PropertyChanged holds it right after input. Explicit stays empty even after focus leaves and only fills in once UpdateSource is called." width="528" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by entering one character into the <code>TextBox</code> and reading the source right afterwards, then again after moving focus to another control. Only the <code>Explicit</code> row calls <code>UpdateSource()</code> at the end.</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.en.md %}
+
+Measured on .NET 10 / Windows 11 by entering one character into the <code>TextBox</code> and reading the source right afterwards, then again after moving focus to another control. Only the <code>Explicit</code> row calls <code>UpdateSource()</code> at the end.
+{: .table-caption}
 
 The `Default` row — which for `TextBox.Text` means `LostFocus` — is empty right after the keystroke and fills in only once focus leaves.
 `Explicit` stays empty even then, and nothing reaches the source until `UpdateSource()` is called.
@@ -159,10 +160,10 @@ Because a missed call means the value is never reflected, call it reliably at th
 - **Interactions that do not move focus**: when the `TextBox` neither loses focus nor has `UpdateSource()` called, no source update occurs under the default `LostFocus`. This covers a `Focusable="False"` button activated by click, a default button (`IsDefault="True"`) activated by Enter, and access keys. Measured with a default button, `UserName` still held the old value at the time of `Click`, and focus remained in the `TextBox` (see the table below). Note that `Focusable="False"` only prevents the button from taking focus; it does not prevent activation via `IsDefault` or an access key. Use `PropertyChanged` or `Explicit` for UIs that commit through such paths.
 - **Difference from `x:Bind`**: WPF `{Binding}` supports all three values including `Explicit`. UWP/WinUI `{x:Bind}` does not support `Explicit`, so do not conflate the two when reading articles targeting other platforms.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.svg" alt="A table of confirming without moving focus and of the thread that raises ErrorsChanged. Typing sato into a TextBox with the default binding and pressing Enter on an IsDefault button while the box keeps focus leaves UserName at suzuki at the time of Click, with focus still in the TextBox. Raising ErrorsChanged from the UI thread and from a background thread both make Validation.HasError True." width="1022" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The characters and Enter were sent through WPF's input processing (<code>InputManager</code>).</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.en.md %}
+
+Measured on .NET 10 / Windows 11. The characters and Enter were sent through WPF's input processing (<code>InputManager</code>).
+{: .table-caption}
 
 ---
 

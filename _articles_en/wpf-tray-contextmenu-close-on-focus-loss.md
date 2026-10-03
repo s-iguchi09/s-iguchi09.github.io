@@ -36,10 +36,10 @@ That said, the following points were verified by running them in the environment
 - With the process's own window already in the foreground, `SetForegroundWindow` returned `true`, and the window stayed in front.
 - With another process's window in the foreground, calling `SetForegroundWindow` on this process's own window returned `false`, and the foreground did not change.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg" alt="A table of ContextMenu.StaysOpen and SetForegroundWindow. The metadata default of ContextMenu.StaysOpen and its value right after new are both True, and the default of Popup.StaysOpen is True as well. With the own window already in front, SetForegroundWindow returns True and it stays in front. With another process in front, it returns False and the foreground does not change." width="810" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. For the row with another process in front, a helper PowerShell process shows a small form to take the foreground before the call.</figcaption>
-</figure>
+{% include tables/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.en.md %}
+
+Measured on .NET 10 / Windows 11. For the row with another process in front, a helper PowerShell process shows a small form to take the foreground before the call.
+{: .table-caption}
 
 Whether the `ContextMenu` itself closes has not been confirmed under automation, for the reason given above.
 
