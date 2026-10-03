@@ -17,3 +17,8 @@ images:
   - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png"
   - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg"
   - "images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg"
+tables:
+  - "_includes/tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.en.md"
+  - "_includes/tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.ja.md"
+  - "_includes/tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.en.md"
+  - "_includes/tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.ja.md"

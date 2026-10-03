@@ -15,6 +15,7 @@ namespace ScreenshotCapture.Scenes;
 internal sealed class ShutdownLifetimeScene : IScene
 {
     /// <summary>これを超えて生き残ったプロセスは、終了しないものとして扱う。</summary>
+
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(9);
 
     public IReadOnlyList<string> Verifies =>
@@ -27,17 +28,20 @@ internal sealed class ShutdownLifetimeScene : IScene
 
     public string Slug => "wpf-application-not-exiting-shutdownmode-threads";
 
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     /// <summary>表に載せる条件。<c>Key</c> は検証用アプリへ渡す引数。</summary>
-    private static readonly (string Key, string Label)[] Conditions =
+    private static readonly (string Key, Loc Label)[] Conditions =
     [
-        ("control", "visible window only"),
-        ("no-window", "no window at all"),
-        ("unclosed-window", "Window created, never closed"),
+        ("control", T("visible window only", "表示したウィンドウだけ")),
+        ("no-window", T("no window at all", "ウィンドウを 1 つも作らない")),
+        ("unclosed-window", T("Window created, never closed", "Window を作ったが閉じない")),
         ("foreground-thread", "new Thread(...)"),
         ("background-thread", "+ IsBackground = true"),
         ("task-run", "Task.Run(...)"),
-        ("second-ui-thread", "2nd UI thread + Dispatcher.Run()"),
-        ("second-ui-thread-shutdown", "+ InvokeShutdown() on Exit"),
+        ("second-ui-thread", T("2nd UI thread + Dispatcher.Run()", "2 つ目の UI スレッド + Dispatcher.Run()")),
+        ("second-ui-thread-shutdown", T("+ InvokeShutdown() on Exit", "+ Exit で InvokeShutdown()")),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -46,16 +50,21 @@ internal sealed class ShutdownLifetimeScene : IScene
         Directory.CreateDirectory(workspace);
         string executable = await BuildProbeAsync(workspace);
 
-        var rows = new List<IReadOnlyList<string>>();
-        foreach ((string key, string label) in Conditions)
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach ((string key, Loc label) in Conditions)
         {
             Measurement result = await MeasureAsync(executable, workspace, key);
-            rows.Add([label, result.ExitRaised, result.RunReturned, result.Lifetime]);
+            rows.Add([
+                label,
+                result.ExitRaised == "raised" ? T("raised", "発生する") : T("never", "発生しない"),
+                result.RunReturned == "returns" ? T("returns", "戻る") : T("never", "戻らない"),
+                result.Lifetime == "never" ? T("never", "終わらない") : T(result.Lifetime, result.Lifetime.Replace(" s", " 秒")),
+            ]);
         }
 
         await context.SaveTableAsync(
             "process lifetime by condition",
-            ["", "Application.Exit", "Run() returns", "process ends"],
+            ["", "Application.Exit", T("Run() returns", "Run() が戻るか"), T("process ends", "プロセスが終わるまで")],
             rows,
             "shutdown-lifetime-matrix.svg");
     }

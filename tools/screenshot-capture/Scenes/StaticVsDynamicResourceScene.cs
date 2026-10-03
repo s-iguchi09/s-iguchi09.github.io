@@ -78,7 +78,7 @@ internal sealed class StaticVsDynamicResourceScene : IScene
 
         await context.SaveTableAsync(
             "Brush resource at run time (White -> Red): the entry replaced, or the same brush's Color changed",
-            ["configuration", "Border.Background"],
+            [Loc.Of("configuration", "構成"), "Border.Background"],
             await ValuePrecedenceMeasurements.ResourceSwapAsync(),
             "static-vs-dynamic-resource-update.svg");
     }

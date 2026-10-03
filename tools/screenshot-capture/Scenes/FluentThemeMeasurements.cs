@@ -14,6 +14,9 @@ internal static class FluentThemeMeasurements
     /// そのまま測ると、Light と Dark の比較のつもりの表が同じテーマどうしの比較になるため、計測を止める。
     /// ThemeMode を切り替えて比べるシーンは、計測の前に必ずこれを呼ぶ。
     /// </summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     public static void EnsureNotHighContrast()
     {
         if (SystemParameters.HighContrast)
@@ -50,32 +53,32 @@ internal static class FluentThemeMeasurements
     /// テンプレートの出どころは、テンプレート内の名前付きパーツで判別できる。
     /// Fluent のテンプレートは <c>DeleteButton</c> を持ち、従来のテーマは持たない。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> ThemeDeliveryAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> ThemeDeliveryAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(await MeasureAsync("no ThemeMode", themeMode: null, implicitStyle: false));
+        rows.Add(await MeasureAsync(T("no ThemeMode", "ThemeMode なし"), themeMode: null, implicitStyle: false));
         rows.Add(await MeasureAsync("ThemeMode=Light", themeMode: "Light", implicitStyle: false));
-        rows.Add(await MeasureAsync("ThemeMode=Light + implicit Style", themeMode: "Light", implicitStyle: true));
-        rows.Add(await MeasureAsync("no ThemeMode + implicit Style", themeMode: null, implicitStyle: true));
+        rows.Add(await MeasureAsync(T("ThemeMode=Light + implicit Style", "ThemeMode=Light + 暗黙の Style"), themeMode: "Light", implicitStyle: true));
+        rows.Add(await MeasureAsync(T("no ThemeMode + implicit Style", "ThemeMode なし + 暗黙の Style"), themeMode: null, implicitStyle: true));
 
         // 記事は ThemeMode 以外に「Fluent.xaml を直接マージする」経路も扱っている。
         // ThemeMode だけを測って結論を書くと、そちらへ一般化できてしまう。
         rows.Add(await MeasureAsync(
-            "merge Fluent.xaml directly", themeMode: null, implicitStyle: false, mergeFluent: true));
+            T("merge Fluent.xaml directly", "Fluent.xaml を直接マージ"), themeMode: null, implicitStyle: false, mergeFluent: true));
         rows.Add(await MeasureAsync(
-            "merge Fluent.xaml + implicit Style", themeMode: null, implicitStyle: true, mergeFluent: true));
+            T("merge Fluent.xaml + implicit Style", "Fluent.xaml をマージ + 暗黙の Style"), themeMode: null, implicitStyle: true, mergeFluent: true));
 
         // ここまでの暗黙スタイルは BasedOn も Template も持たない。
         // 元のスタイルを BasedOn で引き継いだ場合まで同じ結果とは限らないため、別に測る。
         // 経路によって結果が変わりうるので、2 通りとも測る。
         rows.Add(await MeasureAsync(
-            "ThemeMode=Light + implicit Style, BasedOn",
+            T("ThemeMode=Light + implicit Style, BasedOn", "ThemeMode=Light + 暗黙の Style、BasedOn"),
             themeMode: "Light",
             implicitStyle: true,
             basedOnThemeStyle: true));
         rows.Add(await MeasureAsync(
-            "merge Fluent.xaml + implicit Style, BasedOn",
+            T("merge Fluent.xaml + implicit Style, BasedOn", "Fluent.xaml をマージ + 暗黙の Style、BasedOn"),
             themeMode: null,
             implicitStyle: true,
             mergeFluent: true,
@@ -95,8 +98,8 @@ internal static class FluentThemeMeasurements
             UriKind.Absolute),
     };
 
-    private static async Task<IReadOnlyList<string>> MeasureAsync(
-        string label,
+    private static async Task<IReadOnlyList<Loc>> MeasureAsync(
+        Loc label,
         string? themeMode,
         bool implicitStyle,
         bool mergeFluent = false,
@@ -108,7 +111,7 @@ internal static class FluentThemeMeasurements
 
         var window = new Window
         {
-            Title = label,
+            Title = label.En,
             Content = host,
             Width = 260,
             Height = 140,
@@ -155,7 +158,7 @@ internal static class FluentThemeMeasurements
             // Style プロパティに値が入っているかで、暗黙スタイルが当たったかが分かる。
             // 従来のテーマスタイルは Style プロパティを埋めないため null のままになる。
             // Fluent はリソースとして届くため、ここが埋まる。
-            string styleSource = box.Style is null ? "theme style" : "implicit style";
+            Loc styleSource = box.Style is null ? T("theme style", "テーマのスタイル") : T("implicit style", "暗黙のスタイル");
 
             string parts = string.Join(
                 ", ",
@@ -181,7 +184,7 @@ internal static class FluentThemeMeasurements
     ///
     /// 「OS の設定に追随する」という主張は、値を並べて初めて確かめられる。
     /// </summary>
-    public static List<IReadOnlyList<string>> SystemColorValues()
+    public static List<IReadOnlyList<Loc>> SystemColorValues()
     {
         (string Label, Color Color)[] targets =
         [
@@ -196,10 +199,10 @@ internal static class FluentThemeMeasurements
             ("GrayTextColor", SystemColors.GrayTextColor),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // SystemColors は Windows のダークモードでは変わらない。どちらのモードで測ったかを表に残す。
-        rows.Add(["Windows app mode (AppsUseLightTheme)", AppMode(), "-"]);
+        rows.Add([T("Windows app mode (AppsUseLightTheme)", "Windows のアプリのモード（AppsUseLightTheme）"), AppMode(), "-"]);
 
         foreach ((string label, Color color) in targets)
         {
@@ -214,15 +217,15 @@ internal static class FluentThemeMeasurements
     }
 
     /// <summary>レジストリの AppsUseLightTheme。0 がダーク、1 がライト。</summary>
-    private static string AppMode()
+    private static Loc AppMode()
     {
         using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
         return key?.GetValue("AppsUseLightTheme") switch
         {
-            0 => "dark (0)",
-            1 => "light (1)",
+            0 => T("dark (0)", "ダーク（0）"),
+            1 => T("light (1)", "ライト（1）"),
             object other => other.ToString() ?? "-",
-            null => "not set",
+            null => T("not set", "未設定"),
         };
     }
 
@@ -230,7 +233,7 @@ internal static class FluentThemeMeasurements
     /// ThemeMode を Light と Dark にしたときの、Fluent テーマのブラシのキーと SystemColors のブラシのキーの値。
     /// ウィンドウに ThemeMode を設定して表示し、そのウィンドウから各キーを引く。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> ThemeBrushValuesAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> ThemeBrushValuesAsync()
     {
         (string Label, object Key)[] keys =
         [
@@ -273,7 +276,7 @@ internal static class FluentThemeMeasurements
             column++;
         }
 
-        return keys.Select(k => (IReadOnlyList<string>)[k.Label, values[k.Label][0], values[k.Label][1]]).ToList();
+        return keys.Select(k => (IReadOnlyList<Loc>)[k.Label, values[k.Label][0], values[k.Label][1]]).ToList();
     }
 
     /// <summary>
@@ -286,7 +289,7 @@ internal static class FluentThemeMeasurements
     /// ここで測っているのはアプリケーションリソースの差し替えへの追随だけである。
     /// OS のテーマ切り替えそのものは測っていないため、そこまで主張しない。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> ColorReferenceTrackingAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> ColorReferenceTrackingAsync()
     {
         var direct = new Border
         {

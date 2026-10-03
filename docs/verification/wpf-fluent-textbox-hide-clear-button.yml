@@ -17,3 +17,8 @@ images:
   - "images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png"
   - "images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg"
   - "images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.svg"
+tables:
+  - "_includes/tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.en.md"
+  - "_includes/tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.ja.md"
+  - "_includes/tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.en.md"
+  - "_includes/tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.ja.md"

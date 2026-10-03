@@ -22,7 +22,9 @@ The approach uses built-in WPF styling, spacing, corner radius, visual hierarchy
 - Constraint: no external Fluent UI library (for example, MahApps.Metro or ModernWpf)
 - Verification environment: .NET 10 / Windows 11
 
-The measurements in this article were taken in the environment above, on a machine set to the Windows dark mode. `systemcolors-values.svg` reads the color each `SystemColors` key returns and its relative luminance; `systemcolors-tracking.svg` reads the referenced values before and after an application resource is swapped; `theme-brush-values.svg` reads the brush keys under `ThemeMode` `Light` and `Dark`. The screenshots render the article's XAML.
+The measurements in this article were taken in the environment above, on a machine set to the Windows dark mode.
+The three tables read, in order, the color each `SystemColors` key returns and its relative luminance, the referenced values before and after an application resource is swapped, and the brush keys under `ThemeMode` `Light` and `Dark`.
+The screenshots render the article's XAML.
 The following points were confirmed in that environment:
 
 - `HighlightColor` for a selected item and `AccentColor` from personalization settings are different values.
@@ -60,10 +62,10 @@ Two sets of colors are built in. The Fluent theme's own brush keys, such as `App
 
 What `SystemColors` actually returns can be read back and checked.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="A table of the color each SystemColors key returns along with its relative luminance. WindowColor is white, WindowTextColor is black, HighlightColor is a blue, and AccentColor is a red, all matching the OS settings. The first row records that the machine was set to the Windows dark mode." width="603" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by reading each <code>SystemColors</code> key, on a machine set to the Windows dark mode (the first row). <code>relative luminance</code> is the WCAG relative luminance, included to gauge foreground-to-background contrast.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.en.md %}
+
+Measured on .NET 10 / Windows 11 by reading each <code>SystemColors</code> key, on a machine set to the Windows dark mode (the first row). <code>relative luminance</code> is the WCAG relative luminance, included to gauge foreground-to-background contrast.
+{: .table-caption}
 
 `WindowColor` and `WindowTextColor` come out at `1.00` and `0.00` although this machine is set to the dark mode: `SystemColors` did not follow the Windows dark mode.
 
@@ -73,20 +75,20 @@ The machine used here has its accent set to a red, so the table shows `Highlight
 **Reading these keys is not by itself enough to follow a later replacement, though.**
 Reading a color directly, as in `SystemColors.WindowColor`, bakes in the value as of that read.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg" alt="A table of the value before and after the system brush is replaced, per way of referencing the color. A brush built from SystemColors.WindowColor stays white; only the side referencing SystemColors.WindowBrushKey through DynamicResource takes the new color." width="697" height="140" loading="lazy">
-  <figcaption><code>SystemColors.WindowBrushKey</code> in the application's resources replaced, with both values read on either side of the replacement. What this measures is whether each side follows that replacement; an OS theme switch itself is not measured here.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.en.md %}
+
+<code>SystemColors.WindowBrushKey</code> in the application's resources replaced, with both values read on either side of the replacement. What this measures is whether each side follows that replacement; an OS theme switch itself is not measured here.
+{: .table-caption}
 
 The directly read side keeps its value; only the side referencing the resource key through `DynamicResource` takes the new color.
 **Following a replacement requires referencing a resource key such as `SystemColors.WindowBrushKey` through `DynamicResource`, not the color.**
 
 What `DynamicResource` cannot give is a change that never happens. Switching `ThemeMode` between `Light` and `Dark` changed all five Fluent brush keys measured, but none of the three `SystemColors` keys measured (`WindowBrushKey`, `ControlTextBrushKey`, and `AccentColorBrushKey`):
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg" alt="A table of brush keys under ThemeMode Light and Dark. The Fluent keys ApplicationBackgroundBrush, CardBackgroundFillColorDefaultBrush, TextFillColorPrimaryBrush, TextFillColorSecondaryBrush, and AccentFillColorDefaultBrush all change, for example the background from FAFAFA to 202020. SystemColors.WindowBrushKey stays white, ControlTextBrushKey stays black, and AccentColorBrushKey stays the same red in both." width="610" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by showing a window with each <code>ThemeMode</code> and looking up every key from it.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.en.md %}
+
+Measured on .NET 10 / Windows 11 by showing a window with each <code>ThemeMode</code> and looking up every key from it.
+{: .table-caption}
 
 Background, surface, and text colors that should follow the theme therefore have to come from the Fluent brush keys. `SystemColors` suit colors that come from Windows itself; `SystemColors.AccentColorBrushKey`, for example, returned the personalization accent under both themes.
 

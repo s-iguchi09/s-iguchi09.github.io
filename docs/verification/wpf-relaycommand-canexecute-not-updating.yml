@@ -15,3 +15,6 @@ verifies:
 images:
   - "images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png"
   - "images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg"
+tables:
+  - "_includes/tables/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.en.md"
+  - "_includes/tables/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.ja.md"

@@ -60,7 +60,7 @@ With `VirtualizationMode="Recycling"`, containers are reused, which makes incons
 
 With virtualization active, only as many `ListBoxItem` instances exist as the visible range requires.
 Measured on a 600px-tall `ListBox`, the number of realized containers stayed constant at 31 across collections of 100, 10,000, and 100,000 items.
-Those measurements appear in the figure under "Keeping Virtualization Intact" below.
+Those measurements appear in the table under "Keeping Virtualization Intact" below.
 
 `ItemContainerStyle` applies only to `ListBoxItem` instances that have been generated.
 With 10,000 items bound, those 31 are the ones that have a container; **the remaining 9,969 have no corresponding `ListBoxItem` at all**.
@@ -241,10 +241,10 @@ private void RowListBox_SelectionChanged(object sender, SelectionChangedEventArg
 It also fires on a `SelectAll` call, on assignment to `SelectedItem`, and — in the configuration described here — **when the container of an item selected on the data side is realized and the binding restores its selection state**.
 It does not fire for items whose selection already agrees between the UI and the data: after selecting all, scrolling ten pages raised no `SelectionChanged` at all.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg" alt="A table of how often SelectionChanged was raised in a virtualized ListBox with 10,000 items. With the binding and SelectionChanged combined, scrolling ten pages after selecting all raised it 0 times. Selecting the off-screen Row 5001 on the data side left SelectedItems at 0 with 0 events; ScrollIntoView realized it, giving SelectedItems 1 and 1 event with 1 added item. Selecting Row 1 and pressing Shift+End gave SelectedItems 10,000 and 1 event with 9,999 added items in both configurations; the data-side IsSelected count was 10,000 with the SelectionChanged write-back and 31 with only the ItemContainerStyle binding." width="1215" height="230" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. Shift+End is sent as real keyboard input, because <code>ListBox</code> reads the <code>Shift</code> state from <code>Keyboard.Modifiers</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.en.md %}
+
+Measured on .NET 10 / Windows 11. Shift+End is sent as real keyboard input, because <code>ListBox</code> reads the <code>Shift</code> state from <code>Keyboard.Modifiers</code>.
+{: .table-caption}
 
 When it fires for a restore, the handler above receives a call assigning `true` to an item that is already `true`.
 Rejecting an unchanged value in the setter, as `RowItemViewModel` does above, keeps that path from emitting redundant change notifications.

@@ -25,7 +25,7 @@ This article explains the cause in terms of dependency property value precedence
 - Architecture: applicable to both MVVM and code-behind
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from reading the effective value and its `BaseValueSource` in the environment above.
+The tables in this article come from reading the effective value and its `BaseValueSource` in the environment above.
 The following points were confirmed in that environment:
 
 - On an element that carries a local value for a property, a `Style` trigger setting that same property has no effect even when its condition is met.
@@ -98,12 +98,12 @@ Supplying the default through a setter rather than a local value therefore resto
 ---
 
 This precedence can be confirmed by displaying the elements and reading `DependencyPropertyHelper.GetValueSource`.
-The figure below records the result under varying conditions.
+The table below records the result under varying conditions.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg" alt="A table of the effective Border.Background and where the value came from. With a local value it stays white at Local; once the default moves to a Setter the trigger color applies at StyleTrigger; with the trigger unmet it is white at Style; and after ClearValue removes the local value the trigger color applies at StyleTrigger." width="598" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. <code>HasError</code> varies per row: it is <code>False</code> on the <code>trigger not met</code> row and <code>True</code> on the others. The value in parentheses is the <code>BaseValueSource</code> returned by <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.en.md %}
+
+Measured on .NET 10 / Windows 11. <code>HasError</code> varies per row: it is <code>False</code> on the <code>trigger not met</code> row and <code>True</code> on the others. The value in parentheses is the <code>BaseValueSource</code> returned by <code>DependencyPropertyHelper.GetValueSource</code>.
+{: .table-caption}
 
 **On the row where the value does not change, `BaseValueSource` is `Local`.** That is why the trigger value never replaces it.
 Moving the default into the `Setter` changes the source to `StyleTrigger`, and the trigger color becomes the effective value.
@@ -213,10 +213,10 @@ It suits cases where a temporary value is needed without discarding an existing 
 It only avoids creating a local value, however, and does not remove one that is already set.
 Called on a property that has a local value, `SetCurrentValue` does change the effective value, but the value source stays the local value, so a trigger that fires afterward still does not take effect (see the table below). To let the trigger apply, remove the local value with `ClearValue` first.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg" alt="A table of SetCurrentValue, assignment to a bound property, and the theme style. On a Border with a local Red, SetCurrentValue(White) makes the effective value White while the source stays Local, and it stays White (Local) after Tag is set to on to satisfy the trigger. Without a local value, the trigger turns it green (StyleTrigger) after SetCurrentValue(White). Assigning TextBox.Text in code removes a OneWay binding and keeps a TwoWay binding (the source has not changed yet). On a Button with an explicit style that sets only Foreground, Template still comes from DefaultStyle." width="865" height="290" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The trigger is a style trigger that turns <code>Background</code> green when <code>Tag</code> is <code>on</code>. The default <code>UpdateSourceTrigger</code> of <code>TextBox.Text</code> is <code>LostFocus</code>, so even with TwoWay the source has not changed at the moment of the assignment.</figcaption>
-</figure>
+{% include tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.en.md %}
+
+Measured on .NET 10 / Windows 11. The trigger is a style trigger that turns <code>Background</code> green when <code>Tag</code> is <code>on</code>. The default <code>UpdateSourceTrigger</code> of <code>TextBox.Text</code> is <code>LostFocus</code>, so even with TwoWay the source has not changed at the moment of the assignment.
+{: .table-caption}
 
 `ClearValue` removes only the local value, so whichever remaining input ranks highest — a theme style, for instance — becomes the effective value.
 

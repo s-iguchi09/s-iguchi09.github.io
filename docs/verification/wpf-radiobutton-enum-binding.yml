@@ -20,3 +20,6 @@ verifies:
 images:
   - "images/articles/wpf-radiobutton-enum-binding/radiobutton-enum-groupname.png"
   - "images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg"
+tables:
+  - "_includes/tables/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.en.md"
+  - "_includes/tables/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.ja.md"

@@ -26,7 +26,8 @@ Because the part name differs on `.NET 9`, that difference and the corresponding
 - Architecture: applicable to both MVVM and code-behind
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from enumerating the named parts present in the Fluent theme's `TextBox` template in the environment above.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - The part name of the clear button on .NET 10 was read from the template itself.
@@ -63,10 +64,10 @@ Because of this, no public property is provided to hide only the clear button, s
 
 Which named parts a template holds can be confirmed by applying it and looking them up.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="A table of the named parts in the TextBox template per way the theme reaches the control. DeleteButton is present on the row where ThemeMode is set and on the row merging Fluent.xaml directly. An implicit style without BasedOn removes DeleteButton on either route, leaving only PART_ContentHost, while the rows whose implicit style inherits through BasedOn keep DeleteButton on both routes." width="913" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (there is an implicit style) or left <code>null</code> (no implicit style, so the theme style is used). <code>null</code> alone does not name a theme: in this table only the row without <code>ThemeMode</code> is <code>null</code>, and its theme is Aero2. Fluent arrives as an implicit style both through <code>ThemeMode</code> and through a direct merge.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.en.md %}
+
+Measured on .NET 10 / Windows 11 by looking up named parts in the <code>TextBox</code> template. <code>Style applied</code> reports whether the <code>Style</code> property is filled in (there is an implicit style) or left <code>null</code> (no implicit style, so the theme style is used). <code>null</code> alone does not name a theme: in this table only the row without <code>ThemeMode</code> is <code>null</code>, and its theme is Aero2. Fluent arrives as an implicit style both through <code>ThemeMode</code> and through a direct merge.
+{: .table-caption}
 
 **`DeleteButton` is present wherever the Fluent template reaches the control and no implicit style overrides it** — both with `ThemeMode` set and with `Fluent.xaml` merged directly. That part is the clear button, and this confirms its name on `.NET 10`.
 
@@ -324,10 +325,10 @@ It gives complete control over the structure at the cost of far more markup. Tha
 - When an implicit style overrides the `TextBox` style, omitting `BasedOn` loses the Fluent template altogether and the part ceases to exist. The corresponding row of the table above measures exactly that.
 - **Approach 1 is undone when the template is replaced.** Switching `ThemeMode` while the window is open gives the `TextBox` the new theme's template, and the clear button is created again. In the measurement below, the new part was a different instance without the local `Collapsed`, and it appeared again on focus. Calling `HideClearButtonPart` again after the switch hid it; the method is `public` in the code above for this reason.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.svg" alt="A table of Approach 1 across a ThemeMode switch. After applying it under Light, the part is Collapsed. After switching the window to Dark, the part is a different instance with no local Visibility and is Visible with focus. Applying Approach 1 again makes it Collapsed." width="850" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by applying Approach 1, switching the window's <code>ThemeMode</code> from <code>Light</code> to <code>Dark</code>, and applying it again, with keyboard focus in the <code>TextBox</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.en.md %}
+
+Measured on .NET 10 / Windows 11 by applying Approach 1, switching the window's <code>ThemeMode</code> from <code>Light</code> to <code>Dark</code>, and applying it again, with keyboard focus in the <code>TextBox</code>.
+{: .table-caption}
 
 ---
 
