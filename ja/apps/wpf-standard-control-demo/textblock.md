@@ -71,6 +71,6 @@ description: "WPF の TextBlock を .NET 10 で実測して解説。Text と Inl
 
 ## ソースコードと計測の方法
 
-このページの既定値、`Inlines`、バインドした `Run`、折り返し、省略、`Padding`、`LineHeight` の記述は、.NET 10 / Windows 11 で実際に動かして確かめたものです（文字を選択できないことと、デモアプリで示す `TextAlignment` の値は測っていません）。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「clipped」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
+このページの既定値、`Inlines`、バインドした `Run`、折り返し、省略、`Padding`、`LineHeight` の記述は、.NET 10 / Windows 11 で実際に動かして確かめたものです（文字を選択できないことと、デモアプリで示す `TextAlignment` の値は測っていません）。計測には、このサイトのスクリーンショット生成ツールの [`TextBlockDemoScene`](https://github.com/s-iguchi09/s-iguchi09.github.io/blob/main/tools/screenshot-capture/Scenes/TextBlockDemoScene.cs){: target="_blank" rel="noopener noreferrer"} を使いました。TextBlock は `Measure` と `Arrange` でレイアウトしました。行数は高さを 1 行の高さで割った値で、「切り取られる」は与えた幅で WPF のレイアウトによる切り抜きが働いたことを表します。大きさはフォントと表示スケールで変わり、計測したマシンでの値です。
 
 [GitHub で TextBlock のソースコードを見る →](https://github.com/s-iguchi09/WPFStandardControlDemoApp/tree/main/src/WPFStandardControlDemoApp/Features/TextBlockUsage){: target="_blank" rel="noopener noreferrer"}

@@ -102,10 +102,10 @@ internal sealed class ToolBarDemoScene : IScene
     {
         var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class", typeof(ToolBar).BaseType!.Name]);
-        rows.Add(["read-only: HasOverflowItems / IsOverflowItem / ToolBar.Orientation",
+        rows.Add([T("base class", "基底クラス"), typeof(ToolBar).BaseType!.Name]);
+        rows.Add([T("read-only: HasOverflowItems / IsOverflowItem / ToolBar.Orientation", "読み取り専用か: HasOverflowItems / IsOverflowItem / ToolBar.Orientation"),
             $"{ToolBar.HasOverflowItemsProperty.ReadOnly} / {ToolBar.IsOverflowItemProperty.ReadOnly} / {ToolBar.OrientationProperty.ReadOnly}"]);
-        rows.Add(["OverflowMode default", ToolBar.OverflowModeProperty.DefaultMetadata.DefaultValue!.ToString()!]);
+        rows.Add([T("OverflowMode default", "OverflowMode の既定値"), ToolBar.OverflowModeProperty.DefaultMetadata.DefaultValue!.ToString()!]);
 
         {
             var bar = new ToolBar { Width = 100, HorizontalAlignment = HorizontalAlignment.Left };
@@ -122,7 +122,7 @@ internal sealed class ToolBarDemoScene : IScene
             {
                 double itemsWidth = bar.Items.Cast<FrameworkElement>().Sum(b => b.ActualWidth);
                 var panel = Descendants(bar).OfType<ToolBarPanel>().First();
-                rows.Add(["width 100, all 5 Never: HasOverflowItems / items' width / panel width",
+                rows.Add([T("width 100, all 5 Never: HasOverflowItems / items' width / panel width", "幅 100、5 個すべて Never: HasOverflowItems / 項目の幅 / パネルの幅"),
                     $"{bar.HasOverflowItems} / {D(itemsWidth)} / {D(panel.ActualWidth)}"]);
                 await Task.CompletedTask;
             });
@@ -138,7 +138,7 @@ internal sealed class ToolBarDemoScene : IScene
                 await Settle(bar);
                 var button = (ToggleButton)bar.Template.FindName("OverflowButton", bar);
                 var popup = (Popup)bar.Template.FindName("OverflowPopup", bar);
-                rows.Add(["width 400, IsOverflowOpen = true: HasOverflowItems / button / popup",
+                rows.Add([T("width 400, IsOverflowOpen = true: HasOverflowItems / button / popup", "幅 400、IsOverflowOpen = true: HasOverflowItems / ボタン / ポップアップ"),
                     $"{bar.HasOverflowItems} / {button.Visibility}, IsEnabled {button.IsEnabled} / IsOpen {popup.IsOpen}"]);
             });
         }

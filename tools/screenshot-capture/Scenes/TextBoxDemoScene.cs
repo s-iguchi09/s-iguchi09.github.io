@@ -43,7 +43,7 @@ internal sealed class TextBoxDemoScene : IScene
     {
         await context.SaveTableAsync(
             "TextBox: type and defaults",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             Defaults(),
             "textbox-defaults.svg");
 
@@ -87,7 +87,7 @@ internal sealed class TextBoxDemoScene : IScene
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 
-    private static List<IReadOnlyList<string>> Defaults()
+    private static List<IReadOnlyList<Loc>> Defaults()
     {
         var box = new TextBox();
         var text = (FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(typeof(TextBox));
@@ -99,7 +99,7 @@ internal sealed class TextBoxDemoScene : IScene
 
         return
         [
-            ["base types", string.Join(" > ", chain)],
+            [T("base types", "基底の型"), string.Join(" > ", chain)],
             ["Text: BindsTwoWayByDefault / DefaultUpdateSourceTrigger", $"{text.BindsTwoWayByDefault} / {text.DefaultUpdateSourceTrigger}"],
             ["TextWrapping / TextAlignment / CharacterCasing", $"{box.TextWrapping} / {box.TextAlignment} / {box.CharacterCasing}"],
             ["AcceptsReturn / IsReadOnly / MaxLength", $"{box.AcceptsReturn} / {box.IsReadOnly} / {box.MaxLength}"],
@@ -107,7 +107,7 @@ internal sealed class TextBoxDemoScene : IScene
             ["VerticalScrollBarVisibility / HorizontalScrollBarVisibility",
                 $"{box.VerticalScrollBarVisibility} / {box.HorizontalScrollBarVisibility}"],
             ["SelectionOpacity", D(box.SelectionOpacity)],
-            ["TextBox has TextTrimming / PlaceholderText property",
+            [T("TextBox has TextTrimming / PlaceholderText property", "TextBox に TextTrimming / PlaceholderText プロパティがあるか"),
                 $"{typeof(TextBox).GetProperty("TextTrimming") is not null} / {typeof(TextBox).GetProperty("PlaceholderText") is not null}"],
             ["MaxLength = -1", Throws(() => new TextBox().MaxLength = -1)],
         ];

@@ -1,7 +1,7 @@
 | 条件 | 計測値 |
 |---|---|
-| base class | HeaderedItemsControl |
-| read-only: HasOverflowItems / IsOverflowItem / ToolBar.Orientation | True / True / True |
-| OverflowMode default | AsNeeded |
-| width 100, all 5 Never: HasOverflowItems / items\' width / panel width | False / 198.15 / 198.15 |
-| width 400, IsOverflowOpen = true: HasOverflowItems / button / popup | False / Visible, IsEnabled False / IsOpen True |
+| 基底クラス | HeaderedItemsControl |
+| 読み取り専用か: HasOverflowItems / IsOverflowItem / ToolBar.Orientation | True / True / True |
+| OverflowMode の既定値 | AsNeeded |
+| 幅 100、5 個すべて Never: HasOverflowItems / 項目の幅 / パネルの幅 | False / 198.15 / 198.15 |
+| 幅 400、IsOverflowOpen = true: HasOverflowItems / ボタン / ポップアップ | False / Visible, IsEnabled False / IsOpen True |

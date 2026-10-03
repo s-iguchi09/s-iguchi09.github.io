@@ -99,7 +99,7 @@ internal sealed class ListBoxDemoScene : IScene
     {
         var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class of ListBox / ListView / ComboBox",
+        rows.Add([T("base class of ListBox / ListView / ComboBox", "ListBox / ListView / ComboBox の基底クラス"),
             $"{typeof(ListBox).BaseType!.Name} / {typeof(ListView).BaseType!.Name} / {typeof(ComboBox).BaseType!.Name}"]);
         rows.Add(["ListBoxItem.IsSelected: BindsTwoWayByDefault",
             ((FrameworkPropertyMetadata)ListBoxItem.IsSelectedProperty.GetMetadata(typeof(ListBoxItem))).BindsTwoWayByDefault.ToString()]);
@@ -109,11 +109,11 @@ internal sealed class ListBoxDemoScene : IScene
             var host = new Grid();
             host.Children.Add(list);
             Layout(host, 300, 200);
-            rows.Add(["SelectionMode (default)", list.SelectionMode.ToString()]);
+            rows.Add([T("SelectionMode (default)", "SelectionMode（既定値）"), list.SelectionMode.ToString()]);
             rows.Add(["ScrollViewer.HorizontalScrollBarVisibility / VerticalScrollBarVisibility",
                 $"{WpfProbe.ValueAndSource(list, ScrollViewer.HorizontalScrollBarVisibilityProperty)} / " +
                 WpfProbe.ValueAndSource(list, ScrollViewer.VerticalScrollBarVisibilityProperty)]);
-            rows.Add(["items panel", Descendants(list).OfType<Panel>().First(p => p.IsItemsHost).GetType().Name]);
+            rows.Add([T("items panel", "項目のパネル"), Descendants(list).OfType<Panel>().First(p => p.IsItemsHost).GetType().Name]);
         }
 
         foreach (SelectionMode mode in new[] { SelectionMode.Single, SelectionMode.Multiple, SelectionMode.Extended })
@@ -130,7 +130,7 @@ internal sealed class ListBoxDemoScene : IScene
                     steps.Add(Selected(list));
                 }
 
-                rows.Add([$"SelectionMode={mode}: click Item 1, Item 2, Item 1 (no modifier keys)",
+                rows.Add([T($"SelectionMode={mode}: click Item 1, Item 2, Item 1 (no modifier keys)", $"SelectionMode={mode}: Item 1、Item 2、Item 1 の順にクリック（修飾キーなし）"),
                     string.Join("  ->  ", steps)]);
                 await Task.CompletedTask;
             }, activate: true);
@@ -141,7 +141,7 @@ internal sealed class ListBoxDemoScene : IScene
             ListBox list = NewList();
             list.SelectionMode = mode;
             string thrown = Throws(list.SelectAll);
-            rows.Add([$"SelectionMode={mode}: SelectAll()", $"{thrown}; {list.SelectedItems.Count} selected"]);
+            rows.Add([$"SelectionMode={mode}: SelectAll()", T($"{thrown}; {list.SelectedItems.Count} selected", $"{thrown}、選択 {list.SelectedItems.Count} 件")]);
         }
 
         return rows;
