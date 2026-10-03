@@ -17,3 +17,8 @@ images:
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png"
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg"
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg"
+tables:
+  - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.en.md"
+  - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.ja.md"
+  - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.en.md"
+  - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.ja.md"

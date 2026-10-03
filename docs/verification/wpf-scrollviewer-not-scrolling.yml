@@ -17,3 +17,8 @@ images:
   - "images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-stackpanel-vs-grid.png"
   - "images/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.svg"
   - "images/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.svg"
+tables:
+  - "_includes/tables/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.en.md"
+  - "_includes/tables/articles/wpf-scrollviewer-not-scrolling/scrollviewer-height-matrix.ja.md"
+  - "_includes/tables/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.en.md"
+  - "_includes/tables/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.ja.md"

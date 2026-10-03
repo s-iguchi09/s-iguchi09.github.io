@@ -127,12 +127,13 @@ internal static class FormatAndSortMeasurements
     /// 「OS の地域設定ではなくターゲット要素の <c>Language</c> が使われる」ことと、
     /// 「<c>Content</c> では <c>StringFormat</c> が効かない」ことを、実際の表示から確かめる。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> StringFormatAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> StringFormatAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
+        Loc noCulture = Loc.Of("no ConverterCulture", "ConverterCulture なし");
 
         rows.Add([
-            "FrameworkElement.Language default",
+            Loc.Of("FrameworkElement.Language default", "FrameworkElement.Language の既定値"),
             "-",
             ((XmlLanguage)FrameworkElement.LanguageProperty.GetMetadata(typeof(FrameworkElement)).DefaultValue).IetfLanguageTag,
         ]);
@@ -143,11 +144,11 @@ internal static class FormatAndSortMeasurements
             CultureInfo.CurrentCulture.Name,
         ]);
 
-        rows.Add(await MeasureAsync("TextBlock.Text, C", "no ConverterCulture",
+        rows.Add(await MeasureAsync("TextBlock.Text, C", noCulture,
             () => Text(nameof(Money.Price), "C", null)));
         rows.Add(await MeasureAsync("TextBlock.Text, C", "ConverterCulture=ja-JP",
             () => Text(nameof(Money.Price), "C", new CultureInfo("ja-JP"))));
-        rows.Add(await MeasureAsync("TextBlock.Text, d", "no ConverterCulture",
+        rows.Add(await MeasureAsync("TextBlock.Text, d", noCulture,
             () => Text(nameof(Money.Date), "d", null)));
         rows.Add(await MeasureAsync("TextBlock.Text, d", "ConverterCulture=ja-JP",
             () => Text(nameof(Money.Date), "d", new CultureInfo("ja-JP"))));
@@ -157,8 +158,8 @@ internal static class FormatAndSortMeasurements
         return rows;
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureAsync(
-        string label, string condition, Func<(FrameworkElement Host, Func<string> Read)> build)
+    private static async Task<IReadOnlyList<Loc>> MeasureAsync(
+        string label, Loc condition, Func<(FrameworkElement Host, Func<string> Read)> build)
     {
         (FrameworkElement host, Func<string> read) = build();
 

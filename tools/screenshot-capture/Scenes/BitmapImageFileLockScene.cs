@@ -29,6 +29,9 @@ internal sealed class BitmapImageFileLockScene : IScene
     /// このシーンが作った一時ファイル。既定の読み込み方式の BitmapImage は GC されるまでファイルを掴むため、
     /// 計測の途中では消せないものがある。最後に GC を掛けてから、まとめて消す。
     /// </summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static readonly List<string> CreatedFiles = [];
 
     public async Task CaptureAsync(SceneContext context)
@@ -47,13 +50,13 @@ internal sealed class BitmapImageFileLockScene : IScene
     {
         await context.SaveTableAsync(
             "BitmapImage: delete, overwrite and rename right after loading",
-            ["how the image is loaded", "size", "File.Delete", "overwrite (File.Copy)", "rename (File.Move)"],
+            [T("how the image is loaded", "画像の読み込み方"), T("size", "大きさ"), "File.Delete", T("overwrite (File.Copy)", "上書き（File.Copy）"), T("rename (File.Move)", "名前の変更（File.Move）")],
             MeasureLoadStyles(),
             "bitmapimage-file-lock-matrix.svg");
 
         await context.SaveTableAsync(
             "BitmapImage with UriSource=\"{Binding ImagePath}\"",
-            ["where the XAML is loaded", "result"],
+            [T("where the XAML is loaded", "XAML を読み込む場所"), T("result", "結果")],
             await MeasureUriSourceBindingAsync(),
             "bitmapimage-urisource-binding.svg");
     }
@@ -87,17 +90,17 @@ internal sealed class BitmapImageFileLockScene : IScene
     /// UriSource をバインドした BitmapImage。BitmapImage は読み込みの最後（EndInit）に UriSource か StreamSource を
     /// 必要とするため、バインドがまだ解決していない時点で失敗するかを確かめる。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureUriSourceBindingAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureUriSourceBindingAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         try
         {
             SceneContext.LoadXaml<System.Windows.Controls.Image>(BoundImage);
-            rows.Add(["XamlReader, no DataContext", "loaded"]);
+            rows.Add([T("XamlReader, no DataContext", "XamlReader、DataContext なし"), T("loaded", "読み込める")]);
         }
         catch (Exception e)
         {
-            rows.Add(["XamlReader, no DataContext", Describe(e)]);
+            rows.Add([T("XamlReader, no DataContext", "XamlReader、DataContext なし"), Describe(e)]);
         }
 
         string path = CreateImage();
@@ -109,16 +112,16 @@ internal sealed class BitmapImageFileLockScene : IScene
         try
         {
             await Capture.ShowAndSettleAsync(window);
-            rows.Add(["DataTemplate, DataContext holds a valid path", $"shown: {Shown(presenter)}"]);
+            rows.Add([T("DataTemplate, DataContext holds a valid path", "DataTemplate、DataContext に有効なパス"), Shown(presenter)]);
 
             // 表示した後でパスを変える（通知あり）。初期化後の変更は反映されないとされる。
             source.ImagePath = second;
             await Capture.SettleAsync(window);
-            rows.Add(["then ImagePath changed to a 64x96 image", $"shown: {Shown(presenter)}"]);
+            rows.Add([T("then ImagePath changed to a 64x96 image", "続けて ImagePath を 64x96 の画像に変更"), Shown(presenter)]);
         }
         catch (Exception e)
         {
-            rows.Add(["DataTemplate, DataContext holds a valid path", Describe(e)]);
+            rows.Add([T("DataTemplate, DataContext holds a valid path", "DataTemplate、DataContext に有効なパス"), Describe(e)]);
         }
         finally
         {
@@ -131,7 +134,7 @@ internal sealed class BitmapImageFileLockScene : IScene
     }
 
     /// <summary>表示中の Image の BitmapImage の UriSource のファイル名と、画素の大きさ。</summary>
-    private static string Shown(DependencyObject root)
+    private static Loc Shown(DependencyObject root)
     {
         System.Windows.Controls.Image? image = null;
         void Walk(DependencyObject node)
@@ -141,17 +144,31 @@ internal sealed class BitmapImageFileLockScene : IScene
         }
 
         Walk(root);
-        return image?.Source is BitmapImage bitmap
-            ? $"{bitmap.PixelWidth}x{bitmap.PixelHeight}, UriSource {(bitmap.UriSource is null ? "null" : Path.GetFileName(bitmap.UriSource.LocalPath) == Path.GetFileName(((PathSource)((System.Windows.Controls.ContentControl)root).Content).ImagePath) ? "= current ImagePath" : "= earlier path")}"
-            : "no image";
+        if (image?.Source is not BitmapImage bitmap)
+        {
+            return T("shown: no image", "表示: 画像なし");
+        }
+
+        string size = $"{bitmap.PixelWidth}x{bitmap.PixelHeight}";
+        if (bitmap.UriSource is null)
+        {
+            return T($"shown: {size}, UriSource null", $"表示: {size}、UriSource null");
+        }
+
+        bool current = Path.GetFileName(bitmap.UriSource.LocalPath) == Path.GetFileName(((PathSource)((System.Windows.Controls.ContentControl)root).Content).ImagePath);
+        return current
+            ? T($"shown: {size}, UriSource = current ImagePath", $"表示: {size}、UriSource = 今の ImagePath")
+            : T($"shown: {size}, UriSource = earlier path", $"表示: {size}、UriSource = 前のパス");
     }
 
     /// <summary>文言は OS の言語で変わるため、例外の型だけを出す。</summary>
-    private static string Describe(Exception e)
-        => e.InnerException is null ? e.GetType().Name : $"{e.GetType().Name} (inner {e.InnerException.GetType().Name})";
+    private static Loc Describe(Exception e)
+        => e.InnerException is null
+            ? e.GetType().Name
+            : T($"{e.GetType().Name} (inner {e.InnerException.GetType().Name})", $"{e.GetType().Name}（内側の例外 {e.InnerException.GetType().Name}）");
 
     /// <summary>読み込み方と、その直後にファイルを削除できるかの対応。</summary>
-    private static List<IReadOnlyList<string>> MeasureLoadStyles()
+    private static List<IReadOnlyList<Loc>> MeasureLoadStyles()
     {
         (string Label, Func<string, BitmapSource> Load)[] cases =
         [
@@ -164,7 +181,7 @@ internal sealed class BitmapImageFileLockScene : IScene
             ("ImageSourceConverter", LoadWithConverter),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach ((string label, Func<string, BitmapSource> load) in cases)
         {
             // 削除・上書き・リネームは互いに影響するため、それぞれ別のファイルを読み込んで試す。
@@ -185,7 +202,7 @@ internal sealed class BitmapImageFileLockScene : IScene
             GC.WaitForPendingFinalizers();
         }
 
-        rows.Add(["(default) after GC", "-", DeleteResult(collected), "-", "-"]);
+        rows.Add([T("(default) after GC", "（既定の読み込み方）GC の後"), "-", DeleteResult(collected), "-", "-"]);
         TryCleanup(collected);
 
         return rows;

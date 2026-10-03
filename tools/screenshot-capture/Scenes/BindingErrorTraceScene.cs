@@ -37,20 +37,20 @@ internal sealed class BindingErrorTraceScene : IScene
         PresentationTraceSources.Refresh();
         PresentationTraceSources.DataBindingSource.Listeners.Add(listener);
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         try
         {
-            rows.Add(Run(listener, "path not found", SourceLevels.Warning, BuildMissingPath));
-            rows.Add(Run(listener, "path not found", SourceLevels.Error, BuildMissingPath));
-            rows.Add(Run(listener, "path not found", SourceLevels.Critical, BuildMissingPath));
-            rows.Add(Run(listener, "DataContext not set", SourceLevels.Warning, BuildNullDataContext));
-            rows.Add(Run(listener, "DataContext not set", SourceLevels.Information, BuildNullDataContext));
+            rows.Add(Run(listener, T("path not found", "パスが見つからない"), SourceLevels.Warning, BuildMissingPath));
+            rows.Add(Run(listener, T("path not found", "パスが見つからない"), SourceLevels.Error, BuildMissingPath));
+            rows.Add(Run(listener, T("path not found", "パスが見つからない"), SourceLevels.Critical, BuildMissingPath));
+            rows.Add(Run(listener, T("DataContext not set", "DataContext が未設定"), SourceLevels.Warning, BuildNullDataContext));
+            rows.Add(Run(listener, T("DataContext not set", "DataContext が未設定"), SourceLevels.Information, BuildNullDataContext));
             rows.Add(RunTraceLevelHigh(listener));
-            rows.Add(Run(listener, "ConvertBack fails", SourceLevels.Warning, BuildConvertBackFailure));
-            rows.Add(Run(listener, "empty (Validation.Errors)[0]", SourceLevels.Warning, BuildEmptyValidationIndexer));
+            rows.Add(Run(listener, T("ConvertBack fails", "ConvertBack が失敗"), SourceLevels.Warning, BuildConvertBackFailure));
+            rows.Add(Run(listener, T("empty (Validation.Errors)[0]", "空の (Validation.Errors)[0]"), SourceLevels.Warning, BuildEmptyValidationIndexer));
             rows.Add(RunErrorCleared(listener));
-            rows.Add(Run(listener, "getter throws", SourceLevels.Warning, BuildThrowingGetter));
-            rows.Add(Run(listener, "binding that resolves", SourceLevels.Warning, BuildWorkingBinding));
+            rows.Add(Run(listener, T("getter throws", "getter が例外を投げる"), SourceLevels.Warning, BuildThrowingGetter));
+            rows.Add(Run(listener, T("binding that resolves", "解決できるバインド"), SourceLevels.Warning, BuildWorkingBinding));
         }
         finally
         {
@@ -59,15 +59,18 @@ internal sealed class BindingErrorTraceScene : IScene
 
         await context.SaveTableAsync(
             "System.Windows.Data trace output",
-            ["binding", "Switch.Level", "reported as", "message"],
+            [T("binding", "バインド"), "Switch.Level", T("reported as", "記録された番号"), T("message", "メッセージ")],
             rows,
             "binding-error-trace-matrix.svg");
     }
 
     /// <summary>1 つのパターンを実行し、拾えたエラー番号とメッセージの要点を返す。</summary>
-    private static IReadOnlyList<string> Run(
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static IReadOnlyList<Loc> Run(
         CollectingListener listener,
-        string label,
+        Loc label,
         SourceLevels level,
         Func<Window> build)
     {
@@ -91,7 +94,7 @@ internal sealed class BindingErrorTraceScene : IScene
         Match match = Regex.Match(text, @"System\.Windows\.Data (Error|Warning|Information): (\d+)");
         if (!match.Success)
         {
-            return [label, level.ToString(), "nothing", "-"];
+            return [label, level.ToString(), Nothing, "-"];
         }
 
         // 隣のレコードの文言を拾わないよう、一致したレコード 1 件分だけを要約する。
@@ -106,7 +109,7 @@ internal sealed class BindingErrorTraceScene : IScene
     /// 記事の「TraceLevel を付ければ Information 10 が見える」を確かめるため、最初の番号ではなく
     /// Warning 71（DataContext is null）と Information 10 がそれぞれ出たかを返す。
     /// </summary>
-    private static IReadOnlyList<string> RunTraceLevelHigh(CollectingListener listener)
+    private static IReadOnlyList<Loc> RunTraceLevelHigh(CollectingListener listener)
     {
         listener.Clear();
         PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning;
@@ -118,7 +121,7 @@ internal sealed class BindingErrorTraceScene : IScene
         string text = listener.Text;
         return
         [
-            "DataContext not set, TraceLevel=High",
+            T("DataContext not set, TraceLevel=High", "DataContext が未設定、TraceLevel=High"),
             SourceLevels.Warning.ToString(),
             $"Warning 71: {text.Contains("Warning: 71 :", StringComparison.Ordinal)}, Information 10: {text.Contains("Information: 10 :", StringComparison.Ordinal)}",
             Regex.IsMatch(text, @"Warning: 71 : .*DataContext is null") ? "DataContext is null" : "-",
@@ -129,7 +132,7 @@ internal sealed class BindingErrorTraceScene : IScene
     /// 検証エラーを出し、そのあと解消する。解消した時点で記録される番号だけを拾う。
     /// 表示には (Validation.Errors)[0].ErrorContent をバインドしておく（記事の典型例）。
     /// </summary>
-    private static IReadOnlyList<string> RunErrorCleared(CollectingListener listener)
+    private static IReadOnlyList<Loc> RunErrorCleared(CollectingListener listener)
     {
         PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning;
         var source = new AgeSource();
@@ -163,12 +166,18 @@ internal sealed class BindingErrorTraceScene : IScene
         Match match = Regex.Match(recorded, @"System\.Windows\.Data (Error|Warning|Information): (\d+)");
         return
         [
-            "validation error raised, then cleared",
+            T("validation error raised, then cleared", "検証エラーが発生し、その後解消"),
             SourceLevels.Warning.ToString(),
-            $"shown: {shown}; raised: {raised}; cleared: {Numbers(recorded)}",
+            T($"shown: {shown}; raised: {raised}; cleared: {Numbers(recorded)}", $"表示時: {Ja(shown)}、発生時: {Ja(raised)}、解消時: {Ja(Numbers(recorded))}"),
             match.Success ? Summarize(recorded[(match.Index + match.Length)..]) : "-",
         ];
     }
+
+    /// <summary>何も記録されなかったこと。<see cref="Numbers"/> も英語では同じ "nothing" を返す。</summary>
+    private static readonly Loc Nothing = T("nothing", "記録なし");
+
+    /// <summary><see cref="Numbers"/> の結果の日本語。記録が無いときだけ言葉が要る。</summary>
+    private static string Ja(string numbers) => numbers == Nothing.En ? Nothing.Ja : numbers;
 
     /// <summary>記録されたすべての番号を、出た順に重複を除いて並べる。</summary>
     private static string Numbers(string text)
@@ -199,7 +208,7 @@ internal sealed class BindingErrorTraceScene : IScene
     }
 
     /// <summary>表に収まる長さで、メッセージの特徴的な部分だけを取り出す。</summary>
-    private static string Summarize(string text)
+    private static Loc Summarize(string text)
     {
         (string Pattern, string Label)[] markers =
         [
@@ -220,7 +229,7 @@ internal sealed class BindingErrorTraceScene : IScene
             }
         }
 
-        return string.IsNullOrWhiteSpace(text) ? "-" : "(other)";
+        return string.IsNullOrWhiteSpace(text) ? "-" : T("(other)", "（その他）");
     }
 
     /// <summary>存在しないプロパティへバインドする。</summary>

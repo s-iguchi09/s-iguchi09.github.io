@@ -23,7 +23,8 @@ WPF の `DataGrid` コントロールは、列ヘッダーをクリックする�
 
 以降の例では、`Name` と `Price` プロパティを持つ `Product` 型のコレクションに `DataGrid` がバインドされていることを前提とする。
 
-本記事の図は、上記の環境で列の宣言だけを変えた `DataGrid` を実際に表示し、各列の `SortMemberPath` と `CanUserSort` を読み出して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - `SortMemberPath` を明示しない `DataGridTextColumn` では、`Binding` のパスが入る。
@@ -48,12 +49,12 @@ WPF の `DataGrid` コントロールは、列ヘッダーをクリックする�
 標準機能では未ソート状態への復帰は行われないため、解除が必要な場合はコードで明示的に制御する。
 未ソート状態へ戻す実装については [WPFのDataGridのソートを初期化する方法](/ja/articles/wpf-datagrid-sort-reset/) を参照する。
 
-列の作り方を変えて、`SortMemberPath` と `CanUserSort` に何が入るかを測った結果が次の図である。
+列の作り方を変えて、`SortMemberPath` と `CanUserSort` に何が入るかを測った結果が次の表である。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-sorting/datagrid-sortability.svg" alt="列の宣言方法ごとに SortMemberPath、CanUserSort、ヘッダーのクリック後の並びを測った表。Binding だけの DataGridTextColumn では SortMemberPath に Binding のパスが入り、並び替えられる。SortMemberPath を明示するとそちらが使われる。CanUserSort を False にすると、ヘッダーをクリックしても元の並びのまま。Binding を持たないテンプレート列では SortMemberPath が空になり CanUserSort も False で並び替えられないが、SortMemberPath=Name を明示したテンプレート列は並び替えられる。" width="882" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、列の宣言だけを変えて測った結果。<code>order after a header click</code> は、その列のヘッダーのクリックで走るのと同じ並べ替えを実行した後の並びである。元の並びは carol, alice, bob。</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sorting/datagrid-sortability.ja.md %}
+
+.NET 10 / Windows 11 で、列の宣言だけを変えて測った結果。「見出しをクリックした後の並び順」は、その列のヘッダーのクリックで走るのと同じ並べ替えを実行した後の並びである。元の並びは carol, alice, bob。
+{: .table-caption}
 
 **`SortMemberPath` を書かなくても、`Binding` のパスが自動で入る。** 上の XAML で `SortMemberPath` を明示しているのは意図を明確にするためであり、省いても同じ結果になる。
 
@@ -112,10 +113,10 @@ if (CollectionViewSource.GetDefaultView(dataGrid.ItemsSource) is ListCollectionV
 
 `CustomSort` と `SortDescriptions` は重ならず、後から設定したほうだけが残る。`CustomSort` を設定すると `SortDescriptions` は消え、その後に `SortDescription` を足すと `CustomSort` は `null` に戻った。[`ListCollectionView.CustomSort` のリファレンス](https://learn.microsoft.com/dotnet/api/system.windows.data.listcollectionview.customsort)には、前半（このプロパティを設定すると `SortDescriptions` が消えること）が書かれている。そのため、`SortDescriptions` に戻すのに特別な手順は要らない。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.svg" alt="ListCollectionView の表。Name 昇順の SortDescription の後に、名前の長さで比べる CustomSort を設定すると SortDescriptions は 0 件になり bob, alice, carol の順になる。その後に Name 降順の SortDescription を足すと CustomSort は null に戻り carol, bob, alice の順になる。行を選択した状態で Items.Refresh を呼んでも、SelectedItem と CurrentCell は bob のまま。" width="882" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、3 件のコレクションの既定のビューと、それにバインドした <code>DataGrid</code>（最終行）で測った結果。</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.ja.md %}
+
+.NET 10 / Windows 11 で、3 件のコレクションの既定のビューと、それにバインドした <code>DataGrid</code>（最終行）で測った結果。
+{: .table-caption}
 
 ## 注意点
 

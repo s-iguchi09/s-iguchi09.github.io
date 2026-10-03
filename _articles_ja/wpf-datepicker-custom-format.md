@@ -27,10 +27,10 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 
 `DatePicker` に実際に表示される文字列は、設定を変えて読み出せば確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg" alt="DatePicker の設定ごとに、SelectedDateFormat の実効値とその出どころ、表示される文字列を測った表。何も設定しない場合は既定スタイル由来の Short になる。Short と既定はいずれも 2026/07/17、Long は 2026年7月17日、テキスト部分を書き換えた場合は 2026/07/17 (金) になる。" width="642" height="200" loading="lazy">
-  <figcaption>.NET 10 / 日本語環境の Windows 11 で、<code>2026-07-17</code> を選択した <code>DatePicker</code> のテキスト部分を読み取った結果。2 列目の括弧内は、その値がどこから来たかを <code>DependencyPropertyHelper.GetValueSource</code> で読んだものである。</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-format-matrix.ja.md %}
+
+.NET 10 / 日本語環境の Windows 11 で、<code>2026-07-17</code> を選択した <code>DatePicker</code> のテキスト部分を読み取った結果。2 列目の括弧内は、その値がどこから来たかを <code>DependencyPropertyHelper.GetValueSource</code> で読んだものである。
+{: .table-caption}
 
 **`SelectedDateFormat` は `Short` と `Long` の 2 つしか持たない。** どちらも任意の書式を指定する手段を持たない。
 これが、以降で述べる回避方法が必要になる理由である。
@@ -40,7 +40,8 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 
 最終行は、テンプレート内のテキスト部分を直接書き換えた場合である。曜日を含む書式のように、2 つの既定形式では表せない表示もこの方法なら作れる。
 
-本記事の図は、上記の環境で `DatePicker` の設定を変えながら、テキスト部分に表示される文字列を読み取って得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - `SelectedDateFormat` は `Short` と `Long` の 2 つしか持たず、任意の書式にはできない。
@@ -74,10 +75,10 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 自身にも親要素にも指定がなく、値の出どころが既定値(`Default`)のままであれば、スレッドの `CurrentCulture` に従う。このとき `Language` の既定値である `en-US` は使われない。
 自身に指定した場合(`Local`)も、`Window` などの親要素の指定を継承した場合(`Inherited`)も、`CurrentCulture` に関係なくその言語の形式になる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-culture-matrix.svg" alt="DatePicker 自身への xml:lang の指定、親要素への指定、CurrentCulture を独立に変えて、既定表示を測った表。どこにも指定しない場合は CurrentCulture に従い、ja-JP では 2026/04/15、en-US では 4/15/2026 になる。自身に指定した場合は CurrentCulture に関係なく、en-US では 4/15/2026、de-DE では 15.04.2026 になる。親要素に de-DE を指定した場合も、継承した言語に従い 15.04.2026 になる。" width="725" height="320" loading="lazy">
-  <figcaption><code>SelectedDate</code> を 2026-04-15 とした <code>DatePicker</code> の既定表示（.NET 10 / Windows 11 で実測）。どこにも <code>xml:lang</code> を指定しない行では <code>Language</code> の値の出どころが <code>Default</code> であり、表示は <code>CurrentCulture</code> に従う。自身に指定した行（<code>Local</code>）と、親要素の指定を継承した行（<code>Inherited</code>）では、<code>CurrentCulture</code> を変えても表示が変わらない。</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-culture-matrix.ja.md %}
+
+<code>SelectedDate</code> を 2026-04-15 とした <code>DatePicker</code> の既定表示（.NET 10 / Windows 11 で実測）。どこにも <code>xml:lang</code> を指定しない行では <code>Language</code> の値の出どころが <code>Default</code> であり、表示は <code>CurrentCulture</code> に従う。自身に指定した行（<code>Local</code>）と、親要素の指定を継承した行（<code>Inherited</code>）では、<code>CurrentCulture</code> を変えても表示が変わらない。
+{: .table-caption}
 
 適用前後を並べると次のようになる。
 実行マシンの地域設定に左右されないよう、両方に `xml:lang="en-US"` を指定している。
@@ -108,17 +109,17 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 `xml:lang="de-DE"` で表示したあと、コードで `SelectedDate` を変えても、カレンダーで日付を選んでも、表示は指定どおりの `2026/05/20`・`2026/06/03` だった。
 `DatePickerTextBox.Text` の値の出どころは、最後までスタイルのバインドのままだった。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.svg" alt="本節のスタイルを xml:lang が de-DE の DatePicker に当てた結果の表。表示直後は 2026/04/15、コードで SelectedDate を 2026-05-20 にすると 2026/05/20、カレンダーで 2026-06-03 を選ぶと 2026/06/03。TextBox.Text の値の出どころはどれも Style のバインド。" width="658" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、本節のスタイルを当てた <code>DatePicker</code> を表示し、日付を 2 回変えて測った結果。値の出どころは <code>DependencyPropertyHelper.GetValueSource</code> で読んだ。</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.ja.md %}
+
+.NET 10 / Windows 11 で、本節のスタイルを当てた <code>DatePicker</code> を表示し、日付を 2 回変えて測った結果。値の出どころは <code>DependencyPropertyHelper.GetValueSource</code> で読んだ。
+{: .table-caption}
 
 ただし、区切り文字のエスケープで固定できるのは区切り文字と並び順であって、暦そのものではない。区切りが保たれても、`th-TH`・`ar-SA`・`fa-IR` はそれぞれの暦の年と月で表示される。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-stringformat-escape.svg" alt="XAML の Binding の中の StringFormat の 4 通りの書き方を比べた表。'yyyy\/MM\/dd' は解析後に yyyy/MM/dd になり、en-US と ja-JP では 2026/04/15 だが de-DE では 2026.04.15 になり、ar-SA では見えない方向記号が入る。'yyyy\\/MM\\/dd' と yyyy\'/\'MM\'/\'dd は 6 つの文化圏すべてでスラッシュが残るが、th-TH・ar-SA・fa-IR は自分の暦のままになる。エスケープしない yyyy'/'MM'/'dd は XamlParseException で読み込めない。" width="1159" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、本節のスタイルをそれぞれの <code>StringFormat</code> と <code>xml:lang</code> で読み込み、<code>SelectedDate</code> を 2026-04-15 にして測った結果。ASCII 以外の文字は符号位置で示している。</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-stringformat-escape.ja.md %}
+
+.NET 10 / Windows 11 で、本節のスタイルをそれぞれの <code>StringFormat</code> と <code>xml:lang</code> で読み込み、<code>SelectedDate</code> を 2026-04-15 にして測った結果。ASCII 以外の文字は符号位置で示している。
+{: .table-caption}
 
 暦まで含めて固定したい場合は、バインドに `ConverterCulture` を指定してカルチャ自体を固定する。  
 
@@ -127,10 +128,10 @@ WPF の `DatePicker` は、自身にも親要素にも `Language`(XAML では `x
 `SelectedDateChanged` イベントを購読し、整形した文字列を `DatePicker.Text` に代入する方法がよく紹介される。この方法では表示は変わらない。
 `SelectedDateChanged` が発生した時点で、`Text` はすでに既定の書式で設定されている。そこへ `yyyy/MM/dd` の文字列を代入すると、`DatePicker` はその文字列を日付として解析し、代入の直後に既定の書式の文字列へ直した。ハンドラーの入口でも代入の直後でも、`Text` は `4/15/2026` だった。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="xml:lang が en-US の DatePicker で、SelectedDateChanged の中で Text を書き換えた結果の表。ハンドラーは 2 回呼ばれ、どちらも入口の Text は 4/15/2026、yyyy/MM/dd を代入した直後の Text も 4/15/2026 だった。ハンドラーの後の Text と表示も 4/15/2026。" width="929" height="110" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>SelectedDate</code> を 2026-04-15 にしたあと、ハンドラーで <code>Text</code> を不変カルチャの <code>yyyy/MM/dd</code> に書き換えて測った結果。</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-codebehind.ja.md %}
+
+.NET 10 / Windows 11 で、<code>SelectedDate</code> を 2026-04-15 にしたあと、ハンドラーで <code>Text</code> を不変カルチャの <code>yyyy/MM/dd</code> に書き換えて測った結果。
+{: .table-caption}
 
 コードから書式を指定したい場合は、XAML による方法と同じ `DatePickerTextBox` のスタイルとバインドを設定するか、本体の表示はそのままにして、次節のコンバーターで併設表示を整形する。
 

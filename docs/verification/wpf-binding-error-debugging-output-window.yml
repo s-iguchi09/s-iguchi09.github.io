@@ -15,3 +15,6 @@ verifies:
   - "検証エラーを出してから解消したときに記録される番号（(Validation.Errors)[0] の Error 17 が解消の時点で出るか）"
 images:
   - "images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg"
+tables:
+  - "_includes/tables/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.en.md"
+  - "_includes/tables/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.ja.md"

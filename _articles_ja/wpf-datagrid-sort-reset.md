@@ -28,7 +28,8 @@ WPF の `DataGrid` は便利なソート機能を持っていますが、要件�
 - 対象要件: 単一列ソート / 複数列ソート
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で `ICollectionView` の `SortDescriptions` と列の `SortDirection` を読み出して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - 並び替えの状態は、`ICollectionView` の `SortDescriptions` と列の `SortDirection` に分かれて保持される。
@@ -51,12 +52,12 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 
 そのため、「初期状態に戻す」にはコードによる制御が必要です。
 
-並び替えの状態は 2 か所に分かれている。操作ごとに両方を測った結果が次の図である。
+並び替えの状態は 2 か所に分かれている。操作ごとに両方を測った結果が次の表である。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="操作ごとに SortDescriptions の件数と列の SortDirection、並び順を測った表。コードから SortDescriptions を足しただけでは SortDirection は null のまま。SortDescriptions を消しただけでは、ItemsSource に渡した ICollectionView から消した場合も含めて、SortDirection が Ascending のまま残る。両方を消して初めて初期状態に戻る。Score が同点の行を足すと、条件が 1 つなら carol が anna より前のままで、Name を 2 つ目に足すと anna が前になる。最終行の列ヘッダークリックでは両方が同時に更新される。" width="1070" height="350" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。最終行以外はコードから直接操作した場合である。<code>with a tie</code> の 2 行は、carol と同じ <code>Score</code> の行（anna）を足している。</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.ja.md %}
+
+.NET 10 / Windows 11 での実測結果。<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。最終行以外はコードから直接操作した場合である。「同点あり」の 2 行は、carol と同じ <code>Score</code> の行（anna）を足している。
+{: .table-caption}
 
 **`SortDescriptions.Clear()` を呼んだ行を見ると、並び順は初期状態に戻っているのに `column.SortDirection` は `Ascending` のまま残っている。**
 この状態ではヘッダーに矢印が表示されたままになり、並び替えが効いているように見える。
@@ -64,7 +65,7 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 逆に `SortDescriptions` を足しただけの行では、並び順が変わっているのに `SortDirection` は `null` のままである。
 **コードから一方を操作しても、もう一方は追随しない。** どちらの向きにも、両方を明示的に設定する必要がある。
 
-`with a tie` の 2 行が複数列ソートを示している。`Score` だけでは同点の carol と anna が元の順のままで、`Name` を足すと anna が前になる。Shift + クリックはこの状態を作る操作であり、解除ではない。
+「同点あり」の 2 行が複数列ソートを示している。`Score` だけでは同点の carol と anna が元の順のままで、`Name` を足すと anna が前になる。Shift + クリックはこの状態を作る操作であり、解除ではない。
 
 最終行はその対照で、列ヘッダーのクリックで走る標準の並び替えである。**この経路では `SortDescriptions` と `SortDirection` が同時に更新される。**
 ユーザーが並び替えたときに矢印と並び順が食い違わないのはこのためであり、食い違いが生じるのはコードから一方だけを触ったときである。
@@ -203,10 +204,10 @@ public class RowItem
 **ただし、この `ClearSort` が解除するのはビューの並び順だけである。** `DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `ItemsSource = ICollectionView` の行がまさにこれを測っており、ビューの `SortDescriptions` を消しても `SortDirection` は `Ascending` のまま残った）。
 また、この `ClearSort` は `SortDescriptions` だけを消すため、`ListCollectionView.CustomSort` で並べ替えている場合は解除されない。`CustomSort` を設定したビューに `ClearSort` と同じ手順を実行しても、`CustomSort` は残り、並びも変わらなかった。`CustomSort` を使う画面では、`ClearSort` で `CustomSort` にも `null` を代入する。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg" alt="ListCollectionView に CustomSort を設定してから記事の ClearSort を実行した表。初期は 21800, 2480, 4980 の順。CustomSort で Price の降順にすると 21800, 4980, 2480。SortDescriptions.Clear と Refresh の後も CustomSort は set のままで、並びも 21800, 4980, 2480。CustomSort に null を代入して Refresh すると初期の順に戻る。" width="756" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、サンプルデータの <code>ListCollectionView</code> に操作を順に行って測った結果。<code>SortDescriptions</code> の列は条件の数である。</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.ja.md %}
+
+.NET 10 / Windows 11 で、サンプルデータの <code>ListCollectionView</code> に操作を順に行って測った結果。<code>SortDescriptions</code> の列は条件の数である。
+{: .table-caption}
 
 矢印まで戻すには、ViewModel から列の状態を触れない以上、`DataGrid` 側で `SortDirection` を `null` にする処理が別に要る。Behavior 化する場合は、その処理を Behavior に含めるとコマンドから一度に初期化できる。
 

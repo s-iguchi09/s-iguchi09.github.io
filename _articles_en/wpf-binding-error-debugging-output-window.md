@@ -113,10 +113,10 @@ Because detailed tracing produces a large amount of output, remove the setting o
 The wording in the Output window differs by cause.
 The table below records what actually reaches the `System.Windows.Data` trace when each pattern is evaluated.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.svg" alt="A table of trace output per binding failure pattern. Path resolution failure reports Error 40 at the Warning and Error levels and nothing at Critical. A failed ConvertBack reports Error 7, and both indexing an empty Validation.Errors and a getter that throws report Error 17. An unset DataContext produces nothing at the default Warning level and appears as Information 10 with DataItem=null at the Information level; with TraceLevel=High on the binding and the level left at Warning, Warning 71, DataContext is null, appears but Information 10 does not. A validation error that is raised and then cleared records Error 7 when raised and Error 17 when cleared. A binding that resolves produces nothing." width="1141" height="410" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>, or, for the <code>TraceLevel=High</code> row and the raised-then-cleared row, the records that matter for each step. <code>Switch.Level</code> is shown for each row; <code>Warning</code> matches the default.</figcaption>
-</figure>
+{% include tables/articles/wpf-binding-error-debugging-output-window/binding-error-trace-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 by evaluating each binding pattern and recording the first record written to <code>PresentationTraceSources.DataBindingSource</code>, or, for the <code>TraceLevel=High</code> row and the raised-then-cleared row, the records that matter for each step. <code>Switch.Level</code> is shown for each row; <code>Warning</code> matches the default.
+{: .table-caption}
 
 On `.NET 10 / Windows 11`, `Error: 40` corresponds to path resolution, `Error: 7` to a `ConvertBack` conversion failure, and `Error: 17` to a failure while retrieving the value.
 These numbers are identifiers assigned by the internal implementation behind the `System.Windows.Data` trace, not a public API contract guaranteed to stay fixed across versions. Read the accompanying message text rather than relying on the number alone.

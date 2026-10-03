@@ -13,3 +13,8 @@ images:
   - "images/articles/wpf-datagrid-cell-editing-template/datagrid-cell-template-vs-editing.png"
   - "images/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.svg"
   - "images/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.svg"
+tables:
+  - "_includes/tables/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.en.md"
+  - "_includes/tables/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.ja.md"
+  - "_includes/tables/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.en.md"
+  - "_includes/tables/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.ja.md"

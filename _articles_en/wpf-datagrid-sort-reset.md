@@ -28,7 +28,8 @@ This article covers the following approaches for resetting WPF `DataGrid` sortin
 - Scope: single-column and multi-column sorting requirements.
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from reading `SortDescriptions` on the `ICollectionView` and `SortDirection` on the columns in the environment above.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - The sort state is held in two places: `SortDescriptions` on the `ICollectionView` and `SortDirection` on the column.
@@ -51,12 +52,12 @@ It is not a built-in shortcut to clear sorting.
 
 For this reason, explicit reset logic is required when an application needs deterministic unsorted behavior.
 
-The sort state lives in two places. The figure below records both after each operation.
+The sort state lives in two places. The table below records both after each operation.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg" alt="A table of the SortDescriptions count, the column SortDirection, and the row order after each operation. Adding a SortDescription from code leaves SortDirection null. Clearing SortDescriptions leaves SortDirection at Ascending, also when the ICollectionView passed as ItemsSource is cleared. Only clearing both returns to the initial state. With a row that ties on Score, one SortDescription keeps carol before anna while a second one on Name puts anna first. The last row, a column header click, updates both at once." width="1070" height="350" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. <code>SortDescriptions</code> is the number of sort conditions on the view; <code>column.SortDirection</code> is the property that drives the arrow in the column header. Every row but the last operates on them directly from code. The two rows marked <code>with a tie</code> add a row, anna, with the same <code>Score</code> as carol.</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.en.md %}
+
+Measured on .NET 10 / Windows 11. <code>SortDescriptions</code> is the number of sort conditions on the view; <code>column.SortDirection</code> is the property that drives the arrow in the column header. Every row but the last operates on them directly from code. The two rows marked <code>with a tie</code> add a row, anna, with the same <code>Score</code> as carol.
+{: .table-caption}
 
 **On the row that calls `SortDescriptions.Clear()`, the order is back to its initial state while `column.SortDirection` still reads `Ascending`.**
 The header keeps showing its arrow in that state, making it look as though the sort is still applied.
@@ -200,10 +201,10 @@ Managing `SortDescriptions` in `ItemsView` improves testability and keeps view l
 **This `ClearSort` releases the view order only.** `DataGridColumn.SortDirection` stays on the `DataGrid` side, so the rows return to their initial order while the header arrow remains displayed (the `ItemsSource = ICollectionView` row of the table above measures exactly that: clearing the view's `SortDescriptions` left `SortDirection` at `Ascending`).
 This `ClearSort` also clears only `SortDescriptions`, so it does not undo sorting through `ListCollectionView.CustomSort`. Running the same steps on a view with `CustomSort` set left `CustomSort` in place and the order unchanged. On a screen that uses `CustomSort`, have `ClearSort` also assign `null` to `CustomSort`.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg" alt="A table of setting CustomSort on a ListCollectionView and then running the article's ClearSort. The initial order is 21800, 2480, 4980. With CustomSort set to Price descending it is 21800, 4980, 2480. After SortDescriptions.Clear and Refresh, CustomSort is still set and the order is still 21800, 4980, 2480. Assigning null to CustomSort and calling Refresh restores the initial order." width="756" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by applying each step in turn to a <code>ListCollectionView</code> over the sample data. The <code>SortDescriptions</code> column is the number of conditions.</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.en.md %}
+
+Measured on .NET 10 / Windows 11 by applying each step in turn to a <code>ListCollectionView</code> over the sample data. The <code>SortDescriptions</code> column is the number of conditions.
+{: .table-caption}
 
 Clearing the arrow as well needs a separate step that sets `SortDirection` to `null` on the `DataGrid`, since the ViewModel cannot reach the column state. Folding that step into a Behavior lets a single command reset both.
 

@@ -28,7 +28,7 @@ WPF のデータバインディングでは、`double` や `decimal`、`DateTime
 したがって、`C`(通貨)・`N`(数値)・`P`(パーセント)といった標準書式指定子や、`#,0.##` などのカスタム書式指定子がそのまま使える。
 ただしこれは書式の意味の話であり、XAML に書くときは別に構文上の制約がある。`{Binding ...}` のショートハンド構文ではカンマが引数の区切りになるため `#,0.##` は引用符で囲む必要があり、`{` で始まる書式には先頭に `{}` のエスケープが要る。いずれも後述する。
 
-本記事の図は、上記の環境で `FrameworkElement.Language` の既定値と `CultureInfo.CurrentCulture` を読み出し、書式化の結果と突き合わせて得たものである。
+本記事の表は、上記の環境で `FrameworkElement.Language` の既定値と `CultureInfo.CurrentCulture` を読み出し、書式化の結果と突き合わせて得たものである。
 この環境で確認しているのは次の点である。
 
 - 対象要素の `Language` が既定値のままなら、`ConverterCulture` を指定しなくても OS の地域設定ではなく `en-US` で書式化される。
@@ -159,10 +159,10 @@ WPF の既定ではこのカルチャが `en-US` になるため、日本語環�
 
 書式化の結果は、実際に表示して描画された文字列を読めば確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.svg" alt="書式化の結果を測った表。FrameworkElement.Language の既定値は en-us で、CultureInfo.CurrentCulture は ja-JP である。ConverterCulture を指定しない場合は 1,234.50 ドルと 7/17/2026、ja-JP を指定すると 1,235 円と 2026/07/17 になる。Label.Content に StringFormat を指定すると 1234.5 のまま書式化されず、ContentStringFormat では書式化される。" width="665" height="320" loading="lazy">
-  <figcaption>.NET 10 / 日本語環境の Windows 11 で、実際に描画された文字列を visual ツリーから読み取った結果。<code>rendered text</code> は表示された文字列そのものである。</figcaption>
-</figure>
+{% include tables/articles/wpf-binding-stringformat-number-currency-date/stringformat-culture-matrix.ja.md %}
+
+.NET 10 / 日本語環境の Windows 11 で、実際に描画された文字列を visual ツリーから読み取った結果。「表示される文字列」の列は、表示された文字列そのものである。
+{: .table-caption}
 
 **1 行目と 2 行目の食い違いが、この問題の原因である。**
 `CultureInfo.CurrentCulture` は OS の地域設定を反映して `ja-JP` になっているのに、`FrameworkElement.Language` の既定値は `en-us` のままである。

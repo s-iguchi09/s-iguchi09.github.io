@@ -60,7 +60,7 @@ internal sealed class CollectionViewFilterRefreshScene : IScene
 
         await context.SaveTableAsync(
             "filter predicate calls per operation (1,000 items, half pass the filter)",
-            ["operation", "filter calls", "CollectionChanged", "items in view"],
+            [Loc.Of("operation", "操作"), Loc.Of("filter calls", "フィルターの呼び出し回数"), "CollectionChanged", Loc.Of("items in view", "ビューの項目数")],
             await ViewAndTemplateMeasurements.FilterRefreshAsync(),
             "collectionview-filter-calls.svg");
     }

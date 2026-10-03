@@ -47,13 +47,13 @@ internal sealed class DataGridEditingTemplateScene : IScene
 
         await context.SaveTableAsync(
             "element placed in the cell",
-            ["state", "element in the cell", "cell.IsEditing"],
+            [T("state", "状態"), T("element in the cell", "セルの中の要素"), "cell.IsEditing"],
             await DataGridMeasurements.EditingTemplateAsync(),
             "datagrid-editing-template.svg");
 
         await context.SaveTableAsync(
             "single template switched by DataGridCell.IsEditing",
-            ["placement of DataTemplate.Triggers", "result"],
+            [T("placement of DataTemplate.Triggers", "DataTemplate.Triggers の置き場所"), T("result", "結果")],
             await SingleTemplateAsync(),
             "datagrid-single-template.svg");
     }
@@ -87,14 +87,17 @@ internal sealed class DataGridEditingTemplateScene : IScene
     /// XAML の読み取りは読み込み時に行われるが、テンプレートの要素はセルに表示するときに生成される。
     /// Grid の中に置いた誤りは読み込みでは検出されず、要素を生成する時点で結果が分かれる。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> SingleTemplateAsync()
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static async Task<List<IReadOnlyList<Loc>>> SingleTemplateAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
-        foreach ((string label, string inside, string after, string leading) in new[]
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach ((Loc label, string inside, string after, string leading) in new (Loc, string, string, string)[]
         {
-            ("inside <Grid>", Triggers, "", ""),
-            ("under <DataTemplate>, after <Grid>", "", Triggers, ""),
-            ("under <DataTemplate>, before <Grid>", "", "", Triggers),
+            (T("inside <Grid>", "<Grid> の中"), Triggers, "", ""),
+            (T("under <DataTemplate>, after <Grid>", "<DataTemplate> の直下、<Grid> の後"), "", Triggers, ""),
+            (T("under <DataTemplate>, before <Grid>", "<DataTemplate> の直下、<Grid> の前"), "", "", Triggers),
         })
         {
             DataTemplate template;
@@ -104,7 +107,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
             }
             catch (Exception e)
             {
-                rows.Add([label, $"loading the template: {e.GetType().Name}"]);
+                rows.Add([label, T($"loading the template: {e.GetType().Name}", $"テンプレートの読み込みで {e.GetType().Name}")]);
                 continue;
             }
 
@@ -120,7 +123,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
                 }
                 catch (Exception e)
                 {
-                    rows.Add([label, $"loading succeeds; showing the grid throws {e.GetType().Name}"]);
+                    rows.Add([label, T($"loading succeeds; showing the grid throws {e.GetType().Name}", $"読み込みは通り、グリッドの表示で {e.GetType().Name}")]);
                     continue;
                 }
 
@@ -128,7 +131,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
                 grid.CurrentCell = new DataGridCellInfo(items[0], grid.Columns[0]);
                 grid.BeginEdit();
                 await Capture.SettleAsync(window);
-                rows.Add([label, $"before BeginEdit: {before}; after: {Visibilities(grid)}"]);
+                rows.Add([label, T($"before BeginEdit: {before}; after: {Visibilities(grid)}", $"BeginEdit の前: {before}、後: {Visibilities(grid)}")]);
             }
             finally
             {
@@ -136,7 +139,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
             }
         }
 
-        rows.Add(["under <DataTemplate>, before <Grid> (dotnet build)", await BuildBeforeRootAsync()]);
+        rows.Add([T("under <DataTemplate>, before <Grid> (dotnet build)", "<DataTemplate> の直下、<Grid> の前（dotnet build）"), await BuildBeforeRootAsync()]);
         return rows;
     }
 
@@ -144,7 +147,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
     /// 読者が書くのは、XamlReader ではなくビルドする .xaml ファイルである。
     /// ルート要素の前に Triggers を置いたテンプレートを一時プロジェクトでビルドし、マークアップ コンパイラーの結果を返す。
     /// </summary>
-    private static async Task<string> BuildBeforeRootAsync()
+    private static async Task<Loc> BuildBeforeRootAsync()
     {
         string workspace = Path.Combine(Path.GetTempPath(), "datatemplate-triggers-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(workspace);
@@ -198,7 +201,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
             string output = await stdout + await stderr;
             if (process.ExitCode == 0)
             {
-                return "build succeeds";
+                return T("build succeeds", "ビルドが通る");
             }
 
             // エラーコードだけを出す。本文は OS の言語で変わるため。
@@ -208,7 +211,7 @@ internal sealed class DataGridEditingTemplateScene : IScene
                 .ToArray();
             return codes.Length == 0
                 ? throw new InvalidOperationException($"ビルドが失敗したが、エラーコードを読み取れない。{Environment.NewLine}{output}")
-                : $"build fails: {string.Join(", ", codes)} (target 'display' must come before its Setter)";
+                : T($"build fails: {string.Join(", ", codes)} (target 'display' must come before its Setter)", $"ビルドが失敗: {string.Join(", ", codes)}（対象の 'display' が Setter より前に要る）");
         }
         finally
         {

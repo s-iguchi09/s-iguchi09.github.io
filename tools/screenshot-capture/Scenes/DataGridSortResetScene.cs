@@ -48,13 +48,13 @@ internal sealed class DataGridSortResetScene : IScene
 
         await context.SaveTableAsync(
             "sort state after each operation",
-            ["operation", "SortDescriptions", "column.SortDirection", "order"],
+            [T("operation", "操作"), "SortDescriptions", "column.SortDirection", T("order", "並び順")],
             await DataGridMeasurements.SortStateAsync(),
             "datagrid-sort-state.svg");
 
         await context.SaveTableAsync(
             "ListCollectionView with CustomSort, then the article's ClearSort",
-            ["step", "CustomSort", "SortDescriptions", "order (Price)"],
+            [T("step", "手順"), "CustomSort", "SortDescriptions", T("order (Price)", "並び順（Price）")],
             CustomSortThenClear(),
             "datagrid-sort-customsort.svg");
     }
@@ -62,15 +62,18 @@ internal sealed class DataGridSortResetScene : IScene
     /// <summary>
     /// 記事の ViewModel の ClearSort は SortDescriptions だけを消す。CustomSort を設定したビューで、それが残るかを測る。
     /// </summary>
-    private static List<IReadOnlyList<string>> CustomSortThenClear()
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static List<IReadOnlyList<Loc>> CustomSortThenClear()
     {
         var view = new ListCollectionView(SampleData.Products().ToList());
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(Row("initial"));
+        rows.Add(Row(T("initial", "最初")));
 
         view.CustomSort = new ComparerAdapter(Comparer<Product>.Create((a, b) => b.Price.CompareTo(a.Price)));
-        rows.Add(Row("CustomSort = Price descending"));
+        rows.Add(Row(T("CustomSort = Price descending", "CustomSort = Price の降順")));
 
         // 記事の ClearSort と同じ手順。
         view.SortDescriptions.Clear();
@@ -83,10 +86,10 @@ internal sealed class DataGridSortResetScene : IScene
 
         return rows;
 
-        IReadOnlyList<string> Row(string step) =>
+        IReadOnlyList<Loc> Row(Loc step) =>
         [
             step,
-            view.CustomSort is null ? "null" : "set",
+            view.CustomSort is null ? "null" : T("set", "設定あり"),
             view.SortDescriptions.Count.ToString(),
             string.Join(", ", view.Cast<Product>().Select(p => p.Price)),
         ];

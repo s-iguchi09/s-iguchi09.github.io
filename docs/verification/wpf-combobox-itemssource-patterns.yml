@@ -17,3 +17,8 @@ images:
   - "images/articles/wpf-combobox-itemssource-patterns/combobox-itemssource-patterns.png"
   - "images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg"
   - "images/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.svg"
+tables:
+  - "_includes/tables/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.en.md"
+  - "_includes/tables/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.ja.md"
+  - "_includes/tables/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.en.md"
+  - "_includes/tables/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.ja.md"

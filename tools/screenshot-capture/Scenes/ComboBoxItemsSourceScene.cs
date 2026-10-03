@@ -64,13 +64,13 @@ internal sealed class ComboBoxItemsSourceScene : IScene
 
         await context.SaveTableAsync(
             "what each selection property returns for the same selection",
-            ["configuration", "SelectedItem", "SelectedValue", "SelectedIndex", "displayed"],
+            [Loc.Of("configuration", "設定"), "SelectedItem", "SelectedValue", "SelectedIndex", Loc.Of("displayed", "表示")],
             await ComboBoxAndDatePickerMeasurements.SelectionPropertiesAsync(),
             "combobox-selection-properties.svg");
 
         await context.SaveTableAsync(
             "ComboBox pitfalls: settings that are said to fail",
-            ["case", "measured"],
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
             await ComboBoxAndDatePickerMeasurements.PitfallsAsync(),
             "combobox-pitfalls.svg");
     }

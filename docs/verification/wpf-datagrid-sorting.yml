@@ -16,3 +16,8 @@ images:
   - "images/articles/wpf-datagrid-sorting/datagrid-sort-glyph-sync.png"
   - "images/articles/wpf-datagrid-sorting/datagrid-sortability.svg"
   - "images/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.svg"
+tables:
+  - "_includes/tables/articles/wpf-datagrid-sorting/datagrid-sortability.en.md"
+  - "_includes/tables/articles/wpf-datagrid-sorting/datagrid-sortability.ja.md"
+  - "_includes/tables/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.en.md"
+  - "_includes/tables/articles/wpf-datagrid-sorting/datagrid-customsort-refresh.ja.md"

@@ -20,7 +20,8 @@ This article shows how to customise that format so the control always renders da
 - Architecture: applicable to both code-behind and MVVM  
 - Verification environment: .NET 10 / Windows 11 (Japanese regional settings)
 
-The figures in this article come from varying the `DatePicker` settings in the environment above and reading the string shown in its text part.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - `SelectedDateFormat` offers only `Short` and `Long`, so it cannot produce an arbitrary format.
@@ -32,10 +33,10 @@ A fully retemplated `DatePicker` may not expose that element, in which case the 
 
 The text a `DatePicker` actually shows can be confirmed by varying the setting and reading it back.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-format-matrix.svg" alt="A table of the effective SelectedDateFormat, where that value comes from, and the text shown by a DatePicker per setting. Setting nothing yields Short, sourced from the default style. The default and Short both give 2026/07/17, Long gives a long-form Japanese date, and overwriting the text part gives 2026/07/17 with the weekday appended." width="642" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with Japanese regional settings, reading the text part of a <code>DatePicker</code> holding <code>2026-07-17</code>. The parenthesis in the second column is where the value came from, read through <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-format-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 with Japanese regional settings, reading the text part of a <code>DatePicker</code> holding <code>2026-07-17</code>. The parenthesis in the second column is where the value came from, read through <code>DependencyPropertyHelper.GetValueSource</code>.
+{: .table-caption}
 
 **`SelectedDateFormat` offers only `Short` and `Long`.** Neither can state an arbitrary format.
 That is why the workarounds described below are needed.
@@ -71,10 +72,10 @@ Where the default display takes its culture from depends on where the value of `
 When neither the control nor its parents set it, so that its value source is still `Default`, the display follows the thread's `CurrentCulture`; the default `Language` value of `en-US` is not used.  
 When it is set on the control itself (`Local`) or inherited from a parent such as the `Window` (`Inherited`), the display uses that language regardless of `CurrentCulture`.  
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-culture-matrix.svg" alt="A table of the default DatePicker display measured while varying xml:lang on the control, xml:lang on its parent, and CurrentCulture independently. With no xml:lang anywhere the display follows CurrentCulture: 2026/04/15 for ja-JP and 4/15/2026 for en-US. With xml:lang on the control the display ignores CurrentCulture: 4/15/2026 for en-US and 15.04.2026 for de-DE. With de-DE on the parent only, the inherited language gives 15.04.2026." width="725" height="320" loading="lazy">
-  <figcaption>Default display of a <code>DatePicker</code> whose <code>SelectedDate</code> is 2026-04-15, measured on .NET 10 / Windows 11. In rows with no <code>xml:lang</code> anywhere the value source of <code>Language</code> is <code>Default</code> and the display follows <code>CurrentCulture</code>. In rows that set it on the control (<code>Local</code>) or inherit it from the parent (<code>Inherited</code>), changing <code>CurrentCulture</code> does not change the display.</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-culture-matrix.en.md %}
+
+Default display of a <code>DatePicker</code> whose <code>SelectedDate</code> is 2026-04-15, measured on .NET 10 / Windows 11. In rows with no <code>xml:lang</code> anywhere the value source of <code>Language</code> is <code>Default</code> and the display follows <code>CurrentCulture</code>. In rows that set it on the control (<code>Local</code>) or inherit it from the parent (<code>Inherited</code>), changing <code>CurrentCulture</code> does not change the display.
+{: .table-caption}
 
 Placing the two side by side gives the following.  
 Both carry `xml:lang="en-US"` so that the comparison does not depend on the machine's regional settings.  
@@ -105,17 +106,17 @@ The format also survives after the picker is shown.
 With `xml:lang="de-DE"`, changing `SelectedDate` in code and picking a date in the calendar both displayed the specified `2026/05/20` and `2026/06/03`.
 The value of `DatePickerTextBox.Text` kept coming from the style's binding throughout.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.svg" alt="A table of this section's style applied to a DatePicker with xml:lang de-DE. Right after display it shows 2026/04/15; after SelectedDate is set to 2026-05-20 in code it shows 2026/05/20; after 2026-06-03 is picked in the calendar it shows 2026/06/03. The value source of TextBox.Text is the Style binding every time." width="658" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by showing a <code>DatePicker</code> with this section's style and changing the date twice. The value source was read with <code>DependencyPropertyHelper.GetValueSource</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-style-lifecycle.en.md %}
+
+Measured on .NET 10 / Windows 11 by showing a <code>DatePicker</code> with this section's style and changing the date twice. The value source was read with <code>DependencyPropertyHelper.GetValueSource</code>.
+{: .table-caption}
 
 What the escaped separator fixes is the separator and the field order, not the calendar itself: with the separators kept, `th-TH`, `ar-SA`, and `fa-IR` still show their own years and months.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-stringformat-escape.svg" alt="A table of four ways to write StringFormat inside a XAML Binding. 'yyyy\/MM\/dd' becomes yyyy/MM/dd after parsing and shows 2026/04/15 for en-US and ja-JP but 2026.04.15 for de-DE, with invisible direction marks for ar-SA. 'yyyy\\/MM\\/dd' and yyyy\'/\'MM\'/\'dd keep the slash for all six cultures, while th-TH, ar-SA, and fa-IR still use their own calendars. yyyy'/'MM'/'dd without escaping fails to load with XamlParseException." width="1159" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by loading the style from this section with each <code>StringFormat</code> and <code>xml:lang</code>, with <code>SelectedDate</code> set to 2026-04-15. Characters outside ASCII are shown as code points.</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-stringformat-escape.en.md %}
+
+Measured on .NET 10 / Windows 11 by loading the style from this section with each <code>StringFormat</code> and <code>xml:lang</code>, with <code>SelectedDate</code> set to 2026-04-15. Characters outside ASCII are shown as code points.
+{: .table-caption}
 
 To pin the calendar as well, set `ConverterCulture` on the binding so the culture itself is fixed.  
 
@@ -124,10 +125,10 @@ To pin the calendar as well, set `ConverterCulture` on the binding so the cultur
 A common suggestion is to handle `SelectedDateChanged` and assign the formatted text to `DatePicker.Text`. This does not change the display.
 When `SelectedDateChanged` fires, `Text` has already been set in the default format. Assigning a `yyyy/MM/dd` string there makes `DatePicker` parse it as a date and normalize it to the default format right away: `Text` read `4/15/2026` both at the handler's entry and right after the assignment.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datepicker-custom-format/datepicker-codebehind.svg" alt="A table of setting DatePicker.Text in SelectedDateChanged with xml:lang en-US: the handler ran twice; each time Text was 4/15/2026 at the entry and still 4/15/2026 right after assigning yyyy/MM/dd. After the handler, Text and the displayed text were 4/15/2026." width="929" height="110" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with a handler that sets <code>Text</code> to <code>yyyy/MM/dd</code> in the invariant culture, after setting <code>SelectedDate</code> to 2026-04-15.</figcaption>
-</figure>
+{% include tables/articles/wpf-datepicker-custom-format/datepicker-codebehind.en.md %}
+
+Measured on .NET 10 / Windows 11 with a handler that sets <code>Text</code> to <code>yyyy/MM/dd</code> in the invariant culture, after setting <code>SelectedDate</code> to 2026-04-15.
+{: .table-caption}
 
 To set the format from code, apply the same `DatePickerTextBox` style and binding as the XAML approach, or keep the picker's text as it is and format a companion display with a converter, as in the next section.
 

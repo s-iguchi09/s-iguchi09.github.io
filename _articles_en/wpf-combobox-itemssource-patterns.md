@@ -23,7 +23,8 @@ This article organizes the representative binding patterns and explains how to s
 - Prior knowledge: WPF binding basics, `INotifyPropertyChanged`
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from reading `SelectedItem`, `SelectedValue`, and `SelectedIndex` for the same selection in the environment above.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - Whether `SelectedValuePath` is set changes what `SelectedValue` holds.
@@ -58,10 +59,10 @@ The appropriate binding target depends on the data structure, so the configurati
 
 What the three properties return for the same selection can be confirmed by selecting an item and reading them back.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.svg" alt="A table of SelectedItem, SelectedValue, SelectedIndex, and the displayed text after selecting the second item under varying settings. Without SelectedValuePath, SelectedValue returns the item itself. With SelectedValuePath set to Id it returns the Int32 20. Without DisplayMemberPath, the closed ComboBox shows the type name, because the item type does not override ToString." width="1035" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by selecting the second of three items carrying an <code>Id</code> and a <code>Name</code>. <code>displayed</code> is the string shown on the closed <code>ComboBox</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-combobox-itemssource-patterns/combobox-selection-properties.en.md %}
+
+Measured on .NET 10 / Windows 11 by selecting the second of three items carrying an <code>Id</code> and a <code>Name</code>. <code>displayed</code> is the string shown on the closed <code>ComboBox</code>.
+{: .table-caption}
 
 **Without `SelectedValuePath`, `SelectedValue` returns the item itself.** The table above describes it as the value at `SelectedValuePath`; when that path is unset, what comes back is the same object as `SelectedItem`.
 Setting `SelectedValuePath=Id` produces the `Int32` `20`, changing the type as well. Passing only an ID to the view model requires that setting.
@@ -274,10 +275,10 @@ Keeping the ViewModel property type aligned with the `ComboBox` configuration is
 
 ## Notes
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.svg" alt="A table of four ComboBox settings. Setting both DisplayMemberPath and ItemTemplate throws InvalidOperationException from code and XamlParseException from XAML. With SelectedValuePath pointing at an int Id and a string-typed source property holding 20, the item with Id 20 is selected, and selecting another item writes back the string 30; with a property declared as object, the Int32 30 is written back. With enum items and SelectedValuePath set to value__, SelectedValue is null. Setting SelectedValue before ItemsSource, from code or through a binding, still selects the matching item." width="1116" height="290" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with three items whose <code>Id</code> values are 10, 20, and 30.</figcaption>
-</figure>
+{% include tables/articles/wpf-combobox-itemssource-patterns/combobox-pitfalls.en.md %}
+
+Measured on .NET 10 / Windows 11 with three items whose <code>Id</code> values are 10, 20, and 30.
+{: .table-caption}
 
 - **`DisplayMemberPath` and `ItemTemplate` cannot be combined**
     Setting both throws `InvalidOperationException` (from XAML, wrapped in `XamlParseException`). Use `ItemTemplate` when custom display is needed and remove `DisplayMemberPath`.  

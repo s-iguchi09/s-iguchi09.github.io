@@ -28,6 +28,18 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
 
     public string Slug => "wpf-scrollviewer-not-scrolling";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("inside an outer ScrollViewer (Height=180)", "外側の ScrollViewer の中（Height=180）"),
+        ("inside a StackPanel (Height=180)", "StackPanel の中（Height=180）"),
+        ("grouped (CollectionView.GroupDescriptions)", "グループ化（CollectionView.GroupDescriptions）"),
+        ("inside DockPanel (LastChildFill)", "DockPanel の中（LastChildFill）"),
+        ("inside StackPanel", "StackPanel の中"),
+        ("inside Grid", "Grid の中"),
+        ("StackPanel + explicit Height", "StackPanel + Height を明示"),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         Window window = DemoLayout.BuildPanelWindow(
@@ -41,14 +53,14 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
 
         await context.SaveTableAsync(
             "ScrollViewer with 40 rows of 20px, parent constrained to 200px",
-            ["parent layout", "Extent", "Viewport", "Scrollable", "scrollbar"],
-            await ViewAndTemplateMeasurements.ScrollViewerHeightAsync(),
+            [Loc.Of("parent layout", "親のレイアウト"), "Extent", "Viewport", "Scrollable", Loc.Of("scrollbar", "スクロールバー")],
+            LocTable.Translate(await ViewAndTemplateMeasurements.ScrollViewerHeightAsync(), Words),
             "scrollviewer-height-matrix.svg");
 
         await context.SaveTableAsync(
             "ListBox with 2,000 items: realized ListBoxItem",
-            ["configuration", "ListBoxItem realized", "CanContentScroll (value source)"],
-            await VirtualizationLossAsync(),
+            [Loc.Of("configuration", "構成"), Loc.Of("ListBoxItem realized", "実体化した ListBoxItem"), Loc.Of("CanContentScroll (value source)", "CanContentScroll（値の出どころ）")],
+            LocTable.Translate(await VirtualizationLossAsync(), Words),
             "listbox-virtualization-loss.svg");
     }
 

@@ -50,23 +50,23 @@ internal static class ViewAndTemplateMeasurements
     /// 「値は変わったのに一覧から出入りしない」という症状は、
     /// 呼び出し回数が 0 であることを示せば原因まで説明できる。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> FilterRefreshAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> FilterRefreshAsync()
     {
         const int ItemCount = 1000;
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        (string Label, Action<ObservableCollection<Row>, ICollectionView> Operate)[] operations =
+        (Loc Label, Action<ObservableCollection<Row>, ICollectionView> Operate)[] operations =
         [
-            ("Add 1 item (passes filter)", (items, _) => items.Add(new Row { Name = "added", Stock = 1 })),
-            ("Add 1 item (fails filter)", (items, _) => items.Add(new Row { Name = "added", Stock = 0 })),
-            ("Remove 1 item", (items, _) => items.RemoveAt(0)),
-            ("item.Stock = 0 (leaves filter)", (items, _) => items[0].Stock = 0),
-            ("item.Stock = 1 (enters filter)", (items, _) => items[^1].Stock = 1),
+            (Loc.Of("Add 1 item (passes filter)", "1 項目を追加（フィルターを通る）"), (items, _) => items.Add(new Row { Name = "added", Stock = 1 })),
+            (Loc.Of("Add 1 item (fails filter)", "1 項目を追加（フィルターを通らない）"), (items, _) => items.Add(new Row { Name = "added", Stock = 0 })),
+            (Loc.Of("Remove 1 item", "1 項目を削除"), (items, _) => items.RemoveAt(0)),
+            (Loc.Of("item.Stock = 0 (leaves filter)", "item.Stock = 0（フィルターから外れる）"), (items, _) => items[0].Stock = 0),
+            (Loc.Of("item.Stock = 1 (enters filter)", "item.Stock = 1（フィルターに入る）"), (items, _) => items[^1].Stock = 1),
             ("view.Refresh()", (_, view) => view.Refresh()),
         ];
 
-        foreach ((string label, Action<ObservableCollection<Row>, ICollectionView> operate) in operations)
+        foreach ((Loc label, Action<ObservableCollection<Row>, ICollectionView> operate) in operations)
         {
             // 前半は在庫あり、後半は在庫なし。どちらの向きの変化も測れるようにする。
             var items = new ObservableCollection<Row>(
@@ -82,9 +82,9 @@ internal static class ViewAndTemplateMeasurements
             ((INotifyCollectionChanged)view).CollectionChanged += (_, _) => collectionChanged++;
 
             var host = new ItemsControl { ItemsSource = view };
-            List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+            List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
             [
-                new WpfProbe.Case(
+                new WpfProbe.LocCase(
                     label,
                     host,
                     _ => [calls.ToString(), collectionChanged.ToString(), view.Cast<object>().Count().ToString()],
@@ -202,32 +202,32 @@ internal static class ViewAndTemplateMeasurements
     /// 記事の要点は「解決に失敗してもボタンは無効化されない」ことなので、
     /// <c>Command</c> の有無と <c>IsEnabled</c> の両方を出す。
     /// </summary>
-    public static Task<List<IReadOnlyList<string>>> TemplateBindingScopeAsync() =>
+    public static Task<List<IReadOnlyList<Loc>>> TemplateBindingScopeAsync() =>
         WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 "{Binding DeleteCommand}",
                 BuildTemplateCase("{Binding DeleteCommand}"),
                 ReadTemplateButton),
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 "RelativeSource AncestorType=ItemsControl",
                 BuildTemplateCase("{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"),
                 ReadTemplateButton),
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 "ElementName=Root",
                 BuildTemplateCase("{Binding DataContext.DeleteCommand, ElementName=Root}"),
                 ReadTemplateButton),
         ]);
 
-    private static IReadOnlyList<string> ReadTemplateButton(FrameworkElement root)
+    private static IReadOnlyList<Loc> ReadTemplateButton(FrameworkElement root)
     {
         Button? button = Descendants(root).OfType<Button>().FirstOrDefault();
         if (button is null)
         {
-            return ["(button not realized)", "-"];
+            return [Loc.Of("(button not realized)", "（ボタンが作られない）"), "-"];
         }
 
-        return [button.Command is null ? "null" : "resolved", WpfProbe.Describe(button.IsEnabled)];
+        return [button.Command is null ? "null" : Loc.Of("resolved", "解決できた"), WpfProbe.Describe(button.IsEnabled)];
     }
 
     private static FrameworkElement BuildTemplateCase(string commandBinding)

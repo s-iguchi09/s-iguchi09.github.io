@@ -34,12 +34,12 @@ internal static class ComboBoxAndDatePickerMeasurements
     /// DisplayMemberPath と ItemTemplate の同時設定、SelectedValue とパスの型の違い、
     /// 列挙型の数値を SelectedValuePath で取れるか、SelectedValue を ItemsSource より先に設定したとき。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> PitfallsAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> PitfallsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["DisplayMemberPath + ItemTemplate (code)", Throws(() => new ComboBox { DisplayMemberPath = "Name", ItemTemplate = new DataTemplate() })]);
-        rows.Add(["DisplayMemberPath + ItemTemplate (XAML)", Throws(() => System.Windows.Markup.XamlReader.Parse(
+        rows.Add([Loc.Of("DisplayMemberPath + ItemTemplate (code)", "DisplayMemberPath + ItemTemplate（コード）"), Throws(() => new ComboBox { DisplayMemberPath = "Name", ItemTemplate = new DataTemplate() })]);
+        rows.Add([Loc.Of("DisplayMemberPath + ItemTemplate (XAML)", "DisplayMemberPath + ItemTemplate（XAML）"), Throws(() => System.Windows.Markup.XamlReader.Parse(
             "<ComboBox xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" DisplayMemberPath=\"Name\"><ComboBox.ItemTemplate><DataTemplate /></ComboBox.ItemTemplate></ComboBox>"))]);
 
         // 型の違い: SelectedValuePath の Id は int、バインドしたソースは文字列型のプロパティで値は "20"。
@@ -49,10 +49,12 @@ internal static class ComboBoxAndDatePickerMeasurements
         string typedInitial = "";
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "SelectedValuePath=Id (int), source string property \"20\"",
+            new WpfProbe.LocCase(
+                Loc.Of("SelectedValuePath=Id (int), source string property \"20\"", "SelectedValuePath=Id（int）、ソースは string のプロパティで \"20\""),
                 typedCombo,
-                _ => [$"shown: SelectedIndex {typedInitial}; after selecting index 2, source = {typed.Value} ({typed.Value?.GetType().Name})"],
+                _ => [Loc.Of(
+                    $"shown: SelectedIndex {typedInitial}; after selecting index 2, source = {typed.Value} ({typed.Value?.GetType().Name})",
+                    $"表示時: SelectedIndex {typedInitial}、インデックス 2 を選んだ後のソース = {typed.Value}（{typed.Value?.GetType().Name}）")],
                 Act: _ =>
                 {
                     typedInitial = typedCombo.SelectedIndex.ToString();
@@ -68,10 +70,12 @@ internal static class ComboBoxAndDatePickerMeasurements
         string mismatchInitial = "";
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "SelectedValuePath=Id (int), source object property holding \"20\"",
+            new WpfProbe.LocCase(
+                Loc.Of("SelectedValuePath=Id (int), source object property holding \"20\"", "SelectedValuePath=Id（int）、ソースは object のプロパティで \"20\" を保持"),
                 mismatchCombo,
-                _ => [$"shown: SelectedIndex {mismatchInitial}; after selecting index 2, source = {mismatch.Value} ({mismatch.Value?.GetType().Name})"],
+                _ => [Loc.Of(
+                    $"shown: SelectedIndex {mismatchInitial}; after selecting index 2, source = {mismatch.Value} ({mismatch.Value?.GetType().Name})",
+                    $"表示時: SelectedIndex {mismatchInitial}、インデックス 2 を選んだ後のソース = {mismatch.Value}（{mismatch.Value?.GetType().Name}）")],
                 Act: _ =>
                 {
                     mismatchInitial = mismatchCombo.SelectedIndex.ToString();
@@ -83,8 +87,8 @@ internal static class ComboBoxAndDatePickerMeasurements
         var enumCombo = new ComboBox { ItemsSource = Enum.GetValues<Priority>(), SelectedValuePath = "value__" };
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "enum items, SelectedValuePath=value__",
+            new WpfProbe.LocCase(
+                Loc.Of("enum items, SelectedValuePath=value__", "列挙型の項目、SelectedValuePath=value__"),
                 enumCombo,
                 _ => [$"SelectedItem {enumCombo.SelectedItem}, SelectedValue {WpfProbe.Describe(enumCombo.SelectedValue)}"],
                 Act: _ =>
@@ -100,7 +104,7 @@ internal static class ComboBoxAndDatePickerMeasurements
         codeFirst.ItemsSource = Items;
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case("SelectedValue = 20 set before ItemsSource (code)", codeFirst, _ => [$"SelectedIndex {codeFirst.SelectedIndex}"]),
+            new WpfProbe.LocCase(Loc.Of("SelectedValue = 20 set before ItemsSource (code)", "ItemsSource より前に SelectedValue = 20（コード）"), codeFirst, _ => [$"SelectedIndex {codeFirst.SelectedIndex}"]),
         ]));
 
         // SelectedValue をバインドし、表示した後で ItemsSource を入れる。
@@ -109,10 +113,10 @@ internal static class ComboBoxAndDatePickerMeasurements
         boundFirst.SetBinding(System.Windows.Controls.Primitives.Selector.SelectedValueProperty, new System.Windows.Data.Binding(nameof(ValueHolder.Value)) { Mode = System.Windows.Data.BindingMode.TwoWay });
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "SelectedValue bound to 30, ItemsSource assigned after display",
+            new WpfProbe.LocCase(
+                Loc.Of("SelectedValue bound to 30, ItemsSource assigned after display", "SelectedValue を 30 にバインド、表示した後に ItemsSource を設定"),
                 boundFirst,
-                _ => [$"SelectedIndex {boundFirst.SelectedIndex}, source {bound.Value}"],
+                _ => [Loc.Of($"SelectedIndex {boundFirst.SelectedIndex}, source {bound.Value}", $"SelectedIndex {boundFirst.SelectedIndex}、ソース {bound.Value}")],
                 Act: _ =>
                 {
                     boundFirst.ItemsSource = Items;
@@ -133,7 +137,7 @@ internal static class ComboBoxAndDatePickerMeasurements
         public string? Value { get; set; }
     }
 
-    private static string Throws(Action action)
+    private static Loc Throws(Action action)
     {
         try
         {
@@ -144,7 +148,9 @@ internal static class ComboBoxAndDatePickerMeasurements
         {
             // 文言は OS の言語で変わるため、型だけを出す。XAML では XamlParseException に包まれるので内側の型も出す。
             Exception inner = e.InnerException ?? e;
-            return e == inner ? e.GetType().Name : $"{e.GetType().Name} (inner {inner.GetType().Name})";
+            return e == inner
+                ? e.GetType().Name
+                : Loc.Of($"{e.GetType().Name} (inner {inner.GetType().Name})", $"{e.GetType().Name}（内側の例外 {inner.GetType().Name}）");
         }
     }
 
@@ -161,11 +167,11 @@ internal static class ComboBoxAndDatePickerMeasurements
     /// <c>SelectedValuePath</c> の有無で <c>SelectedValue</c> の中身が変わることは、
     /// 並べて出さないと伝わらない。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> SelectionPropertiesAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> SelectionPropertiesAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(await MeasureAsync("no DisplayMemberPath / no SelectedValuePath", null, null));
+        rows.Add(await MeasureAsync(Loc.Of("no DisplayMemberPath / no SelectedValuePath", "DisplayMemberPath なし / SelectedValuePath なし"), null, null));
         rows.Add(await MeasureAsync("DisplayMemberPath=Name", nameof(Item.Name), null));
         rows.Add(await MeasureAsync("+ SelectedValuePath=Id", nameof(Item.Name), nameof(Item.Id)));
         rows.Add(await MeasureAsync("SelectedValuePath=Name", nameof(Item.Name), nameof(Item.Name)));
@@ -173,8 +179,8 @@ internal static class ComboBoxAndDatePickerMeasurements
         return rows;
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureAsync(
-        string label, string? displayMemberPath, string? selectedValuePath)
+    private static async Task<IReadOnlyList<Loc>> MeasureAsync(
+        Loc label, string? displayMemberPath, string? selectedValuePath)
     {
         var combo = new ComboBox { ItemsSource = Items, Width = 160 };
 
@@ -191,9 +197,9 @@ internal static class ComboBoxAndDatePickerMeasurements
         var host = new Grid();
         host.Children.Add(combo);
 
-        List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+        List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 label,
                 host,
                 _ =>
@@ -207,7 +213,7 @@ internal static class ComboBoxAndDatePickerMeasurements
                     },
                     combo.SelectedIndex.ToString(),
                     // ToString をオーバーライドしていないため、DisplayMemberPath が無いと型の完全名が出る。長いので言い換える。
-                    DisplayedText(combo) is string shown && shown == typeof(Item).FullName ? "type name (Item.ToString())" : DisplayedText(combo) ?? "(nothing)",
+                    DisplayedText(combo) is string shown && shown == typeof(Item).FullName ? Loc.Of("type name (Item.ToString())", "型の名前（Item.ToString()）") : DisplayedText(combo) ?? "(nothing)",
                 ],
                 Act: _ =>
                 {
@@ -243,22 +249,22 @@ internal static class ComboBoxAndDatePickerMeasurements
     /// <c>SelectedDateFormat</c> は Short と Long の 2 つしか持たないため、
     /// 任意の書式にするにはテキスト部分を直接書き換えるしかない、というのが記事の主張である。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> DatePickerFormatsAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> DatePickerFormatsAsync()
     {
         var date = new DateTime(2026, 7, 17);
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 依存関係プロパティのメタデータ既定値と、設定しなかった場合の実効値は一致しない。
         // どちらか一方だけを「既定値」と書くと誤るため、両方を表に出す。
         var metadataDefault = (DatePickerFormat)DatePicker.SelectedDateFormatProperty
             .GetMetadata(typeof(DatePicker)).DefaultValue!;
 
-        rows.Add(await MeasureDateAsync($"default (property metadata: {metadataDefault})", date, null, null));
+        rows.Add(await MeasureDateAsync(Loc.Of($"default (property metadata: {metadataDefault})", $"既定（プロパティのメタデータ: {metadataDefault}）"), date, null, null));
 
         rows.Add(await MeasureDateAsync("SelectedDateFormat=Short", date, DatePickerFormat.Short, null));
         rows.Add(await MeasureDateAsync("SelectedDateFormat=Long", date, DatePickerFormat.Long, null));
-        rows.Add(await MeasureDateAsync("text part overwritten", date, DatePickerFormat.Short, "yyyy/MM/dd (ddd)"));
+        rows.Add(await MeasureDateAsync(Loc.Of("text part overwritten", "テキスト部分を上書き"), date, DatePickerFormat.Short, "yyyy/MM/dd (ddd)"));
 
         return rows;
     }
@@ -267,10 +273,10 @@ internal static class ComboBoxAndDatePickerMeasurements
     /// 既定表示のカルチャが、要素の Language（xml:lang）とスレッドの CurrentCulture の
     /// どちらから来るかを切り分ける。両者を独立に変え、実際に出る文字列を測る。
     /// </summary>
-    public static async Task<List<IReadOnlyList<string>>> DatePickerCultureAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> DatePickerCultureAsync()
     {
         var date = new DateTime(2026, 4, 15);
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 親要素だけに指定した場合（継承した Language）も測る。
         // DatePicker 自身に指定が無くても、値の出どころが Default でなくなるため。
@@ -290,7 +296,7 @@ internal static class ComboBoxAndDatePickerMeasurements
         return rows;
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureDateCultureAsync(
+    private static async Task<IReadOnlyList<Loc>> MeasureDateCultureAsync(
         DateTime date, string? language, string? parentLanguage, string currentCulture)
     {
         CultureInfo savedCulture = CultureInfo.CurrentCulture;
@@ -316,16 +322,16 @@ internal static class ComboBoxAndDatePickerMeasurements
             }
             host.Children.Add(picker);
 
-            string label = (language, parentLanguage) switch
+            Loc label = (language, parentLanguage) switch
             {
                 (not null, _) => $"xml:lang=\"{language}\"",
-                (null, not null) => $"parent: xml:lang=\"{parentLanguage}\"",
-                _ => "(not set)",
+                (null, not null) => Loc.Of($"parent: xml:lang=\"{parentLanguage}\"", $"親: xml:lang=\"{parentLanguage}\""),
+                _ => Loc.Of("(not set)", "（指定なし）"),
             };
 
-            List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+            List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
             [
-                new WpfProbe.Case(
+                new WpfProbe.LocCase(
                     label,
                     host,
                     _ =>
@@ -350,8 +356,8 @@ internal static class ComboBoxAndDatePickerMeasurements
         }
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureDateAsync(
-        string label, DateTime date, DatePickerFormat? format, string? customFormat)
+    private static async Task<IReadOnlyList<Loc>> MeasureDateAsync(
+        Loc label, DateTime date, DatePickerFormat? format, string? customFormat)
     {
         var picker = new DatePicker { SelectedDate = date, Width = 200 };
 
@@ -363,9 +369,9 @@ internal static class ComboBoxAndDatePickerMeasurements
         var host = new Grid();
         host.Children.Add(picker);
 
-        List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+        List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 label,
                 host,
                 _ =>

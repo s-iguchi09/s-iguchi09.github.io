@@ -28,7 +28,7 @@ internal sealed class BindingStringFormatScene : IScene
 
         await context.SaveTableAsync(
             "what StringFormat actually produces",
-            ["binding target and format", "culture", "rendered text"],
+            [Loc.Of("binding target and format", "バインド先と書式"), Loc.Of("culture", "カルチャ"), Loc.Of("rendered text", "表示される文字列")],
             await FormatAndSortMeasurements.StringFormatAsync(),
             "stringformat-culture-matrix.svg");
     }

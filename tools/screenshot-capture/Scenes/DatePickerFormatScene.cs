@@ -70,31 +70,31 @@ internal sealed class DatePickerFormatScene : IScene
 
         await context.SaveTableAsync(
             "text shown in the DatePicker",
-            ["configuration", "SelectedDateFormat", "displayed text"],
+            [T("configuration", "設定"), "SelectedDateFormat", T("displayed text", "表示される文字列")],
             await ComboBoxAndDatePickerMeasurements.DatePickerFormatsAsync(),
             "datepicker-format-matrix.svg");
 
         await context.SaveTableAsync(
             "default text of a DatePicker (SelectedDate = 2026-04-15)",
-            ["xml:lang", "CurrentCulture", "Language (value source)", "displayed text"],
+            ["xml:lang", "CurrentCulture", T("Language (value source)", "Language（値の出どころ）"), T("displayed text", "表示される文字列")],
             await ComboBoxAndDatePickerMeasurements.DatePickerCultureAsync(),
             "datepicker-culture-matrix.svg");
 
         await context.SaveTableAsync(
             "StringFormat inside a XAML Binding: format after parsing and text shown (2026-04-15)",
-            ["StringFormat in XAML", "format after parsing", .. Cultures],
+            [T("StringFormat in XAML", "XAML の StringFormat"), T("format after parsing", "解析後の書式"), .. Cultures],
             await EscapeMatrixAsync(),
             "datepicker-stringformat-escape.svg");
 
         await context.SaveTableAsync(
             "setting DatePicker.Text in SelectedDateChanged",
-            ["xml:lang", "handler calls", "Text at handler entry → right after the assignment", "Text / shown after the handler"],
+            ["xml:lang", T("handler calls", "ハンドラーの呼び出し回数"), T("Text at handler entry → right after the assignment", "ハンドラーに入ったときの Text → 代入の直後"), T("Text / shown after the handler", "ハンドラーの後の Text / 表示")],
             [await CodeBehindAsync()],
             "datepicker-codebehind.svg");
 
         await context.SaveTableAsync(
             @"the article's Style (StringFormat='yyyy\\/MM\\/dd', xml:lang=""de-DE""): text shown over time",
-            ["step", "shown text", "TextBox.Text value source"],
+            [T("step", "手順"), T("shown text", "表示される文字列"), T("TextBox.Text value source", "TextBox.Text の値の出どころ")],
             await StyleLifecycleAsync(),
             "datepicker-style-lifecycle.svg");
     }
@@ -104,21 +104,24 @@ internal sealed class DatePickerFormatScene : IScene
     /// カレンダーで日付を選んだ後の表示を測る。既定の書式（de-DE なら dd.MM.yyyy）に戻れば、
     /// DatePicker が TextBox.Text を書き換えて Style のバインドに勝ったことになる。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> StyleLifecycleAsync()
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static async Task<List<IReadOnlyList<Loc>>> StyleLifecycleAsync()
     {
         // 記事の XAML と同じ書き方（XAML の中で \\/ と書く）。
         DatePicker picker = SceneContext.LoadXaml<DatePicker>(StyledPicker(@"'yyyy\\/MM\\/dd'", "de-DE"));
         picker.SelectedDate = new DateTime(2026, 4, 15);
         var window = new Window { Content = picker, Width = 260, Height = 320, ShowActivated = false, ShowInTaskbar = false };
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         try
         {
             await Capture.ShowAndSettleAsync(window);
-            rows.Add(Row("shown (SelectedDate = 2026-04-15)"));
+            rows.Add(Row(T("shown (SelectedDate = 2026-04-15)", "表示した時点（SelectedDate = 2026-04-15）")));
 
             picker.SelectedDate = new DateTime(2026, 5, 20);
             await Capture.SettleAsync(window);
-            rows.Add(Row("SelectedDate = 2026-05-20 in code"));
+            rows.Add(Row(T("SelectedDate = 2026-05-20 in code", "コードで SelectedDate = 2026-05-20")));
 
             // カレンダーを開き、カレンダー側の選択として日付を選ぶ。利用者がクリックで選んだときと同じく、
             // Calendar.SelectedDate から DatePicker.SelectedDate へ伝わる経路を通る。
@@ -128,7 +131,7 @@ internal sealed class DatePickerFormatScene : IScene
             calendar.SelectedDate = new DateTime(2026, 6, 3);
             picker.IsDropDownOpen = false;
             await Capture.SettleAsync(window);
-            rows.Add(Row("2026-06-03 selected in the calendar"));
+            rows.Add(Row(T("2026-06-03 selected in the calendar", "カレンダーで 2026-06-03 を選択")));
         }
         finally
         {
@@ -137,12 +140,13 @@ internal sealed class DatePickerFormatScene : IScene
 
         return rows;
 
-        IReadOnlyList<string> Row(string step)
+        IReadOnlyList<Loc> Row(Loc step)
         {
             DatePickerTextBox box = FindTextBox(picker) ?? throw new InvalidOperationException("テキスト部分が見つからない。");
             ValueSource source = DependencyPropertyHelper.GetValueSource(box, TextBox.TextProperty);
             string flags = (source.IsExpression ? ", binding" : "") + (source.IsCurrent ? ", current value" : "");
-            return [step, Visible(box.Text), source.BaseValueSource + flags];
+            string flagsJa = (source.IsExpression ? "、バインド" : "") + (source.IsCurrent ? "、現在値" : "");
+            return [step, Visible(box.Text), T(source.BaseValueSource + flags, source.BaseValueSource + flagsJa)];
         }
     }
 
@@ -183,9 +187,9 @@ internal sealed class DatePickerFormatScene : IScene
         "<Setter Property=\"Text\" Value=\"{Binding SelectedDate, RelativeSource={RelativeSource AncestorType=DatePicker}, StringFormat=" + format + "}\" />" +
         "</Style></DatePicker.Resources></DatePicker>";
 
-    private static async Task<List<IReadOnlyList<string>>> EscapeMatrixAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> EscapeMatrixAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach (string format in Formats)
         {
             string? effective = null;

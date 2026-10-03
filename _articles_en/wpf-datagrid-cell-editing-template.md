@@ -21,7 +21,8 @@ This article explains the core implementation, common applied patterns, and prac
 - Other constraints: A grid designed for both high readability in listing and efficient interaction during editing
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from reading the type of the element actually placed in a `DataGrid` cell in the environment above.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - While displaying, the cell holds the element from `CellTemplate`; while editing, it holds the one from `CellEditingTemplate`.
@@ -41,10 +42,10 @@ Trying to satisfy both goals with one control usually compromises one side.
 
 That the element in the cell is genuinely swapped between display and editing can be measured.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.svg" alt="A table of the element placed in the cell while displaying and while editing. Displaying gives a TextBlock with cell.IsEditing False; calling BeginEdit gives a ComboBox with cell.IsEditing True." width="532" height="140" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with a <code>DataGridTemplateColumn</code> holding a <code>TextBlock</code> in its <code>CellTemplate</code> and a <code>ComboBox</code> in its <code>CellEditingTemplate</code>. The element type is read out of the visual tree.</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-cell-editing-template/datagrid-editing-template.en.md %}
+
+Measured on .NET 10 / Windows 11 with a <code>DataGridTemplateColumn</code> holding a <code>TextBlock</code> in its <code>CellTemplate</code> and a <code>ComboBox</code> in its <code>CellEditingTemplate</code>. The element type is read out of the visual tree.
+{: .table-caption}
 
 **The element itself is replaced.** Rather than one control changing appearance, the `CellTemplate` content is discarded and the `CellEditingTemplate` content is created.
 A heavy control in the editing template therefore costs nothing while the cell is merely displaying.
@@ -137,10 +138,10 @@ This can satisfy special UI requirements, but it tends to increase XAML complexi
 Placed before the root element, the `display` element that the `Setter`'s `TargetName` refers to has not appeared yet: building failed with markup compiler error MC4111, and loading with `XamlReader` threw `NullReferenceException`.
 Placed inside the `Grid`, the template still loaded. The XAML is read at load time, but the template's elements are created when it is shown in a cell, and that is when `XamlParseException` was thrown.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.svg" alt="A table of the single-template example in a DataGrid cell. With DataTemplate.Triggers inside the Grid, loading succeeds but showing the grid throws XamlParseException. Directly under DataTemplate after the Grid, the TextBlock is visible and the TextBox collapsed before BeginEdit, and the other way round after it. Directly under DataTemplate before the Grid, XamlReader throws NullReferenceException and dotnet build fails with MC4111 (the target display must come before its Setter)." width="1250" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by using each template as the <code>CellTemplate</code> of a <code>DataGridTemplateColumn</code> and calling <code>BeginEdit</code>. The last row is the result of running <code>dotnet build</code> on a temporary project with the same template in a .xaml file.</figcaption>
-</figure>
+{% include tables/articles/wpf-datagrid-cell-editing-template/datagrid-single-template.en.md %}
+
+Measured on .NET 10 / Windows 11 by using each template as the <code>CellTemplate</code> of a <code>DataGridTemplateColumn</code> and calling <code>BeginEdit</code>. The last row is the result of running <code>dotnet build</code> on a temporary project with the same template in a .xaml file.
+{: .table-caption}
 
 This approach is valid for specific cases, but `CellTemplate` plus `CellEditingTemplate` should remain the default policy for maintainability and predictability.
 
