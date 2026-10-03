@@ -87,6 +87,18 @@ internal sealed class TrayContextMenuScene : IScene
         }
     }
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("ContextMenu.StaysOpen metadata default", "ContextMenu.StaysOpen のメタデータの既定値"),
+        ("Popup.StaysOpen metadata default", "Popup.StaysOpen のメタデータの既定値"),
+        ("own window already in front: SetForegroundWindow(own)", "自分のウィンドウが既に前面: SetForegroundWindow(自分)"),
+        ("another process in front: SetForegroundWindow(own)", "別のプロセスが前面: SetForegroundWindow(自分)"),
+        ("returns ", "戻り値 "),
+        (", still in front ", "、前面のまま "),
+        (", foreground switched ", "、前面が切り替わった "),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         var rows = new List<IReadOnlyList<string>>
@@ -123,8 +135,8 @@ internal sealed class TrayContextMenuScene : IScene
 
         await context.SaveTableAsync(
             "ContextMenu.StaysOpen and SetForegroundWindow from this process",
-            ["case", "measured"],
-            rows,
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
+            LocTable.Translate(rows, Words),
             "tray-contextmenu-facts.svg");
     }
 }

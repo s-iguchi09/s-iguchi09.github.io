@@ -12,3 +12,6 @@ verifies:
   - "自分のウィンドウが既に前面のときの SetForegroundWindow の戻り値（前面を取れない状況では測れないと記録する）"
 images:
   - "images/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.svg"
+tables:
+  - "_includes/tables/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.en.md"
+  - "_includes/tables/articles/wpf-tray-contextmenu-close-on-focus-loss/tray-contextmenu-facts.ja.md"

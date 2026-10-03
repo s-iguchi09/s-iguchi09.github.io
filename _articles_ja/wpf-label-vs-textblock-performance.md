@@ -83,10 +83,10 @@ visual の数だけで所要時間が決まるわけではない。
 1,000 個を並べてレイアウトしたあと、GC を掛けても残るマネージドヒープの量は、`Label` が `TextBlock` の約 2.6 倍だった。
 アンダーバーを含む文字列を与えた `Label` は約 5.1 倍になる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.svg" alt="1,000 個を並べてレイアウトしたあと、GC を掛けても残るマネージドヒープの量の表。Label は 4,111 KB で TextBlock の 2.6 倍、アンダーバーを含む Label は 8,135 KB で 5.1 倍、TextBlock は 1,588 KB。" width="422" height="170" loading="lazy">
-  <figcaption>同一環境で、<code>StackPanel</code> に 1,000 個を並べてレイアウトし、<code>GC.GetTotalMemory(true)</code> の前後差を 5 回測った中央値。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.ja.md %}
+
+同一環境で、<code>StackPanel</code> に 1,000 個を並べてレイアウトし、<code>GC.GetTotalMemory(true)</code> の前後差を 5 回測った中央値。
+{: .table-caption}
 
 ### アンダーバーを含む文字列による追加コスト
 
@@ -127,10 +127,10 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 `Label` と `TextBlock` の差は、同じ条件で繰り返した試行どうしの差より小さい。
 15 回の試行の中央値の差は約 4 ms だが、`Label` だけを見ても最小 15.5 ms から最大 114.5 ms まで開いた。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.svg" alt="15 回の試行のレイアウト時間の最小値・中央値・最大値の表。StackPanel に 1,000 個では Label が 256.5・273.8・420.9 ms、TextBlock が 136.7・151.1・213.4 ms。仮想化した ListBox に 10,000 件では Label が 15.5・20.5・114.5 ms、TextBlock が 12.8・16.4・75.6 ms。" width="474" height="200" loading="lazy">
-  <figcaption>上の 2 つの表を作った 15 回の試行の分布。表の値は最小値である。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.ja.md %}
+
+上の 2 つの表を作った 15 回の試行の分布。表の値は最小値である。
+{: .table-caption}
 
 **「`Label` を大量配置すると遅い」という現象の主因は、`Label` そのものではなく仮想化が効いていないことにある。**
 コントロールの選択で得られるのは約 2 倍の改善だが、仮想化の有無による差はそれよりはるかに大きい。
@@ -175,10 +175,10 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 `CanContentScroll` の既定値は `False` だが、`ListBox` の既定スタイルが `True` を与えている。
 滑らかなスクロールが目的なら、仮想化を保ったまま `VirtualizingPanel.ScrollUnit="Pixel"` を指定すればよい。実体化される `ListBoxItem` は 23 個のままで、スクロールの単位だけがピクセルに変わった（`ExtentHeight` が件数の 2,000 から 39,920 ピクセルに変わる）。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.svg" alt="2,000 件の ListBox で、途中までスクロールしたあとの値の表。ScrollViewer.CanContentScroll の既定値は False。既定の ListBox は CanContentScroll が True、ExtentHeight 2,000、実体化 23 個。ScrollUnit を Pixel にすると ExtentHeight 39,920、実体化 23 個。CanContentScroll を False にすると ExtentHeight 39,920、実体化 2,000 個。" width="834" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、2,000 件を持つ <code>ListBox</code> を表示し、中ほどまでスクロールしてから <code>ListBoxItem</code> を数えた結果。<code>ExtentHeight</code> は、項目単位のスクロールなら件数、ピクセル単位ならピクセル数になる。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.ja.md %}
+
+.NET 10 / Windows 11 で、2,000 件を持つ <code>ListBox</code> を表示し、中ほどまでスクロールしてから <code>ListBoxItem</code> を数えた結果。<code>ExtentHeight</code> は、項目単位のスクロールなら件数、ピクセル単位ならピクセル数になる。
+{: .table-caption}
 
 ### 段階 2: 表示専用の Label を TextBlock に置き換える
 

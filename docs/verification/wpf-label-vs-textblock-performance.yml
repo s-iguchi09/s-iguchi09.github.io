@@ -22,3 +22,10 @@ images:
   - "images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.svg"
   - "images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.svg"
   - "images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.svg"
+tables:
+  - "_includes/tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.en.md"
+  - "_includes/tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.ja.md"
+  - "_includes/tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.en.md"
+  - "_includes/tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.ja.md"
+  - "_includes/tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.en.md"
+  - "_includes/tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.ja.md"

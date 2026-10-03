@@ -61,10 +61,10 @@ be.UpdateSource();
 
 上記の条件を実際に動かして確かめた結果が次の表である。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.svg" alt="Text の設定方法ごとに GetBindingExpression と UpdateSource の結果を並べた表。リテラル・MultiBinding・TemplateBinding では GetBindingExpression が null になる。OneTime と OneWay はバインドを張ったまま呼ぶと何も起きないが、Text を書き換えてから呼ぶと InvalidOperationException になる。OneWayToSource と TwoWay は Text を書き換えてから呼ぶとソースが更新される。TextInput 経由で入力した場合はどのモードでもバインドが残り、UpdateSource は呼ばれずソースも更新されない。TwoWay でも ClearBinding でバインドを外した後、先に取得した式で呼ぶと InvalidOperationException になる。" width="976" height="410" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。<code>GetBindingExpression state</code> の列は、行によって読み取った時点が違う。上の 7 行は <code>Text</code> を書き換える前、続く 3 行（<code>typed via TextInput</code>）は入力した後、最後の行（<code>TwoWay, then ClearBinding</code>）は <code>ClearBinding</code> で外す前に取得した状態である。<code>UpdateSource() as-is</code> はバインドを張った直後にそのまま呼んだ場合、<code>after editing Text / after typing</code> は、代入してから <code>UpdateSource()</code> を呼んだ場合の結果と、入力後のソースの値を兼ねる列である。<code>typed via TextInput</code> の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合である。<code>no change</code> はソースの値が変わらなかったことを示す。</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-pitfall-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、<code>Text</code> の設定方法を変えて <code>GetBindingExpression</code> と <code>UpdateSource()</code> を呼んだ結果。「GetBindingExpression の状態」の列は、行によって読み取った時点が違う。上の 7 行は <code>Text</code> を書き換える前、続く 3 行（「TextInput で入力」）は入力した後、最後の行（「TwoWay、続けて ClearBinding」）は <code>ClearBinding</code> で外す前に取得した状態である。「そのまま UpdateSource()」はバインドを張った直後にそのまま呼んだ場合、「Text を変えた後 / 入力した後」は、代入してから <code>UpdateSource()</code> を呼んだ場合の結果と、入力後のソースの値を兼ねる列である。「TextInput で入力」の 3 行は、代入ではなく <code>TextInput</code> イベント経由で 1 文字入力した場合である。「変化なし」はソースの値が変わらなかったことを示す。
+{: .table-caption}
 
 **この表で注意を要するのは、`OneWay` と `OneTime` の 2 列が食い違う点である。**
 
@@ -163,10 +163,10 @@ bool committed = formPanel.BindingGroup.UpdateSources();
 `UpdateSources()` は検証が 1 つでも失敗すると `false` を返す。
 ただし、書き戻しの前に走る段階（`RawProposedValue` など）のルールが失敗した場合はソースへ書き込まれないが、`UpdatedValue` の段階のルールは書き戻しの後に走るため、失敗して `false` が返っても値はソースへ書き込まれた後である（下の表）。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.svg" alt="追加の条件を測った表。TwoWay の TextBox をツリーから外してから UpdateSource を呼ぶと、例外にならず Status は PathError で、ソースは before のまま。OneTime のバインドでソースを変えても Text は変わらないが、UpdateTarget を呼ぶと changed になる。BindingGroup.UpdateSources はルールが無ければ True でソースは after。RawProposedValue の段階のルールが失敗すると False でソースは before のまま。UpdatedValue の段階のルールが失敗すると False だが、ソースは after に書き込まれている。" width="1046" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。<code>BindingGroup</code> の行は、<code>Text</code> に <code>after</code> を代入してから <code>UpdateSources()</code> を呼んだ結果である。</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesource-from-view-pitfalls/updatesource-detach-group.ja.md %}
+
+.NET 10 / Windows 11 で実測。<code>BindingGroup</code> の行は、<code>Text</code> に <code>after</code> を代入してから <code>UpdateSources()</code> を呼んだ結果である。
+{: .table-caption}
 
 ただし `IEditableObject` の編集トランザクションは終了しないため、確定まで行うには `CommitEdit()` を使う。
 

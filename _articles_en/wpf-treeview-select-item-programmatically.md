@@ -14,7 +14,7 @@ Jumping to a folder returned by a search, restoring the node selected in the pre
 Writing `treeView.SelectedItem = node;` — the pattern that works for `ListBox` and `DataGrid` — fails to compile, and binding the property in XAML breaks the build in an ordinary project.
 
 This article explains how the restriction follows from the way `TreeView` stores its selection, and presents two ways to request a selection from code, combined with an attached behavior that controls scroll position and focus.
-The behaviors and exception types summarized in the tables in the figures were all observed by running the code on .NET 10 / Windows 11.
+The behaviors and exception types summarized in the tables were all observed by running the code on .NET 10 / Windows 11.
 
 ---
 
@@ -113,10 +113,10 @@ The problem is therefore not "how to write to a read-only property" but a design
 
 Everything described so far can be confirmed from code.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="A table measuring TreeView selection and container generation. SelectedItemProperty.ReadOnly is True, an external SetValue throws InvalidOperationException, the child container is null before expansion and still null right after IsExpanded is set, becoming a TreeViewItem only once a layout pass runs, and setting the child IsSelected makes TreeView.SelectedItem that item." width="732" height="260" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. <code>child container</code> is the type returned by the parent&#39;s <code>ItemContainerGenerator.ContainerFromIndex(0)</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.en.md %}
+
+Measured on .NET 10 / Windows 11. <code>child container</code> is the type returned by the parent&#39;s <code>ItemContainerGenerator.ContainerFromIndex(0)</code>.
+{: .table-caption}
 
 **The table shows the two obstacles arising separately.**
 The first two rows show that the property cannot be written because it is read-only.
@@ -354,10 +354,10 @@ It can be reached by assigning a custom `VirtualizingStackPanel` that exposes `B
 That comes at the cost of a substantially larger implementation.
 Related interactions between virtualization and selection state are covered in [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/).
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="A table of selection behavior measured with the article's XAML. Selecting Program Files and then Users, both with generated containers, leaves only Users True in the view model. Selecting C: and then drivers, whose ancestors are collapsed so it has no container, leaves both True in the view model with SelectedItem at C:. With IsSelected bound TwoWay, the value source after assigning the container is Style, and setting false from the view model makes the container False too; with OneWay it becomes Local, and the container stays True after the view model sets false. The selected item's background is SystemColors.HighlightColor while it has focus and SystemColors.InactiveSelectionHighlightBrush otherwise. With 200 nodes, selecting the last one leaves the vertical offset at 0 until BringIntoView moves it to 3051.05. With IsVirtualizing, selecting the last node from the view model gives no container and a null SelectedItem until scrolling to the end creates the container and SelectedItem becomes Folder 200." width="1053" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with the article's XAML as the baseline. The OneWay case changes the mode of the <code>IsSelected</code> binding, and the scroll and virtualization cases use a view model of 200 top-level nodes (the virtualization case also sets <code>VirtualizingPanel.IsVirtualizing</code> to <code>True</code>). The background is the <code>Background</code> of <code>Bd</code> in the default template.</figcaption>
-</figure>
+{% include tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.en.md %}
+
+Measured on .NET 10 / Windows 11 with the article's XAML as the baseline. The OneWay case changes the mode of the <code>IsSelected</code> binding, and the scroll and virtualization cases use a view model of 200 top-level nodes (the virtualization case also sets <code>VirtualizingPanel.IsVirtualizing</code> to <code>True</code>). The background is the <code>Background</code> of <code>Bd</code> in the default template.
+{: .table-caption}
 
 ---
 

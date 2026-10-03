@@ -27,7 +27,8 @@ WPF の双方向バインディングでは、`TextBox` に入力した文字が
 `UpdateSourceTrigger` は、双方向(`TwoWay`)または `OneWayToSource` のバインディングでのみ意味を持つ。
 ターゲット(`TextBox.Text`)からソース(ViewModel)へ値を書き戻す方向の「タイミング」を決める設定であり、ソースからターゲットへの表示更新には影響しない。
 
-本記事の図は、上記の環境でプロパティごとの `DefaultUpdateSourceTrigger` をメタデータから読み出し、ソースへ値が渡る時点を計測して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - 掲載した表の中では `TextBox.Text` だけが `LostFocus` で、他は `PropertyChanged` である。
@@ -83,20 +84,20 @@ UpdateSourceTrigger def = metadata.DefaultUpdateSourceTrigger; // => LostFocus
 
 実際にメタデータを読み出して並べると、`TextBox.Text` だけが他と異なることが分かる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.svg" alt="依存関係プロパティごとの DefaultUpdateSourceTrigger を測った表。TextBox.Text だけが LostFocus で、CheckBox.IsChecked、ComboBox.SelectedItem、Slider.Value、PasswordBox の型で読んだ FrameworkElement.Tag、TextBlock.Text はいずれも PropertyChanged である。" width="760" height="260" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>DependencyProperty.GetMetadata</code> から得た <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> を読み出した結果。<code>BindsTwoWayByDefault</code> も併せて示す。</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-defaults.ja.md %}
+
+.NET 10 / Windows 11 で、<code>DependencyProperty.GetMetadata</code> から得た <code>FrameworkPropertyMetadata.DefaultUpdateSourceTrigger</code> を読み出した結果。<code>BindsTwoWayByDefault</code> も併せて示す。
+{: .table-caption}
 
 **`LostFocus` なのは `TextBox.Text` だけである。** 他は既定で `PropertyChanged` であり、入力や操作の直後にソースが更新される。
 「バインドしたのに値が渡ってこない」が `TextBox` でばかり起きるのは、この 1 行の差による。
 
 値が実際にソースへ渡る時点も、入力とフォーカス移動を分けて測れる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.svg" alt="UpdateSourceTrigger 別に、1 文字入力した直後とフォーカスを外した後のソースの値を測った表。Default は入力直後が空でフォーカスを外すと値が入る。PropertyChanged は入力直後に値が入る。Explicit はフォーカスを外しても空のままで、UpdateSource を呼んで初めて値が入る。" width="528" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> へ 1 文字入力し、その直後と別のコントロールへフォーカスを移した後のソースの値を読んだ結果。<code>Explicit</code> の行だけ、最後に <code>UpdateSource()</code> を呼んでいる。</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-timing.ja.md %}
+
+.NET 10 / Windows 11 で、<code>TextBox</code> へ 1 文字入力し、その直後と別のコントロールへフォーカスを移した後のソースの値を読んだ結果。<code>Explicit</code> の行だけ、最後に <code>UpdateSource()</code> を呼んでいる。
+{: .table-caption}
 
 `Default`（＝`TextBox.Text` では `LostFocus`）の行が、入力直後は空でフォーカスを外して初めて値が入ることを示している。
 `Explicit` はフォーカスを外しても空のままで、`UpdateSource()` を呼ぶまで渡らない。
@@ -158,10 +159,10 @@ be.UpdateSource();
 - **フォーカスを移動させない確定操作**: `TextBox` がフォーカスを失わず、かつ `UpdateSource()` も呼ばれない経路では、既定の `LostFocus` でソース更新が起きない。クリックで起動する `Focusable="False"` のボタン、Enter で起動する既定ボタン(`IsDefault="True"`)、アクセスキーがこれに該当する。既定ボタンで測ると、`Click` の時点で `UserName` は更新前の値のままで、`TextBox` にフォーカスが残っていた（下の表）。`Focusable="False"` はボタンへのフォーカス移動を防ぐだけで、`IsDefault` やアクセスキーによる起動自体は妨げない点にも注意する。この経路で確定する UI では `PropertyChanged` か `Explicit` を使う。
 - **`x:Bind` との違い**: WPF の `{Binding}` は `Explicit` を含む 3 値をサポートする。UWP/WinUI の `{x:Bind}` は `Explicit` を持たない点が異なるため、他プラットフォームの記事を参照する際は混同しない。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.svg" alt="フォーカスを移さない確定と、ErrorsChanged を発生させるスレッドを測った表。既定のバインドの TextBox に sato と打ち込み、フォーカスを残したまま Enter で IsDefault のボタンを押すと、Click の時点で UserName は suzuki のままで、TextBox にフォーカスが残っている。ErrorsChanged を UI スレッドから発生させても、バックグラウンドのスレッドから発生させても、Validation.HasError は True になる。" width="1022" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。文字と Enter は WPF の入力処理（<code>InputManager</code>）を通して送った。</figcaption>
-</figure>
+{% include tables/articles/wpf-textbox-updatesourcetrigger-binding-timing/updatesourcetrigger-confirm-errors.ja.md %}
+
+.NET 10 / Windows 11 で実測。文字と Enter は WPF の入力処理（<code>InputManager</code>）を通して送った。
+{: .table-caption}
 
 ---
 

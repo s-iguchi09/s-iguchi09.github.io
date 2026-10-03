@@ -84,10 +84,10 @@ Memory was measured too.
 After laying out 1,000 elements and forcing a garbage collection, `Label` still held about 2.6 times the managed heap that `TextBlock` did.
 A `Label` given a string containing an underscore held about 5.1 times.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.svg" alt="A table of the managed heap still held after laying out 1,000 elements and forcing a garbage collection. Label holds 4,111 KB, 2.6 times TextBlock; a Label whose content contains an underscore holds 8,135 KB, 5.1 times; TextBlock holds 1,588 KB." width="422" height="170" loading="lazy">
-  <figcaption>Measured in the same environment: 1,000 elements laid out in a <code>StackPanel</code>, taking the difference of <code>GC.GetTotalMemory(true)</code> before and after, median of five runs.</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-memory.en.md %}
+
+Measured in the same environment: 1,000 elements laid out in a <code>StackPanel</code>, taking the difference of <code>GC.GetTotalMemory(true)</code> before and after, median of five runs.
+{: .table-caption}
 
 ### Extra Cost from Underscores in the Content
 
@@ -128,10 +128,10 @@ Compared with 4,000 elements in a non-virtualized `StackPanel`, the item count h
 The gap between `Label` and `TextBlock` is smaller than the difference between repeated runs of the same condition.
 The medians of 15 runs differ by about 4 ms, while `Label` alone ranged from 15.5 ms to 114.5 ms.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.svg" alt="A table of the minimum, median, and maximum layout time over 15 runs. With 1,000 elements in a StackPanel, Label takes 256.5, 273.8, and 420.9 ms and TextBlock 136.7, 151.1, and 213.4 ms. With 10,000 items in a virtualized ListBox, Label takes 15.5, 20.5, and 114.5 ms and TextBlock 12.8, 16.4, and 75.6 ms." width="474" height="200" loading="lazy">
-  <figcaption>The distribution of the 15 runs behind the two tables above, whose values are the minimums.</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-spread.en.md %}
+
+The distribution of the 15 runs behind the two tables above, whose values are the minimums.
+{: .table-caption}
 
 **The primary cause of "many Labels make WPF slow" is not `Label` itself but the absence of virtualization.**
 Switching controls buys roughly a factor of two; enabling virtualization buys far more.
@@ -176,10 +176,10 @@ In a `ListBox` with 2,000 items, 23 `ListBoxItem`s were realized by default, but
 `CanContentScroll` defaults to `False`; the `ListBox` default style sets it to `True`.
 For smooth scrolling, keep virtualization and set `VirtualizingPanel.ScrollUnit="Pixel"` instead. The realized `ListBoxItem`s stayed at 23 and only the scroll unit changed to pixels (`ExtentHeight` went from the item count, 2,000, to 39,920 pixels).
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.svg" alt="A table for a ListBox with 2,000 items after scrolling halfway. ScrollViewer.CanContentScroll defaults to False. The default ListBox has CanContentScroll True, ExtentHeight 2,000, and 23 realized items. With ScrollUnit set to Pixel, ExtentHeight is 39,920 with 23 realized items. With CanContentScroll set to False, ExtentHeight is 39,920 and all 2,000 items are realized." width="834" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by showing a <code>ListBox</code> with 2,000 items, scrolling to the middle, and counting the <code>ListBoxItem</code>s. <code>ExtentHeight</code> is the item count for item-based scrolling and the pixel count for pixel-based scrolling.</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-scrolling.en.md %}
+
+Measured on .NET 10 / Windows 11 by showing a <code>ListBox</code> with 2,000 items, scrolling to the middle, and counting the <code>ListBoxItem</code>s. <code>ExtentHeight</code> is the item count for item-based scrolling and the pixel count for pixel-based scrolling.
+{: .table-caption}
 
 ### Step 2: replace display-only Labels with TextBlock
 

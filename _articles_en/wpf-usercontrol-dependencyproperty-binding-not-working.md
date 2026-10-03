@@ -33,7 +33,8 @@ Every value reported here as measured was obtained by running the code in the en
 - Other constraints: the `UserControl` is defined as a XAML file paired with code-behind
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from reading the `DataContext` as seen from elements inside the `UserControl`, and whether each binding reaches its target, in the environment above.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - The `DataContext` seen from elements inside the `UserControl` is the consuming view model.
@@ -144,12 +145,12 @@ Reading the messages that do appear is covered in [Reading WPF Binding Errors an
 
 ---
 
-The figure below records the value that arrives and the `DataContext` seen from inside, per way of writing the binding.
+The table below records the value that arrives and the `DataContext` seen from inside, per way of writing the binding.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.svg" alt="A table of the resulting text and the DataContext type per binding style used from a TextBlock inside the UserControl. A plain Binding and RelativeSource Self both stay empty; RelativeSource AncestorType delivers the Title value. The DataContext is the consuming PageViewModel on every row." width="705" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by referencing <code>Title</code> from a <code>TextBlock</code> placed inside <code>InfoCard</code>, a <code>UserControl</code> holding a <code>Title</code> dependency property. The consuming side sets <code>PageViewModel</code> as its <code>DataContext</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.en.md %}
+
+Measured on .NET 10 / Windows 11 by referencing <code>Title</code> from a <code>TextBlock</code> placed inside <code>InfoCard</code>, a <code>UserControl</code> holding a <code>Title</code> dependency property. The consuming side sets <code>PageViewModel</code> as its <code>DataContext</code>.
+{: .table-caption}
 
 **The `DataContext` column reads `PageViewModel` on every row.** What an element inside sees is not the `InfoCard` but the consuming view model.
 A plain `{Binding Title}` therefore looks for `Title` on that `PageViewModel`, and no value arrives.
@@ -358,15 +359,15 @@ Behavior that must run on value changes belongs in the `PropertyChangedCallback`
 The `x:Name="Root"` on the `UserControl` root is confined to that control's name scope.
 In the measured run, placing an element of the same name in the consuming view resolved each to a different element with no error.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.svg" alt="A table of the measured runs in the body and the notes. When the caller binds Title, Title receives the value but the internal plain Binding is empty and one Error 40 is traced. When the caller&#39;s view model has its own Title, the internals show VM-OWN-TITLE with no error. Under a parent without DataContext the internals are empty with no error. Delegating DataContext to the inner Grid makes the internals see InfoCard while the card keeps PageViewModel, and DataContext.HeaderText is reachable through AncestorType. With BindsTwoWayByDefault, xyz typed into the inner TextBox reaches HeaderText. With DataContext = this, the caller&#39;s binding produces Error 40 and Title stays at its default. If the caller then substitutes DataContext, an object without Title leaves the internals empty with Error 40, and an object with Title shows its value without error. With the outer binding one-way, assigning inside or writing back through an inner TwoWay binding removes the binding, so later HeaderText changes do not arrive; SetCurrentValue keeps the binding and is overwritten by the later change. With an element named Root on the caller&#39;s side as well, the inside and the caller each resolve to their own element without error." width="951" height="470" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The last part of each row is the number of <code>System.Windows.Data Error</code> entries in the data binding trace. Input was sent through WPF&#39;s input processing (<code>InputManager</code>).</figcaption>
-</figure>
+{% include tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.en.md %}
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.svg" alt="A table of whether each reference, by where it is written, reaches InfoCard.Title. From an inner TextBlock, ElementName=Root and {Binding Title} with the DataContext delegated to the inner root both reach it. In a ContextMenu's MenuItem.Header, AncestorType=UserControl and ElementName=Root give null, while {Binding Title} with the DataContext delegated reaches it. In an inline Popup, an inline DataTemplate, and a DataTemplate in UserControl.Resources, both AncestorType=UserControl and ElementName=Root reach it. From a UserControl nested inside the card, AncestorType=UserControl selects the inner UserControl." width="786" height="440" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11. The card owns a name scope and registers itself as <code>Root</code> (equivalent to <code>x:Name="Root"</code>). The nested row tells the two controls apart by <code>Tag</code>.</figcaption>
-</figure>
+Measured on .NET 10 / Windows 11. The last part of each row is the number of <code>System.Windows.Data Error</code> entries in the data binding trace. Input was sent through WPF&#39;s input processing (<code>InputManager</code>).
+{: .table-caption}
+
+{% include tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.en.md %}
+
+Measured on .NET 10 / Windows 11. The card owns a name scope and registers itself as <code>Root</code> (equivalent to <code>x:Name="Root"</code>). The nested row tells the two controls apart by <code>Tag</code>.
+{: .table-caption}
 
 ---
 

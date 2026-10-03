@@ -23,7 +23,8 @@ For this requirement, a practical approach is to use a read-only `TextBox` and a
 - Intended use cases: Error messages, logs, and detail text display
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from displaying a `TextBlock` and a `TextBox` in the environment above and reading whether text can be selected and how focus behaves.
+The tables in this article were measured in the environment above.
+Each caption states how its table was measured.
 The following points were confirmed in that environment:
 
 - `TextBlock` exposes no API for selecting text.
@@ -52,12 +53,12 @@ For display scenarios, this makes it possible to treat a `TextBox` as a practica
 
 ---
 
-The figure below records, for each display-only candidate, whether the text can be selected and how it takes focus.
+The table below records, for each display-only candidate, whether the text can be selected and how it takes focus.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.svg" alt="A table of selectability and focus handling per display-only candidate. TextBlock has no selection API and is not focusable. A read-only TextBox is selectable and focusable. Removing the border and background, and turning off IsTabStop, both leave it selectable." width="623" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with the same string given to each candidate. <code>SelectAll() selects</code> is the content read back from <code>SelectedText</code> after calling <code>SelectAll()</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 with the same string given to each candidate. <code>SelectAll() selects</code> is the content read back from <code>SelectedText</code> after calling <code>SelectAll()</code>.
+{: .table-caption}
 
 **`TextBlock` reports `Focusable` as `False`.** Beyond lacking a selection API, it does not take focus at all.
 Switching to a `TextBox` makes the text selectable, and removing the border and background does not change that. Appearance and behavior are independent here.
@@ -127,10 +128,10 @@ The following example shows that extended configuration.
 
 `VerticalScrollBarVisibility="Auto"` shows a scroll bar when the text exceeds the available display area. `AcceptsReturn` is not needed for text that already contains line breaks: it only decides whether the Enter key inserts one. A read-only `TextBox` showed three lines of text as three lines with `AcceptsReturn` set to `False` or `True`.  
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.svg" alt="A table for a read-only TextBox. IsReadOnlyCaretVisible defaults to False. With three lines of text, LineCount is 3 and the height is the same whether AcceptsReturn is False or True." width="504" height="170" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by reading the default of <code>IsReadOnlyCaretVisible</code> and showing <code>line1</code> to <code>line3</code> in a read-only <code>TextBox</code>.</figcaption>
-</figure>
+{% include tables/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.en.md %}
+
+Measured on .NET 10 / Windows 11 by reading the default of <code>IsReadOnlyCaretVisible</code> and showing <code>line1</code> to <code>line3</code> in a read-only <code>TextBox</code>.
+{: .table-caption}
 
 ---
 

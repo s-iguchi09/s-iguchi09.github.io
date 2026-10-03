@@ -58,6 +58,32 @@ internal sealed class TreeViewSelectItemScene : IScene
 
     public string Slug => "wpf-treeview-select-item-programmatically";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("SetValue(SelectedItemProperty) from outside", "外から SetValue(SelectedItemProperty)"),
+        ("throws InvalidOperationException", "InvalidOperationException が発生"),
+        ("child container before expanding", "展開する前の子のコンテナー"),
+        ("right after IsExpanded = true, before a layout pass", "IsExpanded = true の直後、レイアウトの前"),
+        ("after IsExpanded = true and UpdateLayout()", "IsExpanded = true と UpdateLayout() の後"),
+        ("TreeView.SelectedItem after child.IsSelected = true", "child.IsSelected = true の後の TreeView.SelectedItem"),
+        ("the 'child' item", "'child' の項目"),
+        ("select 'Program Files', then 'Users' (both generated)", "'Program Files' を選び、続けて 'Users'（どちらも生成済み）"),
+        ("select 'C:', then 'drivers' (no container yet)", "'C:' を選び、続けて 'drivers'（まだコンテナーが無い）"),
+        ("TwoWay: assign container.IsSelected, then ViewModel false", "TwoWay: container.IsSelected に代入し、続けて ViewModel を false に"),
+        ("OneWay: assign container.IsSelected, then ViewModel false", "OneWay: container.IsSelected に代入し、続けて ViewModel を false に"),
+        ("selected background, item focused", "選択中の背景、項目にフォーカス"),
+        ("selected background, focus elsewhere", "選択中の背景、フォーカスは別の所"),
+        ("last of 200 nodes: IsSelected, then BringIntoView", "200 個のノードの最後: IsSelected、続けて BringIntoView"),
+        ("IsVirtualizing: last of 200 selected in ViewModel", "IsVirtualizing: 200 個の最後を ViewModel で選択"),
+        ("SelectedItem: no container, null -> scrolled: container, Folder 200", "SelectedItem: コンテナーなし、null -> スクロール後: コンテナーあり、Folder 200"),
+        ("selected Folder 200, offset ", "選択 Folder 200、位置 "),
+        ("; SelectedItem ", "、SelectedItem "),
+        ("; container.IsSelected", "、container.IsSelected"),
+        ("source Style", "値の出どころ Style"),
+        ("source Local", "値の出どころ Local"),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         var content = SceneContext.LoadXaml<DockPanel>(ContentXaml);
@@ -92,14 +118,14 @@ internal sealed class TreeViewSelectItemScene : IScene
 
         await context.SaveTableAsync(
             "TreeView selection and container generation",
-            ["what was measured", "result"],
-            await SelectionAndTriggerMeasurements.TreeViewSelectionAsync(),
+            [Loc.Of("what was measured", "計測したもの"), Loc.Of("result", "結果")],
+            LocTable.Translate(await SelectionAndTriggerMeasurements.TreeViewSelectionAsync(), Words),
             "treeview-selection-facts.svg");
 
         await context.SaveTableAsync(
             "the article's XAML: exclusivity, value source, and selection color",
-            ["case", "measured"],
-            await BehaviorAsync(),
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
+            LocTable.Translate(await BehaviorAsync(), Words),
             "treeview-selection-behavior.svg");
     }
 
