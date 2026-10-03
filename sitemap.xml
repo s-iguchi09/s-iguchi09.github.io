@@ -1285,8 +1285,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.svg</image:loc></image:image>
-    <lastmod>2026-09-25T14:07:02Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1297,8 +1296,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.svg</image:loc></image:image>
-    <lastmod>2026-09-25T14:07:02Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1533,13 +1531,10 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-design-with-systemcolors/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-design-with-systemcolors/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-card-dark.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-under-dark.png</image:loc></image:image>
-    <lastmod>2026-09-25T23:55:13Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1550,13 +1545,10 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-design-with-systemcolors/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-design-with-systemcolors/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-default-theme.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-card.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/fluent-card-dark.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-under-dark.png</image:loc></image:image>
-    <lastmod>2026-09-25T23:55:13Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1567,10 +1559,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-textbox-hide-clear-button/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-textbox-hide-clear-button/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.svg</image:loc></image:image>
-    <lastmod>2026-09-25T23:55:13Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1581,10 +1571,8 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-textbox-hide-clear-button/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-textbox-hide-clear-button/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-default.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-hidden.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.svg</image:loc></image:image>
-    <lastmod>2026-09-25T23:55:13Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1595,10 +1583,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-theme-custom-style-not-applied/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-shadows-fluent.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/basedon-lookup-scope.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png</image:loc></image:image>
-    <lastmod>2026-09-25T18:54:21Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1609,10 +1596,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-fluent-theme-custom-style-not-applied/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-theme-custom-style-not-applied/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-shadows-fluent.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/basedon-lookup-scope.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-theme-custom-style-not-applied/implicit-style-basedon-fluent.png</image:loc></image:image>
-    <lastmod>2026-09-25T18:54:21Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1624,14 +1610,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-pinned-window.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg</image:loc></image:image>
-    <lastmod>2026-09-25T23:55:13Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1643,14 +1622,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-fluent-thememode-runtime-switch/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-main-window.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/switched-pinned-window.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg</image:loc></image:image>
-    <lastmod>2026-09-25T23:55:13Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1681,11 +1653,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-underscore-issue/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-label-underscore-issue/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1696,11 +1666,9 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-label-underscore-issue/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-label-underscore-issue/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-rendering.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-affected-controls.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1744,9 +1712,8 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-listbox-virtualization-selecteditems/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1758,9 +1725,8 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-listbox-virtualization-selecteditems/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/virtualization-selection-owner.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1771,9 +1737,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg</image:loc></image:image>
-    <lastmod>2026-09-26T08:16:45Z</lastmod>
+    <lastmod>2026-10-03T18:46:40Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1784,9 +1748,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg</image:loc></image:image>
-    <lastmod>2026-09-26T08:16:45Z</lastmod>
+    <lastmod>2026-10-03T18:46:40Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1798,8 +1760,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-radiobutton-enum-binding/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-radiobutton-enum-binding/radiobutton-enum-groupname.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-radiobutton-enum-binding/radiobutton-group-convertback-path.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1811,8 +1772,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-radiobutton-enum-binding/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-radiobutton-enum-binding/radiobutton-enum-groupname.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-radiobutton-enum-binding/radiobutton-group-convertback-path.svg</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1823,8 +1783,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-relaycommand-canexecute-not-updating/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-relaycommand-canexecute-not-updating/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1835,8 +1794,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-relaycommand-canexecute-not-updating/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-relaycommand-canexecute-not-updating/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg</image:loc></image:image>
-    <lastmod>2026-09-27T07:28:47Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1895,8 +1853,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg</image:loc></image:image>
-    <lastmod>2026-09-26T11:51:22Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1907,8 +1864,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-staticresource-vs-dynamicresource/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-staticresource-vs-dynamicresource/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg</image:loc></image:image>
-    <lastmod>2026-09-26T11:51:22Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1918,10 +1874,8 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg</image:loc></image:image>
-    <lastmod>2026-09-26T10:45:55Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1931,10 +1885,8 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-style-trigger-not-working-local-value/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-style-trigger-not-working-local-value/" />
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-local-value.png</image:loc></image:image>
-    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg</image:loc></image:image>
-    <lastmod>2026-09-26T10:45:55Z</lastmod>
+    <lastmod>2026-10-03T12:42:15Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
