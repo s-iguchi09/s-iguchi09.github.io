@@ -22,7 +22,9 @@ image: /images/articles/wpf-fluent-design-with-systemcolors/fluent-systemcolors-
 - 方針: 外部 UI ライブラリ（MahApps.Metro、ModernWpf など）を追加しない
 - 検証環境: .NET 10 / Windows 11
 
-本記事の実測は、上記の環境で、Windows をダークモードにした PC で行った。`systemcolors-values.svg` は各 `SystemColors` キーが返す色とその相対輝度を、`systemcolors-tracking.svg` はアプリケーションリソースを差し替えた前後の参照値を、`theme-brush-values.svg` は `ThemeMode` の `Light` と `Dark` でのブラシのキーの値を読み出している。画面の図は、記事の XAML を表示したものである。
+本記事の実測は、上記の環境で、Windows をダークモードにした PC で行った。
+3 つの表は順に、各 `SystemColors` キーが返す色とその相対輝度、アプリケーションリソースを差し替えた前後の参照値、`ThemeMode` の `Light` と `Dark` でのブラシのキーの値を読み出している。
+画面の図は、記事の XAML を表示したものである。
 この環境で確認しているのは次の点である。
 
 - 選択項目の `HighlightColor` と、個人用設定のアクセント色 `AccentColor` は別の値である。
@@ -60,10 +62,10 @@ WPF は柔軟な描画基盤を持つが、Fluent 固有の外観は標準で自
 
 `SystemColors` が実際に返す色は、読み出して確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg" alt="SystemColors の各キーが返す色と相対輝度の表。WindowColor は白、WindowTextColor は黒、HighlightColor は青系、AccentColor は赤系で、いずれも OS の設定に対応した値になっている。1 行目は、計測した PC が Windows のダークモードだったことを示す。" width="603" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11で、Windows をダークモードにした PC（表の 1 行目）で <code>SystemColors</code> の各キーを読み出した結果。<code>relative luminance</code> は WCAG の相対輝度で、前景と背景のコントラストを見積もるために併記している。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.ja.md %}
+
+.NET 10 / Windows 11で、Windows をダークモードにした PC（表の 1 行目）で <code>SystemColors</code> の各キーを読み出した結果。「相対輝度」の列は WCAG の相対輝度で、前景と背景のコントラストを見積もるために併記している。
+{: .table-caption}
 
 この PC はダークモードだが、`WindowColor` と `WindowTextColor` の輝度は `1.00` と `0.00` で、ライトの値のままである。`SystemColors` は Windows のダークモードに追従しなかった。
 
@@ -73,20 +75,20 @@ WPF は柔軟な描画基盤を持つが、Fluent 固有の外観は標準で自
 **ただし、これらのキーを読み取るだけでは、後からの差し替えに追随しない。**
 `SystemColors.WindowColor` のように色を直接読み取ると、読み取った時点の値がそのまま焼き込まれる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg" alt="色の参照方法ごとに、システムのブラシを差し替える前後の値を測った表。SystemColors.WindowColor から作ったブラシは差し替え後も白のまま。DynamicResource で SystemColors.WindowBrushKey を参照した側だけが新しい色に変わる。" width="697" height="140" loading="lazy">
-  <figcaption>アプリケーションのリソースにある <code>SystemColors.WindowBrushKey</code> を差し替え、その前後で両者の値を読み取った結果。測っているのはこの差し替えへの追随であり、OS のテーマ切り替えそのものは測っていない。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.ja.md %}
+
+アプリケーションのリソースにある <code>SystemColors.WindowBrushKey</code> を差し替え、その前後で両者の値を読み取った結果。測っているのはこの差し替えへの追随であり、OS のテーマ切り替えそのものは測っていない。
+{: .table-caption}
 
 直接読み取った側は差し替え後も値が変わらず、リソースキーを `DynamicResource` で参照した側だけが新しい色になっている。
 **差し替えに追随させるには、色ではなく `SystemColors.WindowBrushKey` のようなリソースキーを `DynamicResource` で参照する必要がある。**
 
 ただし、`DynamicResource` でも、値そのものが変わらなければ追従のしようがない。`ThemeMode` を `Light` と `Dark` で切り替えると、測った Fluent のブラシのキー 5 つはすべて変わったが、測った `SystemColors` のキー 3 つ（`WindowBrushKey`・`ControlTextBrushKey`・`AccentColorBrushKey`）はどれも変わらなかった。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg" alt="ThemeMode の Light と Dark でのブラシのキーの値の表。Fluent の ApplicationBackgroundBrush・CardBackgroundFillColorDefaultBrush・TextFillColorPrimaryBrush・TextFillColorSecondaryBrush・AccentFillColorDefaultBrush はすべて変わり、たとえば背景は FAFAFA から 202020 になる。SystemColors.WindowBrushKey は白、ControlTextBrushKey は黒、AccentColorBrushKey は同じ赤のままだった。" width="610" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、それぞれの <code>ThemeMode</code> のウィンドウを表示し、そのウィンドウから各キーを引いた結果。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.ja.md %}
+
+.NET 10 / Windows 11 で、それぞれの <code>ThemeMode</code> のウィンドウを表示し、そのウィンドウから各キーを引いた結果。
+{: .table-caption}
 
 そのため、テーマに追従させたい背景・面・文字の色は、Fluent のブラシのキーから取る必要がある。`SystemColors` は Windows 自身から来る色に向く。たとえば `SystemColors.AccentColorBrushKey` は、どちらのテーマでも個人用設定のアクセント色を返した。
 

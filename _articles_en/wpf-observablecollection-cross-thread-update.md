@@ -75,10 +75,10 @@ The root of the problem is therefore not that the collection was touched on anot
 The distinction is visible by performing the same operation on an `ObservableCollection<T>` that is not bound to anything.
 The table below records the result of calling `Add` from a background thread, varying whether the collection is bound and which countermeasure is applied.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="A table of results from calling Add on a background thread. An unbound ObservableCollection raises no exception. Bound to an ItemsControl it raises NotSupportedException. Both Dispatcher.Invoke and EnableCollectionSynchronization raise no exception. In the bound rows, the collection's Count and the ItemsControl's Items.Count are both 1, but the view received no change notification in the NotSupportedException row and one notification in each of the other two." width="1062" height="200" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window. The last column gives the collection's <code>Count</code> after the <code>Add</code>, the <code>ItemsControl</code>'s <code>Items.Count</code>, and the number of <code>CollectionChanged</code> notifications the view (<code>Items</code>) received.</figcaption>
-</figure>
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 by calling <code>ObservableCollection&lt;string&gt;.Add</code> from inside <code>Task.Run</code>. The first row is a collection bound to nothing; the remaining rows are bound to <code>ItemsControl.ItemsSource</code> and displayed in a window. The last column gives the collection's <code>Count</code> after the <code>Add</code>, the <code>ItemsControl</code>'s <code>Items.Count</code>, and the number of <code>CollectionChanged</code> notifications the view (<code>Items</code>) received.
+{: .table-caption}
 
 **An unbound collection can be modified from a background thread without an exception.**
 If `ObservableCollection<T>` itself carried thread affinity, that row would fail as well.
@@ -177,10 +177,10 @@ Adding 5,000 items one at a time, the loop took 992 ms with `Dispatcher.Invoke`.
 With `EnableCollectionSynchronization` the loop finished in 6 ms, and the view had received notifications for all items after 64 ms.
 When control returned to the UI thread after the loop, though, the view had received only 746 notifications; the rest were applied later on the UI thread. That count was read after the `await`, not at the instant the loop ended, and the UI thread can process notifications in between. Applying the changes remains work for the UI thread.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg" alt="A table of adding 5,000 items one by one from a background thread. With Dispatcher.Invoke per item, the loop took 992 ms, the view had received all 5,000 notifications after the await, and receiving all of them took 994 ms. With EnableCollectionSynchronization and a lock, the loop took 6 ms, the view had received 746 notifications after the await, and receiving all of them took 64 ms." width="976" height="140" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by adding 5,000 items one at a time from inside <code>Task.Run</code> to a collection bound to a virtualized <code>ListBox</code>. The third column is the number of <code>CollectionChanged</code> notifications the view had received when control returned to the UI thread after the loop, and the last column is the time from the start of the loop until the view had received 5,000.</figcaption>
-</figure>
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.en.md %}
+
+Measured on .NET 10 / Windows 11 by adding 5,000 items one at a time from inside <code>Task.Run</code> to a collection bound to a virtualized <code>ListBox</code>. The third column is the number of <code>CollectionChanged</code> notifications the view had received when control returned to the UI thread after the loop, and the last column is the time from the start of the loop until the view had received 5,000.
+{: .table-caption}
 
 **A custom synchronization mechanism such as a semaphore calls for the callback overload.**
 It lets WPF wait on something other than a lock. This is the most complex to implement.

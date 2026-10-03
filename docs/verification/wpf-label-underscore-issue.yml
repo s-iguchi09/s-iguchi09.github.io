@@ -16,3 +16,8 @@ images:
   - "images/articles/wpf-label-underscore-issue/label-underscore-workarounds.png"
   - "images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg"
   - "images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg"
+tables:
+  - "_includes/tables/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.en.md"
+  - "_includes/tables/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.ja.md"
+  - "_includes/tables/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.en.md"
+  - "_includes/tables/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.ja.md"

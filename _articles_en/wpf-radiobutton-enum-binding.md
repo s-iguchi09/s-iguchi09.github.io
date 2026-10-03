@@ -166,10 +166,10 @@ A test run reproduced `ConvertBack(false)` in two setups (see the table below): 
 
 The table below records the converter calls and the checked state from running this article's XAML unchanged. Every "measured run" mentioned in this article corresponds to a row of this table.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="A table measured by running this article's XAML on .NET Framework 4.8 and .NET 10; every row except the runtime has the same value on both. The GroupName default is the empty string. Without GroupName only Single is checked, ConvertBack(false) runs once for Standard, and the source is Standard / Single. With GroupName, Standard and Single are checked and ConvertBack(false) runs 0 times. Selecting Fine gives ConvertBack(true) once and (false) 0 times; selecting Draft changes only Quality to Draft. One StackPanel per enum shows both checked without GroupName. The same GroupName in two Borders clears one of them. With a string ConverterParameter nothing on the Quality side is checked, and selecting Fine changes only the source to Fine. A different ViewModel's same-named property or an unbound button in the group causes one ConvertBack(false). A ConvertBack throwing NotImplementedException propagates to the caller. Returning UnsetValue leaves Standard unchecked with a validation error and the source unchanged. Returning parameter for false and wrapper properties both show both checked. In separate Grid cells, a GroupBox Header and Content, and ItemsControl Items, only one of two stays checked." width="1218" height="770" loading="lazy">
-  <figcaption>Measured on Windows 11 by building a temporary project that loads this article's XAML, view model, and converter unchanged through <code>XamlReader</code>, for both <code>net48</code> and <code>net10.0-windows</code>. A row with one value means both runtimes gave that value. Selections are made through UI Automation's <code>Select</code>, which follows the same path as a click.</figcaption>
-</figure>
+{% include tables/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.en.md %}
+
+Measured on Windows 11 by building a temporary project that loads this article's XAML, view model, and converter unchanged through <code>XamlReader</code>, for both <code>net48</code> and <code>net10.0-windows</code>. A row with one value means both runtimes gave that value. Selections are made through UI Automation's <code>Select</code>, which follows the same path as a click.
+{: .table-caption}
 
 **Without `GroupName` (the `no GroupName` rows), only `Single` remains checked.** `Standard` has been cleared even though it is bound to a different property, and that is the initial selection failing to appear.
 `ConvertBack` runs once with `false` at that moment.

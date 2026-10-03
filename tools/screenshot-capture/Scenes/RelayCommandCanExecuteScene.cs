@@ -63,7 +63,7 @@ internal sealed class RelayCommandCanExecuteScene : IScene
 
         await context.SaveTableAsync(
             "Button.IsEnabled after CanExecute starts returning true",
-            ["implementation / what was called", "before", "after"],
+            [Loc.Of("implementation / what was called", "実装 / 呼んだもの"), Loc.Of("before", "前"), Loc.Of("after", "後")],
             await ValuePrecedenceMeasurements.RelayCommandRequeryAsync(),
             "relaycommand-requery.svg");
     }

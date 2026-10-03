@@ -24,7 +24,7 @@ WPF の MVVM では、ボタンを ViewModel の `ICommand` にバインドし�
 - 名前空間: `System`、`System.Windows.Input`
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で `CanExecute` の戻り値を切り替えながら実際にボタンを表示し、`Button.IsEnabled` を読み出して得たものである。
+本記事の表は、上記の環境で `CanExecute` の戻り値を切り替えながら実際にボタンを表示し、`Button.IsEnabled` を読み出して得たものである。
 この環境で確認しているのは次の点である。
 
 - `CanExecute` の戻り値を変えただけでは、`Button.IsEnabled` は変わらない。
@@ -86,13 +86,13 @@ WPF 標準の `RoutedCommand` がこの問題を表面化させにくいのは�
 ---
 
 どの発火方法がどちらの実装に効くかは、実際にボタンを表示して `IsEnabled` を読めば確かめられる。
-`CanExecute` が `false` を返す状態で表示し、`true` を返すよう条件を変えてから、何も呼ばない場合・`CommandManager.InvalidateRequerySuggested()` を呼ぶ場合・コマンド自身の `RaiseCanExecuteChanged()` を呼ぶ場合・何も呼ばずに隣の `TextBox` へキーを 1 つ入力した場合を測った結果が次の図である。
+`CanExecute` が `false` を返す状態で表示し、`true` を返すよう条件を変えてから、何も呼ばない場合・`CommandManager.InvalidateRequerySuggested()` を呼ぶ場合・コマンド自身の `RaiseCanExecuteChanged()` を呼ぶ場合・何も呼ばずに隣の `TextBox` へキーを 1 つ入力した場合を測った結果が次の表である。
 委譲した実装は自前のイベントを持たず、`RaiseCanExecuteChanged()` で発火するものが無いため、その組み合わせは測っていない。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="実装と発火方法の組み合わせごとに Button.IsEnabled を測った表。何も呼ばない場合はどちらの実装も False のまま。InvalidateRequerySuggested で True になるのは RequerySuggested に委譲した実装だけ。RaiseCanExecuteChanged で True になるのは自前イベントの実装だけ。隣の TextBox へのキー入力で True になるのは RequerySuggested に委譲した実装だけ。Command 未設定のボタンは最初から True。" width="548" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>CanExecute</code> の戻り値を <code>false</code> から <code>true</code> に変えた前後の <code>Button.IsEnabled</code> を測った結果。<code>before</code> は条件を変える直前、<code>after</code> は変えて発火操作を行った直後の値である。キー入力は、WPF の入力処理（<code>InputManager</code>）を通して送った。</figcaption>
-</figure>
+{% include tables/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.ja.md %}
+
+.NET 10 / Windows 11 で、<code>CanExecute</code> の戻り値を <code>false</code> から <code>true</code> に変えた前後の <code>Button.IsEnabled</code> を測った結果。「前」は条件を変える直前、「後」は変えて発火操作を行った直後の値である。キー入力は、WPF の入力処理（<code>InputManager</code>）を通して送った。
+{: .table-caption}
 
 **何も呼ばなければ、どちらの実装でも `IsEnabled` は `False` のままである。** `CanExecute` の戻り値が変わっただけでは反映されない。
 

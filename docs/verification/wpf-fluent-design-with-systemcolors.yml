@@ -20,3 +20,10 @@ images:
   - "images/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.svg"
   - "images/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.svg"
   - "images/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.svg"
+tables:
+  - "_includes/tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.en.md"
+  - "_includes/tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-values.ja.md"
+  - "_includes/tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.en.md"
+  - "_includes/tables/articles/wpf-fluent-design-with-systemcolors/systemcolors-tracking.ja.md"
+  - "_includes/tables/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.en.md"
+  - "_includes/tables/articles/wpf-fluent-design-with-systemcolors/theme-brush-values.ja.md"
