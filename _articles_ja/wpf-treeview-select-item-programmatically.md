@@ -323,7 +323,7 @@ public static class RevealSelectedItemBehavior
 `Focus` を併せて呼ぶと選択がアクティブな配色で描画される。
 フォーカスを移したくない画面では `Focus` の行を外す。
 
-上記の XAML とコードをそのまま実行し、3 階層下の `drivers` に対して `SelectAndReveal` を呼んだ結果が次の表である。
+上記の XAML とコードをそのまま実行し、3 階層下の `drivers` に対して `SelectAndReveal` を呼んだ結果が次の図である。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png" alt="TreeView で C: / Windows / System32 が展開され、その下の drivers が選択色で強調表示されている。下部のテキストに TreeView.SelectedItem = drivers と表示されている。" width="326" height="293" loading="lazy">
