@@ -35,6 +35,13 @@ internal sealed class LabelUnderscoreScene : IScene
     /// 既定テンプレートの <c>ContentPresenter.RecognizesAccessKey</c> が
     /// <c>True</c> かどうかで結果が分かれる。
     /// </summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    /// <summary>"MenuItem (top level)" などの括弧の中だけを日本語にする。</summary>
+    private static Loc ControlName(string name) =>
+        T(name, name.Replace(" (top level)", "（最上位）").Replace(" (submenu)", "（サブメニュー）"));
+
     private static Window BuildAffectedControlsWindow()
     {
         var rows = new[]
@@ -165,8 +172,8 @@ internal sealed class LabelUnderscoreScene : IScene
 
             await Capture.SettleAsync(window);
 
-            var affected = new List<IReadOnlyList<string>>();
-            var presenters = new List<IReadOnlyList<string>>();
+            var affected = new List<IReadOnlyList<Loc>>();
+            var presenters = new List<IReadOnlyList<Loc>>();
 
             foreach (Probe probe in probes)
             {
@@ -174,8 +181,8 @@ internal sealed class LabelUnderscoreScene : IScene
                 bool hasAccessText = tree.OfType<AccessText>().Any();
 
                 affected.Add([
-                    probe.Name,
-                    hasAccessText ? "disappears" : "kept",
+                    ControlName(probe.Name),
+                    hasAccessText ? T("disappears", "消える") : T("kept", "残る"),
                     probe.Property,
                 ]);
 
@@ -190,24 +197,25 @@ internal sealed class LabelUnderscoreScene : IScene
                     .ToArray();
 
                 presenters.Add([
-                    probe.Name,
+                    ControlName(probe.Name),
                     own.Length.ToString(),
                     own.Length == 0
                         ? "-"
-                        : string.Join("  ", own.Select(p =>
-                            $"{(string.IsNullOrEmpty(p.Name) ? "(unnamed)" : p.Name)}={p.RecognizesAccessKey}")),
+                        : T(
+                            string.Join("  ", own.Select(p => $"{(string.IsNullOrEmpty(p.Name) ? "(unnamed)" : p.Name)}={p.RecognizesAccessKey}")),
+                            string.Join("  ", own.Select(p => $"{(string.IsNullOrEmpty(p.Name) ? "（名前なし）" : p.Name)}={p.RecognizesAccessKey}"))),
                 ]);
             }
 
             await context.SaveTableAsync(
                 $"""Content / Header = "{ProbeText}" — is AccessText created?""",
-                ["control", "underscore", "property"],
+                [T("control", "コントロール"), T("underscore", "アンダースコア"), T("property", "プロパティ")],
                 affected,
                 "label-underscore-affected-matrix.svg");
 
             await context.SaveTableAsync(
                 "ContentPresenter whose TemplatedParent is the control itself",
-                ["control", "count", "name = RecognizesAccessKey"],
+                [T("control", "コントロール"), T("count", "ContentPresenter の数"), T("name = RecognizesAccessKey", "名前 = RecognizesAccessKey")],
                 presenters,
                 "label-underscore-presenter-matrix.svg");
         }

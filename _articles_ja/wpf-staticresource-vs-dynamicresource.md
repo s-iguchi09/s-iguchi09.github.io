@@ -22,7 +22,7 @@ WPF のリソース参照には `StaticResource` と `DynamicResource` の2種�
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で同じリソースを `StaticResource` と `DynamicResource` の両方から参照した画面を実際に表示し、実行中にリソースを差し替えて得たものである。
+本記事の図と表は、上記の環境で同じリソースを `StaticResource` と `DynamicResource` の両方から参照した画面を実際に表示し、実行中にリソースを差し替えて得たものである。
 この環境で確認しているのは次の点である。
 
 - 差し替える前は、両者とも同じ値になる。
@@ -92,10 +92,10 @@ Resources["ThemeColor"] = new SolidColorBrush(Colors.OrangeRed);
 
 この違いは、実行中にリソースを差し替えてプロパティを読めば確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="リソースを白から赤へ変える前後の Border.Background を測った表。エントリを差し替えると、StaticResource は白のまま、DynamicResource は赤になる。エントリを差し替えずに同じブラシの Color を赤に書き換えると、Freeze されていないブラシでは StaticResource も DynamicResource も赤になる。" width="637" height="260" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、同じキー <code>PanelBrush</code> のエントリを実行中に白から赤のブラシへ差し替えた場合と、エントリを差し替えずに同じブラシの <code>Color</code> を赤に書き換えた場合に、<code>Border.Background</code> を読んだ結果。参照の書き方と変え方以外の条件は同一である。</figcaption>
-</figure>
+{% include tables/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.ja.md %}
+
+.NET 10 / Windows 11 で、同じキー <code>PanelBrush</code> のエントリを実行中に白から赤のブラシへ差し替えた場合と、エントリを差し替えずに同じブラシの <code>Color</code> を赤に書き換えた場合に、<code>Border.Background</code> を読んだ結果。参照の書き方と変え方以外の条件は同一である。
+{: .table-caption}
 
 差し替え前は両者とも同じ値である。差が出るのは差し替えた後だけであり、`StaticResource` 側は白のまま変わらない。
 

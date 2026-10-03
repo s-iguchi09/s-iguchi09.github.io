@@ -13,3 +13,6 @@ verifies:
 images:
   - "images/articles/wpf-staticresource-vs-dynamicresource/staticresource-vs-dynamicresource.png"
   - "images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg"
+tables:
+  - "_includes/tables/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.en.md"
+  - "_includes/tables/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.ja.md"

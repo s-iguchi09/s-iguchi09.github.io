@@ -59,7 +59,7 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 
 仮想化が有効なとき、同時に存在する `ListBoxItem` は表示範囲に必要な数だけである。
 高さ 600px の `ListBox` で計測すると、コレクションの件数を 100 件・10,000 件・100,000 件と変えても、実体化されるコンテナは 31 個で一定であった。
-この計測結果は、後掲の「仮想化を壊さない」の図に示している。
+この計測結果は、後掲の「仮想化を壊さない」の表に示している。
 
 `ItemContainerStyle` が適用されるのは、生成された `ListBoxItem` に対してだけである。
 10,000 件をバインドした場合、コンテナを持つのはこの 31 件であり、**残る 9,969 件には対応する `ListBoxItem` がそもそも存在しない**。
@@ -215,7 +215,7 @@ public class MainViewModel
 | データ → UI(コンテナ実体化時の復元) | `ItemContainerStyle` のバインド | 実体化されたコンテナ |
 
 `SelectionChanged` が全件をデータへ書き戻すため、後からコンテナが実体化されても、バインドは正しい値(`true`)を読み取る。
-上の表で「both」の行が両方 10,000 件で一致しているのはこのためである。
+上の表で「両方」の行が両方 10,000 件で一致しているのはこのためである。
 
 コードビハインドに次のハンドラーを置く。
 
@@ -241,10 +241,10 @@ private void RowListBox_SelectionChanged(object sender, SelectionChangedEventArg
 `SelectAll` の呼び出し、`SelectedItem` への代入のほか、本節の構成では**データ側で選択した項目のコンテナが実体化され、バインドが選択状態を復元したとき**にも発生する。
 一方、UI とデータの選択が一致している項目では、実体化されても発生しない。全件を選んだあと 10 ページ スクロールしても、`SelectionChanged` は 1 回も発生しなかった。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg" alt="仮想化した 10,000 件の ListBox で、SelectionChanged が発生した回数の表。バインドと SelectionChanged を併用して全件を選んだあと 10 ページ スクロールしても 0 回。画面外の Row 5001 をデータ側で選んだ直後は SelectedItems 0 件で 0 回、ScrollIntoView で実体化すると SelectedItems 1 件で 1 回（追加 1 件）。Row 1 を選んで Shift+End を押すと、どちらの構成でも SelectedItems は 10,000 件で、SelectionChanged は 1 回、追加 9,999 件。データ側の IsSelected は SelectionChanged で反映する構成では 10,000 件、ItemContainerStyle のバインドだけの構成では 31 件。" width="1215" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。Shift+End は実際のキー入力として送っている。<code>ListBox</code> は <code>Shift</code> の状態を <code>Keyboard.Modifiers</code> で判定するためである。</figcaption>
-</figure>
+{% include tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.ja.md %}
+
+.NET 10 / Windows 11 で実測。Shift+End は実際のキー入力として送っている。<code>ListBox</code> は <code>Shift</code> の状態を <code>Keyboard.Modifiers</code> で判定するためである。
+{: .table-caption}
 
 復元で発生した場合、上のハンドラーは「すでに `true` の項目へ `true` を代入する」呼び出しを受ける。
 前掲の `RowItemViewModel` のように**セッターで同値を弾いておく**ことで、この経路が余計な変更通知を発生させずに済む。

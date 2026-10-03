@@ -167,20 +167,20 @@ WPF の `RadioButton.GroupName` の既定値は空文字列である。
 
 本記事の XAML をそのまま動かし、コンバーターの呼び出しとチェック状態を測った結果が次の表である。本文で「実測では」と書いた箇所は、すべてこの表の行に対応する。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.svg" alt="本記事の XAML を .NET Framework 4.8 と .NET 10 で実行して測った表。ランタイムの行以外は両方で同じ値。GroupName の既定値は空文字列。GroupName なしではチェックが Single だけで、ConvertBack(false) が Standard で 1 回、ソースは Standard / Single。GroupName ありでは Standard と Single にチェックが付き、ConvertBack(false) は 0 回。Fine を選ぶと ConvertBack(true) 1 回・(false) 0 回、Draft を選ぶと Quality だけが Draft に変わる。列挙体ごとに StackPanel を分けると GroupName なしでも両方にチェックが付く。別々の Border の同じ GroupName は 1 つに解除される。ConverterParameter を文字列にすると Quality 側はどれもチェックされず、Fine を選ぶとソースだけが Fine になる。別の ViewModel の同名プロパティや、バインドしていないボタンが混ざると ConvertBack(false) が 1 回。ConvertBack が NotImplementedException を投げると呼び出し元まで上がる。UnsetValue を返すと Standard は未チェックのまま検証エラーが付き、ソースは変わらない。false でも parameter を返す実装とラッパープロパティでは両方にチェックが付く。Grid の別セル、GroupBox の Header と Content、ItemsControl の Items では 2 つのうち 1 つだけがチェックされる。" width="1218" height="770" loading="lazy">
-  <figcaption>Windows 11 で、記事の XAML・ViewModel・コンバーターをそのまま <code>XamlReader</code> で読み込む一時プロジェクトを、<code>net48</code> と <code>net10.0-windows</code> の両方でビルドして測った結果。値が 1 つの行は、両方のランタイムで同じ値だったことを示す。選択の操作は、クリックと同じ経路を通る UI オートメーションの <code>Select</code> で行った。</figcaption>
-</figure>
+{% include tables/articles/wpf-radiobutton-enum-binding/radiobutton-grouping.ja.md %}
 
-**`GroupName` を設定しない場合（`no GroupName` の行）、チェックが `Single` だけになっている。** 別のプロパティにバインドしているにもかかわらず `Standard` が解除されており、これが「初期選択が表示されない」症状の実体である。
+Windows 11 で、記事の XAML・ViewModel・コンバーターをそのまま <code>XamlReader</code> で読み込む一時プロジェクトを、<code>net48</code> と <code>net10.0-windows</code> の両方でビルドして測った結果。値が 1 つの行は、両方のランタイムで同じ値だったことを示す。選択の操作は、クリックと同じ経路を通る UI オートメーションの <code>Select</code> で行った。
+{: .table-caption}
+
+**`GroupName` を設定しない場合（「GroupName なし」の行）、チェックが `Single` だけになっている。** 別のプロパティにバインドしているにもかかわらず `Standard` が解除されており、これが「初期選択が表示されない」症状の実体である。
 このとき `ConvertBack` が `false` で 1 回呼ばれている。
 
 注目すべきは、**ソース側の値はどちらの場合も `Standard / Single` のまま無傷である**点である。
 コンバーターが `false` に対して `Binding.DoNothing` を返しているため、ViewModel は壊れていない。
 壊れているのは画面の表示だけであり、ViewModel をログに出しても原因にたどり着けない。
 
-`GroupName` を設定した場合（`GroupName set` の行）、画面の初期化の間に `ConvertBack` が 1 度も呼ばれず、両方のチェックが残る。
-その後に選択を変えると、新しくチェックされたボタンで `ConvertBack(true)` が 1 回だけ走る（`select Fine` の行）。
+`GroupName` を設定した場合（「GroupName あり」の行）、画面の初期化の間に `ConvertBack` が 1 度も呼ばれず、両方のチェックが残る。
+その後に選択を変えると、新しくチェックされたボタンで `ConvertBack(true)` が 1 回だけ走る（「Fine を選択」の行）。
 
 ---
 
@@ -198,7 +198,7 @@ WPF の `RadioButton.GroupName` の既定値は空文字列である。
   文字列を渡すと比較が成立しない（後述）。
 
 グループ化は論理親の単位で行われるため、列挙体のプロパティごとに親のパネルを分けても症状は解消する。
-実測でも、「問題」の 5 つを `Quality` 用と `PageLayout` 用の 2 つの `StackPanel` に分けるだけで、`GroupName` を書かずに初期選択が両方とも表示された（表の `one StackPanel per enum`）。
+実測でも、「問題」の 5 つを `Quality` 用と `PageLayout` 用の 2 つの `StackPanel` に分けるだけで、`GroupName` を書かずに初期選択が両方とも表示された（表の「列挙型ごとに StackPanel を 1 つ」）。
 ただしこの方法はレイアウトの構造に依存し、後の変更でパネルをまとめ直すと再発する。
 `GroupBox` の `Header` と `Content`、`Grid` の別セルのように、画面上は離れていても論理親が同じになる配置では、グループが分かれない（「注意点」参照）。
 グループの境界を意図として明示できる `GroupName` の指定を推奨する。
@@ -258,7 +258,7 @@ XAML では、列挙体のプロパティごとに異なる `GroupName` を与�
 
 - **`GroupName` は親要素をまたいでグループ化する。**
   `GroupName` を設定したラジオボタンは、別々の `Border` や別のパネルに分かれていても同一グループになる。
-  実測では、異なる親に配置した `GroupName="quality"` の 2 組が互いを解除し、チェックは 1 つだけ残った（表の `two Borders`）。
+  実測では、異なる親に配置した `GroupName="quality"` の 2 組が互いを解除し、チェックは 1 つだけ残った（表の「2 つの Border に」）。
   そのため、1 つのグループに与える名前を、同じビジュアルツリーのルート内にある他のグループの名前と重複させないようにする（同じグループに属するボタンには同じ名前を与える）。
   命名規則をアプリケーション全体で統一する場合も、同じ列挙体の選択群が 1 つの画面に 2 セット出ないことが前提となる。
   なお、グループ化はビジュアルツリーのルートをまたがない。
@@ -267,7 +267,7 @@ XAML では、列挙体のプロパティごとに異なる `GroupName` を与�
   `ConverterParameter=Draft` と書くと、`ConverterParameter` が `object` 型で変換先の型が確定しないため、値は文字列 `"Draft"` のまま渡る。
   `Convert` の比較が常に `false` となり、どのボタンも選択表示されない。
   一方でクリック時の `ConvertBack` は文字列を返し、WPF の既定の型変換で列挙体へ変換されるため、ソースの更新だけは成功する。
-  実測では、ViewModel の値だけが変わり、`Quality` 側の画面はどれも未選択のまま、という状態になった（表の `ConverterParameter=Draft (string)`）。
+  実測では、ViewModel の値だけが変わり、`Quality` 側の画面はどれも未選択のまま、という状態になった（表の「ConverterParameter=Draft（string）」）。
   `x:Static` で列挙体の値を渡すか、`Convert` 側で `Enum.Parse` して受けること。
 - **`ConverterParameter` にはバインドできない。**
   `Binding` は `BindingBase` を経て `MarkupExtension` を継承しており、`DependencyObject` ではない。

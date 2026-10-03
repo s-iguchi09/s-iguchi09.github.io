@@ -34,28 +34,28 @@ internal sealed class CollectionCrossThreadScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        async Task AddRowAsync(string collection, string countermeasure, Bound bound, Fix fix)
+        async Task AddRowAsync(Loc collection, string countermeasure, Bound bound, Fix fix)
         {
             (string result, string counts) = await RunDetailedAsync(bound, fix);
             rows.Add([collection, countermeasure, result, counts]);
         }
 
-        await AddRowAsync("ObservableCollection alone", "-", Bound.No, Fix.None);
-        await AddRowAsync("bound to ItemsControl", "-", Bound.Yes, Fix.None);
-        await AddRowAsync("bound to ItemsControl", "Dispatcher.Invoke", Bound.Yes, Fix.Dispatcher);
-        await AddRowAsync("bound to ItemsControl", "EnableCollectionSynchronization", Bound.Yes, Fix.Synchronization);
+        await AddRowAsync(T("ObservableCollection alone", "ObservableCollection だけ"), "-", Bound.No, Fix.None);
+        await AddRowAsync(T("bound to ItemsControl", "ItemsControl にバインド"), "-", Bound.Yes, Fix.None);
+        await AddRowAsync(T("bound to ItemsControl", "ItemsControl にバインド"), "Dispatcher.Invoke", Bound.Yes, Fix.Dispatcher);
+        await AddRowAsync(T("bound to ItemsControl", "ItemsControl にバインド"), "EnableCollectionSynchronization", Bound.Yes, Fix.Synchronization);
 
         await context.SaveTableAsync(
             "Add() from a background thread",
-            ["collection", "countermeasure", "result", "Count / Items.Count / view notifications"],
+            [T("collection", "コレクション"), T("countermeasure", "対策"), T("result", "結果"), T("Count / Items.Count / view notifications", "Count / Items.Count / ビューへの通知の数")],
             rows,
             "collection-cross-thread-matrix.svg");
 
         await context.SaveTableAsync(
             $"{BulkCount:N0} Add() calls from a background thread",
-            ["countermeasure", "background loop ms", "view notifications after await", "until all notified ms"],
+            [T("countermeasure", "対策"), T("background loop ms", "バックグラウンドのループ（ms）"), T("view notifications after await", "await の後のビューへの通知の数"), T("until all notified ms", "すべて通知されるまで（ms）")],
             [
                 await MeasureBulkAsync(Fix.Dispatcher),
                 await MeasureBulkAsync(Fix.Synchronization),
@@ -71,7 +71,10 @@ internal sealed class CollectionCrossThreadScene : IScene
     /// ビューが全件分の通知を受け取るまでの時間を返す。
     /// Dispatcher.Invoke は 1 件ごとに UI スレッドでの実行を待つ。
     /// </summary>
-    private static async Task<IReadOnlyList<string>> MeasureBulkAsync(Fix fix)
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static async Task<IReadOnlyList<Loc>> MeasureBulkAsync(Fix fix)
     {
         var items = new ObservableCollection<string>();
         var gate = new object();
@@ -134,7 +137,7 @@ internal sealed class CollectionCrossThreadScene : IScene
         }
 
         total.Stop();
-        string until = viewEvents == BulkCount ? total.Elapsed.TotalMilliseconds.ToString("N0") : $"not reached ({viewEvents:N0})";
+        Loc until = viewEvents == BulkCount ? total.Elapsed.TotalMilliseconds.ToString("N0") : T($"not reached ({viewEvents:N0})", $"届かない（{viewEvents:N0}）");
         host.Content = null;
         host.Close();
 
@@ -143,7 +146,7 @@ internal sealed class CollectionCrossThreadScene : IScene
             BindingOperations.DisableCollectionSynchronization(items);
         }
 
-        return [fix == Fix.Dispatcher ? "Dispatcher.Invoke per item" : "EnableCollectionSynchronization + lock", elapsed.ToString("N0"), eventsAfterAwait.ToString("N0"), until];
+        return [fix == Fix.Dispatcher ? T("Dispatcher.Invoke per item", "1 件ごとに Dispatcher.Invoke") : "EnableCollectionSynchronization + lock", elapsed.ToString("N0"), eventsAfterAwait.ToString("N0"), until];
     }
 
     private enum Bound

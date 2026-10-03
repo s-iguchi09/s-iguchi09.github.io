@@ -82,36 +82,36 @@ internal sealed class FluentThemeModeSwitchScene : IScene
         {
             await context.SaveTableAsync(
                 "Application.Resources.MergedDictionaries per ThemeMode",
-                ["Application.ThemeMode", "merged dictionaries"],
+                ["Application.ThemeMode", T("merged dictionaries", "マージされたディクショナリ")],
                 await MeasureAppDictionariesAsync(),
                 "thememode-app-dictionaries.svg");
 
-            var appDictionaries = new List<IReadOnlyList<string>>();
+            var appDictionaries = new List<IReadOnlyList<Loc>>();
             await context.SaveTableAsync(
                 "Application.ThemeMode: Light -> Dark",
-                ["window setup", "Window.ThemeMode", "brush before", "brush after", "follows"],
+                [T("window setup", "ウィンドウの設定"), "Window.ThemeMode", T("brush before", "切り替え前のブラシ"), T("brush after", "切り替え後のブラシ"), T("follows", "追従するか")],
                 await MeasureWindowSetupsAsync(helper: false, appDictionaries),
                 "thememode-follow-matrix.svg");
 
             await context.SaveTableAsync(
                 "App merged dictionaries before and after the switch",
-                ["window setup", "ThemeMode", "App merged dictionaries"],
+                [T("window setup", "ウィンドウの設定"), "ThemeMode", T("App merged dictionaries", "App のマージされたディクショナリ")],
                 appDictionaries,
                 "thememode-manual-dictionaries.svg");
 
             await context.SaveTableAsync(
                 "ApplyTheme(ThemeMode.Dark) from a Light app",
-                ["window setup", "Window.ThemeMode", "brush before", "brush after", "follows"],
+                [T("window setup", "ウィンドウの設定"), "Window.ThemeMode", T("brush before", "切り替え前のブラシ"), T("brush after", "切り替え後のブラシ"), T("follows", "追従するか")],
                 await MeasureWindowSetupsAsync(helper: true),
                 "thememode-helper-matrix.svg");
 
             await context.SaveTableAsync(
                 "Application.ThemeMode: Light -> Dark",
-                ["how the brush is referenced", "ReadLocalValue", "before", "after", "follows"],
+                [T("how the brush is referenced", "ブラシの参照のしかた"), "ReadLocalValue", T("before", "切り替え前"), T("after", "切り替え後"), T("follows", "追従するか")],
                 await MeasureReferenceKindsAsync(),
                 "thememode-reference-kinds.svg");
 
-            IReadOnlyList<string> systemRow = await MeasureSystemAsync();
+            IReadOnlyList<Loc> systemRow = await MeasureSystemAsync();
 
             // 本文の System の主張は、ダーク設定の環境で Dark のブラシが選ばれたことに基づく。
             // それ以外の環境で実行した場合は、主張を検証記録に出さない。
@@ -123,13 +123,13 @@ internal sealed class FluentThemeModeSwitchScene : IScene
 
             await context.SaveTableAsync(
                 "ThemeMode.System on this machine",
-                ["AppsUseLightTheme", "merged dictionary", ProbeKey],
+                ["AppsUseLightTheme", T("merged dictionary", "マージされたディクショナリ"), ProbeKey],
                 [systemRow],
                 "thememode-system.svg");
 
             await context.SaveTableAsync(
                 "DumpThemeState(StaticText) after ThemeMode=Dark",
-                ["output"],
+                [T("output", "出力")],
                 await MeasureDumpAsync(),
                 "thememode-dump-output.svg");
 
@@ -146,6 +146,9 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// アプリ全体の ThemeMode を変え、各ウィンドウが持つ Fluent 辞書を外して
     /// アプリ側の辞書へ追従させる。
     /// </summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static void ApplyTheme(ThemeMode mode)
     {
         Application app = Application.Current;
@@ -176,7 +179,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// App.xaml で辞書を宣言し、起動後に ThemeMode を設定する順序を再現するためである。
     /// </summary>
     private sealed record Setup(
-        string Label,
+        Loc Label,
         Func<ResourceDictionary?>? ConfigureApp = null,
         Action<Window>? ConfigureWindow = null);
 
@@ -194,33 +197,33 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// <paramref name="appDictionaries"/> を渡すと、アプリ側に辞書を置いた構成について
     /// 切り替え前後の Application.Resources.MergedDictionaries の並びを書き込む。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureWindowSetupsAsync(
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureWindowSetupsAsync(
         bool helper,
-        List<IReadOnlyList<string>>? appDictionaries = null)
+        List<IReadOnlyList<Loc>>? appDictionaries = null)
     {
         Application app = Application.Current;
 
         Setup[] setups =
         [
-            new("(not set)"),
+            new(T("(not set)", "（指定なし）")),
             new("Window.ThemeMode=None", ConfigureWindow: w => w.ThemeMode = ThemeMode.None),
             new("Window.ThemeMode=Light", ConfigureWindow: w => w.ThemeMode = ThemeMode.Light),
             new(
-                "Fluent.Light.xaml in Window.Resources",
+                T("Fluent.Light.xaml in Window.Resources", "Window.Resources に Fluent.Light.xaml"),
                 ConfigureWindow: w => w.Resources.MergedDictionaries.Add(
                     new ResourceDictionary { Source = new Uri(FluentLightUri) })),
             // App.xaml の MergedDictionaries に Fluent.Light.xaml を直接書いた状態。
             new(
-                "Fluent.Light.xaml in App resources",
+                T("Fluent.Light.xaml in App resources", "App のリソースに Fluent.Light.xaml"),
                 ConfigureApp: () => AddToApp(new ResourceDictionary { Source = new Uri(FluentLightUri) })),
             // App.xaml から Styles.xaml をマージし、その Styles.xaml の中で Fluent.Light.xaml を
             // マージしている状態。
             new(
-                "Fluent.Light.xaml nested in Styles.xaml",
+                T("Fluent.Light.xaml nested in Styles.xaml", "Styles.xaml の中に Fluent.Light.xaml"),
                 ConfigureApp: () => AddToApp(new ResourceDictionary { Source = new Uri(StylesUri) })),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (Setup setup in setups)
         {
@@ -230,7 +233,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
 
             var window = new Window
             {
-                Title = setup.Label,
+                Title = setup.Label.En,
                 Width = 320,
                 Height = 200,
                 ShowActivated = false,
@@ -260,7 +263,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
                     window.ThemeMode.Value,
                     before,
                     after,
-                    before == after ? "no" : "yes",
+                    before == after ? T("no", "しない") : T("yes", "する"),
                 ]);
 
                 if (added is not null)
@@ -303,7 +306,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// 同じブラシを StaticResource・DynamicResource・コードでの FindResource で参照し、
     /// 切り替えへの追従と、ReadLocalValue で読める値の型を測る。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureReferenceKindsAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureReferenceKindsAsync()
     {
         // 記事の DumpThemeState は TextBlock.ForegroundProperty で Button なども読めると述べている。
         // その前提が崩れていれば、ここで止める。
@@ -334,14 +337,14 @@ internal sealed class FluentThemeModeSwitchScene : IScene
             // 記事の「問題」で避けるよう述べている書き方。取得した時点のブラシを代入する。
             codeText.Foreground = (Brush)window.FindResource(ProbeKey);
 
-            (string Label, Control? Button, TextBlock? Target)[] targets =
+            (Loc Label, Control? Button, TextBlock? Target)[] targets =
             [
                 ("{StaticResource}", null, StaticText(window)),
                 ("{DynamicResource}", null, DynamicText(window)),
                 ("Foreground = FindResource(...)", null, codeText),
                 ("{DynamicResource SystemColors.ControlTextBrushKey}", null, systemText),
                 // Foreground を指定していない標準コントロール。色は Fluent のスタイルから来る。
-                ("Button (Fluent style)", (Control)content.FindName("SaveButton"), null),
+                (T("Button (Fluent style)", "Button（Fluent のスタイル）"), (Control)content.FindName("SaveButton"), null),
             ];
 
             var before = targets.Select(t => BrushText(Foreground(t.Button, t.Target))).ToList();
@@ -349,7 +352,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
             app.ThemeMode = ThemeMode.Dark;
             await Capture.SettleAsync(window);
 
-            var rows = new List<IReadOnlyList<string>>();
+            var rows = new List<IReadOnlyList<Loc>>();
             for (int i = 0; i < targets.Length; i++)
             {
                 DependencyObject target = (DependencyObject?)targets[i].Target ?? targets[i].Button!;
@@ -357,10 +360,10 @@ internal sealed class FluentThemeModeSwitchScene : IScene
                 object local = target.ReadLocalValue(TextBlock.ForegroundProperty);
                 rows.Add([
                     targets[i].Label,
-                    local == DependencyProperty.UnsetValue ? "(no local value)" : local.GetType().Name,
+                    local == DependencyProperty.UnsetValue ? T("(no local value)", "（ローカル値なし）") : local.GetType().Name,
                     before[i],
                     after,
-                    before[i] == after ? "no" : "yes",
+                    before[i] == after ? T("no", "しない") : T("yes", "する"),
                 ]);
             }
 
@@ -376,10 +379,10 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// <summary>
     /// Application.ThemeMode を順に切り替え、Application.Resources 直下にどの辞書が並ぶかを読む。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureAppDictionariesAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAppDictionariesAsync()
     {
         Application app = Application.Current;
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (ThemeMode mode in new[] { ThemeMode.None, ThemeMode.Light, ThemeMode.Dark, ThemeMode.None })
         {
@@ -401,7 +404,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// ThemeMode.System が、実行環境の「アプリのモード」設定と同じ側のブラシを選ぶかを測る。
     /// OS の設定は読むだけで変更しない。そのため、OS 側を切り替えたときの追従は測っていない。
     /// </summary>
-    private static async Task<IReadOnlyList<string>> MeasureSystemAsync()
+    private static async Task<IReadOnlyList<Loc>> MeasureSystemAsync()
     {
         Application app = Application.Current;
         object? lightTheme = Microsoft.Win32.Registry.GetValue(
@@ -428,7 +431,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
                 .FirstOrDefault() ?? "(none)";
 
             return [
-                lightTheme?.ToString() ?? "(not set)",
+                lightTheme?.ToString() ?? T("(not set)", "（指定なし）"),
                 dictionary,
                 BrushText(DynamicText(window).Foreground),
             ];
@@ -481,7 +484,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
     /// Styles.xaml の中に Fluent.Light.xaml をネストし、SettingsWindow に Window.ThemeMode=Light を指定し、
     /// MainWindow の StaticResource のテキストを probe に渡す。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureDumpAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureDumpAsync()
     {
         Application app = Application.Current;
         ResourceDictionary styles = AddToApp(new ResourceDictionary { Source = new Uri(StylesUri) });
@@ -513,7 +516,7 @@ internal sealed class FluentThemeModeSwitchScene : IScene
 
             return DumpThemeState(StaticText(main))
                 .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-                .Select(line => (IReadOnlyList<string>)[line])
+                .Select(line => (IReadOnlyList<Loc>)[line])
                 .ToList();
         }
         finally
