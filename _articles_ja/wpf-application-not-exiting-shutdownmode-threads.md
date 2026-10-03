@@ -121,12 +121,12 @@ WPF は `Application.Shutdown` が呼ばれたときにアプリケーション�
 | 2 つ目の UI スレッドで `Dispatcher.Run()` | 発生する | 戻る | **終了しない** |
 | 同上 ＋ `Exit` で `InvokeShutdown()` | 発生する | 戻る | 直後 |
 
-実際に計測した値が次の図である。
+実際に計測した値が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.svg" alt="条件別にプロセスの生存時間を計測した表。可視ウィンドウのみ、IsBackground を有効にしたスレッド、Task.Run、InvokeShutdown を呼ぶ構成は数秒で終了する。ウィンドウを生成しない場合と閉じないウィンドウがある場合は Application.Exit が発生せず終了しない。既定の new Thread はスリープが尽きるまで残り、2 つ目の UI スレッドは終了しない。" width="709" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、条件だけを変えた検証用アプリを起動して計測した値。<code>process ends</code> はプロセス起動から終了までの実測時間で、<code>never</code> は 9 秒を超えても終了しなかったことを示す。ウィンドウは起動から 2 秒後に自動で閉じ、バックグラウンド処理は 6 秒のスリープに置き換えている。所要時間は実行環境に依存するため、絶対値ではなく条件間の差として読む。</figcaption>
-</figure>
+{% include tables/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、条件だけを変えた検証用アプリを起動して計測した値。「プロセスが終わるまで」はプロセス起動から終了までの実測時間で、「終わらない」は 9 秒を超えても終了しなかったことを示す。ウィンドウは起動から 2 秒後に自動で閉じ、バックグラウンド処理は 6 秒のスリープに置き換えている。所要時間は実行環境に依存するため、絶対値ではなく条件間の差として読む。
+{: .table-caption}
 
 計測に使った 6 秒のスリープは、実際の障害で問題になる「止め忘れて終わらない処理」を有限時間に置き換えたものである。
 そのため `new Thread(...)` の行は数秒後にプロセスが終了しているが、実際に終わらないループを回していれば、そのままプロセスは残り続ける。

@@ -133,19 +133,19 @@ internal sealed class FluentSystemColorsScene : IScene
 
         await context.SaveTableAsync(
             "what SystemColors keys resolve to on this machine",
-            ["key", "value", "relative luminance"],
+            [Loc.Of("key", "キー"), Loc.Of("value", "値"), Loc.Of("relative luminance", "相対輝度")],
             FluentThemeMeasurements.SystemColorValues(),
             "systemcolors-values.svg");
 
         await context.SaveTableAsync(
             "does the color follow when the system brush is replaced",
-            ["how the color is referenced", "before", "after the replacement"],
+            [Loc.Of("how the color is referenced", "色の参照のしかた"), Loc.Of("before", "置き換える前"), Loc.Of("after the replacement", "置き換えた後")],
             await FluentThemeMeasurements.ColorReferenceTrackingAsync(),
             "systemcolors-tracking.svg");
 
         await context.SaveTableAsync(
             "brush keys under ThemeMode Light and Dark",
-            ["resource key", "ThemeMode=Light", "ThemeMode=Dark"],
+            [Loc.Of("resource key", "リソースキー"), "ThemeMode=Light", "ThemeMode=Dark"],
             await FluentThemeMeasurements.ThemeBrushValuesAsync(),
             "theme-brush-values.svg");
     }

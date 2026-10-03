@@ -92,10 +92,10 @@ The second window keeps a light background and light buttons.
 The starting point for diagnosis is what gets replaced when `Application.ThemeMode` changes.
 The following table shows the contents of `Application.Resources.MergedDictionaries` read after setting the application-wide `ThemeMode` in sequence.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg" alt="Application.Resources.MergedDictionaries for each Application.ThemeMode. Empty for None, Fluent.Light.xaml for Light, Fluent.Dark.xaml for Dark, and empty again after returning to None" width="394" height="200" loading="lazy">
-  <figcaption>Application.Resources.MergedDictionaries when Application.ThemeMode is set to None, Light, Dark, and None in that order. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.en.md %}
+
+Application.Resources.MergedDictionaries when Application.ThemeMode is set to None, Light, Dark, and None in that order. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 What `ThemeMode` does is swap `Fluent.Light.xaml` and `Fluent.Dark.xaml` placed directly under `Application.Resources`.
 Control appearance and brushes are resolved from this dictionary through resource lookup.
@@ -162,10 +162,10 @@ The return value is inspected by writing it out, as in `Debug.WriteLine(DumpThem
 The following output was produced with `Fluent.Light.xaml` nested in `Styles.xaml`, `Window.ThemeMode="Light"` set on `SettingsWindow`, the app switched to Dark, and the `StaticResource` text of `MainWindow` passed as the probe.
 All three causes appear in the output.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg" alt="Output of DumpThemeState. Fluent.Dark.xaml and Styles.xaml sit directly under App, with Fluent.Light.xaml under Styles.xaml. SettingsWindow reports Window.ThemeMode as Light with Fluent.Light.xaml under it. The last line is Foreground local value = SolidColorBrush" width="876" height="320" loading="lazy">
-  <figcaption>Output of DumpThemeState right after switching to Dark in a state that contains all three causes. Run on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.en.md %}
+
+Output of DumpThemeState right after switching to Dark in a state that contains all three causes. Run on .NET 10 / Windows 11.
+{: .table-caption}
 
 The output reads as follows.
 
@@ -180,10 +180,10 @@ The output reads as follows.
 The following table shows, for each window setup, whether a brush referenced through `DynamicResource` followed a switch of `Application.ThemeMode` from `Light` to `Dark`.
 The brush value is `#E4000000` in Light and `#FFFFFFFF` in Dark.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg" alt="Result per window setup. No Window.ThemeMode, Window.ThemeMode=None, and a direct merge into App resources follow the switch; Window.ThemeMode=Light, a merge into Window.Resources, and a merge nested in Styles.xaml do not" width="831" height="260" loading="lazy">
-  <figcaption>Value of TextFillColorPrimaryBrush (referenced through DynamicResource) per window setup when Application.ThemeMode is switched from Light to Dark. The Window.ThemeMode column is read after the switch. For the two setups that place a dictionary in Application.Resources (App resources and Styles.xaml in the figure), the dictionary was merged before ThemeMode was set. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.en.md %}
+
+Value of TextFillColorPrimaryBrush (referenced through DynamicResource) per window setup when Application.ThemeMode is switched from Light to Dark. The Window.ThemeMode column is read after the switch. For the two setups that place a dictionary in Application.Resources (App resources and Styles.xaml in the figure), the dictionary was merged before ThemeMode was set. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ### The Window Holds Its Own Fluent Dictionary
 
@@ -203,10 +203,10 @@ In the measurement, the window with `Window.ThemeMode=None` followed the switch.
 When `Fluent.Light.xaml` is placed inside a custom dictionary such as `Styles.xaml` and that dictionary is merged from `App.xaml`, the brush kept its Light value after switching to Dark.
 Reading the order of the merged dictionaries in `Application.Resources` before and after the switch reveals the cause.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg" alt="Order of hand-merged dictionaries. A directly merged Fluent.Light.xaml is replaced by Fluent.Dark.xaml under Dark. When nested in Styles.xaml, Light shows Fluent.Light.xaml followed by Styles.xaml, and Dark changes only the first entry to Fluent.Dark.xaml while the Fluent.Light.xaml inside Styles.xaml remains" width="869" height="200" loading="lazy">
-  <figcaption>Application.Resources.MergedDictionaries for a setup that merges Fluent.Light.xaml directly into Application.Resources and a setup that nests it inside Styles.xaml. In both, the dictionary was merged before ThemeMode was set. Square brackets show the contents of a nested dictionary. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.en.md %}
+
+Application.Resources.MergedDictionaries for a setup that merges Fluent.Light.xaml directly into Application.Resources and a setup that nests it inside Styles.xaml. In both, the dictionary was merged before ThemeMode was set. Square brackets show the contents of a nested dictionary. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 `ThemeMode` swaps the Fluent dictionaries directly under `Application.Resources`, and a Fluent dictionary nested inside another dictionary is not a target.
 In this setup, the `ThemeMode` dictionary went in before the existing `Styles.xaml` (at the front), and the `Fluent.Light.xaml` inside `Styles.xaml` remained after it.
@@ -224,10 +224,10 @@ If standard controls switch but text or backgrounds colored by the app stay the 
 The following table shows the same brush referenced in three ways, read before and after the switch.
 A `SystemColors` key referenced through `DynamicResource` is added for comparison, and a `Button` without an explicit `Foreground` as the last row.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg" alt="Result per brush reference. StaticResource and a FindResource assignment have a SolidColorBrush local value and do not follow; DynamicResource has a ResourceReferenceExpression and follows. DynamicResource to SystemColors.ControlTextBrushKey also has a ResourceReferenceExpression but stays black and does not follow. A Button without an explicit Foreground has no local value and follows through the Fluent style" width="965" height="230" loading="lazy">
-  <figcaption>TextFillColorPrimaryBrush set to Foreground in each way, and SystemColors.ControlTextBrushKey through DynamicResource, with Application.ThemeMode switched from Light to Dark. The ReadLocalValue column is the type of the Foreground local value. The last row is a Button without an explicit Foreground. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.en.md %}
+
+TextFillColorPrimaryBrush set to Foreground in each way, and SystemColors.ControlTextBrushKey through DynamicResource, with Application.ThemeMode switched from Light to Dark. The ReadLocalValue column is the type of the Foreground local value. The last row is a Button without an explicit Foreground. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 `StaticResource` assigns the brush found when the XAML is loaded, once.
 Assigning the return value of `FindResource` in code behaves the same way, leaving the Light brush of that moment as the value.
@@ -291,10 +291,10 @@ This approach assumes that such windows do not set `ThemeMode`.
 
 The following table shows the result for the same window setups as the previous section, calling this method instead of rewriting `Application.ThemeMode` directly.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg" alt="Result with ApplyTheme. Window.ThemeMode=Light and a merge into Window.Resources now follow the switch, but the merge nested in Styles.xaml still does not" width="831" height="260" loading="lazy">
-  <figcaption>Value of TextFillColorPrimaryBrush (referenced through DynamicResource) per window setup when ApplyTheme(ThemeMode.Dark) is called in a Light app. The Window.ThemeMode column is read after the switch. The dictionaries were placed in the same order as the previous figure. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.en.md %}
+
+Value of TextFillColorPrimaryBrush (referenced through DynamicResource) per window setup when ApplyTheme(ThemeMode.Dark) is called in a Light app. The Window.ThemeMode column is read after the switch. The dictionaries were placed in the same order as the previous figure. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 The two setups that pinned the theme per window now follow the switch.
 The nested dictionary setup, however, is not fixed by this method.
@@ -313,10 +313,10 @@ Brushes pinned by `StaticResource` are not fixed by this method either.
 The following table shows the result of setting `ThemeMode.System` in the test environment.
 `Fluent.xaml`, which does not fix the light/dark variant, was merged into `Application.Resources`, and the brush took the same value as Dark.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg" alt="Measurement of ThemeMode.System. With AppsUseLightTheme at 0, the merged dictionary is Fluent.xaml and TextFillColorPrimaryBrush is #FFFFFFFF" width="571" height="110" loading="lazy">
-  <figcaption>Merged dictionary and TextFillColorPrimaryBrush value when Application.ThemeMode is set to System. AppsUseLightTheme is read from the registry (0 means dark). Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-system.en.md %}
+
+Merged dictionary and TextFillColorPrimaryBrush value when Application.ThemeMode is set to System. AppsUseLightTheme is read from the registry (0 means dark). Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ---
 

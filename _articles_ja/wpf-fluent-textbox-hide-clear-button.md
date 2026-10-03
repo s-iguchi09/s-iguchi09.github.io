@@ -26,7 +26,8 @@ Fluent テーマを適用した WPF の `TextBox` は、編集可能で単一行
 - アーキテクチャ: MVVM / コードビハインドのいずれにも適用可能
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で Fluent テーマの `TextBox` テンプレートに存在する名前付きパーツを列挙して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - .NET 10 でのクリアボタンのパーツ名は、テンプレートから実際に読み出して確かめている。
@@ -63,10 +64,10 @@ Fluent テーマの `TextBox` は、キーボードフォーカスが入ると�
 
 テンプレートに存在する名前付きパーツは、実際に適用してから読み出せば確かめられる。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.svg" alt="テーマの届き方ごとに TextBox テンプレートの名前付きパーツを調べた表。ThemeMode を設定した行と Fluent.xaml を直接マージした行に DeleteButton が存在する。BasedOn を書かない暗黙スタイルを置くとどちらの経路でも DeleteButton が消え PART_ContentHost だけになるが、BasedOn で元のスタイルを引き継いだ行ではどちらの経路でも DeleteButton が残る。" width="913" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。<code>Style applied</code> は <code>Style</code> プロパティが埋まっているか（暗黙スタイルがある）、<code>null</code> のままか（暗黙スタイルが無く、テーマのスタイルが使われる）を示す。<code>null</code> 自体はテーマの種類を表さない。この表で <code>null</code> になったのは <code>ThemeMode</code> を設定しない行だけで、そのテーマは Aero2 である。Fluent は <code>ThemeMode</code> でも直接マージでも暗黙スタイルとして届く。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-textbox-parts.ja.md %}
+
+.NET 10 / Windows 11 で、<code>TextBox</code> のテンプレートから名前付きパーツを引いた結果。「適用された Style」の列は、<code>Style</code> プロパティが埋まっているか（暗黙スタイルがある）、<code>null</code> のままか（暗黙スタイルが無く、テーマのスタイルが使われる）を示す。<code>null</code> 自体はテーマの種類を表さない。この表で <code>null</code> になったのは <code>ThemeMode</code> を設定しない行だけで、そのテーマは Aero2 である。Fluent は <code>ThemeMode</code> でも直接マージでも暗黙スタイルとして届く。
+{: .table-caption}
 
 **`DeleteButton` が存在するのは、Fluent のテンプレートが届いており、かつそれを上書きする暗黙スタイルが無い行である。** `ThemeMode` を設定した場合と `Fluent.xaml` を直接マージした場合の両方で現れる。 これがクリアボタンの実体であり、`.NET 10` でのパーツ名がこの名前であることが確かめられる。
 
@@ -324,10 +325,10 @@ XAML 側では、対象の `TextBox` に `SingleLineHideClear` を付与する�
 - 暗黙スタイルで `TextBox` のスタイルを上書きしている場合、`BasedOn` を書かないと Fluent のテンプレートごと失われ、パーツが存在しなくなる。前掲の表の該当行がその実測である。
 - **方法 1 は、テンプレートが差し替わると解除される。** ウィンドウを開いたまま `ThemeMode` を切り替えると、`TextBox` には新しいテーマのテンプレートが適用され、クリアボタンは作り直される。次の計測では、新しいパーツは別のインスタンスでローカル値の `Collapsed` を持たず、フォーカスで再び表示された。切り替えの後に `HideClearButtonPart` をもう一度呼ぶと非表示に戻った。前掲のコードでこのメソッドを `public` にしているのはこのためである。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.svg" alt="テーマの切り替えをまたいだ方法 1 の表。Light で適用するとパーツは Collapsed。ウィンドウを Dark に切り替えると、パーツは別のインスタンスでローカル値の Visibility が無く、フォーカスで Visible になる。方法 1 をもう一度適用すると Collapsed に戻る。" width="850" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>TextBox</code> にキーボードフォーカスを入れた状態で方法 1 を適用し、ウィンドウの <code>ThemeMode</code> を <code>Light</code> から <code>Dark</code> に切り替え、もう一度適用して測った結果。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-textbox-hide-clear-button/fluent-clear-button-theme-switch.ja.md %}
+
+.NET 10 / Windows 11 で、<code>TextBox</code> にキーボードフォーカスを入れた状態で方法 1 を適用し、ウィンドウの <code>ThemeMode</code> を <code>Light</code> から <code>Dark</code> に切り替え、もう一度適用して測った結果。
+{: .table-caption}
 
 ---
 

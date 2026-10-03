@@ -91,10 +91,10 @@ Application.Current.ThemeMode = ThemeMode.Dark;
 切り分けの起点は、`Application.ThemeMode` を変えたときに何が差し替わるかである。
 アプリ全体の `ThemeMode` を順に設定し、`Application.Resources.MergedDictionaries` の中身を読み出した結果を次に示す。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.svg" alt="Application.ThemeMode ごとの Application.Resources.MergedDictionaries。None では空、Light では Fluent.Light.xaml、Dark では Fluent.Dark.xaml、再び None にすると空に戻る" width="394" height="200" loading="lazy">
-  <figcaption>Application.ThemeMode を None → Light → Dark → None の順に設定したときの Application.Resources.MergedDictionaries。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-app-dictionaries.ja.md %}
+
+Application.ThemeMode を None → Light → Dark → None の順に設定したときの Application.Resources.MergedDictionaries。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 `ThemeMode` が行っているのは、`Application.Resources` 直下に置いた `Fluent.Light.xaml` と `Fluent.Dark.xaml` の入れ替えである。
 コントロールの外観やブラシは、この辞書からリソース検索で解決される。
@@ -155,16 +155,16 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 
 `StringBuilder` は `System.Text`、`TextBlock` は `System.Windows.Controls`、`Debug` は `System.Diagnostics`、それ以外の型は `System.Windows` にある。
 `TextBlock.ForegroundProperty` は `Control.ForegroundProperty` と同じ依存関係プロパティなので、`Button` などを渡しても例外にはならない。
-ただし、Fluent のスタイルから色が決まる標準コントロールでは `(no local value)` となり（後述の参照方法の表の最終行）、参照方法の判別には使えない。
+ただし、Fluent のスタイルから色が決まる標準コントロールでは「（ローカル値なし）」となり（後述の参照方法の表の最終行）、参照方法の判別には使えない。
 戻り値は `Debug.WriteLine(DumpThemeState(element))` のように出力して確認する。
 
 `Styles.xaml` の中に `Fluent.Light.xaml` をネストし、`SettingsWindow` に `Window.ThemeMode="Light"` を指定した状態で Dark へ切り替え、`MainWindow` の `StaticResource` のテキストを渡した出力を次に示す。
 3 系統の原因がすべて出力に現れている。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.svg" alt="DumpThemeState の出力。App の直下に Fluent.Dark.xaml と Styles.xaml が並び、Styles.xaml の下に Fluent.Light.xaml がある。SettingsWindow は Window.ThemeMode が Light で、その下に Fluent.Light.xaml がある。最後の行は Foreground local value = SolidColorBrush" width="876" height="320" loading="lazy">
-  <figcaption>3 系統の原因を含む状態で Dark へ切り替えた直後の DumpThemeState の出力。.NET 10 / Windows 11 で実行。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-dump-output.ja.md %}
+
+3 系統の原因を含む状態で Dark へ切り替えた直後の DumpThemeState の出力。.NET 10 / Windows 11 で実行。
+{: .table-caption}
 
 出力の読み方は次のとおりである。
 
@@ -179,10 +179,10 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 各ウィンドウ構成で `Application.ThemeMode` を `Light` から `Dark` へ切り替え、`DynamicResource` で参照したブラシが追従したかを測った結果を次に示す。
 ブラシの値は Light で `#E4000000`、Dark で `#FFFFFFFF` となる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.svg" alt="ウィンドウ構成ごとの追従結果。Window.ThemeMode 未指定・None 指定・App resources への直接マージは追従し、Window.ThemeMode=Light・Window.Resources へのマージ・Styles.xaml へのネストは追従しない" width="831" height="260" loading="lazy">
-  <figcaption>Application.ThemeMode を Light から Dark へ切り替えたときの、ウィンドウ構成ごとの TextFillColorPrimaryBrush（DynamicResource 参照）の値。Window.ThemeMode 列は切り替え後に読んだ値。Application.Resources に辞書を置く 2 構成（図中の App resources と Styles.xaml）は、ThemeMode を設定する前に辞書をマージした。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-follow-matrix.ja.md %}
+
+Application.ThemeMode を Light から Dark へ切り替えたときの、ウィンドウ構成ごとの TextFillColorPrimaryBrush（DynamicResource 参照）の値。Window.ThemeMode 列は切り替え後に読んだ値。Application.Resources に辞書を置く 2 構成（表の「App のリソースに Fluent.Light.xaml」と「Styles.xaml の中に Fluent.Light.xaml」）は、ThemeMode を設定する前に辞書をマージした。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ### ウィンドウ自身が Fluent 辞書を持っている
 
@@ -202,10 +202,10 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 `Styles.xaml` などの独自の辞書の中に `Fluent.Light.xaml` を入れ、その辞書を `App.xaml` からマージしている構成では、Dark に切り替えてもブラシが Light の値のまま残った。
 切り替えの前後で `Application.Resources` のマージ辞書の並びを読み出すと、原因が分かる。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.svg" alt="手でマージした辞書の並び。直接マージした Fluent.Light.xaml は Dark で Fluent.Dark.xaml に置き換わる。Styles.xaml にネストした場合は、Light で Fluent.Light.xaml、Styles.xaml の順に並び、Dark にすると先頭だけが Fluent.Dark.xaml に変わり、Styles.xaml の中の Fluent.Light.xaml は残る" width="869" height="200" loading="lazy">
-  <figcaption>Fluent.Light.xaml を Application.Resources へ直接マージした構成と、Styles.xaml の中にネストした構成での Application.Resources.MergedDictionaries。どちらも ThemeMode を設定する前に辞書をマージした。角かっこはネストした辞書の中身。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-manual-dictionaries.ja.md %}
+
+Fluent.Light.xaml を Application.Resources へ直接マージした構成と、Styles.xaml の中にネストした構成での Application.Resources.MergedDictionaries。どちらも ThemeMode を設定する前に辞書をマージした。角かっこはネストした辞書の中身。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 `ThemeMode` が入れ替えるのは `Application.Resources` の直下に並ぶ Fluent 辞書であり、別の辞書の中にネストした Fluent 辞書は対象にならない。
 この構成では、`ThemeMode` の辞書は既存の `Styles.xaml` より前（先頭）に入り、`Styles.xaml` の中の `Fluent.Light.xaml` はその後ろに残った。
@@ -223,10 +223,10 @@ static void AppendDictionaries(StringBuilder text, ResourceDictionary dictionary
 同じブラシを 3 通りの方法で参照し、切り替えの前後で値を読み出した結果を次に示す。
 比較のため、`SystemColors` のキーを `DynamicResource` で参照した行と、`Foreground` を指定していない `Button` の行（最終行）を加えている。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.svg" alt="ブラシの参照方法ごとの追従結果。StaticResource と FindResource の代入は ReadLocalValue が SolidColorBrush で追従せず、DynamicResource は ResourceReferenceExpression で追従する。SystemColors.ControlTextBrushKey を DynamicResource で参照した場合も ResourceReferenceExpression だが、黒のままで追従しない。Foreground を指定していない Button はローカル値が無く、Fluent のスタイル経由で追従する。" width="965" height="230" loading="lazy">
-  <figcaption>TextFillColorPrimaryBrush を参照方法ごとに Foreground へ設定し、SystemColors.ControlTextBrushKey も DynamicResource で設定して、Application.ThemeMode を Light から Dark へ切り替えた結果。ReadLocalValue 列は Foreground のローカル値の型。最終行は Foreground を指定していない Button。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-reference-kinds.ja.md %}
+
+TextFillColorPrimaryBrush を参照方法ごとに Foreground へ設定し、SystemColors.ControlTextBrushKey も DynamicResource で設定して、Application.ThemeMode を Light から Dark へ切り替えた結果。ReadLocalValue 列は Foreground のローカル値の型。最終行は Foreground を指定していない Button。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 `StaticResource` は、XAML の読み込み時に見つかったブラシを 1 回だけ代入する。
 コードで `FindResource` の戻り値を代入した場合も同じで、その時点の Light のブラシが値として残る。
@@ -290,10 +290,10 @@ public static class ThemeSwitcher
 
 前節と同じウィンドウ構成で、`Application.ThemeMode` を直接書き換える代わりにこのメソッドを通した結果を次に示す。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.svg" alt="ApplyTheme を通した場合の追従結果。Window.ThemeMode=Light と Window.Resources へのマージも追従するようになったが、Styles.xaml へのネストだけは追従しない" width="831" height="260" loading="lazy">
-  <figcaption>Light のアプリで ApplyTheme(ThemeMode.Dark) を呼んだときの、ウィンドウ構成ごとの TextFillColorPrimaryBrush（DynamicResource 参照）の値。Window.ThemeMode 列は切り替え後に読んだ値。辞書を置く順序は前節の図と同じ。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-helper-matrix.ja.md %}
+
+Light のアプリで ApplyTheme(ThemeMode.Dark) を呼んだときの、ウィンドウ構成ごとの TextFillColorPrimaryBrush（DynamicResource 参照）の値。Window.ThemeMode 列は切り替え後に読んだ値。辞書を置く順序は前節の表と同じ。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ウィンドウ単位で固定していた 2 つの構成は追従するようになった。
 一方、ネストした辞書の構成はこのメソッドでも直らない。
@@ -312,10 +312,10 @@ public static class ThemeSwitcher
 検証環境で `ThemeMode.System` を設定した結果を次に示す。
 `Application.Resources` には明暗を固定しない `Fluent.xaml` がマージされ、ブラシは Dark と同じ値になった。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-fluent-thememode-runtime-switch/thememode-system.svg" alt="ThemeMode.System の実測。AppsUseLightTheme が 0 の環境で、マージされた辞書は Fluent.xaml、TextFillColorPrimaryBrush は #FFFFFFFF" width="571" height="110" loading="lazy">
-  <figcaption>Application.ThemeMode に System を設定したときの、マージされた辞書と TextFillColorPrimaryBrush の値。AppsUseLightTheme はレジストリから読み出した値（0 はダーク）。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/articles/wpf-fluent-thememode-runtime-switch/thememode-system.ja.md %}
+
+Application.ThemeMode に System を設定したときの、マージされた辞書と TextFillColorPrimaryBrush の値。AppsUseLightTheme はレジストリから読み出した値（0 はダーク）。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ---
 

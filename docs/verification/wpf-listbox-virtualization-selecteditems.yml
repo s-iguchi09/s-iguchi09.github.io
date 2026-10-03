@@ -16,3 +16,6 @@ images:
   - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png"
   - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png"
   - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg"
+tables:
+  - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.en.md"
+  - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.ja.md"

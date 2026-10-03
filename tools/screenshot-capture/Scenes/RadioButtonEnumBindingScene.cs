@@ -58,7 +58,7 @@ internal sealed class RadioButtonEnumBindingScene : IScene
         }
 
         List<(string Label, string Value)> first = results[0];
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         for (int i = 0; i < first.Count; i++)
         {
             string label = first[i].Label;
@@ -69,15 +69,64 @@ internal sealed class RadioButtonEnumBindingScene : IScene
 
             // 両方のランタイムで同じ値なら 1 つだけ出す。違う行だけ両方を並べる。
             string[] values = results.Select(r => r[i].Value).ToArray();
-            rows.Add([label, values.Distinct().Count() == 1 ? values[0] : string.Join(" / ", Targets.Zip(values, (t, v) => $"{t}: {v}"))]);
+            string value = values.Distinct().Count() == 1 ? values[0] : string.Join(" / ", Targets.Zip(values, (t, v) => $"{t}: {v}"));
+            rows.Add([Loc.Of(label, JapaneseLabel(label)), Loc.Of(value, JapaneseValue(value))]);
         }
 
         await context.SaveTableAsync(
             $"the article's XAML, measured on {string.Join(" and ", Targets)} (one value = same on both)",
-            ["case", "measured"],
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
             rows,
             "radiobutton-grouping.svg");
     }
+
+    /// <summary>
+    /// 子プロセスが出した行の名前の日本語。前から順に置き換える（長いものを先に置く）。
+    /// </summary>
+    private static readonly (string English, string Japanese)[] LabelWords =
+    [
+        ("no GroupName, one StackPanel per enum", "GroupName なし、列挙型ごとに StackPanel を 1 つ"),
+        ("GroupName='quality' in two Borders", "GroupName='quality' を 2 つの Border に"),
+        ("same GroupName, two ViewModels", "同じ GroupName、ViewModel が 2 つ"),
+        ("unbound RadioButton in the group", "グループの中のバインドしていない RadioButton"),
+        ("ConvertBack throws NotImplementedException", "ConvertBack が NotImplementedException を投げる"),
+        ("ConvertBack returns UnsetValue (FallbackValue=True)", "ConvertBack が UnsetValue を返す（FallbackValue=True）"),
+        ("ConvertBack returns parameter for false (no GroupName)", "ConvertBack が false のときに parameter を返す（GroupName なし）"),
+        ("bool wrapper properties (no GroupName)", "bool のラッパープロパティ（GroupName なし）"),
+        ("Grid, different cells", "Grid、別々のセル"),
+        ("GroupBox Header and Content", "GroupBox の Header と Content"),
+        ("ItemsControl, RadioButtons in Items", "ItemsControl、Items の中の RadioButton"),
+        ("ConverterParameter=Draft (string)", "ConverterParameter=Draft（string）"),
+        ("GroupName default", "GroupName の既定値"),
+        ("no GroupName", "GroupName なし"),
+        ("GroupName set", "GroupName あり"),
+        (": checked", ": チェックされたもの"),
+        (": select Fine", ": Fine を選択"),
+        (": select Draft", ": Draft を選択"),
+        ("runtime", "ランタイム"),
+    ];
+
+    /// <summary>子プロセスが出した値の言葉の日本語。値（列挙型の名前や回数）はそのまま残す。</summary>
+    private static readonly (string English, string Japanese)[] ValueWords =
+    [
+        (" thrown to the caller", " が呼び出し元へ送出される"),
+        (" unhandled on the dispatcher", " がディスパッチャーで未処理"),
+        ("not raised", "発生しない"),
+        (" (both set True)", "（両方を True に設定）"),
+        ("Standard unchecked", "Standard はチェックなし"),
+        ("Standard checked", "Standard はチェックあり"),
+        ("no error", "エラーなし"),
+        ("error \"", "エラー \""),
+        ("checked ", "チェック "),
+        ("source ", "ソース "),
+        ("; ", "、"),
+    ];
+
+    private static string JapaneseLabel(string label) =>
+        LabelWords.Aggregate(label, (text, word) => text.Replace(word.English, word.Japanese, StringComparison.Ordinal));
+
+    private static string JapaneseValue(string value) =>
+        ValueWords.Aggregate(value, (text, word) => text.Replace(word.English, word.Japanese, StringComparison.Ordinal));
 
     /// <summary>
     /// 記事に載せた XAML と同じ構成でパネルを組む。GroupName 属性の有無だけが 2 つの差である。

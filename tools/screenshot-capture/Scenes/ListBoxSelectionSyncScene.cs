@@ -45,7 +45,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
 
         await context.SaveTableAsync(
             $"ListBox, {ItemCount:N0} items, virtualized: when SelectionChanged is raised",
-            ["", "", "measured"],
+            ["", "", Loc.Of("measured", "計測値")],
             MeasureSelectionEvents(),
             "listbox-selection-events.svg");
     }
@@ -62,6 +62,9 @@ internal sealed class ListBoxSelectionSyncScene : IScene
         public void Reset() => (Raised, Added, Removed) = (0, 0, 0);
 
         public override string ToString() => $"SelectionChanged {Raised:N0} (added {Added:N0}, removed {Removed:N0})";
+
+        /// <summary><see cref="ToString"/> の日本語。</summary>
+        public string ToJapanese() => $"SelectionChanged {Raised:N0}（追加 {Added:N0}、削除 {Removed:N0}）";
     }
 
     /// <summary>
@@ -99,9 +102,10 @@ internal sealed class ListBoxSelectionSyncScene : IScene
     /// SelectionChanged がどの操作で発生するかを測る。
     /// 範囲選択は、ListBox が Keyboard.Modifiers で Shift を判定するため、実際のキー入力で行う。
     /// </summary>
-    private static List<IReadOnlyList<string>> MeasureSelectionEvents()
+    private static List<IReadOnlyList<Loc>> MeasureSelectionEvents()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
+        Loc both = Loc.Of("both", "両方");
 
         // 1. 併用の構成で全件を選び、スクロールでコンテナを実体化させる。
         {
@@ -114,7 +118,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             host.Settle();
             log.Reset();
             PageDown(listBox, host);
-            rows.Add(["both", $"SelectAll(), then PageDown x{PageDownCount}", log.ToString()]);
+            rows.Add([both, Loc.Of($"SelectAll(), then PageDown x{PageDownCount}", $"SelectAll() の後に PageDown x{PageDownCount}"), Loc.Of(log.ToString(), log.ToJapanese())]);
         }
 
         // 2. 併用の構成で、画面外の 1 件をデータ側で選び、その行までスクロールする。
@@ -127,11 +131,11 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             RowItemViewModel target = items[ItemCount / 2];
             target.IsSelected = true;
             host.Settle();
-            rows.Add(["both", $"{target.Name}.IsSelected = true (off screen)", $"SelectedItems {listBox.SelectedItems.Count}, {log}"]);
+            rows.Add([both, Loc.Of($"{target.Name}.IsSelected = true (off screen)", $"{target.Name}.IsSelected = true（画面外）"), Loc.Of($"SelectedItems {listBox.SelectedItems.Count}, {log}", $"SelectedItems {listBox.SelectedItems.Count}、{log.ToJapanese()}")]);
 
             listBox.ScrollIntoView(target);
             host.Settle();
-            rows.Add(["both", $"then ScrollIntoView({target.Name})", $"SelectedItems {listBox.SelectedItems.Count}, {log}"]);
+            rows.Add([both, Loc.Of($"then ScrollIntoView({target.Name})", $"続けて ScrollIntoView({target.Name})"), Loc.Of($"SelectedItems {listBox.SelectedItems.Count}, {log}", $"SelectedItems {listBox.SelectedItems.Count}、{log.ToJapanese()}")]);
         }
 
         // 3. 先頭の行を選び、Shift+End で末尾まで範囲選択する。
@@ -162,8 +166,10 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             rows.Add(
             [
                 label,
-                "Row 1 selected, then Shift+End",
-                $"SelectedItems {Format(listBox.SelectedItems.Count)}, IsSelected {Format(items.Count(x => x.IsSelected))}, {log}",
+                Loc.Of("Row 1 selected, then Shift+End", "Row 1 を選択し、Shift+End"),
+                Loc.Of(
+                    $"SelectedItems {Format(listBox.SelectedItems.Count)}, IsSelected {Format(items.Count(x => x.IsSelected))}, {log}",
+                    $"SelectedItems {Format(listBox.SelectedItems.Count)}、IsSelected {Format(items.Count(x => x.IsSelected))}、{log.ToJapanese()}"),
             ]);
         }
 

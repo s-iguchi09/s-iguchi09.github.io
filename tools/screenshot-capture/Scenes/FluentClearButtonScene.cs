@@ -11,6 +11,9 @@ namespace ScreenshotCapture.Scenes;
 internal sealed class FluentClearButtonScene : IScene
 {
     /// <summary>.NET 10 は "DeleteButton"、.NET 9 は "ClearButton"。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static readonly string[] ClearButtonPartNames = ["DeleteButton", "ClearButton"];
 
     public IReadOnlyList<string> Verifies =>
@@ -46,13 +49,13 @@ internal sealed class FluentClearButtonScene : IScene
 
         await context.SaveTableAsync(
             "TextBox template parts, by how the theme reaches the control",
-            ["window", "Style applied", "named parts present", "Padding.Left"],
+            [T("window", "ウィンドウ"), T("Style applied", "適用された Style"), T("named parts present", "ある名前付きパーツ"), "Padding.Left"],
             await FluentThemeMeasurements.ThemeDeliveryAsync(),
             "fluent-textbox-parts.svg");
 
         await context.SaveTableAsync(
             "approach 1 (local Collapsed on the part) across a ThemeMode switch",
-            ["step", "same part instance", "local Visibility", "Visibility with focus"],
+            [T("step", "手順"), T("same part instance", "パーツが同じインスタンスか"), T("local Visibility", "ローカルの Visibility"), T("Visibility with focus", "フォーカスがあるときの Visibility")],
             await ThemeSwitchAsync(),
             "fluent-clear-button-theme-switch.svg");
     }
@@ -61,11 +64,11 @@ internal sealed class FluentClearButtonScene : IScene
     /// 方法 1 で非表示にしたあと、ウィンドウの ThemeMode を Light から Dark に切り替える。
     /// テーマの切り替えでテンプレートが作り直されると、ローカル値を持たない新しいパーツになる。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> ThemeSwitchAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> ThemeSwitchAsync()
     {
         Window window = BuildWindow(out TextBox textBox);
         window.ShowActivated = true;
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         try
         {
             await Capture.ShowAndSettleAsync(window);
@@ -73,7 +76,7 @@ internal sealed class FluentClearButtonScene : IScene
             HideClearButtonPart(textBox);
             await Capture.SettleAsync(window);
             UIElement? first = Part(textBox);
-            rows.Add(Row("approach 1 applied (ThemeMode=Light)", first, first));
+            rows.Add(Row(T("approach 1 applied (ThemeMode=Light)", "方法 1 を適用（ThemeMode=Light）"), first, first));
 
 #pragma warning disable WPF0001 // ThemeMode は実験的 API として公開されている。
             window.ThemeMode = ThemeMode.Dark;
@@ -82,11 +85,11 @@ internal sealed class FluentClearButtonScene : IScene
             await FocusAsync(textBox);
             await Capture.SettleAsync(window);
             UIElement? second = Part(textBox);
-            rows.Add(Row("after switching to ThemeMode=Dark", first, second));
+            rows.Add(Row(T("after switching to ThemeMode=Dark", "ThemeMode=Dark に切り替えた後"), first, second));
 
             HideClearButtonPart(textBox);
             await Capture.SettleAsync(window);
-            rows.Add(Row("approach 1 applied again", second, Part(textBox)));
+            rows.Add(Row(T("approach 1 applied again", "方法 1 をもう一度適用"), second, Part(textBox)));
         }
         finally
         {
@@ -102,7 +105,7 @@ internal sealed class FluentClearButtonScene : IScene
         return ClearButtonPartNames.Select(name => textBox.Template?.FindName(name, textBox)).OfType<UIElement>().FirstOrDefault();
     }
 
-    private static IReadOnlyList<string> Row(string step, UIElement? previous, UIElement? current)
+    private static IReadOnlyList<Loc> Row(Loc step, UIElement? previous, UIElement? current)
     {
         if (current is null)
         {
@@ -113,7 +116,7 @@ internal sealed class FluentClearButtonScene : IScene
         return
         [
             step,
-            ReferenceEquals(previous, current) ? "yes" : "no",
+            ReferenceEquals(previous, current) ? T("yes", "同じ") : T("no", "別"),
             local == DependencyProperty.UnsetValue ? "(none)" : local.ToString()!,
             current.Visibility.ToString(),
         ];

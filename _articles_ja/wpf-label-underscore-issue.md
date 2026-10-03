@@ -108,18 +108,18 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 
 上表は目視ではなく、各コントロールに同じ文字列を与えて表示し、visual ツリーに `AccessText` が現れるかを走査して求めている。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.svg" alt="15 種類のコントロールに my_var を与え、AccessText が生成されるかを調べた表。Label、Button、CheckBox、RadioButton、ToggleButton、GroupBox、Expander、TabItem、MenuItem のトップレベルとサブメニューでは disappears。TreeViewItem、ListBoxItem、ComboBoxItem、StatusBarItem、TextBlock では kept。" width="406" height="530" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。<code>disappears</code> は visual ツリーに <code>AccessText</code> が生成されたこと、<code>kept</code> は生成されなかったことを示す。<code>ComboBoxItem</code> とサブメニューの <code>MenuItem</code> は、ポップアップを開いてコンテナを実体化させてから調べている。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-underscore-issue/label-underscore-affected-matrix.ja.md %}
+
+.NET 10 / Windows 11 での実測結果。「消える」は visual ツリーに <code>AccessText</code> が生成されたこと、「残る」は生成されなかったことを示す。<code>ComboBoxItem</code> とサブメニューの <code>MenuItem</code> は、ポップアップを開いてコンテナを実体化させてから調べている。
+{: .table-caption}
 
 `Header` を持つこれらのコントロールでは、`RecognizesAccessKey="True"` なのは `Header` を描画する `ContentPresenter` だけである。
 本体の `Content` を描画する側の構成はコントロールによって異なる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.svg" alt="対象コントロール自身のテンプレートに属する ContentPresenter を数えた表。GroupBox は 2 個で片方が True。Expander は 1 個で ExpandSite が False。TabItem は 1 個で contentPresenter が True。MenuItem はトップレベル・サブメニューとも 2 個で、Icon が False、ヘッダー側が True。" width="587" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、各コントロールを実際に表示して <code>ContentPresenter</code> を数えた結果。<code>TemplatedParent</code> が対象コントロール自身であるものだけを数えている。<code>name</code> はテンプレート内での名前で、<code>(unnamed)</code> は名前が付いていないことを示す。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-underscore-issue/label-underscore-presenter-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、各コントロールを実際に表示して <code>ContentPresenter</code> を数えた結果。<code>TemplatedParent</code> が対象コントロール自身であるものだけを数えている。「名前」はテンプレート内での名前で、「（名前なし）」は名前が付いていないことを示す。
+{: .table-caption}
 
 読み取れることは 3 点ある。
 
@@ -132,13 +132,13 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
 
 **`MenuItem` は階層でテンプレートが変わるが、個数と `RecognizesAccessKey` は変わらない。**
 トップレベルでもサブメニューでも `Icon` 用（`False`）とヘッダー用（`True`）の 2 個であり、
-ヘッダー用の名前だけが `(unnamed)` と `menuHeaderContainer` で異なる。
+ヘッダー用の名前だけが「（名前なし）」と `menuHeaderContainer` で異なる。
 
 つまり `Expander` と `TabItem` は、`Header` と `Content` を描く `ContentPresenter` が別のコントロールのテンプレートに分かれている。
 `ContentPresenter` がどのテンプレートに属するかは、`TemplatedParent` を見ると判別できる。
 
 **visual ツリーを単に走査すると、子コントロールのテンプレート部品まで数に入る。**
-上図は `TemplatedParent` が対象コントロール自身であるものだけを数えており、この判別条件はシーンのコードに書いてある。
+上の表は `TemplatedParent` が対象コントロール自身であるものだけを数えており、この判別条件はシーンのコードに書いてある。
 目で追って数えると `Expander` のヘッダー用 `ContentPresenter` を `Expander` 自身のものと取り違える。
 
 いずれの場合も、`RecognizesAccessKey="True"` なのは `Header` を描く側だけである。
@@ -151,7 +151,7 @@ visual ツリーを実際にたどると、この差がそのまま現れる。
   <figcaption>.NET 10 / Windows 11 で、同じ文字列 <code>my_var</code> を各コントロールに与えた実行結果。<code>Label</code>・<code>Button</code>・<code>CheckBox</code>・<code>GroupBox</code> のヘッダーではアンダーバーが失われ、<code>ListBoxItem</code> と <code>TextBlock</code> ではそのまま表示される。差は既定テンプレートの <code>ContentPresenter.RecognizesAccessKey</code> によって生じている。</figcaption>
 </figure>
 
-`ListBoxItem` や `ComboBoxItem` で問題が起きないのは、既定テンプレートの `ContentPresenter` が `AccessText` を生成しないためである（前掲の表で `kept`）。
+`ListBoxItem` や `ComboBoxItem` で問題が起きないのは、既定テンプレートの `ContentPresenter` が `AccessText` を生成しないためである（前掲の表で「残る」）。
 逆に言えば、`ItemTemplate` の中に `Label` や `Button` を置いた場合は、そこでアンダーバーが消える。
 
 ---

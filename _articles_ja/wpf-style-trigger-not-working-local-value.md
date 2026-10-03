@@ -24,7 +24,7 @@ WPF で `Style.Triggers` に定義した `Trigger` や `DataTrigger` が、条�
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で実効値と、その `BaseValueSource` を読み出して得たものである。
+本記事の表は、上記の環境で実効値と、その `BaseValueSource` を読み出して得たものである。
 この環境で確認しているのは次の点である。
 
 - あるプロパティにローカル値を持つ要素では、そのプロパティを設定する `Style` の `Trigger` は、条件が成立しても反映されない。
@@ -97,12 +97,12 @@ WPF の依存関係プロパティは、ローカル値・スタイル・テン�
 ---
 
 この優先順位は、実際に表示して `DependencyPropertyHelper.GetValueSource` を読めば確かめられる。
-条件を変えて測った結果が次の図である。
+条件を変えて測った結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.svg" alt="Border.Background の実効値と、その値の出どころを条件別に測った表。ローカル値がある場合は白のまま Local、既定値を Setter へ移した場合はトリガーの色で StyleTrigger、トリガー不成立では白で Style、ローカル値を ClearValue した後はトリガーの色で StyleTrigger になる。" width="598" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で <code>Border.Background</code> を測った結果。<code>HasError</code> は行ごとに変えており、<code>trigger not met</code> の行だけ <code>False</code>、他の行は <code>True</code> である。括弧内は <code>DependencyPropertyHelper.GetValueSource</code> が返す <code>BaseValueSource</code> である。</figcaption>
-</figure>
+{% include tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-precedence.ja.md %}
+
+.NET 10 / Windows 11 で <code>Border.Background</code> を測った結果。<code>HasError</code> は行ごとに変えており、「トリガーの条件を満たさない」の行だけ <code>False</code>、他の行は <code>True</code> である。括弧内は <code>DependencyPropertyHelper.GetValueSource</code> が返す <code>BaseValueSource</code> である。
+{: .table-caption}
 
 **値が変わらない行では `BaseValueSource` が `Local` になっている。** これがトリガーの値に置き換わらない理由である。
 既定値を `Setter` へ移すと `StyleTrigger` に変わり、トリガーの色が実効値になる。
@@ -212,10 +212,10 @@ border.ClearValue(Border.BackgroundProperty);
 ただしローカル値を作らないだけであり、既に設定されているローカル値を取り除く効果は無い。
 ローカル値があるプロパティに `SetCurrentValue` を呼ぶと、実効値そのものは変わるが、値の出どころはローカル値のままである。そのため、後からトリガーが作動してもトリガーの値にはならない（下の表）。トリガーを効かせたいなら、先に `ClearValue` でローカル値を取り除く必要がある。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.svg" alt="SetCurrentValue、バインドのあるプロパティへの代入、テーマスタイルを測った表。ローカル値 Red がある Border で SetCurrentValue(White) を呼ぶと、実効値は White で出どころは Local のまま。その後に Tag を on にしてトリガーの条件を満たしても White（Local）のまま。ローカル値が無い場合は、SetCurrentValue(White) の後にトリガーが作動すると緑（StyleTrigger）になる。TextBox.Text にコードで代入すると、OneWay のバインドは外れ、TwoWay のバインドは残る（ソースはまだ変わらない）。Foreground だけを設定した明示スタイルの Button でも、Template の出どころは DefaultStyle。" width="865" height="290" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。トリガーは <code>Tag</code> が <code>on</code> のとき <code>Background</code> を緑にするスタイルのトリガーである。<code>TextBox.Text</code> の既定の <code>UpdateSourceTrigger</code> は <code>LostFocus</code> のため、TwoWay でも代入した時点ではソースは変わっていない。</figcaption>
-</figure>
+{% include tables/articles/wpf-style-trigger-not-working-local-value/style-trigger-currentvalue-binding.ja.md %}
+
+.NET 10 / Windows 11 で実測。トリガーは <code>Tag</code> が <code>on</code> のとき <code>Background</code> を緑にするスタイルのトリガーである。<code>TextBox.Text</code> の既定の <code>UpdateSourceTrigger</code> は <code>LostFocus</code> のため、TwoWay でも代入した時点ではソースは変わっていない。
+{: .table-caption}
 
 `ClearValue` はローカル値のみを取り除くため、テーマスタイルなど他の入力元が残っていればその値が実効値となる。
 

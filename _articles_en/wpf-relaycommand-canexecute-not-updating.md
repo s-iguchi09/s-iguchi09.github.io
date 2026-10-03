@@ -25,7 +25,7 @@ This article explains that the cause is a missing `ICommand.CanExecuteChanged` n
 - Namespaces: `System`, `System.Windows.Input`
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from displaying buttons in the environment above while toggling what `CanExecute` returns, and reading `Button.IsEnabled`.
+The table in this article comes from displaying buttons in the environment above while toggling what `CanExecute` returns, and reading `Button.IsEnabled`.
 The following points were confirmed in that environment:
 
 - Changing what `CanExecute` returns does not, by itself, change `Button.IsEnabled`.
@@ -87,13 +87,13 @@ Note also that the `CommandManager` only detects UI interactions such as focus c
 ---
 
 Which way of raising the event reaches which implementation can be confirmed by displaying the button and reading `IsEnabled`.
-The figure below shows the button displayed while `CanExecute` returns `false`, the condition then changed so it returns `true`, and the result of calling nothing, `CommandManager.InvalidateRequerySuggested()`, the command's own `RaiseCanExecuteChanged()`, or calling nothing and typing one key into the neighboring `TextBox`.
+The table below shows the button displayed while `CanExecute` returns `false`, the condition then changed so it returns `true`, and the result of calling nothing, `CommandManager.InvalidateRequerySuggested()`, the command's own `RaiseCanExecuteChanged()`, or calling nothing and typing one key into the neighboring `TextBox`.
 The delegating implementation has no event of its own, so `RaiseCanExecuteChanged()` has nothing to raise there and that combination is not measured.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.svg" alt="A table of Button.IsEnabled per implementation and per way of raising the event. With nothing called, both implementations stay False. InvalidateRequerySuggested turns only the implementation delegating to RequerySuggested True. RaiseCanExecuteChanged turns only the implementation with its own event True. A key typed in the neighboring TextBox turns only the implementation delegating to RequerySuggested True. A button without a Command is True from the start." width="548" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11, reading <code>Button.IsEnabled</code> before and after <code>CanExecute</code> switches from <code>false</code> to <code>true</code>. <code>before</code> is taken just prior to changing the condition; <code>after</code> is taken once the condition changed and the listed call was made. The key input is sent through WPF's input processing (<code>InputManager</code>).</figcaption>
-</figure>
+{% include tables/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-requery.en.md %}
+
+Measured on .NET 10 / Windows 11, reading <code>Button.IsEnabled</code> before and after <code>CanExecute</code> switches from <code>false</code> to <code>true</code>. <code>before</code> is taken just prior to changing the condition; <code>after</code> is taken once the condition changed and the listed call was made. The key input is sent through WPF's input processing (<code>InputManager</code>).
+{: .table-caption}
 
 **With nothing called, `IsEnabled` stays `False` on both implementations.** A changed return value from `CanExecute` alone does not reach the button.
 

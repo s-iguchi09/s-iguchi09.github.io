@@ -46,23 +46,26 @@ internal static class ValuePrecedenceMeasurements
     private const string BorderWithoutLocalValue =
         """<Border x:Name="Target" Style="{StaticResource StatusBox}" Width="80" Height="24" />""";
 
-    public static Task<List<IReadOnlyList<string>>> StyleTriggerPrecedenceAsync() =>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    public static Task<List<IReadOnlyList<Loc>>> StyleTriggerPrecedenceAsync() =>
         WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "local Background + trigger",
+            new WpfProbe.LocCase(
+                T("local Background + trigger", "ローカルの Background + トリガー"),
                 BuildTriggerCase(StyleWithoutDefault, BorderWithLocalValue, hasError: true),
                 ReadBackgroundSource),
-            new WpfProbe.Case(
-                "Setter default + trigger",
+            new WpfProbe.LocCase(
+                T("Setter default + trigger", "Setter の既定値 + トリガー"),
                 BuildTriggerCase(StyleWithDefault, BorderWithoutLocalValue, hasError: true),
                 ReadBackgroundSource),
-            new WpfProbe.Case(
-                "Setter default, trigger not met",
+            new WpfProbe.LocCase(
+                T("Setter default, trigger not met", "Setter の既定値、トリガーの条件を満たさない"),
                 BuildTriggerCase(StyleWithDefault, BorderWithoutLocalValue, hasError: false),
                 ReadBackgroundSource),
-            new WpfProbe.Case(
-                "local Background, then ClearValue",
+            new WpfProbe.LocCase(
+                T("local Background, then ClearValue", "ローカルの Background、続けて ClearValue"),
                 BuildTriggerCase(StyleWithDefault, BorderWithLocalValue, hasError: true),
                 ReadBackgroundSource,
                 Act: root =>
@@ -72,7 +75,7 @@ internal static class ValuePrecedenceMeasurements
                 }),
         ]);
 
-    private static IReadOnlyList<string> ReadBackgroundSource(FrameworkElement root) =>
+    private static IReadOnlyList<Loc> ReadBackgroundSource(FrameworkElement root) =>
         [WpfProbe.ValueAndSource(TargetBorder(root), Border.BackgroundProperty)];
 
     private static Border TargetBorder(FrameworkElement root) => (Border)root.FindName("Target");
@@ -103,21 +106,21 @@ internal static class ValuePrecedenceMeasurements
     // StaticResource と DynamicResource の差
     // ------------------------------------------------------------------
 
-    public static Task<List<IReadOnlyList<string>>> ResourceSwapAsync() =>
+    public static Task<List<IReadOnlyList<Loc>>> ResourceSwapAsync() =>
         WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case("StaticResource, before swap", BuildResourceCase("StaticResource"), ReadBackground),
-            new WpfProbe.Case("StaticResource, after swap", BuildResourceCase("StaticResource"), ReadBackground, SwapResourceAsync),
-            new WpfProbe.Case("DynamicResource, before swap", BuildResourceCase("DynamicResource"), ReadBackground),
-            new WpfProbe.Case("DynamicResource, after swap", BuildResourceCase("DynamicResource"), ReadBackground, SwapResourceAsync),
-            new WpfProbe.Case("StaticResource, brush.Color changed", BuildResourceCase("StaticResource"), ReadBackgroundAndFrozen, ChangeBrushColorAsync),
-            new WpfProbe.Case("DynamicResource, brush.Color changed", BuildResourceCase("DynamicResource"), ReadBackgroundAndFrozen, ChangeBrushColorAsync),
+            new WpfProbe.LocCase(T("StaticResource, before swap", "StaticResource、差し替え前"), BuildResourceCase("StaticResource"), ReadBackground),
+            new WpfProbe.LocCase(T("StaticResource, after swap", "StaticResource、差し替え後"), BuildResourceCase("StaticResource"), ReadBackground, SwapResourceAsync),
+            new WpfProbe.LocCase(T("DynamicResource, before swap", "DynamicResource、差し替え前"), BuildResourceCase("DynamicResource"), ReadBackground),
+            new WpfProbe.LocCase(T("DynamicResource, after swap", "DynamicResource、差し替え後"), BuildResourceCase("DynamicResource"), ReadBackground, SwapResourceAsync),
+            new WpfProbe.LocCase(T("StaticResource, brush.Color changed", "StaticResource、brush.Color を変更"), BuildResourceCase("StaticResource"), ReadBackgroundAndFrozen, ChangeBrushColorAsync),
+            new WpfProbe.LocCase(T("DynamicResource, brush.Color changed", "DynamicResource、brush.Color を変更"), BuildResourceCase("DynamicResource"), ReadBackgroundAndFrozen, ChangeBrushColorAsync),
         ]);
 
     private static bool s_wasFrozen;
 
-    private static IReadOnlyList<string> ReadBackgroundAndFrozen(FrameworkElement root) =>
-        [$"{WpfProbe.Describe(TargetBorder(root).Background)} (brush was frozen: {WpfProbe.Describe(s_wasFrozen)})"];
+    private static IReadOnlyList<Loc> ReadBackgroundAndFrozen(FrameworkElement root) =>
+        [T($"{WpfProbe.Describe(TargetBorder(root).Background)} (brush was frozen: {WpfProbe.Describe(s_wasFrozen)})", $"{WpfProbe.Describe(TargetBorder(root).Background)}（ブラシが Freeze されていたか: {WpfProbe.Describe(s_wasFrozen)}）")];
 
     /// <summary>リソースを差し替えず、同じブラシの Color を書き換える。Freeze されていなければ書き換えられる。</summary>
     private static Task ChangeBrushColorAsync(FrameworkElement root)
@@ -132,7 +135,7 @@ internal static class ValuePrecedenceMeasurements
         return Task.CompletedTask;
     }
 
-    private static IReadOnlyList<string> ReadBackground(FrameworkElement root) =>
+    private static IReadOnlyList<Loc> ReadBackground(FrameworkElement root) =>
         [WpfProbe.Describe(TargetBorder(root).Background)];
 
     /// <summary>実行中にリソースを差し替える。キーは同じまま、値だけを変える。</summary>
@@ -156,40 +159,42 @@ internal static class ValuePrecedenceMeasurements
     // RelayCommand の CanExecute がボタンへ反映されるか
     // ------------------------------------------------------------------
 
-    public static async Task<List<IReadOnlyList<string>>> RelayCommandRequeryAsync()
+    public static async Task<List<IReadOnlyList<Loc>>> RelayCommandRequeryAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 委譲型は自前のイベントを持たず、RaiseCanExecuteChanged で発火するものが無いため、その組み合わせは測らない。
-        (string Name, Func<Func<bool>, RelayCommandBase> Create, string[] Triggers)[] implementations =
+        Loc keyInput = T(KeyInput, "TextBox にキー入力");
+        (Loc Name, Func<Func<bool>, RelayCommandBase> Create, Loc[] Triggers)[] implementations =
         [
-            ("RequerySuggested", canExecute => new RequeryRelayCommand(canExecute), ["(nothing)", "InvalidateRequerySuggested", KeyInput]),
-            ("own event", canExecute => new ManualRelayCommand(canExecute), ["(nothing)", "InvalidateRequerySuggested", "RaiseCanExecuteChanged", KeyInput]),
+            ("RequerySuggested", canExecute => new RequeryRelayCommand(canExecute), ["(nothing)", "InvalidateRequerySuggested", keyInput]),
+            (T("own event", "独自のイベント"), canExecute => new ManualRelayCommand(canExecute), ["(nothing)", "InvalidateRequerySuggested", "RaiseCanExecuteChanged", keyInput]),
         ];
 
-        foreach ((string name, Func<Func<bool>, RelayCommandBase> create, string[] triggers) in implementations)
+        foreach ((Loc name, Func<Func<bool>, RelayCommandBase> create, Loc[] triggers) in implementations)
         {
-            foreach (string trigger in triggers)
+            foreach (Loc trigger in triggers)
             {
+                Loc label = T($"{name.En} / {trigger.En}", $"{name.Ja} / {trigger.Ja}");
                 bool allowed = false;
                 RelayCommandBase command = create(() => allowed);
 
-                if (trigger == KeyInput)
+                if (trigger.En == KeyInput)
                 {
-                    rows.Add(await MeasureKeyInputAsync($"{name} / {trigger}", command, () => allowed = true));
+                    rows.Add(await MeasureKeyInputAsync(label, command, () => allowed = true));
                     continue;
                 }
 
                 var button = new Button { Content = "Run", Command = command, Width = 80 };
 
-                rows.Add(await MeasureButtonAsync($"{name} / {trigger}", button, () =>
+                rows.Add(await MeasureButtonAsync(label, button, () =>
                 {
                     allowed = true;
-                    if (trigger == "InvalidateRequerySuggested")
+                    if (trigger.En == "InvalidateRequerySuggested")
                     {
                         CommandManager.InvalidateRequerySuggested();
                     }
-                    else if (trigger == "RaiseCanExecuteChanged")
+                    else if (trigger.En == "RaiseCanExecuteChanged")
                     {
                         command.RaiseCanExecuteChanged();
                     }
@@ -210,12 +215,12 @@ internal static class ValuePrecedenceMeasurements
     /// 条件を変えたあと、何も呼ばずに隣の TextBox へ InputManager を通してキー入力（a）を送る。
     /// ユーザーの入力を受けて WPF が再問い合わせを行うかを見る。
     /// </summary>
-    private static async Task<IReadOnlyList<string>> MeasureKeyInputAsync(string label, RelayCommandBase command, Action change)
+    private static async Task<IReadOnlyList<Loc>> MeasureKeyInputAsync(Loc label, RelayCommandBase command, Action change)
     {
         var textBox = new TextBox { Width = 120 };
         var button = new Button { Content = "Run", Command = command, Width = 80 };
         var panel = new StackPanel { Orientation = Orientation.Horizontal, Children = { textBox, button } };
-        var window = new Window { Title = label, Content = panel, Width = 320, Height = 120 };
+        var window = new Window { Title = label.En, Content = panel, Width = 320, Height = 120 };
 
         try
         {
@@ -242,16 +247,16 @@ internal static class ValuePrecedenceMeasurements
         }
     }
 
-    private static async Task<IReadOnlyList<string>> MeasureButtonAsync(string label, Button button, Action change)
+    private static async Task<IReadOnlyList<Loc>> MeasureButtonAsync(Loc label, Button button, Action change)
     {
         var host = new Grid();
         host.Children.Add(button);
 
         string before = string.Empty;
 
-        List<IReadOnlyList<string>> measured = await WpfProbe.MeasureAsync(
+        List<IReadOnlyList<Loc>> measured = await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
+            new WpfProbe.LocCase(
                 label,
                 host,
                 _ => [WpfProbe.Describe(button.IsEnabled)],

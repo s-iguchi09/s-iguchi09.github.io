@@ -90,13 +90,13 @@ internal sealed class StyleTriggerLocalValueScene : IScene
 
         await context.SaveTableAsync(
             "Border.Background, DataTrigger on HasError",
-            ["configuration", "effective value (BaseValueSource)"],
+            [Loc.Of("configuration", "構成"), Loc.Of("effective value (BaseValueSource)", "実効値（BaseValueSource）")],
             await ValuePrecedenceMeasurements.StyleTriggerPrecedenceAsync(),
             "style-trigger-precedence.svg");
 
         await context.SaveTableAsync(
             "SetCurrentValue, assignment over a binding, and the theme style",
-            ["case", "measured"],
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
             await CurrentValueAndBindingAsync(),
             "style-trigger-currentvalue-binding.svg");
     }
@@ -133,9 +133,9 @@ internal sealed class StyleTriggerLocalValueScene : IScene
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> CurrentValueAndBindingAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> CurrentValueAndBindingAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (bool withLocal in new[] { true, false })
         {
@@ -145,11 +145,11 @@ internal sealed class StyleTriggerLocalValueScene : IScene
                 border.Background = Brushes.Red;
             }
 
-            string prefix = withLocal ? "local Red" : "no local value";
+            Loc prefix = withLocal ? Loc.Of("local Red", "ローカル値 Red") : Loc.Of("no local value", "ローカル値なし");
             rows.AddRange(await WpfProbe.MeasureAsync(
             [
-                new WpfProbe.Case(
-                    $"{prefix}: SetCurrentValue(White), then Tag = on",
+                new WpfProbe.LocCase(
+                    Loc.Of($"{prefix.En}: SetCurrentValue(White), then Tag = on", $"{prefix.Ja}: SetCurrentValue(White)、続けて Tag = on"),
                     border,
                     _ => [WpfProbe.ValueAndSource(border, Border.BackgroundProperty)],
                     Act: async _ =>
@@ -158,7 +158,7 @@ internal sealed class StyleTriggerLocalValueScene : IScene
                         string afterSet = WpfProbe.ValueAndSource(border, Border.BackgroundProperty);
                         border.Tag = "on";
                         await Task.Yield();
-                        rows.Add([$"{prefix}: right after SetCurrentValue(White)", afterSet]);
+                        rows.Add([Loc.Of($"{prefix.En}: right after SetCurrentValue(White)", $"{prefix.Ja}: SetCurrentValue(White) の直後"), afterSet]);
                     }),
             ]));
         }
@@ -170,12 +170,14 @@ internal sealed class StyleTriggerLocalValueScene : IScene
             box.SetBinding(TextBox.TextProperty, new System.Windows.Data.Binding(nameof(Source.Value)) { Source = source, Mode = mode });
             rows.AddRange(await WpfProbe.MeasureAsync(
             [
-                new WpfProbe.Case(
-                    $"TextBox.Text bound {mode}, then Text = \"typed\" in code",
+                new WpfProbe.LocCase(
+                    Loc.Of($"TextBox.Text bound {mode}, then Text = \"typed\" in code", $"TextBox.Text を {mode} でバインド、続けてコードで Text = \"typed\""),
                     box,
                     _ =>
                     [
-                        $"binding {(System.Windows.Data.BindingOperations.GetBindingExpression(box, TextBox.TextProperty) is null ? "removed" : "kept")}, source.Value = {source.Value}",
+                        System.Windows.Data.BindingOperations.GetBindingExpression(box, TextBox.TextProperty) is null
+                            ? Loc.Of($"binding removed, source.Value = {source.Value}", $"バインドは外れる、source.Value = {source.Value}")
+                            : Loc.Of($"binding kept, source.Value = {source.Value}", $"バインドは残る、source.Value = {source.Value}"),
                     ],
                     Act: _ =>
                     {
@@ -196,10 +198,14 @@ internal sealed class StyleTriggerLocalValueScene : IScene
             """);
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            new WpfProbe.Case(
-                "Button with an explicit Style (Foreground only): Template",
+            new WpfProbe.LocCase(
+                Loc.Of("Button with an explicit Style (Foreground only): Template", "Style を明示した Button（Foreground だけ）: Template"),
                 styled,
-                _ => [$"{(styled.Template is null ? "null" : "set")} ({System.Windows.DependencyPropertyHelper.GetValueSource(styled, Control.TemplateProperty).BaseValueSource})"]),
+                _ => [styled.Template is null
+                    ? $"null ({System.Windows.DependencyPropertyHelper.GetValueSource(styled, Control.TemplateProperty).BaseValueSource})"
+                    : Loc.Of(
+                        $"set ({System.Windows.DependencyPropertyHelper.GetValueSource(styled, Control.TemplateProperty).BaseValueSource})",
+                        $"設定あり（{System.Windows.DependencyPropertyHelper.GetValueSource(styled, Control.TemplateProperty).BaseValueSource}）")]),
         ]));
 
         return rows;

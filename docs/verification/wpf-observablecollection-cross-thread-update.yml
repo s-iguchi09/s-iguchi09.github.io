@@ -15,3 +15,8 @@ verifies:
 images:
   - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg"
   - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg"
+tables:
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.en.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.ja.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.en.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.ja.md"

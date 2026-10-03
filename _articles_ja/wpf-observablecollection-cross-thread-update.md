@@ -75,10 +75,10 @@ WPF のオブジェクトの多くは `DispatcherObject` から派生し、生�
 この違いは、バインドしていない `ObservableCollection<T>` を同じ手順で操作してみると確認できる。
 バインドの有無と対処の有無を変えて、バックグラウンドスレッドから `Add` を呼んだ結果が次の表である。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg" alt="バックグラウンドスレッドから Add を呼んだ結果の表。バインドしていない ObservableCollection では例外が発生しない。ItemsControl にバインドすると NotSupportedException になる。Dispatcher.Invoke と EnableCollectionSynchronization ではいずれも例外が発生しない。バインドした行では、コレクションの Count と ItemsControl の Items.Count はどれも 1 だが、ビューが受け取った変更通知は、NotSupportedException の行では 0、ほかの 2 行では 1 である。" width="1062" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>Task.Run</code> の中から <code>ObservableCollection&lt;string&gt;.Add</code> を呼んだ結果。1 行目はどこにもバインドしていないコレクション、2 行目以降は <code>ItemsControl.ItemsSource</code> にバインドしたうえでウィンドウに表示したコレクションである。最終列は、<code>Add</code> のあとのコレクションの <code>Count</code>、<code>ItemsControl</code> の <code>Items.Count</code>、ビュー（<code>Items</code>）が受け取った <code>CollectionChanged</code> の通知の数である。</figcaption>
-</figure>
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、<code>Task.Run</code> の中から <code>ObservableCollection&lt;string&gt;.Add</code> を呼んだ結果。1 行目はどこにもバインドしていないコレクション、2 行目以降は <code>ItemsControl.ItemsSource</code> にバインドしたうえでウィンドウに表示したコレクションである。最終列は、<code>Add</code> のあとのコレクションの <code>Count</code>、<code>ItemsControl</code> の <code>Items.Count</code>、ビュー（<code>Items</code>）が受け取った <code>CollectionChanged</code> の通知の数である。
+{: .table-caption}
 
 **バインドしていないコレクションは、バックグラウンドスレッドから変更しても例外にならない。**
 `ObservableCollection<T>` 自体がスレッドアフィニティを持つのであれば、この行も例外になるはずである。
@@ -177,10 +177,10 @@ private async Task LoadAsync(string path)
 `EnableCollectionSynchronization` ではループが 6 ms で終わり、ビューが全件分の通知を受け取るまでで 64 ms だった。
 ただし、ループのあと UI スレッドへ戻った時点でビューが受け取っていた通知は 746 件で、残りは後から UI スレッドで反映された。この値は `await` のあとに読んだもので、ループを抜けた瞬間の値ではない。その間にも UI スレッドは通知を処理できる。反映そのものは UI スレッドの仕事として残る。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg" alt="バックグラウンドスレッドから 5,000 件を 1 件ずつ Add した結果の表。1 件ごとに Dispatcher.Invoke する方式は、ループに 992 ms かかり、await のあとの時点でビューは 5,000 件分の通知を受け取っており、全件分を受け取るまで 994 ms。EnableCollectionSynchronization とロックの方式は、ループが 6 ms で、await のあとの時点の通知は 746 件、全件分を受け取るまで 64 ms。" width="976" height="140" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、仮想化した <code>ListBox</code> にバインドしたコレクションへ、<code>Task.Run</code> の中から 5,000 件を 1 件ずつ <code>Add</code> した結果。3 列目は、ループのあと UI スレッドへ戻った時点でビューが受け取っていた <code>CollectionChanged</code> の通知の数、右端の列は、ループの開始からビューが 5,000 件分の通知を受け取るまでの時間である。</figcaption>
-</figure>
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.ja.md %}
+
+.NET 10 / Windows 11 で、仮想化した <code>ListBox</code> にバインドしたコレクションへ、<code>Task.Run</code> の中から 5,000 件を 1 件ずつ <code>Add</code> した結果。3 列目は、ループのあと UI スレッドへ戻った時点でビューが受け取っていた <code>CollectionChanged</code> の通知の数、右端の列は、<code>Task.Run</code> を呼ぶ直前（タスクが始まるまでの待ちを含む）から、ビューが 5,000 件分の通知を受け取るまでの時間である。
+{: .table-caption}
 
 **セマフォなど独自の同期機構が既にあるなら、コールバック版のオーバーロード。**
 ロック以外の同期機構を WPF 側の待ちに使わせられる。実装は最も複雑になる。

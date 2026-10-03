@@ -124,10 +124,10 @@ Where a background workload is present, it starts immediately and sleeps for six
 
 The measured values are shown below.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.svg" alt="A table of measured process lifetimes by configuration. Visible window only, a thread with IsBackground enabled, Task.Run, and the InvokeShutdown configuration all terminate within seconds. Creating no window and leaving a window unclosed never raise Application.Exit and never terminate. A default new Thread stays alive until its sleep elapses, and a second UI thread never terminates." width="709" height="320" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by launching a test application that differs only in the configuration under test. <code>process ends</code> is the measured time from process start to exit; <code>never</code> means the process was still alive after nine seconds. The window closes automatically two seconds after start, and background work is represented by a six-second sleep. Elapsed time depends on the execution environment, so read the values as differences between configurations rather than absolute numbers.</figcaption>
-</figure>
+{% include tables/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-lifetime-matrix.en.md %}
+
+Measured on .NET 10 / Windows 11 by launching a test application that differs only in the configuration under test. <code>process ends</code> is the measured time from process start to exit; <code>never</code> means the process was still alive after nine seconds. The window closes automatically two seconds after start, and background work is represented by a six-second sleep. Elapsed time depends on the execution environment, so read the values as differences between configurations rather than absolute numbers.
+{: .table-caption}
 
 The six-second sleep used for measurement stands in for the work that causes the real failure: a loop that was never stopped.
 The `new Thread(...)` row therefore terminates after a few seconds, whereas a loop that never ends keeps the process alive indefinitely.

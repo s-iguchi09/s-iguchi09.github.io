@@ -22,7 +22,7 @@ This article explains the internal behavior of both mechanisms and provides crit
 - Architecture: Applicable to both MVVM and code-behind patterns
 - Verification environment: .NET 10 / Windows 11
 
-The figures in this article come from displaying a screen in the environment above that references the same resource through both `StaticResource` and `DynamicResource`, then swapping the resource at run time.
+The figure and table in this article come from displaying a screen in the environment above that references the same resource through both `StaticResource` and `DynamicResource`, then swapping the resource at run time.
 The following points were confirmed in that environment:
 
 - Before the swap, both sides hold the same value.
@@ -94,10 +94,10 @@ Whenever the corresponding entry in the resource dictionary changes at runtime, 
 
 The difference can be confirmed by replacing the resource at run time and reading the property back.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.svg" alt="A table of Border.Background before and after the resource changes from white to red. Replacing the entry leaves StaticResource white while DynamicResource turns red. Changing the Color of the same brush to red without replacing the entry turns both StaticResource and DynamicResource red when the brush is not frozen." width="637" height="260" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by reading <code>Border.Background</code> after replacing the entry behind the same key <code>PanelBrush</code> with a red brush at run time, and after changing the same brush's <code>Color</code> to red without replacing the entry. Nothing else differs between the rows except how the resource is referenced and changed.</figcaption>
-</figure>
+{% include tables/articles/wpf-staticresource-vs-dynamicresource/static-vs-dynamic-resource-update.en.md %}
+
+Measured on .NET 10 / Windows 11 by reading <code>Border.Background</code> after replacing the entry behind the same key <code>PanelBrush</code> with a red brush at run time, and after changing the same brush's <code>Color</code> to red without replacing the entry. Nothing else differs between the rows except how the resource is referenced and changed.
+{: .table-caption}
 
 Both hold the same value before the swap. The two diverge only afterwards, where the `StaticResource` side stays white.
 
