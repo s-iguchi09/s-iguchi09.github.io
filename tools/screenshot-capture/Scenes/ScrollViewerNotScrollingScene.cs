@@ -23,7 +23,7 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
         "StackPanel でも高さを明示すればスクロールできること（Height と MaxHeight の両方）",
         "ListBox の ScrollViewer.CanContentScroll が True になる出どころ（既定スタイルか）",
         "ListBox の仮想化が失われる条件（CanContentScroll=False のほか、外側の ScrollViewer・StackPanel、IsVirtualizing=False）",
-        "グループ化したときに仮想化が保たれるか（この計測では保たれた）",
+        "GroupDescriptions だけで GroupStyle を付けない場合は仮想化が保たれ、GroupStyle を付けると全件が実体化されること",
     ];
 
     public string Slug => "wpf-scrollviewer-not-scrolling";
@@ -33,7 +33,8 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
     [
         ("inside an outer ScrollViewer (Height=180)", "外側の ScrollViewer の中（Height=180）"),
         ("inside a StackPanel (Height=180)", "StackPanel の中（Height=180）"),
-        ("grouped (CollectionView.GroupDescriptions)", "グループ化（CollectionView.GroupDescriptions）"),
+        ("CollectionView.GroupDescriptions + GroupStyle", "CollectionView.GroupDescriptions + GroupStyle"),
+        ("CollectionView.GroupDescriptions only, no GroupStyle", "CollectionView.GroupDescriptions だけ（GroupStyle なし）"),
         ("inside DockPanel (LastChildFill)", "DockPanel の中（LastChildFill）"),
         ("inside StackPanel", "StackPanel の中"),
         ("inside Grid", "Grid の中"),
@@ -83,11 +84,19 @@ internal sealed class ScrollViewerNotScrollingScene : IScene
                 VirtualizingPanel.SetIsVirtualizing(listBox, false);
                 return listBox;
             }),
-            Case("grouped (CollectionView.GroupDescriptions)", listBox =>
+            Case("CollectionView.GroupDescriptions only, no GroupStyle", listBox =>
             {
                 var view = new System.Windows.Data.ListCollectionView(Enumerable.Range(0, 2000).Select(i => new Row(i)).ToList());
                 view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(Row.Group)));
                 listBox.ItemsSource = view;
+                return listBox;
+            }),
+            Case("CollectionView.GroupDescriptions + GroupStyle", listBox =>
+            {
+                var view = new System.Windows.Data.ListCollectionView(Enumerable.Range(0, 2000).Select(i => new Row(i)).ToList());
+                view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(Row.Group)));
+                listBox.ItemsSource = view;
+                listBox.GroupStyle.Add(new GroupStyle());
                 return listBox;
             }),
             Case("inside an outer ScrollViewer (Height=180)", listBox =>

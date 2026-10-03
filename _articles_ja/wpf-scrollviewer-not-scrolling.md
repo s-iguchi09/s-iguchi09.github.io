@@ -150,7 +150,7 @@ WPF の `ScrollViewer` は、内部の要素がビューポートより大きい
 - **物理スクロールと論理スクロールの違い:** `ScrollViewer.CanContentScroll` の既定値は `false` で、ピクセル単位の物理スクロールとなる。
   `true` のときは項目単位の論理スクロールとなる。
   ただし `ListBox` の既定スタイルが `true` を設定するため（値の出どころは `DefaultStyle`）、データバインドした `ListBox` は論理スクロールで動作し、`VirtualizingStackPanel` が項目を仮想化する。
-  仮想化が失われるのは `CanContentScroll` を `false` にした場合だけではない。2,000 件の `ListBox` で実体化された `ListBoxItem` を数えると、`VirtualizingPanel.IsVirtualizing` を `false` にした場合と、`ListBox` を外側の `ScrollViewer` や `StackPanel` の中に置いた場合も、2,000 個すべてが実体化された。外側がスクロールを引き受けたり高さを制約しなかったりすると、`ListBox` にはすべての項目を並べる高さが渡るためである。グループ化した場合は、この計測では仮想化されたままだった。
+  仮想化が失われるのは `CanContentScroll` を `false` にした場合だけではない。2,000 件の `ListBox` で実体化された `ListBoxItem` を数えると、`VirtualizingPanel.IsVirtualizing` を `false` にした場合と、`ListBox` を外側の `ScrollViewer` や `StackPanel` の中に置いた場合も、2,000 個すべてが実体化された。外側がスクロールを引き受けたり高さを制約しなかったりすると、`ListBox` にはすべての項目を並べる高さが渡るためである。`CollectionView` に `GroupDescriptions` を付けた場合は、`GroupStyle` を付けなければ仮想化されたままだった。`GroupStyle` を付けると、2,000 個すべてが実体化され、`CanContentScroll` もテンプレートのトリガーで `false` になった。
 
 {% include tables/articles/wpf-scrollviewer-not-scrolling/listbox-virtualization-loss.ja.md %}
 
