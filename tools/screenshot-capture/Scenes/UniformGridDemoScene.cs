@@ -55,23 +55,6 @@ internal sealed class UniformGridDemoScene : IScene
         return grid;
     }
 
-    /// <summary>
-    /// セルの大きさから UniformGrid が作ったセル配置（行数 x 列数）を求め、セルの大きさを添える。
-    /// 子のいる行の数がセル配置の行数と違う場合（空の行が残る場合）は、それも添える。
-    /// 子の位置だけを数えると、空の行を持つ配置（5 個で 3 x 3 など）を取り違えるため。
-    /// </summary>
-    private static string Shape(UniformGrid grid)
-    {
-        var rects = grid.Children.Cast<FrameworkElement>()
-            .Where(c => c.Visibility == Visibility.Visible)
-            .Select(c => Bounds(c, grid)).ToList();
-        int gridRows = (int)Math.Round(grid.ActualHeight / rects[0].Height);
-        int gridColumns = (int)Math.Round(grid.ActualWidth / rects[0].Width);
-        int usedRows = rects.Select(r => Math.Round(r.Y, 2)).Distinct().Count();
-        string used = usedRows == gridRows ? "" : $" (children in {usedRows} rows)";
-        return $"{gridRows} rows x {gridColumns} columns{used}, cell {D(rects[0].Width)} x {D(rects[0].Height)}";
-    }
-
     /// <summary>行と列の数（子が使っている行の数が違えば添える）。</summary>
     private static Loc Head(UniformGrid grid)
     {
@@ -89,6 +72,11 @@ internal sealed class UniformGridDemoScene : IScene
         return T($"{head.En}, cell {cell}", $"{head.Ja}、セル {cell}");
     }
 
+    /// <summary>
+    /// セルの大きさから UniformGrid が作ったセル配置（行数・列数）を求め、子のいる行の数とセルの大きさと合わせて返す。
+    /// 子のいる行の数がセル配置の行数と違えば、空の行が残っている。
+    /// 子の位置だけを数えると、空の行を持つ配置（5 個で 3 x 3 など）を取り違えるため。
+    /// </summary>
     private static (int Rows, int Columns, int UsedRows, string Cell) Measure(UniformGrid grid)
     {
         var rects = grid.Children.Cast<FrameworkElement>()
@@ -184,14 +172,14 @@ internal sealed class UniformGridDemoScene : IScene
             grid.Columns = 3;
             grid.Children.Add(new Border { Name = "Wide", Width = 150, Height = 20 });
             Laid(grid, 300, 100);
-            string stretched = Shape(grid);
+            string stretched = Measure(grid).Cell;
             UniformGrid auto = DemoGrid(2);
             auto.Columns = 3;
             auto.Children.Add(new Border { Name = "Wide", Width = 150, Height = 20 });
             var host = new StackPanel { Orientation = Orientation.Horizontal, Children = { auto } };
             Layout(host, 600, 100);
             rows.Add([T("Columns=3 with a child 150 wide: stretched to 300 / sized to content", "Columns=3、幅 150 の子: 300 に広げる / 内容に合わせる"),
-                $"{stretched.Split(", cell ")[1]} / {Shape(auto).Split(", cell ")[1]}"]);
+                $"{stretched} / {Measure(auto).Cell}"]);
         }
 
         foreach ((string label, Brush? background) in new (string, Brush?)[] { ("null", null), ("Transparent", Brushes.Transparent) })
