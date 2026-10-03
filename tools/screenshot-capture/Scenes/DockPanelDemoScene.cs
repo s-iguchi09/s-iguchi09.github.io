@@ -32,11 +32,14 @@ internal sealed class DockPanelDemoScene : IScene
     {
         await context.SaveTableAsync(
             "DockPanel: docking, LastChildFill, order, background and ZIndex (panel 300 x 100)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             Measure(),
             "dockpanel-behavior.svg");
         await Task.CompletedTask;
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static Label DemoLabel(string name, Brush background, Dock? dock = null)
     {
@@ -56,11 +59,11 @@ internal sealed class DockPanelDemoScene : IScene
         return label;
     }
 
-    private static List<IReadOnlyList<string>> Measure()
+    private static List<IReadOnlyList<Loc>> Measure()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["defaults: LastChildFill / Dock of a child",
+        rows.Add([T("defaults: LastChildFill / Dock of a child", "既定値: LastChildFill / 子の Dock"),
             $"{new DockPanel().LastChildFill} / {DockPanel.GetDock(new Label())}"]);
 
         foreach (bool fill in new[] { false, true })
@@ -69,7 +72,7 @@ internal sealed class DockPanelDemoScene : IScene
             Label item2 = DemoLabel("Item2", Brushes.SkyBlue);
             var panel = new DockPanel { LastChildFill = fill, Children = { item1, item2 } };
             Layout(panel, 300, 100);
-            rows.Add([$"demo's two labels, LastChildFill={fill}: Item1 / Item2",
+            rows.Add([T($"demo's two labels, LastChildFill={fill}: Item1 / Item2", $"デモの 2 つの Label、LastChildFill={fill}: Item1 / Item2"),
                 $"{Format(Bounds(item1, panel))} / {Format(Bounds(item2, panel))}"]);
         }
 
@@ -78,7 +81,7 @@ internal sealed class DockPanelDemoScene : IScene
             Label item2 = DemoLabel("Item2", Brushes.SkyBlue, Dock.Top);
             var panel = new DockPanel { LastChildFill = true, Children = { item1, item2 } };
             Layout(panel, 300, 100);
-            rows.Add(["LastChildFill=True, last label with Dock=Top: its rect", Format(Bounds(item2, panel))]);
+            rows.Add([T("LastChildFill=True, last label with Dock=Top: its rect", "LastChildFill=True、最後の Label に Dock=Top: その位置と大きさ"), Format(Bounds(item2, panel))]);
         }
 
         foreach (Dock dock in new[] { Dock.Left, Dock.Top, Dock.Right, Dock.Bottom })
@@ -86,7 +89,7 @@ internal sealed class DockPanelDemoScene : IScene
             Label item = DemoLabel("Item1", Brushes.LightBlue, dock);
             var panel = new DockPanel { LastChildFill = false, Height = 100, Children = { item } };
             Layout(panel, 300, 100);
-            rows.Add([$"demo's single label, LastChildFill=False, Dock={dock}", Format(Bounds(item, panel))]);
+            rows.Add([T($"demo's single label, LastChildFill=False, Dock={dock}", $"デモの 1 つの Label、LastChildFill=False、Dock={dock}"), Format(Bounds(item, panel))]);
         }
 
         foreach (bool leftFirst in new[] { false, true })
@@ -102,7 +105,7 @@ internal sealed class DockPanelDemoScene : IScene
             }
 
             Layout(panel, 300, 100);
-            rows.Add([$"{(leftFirst ? "Left, Top, Bottom, content" : "Top, Bottom, Left, content")}: Left / content",
+            rows.Add([T($"{(leftFirst ? "Left, Top, Bottom, content" : "Top, Bottom, Left, content")}: Left / content", $"{(leftFirst ? "Left、Top、Bottom、内容" : "Top、Bottom、Left、内容")} の順: Left / 内容"),
                 $"{Format(Bounds(left, panel))} / {Format(Bounds(content, panel))}"]);
         }
 
@@ -112,7 +115,7 @@ internal sealed class DockPanelDemoScene : IScene
             var panel = new DockPanel { Name = "Panel", LastChildFill = false, Background = background, Children = { item } };
             var host = new Grid { Children = { panel } };
             Layout(host, 300, 100);
-            rows.Add([$"LastChildFill=False, Background={label}: hit test in the empty area", HitName(host, new Point(250, 50))]);
+            rows.Add([T($"LastChildFill=False, Background={label}: hit test in the empty area", $"LastChildFill=False、Background={label}: 空いた部分のヒットテスト"), HitName(host, new Point(250, 50))]);
         }
 
         foreach ((int first, int second) in new[] { (1, 2), (3, 2) })
@@ -125,7 +128,7 @@ internal sealed class DockPanelDemoScene : IScene
             var panel = new DockPanel { Children = { item1, item2 } };
             Layout(panel, 300, 100);
             Rect overlap = Rect.Intersect(Bounds(item1, panel), Bounds(item2, panel));
-            rows.Add([$"demo's ZIndex labels (Item2 margin -30), ZIndex {first} and {second}: on top where they overlap",
+            rows.Add([T($"demo's ZIndex labels (Item2 margin -30), ZIndex {first} and {second}: on top where they overlap", $"デモの ZIndex の Label（Item2 の Margin -30）、ZIndex {first} と {second}: 重なった部分で上にあるもの"),
                 HitName(panel, new Point(overlap.X + overlap.Width / 2, overlap.Y + overlap.Height / 2))]);
         }
 

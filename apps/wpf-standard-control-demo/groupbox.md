@@ -25,10 +25,10 @@ By default the border (`BorderBrush` and `BorderThickness`) is 1 wide in `#FFD5D
 
 The font properties and `Foreground` reach the text of both the header and the content: `FontSize="20"` set on the GroupBox made both the header's text and a TextBlock in the content 20. `Background` fills the area inside the border, starting at the middle of the header: in a GroupBox whose header was 1 to 27.6 from the top, the painted area started at 13.8. The top half of the header stays outside it. The content lies inside that area, so the background shows behind it.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.svg" alt="Table of GroupBox results: it derives from HeaderedContentControl with a 1-wide #FFD5DFE5 border and no padding, a null header takes no height, HeaderStringFormat applies to a string header but not to a TextBlock, a header with a line break is two lines high, Padding 20 moves the content down by 20, FontSize and Foreground reach the header and the content, Background starts at the middle of the header and covers the content, UI Automation reports a Group named after the header, and the header's access key moves the focus to the first TextBox inside" width="1077" height="470" loading="lazy">
-  <figcaption>The header, padding, inherited properties, and the access key. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.en.md %}
+
+The header, padding, inherited properties, and the access key. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

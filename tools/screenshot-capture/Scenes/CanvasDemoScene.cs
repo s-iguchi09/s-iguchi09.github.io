@@ -35,7 +35,7 @@ internal sealed class CanvasDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Canvas: sizes, positions, clipping and ZIndex (rectangles 100 x 100)",
-            ["case", "measured"],
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
             Measure(),
             "canvas-behavior.svg");
         await Task.CompletedTask;
@@ -70,16 +70,18 @@ internal sealed class CanvasDemoScene : IScene
         return canvas;
     }
 
-    private static List<IReadOnlyList<string>> Measure()
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    private static List<IReadOnlyList<Loc>> Measure()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var probe = new SizeProbe();
             var text = new TextBlock { Text = "A TextBlock" };
             var stretch = new Border { HorizontalAlignment = HorizontalAlignment.Stretch, Child = new TextBlock { Text = "Stretch" } };
             Canvas canvas = Stretched(300, 200, probe, text, stretch);
-            rows.Add(["size given to a child / width of a TextBlock / width of a Stretch Border (Canvas 300 wide)",
+            rows.Add([T("size given to a child / width of a TextBlock / width of a Stretch Border (Canvas 300 wide)", "子に渡される大きさ / TextBlock の幅 / Stretch の Border の幅（幅 300 の Canvas）"),
                 $"{D(probe.Available.Width)} x {D(probe.Available.Height)} / {D(text.RenderSize.Width)} / {D(stretch.RenderSize.Width)}"]);
         }
 
@@ -89,7 +91,7 @@ internal sealed class CanvasDemoScene : IScene
             Canvas.SetTop(canvas.Children[0], 20);
             var host = new StackPanel { Orientation = Orientation.Horizontal, Children = { canvas } };
             Layout(host, 300, 200);
-            rows.Add(["Canvas with a child at (20, 20), in a horizontal StackPanel: DesiredSize / ClipToBounds default",
+            rows.Add([T("Canvas with a child at (20, 20), in a horizontal StackPanel: DesiredSize / ClipToBounds default", "(20, 20) に子を置いた Canvas、横向きの StackPanel の中: DesiredSize / ClipToBounds の既定値"),
                 $"{D(canvas.DesiredSize.Width)} x {D(canvas.DesiredSize.Height)} / {canvas.ClipToBounds}"]);
         }
 
@@ -98,7 +100,7 @@ internal sealed class CanvasDemoScene : IScene
             Canvas.SetTop(a, 20);
             Canvas.SetLeft(a, 20);
             Canvas canvas = Stretched(300, 200, a);
-            rows.Add(["demo's initial values Top 20, Left 20", At(canvas, a)]);
+            rows.Add([T("demo's initial values Top 20, Left 20", "デモの初期値 Top 20、Left 20"), At(canvas, a)]);
         }
 
         {
@@ -108,7 +110,7 @@ internal sealed class CanvasDemoScene : IScene
             Canvas.SetTop(a, 20);
             Canvas.SetBottom(a, 20);
             Canvas canvas = Stretched(300, 200, a);
-            rows.Add(["Left 20 and Right 20, Top 20 and Bottom 20 (Canvas 300 x 200)", At(canvas, a)]);
+            rows.Add([T("Left 20 and Right 20, Top 20 and Bottom 20 (Canvas 300 x 200)", "Left 20 と Right 20、Top 20 と Bottom 20（300 x 200 の Canvas）"), At(canvas, a)]);
         }
 
         {
@@ -116,7 +118,7 @@ internal sealed class CanvasDemoScene : IScene
             Canvas.SetRight(a, 20);
             Canvas.SetBottom(a, 20);
             Canvas canvas = Stretched(300, 200, a);
-            rows.Add(["only Right 20, Bottom 20, Canvas stretched to 300 x 200 (no Width set)", At(canvas, a)]);
+            rows.Add([T("only Right 20, Bottom 20, Canvas stretched to 300 x 200 (no Width set)", "Right 20 と Bottom 20 だけ、300 x 200 に広げた Canvas（Width の指定なし）"), At(canvas, a)]);
         }
 
         {
@@ -126,7 +128,7 @@ internal sealed class CanvasDemoScene : IScene
             var canvas = new Canvas { Children = { a } };
             var host = new StackPanel { Orientation = Orientation.Horizontal, Children = { new StackPanel { Children = { canvas } } } };
             Layout(host, 300, 200);
-            rows.Add(["  same in a Canvas of size 0 (inside StackPanels)", At(canvas, a)]);
+            rows.Add([T("  same in a Canvas of size 0 (inside StackPanels)", "  同じ指定で大きさ 0 の Canvas（StackPanel の中）"), At(canvas, a)]);
         }
 
         {
@@ -135,7 +137,7 @@ internal sealed class CanvasDemoScene : IScene
             Canvas.SetLeft(negative, -30);
             Canvas.SetTop(negative, 150);
             Canvas canvas = Stretched(300, 300, plain, negative);
-            rows.Add(["no position set / Left -30", $"{At(canvas, plain)} / {At(canvas, negative)}"]);
+            rows.Add([T("no position set / Left -30", "位置の指定なし / Left -30"), $"{At(canvas, plain)} / {At(canvas, negative)}"]);
         }
 
         foreach (bool clip in new[] { false, true })
@@ -145,7 +147,7 @@ internal sealed class CanvasDemoScene : IScene
             var canvas = new Canvas { Name = "Canvas", Width = 200, Height = 100, ClipToBounds = clip, Children = { a }, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
             var host = new Grid { Children = { canvas } };
             Layout(host, 400, 200);
-            rows.Add([$"Canvas 200 wide, child at Left 150 (to 250), ClipToBounds={clip}: hit test at x=230",
+            rows.Add([T($"Canvas 200 wide, child at Left 150 (to 250), ClipToBounds={clip}: hit test at x=230", $"幅 200 の Canvas、子を Left 150（250 まで）、ClipToBounds={clip}: x=230 のヒットテスト"),
                 HitName(host, new Point(230, 50))]);
         }
 
@@ -161,7 +163,7 @@ internal sealed class CanvasDemoScene : IScene
             Panel.SetZIndex(a, zA);
             Panel.SetZIndex(b, zB);
             Canvas canvas = Stretched(300, 200, a, b);
-            rows.Add([$"demo's rectangles A (20, 20) and B (50, 50), ZIndex A={zA}, B={zB}: on top at (85, 85)",
+            rows.Add([T($"demo's rectangles A (20, 20) and B (50, 50), ZIndex A={zA}, B={zB}: on top at (85, 85)", $"デモの長方形 A (20, 20) と B (50, 50)、ZIndex A={zA}、B={zB}: (85, 85) で上にあるもの"),
                 HitName(canvas, new Point(85, 85))]);
         }
 
@@ -172,7 +174,7 @@ internal sealed class CanvasDemoScene : IScene
                 new Binding(nameof(TextBox.Text)) { Source = text, TargetNullValue = double.NaN, FallbackValue = double.NaN });
             string empty = D(Canvas.GetRight(a));
             text.Text = "30";
-            rows.Add(["demo binding with FallbackValue=NaN: Canvas.Right for text \"\" / \"30\"", $"{empty} / {D(Canvas.GetRight(a))}"]);
+            rows.Add([T("demo binding with FallbackValue=NaN: Canvas.Right for text \"\" / \"30\"", "デモの FallbackValue=NaN のバインド: 文字列 \"\" / \"30\" のときの Canvas.Right"), $"{empty} / {D(Canvas.GetRight(a))}"]);
         }
 
         return rows;

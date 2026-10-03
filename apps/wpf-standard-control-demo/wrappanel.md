@@ -29,10 +29,10 @@ It does not virtualize either. A ListBox 300 × 200 with a WrapPanel as its `Ite
 
 With the default `Background` of `null`, a hit test in the gap between two labels found nothing; with `Transparent`, it found the panel. Set `Transparent` to make the gaps clickable. Where children overlap, `Panel.ZIndex` decides the order: with two labels overlapping by 15, `ZIndex` 1 and 2 put the second on top, and 3 and 2 the first.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg" alt="Table of WrapPanel results: Horizontal with NaN item sizes by default, the demo's five labels in two rows of 3 and 2 at 150 wide and five columns at 60 high, a short child stretched to the row height only with Stretch, ItemWidth and ItemHeight 100 stretching labels to 96 and cutting off a 150-wide child at 100, three rows in a ScrollViewer and one row when horizontal scrolling is allowed, gaps hit only with a Background, ZIndex ordering overlapping labels, and all 1000 items created in a ListBox" width="1038" height="530" loading="lazy">
-  <figcaption>Wrapping, line sizes, <code>ItemWidth</code> and <code>ItemHeight</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.en.md %}
+
+Wrapping, line sizes, <code>ItemWidth</code> and <code>ItemHeight</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

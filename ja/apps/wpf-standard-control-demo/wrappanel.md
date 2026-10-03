@@ -29,10 +29,10 @@ description: "WPF の WrapPanel を .NET 10 で実測して解説。デモアプ
 
 `Background` が既定値の `null` では、2 つのラベルの間のヒットテストで何も当たらず、`Transparent` ではパネルが当たりました。子の間をクリックさせるなら `Transparent` を設定します。子が重なったときは `Panel.ZIndex` で順序が決まり、15 重なった 2 つのラベルで、`ZIndex` が 1 と 2 なら 2 つ目が、3 と 2 なら 1 つ目が上になりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.svg" alt="WrapPanel の計測結果の表。既定値は Horizontal で項目の大きさは NaN、デモアプリの 5 つのラベルは幅 150 で 3 つと 2 つの 2 行、高さ 60 で 5 列になり、低い子は Stretch のときだけ行の高さまで伸び、ItemWidth と ItemHeight を 100 にするとラベルは 96 に伸びて幅 150 の子は 100 で切れ、ScrollViewer の中では 3 行、横スクロールできると 1 行になり、子の間は Background があるときだけ当たり、ZIndex が重なったラベルの順序を決め、ListBox では 1000 項目すべてが作られる" width="1038" height="530" loading="lazy">
-  <figcaption>折り返し、行の大きさ、<code>ItemWidth</code> と <code>ItemHeight</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/wrappanel/wrappanel-behavior.ja.md %}
+
+折り返し、行の大きさ、<code>ItemWidth</code> と <code>ItemHeight</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

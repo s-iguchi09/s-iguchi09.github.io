@@ -19,10 +19,10 @@ In the measured item types, every public property became a column, while the ind
 
 `IsReadOnly` turns off editing for the whole grid. With `IsReadOnly="True"`, `CanUserAddRows` became `False`. A column cannot opt back in: a column with `IsReadOnly="False"` set explicitly still reported `False`, but `BeginEdit()` on its cell returned `False` and no editing started.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.svg" alt="Table of DataGrid column and row results: automatic columns follow declaration order and include the demo data's Error column, a read-only grid blocks editing even for a column set to IsReadOnly False, the new-item row appears for List and ObservableCollection but not for an array or a type without a parameterless constructor, row validation needs a DataErrorValidationRule, and the Delete key removes the selected row" width="1218" height="440" loading="lazy">
-  <figcaption>Columns, read-only settings, validation, and adding and deleting rows. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.en.md %}
+
+Columns, read-only settings, validation, and adding and deleting rows. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Row validation needs a rule
 
@@ -46,10 +46,10 @@ Grouping comes from the collection view, and the DataGrid shows groups only when
 
 `AlternatingRowBackground` sets the background of every other row. Setting only this property was enough: `AlternationCount` became 2, and the four rows alternated between white and the alternating brush.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg" alt="Table of DataGrid behavior: F2, Esc, and Enter start, cancel, and commit editing, each column type uses its own editor, three header clicks give Ascending, Descending, Ascending, sorting during an edit throws InvalidOperationException even after CommitEdit() or CancelEdit() but not after ending the row edit, AlternatingRowBackground alone sets AlternationCount to 2, grouping with a GroupStyle creates all 1,000 rows by default and 18 with IsVirtualizingWhenGrouping, and a frozen first column keeps its position while scrolling" width="1203" height="590" loading="lazy">
-  <figcaption>Editing, sorting, alternating rows, virtualization, and frozen columns. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.en.md %}
+
+Editing, sorting, alternating rows, virtualization, and frozen columns. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## The defaults of the other switches
 

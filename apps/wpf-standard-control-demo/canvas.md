@@ -29,10 +29,10 @@ The Canvas itself asks for no space. With a rectangle at (20, 20) inside it, a C
 
 The demo app starts with rectangle A at `ZIndex` 0 and rectangle B at 1; at (85, 85), where they overlap, B was on top. With A at 2, A was on top. With both at 0, B, the later child, was on top.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/canvas/canvas-behavior.svg" alt="Table of Canvas results: children measured with infinite size and not stretched, a Canvas with children asking for 0 by 0 with ClipToBounds False, Left and Top winning over Right and Bottom without stretching, Right and Bottom measured from the Canvas's actual size including size 0, an unplaced child at (0, 0), a child outside the Canvas hit only without clipping, ZIndex ordering the demo's rectangles with the later child on top when equal, and an empty bound text giving NaN" width="1179" height="470" loading="lazy">
-  <figcaption>Sizes, positions, clipping, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/canvas/canvas-behavior.en.md %}
+
+Sizes, positions, clipping, and <code>ZIndex</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

@@ -33,7 +33,7 @@ internal sealed class GridDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Grid: placement (Grid 300 x 200)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             Placement(),
             "grid-placement.svg");
 
@@ -45,7 +45,7 @@ internal sealed class GridDemoScene : IScene
 
         await context.SaveTableAsync(
             "Grid columns 1* | 2* with contents 60 and 30 wide, by container",
-            ["container", "sizes", "scroll bar"],
+            [T("container", "入れ物"), T("sizes", "大きさ"), T("scroll bar", "スクロールバー")],
             Unbounded(),
             "grid-unbounded.svg");
 
@@ -57,16 +57,22 @@ internal sealed class GridDemoScene : IScene
 
         await context.SaveTableAsync(
             "Grid: SharedSizeGroup (contents 50 and 120 wide) and ShowGridLines",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             SharedSizeAndGridLines(),
             "grid-shared-size.svg");
 
         await context.SaveTableAsync(
             "Grid: measure calls, and first-layout time ratio (3 runs, each the median of 15 alternating trials)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             LayoutCost(),
             "grid-layout-cost.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    /// <summary>列の幅の一覧。</summary>
+    private static Loc Columns(string widths) => T($"columns {widths}", $"列 {widths}");
 
     private static Grid NewGrid(int columns, int rows)
     {
@@ -84,11 +90,11 @@ internal sealed class GridDemoScene : IScene
         return grid;
     }
 
-    private static List<IReadOnlyList<string>> Placement()
+    private static List<IReadOnlyList<Loc>> Placement()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["default of Grid.Row / Grid.Column (metadata)",
+        rows.Add([T("default of Grid.Row / Grid.Column (metadata)", "Grid.Row / Grid.Column の既定値（メタデータ）"),
             $"{Grid.RowProperty.DefaultMetadata.DefaultValue} / {Grid.ColumnProperty.DefaultMetadata.DefaultValue}"]);
 
         // 2 x 2 の Grid に、行・列を指定しない子を 2 つ置く。
@@ -99,7 +105,7 @@ internal sealed class GridDemoScene : IScene
             grid.Children.Add(a);
             grid.Children.Add(b);
             Layout(grid, 300, 200);
-            rows.Add(["2x2, two children without Grid.Row/Column",
+            rows.Add([T("2x2, two children without Grid.Row/Column", "2x2、Grid.Row/Column を指定しない子が 2 つ"),
                 $"{Format(Bounds(a, grid))} | {Format(Bounds(b, grid))}"]);
         }
 
@@ -110,7 +116,7 @@ internal sealed class GridDemoScene : IScene
             Grid.SetColumn(child, 2);
             grid.Children.Add(child);
             Layout(grid, 300, 200);
-            rows.Add(["2x2, Grid.Column=2 (out of range)", Format(Bounds(child, grid))]);
+            rows.Add([T("2x2, Grid.Column=2 (out of range)", "2x2、Grid.Column=2（範囲外）"), Format(Bounds(child, grid))]);
         }
 
         {
@@ -162,7 +168,7 @@ internal sealed class GridDemoScene : IScene
             grid.Children.Add(a);
             grid.Children.Add(b);
             Layout(grid, 300, 200);
-            rows.Add(["no definitions, child A + child B (Column=1, 50x30)",
+            rows.Add([T("no definitions, child A + child B (Column=1, 50x30)", "定義なし、子 A と子 B（Column=1、50x30）"),
                 $"{Format(Bounds(a, grid))} | {Format(Bounds(b, grid))}"]);
         }
 
@@ -186,9 +192,9 @@ internal sealed class GridDemoScene : IScene
         return grid;
     }
 
-    private static List<IReadOnlyList<string>> Sizing()
+    private static List<IReadOnlyList<Loc>> Sizing()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 各列には幅 60 の子を置く。Auto 列はこの幅になるはずである。
         Grid Mixed() => SizingGrid(
@@ -248,9 +254,9 @@ internal sealed class GridDemoScene : IScene
         return rows;
     }
 
-    private static List<IReadOnlyList<string>> Unbounded()
+    private static List<IReadOnlyList<Loc>> Unbounded()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 比率が保たれるかを見分けるため、1* 列の中身を 2* 列より広くしておく。
         Grid StarGrid()
@@ -267,7 +273,7 @@ internal sealed class GridDemoScene : IScene
             var panel = new StackPanel { Orientation = Orientation.Horizontal };
             panel.Children.Add(grid);
             Layout(panel, 400, 100);
-            rows.Add(["StackPanel Horizontal, width 400", $"columns {Widths(grid)}", "-"]);
+            rows.Add([T("StackPanel Horizontal, width 400", "横向きの StackPanel、幅 400"), Columns(Widths(grid)), "-"]);
         }
 
         {
@@ -275,7 +281,7 @@ internal sealed class GridDemoScene : IScene
             var panel = new StackPanel();
             panel.Children.Add(grid);
             Layout(panel, 400, 100);
-            rows.Add(["StackPanel Vertical, width 400", $"columns {Widths(grid)}", "-"]);
+            rows.Add([T("StackPanel Vertical, width 400", "縦向きの StackPanel、幅 400"), Columns(Widths(grid)), "-"]);
         }
 
         foreach ((ScrollBarVisibility visibility, double width) in new[]
@@ -295,9 +301,9 @@ internal sealed class GridDemoScene : IScene
                 Content = grid,
             };
             Layout(viewer, width, 100);
-            rows.Add([$"ScrollViewer {width} wide, horizontal {visibility}",
-                $"columns {Widths(grid)}",
-                $"horizontal {viewer.ComputedHorizontalScrollBarVisibility}"]);
+            rows.Add([T($"ScrollViewer {width} wide, horizontal {visibility}", $"幅 {width} の ScrollViewer、横 {visibility}"),
+                Columns(Widths(grid)),
+                T($"horizontal {viewer.ComputedHorizontalScrollBarVisibility}", $"横 {viewer.ComputedHorizontalScrollBarVisibility}")]);
         }
 
         {
@@ -312,9 +318,9 @@ internal sealed class GridDemoScene : IScene
 
             var viewer = new ScrollViewer { Content = grid };
             Layout(viewer, 300, 300);
-            rows.Add(["ScrollViewer 300 high; rows 1* | 1* (contents 20)",
-                $"rows {string.Join(" / ", grid.RowDefinitions.Select(r => D(r.ActualHeight)))}, " +
-                $"scrollable {D(viewer.ScrollableHeight)}",
+            rows.Add([T("ScrollViewer 300 high; rows 1* | 1* (contents 20)", "高さ 300 の ScrollViewer、行 1* | 1*（内容 20）"),
+                T($"rows {string.Join(" / ", grid.RowDefinitions.Select(r => D(r.ActualHeight)))}, scrollable {D(viewer.ScrollableHeight)}",
+                  $"行 {string.Join(" / ", grid.RowDefinitions.Select(r => D(r.ActualHeight)))}、スクロールできる量 {D(viewer.ScrollableHeight)}"),
                 "-"]);
         }
 
@@ -330,17 +336,17 @@ internal sealed class GridDemoScene : IScene
 
             var viewer = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, Content = grid };
             Layout(viewer, 300, 120);
-            rows.Add(["ScrollViewer 120 high, vertical Auto; rows Auto x3 (100 each)",
-                $"Grid {D(grid.ActualHeight)}, scrollable {D(viewer.ScrollableHeight)}",
-                $"vertical {viewer.ComputedVerticalScrollBarVisibility}"]);
+            rows.Add([T("ScrollViewer 120 high, vertical Auto; rows Auto x3 (100 each)", "高さ 120 の ScrollViewer、縦 Auto、行 Auto x3（それぞれ 100）"),
+                T($"Grid {D(grid.ActualHeight)}, scrollable {D(viewer.ScrollableHeight)}", $"Grid {D(grid.ActualHeight)}、スクロールできる量 {D(viewer.ScrollableHeight)}"),
+                T($"vertical {viewer.ComputedVerticalScrollBarVisibility}", $"縦 {viewer.ComputedVerticalScrollBarVisibility}")]);
         }
 
         return rows;
     }
 
-    private static List<IReadOnlyList<string>> HitTesting()
+    private static List<IReadOnlyList<Loc>> HitTesting()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (Brush? background in new Brush?[] { null, Brushes.Transparent })
         {
@@ -395,9 +401,9 @@ internal sealed class GridDemoScene : IScene
         return grid;
     }
 
-    private static List<IReadOnlyList<string>> SharedSizeAndGridLines()
+    private static List<IReadOnlyList<Loc>> SharedSizeAndGridLines()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach ((bool scope, GridLength width, string label) in new[]
         {
@@ -436,9 +442,9 @@ internal sealed class GridDemoScene : IScene
         return rows;
     }
 
-    private static List<IReadOnlyList<string>> LayoutCost()
+    private static List<IReadOnlyList<Loc>> LayoutCost()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 2 x 2 の Grid で、各セルの子が初回レイアウトで何回測られるかを数える。
         // Auto 列 x 比率行のセルと、比率列 x Auto 行のセルが同居すると、

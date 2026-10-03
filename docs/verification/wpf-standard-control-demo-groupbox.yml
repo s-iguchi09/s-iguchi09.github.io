@@ -16,3 +16,6 @@ verifies:
   - "アンダースコア付きの Header のアクセスキーを押したときのフォーカスの移動先"
 images:
   - "images/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/groupbox/groupbox-behavior.ja.md"

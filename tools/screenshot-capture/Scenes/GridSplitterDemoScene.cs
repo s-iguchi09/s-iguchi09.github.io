@@ -47,7 +47,7 @@ internal sealed class GridSplitterDemoScene : IScene
 
         await context.SaveTableAsync(
             "GridSplitter in a 400-wide Auto column, dragged 30 to the right (widths: left / splitter / right)",
-            ["left | right", "before", "BasedOnAlignment", "CurrentAndNext", "PreviousAndCurrent", "PreviousAndNext"],
+            [T("left | right", "左 | 右"), T("before", "ドラッグ前"), "BasedOnAlignment", "CurrentAndNext", "PreviousAndCurrent", "PreviousAndNext"],
             BehaviorMatrix(),
             "gridsplitter-resize-behavior.svg");
 
@@ -75,6 +75,9 @@ internal sealed class GridSplitterDemoScene : IScene
     // ------------------------------------------------------------------
 
     /// <summary>左の列・スプリッターの Auto 列・右の列の 3 列の Grid。デモアプリと同じ形。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static (Grid Grid, GridSplitter Splitter) ThreeColumns(
         GridLength left, GridLength right, GridResizeBehavior behavior, double width = 400)
     {
@@ -122,7 +125,7 @@ internal sealed class GridSplitterDemoScene : IScene
     // 計測
     // ------------------------------------------------------------------
 
-    private static List<IReadOnlyList<string>> Defaults()
+    private static List<IReadOnlyList<Loc>> Defaults()
     {
         var splitter = new GridSplitter();
         var chain = new List<string>();
@@ -164,7 +167,7 @@ internal sealed class GridSplitterDemoScene : IScene
         return WpfProbe.ValueAndSource(splitter, property);
     }
 
-    private static List<IReadOnlyList<string>> BehaviorMatrix()
+    private static List<IReadOnlyList<Loc>> BehaviorMatrix()
     {
         var sizes = new (string Label, GridLength Length)[]
         {
@@ -178,12 +181,12 @@ internal sealed class GridSplitterDemoScene : IScene
             GridResizeBehavior.PreviousAndCurrent, GridResizeBehavior.PreviousAndNext,
         };
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach ((string leftLabel, GridLength left) in sizes)
         {
             foreach ((string rightLabel, GridLength right) in sizes)
             {
-                var row = new List<string> { $"{leftLabel} | {rightLabel}" };
+                var row = new List<Loc> { $"{leftLabel} | {rightLabel}" };
 
                 (Grid before, _) = ThreeColumns(left, right, GridResizeBehavior.PreviousAndNext);
                 row.Add(Widths(Relayout(before)));
@@ -195,7 +198,7 @@ internal sealed class GridSplitterDemoScene : IScene
                     string initial = Widths(grid);
                     Drag(splitter, 30, 0);
                     string after = Widths(Relayout(grid));
-                    row.Add(after == initial ? "no change" : after);
+                    row.Add(after == initial ? T("no change", "変化なし") : after);
                 }
 
                 rows.Add(row);
@@ -205,9 +208,9 @@ internal sealed class GridSplitterDemoScene : IScene
         return rows;
     }
 
-    private static List<IReadOnlyList<string>> Placement()
+    private static List<IReadOnlyList<Loc>> Placement()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 専用の Auto 列に置き、配置を変える。
         foreach (HorizontalAlignment alignment in new[] { HorizontalAlignment.Stretch, HorizontalAlignment.Center })
@@ -283,14 +286,14 @@ internal sealed class GridSplitterDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> DirectionAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> DirectionAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (GridResizeDirection direction in new[]
                  { GridResizeDirection.Auto, GridResizeDirection.Columns, GridResizeDirection.Rows })
         {
-            var cells = new List<string> { direction.ToString() };
+            var cells = new List<Loc> { direction.ToString() };
             foreach (bool vertical in new[] { true, false })
             {
                 // デモアプリの ResizeDirection 欄と同じ構成。
@@ -334,9 +337,9 @@ internal sealed class GridSplitterDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> BehaviorsAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> BehaviorsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         GridLength star = new(1, GridUnitType.Star);
 
         // ShowsPreview: ドラッグ中（DragCompleted の前）と完了後の幅。

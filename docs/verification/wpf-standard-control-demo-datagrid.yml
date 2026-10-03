@@ -22,3 +22,10 @@ images:
   - "images/wpf-standard-control-demo/verification/datagrid/datagrid-defaults.svg"
   - "images/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.svg"
   - "images/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/datagrid/datagrid-defaults.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datagrid/datagrid-defaults.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datagrid/datagrid-columns-rows.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datagrid/datagrid-behavior.ja.md"

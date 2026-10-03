@@ -51,13 +51,13 @@ internal sealed class DataGridDemoScene : IScene
 
         await context.SaveTableAsync(
             "DataGrid: columns, read-only, adding and deleting rows",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await ColumnsAndRowsAsync(),
             "datagrid-columns-rows.svg");
 
         await context.SaveTableAsync(
             "DataGrid: editing, sorting, alternation, virtualization, frozen columns (4 x 100 in 200)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await BehaviorAsync(),
             "datagrid-behavior.svg");
     }
@@ -107,6 +107,9 @@ internal sealed class DataGridDemoScene : IScene
         public string this[string columnName] => null!;
     }
 
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static ObservableCollection<SampleItem> SampleItems() =>
     [
         new SampleItem { Name = "Item 1", Value = "Value A" },
@@ -136,9 +139,9 @@ internal sealed class DataGridDemoScene : IScene
         return (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(column);
     }
 
-    private static async Task<List<IReadOnlyList<string>>> DefaultsAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> DefaultsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         var chain = new List<string>();
         for (Type? type = typeof(DataGrid).BaseType; type is not null && type != typeof(Control); type = type.BaseType)
         {
@@ -169,16 +172,15 @@ internal sealed class DataGridDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> ColumnsAndRowsAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> ColumnsAndRowsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             DataGrid grid = NewGrid(new List<Declared> { new() });
             await ShowAsync(grid, async () =>
             {
-                rows.Add(["auto columns, declared Zeta, Alpha (get-only), Mid",
-                    string.Join(", ", grid.Columns.Select(c => $"{c.Header} ({(c.IsReadOnly ? "read-only" : "editable")})"))]);
+                rows.Add([T("auto columns, declared Zeta, Alpha (get-only), Mid", "自動生成の列、宣言は Zeta、Alpha（get のみ）、Mid"), ColumnList(grid)]);
                 await Task.CompletedTask;
             });
         }
@@ -188,8 +190,7 @@ internal sealed class DataGridDemoScene : IScene
             DataGrid grid = NewGrid(SampleItems());
             await ShowAsync(grid, async () =>
             {
-                rows.Add(["auto columns, demo SampleItem (IDataErrorInfo)",
-                    string.Join(", ", grid.Columns.Select(c => $"{c.Header} ({(c.IsReadOnly ? "read-only" : "editable")})"))]);
+                rows.Add([T("auto columns, demo SampleItem (IDataErrorInfo)", "自動生成の列、デモの SampleItem（IDataErrorInfo）"), ColumnList(grid)]);
                 await Task.CompletedTask;
             });
         }
@@ -200,18 +201,18 @@ internal sealed class DataGridDemoScene : IScene
             grid.Columns.Add(new DataGridTextColumn { Header = "Frozen", Binding = new Binding(nameof(SampleItem.Name)) });
             grid.Columns.Add(new DataGridTextColumn { Header = "Scrollable", Binding = new Binding(nameof(SampleItem.Value)) });
             string thrown = Throws(() => grid.FrozenColumnCount = 3);
-            string shown = "shown";
+            Loc shown = T("shown", "表示できる");
             try
             {
                 await ShowAsync(grid, () => Task.CompletedTask);
             }
             catch (Exception ex)
             {
-                shown = ex.GetType().Name + " when shown";
+                shown = T(ex.GetType().Name + " when shown", "表示時に " + ex.GetType().Name);
             }
 
-            rows.Add(["2 columns, FrozenColumnCount = 3 (demo slider max)",
-                $"{thrown}, {shown}; value {grid.FrozenColumnCount}"]);
+            rows.Add([T("2 columns, FrozenColumnCount = 3 (demo slider max)", "2 列、FrozenColumnCount = 3（デモのスライダーの最大値）"),
+                T($"{thrown}, {shown.En}; value {grid.FrozenColumnCount}", $"{thrown}、{shown.Ja}、値 {grid.FrozenColumnCount}")]);
         }
 
         foreach (bool withRule in new[] { false, true })
@@ -232,7 +233,7 @@ internal sealed class DataGridDemoScene : IScene
                 grid.BeginEdit();
                 grid.CommitEdit(DataGridEditingUnit.Row, true);
                 await Settle(grid);
-                rows.Add([$"demo data, row 3 Error, RowValidationRules {(withRule ? "+ DataErrorValidationRule" : "empty")}: HasError start / edited",
+                rows.Add([T($"demo data, row 3 Error, RowValidationRules {(withRule ? "+ DataErrorValidationRule" : "empty")}: HasError start / edited", $"デモのデータ、3 行目に Error、RowValidationRules {(withRule ? "+ DataErrorValidationRule" : "空")}: HasError の最初 / 編集後"),
                     $"{atStart} / {Validation.GetHasError(errorRow)}"]);
             });
         }
@@ -245,20 +246,20 @@ internal sealed class DataGridDemoScene : IScene
             await ShowAsync(grid, async () =>
             {
                 DataGridColumn column = grid.Columns[0];
-                rows.Add(["DataGrid IsReadOnly=True: CanUserAddRows",
+                rows.Add([T("DataGrid IsReadOnly=True: CanUserAddRows", "DataGrid が IsReadOnly=True: CanUserAddRows"),
                     WpfProbe.ValueAndSource(grid, DataGrid.CanUserAddRowsProperty)]);
-                rows.Add(["  column IsReadOnly=False set: IsReadOnly / BeginEdit()",
+                rows.Add([T("  column IsReadOnly=False set: IsReadOnly / BeginEdit()", "  列に IsReadOnly=False を指定: IsReadOnly / BeginEdit()"),
                     $"{column.IsReadOnly} / {BeginEditOn(grid)}"]);
                 await Task.CompletedTask;
             });
         }
 
-        foreach ((string label, object source) in new (string, object)[]
+        foreach ((Loc label, object source) in new (Loc, object)[]
         {
             ("List<Person>", People().ToList()),
             ("ObservableCollection<Person>", People()),
-            ("Person[] (array)", People().ToArray()),
-            ("List<T> without parameterless ctor", new List<NoDefaultConstructor> { new(1), new(2) }),
+            (T("Person[] (array)", "Person[]（配列）"), People().ToArray()),
+            (T("List<T> without parameterless ctor", "引数なしのコンストラクターが無い型の List<T>"), new List<NoDefaultConstructor> { new(1), new(2) }),
         })
         {
             DataGrid grid = NewGrid(source);
@@ -268,8 +269,8 @@ internal sealed class DataGridDemoScene : IScene
                 await ShowAsync(grid, async () =>
                 {
                     bool placeholder = grid.Items.Contains(CollectionView.NewItemPlaceholder);
-                    rows.Add([$"new-item row / CanUserAddRows, ItemsSource {label}",
-                        $"{(placeholder ? "shown" : "not shown")} / {grid.CanUserAddRows}"]);
+                    rows.Add([T($"new-item row / CanUserAddRows, ItemsSource {label.En}", $"新規行 / CanUserAddRows、ItemsSource {label.Ja}"),
+                        placeholder ? T($"shown / {grid.CanUserAddRows}", $"表示される / {grid.CanUserAddRows}") : T($"not shown / {grid.CanUserAddRows}", $"表示されない / {grid.CanUserAddRows}")]);
                     await Task.CompletedTask;
                 });
             }
@@ -280,7 +281,7 @@ internal sealed class DataGridDemoScene : IScene
 
             if (thrown != "no exception")
             {
-                rows.Add([$"  {label}: exception", thrown]);
+                rows.Add([T($"  {label.En}: exception", $"  {label.Ja}: 例外"), thrown]);
             }
         }
 
@@ -295,7 +296,7 @@ internal sealed class DataGridDemoScene : IScene
                 await Settle(grid);
                 PressKey(cell, Key.Delete);
                 await Settle(grid);
-                rows.Add(["row 2 selected, Delete key: items left",
+                rows.Add([T("row 2 selected, Delete key: items left", "2 行目を選んで Delete キー: 残った項目"),
                     $"{people.Count} ({string.Join(", ", people.Select(p => p.Name))})"]);
             }, activate: true);
         }
@@ -303,15 +304,20 @@ internal sealed class DataGridDemoScene : IScene
         return rows;
     }
 
+    /// <summary>列の見出しと、読み取り専用かどうか。</summary>
+    private static Loc ColumnList(DataGrid grid) => T(
+        string.Join(", ", grid.Columns.Select(c => $"{c.Header} ({(c.IsReadOnly ? "read-only" : "editable")})")),
+        string.Join("、", grid.Columns.Select(c => $"{c.Header}（{(c.IsReadOnly ? "読み取り専用" : "編集できる")}）")));
+
     private static string BeginEditOn(DataGrid grid)
     {
         grid.CurrentCell = new DataGridCellInfo(grid.Items[0], grid.Columns[0]);
         return grid.BeginEdit().ToString();
     }
 
-    private static async Task<List<IReadOnlyList<string>>> BehaviorAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> BehaviorAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             ObservableCollection<Person> people = People();
@@ -326,19 +332,19 @@ internal sealed class DataGridDemoScene : IScene
                 PressKey(cell, Key.F2);
                 await Settle(grid);
                 string editor = Descendants(cell).OfType<Control>().FirstOrDefault()?.GetType().Name ?? "(none)";
-                rows.Add(["Name cell, F2: IsEditing / editor", $"{cell.IsEditing} / {editor}"]);
+                rows.Add([T("Name cell, F2: IsEditing / editor", "Name のセルで F2: IsEditing / 編集用の要素"), $"{cell.IsEditing} / {editor}"]);
 
                 Descendants(cell).OfType<TextBox>().First().Text = "Changed";
                 PressKey(Descendants(cell).OfType<TextBox>().First(), Key.Escape);
                 await Settle(grid);
-                rows.Add(["  typed \"Changed\", Esc: IsEditing / source", $"{cell.IsEditing} / \"{people[0].Name}\""]);
+                rows.Add([T("  typed \"Changed\", Esc: IsEditing / source", "  \"Changed\" を入力して Esc: IsEditing / ソース"), $"{cell.IsEditing} / \"{people[0].Name}\""]);
 
                 PressKey(cell, Key.F2);
                 await Settle(grid);
                 Descendants(cell).OfType<TextBox>().First().Text = "Committed";
                 PressKey(Descendants(cell).OfType<TextBox>().First(), Key.Enter);
                 await Settle(grid);
-                rows.Add(["  F2, typed \"Committed\", Enter: source", $"\"{people[0].Name}\""]);
+                rows.Add([T("  F2, typed \"Committed\", Enter: source", "  F2、\"Committed\" を入力して Enter: ソース"), $"\"{people[0].Name}\""]);
             }, activate: true);
         }
 
@@ -366,7 +372,7 @@ internal sealed class DataGridDemoScene : IScene
                     grid.CancelEdit();
                 }
 
-                rows.Add(["editor by column type", string.Join(", ", editors)]);
+                rows.Add([T("editor by column type", "列の種類ごとの編集用の要素"), string.Join(", ", editors)]);
             });
         }
 
@@ -385,18 +391,19 @@ internal sealed class DataGridDemoScene : IScene
                     directions.Add(grid.Columns[1].SortDirection?.ToString() ?? "none");
                 }
 
-                rows.Add(["Name header clicked 3 times: SortDirection", string.Join(" -> ", directions)]);
+                string order = string.Join(" -> ", directions);
+                rows.Add([T("Name header clicked 3 times: SortDirection", "Name の見出しを 3 回クリック: SortDirection"), T(order, order.Replace("none", "なし"))]);
             });
         }
 
         // セルの編集中に並べ替えを加える。編集を終えるメソッドごとに、並べ替えられるかを確かめる。
-        foreach ((string label, Action<DataGrid>? finish) in new (string, Action<DataGrid>?)[]
+        foreach ((Loc label, Action<DataGrid>? finish) in new (Loc, Action<DataGrid>?)[]
         {
-            ("editing a cell, Items.SortDescriptions.Add(...)", null),
-            ("  after CommitEdit()", g => g.CommitEdit()),
-            ("  after CancelEdit()", g => g.CancelEdit()),
-            ("  after CommitEdit(DataGridEditingUnit.Row, true)", g => g.CommitEdit(DataGridEditingUnit.Row, true)),
-            ("  after CancelEdit(DataGridEditingUnit.Row)", g => g.CancelEdit(DataGridEditingUnit.Row)),
+            (T("editing a cell, Items.SortDescriptions.Add(...)", "セルの編集中に Items.SortDescriptions.Add(...)"), null),
+            (T("  after CommitEdit()", "  CommitEdit() の後"), g => g.CommitEdit()),
+            (T("  after CancelEdit()", "  CancelEdit() の後"), g => g.CancelEdit()),
+            (T("  after CommitEdit(DataGridEditingUnit.Row, true)", "  CommitEdit(DataGridEditingUnit.Row, true) の後"), g => g.CommitEdit(DataGridEditingUnit.Row, true)),
+            (T("  after CancelEdit(DataGridEditingUnit.Row)", "  CancelEdit(DataGridEditingUnit.Row) の後"), g => g.CancelEdit(DataGridEditingUnit.Row)),
         })
         {
             ObservableCollection<Person> people = People();
@@ -420,18 +427,18 @@ internal sealed class DataGridDemoScene : IScene
             {
                 var backgrounds = Enumerable.Range(0, 4)
                     .Select(i => ((DataGridRow)grid.ItemContainerGenerator.ContainerFromIndex(i)).Background?.ToString() ?? "null");
-                rows.Add(["only AlternatingRowBackground set: AlternationCount / rows",
+                rows.Add([T("only AlternatingRowBackground set: AlternationCount / rows", "AlternatingRowBackground だけを指定: AlternationCount / 各行"),
                     $"{grid.AlternationCount} / {string.Join(", ", backgrounds)}"]);
                 await Task.CompletedTask;
             });
         }
 
-        foreach ((string label, bool grouped, bool groupStyle, bool virtualizeGroups) in new[]
+        foreach ((Loc label, bool grouped, bool groupStyle, bool virtualizeGroups) in new (Loc, bool, bool, bool)[]
         {
-            ("1,000 rows", false, false, false),
-            ("1,000 rows grouped, with GroupStyle", true, true, false),
-            ("1,000 rows grouped, no GroupStyle", true, false, false),
-            ("1,000 rows grouped, GroupStyle, IsVirtualizingWhenGrouping=True", true, true, true),
+            (T("1,000 rows", "1,000 行"), false, false, false),
+            (T("1,000 rows grouped, with GroupStyle", "1,000 行をグループ化、GroupStyle あり"), true, true, false),
+            (T("1,000 rows grouped, no GroupStyle", "1,000 行をグループ化、GroupStyle なし"), true, false, false),
+            (T("1,000 rows grouped, GroupStyle, IsVirtualizingWhenGrouping=True", "1,000 行をグループ化、GroupStyle、IsVirtualizingWhenGrouping=True"), true, true, true),
         })
         {
             var people = new ObservableCollection<Person>(Enumerable.Range(1, 1000).Select(i => new Person { Id = i, Name = $"N{i}", Age = i % 10 }));
@@ -455,7 +462,7 @@ internal sealed class DataGridDemoScene : IScene
 
             await ShowAsync(grid, async () =>
             {
-                rows.Add([$"{label}: DataGridRows / GroupItems",
+                rows.Add([T($"{label.En}: DataGridRows / GroupItems", $"{label.Ja}: DataGridRow の数 / GroupItem の数"),
                     $"{Descendants(grid).OfType<DataGridRow>().Count()} / {Descendants(grid).OfType<GroupItem>().Count()}"]);
                 await Task.CompletedTask;
             });
@@ -475,7 +482,7 @@ internal sealed class DataGridDemoScene : IScene
                 string before = $"{D(Bounds(first, grid).X)}, {D(Bounds(second, grid).X)}";
                 viewer.ScrollToHorizontalOffset(60);
                 await Settle(grid);
-                rows.Add([$"FrozenColumnCount={frozen}, scrolled 60: x of columns 1, 2 before / after",
+                rows.Add([T($"FrozenColumnCount={frozen}, scrolled 60: x of columns 1, 2 before / after", $"FrozenColumnCount={frozen}、60 スクロール: 1 列目と 2 列目の x 座標 前 / 後"),
                     $"{before} / {D(Bounds(first, grid).X)}, {D(Bounds(second, grid).X)}"]);
             });
         }

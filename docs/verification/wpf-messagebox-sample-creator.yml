@@ -13,3 +13,8 @@ verifies:
 images:
   - "images/wpf-messagebox-sample-creator/verification/messagebox-enums.svg"
   - "images/wpf-messagebox-sample-creator/verification/messagebox-default-button.svg"
+tables:
+  - "_includes/tables/wpf-messagebox-sample-creator/verification/messagebox-enums.en.md"
+  - "_includes/tables/wpf-messagebox-sample-creator/verification/messagebox-enums.ja.md"
+  - "_includes/tables/wpf-messagebox-sample-creator/verification/messagebox-default-button.en.md"
+  - "_includes/tables/wpf-messagebox-sample-creator/verification/messagebox-default-button.ja.md"

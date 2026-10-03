@@ -25,10 +25,10 @@ Grid は行を `RowDefinition`、列を `ColumnDefinition` で定義し、子要
 
 例外になるのは不正な数値だけで、負の番号と 0 の Span は `ArgumentException` になります。それ以外は警告なしに丸められます。`Grid.Column` は `ColumnDefinition` への参照ではなく番号なので、定義を削除しても子要素の番号はそのままです。削除後にその番号を持つ列に置かれ、番号が新しい最後の列を超えていれば、上で見た丸めのとおり警告なしに最後の列へ置かれます。定義を削除したときは子要素を確認します（削除そのものは測っていません）。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/grid/grid-placement.svg" alt="300×200 の Grid での子要素の配置を示す表。行と列を指定しない子要素は最初のセルで重なり、範囲外の番号や Span は最後の列と行に丸められ、負の値と Span 0 は ArgumentException になり、定義のない Grid ではすべての子要素が 1 つのセルに置かれる" width="810" height="380" loading="lazy">
-  <figcaption>300 &times; 200 の Grid で子要素が置かれた位置（x, y, 幅, 高さ）。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/grid/grid-placement.ja.md %}
+
+300 &times; 200 の Grid で子要素が置かれた位置（x, y, 幅, 高さ）。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## `*` 列が比率を保つ条件
 
@@ -40,10 +40,10 @@ Grid は行を `RowDefinition`、列を `ColumnDefinition` で定義し、子要
 
 行も縦方向に同じように振る舞います。`ScrollViewer` の中で `Auto` 行を使うのは問題ありません。高さ 120 の ScrollViewer に、高さ 100 の `Auto` 行を 3 つ持つ Grid を入れると、Grid の高さは 300 になり、縦のスクロールバーが表示されました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/grid/grid-unbounded.svg" alt="幅 60 と 30 の内容を持つ 1* と 2* の列の幅を、親要素ごとに示す表。横向きの StackPanel では内容の幅 60 と 30、縦向きの StackPanel と広い ScrollViewer では 1:2、幅 60 の ScrollViewer では横スクロールの設定により内容の幅とスクロールバー、または 20 と 40 の比率になる" width="964" height="320" loading="lazy">
-  <figcaption>親要素ごとの <code>*</code> 列・<code>*</code> 行の大きさ。どの場合も 0 には潰れない。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/grid/grid-unbounded.ja.md %}
+
+親要素ごとの <code>*</code> 列・<code>*</code> 行の大きさ。どの場合も 0 には潰れない。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 別々の Grid の列をそろえる
 

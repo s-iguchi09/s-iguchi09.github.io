@@ -22,3 +22,10 @@ images:
   - "images/wpf-standard-control-demo/verification/datepicker/datepicker-defaults.svg"
   - "images/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.svg"
   - "images/wpf-standard-control-demo/verification/datepicker/datepicker-calendar-binding.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/datepicker/datepicker-defaults.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datepicker/datepicker-defaults.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datepicker/datepicker-range-input.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datepicker/datepicker-calendar-binding.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/datepicker/datepicker-calendar-binding.ja.md"

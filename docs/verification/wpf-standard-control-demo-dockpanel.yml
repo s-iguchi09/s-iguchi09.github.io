@@ -15,3 +15,6 @@ verifies:
   - "デモアプリと同じ重なり（2 つ目の Label の左余白 -30）で、ZIndex を入れ替えたときに上になる要素"
 images:
   - "images/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/dockpanel/dockpanel-behavior.ja.md"

@@ -15,6 +15,9 @@ namespace ScreenshotCapture.Scenes;
 /// </summary>
 internal sealed class MessageBoxSampleCreatorScene : IScene
 {
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static readonly string[] Targets = ["net8.0-windows", "net10.0-windows"];
 
     public string Slug => "wpf-messagebox-sample-creator";
@@ -31,8 +34,8 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
-        var enums = new List<IReadOnlyList<string>>();
-        var defaults = new List<IReadOnlyList<string>>();
+        var enums = new List<IReadOnlyList<Loc>>();
+        var defaults = new List<IReadOnlyList<Loc>>();
 
         foreach (string target in Targets)
         {
@@ -42,7 +45,7 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
             enums.Add([$"{runtime}: MessageBoxButton", string.Join(", ", result["button"])]);
             enums.Add([$"{runtime}: MessageBoxResult", string.Join(", ", result["result"])]);
             enums.Add([$"{runtime}: MessageBoxOptions", string.Join(", ", result["options"])]);
-            enums.Add([$"{runtime}: Enum.GetValues(MessageBoxImage) as text", string.Join(", ", result["image"])]);
+            enums.Add([T($"{runtime}: Enum.GetValues(MessageBoxImage) as text", $"{runtime}: Enum.GetValues(MessageBoxImage) の文字列"), string.Join(", ", result["image"])]);
 
             int combinations = 0, firstWhenAbsent = 0, absent = 0;
             foreach (string line in result["default"])
@@ -51,7 +54,7 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
                 string[] parts = line.Split('\t');
                 string button = parts[0];
                 string[] shown = parts[1].Split(',');
-                var others = new List<string>();
+                var others = new List<Loc>();
                 foreach (string pair in parts.Skip(2))
                 {
                     string[] kv = pair.Split('=');
@@ -65,7 +68,7 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
                         }
                         else
                         {
-                            others.Add($"{kv[0]} gave {kv[1]}");
+                            others.Add(T($"{kv[0]} gave {kv[1]}", $"{kv[0]} で {kv[1]}"));
                         }
                     }
                     else if (kv[0] != "None")
@@ -74,25 +77,25 @@ internal sealed class MessageBoxSampleCreatorScene : IScene
                     }
                 }
 
-                defaults.Add([$"{runtime}: {button} ({string.Join(", ", shown)})", string.Join("; ", others)]);
+                defaults.Add([$"{runtime}: {button} ({string.Join(", ", shown)})", T(string.Join("; ", others.Select(o => o.En)), string.Join("、", others.Select(o => o.Ja)))]);
             }
 
             defaults.Add(
             [
-                $"{runtime}: None or a result not in the set → first button",
-                $"{firstWhenAbsent} of {absent} (of {combinations} dialogs shown)",
+                T($"{runtime}: None or a result not in the set → first button", $"{runtime}: None または組に無い結果 → 最初のボタン"),
+                T($"{firstWhenAbsent} of {absent} (of {combinations} dialogs shown)", $"{absent} 件中 {firstWhenAbsent} 件（表示した {combinations} 個のダイアログのうち）"),
             ]);
         }
 
         await context.SaveTableAsync(
             "MessageBox enums on .NET 8 and .NET 10",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             enums,
             "messagebox-enums.svg");
 
         await context.SaveTableAsync(
             "MessageBox default button for each button set and defaultResult",
-            ["button set (buttons shown)", "defaultResult → default button"],
+            [T("button set (buttons shown)", "ボタンの組（表示されるボタン）"), T("defaultResult → default button", "defaultResult → 既定のボタン")],
             defaults,
             "messagebox-default-button.svg");
     }
