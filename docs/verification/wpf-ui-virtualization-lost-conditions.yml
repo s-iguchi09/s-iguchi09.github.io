@@ -1,0 +1,38 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-ui-virtualization-lost-conditions
+slug: "wpf-ui-virtualization-lost-conditions"
+scene: "VirtualizationLostConditionsScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "高さ 200 の領域に 1,000 件を表示したとき、ListBox・ListView（GridView）・DataGrid は表示範囲とキャッシュの分（10〜11 個）しかコンテナーを作らないこと。DataGrid の項目のパネル DataGridRowsPresenter は VirtualizingStackPanel の派生であること"
+  - "ScrollViewer に入れた ItemsControl、高さ 200 の Grid に直接置いた ItemsControl、ルートのノードが 1,000 個の TreeView は、1,000 個すべてのコンテナーを作ること。いずれも項目のパネルが StackPanel であり、TreeView は IsVirtualizing と CanContentScroll が False であること"
+  - "ComboBox はドロップダウンを開く前はコンテナーも項目のパネルも作らず、開くと 1,000 個すべてのコンテナーを作り、閉じた後も 1,000 個を持ち続けること。項目のパネルが StackPanel であること"
+  - "縦の StackPanel・ScrollViewer・Height=Auto の Grid の行に置いた ListBox は、高さが全項目分まで伸び、1,000 個すべてのコンテナーを作ること。項目のパネル・IsVirtualizing・CanContentScroll は仮想化される場合と同じであること"
+  - "展開した Expander の中の ListBox は、Expander が Grid の中なら仮想化され、縦の StackPanel の中なら 1,000 個すべてを作ること"
+  - "ScrollViewer.CanContentScroll=False と VirtualizingPanel.IsVirtualizing=False は、高さが 200 のままでも 1,000 個すべてのコンテナーを作り、項目のパネルは VirtualizingStackPanel のままであること"
+  - "ItemsPanel を StackPanel または WrapPanel に替えた ListBox は、1,000 個すべてのコンテナーを作ること"
+  - "GroupStyle を付けてグループ化した ListBox は、最上位の項目のパネルが StackPanel に、CanContentScroll が False になり、1,000 個すべてのコンテナーを作ること。GroupStyle を付けなければ、GroupDescriptions があっても IsGrouping は False で、仮想化は保たれること"
+  - "DataGrid の EnableRowVirtualization=False は、1,000 個すべての行を作り、IsVirtualizing が False になること"
+  - "VirtualizingPanel.ScrollUnit=Pixel は仮想化を保つこと"
+  - "ListBox は VirtualizingPanel.CacheLength=0 にするとコンテナーが 11 個から 10 個に、VirtualizingPanel.CacheLengthUnit=Page にすると 20 個になること"
+  - "VirtualizingPanel.IsVirtualizing=True の TreeView は、VirtualizingPanel.CacheLength=0 にするとコンテナーが 25 個から 13 個になること"
+  - "TreeView に VirtualizingPanel.IsVirtualizing=True を指定すると、項目のパネルが VirtualizingStackPanel に、CanContentScroll が True になり、仮想化されること"
+  - "ItemsControl は VirtualizingStackPanel の ItemsPanel と CanContentScroll=True の ScrollViewer のテンプレートで仮想化され、パネルだけを替えた場合は CanContentScroll=True の外側の ScrollViewer に入れても高さ 200 の Grid に直接置いても 1,000 個すべてを作ること"
+  - "ComboBox に VirtualizingStackPanel の ItemsPanel、GroupStyle 付きのグループ化に VirtualizingPanel.IsVirtualizingWhenGrouping=True、縦の StackPanel の中の ListBox に MaxHeight を指定すると、それぞれ仮想化されること"
+  - "検索欄の TextBox と ListBox を、Grid の Auto と * の行、または DockPanel（上に寄せた TextBox と最後の子の ListBox）に置くと、ListBox が仮想化されること"
+images:
+  - "images/articles/wpf-ui-virtualization-lost-conditions/virtualization-defaults.svg"
+  - "images/articles/wpf-ui-virtualization-lost-conditions/virtualization-placement.svg"
+  - "images/articles/wpf-ui-virtualization-lost-conditions/virtualization-settings.svg"
+  - "images/articles/wpf-ui-virtualization-lost-conditions/virtualization-fixes.svg"
+tables:
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-defaults.en.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-defaults.ja.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-placement.en.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-placement.ja.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-settings.en.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-settings.ja.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-fixes.en.md"
+  - "_includes/tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-fixes.ja.md"
