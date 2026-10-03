@@ -45,6 +45,7 @@ internal static class Program
         new RadioButtonEnumBindingScene(),
         new NaturalSortScene(),
         new InputLimitsFromCodeScene(),
+        new VirtualizationLostConditionsScene(),
         new CollectionViewFilterRefreshScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
