@@ -16,3 +16,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.svg"
   - "images/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-groups.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/radiobutton/radiobutton-binding-keys.ja.md"

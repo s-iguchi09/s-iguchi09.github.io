@@ -23,10 +23,10 @@ Setting `SelectedIndex = 2` selected the third item, updated `SelectedItem`, and
 
 `DisplayMemberPath` is the property of each item to show as text. With `DisplayMemberPath="Name"`, each item was shown by a `TextBlock` reading "Desktop". A path that does not exist gave an empty `TextBlock`, with no exception. It cannot be combined with `ItemTemplate`: setting both threw `InvalidOperationException`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/listbox/listbox-values.svg" alt="Table of ListBox selection values: an out-of-range SelectedIndex is ignored, -1 clears the selection, a new instance of a class without Equals selects nothing while an equal record selects the item, SelectedValue set before ItemsSource is applied later, a missing DisplayMemberPath shows empty text, and DisplayMemberPath with ItemTemplate throws InvalidOperationException" width="1077" height="350" loading="lazy">
-  <figcaption>SelectedIndex, SelectedItem, SelectedValue, and DisplayMemberPath. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/listbox/listbox-values.en.md %}
+
+SelectedIndex, SelectedItem, SelectedValue, and DisplayMemberPath. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Virtualization: what exists, and what scrolls
 
@@ -38,10 +38,10 @@ It also affects multi-selection. `IsSelected` on a `ListBoxItem` binds two-way b
 
 The scroll bars are set with the attached properties `ScrollViewer.HorizontalScrollBarVisibility` and `ScrollViewer.VerticalScrollBarVisibility`; the default style sets both to `Auto`. With 1,000 items, `Auto` showed the vertical bar. `Disabled` hid it but did not stop scrolling: the scrollable range was the same (996 items), and 20 presses of the down arrow scrolled the list as far as with `Auto`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/listbox/listbox-scrolling.svg" alt="Table of ListBox scrolling with 1,000 items: six containers are created, selecting item 500 from code does not scroll until ScrollIntoView is called, and a Disabled vertical scroll bar hides the bar but keyboard navigation still scrolls" width="1022" height="230" loading="lazy">
-  <figcaption>Virtualization and scrolling with 1,000 items in a list 100 high. Offsets are in items. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/listbox/listbox-scrolling.en.md %}
+
+Virtualization and scrolling with 1,000 items in a list 100 high. Offsets are in items. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

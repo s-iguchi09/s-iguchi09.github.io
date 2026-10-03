@@ -36,16 +36,19 @@ internal sealed class ProgressBarDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ProgressBar: range, fill and orientation",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             MeasureRange(),
             "progressbar-range.svg");
 
         await context.SaveTableAsync(
             "ProgressBar: indeterminate mode, threads and UI Automation",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureModesAsync(),
             "progressbar-modes.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static Rect Indicator(ProgressBar bar)
     {
@@ -64,31 +67,31 @@ internal sealed class ProgressBarDemoScene : IScene
         return bar;
     }
 
-    private static List<IReadOnlyList<string>> MeasureRange()
+    private static List<IReadOnlyList<Loc>> MeasureRange()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new ProgressBar();
-        rows.Add(["base class / defaults: Minimum, Maximum, Value, IsIndeterminate, Orientation",
+        rows.Add([T("base class / defaults: Minimum, Maximum, Value, IsIndeterminate, Orientation", "基底クラス / 既定値: Minimum、Maximum、Value、IsIndeterminate、Orientation"),
             $"{typeof(ProgressBar).BaseType!.Name} / {D(defaults.Minimum)}, {D(defaults.Maximum)}, {D(defaults.Value)}, {defaults.IsIndeterminate}, {defaults.Orientation}"]);
 
         foreach ((double min, double max, double value) in new[] { (0d, 100d, 30d), (20d, 120d, 70d), (0d, 100d, 0d) })
         {
             ProgressBar bar = Bar(min, max, value);
-            rows.Add([$"width 200, Minimum {D(min)}, Maximum {D(max)}, Value {D(value)}: indicator width",
+            rows.Add([T($"width 200, Minimum {D(min)}, Maximum {D(max)}, Value {D(value)}: indicator width", $"幅 200、Minimum {D(min)}、Maximum {D(max)}、Value {D(value)}: 進捗の部分の幅"),
                 D(Indicator(bar).Width)]);
         }
 
         {
             ProgressBar bar = Bar(50, 50, 50);
-            rows.Add(["Minimum = Maximum = 50: indicator width (exception)", $"{D(Indicator(bar).Width)} (none)"]);
+            rows.Add([T("Minimum = Maximum = 50: indicator width (exception)", "Minimum = Maximum = 50: 進捗の部分の幅（例外）"), $"{D(Indicator(bar).Width)} (none)"]);
         }
 
         {
             var bar = new ProgressBar { Minimum = 50, Width = 200, Height = 20 };
             bar.Maximum = 10;
             Host(bar);
-            rows.Add(["Minimum 50, then Maximum = 10: Maximum / Value / indicator width",
+            rows.Add([T("Minimum 50, then Maximum = 10: Maximum / Value / indicator width", "Minimum 50、続けて Maximum = 10: Maximum / Value / 進捗の部分の幅"),
                 $"{D(bar.Maximum)} / {D(bar.Value)} / {D(Indicator(bar).Width)}"]);
         }
 
@@ -97,13 +100,13 @@ internal sealed class ProgressBarDemoScene : IScene
             string first = $"{D(bar.Value)} / {D(Indicator(bar).Width)}";
             bar.Maximum = 200;
             Host(bar);
-            rows.Add(["Value = 150 with Maximum 100: Value / indicator width; then Maximum = 200: Value",
+            rows.Add([T("Value = 150 with Maximum 100: Value / indicator width; then Maximum = 200: Value", "Maximum 100 で Value = 150: Value / 進捗の部分の幅、続けて Maximum = 200: Value"),
                 $"{first}; {D(bar.Value)}"]);
         }
 
         {
             var bar = Host(new ProgressBar { Orientation = Orientation.Vertical, Value = 75, Width = 20, Height = 200 });
-            rows.Add(["Orientation=Vertical, 20 x 200, Value 75: indicator bounds", Format(Indicator(bar))]);
+            rows.Add([T("Orientation=Vertical, 20 x 200, Value 75: indicator bounds", "Orientation=Vertical、20 x 200、Value 75: 進捗の部分の位置と大きさ"), Format(Indicator(bar))]);
         }
 
         return rows;
@@ -113,9 +116,9 @@ internal sealed class ProgressBarDemoScene : IScene
     private static string Snapshot(ProgressBar bar) => string.Join("|", Descendants(bar).OfType<FrameworkElement>()
         .Select(e => $"{e.Margin}{e.RenderTransform.Value}{e.RenderTransformOrigin}{e.Opacity}{(e is System.Windows.Shapes.Shape or Border ? e.ActualWidth : 0)}"));
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureModesAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureModesAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var bar = new ProgressBar { Value = 30, Width = 200, Height = 20, IsIndeterminate = true };
@@ -127,7 +130,7 @@ internal sealed class ProgressBarDemoScene : IScene
                 string states = string.Join(", ", VisualStateManager.GetVisualStateGroups(root)!
                     .Cast<VisualStateGroup>()
                     .Select(g => $"{g.Name}: {g.CurrentState?.Name ?? "none"}"));
-                rows.Add(["IsIndeterminate=True, Value 30: indicator width / visual state",
+                rows.Add([T("IsIndeterminate=True, Value 30: indicator width / visual state", "IsIndeterminate=True、Value 30: 進捗の部分の幅 / 表示状態"),
                     $"{D(Indicator(bar).Width)} / {states}"]);
 
                 string before = Snapshot(bar);
@@ -147,7 +150,7 @@ internal sealed class ProgressBarDemoScene : IScene
                 await Task.Delay(300);
                 bool movingDeterminate = Snapshot(bar) != before;
 
-                rows.Add(["animation running (template changes in 300 ms): visible / Collapsed / determinate",
+                rows.Add([T("animation running (template changes in 300 ms): visible / Collapsed / determinate", "アニメーション中（300 ミリ秒でテンプレートを変える）: 表示 / Collapsed / 確定モード"),
                     $"{movingVisible} / {movingCollapsed} / {movingDeterminate}"]);
             });
         }
@@ -164,8 +167,8 @@ internal sealed class ProgressBarDemoScene : IScene
             });
             await Task.Run(() => ((IProgress<double>)progress).Report(40));
             int callbackThread = await reported.Task;
-            rows.Add(["Value set from a worker thread", fromWorker]);
-            rows.Add(["Progress<double> made on the UI thread, Report(40) from a worker: callback on the UI thread / Value",
+            rows.Add([T("Value set from a worker thread", "ワーカースレッドから Value を設定"), fromWorker]);
+            rows.Add([T("Progress<double> made on the UI thread, Report(40) from a worker: callback on the UI thread / Value", "UI スレッドで作った Progress<double>、ワーカーから Report(40): UI スレッドでのコールバックか / Value"),
                 $"{callbackThread == uiThread} / {D(bar.Value)}"]);
         }
 
@@ -174,13 +177,13 @@ internal sealed class ProgressBarDemoScene : IScene
             await ShowAsync(bar, async () =>
             {
                 var peer = new ProgressBarAutomationPeer(bar);
-                string Pattern() => peer.GetPattern(PatternInterface.RangeValue) is System.Windows.Automation.Provider.IRangeValueProvider range
-                    ? $"value {D(range.Value)}, IsReadOnly {range.IsReadOnly}"
-                    : "not supported";
-                string determinate = Pattern();
+                Loc Pattern() => peer.GetPattern(PatternInterface.RangeValue) is System.Windows.Automation.Provider.IRangeValueProvider range
+                    ? T($"value {D(range.Value)}, IsReadOnly {range.IsReadOnly}", $"値 {D(range.Value)}、IsReadOnly {range.IsReadOnly}")
+                    : T("not supported", "対応していない");
+                Loc determinate = Pattern();
                 bar.IsIndeterminate = true;
-                rows.Add(["UI Automation RangeValue pattern: determinate / IsIndeterminate=True",
-                    $"{determinate} / {Pattern()}"]);
+                rows.Add([T("UI Automation RangeValue pattern: determinate / IsIndeterminate=True", "UI オートメーションの RangeValue パターン: 確定モード / IsIndeterminate=True"),
+                    T($"{determinate.En} / {Pattern().En}", $"{determinate.Ja} / {Pattern().Ja}")]);
                 await Task.CompletedTask;
             });
         }

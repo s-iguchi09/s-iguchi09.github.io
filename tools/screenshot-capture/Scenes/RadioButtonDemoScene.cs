@@ -38,16 +38,19 @@ internal sealed class RadioButtonDemoScene : IScene
     {
         await context.SaveTableAsync(
             "RadioButton: which buttons form a group",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureGroupsAsync(),
             "radiobutton-groups.svg");
 
         await context.SaveTableAsync(
             "RadioButton: bindings, keyboard and VerticalContentAlignment",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureBindingAndKeysAsync(),
             "radiobutton-binding-keys.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static readonly System.Reflection.MethodInfo OnClickMethod =
         typeof(ToggleButton).GetMethod("OnClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!;
@@ -75,11 +78,11 @@ internal sealed class RadioButtonDemoScene : IScene
         return Checked(buttons);
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureGroupsAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureGroupsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class / default IsChecked", $"{typeof(RadioButton).BaseType!.Name} / {WpfProbe.Describe(new RadioButton().IsChecked)}"]);
+        rows.Add([T("base class / default IsChecked", "基底クラス / IsChecked の既定値"), $"{typeof(RadioButton).BaseType!.Name} / {WpfProbe.Describe(new RadioButton().IsChecked)}"]);
 
         {
             var a = Radio("A");
@@ -89,7 +92,7 @@ internal sealed class RadioButtonDemoScene : IScene
             {
                 Click(a);
                 Click(a);
-                rows.Add(["checked RadioButton clicked again: IsChecked", WpfProbe.Describe(a.IsChecked)]);
+                rows.Add([T("checked RadioButton clicked again: IsChecked", "チェック済みの RadioButton をもう一度クリック: IsChecked"), WpfProbe.Describe(a.IsChecked)]);
                 await Task.CompletedTask;
             });
         }
@@ -123,10 +126,10 @@ internal sealed class RadioButtonDemoScene : IScene
             root.Children.Add(third);
             await ShowAsync(root, async () =>
             {
-                rows.Add(["no GroupName, A-C in one StackPanel: all clicked in turn -> checked", ClickAll(same)]);
-                rows.Add(["  D-E in another StackPanel, clicked after A-C -> checked in A-E",
+                rows.Add([T("no GroupName, A-C in one StackPanel: all clicked in turn -> checked", "GroupName なし、1 つの StackPanel に A-C: 順にすべてクリック -> チェックされたもの"), ClickAll(same)]);
+                rows.Add([T("  D-E in another StackPanel, clicked after A-C -> checked in A-E", "  別の StackPanel の D-E を A-C の後にクリック -> A-E でチェックされたもの"),
                     $"{ClickAll(otherPanel)}; A-C: {Checked(same)}"]);
-                rows.Add(["  F and G each wrapped in a Border in one StackPanel: both clicked -> checked", ClickAll(wrapped)]);
+                rows.Add([T("  F and G each wrapped in a Border in one StackPanel: both clicked -> checked", "  1 つの StackPanel で F と G をそれぞれ Border で包む: 両方クリック -> チェックされたもの"), ClickAll(wrapped)]);
                 await Task.CompletedTask;
             });
         }
@@ -146,7 +149,7 @@ internal sealed class RadioButtonDemoScene : IScene
             {
                 var buttons = Descendants(items).OfType<RadioButton>().ToList();
                 string parent = WpfProbe.Describe(buttons[0].Parent?.GetType().Name);
-                rows.Add(["no GroupName, RadioButton in an ItemsControl's ItemTemplate: all clicked -> checked (Parent)",
+                rows.Add([T("no GroupName, RadioButton in an ItemsControl's ItemTemplate: all clicked -> checked (Parent)", "GroupName なし、ItemsControl の ItemTemplate の RadioButton: すべてクリック -> チェックされたもの（Parent）"),
                     $"{ClickAll(buttons)} ({parent})"]);
                 await Task.CompletedTask;
             });
@@ -161,7 +164,7 @@ internal sealed class RadioButtonDemoScene : IScene
                 Click(named);
                 Click(plain[0]);
                 Click(plain[1]);
-                rows.Add(["same parent: A, B without GroupName and X with GroupName=\"1\"; X, A, B clicked -> checked",
+                rows.Add([T("same parent: A, B without GroupName and X with GroupName=\"1\"; X, A, B clicked -> checked", "同じ親: GroupName なしの A、B と GroupName=\"1\" の X、X・A・B の順にクリック -> チェックされたもの"),
                     Checked([.. plain, named])]);
                 await Task.CompletedTask;
             });
@@ -179,7 +182,7 @@ internal sealed class RadioButtonDemoScene : IScene
             {
                 Click(left);
                 Click(right);
-                rows.Add(["GroupName=\"shared\" in two different GroupBoxes: both clicked -> checked", Checked([left, right])]);
+                rows.Add([T("GroupName=\"shared\" in two different GroupBoxes: both clicked -> checked", "2 つの GroupBox の GroupName=\"shared\": 両方クリック -> チェックされたもの"), Checked([left, right])]);
                 await Task.CompletedTask;
             });
         }
@@ -202,7 +205,7 @@ internal sealed class RadioButtonDemoScene : IScene
                     Click(inMain);
                     Click(inOther);
                     Click(inPopup);
-                    rows.Add(["GroupName=\"shared\" in the window, another window and a Popup: all clicked -> checked",
+                    rows.Add([T("GroupName=\"shared\" in the window, another window and a Popup: all clicked -> checked", "ウィンドウ・別のウィンドウ・Popup の GroupName=\"shared\": すべてクリック -> チェックされたもの"),
                         Checked([inMain, inOther, inPopup])]);
                 }
                 finally
@@ -239,9 +242,9 @@ internal sealed class RadioButtonDemoScene : IScene
         }
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureBindingAndKeysAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureBindingAndKeysAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var options = new Options();
@@ -255,12 +258,12 @@ internal sealed class RadioButtonDemoScene : IScene
             await ShowAsync(panel, async () =>
             {
                 Click(b);
-                rows.Add(["IsChecked bound to bool A, B, C (Mode not set); B clicked: source / A still bound",
+                rows.Add([T("IsChecked bound to bool A, B, C (Mode not set); B clicked: source / A still bound", "IsChecked を bool の A、B、C にバインド（Mode なし）、B をクリック: ソース / A のバインドが残っているか"),
                     $"{options} / {BindingOperations.IsDataBound(a, ToggleButton.IsCheckedProperty)}"]);
 
                 options.C = true;
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 20);
-                rows.Add(["  then C set to true in the source: source / checked", $"{options} / {Checked([a, b, c])}"]);
+                rows.Add([T("  then C set to true in the source: source / checked", "  続けてソースの C を true に: ソース / チェックされたもの"), $"{options} / {Checked([a, b, c])}"]);
             });
         }
 
@@ -277,13 +280,13 @@ internal sealed class RadioButtonDemoScene : IScene
                 SendKey(Key.Down);
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 50);
                 string focused = Keyboard.FocusedElement is ContentControl { Content: string name } ? name : "?";
-                rows.Add(["A checked and focused, Down arrow: focus / checked", $"{focused} / {Checked([a, b, c])}"]);
+                rows.Add([T("A checked and focused, Down arrow: focus / checked", "A がチェック済みでフォーカスあり、下矢印キー: フォーカス / チェックされたもの"), $"{focused} / {Checked([a, b, c])}"]);
 
                 await FocusAsync(a);
                 SendKey(Key.Tab);
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 50);
                 focused = Keyboard.FocusedElement is ContentControl { Content: string next } ? next : "?";
-                rows.Add(["focus on A, Tab: focus", focused]);
+                rows.Add([T("focus on A, Tab: focus", "A にフォーカス、Tab: フォーカス"), focused]);
             }, activate: true);
         }
 
@@ -293,7 +296,7 @@ internal sealed class RadioButtonDemoScene : IScene
             var host = new Grid();
             host.Children.Add(box);
             Layout(host, 200, 50);
-            rows.Add(["VerticalContentAlignment (value source)", WpfProbe.ValueAndSource(box, Control.VerticalContentAlignmentProperty)]);
+            rows.Add([T("VerticalContentAlignment (value source)", "VerticalContentAlignment（値の出どころ）"), WpfProbe.ValueAndSource(box, Control.VerticalContentAlignmentProperty)]);
         }
 
         // RadioButton を高さ 200 に引き伸ばした場合と、ラベルの高さに合わせた場合（VerticalAlignment=Top）で比べる。
@@ -318,8 +321,8 @@ internal sealed class RadioButtonDemoScene : IScene
             var content = Descendants(box).OfType<ContentPresenter>().First();
             Rect g = Bounds(glyph, box);
             Rect c = Bounds(content, box);
-            rows.Add([$"3-line label, VerticalContentAlignment={alignment}, RadioButton {D(box.ActualHeight)} high: glyph y / label y",
-                $"{D(g.Y)} (height {D(g.Height)}) / {D(c.Y)} (height {D(c.Height)})"]);
+            rows.Add([T($"3-line label, VerticalContentAlignment={alignment}, RadioButton {D(box.ActualHeight)} high: glyph y / label y", $"3 行のラベル、VerticalContentAlignment={alignment}、高さ {D(box.ActualHeight)} の RadioButton: 丸印の y / ラベルの y"),
+                T($"{D(g.Y)} (height {D(g.Height)}) / {D(c.Y)} (height {D(c.Height)})", $"{D(g.Y)}（高さ {D(g.Height)}）/ {D(c.Y)}（高さ {D(c.Height)}）")]);
         }
 
         return rows;

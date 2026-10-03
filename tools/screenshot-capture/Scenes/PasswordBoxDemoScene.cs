@@ -36,18 +36,21 @@ internal sealed class PasswordBoxDemoScene : IScene
     {
         await context.SaveTableAsync(
             "PasswordBox: type, properties and defaults",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             Defaults(),
             "passwordbox-defaults.svg");
 
         await context.SaveTableAsync(
             "PasswordBox: input, events, commands and selection",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await BehaviorAsync(),
             "passwordbox-behavior.svg");
     }
 
     /// <summary>キーボードから 1 文字ずつ入力したのと同じ経路で、文字列を入力する（1 文字ごとに TextComposition を送る）。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static void Type(PasswordBox box, string text)
     {
         box.Focus();
@@ -57,16 +60,16 @@ internal sealed class PasswordBoxDemoScene : IScene
         }
     }
 
-    private static List<IReadOnlyList<string>> Defaults()
+    private static List<IReadOnlyList<Loc>> Defaults()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         var box = new PasswordBox();
 
-        rows.Add(["base class", typeof(PasswordBox).BaseType!.Name]);
-        rows.Add(["has PasswordProperty / PasswordCharProperty",
+        rows.Add([T("base class", "基底クラス"), typeof(PasswordBox).BaseType!.Name]);
+        rows.Add([T("has PasswordProperty / PasswordCharProperty", "PasswordProperty / PasswordCharProperty があるか"),
             $"{typeof(PasswordBox).GetField("PasswordProperty", BindingFlags.Public | BindingFlags.Static) is not null} / " +
             $"{typeof(PasswordBox).GetField("PasswordCharProperty", BindingFlags.Public | BindingFlags.Static) is not null}"]);
-        rows.Add(["PasswordChar (metadata default)",
+        rows.Add([T("PasswordChar (metadata default)", "PasswordChar（メタデータの既定値）"),
             $"'{(char)PasswordBox.PasswordCharProperty.DefaultMetadata.DefaultValue}' (U+{(int)(char)PasswordBox.PasswordCharProperty.DefaultMetadata.DefaultValue:X4})"]);
         rows.Add(["MaxLength / SelectionOpacity / IsInactiveSelectionHighlightEnabled",
             $"{box.MaxLength} / {D(box.SelectionOpacity)} / {box.IsInactiveSelectionHighlightEnabled}"]);
@@ -75,9 +78,9 @@ internal sealed class PasswordBoxDemoScene : IScene
         var host = new Grid();
         host.Children.Add(box);
         Layout(host, 200, 50);
-        rows.Add(["PasswordChar with the default style (value source)",
+        rows.Add([T("PasswordChar with the default style (value source)", "既定のスタイルでの PasswordChar（値の出どころ）"),
             $"'{box.PasswordChar}' (U+{(int)box.PasswordChar:X4}, {DependencyPropertyHelper.GetValueSource(box, PasswordBox.PasswordCharProperty).BaseValueSource})"]);
-        rows.Add(["CaretBrush / SelectionBrush (value source)",
+        rows.Add([T("CaretBrush / SelectionBrush (value source)", "CaretBrush / SelectionBrush（値の出どころ）"),
             $"{WpfProbe.ValueAndSource(box, PasswordBox.CaretBrushProperty)} / {WpfProbe.ValueAndSource(box, PasswordBox.SelectionBrushProperty)}"]);
 
         // パスワードを保持している内部のフィールドを型で探す。
@@ -89,7 +92,7 @@ internal sealed class PasswordBoxDemoScene : IScene
             .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
             .Where(f => f.FieldType == typeof(SecureString) || f.FieldType == typeof(string) || f.FieldType == typeof(char[]))
             .Select(f => $"{f.Name}: {f.FieldType.Name}") ?? [];
-        rows.Add(["internal text container / its text fields",
+        rows.Add([T("internal text container / its text fields", "内部のテキストの入れ物 / その文字列のフィールド"),
             $"{container?.GetType().Name ?? "not found"} / {string.Join(", ", storage)}"]);
 
         {
@@ -97,21 +100,21 @@ internal sealed class PasswordBoxDemoScene : IScene
             SecureString first = withPassword.SecurePassword;
             SecureString second = withPassword.SecurePassword;
             rows.Add(["Password = \"secret\": Password", $"{withPassword.Password.GetType().Name} \"{withPassword.Password}\""]);
-            rows.Add(["  SecurePassword", $"{first.GetType().Name}, Length {first.Length}, read-only {first.IsReadOnly()}"]);
-            rows.Add(["  SecurePassword twice: same instance", ReferenceEquals(first, second).ToString()]);
+            rows.Add(["  SecurePassword", T($"{first.GetType().Name}, Length {first.Length}, read-only {first.IsReadOnly()}", $"{first.GetType().Name}、Length {first.Length}、読み取り専用 {first.IsReadOnly()}")]);
+            rows.Add([T("  SecurePassword twice: same instance", "  SecurePassword を 2 回読む: 同じインスタンスか"), ReferenceEquals(first, second).ToString()]);
         }
 
         {
             var fromXaml = SceneContext.LoadXaml<PasswordBox>("""<PasswordBox Password="PASSWORD" />""");
-            rows.Add(["XAML Password=\"PASSWORD\" (the demo app's markup)", $"Password \"{fromXaml.Password}\""]);
+            rows.Add([T("XAML Password=\"PASSWORD\" (the demo app's markup)", "XAML の Password=\"PASSWORD\"（デモアプリのマークアップ）"), $"Password \"{fromXaml.Password}\""]);
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> BehaviorAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> BehaviorAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var box = new PasswordBox { Width = 200, MaxLength = 8 };
@@ -119,14 +122,14 @@ internal sealed class PasswordBoxDemoScene : IScene
             {
                 Type(box, "1234567890");
                 await Capture.SettleAsync(Window.GetWindow(box)!);
-                rows.Add(["MaxLength=8, typed \"1234567890\"", $"Password \"{box.Password}\""]);
+                rows.Add([T("MaxLength=8, typed \"1234567890\"", "MaxLength=8、\"1234567890\" を入力"), $"Password \"{box.Password}\""]);
             }, activate: true);
         }
 
         {
             var box = new PasswordBox { MaxLength = 8 };
             box.Password = "1234567890";
-            rows.Add(["MaxLength=8, Password = \"1234567890\" from code", $"Password \"{box.Password}\""]);
+            rows.Add([T("MaxLength=8, Password = \"1234567890\" from code", "MaxLength=8、コードから Password = \"1234567890\""), $"Password \"{box.Password}\""]);
         }
 
         {
@@ -142,8 +145,8 @@ internal sealed class PasswordBoxDemoScene : IScene
                 int set = changed - typed;
                 box.Clear();
                 int cleared = changed - typed - set;
-                rows.Add(["PasswordChanged count: typing \"abc\" one character at a time / Password = \"xyz\" / Clear()", $"{typed} / {set} / {cleared}"]);
-                rows.Add(["  Password after Clear()", $"\"{box.Password}\""]);
+                rows.Add([T("PasswordChanged count: typing \"abc\" one character at a time / Password = \"xyz\" / Clear()", "PasswordChanged の回数: \"abc\" を 1 文字ずつ入力 / Password = \"xyz\" / Clear()"), $"{typed} / {set} / {cleared}"]);
+                rows.Add([T("  Password after Clear()", "  Clear() の後の Password"), $"\"{box.Password}\""]);
             }, activate: true);
         }
 
@@ -153,7 +156,7 @@ internal sealed class PasswordBoxDemoScene : IScene
             {
                 box.Focus();
                 box.SelectAll();
-                rows.Add(["all text selected: CanExecute of Copy / Cut / Paste",
+                rows.Add([T("all text selected: CanExecute of Copy / Cut / Paste", "全選択: Copy / Cut / Paste の CanExecute"),
                     $"{ApplicationCommands.Copy.CanExecute(null, box)} / {ApplicationCommands.Cut.CanExecute(null, box)} / " +
                     $"{ApplicationCommands.Paste.CanExecute(null, box)}"]);
                 await Task.CompletedTask;
@@ -169,13 +172,13 @@ internal sealed class PasswordBoxDemoScene : IScene
             panel.Children.Add(other);
             await ShowAsync(panel, async () =>
             {
-                rows.Add(["IsSelectionActive: before focusing", box.IsSelectionActive.ToString()]);
+                rows.Add([T("IsSelectionActive: before focusing", "IsSelectionActive: フォーカスを移す前"), box.IsSelectionActive.ToString()]);
                 box.Focus();
-                rows.Add(["  focused, nothing selected", box.IsSelectionActive.ToString()]);
+                rows.Add([T("  focused, nothing selected", "  フォーカスあり、選択なし"), box.IsSelectionActive.ToString()]);
                 box.SelectAll();
-                rows.Add(["  focused, all text selected", box.IsSelectionActive.ToString()]);
+                rows.Add([T("  focused, all text selected", "  フォーカスあり、全選択"), box.IsSelectionActive.ToString()]);
                 other.Focus();
-                rows.Add(["  focus moved to another control (selection kept)", box.IsSelectionActive.ToString()]);
+                rows.Add([T("  focus moved to another control (selection kept)", "  フォーカスを別のコントロールへ移す（選択は残る）"), box.IsSelectionActive.ToString()]);
                 await Task.CompletedTask;
             }, activate: true);
         }

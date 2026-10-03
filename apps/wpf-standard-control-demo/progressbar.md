@@ -15,10 +15,10 @@ An empty range does not break the bar, but it does not show an empty bar either.
 
 With `Orientation="Vertical"`, the fill grows from the bottom, as for a level meter: in a bar 20 wide and 200 high, `Value` 75 gave a fill from y=50 to the bottom, 150 high.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/progressbar/progressbar-range.svg" alt="Table of ProgressBar ranges: it derives from RangeBase with defaults 0, 100, and 0, the fill is 60 for 30 of 0 to 100 and 100 for 70 of 20 to 120 in a bar 200 wide, an empty range and a Maximum below Minimum draw a full bar, a Value of 150 reads 100 and returns to 150 when Maximum becomes 200, and a vertical bar fills from the bottom" width="1022" height="320" loading="lazy">
-  <figcaption>The range, the fill, and the orientation. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/progressbar/progressbar-range.en.md %}
+
+The range, the fill, and the orientation. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## When the indeterminate animation runs
 
@@ -30,10 +30,10 @@ A ProgressBar created on the UI thread cannot be updated from another thread: se
 
 To UI Automation, the bar is a read-only range. The `RangeValue` pattern reported the value 30 with `IsReadOnly` `True`. In the indeterminate mode, the pattern was not supported, so assistive technology gets no value. Show the numbers in text as well.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/progressbar/progressbar-modes.svg" alt="Table of ProgressBar modes: the indeterminate mode fills the whole bar and enters the Indeterminate state, its animation runs while shown and stops when collapsed, setting Value from a worker thread throws InvalidOperationException, Progress of double calls back on the UI thread, and UI Automation reports a read-only range that is not supported in the indeterminate mode" width="1179" height="230" loading="lazy">
-  <figcaption>The indeterminate mode, threads, and UI Automation. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/progressbar/progressbar-modes.en.md %}
+
+The indeterminate mode, threads, and UI Automation. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

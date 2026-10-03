@@ -31,17 +31,20 @@ internal sealed class ViewboxDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Viewbox: scale of the demo's label (x, y) by Stretch and StretchDirection",
-            ["Stretch", "area", "UpOnly", "DownOnly", "Both"],
+            ["Stretch", T("area", "領域"), "UpOnly", "DownOnly", "Both"],
             MatrixRows(),
             "viewbox-matrix.svg");
 
         await context.SaveTableAsync(
             "Viewbox: type, measuring, clipping and unconstrained parents",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             OtherRows(),
             "viewbox-behavior.svg");
         await Task.CompletedTask;
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static Label DemoLabel() => new()
     {
@@ -66,14 +69,14 @@ internal sealed class ViewboxDemoScene : IScene
         return (box, label);
     }
 
-    private static List<IReadOnlyList<string>> MatrixRows()
+    private static List<IReadOnlyList<Loc>> MatrixRows()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach (Stretch stretch in new[] { Stretch.None, Stretch.Fill, Stretch.Uniform, Stretch.UniformToFill })
         {
             foreach ((double w, double h) in new[] { (300d, 100d), (40d, 20d) })
             {
-                var cells = new List<string> { stretch.ToString(), $"{D(w)} x {D(h)}" };
+                var cells = new List<Loc> { stretch.ToString(), $"{D(w)} x {D(h)}" };
                 foreach (StretchDirection direction in new[] { StretchDirection.UpOnly, StretchDirection.DownOnly, StretchDirection.Both })
                 {
                     (Viewbox box, Label label) = Laid(stretch, direction, w, h);
@@ -98,14 +101,14 @@ internal sealed class ViewboxDemoScene : IScene
         }
     }
 
-    private static List<IReadOnlyList<string>> OtherRows()
+    private static List<IReadOnlyList<Loc>> OtherRows()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new Viewbox();
-        rows.Add(["base class / defaults: Stretch, StretchDirection",
+        rows.Add([T("base class / defaults: Stretch, StretchDirection", "基底クラス / 既定値: Stretch、StretchDirection"),
             $"{typeof(Viewbox).BaseType!.Name} / {defaults.Stretch}, {defaults.StretchDirection}"]);
-        rows.Add(["first item of the demo's combo boxes (enum order): Stretch / StretchDirection",
+        rows.Add([T("first item of the demo's combo boxes (enum order): Stretch / StretchDirection", "デモのコンボボックスの最初の項目（列挙値の順）: Stretch / StretchDirection"),
             $"{Enum.GetValues<Stretch>()[0]} / {Enum.GetValues<StretchDirection>()[0]}"]);
 
         {
@@ -113,7 +116,7 @@ internal sealed class ViewboxDemoScene : IScene
             var box = new Viewbox { Child = probe };
             Layout(new Grid { Children = { box } }, 300, 100);
             (Viewbox _, Label label) = Laid(Stretch.Uniform, StretchDirection.Both, 300, 100);
-            rows.Add(["size given to the child in a 300 x 100 Viewbox / natural size of the demo's label",
+            rows.Add([T("size given to the child in a 300 x 100 Viewbox / natural size of the demo's label", "300 x 100 の Viewbox で子に渡される大きさ / デモの Label の本来の大きさ"),
                 $"{D(probe.Available.Width)} x {D(probe.Available.Height)} / {D(label.ActualWidth)} x {D(label.ActualHeight)}"]);
         }
 
@@ -130,8 +133,9 @@ internal sealed class ViewboxDemoScene : IScene
 
             // 子のうち、Viewbox のレイアウト上の高さ 100 より 5 下にある部分を突く。
             var outside = new Point(origin.X + box.Width / 2, origin.Y + box.Height + 5);
-            rows.Add(["UniformToFill 300 x 100: label rect / Viewbox clip / hit 5 below height 100",
-                $"{Format(labelRect)} / {(clip is null ? "none" : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")} / {HitName(host, outside)}"]);
+            rows.Add([T("UniformToFill 300 x 100: label rect / Viewbox clip / hit 5 below height 100", "UniformToFill 300 x 100: Label の位置と大きさ / Viewbox のクリップ / 高さ 100 の 5 下のヒット"),
+                T($"{Format(labelRect)} / {(clip is null ? "none" : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")} / {HitName(host, outside)}",
+                  $"{Format(labelRect)} / {(clip is null ? "なし" : $"{D(clip.Bounds.Width)} x {D(clip.Bounds.Height)}")} / {HitName(host, outside)}")]);
         }
 
         {
@@ -139,7 +143,7 @@ internal sealed class ViewboxDemoScene : IScene
             var box = new Viewbox { Child = label };
             var host = new StackPanel { Orientation = Orientation.Horizontal, Height = 100, Children = { box } };
             Layout(host, 600, 100);
-            rows.Add(["Uniform, inside a horizontal StackPanel 100 high: scale", Scale(box, label)]);
+            rows.Add([T("Uniform, inside a horizontal StackPanel 100 high: scale", "Uniform、高さ 100 の横の StackPanel の中: 拡大率"), Scale(box, label)]);
         }
 
         return rows;

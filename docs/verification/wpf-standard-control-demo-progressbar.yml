@@ -17,3 +17,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/progressbar/progressbar-range.svg"
   - "images/wpf-standard-control-demo/verification/progressbar/progressbar-modes.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/progressbar/progressbar-range.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/progressbar/progressbar-range.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/progressbar/progressbar-modes.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/progressbar/progressbar-modes.ja.md"

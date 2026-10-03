@@ -34,24 +34,27 @@ internal sealed class ToolBarDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ToolBar outside a ToolBarTray (the demo app's overflow section): where the target item goes",
-            ["ToolBar width", "AsNeeded", "Never", "Always"],
+            [T("ToolBar width", "ToolBar の幅"), "AsNeeded", "Never", "Always"],
             await OverflowMatrixAsync(),
             "toolbar-overflow-matrix.svg");
 
         await context.SaveTableAsync(
             "ToolBar: overflow",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await OverflowAsync(),
             "toolbar-overflow.svg");
 
         await context.SaveTableAsync(
             "ToolBar: styles, background, ToolBarTray bands, locking and orientation",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await TrayAsync(),
             "toolbar-tray.svg");
     }
 
     /// <summary>デモアプリの Overflow 欄と同じ 5 つのボタン。2 つ目が OverflowMode を変える対象。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static (ToolBar Bar, Button Target) DemoToolBar(double width, OverflowMode mode)
     {
         var bar = new ToolBar { Width = width, HorizontalAlignment = HorizontalAlignment.Left };
@@ -68,12 +71,12 @@ internal sealed class ToolBarDemoScene : IScene
     private static async Task Settle(FrameworkElement element) =>
         await Capture.SettleAsync(Window.GetWindow(element)!);
 
-    private static async Task<List<IReadOnlyList<string>>> OverflowMatrixAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> OverflowMatrixAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach (double width in new[] { 100.0, 200.0, 400.0 })
         {
-            var cells = new List<string> { D(width) };
+            var cells = new List<Loc> { D(width) };
             foreach (OverflowMode mode in new[] { OverflowMode.AsNeeded, OverflowMode.Never, OverflowMode.Always })
             {
                 (ToolBar bar, Button target) = DemoToolBar(width, mode);
@@ -82,7 +85,9 @@ internal sealed class ToolBarDemoScene : IScene
                 await ShowAsync(host, async () =>
                 {
                     int overflowCount = bar.Items.Cast<UIElement>().Count(ToolBar.GetIsOverflowItem);
-                    cells.Add($"{(ToolBar.GetIsOverflowItem(target) ? "overflow" : "bar")} ({overflowCount} of 5 in overflow)");
+                    cells.Add(ToolBar.GetIsOverflowItem(target)
+                        ? T($"overflow ({overflowCount} of 5 in overflow)", $"オーバーフロー（5 個中 {overflowCount} 個がオーバーフロー）")
+                        : T($"bar ({overflowCount} of 5 in overflow)", $"バー（5 個中 {overflowCount} 個がオーバーフロー）"));
                     await Task.CompletedTask;
                 });
             }
@@ -93,9 +98,9 @@ internal sealed class ToolBarDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> OverflowAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> OverflowAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         rows.Add(["base class", typeof(ToolBar).BaseType!.Name]);
         rows.Add(["read-only: HasOverflowItems / IsOverflowItem / ToolBar.Orientation",
@@ -141,9 +146,9 @@ internal sealed class ToolBarDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> TrayAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> TrayAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var bar = new ToolBar();
@@ -157,12 +162,12 @@ internal sealed class ToolBarDemoScene : IScene
             bar.Items.Add(separator);
             await ShowAsync(bar, async () =>
             {
-                string Check(FrameworkElement element, ResourceKey key) =>
-                    ReferenceEquals(element.Style, bar.FindResource(key)) ? "ToolBar style" : "other";
-                rows.Add(["Button / ToggleButton / ComboBox / Separator in a ToolBar: style",
-                    $"{Check(button, ToolBar.ButtonStyleKey)} / {Check(toggle, ToolBar.ToggleButtonStyleKey)} / " +
-                    $"{Check(combo, ToolBar.ComboBoxStyleKey)} / {Check(separator, ToolBar.SeparatorStyleKey)}"]);
-                rows.Add(["  Separator in a horizontal ToolBar: width / height", $"{D(separator.ActualWidth)} / {D(separator.ActualHeight)}"]);
+                Loc Check(FrameworkElement element, ResourceKey key) =>
+                    ReferenceEquals(element.Style, bar.FindResource(key)) ? T("ToolBar style", "ToolBar のスタイル") : T("other", "その他");
+                rows.Add([T("Button / ToggleButton / ComboBox / Separator in a ToolBar: style", "ToolBar の中の Button / ToggleButton / ComboBox / Separator: スタイル"),
+                    T($"{Check(button, ToolBar.ButtonStyleKey).En} / {Check(toggle, ToolBar.ToggleButtonStyleKey).En} / {Check(combo, ToolBar.ComboBoxStyleKey).En} / {Check(separator, ToolBar.SeparatorStyleKey).En}",
+                      $"{Check(button, ToolBar.ButtonStyleKey).Ja} / {Check(toggle, ToolBar.ToggleButtonStyleKey).Ja} / {Check(combo, ToolBar.ComboBoxStyleKey).Ja} / {Check(separator, ToolBar.SeparatorStyleKey).Ja}")]);
+                rows.Add([T("  Separator in a horizontal ToolBar: width / height", "  横の ToolBar の中の Separator: 幅 / 高さ"), $"{D(separator.ActualWidth)} / {D(separator.ActualHeight)}"]);
                 await Task.CompletedTask;
             });
         }
@@ -179,8 +184,8 @@ internal sealed class ToolBarDemoScene : IScene
             await ShowAsync(bar, async () =>
             {
                 Border? main = Descendants(bar).OfType<Border>().FirstOrDefault(b => b.TemplatedParent == bar && b.Background is not null);
-                rows.Add([$"Background {(background is null ? "not set" : "LightYellow")}: value (source) / template border",
-                    $"{WpfProbe.ValueAndSource(bar, Control.BackgroundProperty)} / {main?.Background?.ToString() ?? "none"}"]);
+                rows.Add([T($"Background {(background is null ? "not set" : "LightYellow")}: value (source) / template border", $"Background {(background is null ? "指定なし" : "LightYellow")}: 値（出どころ） / テンプレートの枠"),
+                    T($"{WpfProbe.ValueAndSource(bar, Control.BackgroundProperty)} / {main?.Background?.ToString() ?? "none"}", $"{WpfProbe.ValueAndSource(bar, Control.BackgroundProperty)} / {main?.Background?.ToString() ?? "なし"}")]);
                 await Task.CompletedTask;
             });
         }
@@ -199,7 +204,7 @@ internal sealed class ToolBarDemoScene : IScene
 
             await ShowAsync(tray, async () =>
             {
-                rows.Add(["tray, (Band, BandIndex) (0,0) (0,1) (1,0) (1,1): positions",
+                rows.Add([T("tray, (Band, BandIndex) (0,0) (0,1) (1,0) (1,1): positions", "トレイ、(Band, BandIndex) (0,0) (0,1) (1,0) (1,1): 位置"),
                     string.Join("  ", bars.Select(b => { Rect r = Bounds(b, tray); return $"({D(r.X)}, {D(r.Y)})"; }))]);
 
                 // (1,0) の ToolBar をつまみで上へドラッグし、1 行目へ移せるかを見る。
@@ -209,7 +214,7 @@ internal sealed class ToolBarDemoScene : IScene
                 thumb.RaiseEvent(new DragDeltaEventArgs(250, -30));
                 thumb.RaiseEvent(new DragCompletedEventArgs(250, -30, false));
                 await Settle(tray);
-                rows.Add(["  thumb of (1,0) dragged by (250, -30): its Band / BandIndex", $"{moved.Band} / {moved.BandIndex}"]);
+                rows.Add([T("  thumb of (1,0) dragged by (250, -30): its Band / BandIndex", "  (1,0) のつまみを (250, -30) ドラッグ: その Band / BandIndex"), $"{moved.Band} / {moved.BandIndex}"]);
             });
         }
 
@@ -222,7 +227,7 @@ internal sealed class ToolBarDemoScene : IScene
             await ShowAsync(tray, async () =>
             {
                 var thumb = (Thumb)bar.Template.FindName("ToolBarThumb", bar);
-                rows.Add([$"ToolBarTray IsLocked={locked}: ToolBar's IsLocked / thumb visibility",
+                rows.Add([T($"ToolBarTray IsLocked={locked}: ToolBar's IsLocked / thumb visibility", $"ToolBarTray IsLocked={locked}: ToolBar の IsLocked / つまみの Visibility"),
                     $"{ToolBarTray.GetIsLocked(bar)} / {thumb.Visibility}"]);
                 await Task.CompletedTask;
             });
@@ -239,9 +244,9 @@ internal sealed class ToolBarDemoScene : IScene
             panel.Children.Add(standalone);
             await ShowAsync(panel, async () =>
             {
-                rows.Add(["tray Vertical: ToolBar.Orientation (source) / ToolBar outside a tray",
+                rows.Add([T("tray Vertical: ToolBar.Orientation (source) / ToolBar outside a tray", "トレイが Vertical: ToolBar.Orientation（出どころ）/ トレイの外の ToolBar"),
                     $"{WpfProbe.ValueAndSource(bar, ToolBar.OrientationProperty)} / {standalone.Orientation}"]);
-                rows.Add(["  setting ToolBar.Orientation", Throws(() => bar.SetValue(ToolBar.OrientationProperty, Orientation.Horizontal))]);
+                rows.Add([T("  setting ToolBar.Orientation", "  ToolBar.Orientation を設定"), Throws(() => bar.SetValue(ToolBar.OrientationProperty, Orientation.Horizontal))]);
                 await Task.CompletedTask;
             });
         }

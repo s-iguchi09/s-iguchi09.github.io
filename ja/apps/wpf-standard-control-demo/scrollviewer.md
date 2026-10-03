@@ -18,10 +18,10 @@ description: "WPF の ScrollViewer を .NET 10 で実測して解説。スクロ
 
 バーが実際に表示されているかを表す `ComputedVerticalScrollBarVisibility` が `Visible` だったのは、`Auto` でラベルが 9 つのときと `Visible` のときだけで、それ以外はすべて `Collapsed` でした。計測したのは縦のバーです。`HorizontalScrollBarVisibility` にも同じ 4 つの値を設定できますが、横方向は計測していません。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.svg" alt="幅 200、高さ 100 の ScrollViewer にラベルを 2 つと 9 つ入れたときの、VerticalScrollBarVisibility の 4 つの値の計測結果の表。Disabled はバーがなく、内容の高さは 100 になり、スクロールしない。Auto はラベルが 9 つのときだけバーを表示し、Hidden はバーを表示しないが 50 までスクロールでき、Visible は常にバーを表示し、バーがあると表示領域の幅は 200 から 183 になる" width="946" height="320" loading="lazy">
-  <figcaption>内容が収まる場合とはみ出す場合の、<code>VerticalScrollBarVisibility</code> の各値。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-visibility.ja.md %}
+
+内容が収まる場合とはみ出す場合の、<code>VerticalScrollBarVisibility</code> の各値。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 既定値と、コントロールの中の ScrollViewer の変え方
 
@@ -41,10 +41,10 @@ ScrollViewer の既定値は、`VerticalScrollBarVisibility` が `Visible`、`Ho
 
 大きさのプロパティは、レイアウトの後でないと分かりません。`ExtentHeight` と `ViewportHeight` は、最初のレイアウトの前は 0、後は 251.64 と 100 でした。StackPanel の中などで ScrollViewer がまったくスクロールしない理由は、下にリンクした記事で扱っています。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.svg" alt="ScrollViewer のスクロールの計測結果の表。既定値は Visible と Disabled、CanContentScroll が False なら 16 ピクセル、True なら 1 項目ずつスクロールし、1000 項目の ListBox は True でコンテナーを 10 個、False で 1000 個作り、遅延スクロールではつまみを離すまで VerticalOffset と ContentVerticalOffset が 0 のまま、ListBox・TreeView・DataGrid の中は Auto、TextBox の中は Hidden、ListBox の添付プロパティは中に届き外側の ScrollViewer は届かず、大きさはレイアウト前は 0" width="936" height="380" loading="lazy">
-  <figcaption><code>CanContentScroll</code>、遅延スクロール、コントロールの中の ScrollViewer。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/scrollviewer/scrollviewer-scrolling.ja.md %}
+
+<code>CanContentScroll</code>、遅延スクロール、コントロールの中の ScrollViewer。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

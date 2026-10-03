@@ -19,3 +19,10 @@ images:
   - "images/wpf-standard-control-demo/verification/listbox/listbox-selection.svg"
   - "images/wpf-standard-control-demo/verification/listbox/listbox-values.svg"
   - "images/wpf-standard-control-demo/verification/listbox/listbox-scrolling.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/listbox/listbox-selection.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/listbox/listbox-selection.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/listbox/listbox-values.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/listbox/listbox-values.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/listbox/listbox-scrolling.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/listbox/listbox-scrolling.ja.md"

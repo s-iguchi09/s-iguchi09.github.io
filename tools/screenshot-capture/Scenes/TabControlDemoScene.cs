@@ -35,16 +35,19 @@ internal sealed class TabControlDemoScene : IScene
     {
         await context.SaveTableAsync(
             "TabControl: TabStripPlacement (300 x 150, two tabs)",
-            ["TabStripPlacement", "Tab1 header", "Tab2 header", "content area"],
+            ["TabStripPlacement", T("Tab1 header", "Tab1 の見出し"), T("Tab2 header", "Tab2 の見出し"), T("content area", "内容の領域")],
             await PlacementRowsAsync(),
             "tabcontrol-placement.svg");
 
         await context.SaveTableAsync(
             "TabControl: string format, selection, items and keyboard",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "tabcontrol-behavior.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static TabControl DemoTabs(int count = 2)
     {
@@ -65,9 +68,9 @@ internal sealed class TabControlDemoScene : IScene
         return Descendants(host).OfType<TextBlock>().FirstOrDefault()?.Text ?? "(nothing)";
     }
 
-    private static async Task<List<IReadOnlyList<string>>> PlacementRowsAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> PlacementRowsAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach (Dock placement in new[] { Dock.Top, Dock.Bottom, Dock.Left, Dock.Right })
         {
             TabControl tabs = DemoTabs();
@@ -83,11 +86,11 @@ internal sealed class TabControlDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class / default TabStripPlacement / first Dock value (demo start)",
+        rows.Add([T("base class / default TabStripPlacement / first Dock value (demo start)", "基底クラス / TabStripPlacement の既定値 / Dock の最初の値（デモの初期値）"),
             $"{typeof(TabControl).BaseType!.Name} / {new TabControl().TabStripPlacement} / {Enum.GetValues<Dock>()[0]}"]);
 
         {
@@ -97,12 +100,12 @@ internal sealed class TabControlDemoScene : IScene
             string before = tabs.SelectedIndex.ToString();
             await ShowAsync(tabs, async () =>
             {
-                rows.Add(["SelectedIndex before showing / after showing", $"{before} / {tabs.SelectedIndex}"]);
-                rows.Add(["demo \"Format: {0}.\": text / SelectedContent / SelectedContentStringFormat",
+                rows.Add([T("SelectedIndex before showing / after showing", "表示前の SelectedIndex / 表示後"), $"{before} / {tabs.SelectedIndex}"]);
+                rows.Add([T("demo \"Format: {0}.\": text / SelectedContent / SelectedContentStringFormat", "デモの \"Format: {0}.\": 表示される文字列 / SelectedContent / SelectedContentStringFormat"),
                     $"{Shown(tabs)} / {WpfProbe.Describe(tabs.SelectedContent)} / {WpfProbe.Describe(tabs.SelectedContentStringFormat)}"]);
                 tabs.SelectedIndex = 1;
                 await Capture.SettleAsync(Window.GetWindow(tabs)!, 20);
-                rows.Add(["  switched to Tab2 (its own \"Own {0}\"): text / SelectedContentStringFormat",
+                rows.Add([T("  switched to Tab2 (its own \"Own {0}\"): text / SelectedContentStringFormat", "  Tab2（自身の \"Own {0}\"）に切り替え: 表示される文字列 / SelectedContentStringFormat"),
                     $"{Shown(tabs)} / {WpfProbe.Describe(tabs.SelectedContentStringFormat)}"]);
             });
         }
@@ -115,7 +118,7 @@ internal sealed class TabControlDemoScene : IScene
             tabs.SelectedIndex = 1;
             await ShowAsync(tabs, async () =>
             {
-                rows.Add(["  Tab2 selected before showing: text / SelectedContentStringFormat",
+                rows.Add([T("  Tab2 selected before showing: text / SelectedContentStringFormat", "  表示前に Tab2 を選択: 表示される文字列 / SelectedContentStringFormat"),
                     $"{Shown(tabs)} / {WpfProbe.Describe(tabs.SelectedContentStringFormat)}"]);
                 await Task.CompletedTask;
             });
@@ -126,15 +129,15 @@ internal sealed class TabControlDemoScene : IScene
             await ShowAsync(tabs, async () =>
             {
                 string thrown = Throws(() => tabs.SelectedIndex = 5);
-                rows.Add(["2 tabs, SelectedIndex = 5: exception / SelectedIndex", $"{thrown} / {tabs.SelectedIndex}"]);
+                rows.Add([T("2 tabs, SelectedIndex = 5: exception / SelectedIndex", "タブ 2 つ、SelectedIndex = 5: 例外 / SelectedIndex"), $"{thrown} / {tabs.SelectedIndex}"]);
                 string belowMinusOne = Throws(() => tabs.SelectedIndex = -2);
-                rows.Add(["  SelectedIndex = -2: exception / SelectedIndex", $"{belowMinusOne} / {tabs.SelectedIndex}"]);
+                rows.Add([T("  SelectedIndex = -2: exception / SelectedIndex", "  SelectedIndex = -2: 例外 / SelectedIndex"), $"{belowMinusOne} / {tabs.SelectedIndex}"]);
                 tabs.SelectedIndex = 1;
                 tabs.SelectedItem = new TabItem { Header = "not in the list" };
-                rows.Add(["Tab2 selected, SelectedItem = a TabItem not in the list", tabs.SelectedIndex.ToString()]);
+                rows.Add([T("Tab2 selected, SelectedItem = a TabItem not in the list", "Tab2 を選択中、一覧に無い TabItem を SelectedItem に"), tabs.SelectedIndex.ToString()]);
                 tabs.SelectedIndex = -1;
                 await Capture.SettleAsync(Window.GetWindow(tabs)!, 20);
-                rows.Add(["SelectedIndex = -1: SelectedContent / text shown", $"{WpfProbe.Describe(tabs.SelectedContent)} / {Shown(tabs)}"]);
+                rows.Add([T("SelectedIndex = -1: SelectedContent / text shown", "SelectedIndex = -1: SelectedContent / 表示される文字列"), $"{WpfProbe.Describe(tabs.SelectedContent)} / {Shown(tabs)}"]);
             });
         }
 
@@ -146,7 +149,7 @@ internal sealed class TabControlDemoScene : IScene
                 tabs.Items.RemoveAt(1);
                 await Capture.SettleAsync(Window.GetWindow(tabs)!, 20);
                 string selected = tabs.SelectedItem is TabItem { Header: string header } ? header : "none";
-                rows.Add(["3 tabs, Tab2 selected and removed: SelectedIndex / selected tab", $"{tabs.SelectedIndex} / {selected}"]);
+                rows.Add([T("3 tabs, Tab2 selected and removed: SelectedIndex / selected tab", "タブ 3 つ、選択中の Tab2 を削除: SelectedIndex / 選ばれているタブ"), $"{tabs.SelectedIndex} / {selected}"]);
             });
         }
 
@@ -155,7 +158,7 @@ internal sealed class TabControlDemoScene : IScene
             string first = Throws(() => filled.ItemsSource = new[] { "a", "b" });
             var bound = new TabControl { ItemsSource = new[] { "a", "b" } };
             string second = Throws(() => bound.Items.Add(new TabItem { Header = "Tab3" }));
-            rows.Add(["Items filled, then ItemsSource / ItemsSource, then Items.Add", $"{first} / {second}"]);
+            rows.Add([T("Items filled, then ItemsSource / ItemsSource, then Items.Add", "Items を埋めてから ItemsSource / ItemsSource を設定してから Items.Add"), $"{first} / {second}"]);
         }
 
         {
@@ -165,8 +168,8 @@ internal sealed class TabControlDemoScene : IScene
                 await FocusAsync(Item(tabs, 0));
                 SendKey(Key.Right);
                 await Capture.SettleAsync(Window.GetWindow(tabs)!, 50);
-                rows.Add(["focus on Tab1's header, Right arrow: SelectedIndex / focused header",
-                    $"{tabs.SelectedIndex} / {(Keyboard.FocusedElement is TabItem { Header: string h } ? h : "not a header")}"]);
+                rows.Add([T("focus on Tab1's header, Right arrow: SelectedIndex / focused header", "Tab1 の見出しにフォーカス、右矢印キー: SelectedIndex / フォーカスのある見出し"),
+                    $"{tabs.SelectedIndex} / {(Keyboard.FocusedElement is TabItem { Header: string h } ? h : "(not a header)")}"]);
             }, activate: true);
         }
 

@@ -16,3 +16,6 @@ verifies:
   - "内側のパネルの子に大きな ZIndex を付けても、外側のパネルの兄弟より上にならないこと"
 images:
   - "images/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/stackpanel/stackpanel-behavior.ja.md"

@@ -18,3 +18,10 @@ images:
   - "images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.svg"
   - "images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow.svg"
   - "images/wpf-standard-control-demo/verification/toolbar/toolbar-tray.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/toolbar/toolbar-overflow.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/toolbar/toolbar-overflow.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/toolbar/toolbar-tray.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/toolbar/toolbar-tray.ja.md"

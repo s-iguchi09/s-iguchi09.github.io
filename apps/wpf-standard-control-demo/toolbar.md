@@ -15,10 +15,10 @@ The attached `ToolBar.OverflowMode` decides where an item goes when space runs o
 
 `HasOverflowItems` tells whether the toolbar has any item in its overflow, and the attached `ToolBar.IsOverflowItem` tells it for a single item; both are read-only. `IsOverflowOpen` is whether the overflow popup is open. With nothing in the overflow (width 400), the overflow button was still visible but disabled. Setting `IsOverflowOpen = true` still opened the popup, which had no items to show.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.svg" alt="Table of where the demo app's target button goes in a ToolBar outside a ToolBarTray: at width 100 it is in the overflow with AsNeeded and Always and on the bar with Never, at widths 200 and 400 it is on the bar except with Always" width="882" height="170" loading="lazy">
-  <figcaption>The target button of the demo app's overflow section, by toolbar width and <code>OverflowMode</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/toolbar/toolbar-overflow-matrix.en.md %}
+
+The target button of the demo app's overflow section, by toolbar width and <code>OverflowMode</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## The styles items get inside a toolbar
 
@@ -34,10 +34,10 @@ The toolbar's own `Background` can be changed directly: set to `LightYellow`, it
 
 The tray's `Orientation` decides the toolbars' orientation. `ToolBar.Orientation` is read-only: in a vertical tray it was `Vertical`, outside a tray `Horizontal`, and setting it threw `InvalidOperationException`. The two cannot be out of step.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/toolbar/toolbar-tray.svg" alt="Table of ToolBar styles and ToolBarTray results: items get the ToolBar style keys, the Background set on a ToolBar reaches its template, bands place toolbars in rows, dragging the thumb changes Band, IsLocked collapses the thumb, and ToolBar.Orientation follows the tray and cannot be set" width="1093" height="380" loading="lazy">
-  <figcaption>Item styles, background, bands, locking, and orientation. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/toolbar/toolbar-tray.en.md %}
+
+Item styles, background, bands, locking, and orientation. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

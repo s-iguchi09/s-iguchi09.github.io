@@ -13,10 +13,10 @@ description: "WPF の Viewbox を .NET 10 で実測して解説。Stretch と St
 
 既定値は `Stretch="Uniform"` と `StretchDirection="Both"` です。デモアプリはここから始まりません。コンボボックスが列挙型の最初の値の `None` と `UpOnly` で始まるので、`Stretch` を `None` 以外にするまでラベルは拡大縮小されません。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.svg" alt="Viewbox の計測結果の表。Decorator を継承し既定値は Uniform と Both だがデモアプリは None と UpOnly で始まり、子は無限の大きさで測られてラベルは 72.34 × 57.96、UniformToFill では収まらない部分が Viewbox のレイアウト上の高さで切れ、横の StackPanel の中の Viewbox は高さだけに合わせて拡大する" width="1108" height="230" loading="lazy">
-  <figcaption>型、既定値、測り方、切り抜き。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/viewbox/viewbox-behavior.ja.md %}
+
+型、既定値、測り方、切り抜き。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## Stretch ごとの倍率
 
@@ -28,10 +28,10 @@ description: "WPF の Viewbox を .NET 10 で実測して解説。Stretch と St
 
 `StretchDirection` は、子を拡大してよいか、縮小してよいか、両方かを決めます。ラベルが拡大される 300 × 100 の領域では、`DownOnly` でどの `Stretch` も 1 倍のままでした。ラベルが縮小される 40 × 20 の領域では、`UpOnly` でどの `Stretch` も 1 倍のままで、ラベルは領域より大きくなりました。`Both` は、当てはまる方向と同じ倍率になりました。縮めても大きくはしないなら `DownOnly` を使います。大きなウィンドウで文字が大きくなりすぎるのを防げます。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.svg" alt="300 × 100 と 40 × 20 の領域での、Stretch と StretchDirection ごとのデモアプリのラベルの倍率の表。None は常に 1、Fill は 4.15 と 1.73 または 0.55 と 0.35、Uniform は 1.73 または 0.35、UniformToFill は 4.15 または 0.55 で、UpOnly は小さい領域で、DownOnly は大きい領域で 1 のまま" width="572" height="320" loading="lazy">
-  <figcaption><code>Stretch</code>、領域、<code>StretchDirection</code> ごとの倍率（横, 縦）。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/viewbox/viewbox-matrix.ja.md %}
+
+<code>Stretch</code>、領域、<code>StretchDirection</code> ごとの倍率（横, 縦）。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 拡大縮小には大きさの制限が要る
 
