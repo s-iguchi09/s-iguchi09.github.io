@@ -30,6 +30,30 @@ internal sealed class UpdateSourcePitfallScene : IScene
 
     public string Slug => "wpf-textbox-updatesource-from-view-pitfalls";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("TwoWay, TextBox removed from the tree, then UpdateSource()", "TwoWay、TextBox をツリーから外してから UpdateSource()"),
+        ("OneTime: source changed, then UpdateTarget()", "OneTime: ソースを変えてから UpdateTarget()"),
+        (" (no call)", "（呼ぶ前）"),
+        (" (after UpdateTarget)", "（UpdateTarget の後）"),
+        ("BindingGroup.UpdateSources(), no rule", "BindingGroup.UpdateSources()、規則なし"),
+        ("BindingGroup.UpdateSources(), rule at RawProposedValue fails", "BindingGroup.UpdateSources()、RawProposedValue の規則が失敗"),
+        ("BindingGroup.UpdateSources(), rule at UpdatedValue fails", "BindingGroup.UpdateSources()、UpdatedValue の規則が失敗"),
+        ("; Status ", "、Status "),
+        ("; source = ", "、ソース = "),
+        ("returns ", "戻り値 "),
+        (", typed via TextInput", "、TextInput で入力"),
+        ("TwoWay, then ClearBinding", "TwoWay、続けて ClearBinding"),
+        ("cannot call", "呼べない"),
+        ("obtained", "取得できる"),
+        ("still bound", "バインドされたまま"),
+        ("not called", "呼んでいない"),
+        ("source updated", "ソースが更新される"),
+        ("unchanged", "変わらない"),
+        ("no change", "変化なし"),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         var rows = new List<IReadOnlyList<string>>();
@@ -53,14 +77,14 @@ internal sealed class UpdateSourcePitfallScene : IScene
 
         await context.SaveTableAsync(
             "GetBindingExpression() and UpdateSource()",
-            ["how Text is set", "GetBindingExpression state", "UpdateSource() as-is", "after editing Text / after typing"],
-            rows,
+            [Loc.Of("how Text is set", "Text の設定のしかた"), Loc.Of("GetBindingExpression state", "GetBindingExpression の状態"), Loc.Of("UpdateSource() as-is", "そのまま UpdateSource()"), Loc.Of("after editing Text / after typing", "Text を変えた後 / 入力した後")],
+            LocTable.Translate(rows, Words),
             "updatesource-pitfall-matrix.svg");
 
         await context.SaveTableAsync(
             "detached TextBox, UpdateTarget with OneTime, and BindingGroup validation steps",
-            ["case", "result"],
-            ExtraRows(),
+            [Loc.Of("case", "条件"), Loc.Of("result", "結果")],
+            LocTable.Translate(ExtraRows(), Words),
             "updatesource-detach-group.svg");
     }
 

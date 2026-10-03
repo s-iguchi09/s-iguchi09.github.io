@@ -22,3 +22,8 @@ images:
   - "images/articles/wpf-validation-error-not-displayed/adorner-layer-required.png"
   - "images/articles/wpf-validation-error-not-displayed/validation-stages.svg"
   - "images/articles/wpf-validation-error-not-displayed/validation-pitfalls.svg"
+tables:
+  - "_includes/tables/articles/wpf-validation-error-not-displayed/validation-stages.en.md"
+  - "_includes/tables/articles/wpf-validation-error-not-displayed/validation-stages.ja.md"
+  - "_includes/tables/articles/wpf-validation-error-not-displayed/validation-pitfalls.en.md"
+  - "_includes/tables/articles/wpf-validation-error-not-displayed/validation-pitfalls.ja.md"

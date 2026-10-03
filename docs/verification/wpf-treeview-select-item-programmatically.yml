@@ -21,3 +21,8 @@ images:
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png"
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg"
   - "images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg"
+tables:
+  - "_includes/tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.en.md"
+  - "_includes/tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.ja.md"
+  - "_includes/tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.en.md"
+  - "_includes/tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.ja.md"

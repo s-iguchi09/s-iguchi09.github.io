@@ -36,7 +36,8 @@ image: /images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/u
 掲載する XAML の `...` は、標準の `xmlns` 宣言など本題に関係しない属性の省略を示す。
 そのまま貼り付けても解析できないため、実際のファイルでは通常の宣言に置き換える。
 
-本記事の図は、上記の環境で `UserControl` 内部の要素から見た `DataContext` と、バインドの到達可否を読み出して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - `UserControl` 内部の要素から見た `DataContext` は、利用側の ViewModel である。
@@ -145,12 +146,12 @@ ViewModel 側にも `Title` という名前のプロパティが存在すると�
 
 ---
 
-内部要素からの参照方法を変えて、届く値と `DataContext` の型を測った結果が次の図である。
+内部要素からの参照方法を変えて、届く値と `DataContext` の型を測った結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.svg" alt="UserControl 内部の TextBlock からの参照方法別に、届いた文字列と DataContext の型を測った表。素の Binding と、内部要素に書いた RelativeSource Self は空のまま。RelativeSource AncestorType では Title の値が届く。DataContext はいずれも利用側の PageViewModel である。" width="705" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>InfoCard</code>（<code>Title</code> 依存関係プロパティを持つ <code>UserControl</code>）の内部に置いた <code>TextBlock</code> から <code>Title</code> を参照した結果。利用側の <code>DataContext</code> には <code>PageViewModel</code> を設定している。</figcaption>
-</figure>
+{% include tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-scope.ja.md %}
+
+.NET 10 / Windows 11 で、<code>InfoCard</code>（<code>Title</code> 依存関係プロパティを持つ <code>UserControl</code>）の内部に置いた <code>TextBlock</code> から <code>Title</code> を参照した結果。利用側の <code>DataContext</code> には <code>PageViewModel</code> を設定している。
+{: .table-caption}
 
 **`DataContext` の列はどの行も `PageViewModel` である。** 内部要素から見た `DataContext` は `InfoCard` ではなく、利用側の ViewModel である。
 素の `{Binding Title}` はこの `PageViewModel` に `Title` を探しにいくため、値が届かない。
@@ -361,15 +362,15 @@ XAML の解析とバインディングは、`Title` の setter ではなく `Set
 `UserControl` のルートに付けた `x:Name="Root"` は、そのコントロールの名前スコープに閉じる。
 実測でも、利用側に同じ名前の要素を置いた状態で双方が別の要素として解決し、エラーは出なかった。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.svg" alt="本文と注意点の実測をまとめた表。利用側が Title をバインドすると Title には値が届くが、内部の素の Binding は空で Error 40 が 1 件出る。利用側の ViewModel が同名の Title を持つと、内部には VM-OWN-TITLE が表示され、エラーは出ない。DataContext の無い親では内部は空でエラーも出ない。DataContext を内側の Grid へ委譲すると、内部は InfoCard を見て、カード自身は PageViewModel のままで、AncestorType から DataContext.HeaderText にも届く。BindsTwoWayByDefault では内部の TextBox に打ち込んだ xyz が HeaderText まで届く。DataContext = this では利用側のバインドが Error 40 になり Title は既定値のまま。そこへ利用側が DataContext を差し替えると、Title の無いオブジェクトでは内部が空で Error 40、Title のあるオブジェクトではその値がエラーなしで表示される。外側が OneWay のまま内部で代入するか内部の TwoWay で書き戻すとバインドが外れ、後の HeaderText の変更が届かない。SetCurrentValue ではバインドが残り、後の変更で上書きされる。利用側にも Root という名前の要素があっても、内部と利用側はそれぞれ別の要素に解決し、エラーは出ない。" width="951" height="470" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。右端はデータバインドのトレースに出た <code>System.Windows.Data Error</code> の件数である。入力は WPF の入力処理（<code>InputManager</code>）を通して送った。</figcaption>
-</figure>
+{% include tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-more.ja.md %}
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.svg" alt="参照の書き方と置き場所ごとに、InfoCard.Title へ届いたかを測った表。内側の TextBlock からの ElementName=Root と、内側のルート要素へ DataContext を委譲した {Binding Title} は届く。ContextMenu の MenuItem.Header では AncestorType=UserControl と ElementName=Root が null で、DataContext を委譲した {Binding Title} は届く。インラインの Popup、インラインの DataTemplate、UserControl.Resources の DataTemplate では、AncestorType=UserControl と ElementName=Root の両方が届く。カードの中に入れ子にした UserControl から AncestorType=UserControl を評価すると、内側の UserControl が選ばれる。" width="786" height="440" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。カードは名前スコープを持ち、自身を <code>Root</code> という名前で登録している（<code>x:Name="Root"</code> と同じ）。入れ子の行は、どちらのコントロールが選ばれたかを <code>Tag</code> で見分けた。</figcaption>
-</figure>
+.NET 10 / Windows 11 で実測。右端はデータバインドのトレースに出た <code>System.Windows.Data Error</code> の件数である。入力は WPF の入力処理（<code>InputManager</code>）を通して送った。
+{: .table-caption}
+
+{% include tables/articles/wpf-usercontrol-dependencyproperty-binding-not-working/usercontrol-dp-resolution.ja.md %}
+
+.NET 10 / Windows 11 で実測。カードは名前スコープを持ち、自身を <code>Root</code> という名前で登録している（<code>x:Name="Root"</code> と同じ）。入れ子の行は、どちらのコントロールが選ばれたかを <code>Tag</code> で見分けた。
+{: .table-caption}
 
 ---
 

@@ -22,7 +22,8 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
 - 想定用途: エラーメッセージ、ログ、詳細情報の表示
 - 検証環境: .NET 10 / Windows 11
 
-本記事の図は、上記の環境で `TextBlock` と `TextBox` を実際に表示し、選択の可否とフォーカスの状態を読み出して得たものである。
+本記事の表は、上記の環境で実際に計測したものである。
+計測の条件は、それぞれの表の説明に書いた。
 この環境で確認しているのは次の点である。
 
 - `TextBlock` には、テキストを選択する API が無い。
@@ -48,12 +49,12 @@ image: /images/articles/wpf-selectable-readonly-text-display/selectable-readonly
 このため、表示用途では `TextBlock` の代替として同じように扱うことができる。  
 ---
 
-表示専用の候補ごとに、テキストを選択できるかとフォーカスの扱いを測った結果が次の図である。
+表示専用の候補ごとに、テキストを選択できるかとフォーカスの扱いを測った結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.svg" alt="表示専用の候補ごとに選択可否とフォーカスの扱いを測った表。TextBlock には選択の API が無く Focusable も False。IsReadOnly の TextBox は選択でき Focusable も True。枠と背景を消しても、IsTabStop を切っても選択できる。" width="623" height="200" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、同じ文字列を各候補に与えて測った結果。<code>SelectAll() selects</code> は <code>SelectAll()</code> の後に <code>SelectedText</code> から読み出した内容である。</figcaption>
-</figure>
+{% include tables/articles/wpf-selectable-readonly-text-display/selectable-text-matrix.ja.md %}
+
+.NET 10 / Windows 11 で、同じ文字列を各候補に与えて測った結果。「SelectAll() で選択されるもの」は <code>SelectAll()</code> の後に <code>SelectedText</code> から読み出した内容である。
+{: .table-caption}
 
 **`TextBlock` は `Focusable` が `False` である。** 選択の API を持たないだけでなく、フォーカスも受け取らない。
 `TextBox` に変えると選択でき、枠と背景を消しても選択できることは変わらない。見た目と機能は独立している。
@@ -122,10 +123,10 @@ Tab キーの巡回からは外れるが、`Focusable` は `True` のままで�
 
 `VerticalScrollBarVisibility="Auto"` により、表示領域を超えた内容はスクロールバーで確認できる。改行を含む文字列の表示に `AcceptsReturn` は要らない。`AcceptsReturn` は Enter キーで改行を入れるかどうかを決めるだけで、読み取り専用の `TextBox` に 3 行の文字列を表示すると、`False` でも `True` でも 3 行で表示された。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.svg" alt="読み取り専用の TextBox の表。IsReadOnlyCaretVisible の既定値は False。3 行の文字列を表示すると、AcceptsReturn が False でも True でも LineCount は 3 で高さも同じ。" width="504" height="170" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、<code>IsReadOnlyCaretVisible</code> の既定値を読み、読み取り専用の <code>TextBox</code> に <code>line1</code>〜<code>line3</code> を表示して測った結果。</figcaption>
-</figure>
+{% include tables/articles/wpf-selectable-readonly-text-display/readonly-textbox-caret-acceptsreturn.ja.md %}
+
+.NET 10 / Windows 11 で、<code>IsReadOnlyCaretVisible</code> の既定値を読み、読み取り専用の <code>TextBox</code> に <code>line1</code>〜<code>line3</code> を表示して測った結果。
+{: .table-caption}
 
 ---
 

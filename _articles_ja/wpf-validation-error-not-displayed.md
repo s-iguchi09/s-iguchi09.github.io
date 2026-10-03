@@ -207,12 +207,12 @@ WPF の入力検証は、次の 3 段階が独立して成立して初めて画�
 ---
 
 どの段階で止まっているかは、`Validation.HasError`・`Validation.Errors` の件数・アドーナーの数を分けて読めば判別できる。
-常にエラーを返すソースへバインドした `TextBox` で測った結果が次の図である。
+常にエラーを返すソースへバインドした `TextBox` で測った結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-validation-error-not-displayed/validation-stages.svg" alt="検証の構成別に HasError・Errors の件数・アドーナーの数を測った表。IDataErrorInfo だけでは HasError が False で Errors も 0。ValidatesOnDataErrors を有効にすると True・1・1 になる。INotifyDataErrorInfo は既定で True・1・1。ValidationRules も True・1・1。ErrorTemplate を null にすると True・1 のままアドーナーだけが 0 になる。" width="615" height="230" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、常にエラーを返すソースへバインドした <code>TextBox</code> を測った結果。<code>adorners</code> は <code>AdornerLayer.GetAdorners</code> が返した数である。</figcaption>
-</figure>
+{% include tables/articles/wpf-validation-error-not-displayed/validation-stages.ja.md %}
+
+.NET 10 / Windows 11 で、常にエラーを返すソースへバインドした <code>TextBox</code> を測った結果。「装飾（adorner）の数」は <code>AdornerLayer.GetAdorners</code> が返した数である。
+{: .table-caption}
 
 **1 行目は `Errors` が 0 である。** `IDataErrorInfo` を実装しても、`ValidatesOnDataErrors` を有効にしなければ段階 1 に到達しない。
 2 行目で有効にすると 1 件になり、アドーナーも 1 つ描かれる。
@@ -424,10 +424,10 @@ XAML 側では、メッセージを描く `ErrorTemplate` を定義して `Style
 各値の違いは [WPF TextBox の UpdateSourceTrigger で入力がソースへ反映されるタイミングを制御する](/ja/articles/wpf-textbox-updatesourcetrigger-binding-timing/) で扱っている。
 `Explicit` を選んだ場合に View 側から更新を指示する実装は [WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/) で扱っている。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-validation-error-not-displayed/validation-pitfalls.svg" alt="注意点の挙動を測った表。setter で検証する INotifyDataErrorInfo は、LostFocus では入力で空にしても HasError は False のままで、フォーカスが外れると True になる。Explicit ではフォーカスが外れても False で、UpdateSource で True になる。OneWay と検証ルールでは、開始時に True、入力しても True、ソースを直すと False。OneWay と OneTime でコードから代入するとバインドが外れて False、SetCurrentValue ではバインドが残って True。ErrorsChanged を Namee で通知すると HasErrors は True でも Validation.HasError は False、Name なら True。Validation.Error は NotifyOnValidationError が False なら 0 回、True なら 2 回。Validation.Errors の先頭要素を添字で指す ErrorContent のバインドはエラーの解消時に Error 17 を 1 回出し、現在の項目を指す /ErrorContent は 0 回。ErrorsChanged は UI スレッドからでもバックグラウンドのスレッドからでも True になる。" width="1218" height="500" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で実測。入力とキー操作は WPF の入力処理（<code>InputManager</code>）を通して送った。<code>Error 17</code> は、データバインドのトレースに記録された件数である。</figcaption>
-</figure>
+{% include tables/articles/wpf-validation-error-not-displayed/validation-pitfalls.ja.md %}
+
+.NET 10 / Windows 11 で実測。入力とキー操作は WPF の入力処理（<code>InputManager</code>）を通して送った。<code>Error 17</code> は、データバインドのトレースに記録された件数である。
+{: .table-caption}
 
 ---
 

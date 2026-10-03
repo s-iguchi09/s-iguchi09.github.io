@@ -58,10 +58,10 @@ internal sealed class LabelVsTextBlockScene : IScene
 
         await context.SaveTableAsync(
             $"layout ms over {Iterations} runs",
-            ["", "min", "median", "max"],
-            Spread.Select(entry => (IReadOnlyList<string>)
+            ["", Loc.Of("min", "最小"), Loc.Of("median", "中央値"), Loc.Of("max", "最大")],
+            Spread.Select(entry => (IReadOnlyList<Loc>)
             [
-                entry.Name,
+                Loc.Of(entry.Name, entry.Name.Replace(", ", "、")),
                 entry.Result.BestMilliseconds.ToString("F1"),
                 entry.Result.MedianMilliseconds.ToString("F1"),
                 entry.Result.WorstMilliseconds.ToString("F1"),
@@ -70,13 +70,13 @@ internal sealed class LabelVsTextBlockScene : IScene
 
         await context.SaveTableAsync(
             $"managed heap kept after laying out {ItemCount:N0} items",
-            ["", "KB", "vs TextBlock"],
+            ["", "KB", Loc.Of("vs TextBlock", "TextBlock との比")],
             MeasureRetainedHeap(),
             "label-vs-textblock-memory.svg");
 
         await context.SaveTableAsync(
             "ListBox with 2,000 items: scrolling and virtualization",
-            ["", "measured"],
+            ["", Loc.Of("measured", "計測値")],
             await MeasureScrollingAsync(),
             "label-vs-textblock-scrolling.svg");
     }
@@ -245,12 +245,12 @@ internal sealed class LabelVsTextBlockScene : IScene
     /// 1,000 個を並べてレイアウトしたあと、GC を掛けても残るマネージドヒープの量を測る。
     /// 5 回測り、中央値を採る。
     /// </summary>
-    private static List<IReadOnlyList<string>> MeasureRetainedHeap()
+    private static List<IReadOnlyList<Loc>> MeasureRetainedHeap()
     {
-        (string Name, Func<FrameworkElement> Make)[] variants =
+        (Loc Name, Func<FrameworkElement> Make)[] variants =
         [
             ("Label", CreateLabel),
-            ("Label (Content has '_')", CreateUnderscoreLabel),
+            (Loc.Of("Label (Content has '_')", "Label（Content に '_' を含む）"), CreateUnderscoreLabel),
             ("TextBlock", CreateTextBlock),
         ];
 
@@ -264,7 +264,7 @@ internal sealed class LabelVsTextBlockScene : IScene
 
         long textBlock = medians[^1];
         return variants
-            .Select((variant, i) => (IReadOnlyList<string>)
+            .Select((variant, i) => (IReadOnlyList<Loc>)
             [
                 variant.Name,
                 (medians[i] / 1024.0).ToString("N0"),
@@ -296,16 +296,16 @@ internal sealed class LabelVsTextBlockScene : IScene
     /// <summary>
     /// CanContentScroll の既定値と、仮想化とスクロール単位の関係を実際の ListBox で確かめる。
     /// </summary>
-    private static async Task<List<IReadOnlyList<string>>> MeasureScrollingAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureScrollingAsync()
     {
-        var rows = new List<IReadOnlyList<string>>
+        var rows = new List<IReadOnlyList<Loc>>
         {
-            new[] { "ScrollViewer.CanContentScroll default", WpfProbe.Describe(ScrollViewer.CanContentScrollProperty.DefaultMetadata.DefaultValue) },
+            new Loc[] { Loc.Of("ScrollViewer.CanContentScroll default", "ScrollViewer.CanContentScroll の既定値"), WpfProbe.Describe(ScrollViewer.CanContentScrollProperty.DefaultMetadata.DefaultValue) },
         };
 
         rows.AddRange(await WpfProbe.MeasureAsync(
         [
-            ScrollCase("ListBox (default style)", null),
+            ScrollCase(Loc.Of("ListBox (default style)", "ListBox（既定のスタイル）"), null),
             ScrollCase("ScrollUnit=\"Pixel\"", listBox => VirtualizingPanel.SetScrollUnit(listBox, ScrollUnit.Pixel)),
             ScrollCase("CanContentScroll=\"False\"", listBox => ScrollViewer.SetCanContentScroll(listBox, false)),
         ]));
@@ -314,19 +314,21 @@ internal sealed class LabelVsTextBlockScene : IScene
 
         // ExtentHeight は、項目単位のスクロールなら件数、ピクセル単位ならピクセル数になる。
         // 途中までスクロールしてから数え、スクロール後も表示範囲の分しか実体化されないことを見る。
-        static WpfProbe.Case ScrollCase(string name, Action<ListBox>? configure)
+        static WpfProbe.LocCase ScrollCase(Loc name, Action<ListBox>? configure)
         {
             var listBox = new ListBox { ItemsSource = Enumerable.Range(0, 2000).Select(i => $"item {i}").ToList() };
             configure?.Invoke(listBox);
 
-            return new WpfProbe.Case(
+            return new WpfProbe.LocCase(
                 name,
                 listBox,
                 _ =>
                 {
                     ScrollViewer viewer = FindDescendants<ScrollViewer>(listBox).First();
                     int realized = FindDescendants<ListBoxItem>(listBox).Count();
-                    return [$"CanContentScroll {viewer.CanContentScroll}, ExtentHeight {viewer.ExtentHeight:N0}, realized {realized:N0}"];
+                    return [Loc.Of(
+                        $"CanContentScroll {viewer.CanContentScroll}, ExtentHeight {viewer.ExtentHeight:N0}, realized {realized:N0}",
+                        $"CanContentScroll {viewer.CanContentScroll}、ExtentHeight {viewer.ExtentHeight:N0}、実体化した項目 {realized:N0}")];
                 },
                 _ =>
                 {

@@ -14,7 +14,7 @@ image: /images/articles/wpf-treeview-select-item-programmatically/treeview-selec
 ところが `ListBox` や `DataGrid` と同じ要領で `treeView.SelectedItem = node;` と書くとコンパイルエラーになり、XAML でバインドしても通常の構成ではビルドが通らない。
 
 本記事では、この制約が `TreeView` の選択状態の持ち方に由来することを説明し、コードから選択を指示する 2 つの方式と、表示位置・フォーカスの制御を担う添付ビヘイビアを組み合わせた実装を示す。
-図の表にまとめた挙動と例外の型は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である。
+表にまとめた挙動と例外の型は、いずれも .NET 10 / Windows 11 で実際に動かして確認した結果である。
 
 ---
 
@@ -120,10 +120,10 @@ error MC3065: 'SelectedItem' property is read-only and cannot be set from markup
 
 ここまでの説明は、いずれもコードから確かめられる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.svg" alt="TreeView の選択とコンテナ生成を測った表。SelectedItemProperty.ReadOnly は True、外部からの SetValue は InvalidOperationException、子のコンテナは展開前も IsExpanded を true にした直後もまだ null で、レイアウトが走ってから TreeViewItem になる。子の IsSelected を true にすると TreeView.SelectedItem がその項目になる。" width="732" height="260" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 での実測結果。<code>child container</code> は親の <code>ItemContainerGenerator.ContainerFromIndex(0)</code> が返した値の型である。</figcaption>
-</figure>
+{% include tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-facts.ja.md %}
+
+.NET 10 / Windows 11 での実測結果。子のコンテナーを調べた 3 行は、親の <code>ItemContainerGenerator.ContainerFromIndex(0)</code> が返した値の型である。
+{: .table-caption}
 
 **2 つの壁が別々に現れていることが、この表で確認できる。**
 1 行目と 2 行目は「読み取り専用だから書き込めない」ことを示す。
@@ -323,7 +323,7 @@ public static class RevealSelectedItemBehavior
 `Focus` を併せて呼ぶと選択がアクティブな配色で描画される。
 フォーカスを移したくない画面では `Focus` の行を外す。
 
-上記の XAML とコードをそのまま実行し、3 階層下の `drivers` に対して `SelectAndReveal` を呼んだ結果が次の図である。
+上記の XAML とコードをそのまま実行し、3 階層下の `drivers` に対して `SelectAndReveal` を呼んだ結果が次の表である。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-select-from-viewmodel.png" alt="TreeView で C: / Windows / System32 が展開され、その下の drivers が選択色で強調表示されている。下部のテキストに TreeView.SelectedItem = drivers と表示されている。" width="326" height="293" loading="lazy">
@@ -365,10 +365,10 @@ UI 上の操作と同じ扱いになるだけで、以後の ViewModel 側の変
 `BringIndexIntoView` を公開したカスタムの `VirtualizingStackPanel` を `TreeView` と `TreeViewItem` の双方の `ItemsPanel` に据え、階層ごとにコンテナを実体化させれば取得できるが、実装量は大きく増える。
 仮想化と選択状態の関係は [WPF ListBox 仮想化環境での SelectedItems が消えたように見える問題とその解決法](/ja/articles/wpf-listbox-virtualization-selecteditems/) でも扱っている。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.svg" alt="記事の XAML で選択の振る舞いを測った表。コンテナが生成済みの Program Files と Users を順に選ぶと、ViewModel では Users だけが True になる。C: を選んでから、祖先が閉じていてコンテナの無い drivers を選ぶと、ViewModel では両方が True のまま、SelectedItem は C:。IsSelected が TwoWay ではコンテナへ代入した後の値の出どころは Style で、ViewModel から false にするとコンテナも False になる。OneWay では Local になり、ViewModel から false にしてもコンテナは True のまま。選択中の項目の背景は、フォーカスがあると SystemColors.HighlightColor、無いと SystemColors.InactiveSelectionHighlightBrush。200 個のノードで最後のノードを選んでも縦のスクロール位置は 0 のままで、BringIntoView で 3051.05 まで動く。仮想化を有効にして ViewModel から最後のノードを選ぶと、コンテナは無く SelectedItem は null で、末尾までスクロールしてコンテナが生成されると SelectedItem が Folder 200 になる。" width="1053" height="320" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、記事の XAML を基本の構成として測った結果。OneWay の行では <code>IsSelected</code> のバインドのモードを変え、スクロールと仮想化の行では最上位のノードを 200 個持つ ViewModel を使った（仮想化の行では <code>VirtualizingPanel.IsVirtualizing</code> も <code>True</code> にした）。背景は、既定テンプレートの <code>Bd</code> の <code>Background</code> を読んだ。</figcaption>
-</figure>
+{% include tables/articles/wpf-treeview-select-item-programmatically/treeview-selection-behavior.ja.md %}
+
+.NET 10 / Windows 11 で、記事の XAML を基本の構成として測った結果。OneWay の行では <code>IsSelected</code> のバインドのモードを変え、スクロールと仮想化の行では最上位のノードを 200 個持つ ViewModel を使った（仮想化の行では <code>VirtualizingPanel.IsVirtualizing</code> も <code>True</code> にした）。背景は、既定テンプレートの <code>Bd</code> の <code>Background</code> を読んだ。
+{: .table-caption}
 
 ---
 

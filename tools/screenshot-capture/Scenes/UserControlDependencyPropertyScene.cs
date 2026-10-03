@@ -87,6 +87,43 @@ internal sealed class UserControlDependencyPropertyScene : IScene
 
     public string Slug => "wpf-usercontrol-dependencyproperty-binding-not-working";
 
+    /// <summary>表の英語の言い回しの日本語。前から順に置き換える（長いものを先に置く）。</summary>
+    private static readonly (string En, string Ja)[] Words =
+    [
+        ("RelativeSource Self (on the inner element)", "RelativeSource Self（内側の要素に）"),
+        ("inner TextBlock, ElementName=Root", "内側の TextBlock、ElementName=Root"),
+        ("inner root DataContext = the control, then {Binding Title}", "内側のルートの DataContext = コントロール、続けて {Binding Title}"),
+        ("ContextMenu MenuItem.Header, {Binding Title} with DataContext delegated", "ContextMenu の MenuItem.Header、DataContext を引き継いで {Binding Title}"),
+        ("ContextMenu MenuItem.Header, ", "ContextMenu の MenuItem.Header、"),
+        ("inline Popup, ", "その場に書いた Popup、"),
+        ("inline DataTemplate, ", "その場に書いた DataTemplate、"),
+        ("DataTemplate in UserControl.Resources, ", "UserControl.Resources の DataTemplate、"),
+        ("UserControl nested inside the card, AncestorType=UserControl (Path=Tag)", "カードの中に入れ子にした UserControl、AncestorType=UserControl（Path=Tag）"),
+        ("caller Title={Binding HeaderText}, inner {Binding Title}", "呼び出し側で Title={Binding HeaderText}、内側で {Binding Title}"),
+        ("caller's view model also has Title", "呼び出し側の ViewModel にも Title がある"),
+        ("parent without DataContext, Title set", "親に DataContext なし、Title を設定"),
+        ("DataContext delegated to the inner Grid", "DataContext を内側の Grid に引き継ぐ"),
+        ("delegated, DataContext.HeaderText via AncestorType", "引き継いだうえで、AncestorType 経由の DataContext.HeaderText"),
+        ("BindsTwoWayByDefault, type xyz inside", "BindsTwoWayByDefault、内側で xyz と入力"),
+        ("DataContext = this, caller binds Title", "DataContext = this、呼び出し側が Title をバインド"),
+        ("DataContext = this, caller's DataContext lacks Title", "DataContext = this、呼び出し側の DataContext に Title が無い"),
+        ("DataContext = this, caller's DataContext has Title", "DataContext = this、呼び出し側の DataContext に Title がある"),
+        ("caller OneWay, inside inner TwoWay write-back", "呼び出し側は OneWay、内側で TwoWay の書き戻し"),
+        ("caller OneWay, inside ", "呼び出し側は OneWay、内側で "),
+        ("caller also names an element Root", "呼び出し側も要素に Root という名前を付ける"),
+        ("; 0 errors", "、エラー 0 件"),
+        ("; Error 40 x1", "、Error 40 が 1 件"),
+        ("inner sees ", "内側の DataContext は "),
+        (", card keeps ", "、カードの DataContext は "),
+        ("binding removed; ", "バインドは外れる、"),
+        ("binding kept; ", "バインドは残る、"),
+        ("inside -> ", "内側 -> "),
+        (", caller -> ", "、呼び出し側 -> "),
+        (", inner ", "、内側 "),
+        ("inner (empty)", "内側 (empty)"),
+        ("inner from ", "内側 from "),
+    ];
+
     public async Task CaptureAsync(SceneContext context)
     {
         await CaptureThreeWaysAsync(context);
@@ -124,20 +161,20 @@ internal sealed class UserControlDependencyPropertyScene : IScene
 
         await context.SaveTableAsync(
             "TextBlock inside the UserControl, bound three ways",
-            ["binding inside the control", "resulting Text", "its DataContext"],
-            await ValidationAndScopeMeasurements.UserControlPropertyScopeAsync(),
+            [Loc.Of("binding inside the control", "コントロールの中のバインド"), Loc.Of("resulting Text", "結果の Text"), Loc.Of("its DataContext", "その DataContext")],
+            LocTable.Translate(await ValidationAndScopeMeasurements.UserControlPropertyScopeAsync(), Words),
             "usercontrol-dp-scope.svg");
 
         await context.SaveTableAsync(
             "where the reference is written, and whether it reaches InfoCard.Title",
-            ["reference", "result"],
-            await ValidationAndScopeMeasurements.UserControlResolutionAsync(),
+            [Loc.Of("reference", "参照"), Loc.Of("result", "結果")],
+            LocTable.Translate(await ValidationAndScopeMeasurements.UserControlResolutionAsync(), Words),
             "usercontrol-dp-resolution.svg");
 
         await context.SaveTableAsync(
             "the other measured runs in this article",
-            ["case", "measured"],
-            await ValidationAndScopeMeasurements.UserControlMoreAsync(),
+            [Loc.Of("case", "条件"), Loc.Of("measured", "計測値")],
+            LocTable.Translate(await ValidationAndScopeMeasurements.UserControlMoreAsync(), Words),
             "usercontrol-dp-more.svg");
     }
 
