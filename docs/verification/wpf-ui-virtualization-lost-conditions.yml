@@ -16,6 +16,7 @@ verifies:
   - "GroupStyle を付けてグループ化した ListBox は、最上位の項目のパネルが StackPanel に、CanContentScroll が False になり、1,000 個すべてのコンテナーを作ること。GroupStyle を付けなければ、GroupDescriptions があっても IsGrouping は False で、仮想化は保たれること"
   - "DataGrid の EnableRowVirtualization=False は、1,000 個すべての行を作り、IsVirtualizing が False になること"
   - "VirtualizingPanel.ScrollUnit=Pixel は仮想化を保つこと"
+  - "ListBoxItem を 1,000 個 Items に直接追加した ListBox は、ContainerFromItem で数えたコンテナーも、項目のパネルの子要素も 11 個で、データを渡した場合と同じになること。IsItemItsOwnContainer が true の項目は、直接追加では 1,000 個、設定の表のデータを渡した行では 0 個であること"
   - "ListBox は VirtualizingPanel.CacheLength=0 にするとコンテナーが 11 個から 10 個に、VirtualizingPanel.CacheLengthUnit=Page にすると 20 個になること"
   - "VirtualizingPanel.IsVirtualizing=True の TreeView は、VirtualizingPanel.CacheLength=0 にするとコンテナーが 25 個から 13 個になること"
   - "TreeView に VirtualizingPanel.IsVirtualizing=True を指定すると、項目のパネルが VirtualizingStackPanel に、CanContentScroll が True になり、仮想化されること"

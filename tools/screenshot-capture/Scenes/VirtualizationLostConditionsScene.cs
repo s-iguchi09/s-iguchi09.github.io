@@ -33,6 +33,7 @@ internal sealed class VirtualizationLostConditionsScene : IScene
         "GroupStyle を付けてグループ化した ListBox は、最上位の項目のパネルが StackPanel に、CanContentScroll が False になり、1,000 個すべてのコンテナーを作ること。GroupStyle を付けなければ、GroupDescriptions があっても IsGrouping は False で、仮想化は保たれること",
         "DataGrid の EnableRowVirtualization=False は、1,000 個すべての行を作り、IsVirtualizing が False になること",
         "VirtualizingPanel.ScrollUnit=Pixel は仮想化を保つこと",
+        "ListBoxItem を 1,000 個 Items に直接追加した ListBox は、ContainerFromItem で数えたコンテナーも、項目のパネルの子要素も 11 個で、データを渡した場合と同じになること。IsItemItsOwnContainer が true の項目は、直接追加では 1,000 個、設定の表のデータを渡した行では 0 個であること",
         "ListBox は VirtualizingPanel.CacheLength=0 にするとコンテナーが 11 個から 10 個に、VirtualizingPanel.CacheLengthUnit=Page にすると 20 個になること",
         "VirtualizingPanel.IsVirtualizing=True の TreeView は、VirtualizingPanel.CacheLength=0 にするとコンテナーが 25 個から 13 個になること",
         "TreeView に VirtualizingPanel.IsVirtualizing=True を指定すると、項目のパネルが VirtualizingStackPanel に、CanContentScroll が True になり、仮想化されること",
@@ -70,7 +71,7 @@ internal sealed class VirtualizationLostConditionsScene : IScene
 
         await context.SaveTableAsync(
             "1,000 items in a 200-high area: settings on the ListBox",
-            [.. headers, "IsGrouping"],
+            [.. headers, "IsGrouping", T("children of the items panel", "項目のパネルの子要素"), T("items that are their own container", "自分自身がコンテナーの項目")],
             await MeasureAsync(Settings(), withGrouping: true),
             "virtualization-settings.svg");
 
@@ -96,10 +97,18 @@ internal sealed class VirtualizationLostConditionsScene : IScene
     /// <summary>1 つの条件。<paramref name="Act"/> は表示した後、数える前に行う操作（ドロップダウンを開くなど）。</summary>
     private sealed record Case(Loc Label, FrameworkElement Root, ItemsControl Items, Func<ItemsControl, Task>? Act = null);
 
+    /// <summary>
+    /// ドロップダウンの高さ。既定値（MaxDropDownHeight）は画面の高さの 3 分の 1 から決まり、
+    /// 画面によって表示範囲とコンテナーの数が変わるため、固定する。
+    /// </summary>
+    private const double DropDownHeight = 360;
+
     /// <summary>ComboBox のドロップダウンを開く。</summary>
     private static Task Open(ItemsControl items)
     {
-        ((ComboBox)items).IsDropDownOpen = true;
+        var combo = (ComboBox)items;
+        combo.MaxDropDownHeight = DropDownHeight;
+        combo.IsDropDownOpen = true;
         return Task.CompletedTask;
     }
 
@@ -107,6 +116,7 @@ internal sealed class VirtualizationLostConditionsScene : IScene
     private static async Task OpenAndClose(ItemsControl items)
     {
         var combo = (ComboBox)items;
+        combo.MaxDropDownHeight = DropDownHeight;
         combo.IsDropDownOpen = true;
         await Capture.SettleAsync(Window.GetWindow(combo)!, 200);
         combo.IsDropDownOpen = false;
@@ -242,6 +252,16 @@ internal sealed class VirtualizationLostConditionsScene : IScene
             ListBox list = NewList();
             VirtualizingPanel.SetCacheLengthUnit(list, VirtualizationCacheLengthUnit.Page);
             yield return new Case("VirtualizingPanel.CacheLengthUnit=Page", Area(list), list);
+        }
+
+        {
+            var list = new ListBox();
+            foreach (Row row in Rows())
+            {
+                list.Items.Add(new ListBoxItem { Content = row.Text });
+            }
+
+            yield return new Case(T("ListBoxItem added directly to Items (1,000)", "ListBoxItem を Items に直接追加（1,000 個）"), Area(list), list);
         }
     }
 
@@ -405,6 +425,8 @@ internal sealed class VirtualizationLostConditionsScene : IScene
                 if (withGrouping)
                 {
                     cells.Add(WpfProbe.Describe(@case.Items.IsGrouping));
+                    cells.Add(report.PanelChildren is { } children ? $"{children:N0}" : "-");
+                    cells.Add($"{report.OwnContainers:N0}");
                 }
 
                 rows.Add(cells);
@@ -417,7 +439,7 @@ internal sealed class VirtualizationLostConditionsScene : IScene
     /// <summary>
     /// 記事の切り分け用のコード。実体化したコンテナーの数と、仮想化を左右する値を読む。
     /// </summary>
-    private sealed record Report(int Realized, string Panel, bool Virtualizing, bool IsVirtualizing, bool? CanContentScroll, double Height)
+    private sealed record Report(int Realized, string Panel, bool Virtualizing, bool IsVirtualizing, bool? CanContentScroll, double Height, int? PanelChildren, int OwnContainers)
     {
         public static Report Of(ItemsControl items)
         {
@@ -439,7 +461,9 @@ internal sealed class VirtualizationLostConditionsScene : IScene
                 host is VirtualizingStackPanel,
                 VirtualizingPanel.GetIsVirtualizing(items),
                 viewer?.CanContentScroll,
-                items.ActualHeight);
+                items.ActualHeight,
+                host is null ? null : System.Windows.Media.VisualTreeHelper.GetChildrenCount(host),
+                items.Items.Cast<object>().Count(items.IsItemItsOwnContainer));
         }
     }
 

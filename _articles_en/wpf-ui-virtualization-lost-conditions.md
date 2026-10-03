@@ -16,6 +16,7 @@ When the placement is the cause, or when `ItemsPanel` is replaced or the items a
 
 The main causes fall into three groups.
 The placement does not limit the height, the items panel or the template does not support virtualization, or a setting turns off virtualization or logical scrolling, and each group needs a different fix.
+In addition, when containers are added directly to `Items`, the number of containers alone cannot tell the list apart from one given data.
 This article shows which conditions turn virtualization off, measured by counting the item containers realized for 1,000 items in an area 200 units high.
 It also shows how to find the cause in an existing application, and the fix for each cause.
 
@@ -25,7 +26,7 @@ It also shows how to find the cause in an existing application, and the fix for 
 
 - Framework: WPF on .NET Framework 4.5 or later / .NET Core 3.0 or later
 - Scope: controls derived from `ItemsControl` (`ListBox`, `ListView`, `DataGrid`, `TreeView`, `ComboBox`, `ItemsControl`)
-- APIs involved: `VirtualizingStackPanel`, `VirtualizingPanel.IsVirtualizing`, `VirtualizingPanel.IsVirtualizingWhenGrouping`, `VirtualizingPanel.ScrollUnit`, `VirtualizingPanel.CacheLength`, `VirtualizingPanel.CacheLengthUnit`, `ScrollViewer.CanContentScroll`, `DataGrid.EnableRowVirtualization`, `ItemsControl.IsGrouping`
+- APIs involved: `VirtualizingStackPanel`, `VirtualizingPanel.IsVirtualizing`, `VirtualizingPanel.IsVirtualizingWhenGrouping`, `VirtualizingPanel.ScrollUnit`, `VirtualizingPanel.CacheLength`, `VirtualizingPanel.CacheLengthUnit`, `ScrollViewer.CanContentScroll`, `DataGrid.EnableRowVirtualization`, `ItemsControl.IsGrouping`, `ItemsControl.IsItemItsOwnContainer`
 - Verification environment: .NET 10 / Windows 11 (default theme)
 - Measurement: 1,000 items were shown in an area 300 wide and 200 high, and after layout completed, the containers returned by `ItemContainerGenerator.ContainerFromItem` were counted. The measurement is implemented as a scene in `tools/screenshot-capture`.
 
@@ -63,7 +64,11 @@ The measured size is shown in the settings table below.
 When an `ItemsControl` with only its panel replaced by a `VirtualizingStackPanel` was placed in an outer `ScrollViewer`, the items panel did not scroll logically, even with `CanContentScroll=True` (see the table of fixes below).
 Virtualization therefore needs three conditions at once.
 The view of the `ScrollViewer` inside the template must be limited, the items panel must be a `VirtualizingStackPanel`, and `IsVirtualizing` and `CanContentScroll` must be `True`.
-Which one is missing can be read from the following values.
+These three conditions apply when the items are passed as data.
+When item containers such as `ListBoxItem` are added directly to `Items`, the official documentation states that they are not virtualized ([Optimizing performance: Controls](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-controls#displaying-large-data-sets)).
+How to tell that case apart is covered after the settings table below.
+
+Which of the three conditions is missing can be read from the following values.
 
 | Value to read | Group of causes |
 |---|---|
@@ -80,8 +85,8 @@ The "VirtualizingStackPanel?" column in the tables below also counts derived cla
 
 ## Diagnosis Procedure
 
-1. The list is shown, and after layout completes, `VirtualizationReport.Write` from the implementation example below is called.
-2. The number of realized containers is read. If it is smaller than the number of items, virtualization works, and the diagnosis ends here.
+1. The list is shown with far more items than the visible range and the cache hold, and after layout completes, `VirtualizationReport.Write` from the implementation example below is called. With few items, the number of containers equals the number of items even with virtualization on (here, about 10 are in view for 1,000 items).
+2. The number of realized containers and the items that are their own container (`own containers` in the output) are read. If `own containers` is not 0, containers are added directly to `Items` (see "Containers are added directly to `Items`" under Fixes by Cause). If it is 0 and the number of containers is smaller than the number of items, virtualization works, and the diagnosis ends here.
 3. If it equals the number of items, the values are compared with the table above, row by row in order.
 4. If more than one row matches, all of them are fixed. After a fix, the diagnosis starts again from step 1.
 
@@ -104,11 +109,11 @@ Only the height tells this group apart.
 Inside an `Expander`, the result depends on where the `Expander` itself is placed.
 In a `Grid` the list was virtualized, and in a vertical `StackPanel` it created every container.
 
-The next table keeps the placement in the `Grid` and changes the settings (only the `DataGrid` row uses a different control).
+The next table keeps the placement in the `Grid` and changes the settings (the `DataGrid` row changes the control, and the last row changes how the items are passed).
 
 {% include tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-settings.en.md %}
 
-Measured on .NET 10 / Windows 11 (default theme) with a `ListBox` of 1,000 items in a `Grid` 300 wide and 200 high, changing one setting at a time. The `DataGrid` row places a `DataGrid` instead of the `ListBox`. The two "grouped" rows split the items into 10 groups of 100 with `GroupDescriptions` on a `ListCollectionView`. The items panel is the top-level panel of the control, and `IsGrouping` is the control's `ItemsControl.IsGrouping`.
+Measured on .NET 10 / Windows 11 (default theme) with a `ListBox` of 1,000 items in a `Grid` 300 wide and 200 high, changing one setting at a time. The `DataGrid` row places a `DataGrid` instead of the `ListBox`. The two "grouped" rows split the items into 10 groups of 100 with `GroupDescriptions` on a `ListCollectionView`. Only the last row adds `ListBoxItem` objects directly to `Items` instead of using `ItemsSource`. The items panel is the top-level panel of the control, and `IsGrouping` is the control's `ItemsControl.IsGrouping`. "Children of the items panel" counts the children of the top-level panel, which are the groups (`GroupItem`) when grouping with a `GroupStyle`. "Items that are their own container" counts the items for which `ItemsControl.IsItemItsOwnContainer` returns `true`.
 {: .table-caption}
 
 The height stays 200 in every row.
@@ -125,16 +130,27 @@ With a `GroupStyle`, `IsGrouping` became `True`, the top-level panel became a `S
 That `ScrollUnit=Pixel` makes scrolling per pixel is measured in [Why WPF Slows Down with Many Labels and When to Switch to TextBlock](/articles/wpf-label-vs-textblock-performance/).
 Per-pixel scrolling does not need `CanContentScroll=False`.
 
-The last two rows change only the cache settings.
+The `CacheLength=0` and `CacheLengthUnit=Page` rows change only the cache settings.
 With `CacheLength=0`, the default 11 containers became 10.
 The default `ListBox` therefore created one extra container beyond the 10 in view.
 With `CacheLengthUnit=Page`, there were 20, one page beyond the visible range.
+
+The last row creates 1,000 `ListBoxItem` objects and adds them directly to `Items` instead of using `ItemsSource`.
+Both the containers counted with `ContainerFromItem` and the children of the items panel were 11, the same as for a `ListBox` given data.
+The panel holds only the visible range and the cache.
+What cannot be saved is the 1,000 `ListBoxItem` objects the application created.
+The official documentation states that when containers are created and added, a `VirtualizingStackPanel` offers no performance advantage over a `StackPanel` ([VirtualizingStackPanel](https://learn.microsoft.com/dotnet/api/system.windows.controls.virtualizingstackpanel)).
+In this measurement, however, the panel had 11 children, unlike the 1,000 in the row with `ItemsPanel` replaced by a `StackPanel` (given data).
+Time and memory were not measured.
+
+In this case, neither the number of containers nor the number of panel children tells it apart from a `ListBox` given data.
+What does tell it apart is the number of items for which `ItemsControl.IsItemItsOwnContainer` returns `true`: 1,000 in the directly added row, and 0 in every row of the settings table given data ([ItemsControl.IsItemItsOwnContainer](https://learn.microsoft.com/dotnet/api/system.windows.controls.itemscontrol.isitemitsowncontainer)).
 
 The last table shows the defaults of each control.
 
 {% include tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-defaults.en.md %}
 
-Measured on .NET 10 / Windows 11 (default theme) by showing 1,000 items with each control in an area 300 wide and 200 high. The three `ComboBox` rows were counted before the drop-down opened, after it opened, and after it was opened and closed. The "height" of the `ComboBox` is that of the closed control, and it does not decide the visible range of the drop-down. A `CanContentScroll` of "-" means there is no `ScrollViewer` around the items panel inside the control's template. Before the drop-down opens, the `ComboBox` has no items panel at all, so "items panel" is also "-" and "VirtualizingStackPanel?" is `False`.
+Measured on .NET 10 / Windows 11 (default theme) by showing 1,000 items with each control in an area 300 wide and 200 high. The three `ComboBox` rows were counted before the drop-down opened, after it opened, and after it was opened and closed. The "height" of the `ComboBox` is that of the closed control. The maximum height of the drop-down was fixed with `MaxDropDownHeight=360`, because its default is derived from a third of the screen height, so the visible range would differ by screen ([ComboBox.MaxDropDownHeight](https://learn.microsoft.com/dotnet/api/system.windows.controls.combobox.maxdropdownheight)). A `CanContentScroll` of "-" means there is no `ScrollViewer` around the items panel inside the control's template. Before the drop-down opens, the `ComboBox` has no items panel at all, so "items panel" is also "-" and "VirtualizingStackPanel?" is `False`.
 {: .table-caption}
 
 `ListBox`, `ListView` (with `GridView`), and `DataGrid` virtualized by default.
@@ -231,6 +247,7 @@ For `ComboBox`, the fix is to replace `ItemsPanel` with a `VirtualizingStackPane
 ```
 
 With the drop-down open, the containers went from 1,000 to 19 (see the table of fixes).
+This value was measured with `MaxDropDownHeight=360` and changes with the height of the drop-down.
 
 When grouping with a `GroupStyle`, the fix is `VirtualizingPanel.IsVirtualizingWhenGrouping="True"`.
 `GroupedItems` is a `ListCollectionView` with `GroupDescriptions` (or the view of a `CollectionViewSource`).
@@ -257,13 +274,19 @@ Removing `ScrollViewer.CanContentScroll="False"` or `VirtualizingPanel.IsVirtual
 The same holds for `EnableRowVirtualization="False"` on a `DataGrid`: removing it brings back the virtualized default of `DataGrid`.
 If `CanContentScroll="False"` is there for per-pixel scrolling, `VirtualizingPanel.ScrollUnit="Pixel"` is the setting to use instead.
 
+### Containers are added directly to `Items`
+
+When step 2 shows an `own containers` other than 0, containers such as `ListBoxItem` are added directly to `Items`.
+Even with a `VirtualizingStackPanel` as the panel, the containers the application created do not go away (see the last row of the settings table above).
+The fix is to pass data instead of containers, usually by binding `ItemsSource`.
+
 ### Measurements after the fixes
 
 The next table measures the conditions with the fixes under Fixes by Cause applied.
 
 {% include tables/articles/wpf-ui-virtualization-lost-conditions/virtualization-fixes.en.md %}
 
-Measured on .NET 10 / Windows 11 (default theme) by showing 1,000 items in an area 300 wide and 200 high. The `TreeView`, `ItemsControl`, `ComboBox`, and search box rows were measured by loading XAML. Of these, the `TreeView` row with `CacheLength=0`, the two `ItemsControl` rows with only the panel replaced, and the `DockPanel` search box row put the configurations described in the text into XAML, which the text does not show. The grouping and `MaxHeight` rows set the same values in code. The `ComboBox` was counted after its drop-down opened.
+Measured on .NET 10 / Windows 11 (default theme) by showing 1,000 items in an area 300 wide and 200 high. The `TreeView`, `ItemsControl`, `ComboBox`, and search box rows were measured by loading XAML. Of these, the `TreeView` row with `CacheLength=0`, the two `ItemsControl` rows with only the panel replaced, and the `DockPanel` search box row put the configurations described in the text into XAML, which the text does not show. The grouping and `MaxHeight` rows set the same values in code. The `ComboBox` was given `MaxDropDownHeight=360` and counted after its drop-down opened.
 {: .table-caption}
 
 ---
@@ -291,6 +314,9 @@ public static class VirtualizationReport
         int realized = items.Items.Cast<object>()
             .Count(item => items.ItemContainerGenerator.ContainerFromItem(item) != null);
 
+        // Items that are their own container, such as ListBoxItem objects added directly to Items.
+        int ownContainers = items.Items.Cast<object>().Count(items.IsItemItsOwnContainer);
+
         // The items of a ComboBox are inside its popup, outside the ComboBox's visual tree.
         DependencyObject root = items;
         if (items is ComboBox combo && combo.Template?.FindName("PART_Popup", combo) is Popup popup && popup.Child != null)
@@ -306,6 +332,7 @@ public static class VirtualizationReport
 
         Debug.WriteLine(
             $"{items.Name}: {realized.ToString("#,0", CultureInfo.InvariantCulture)}/{items.Items.Count.ToString("#,0", CultureInfo.InvariantCulture)} realized, " +
+            $"own containers {ownContainers.ToString("#,0", CultureInfo.InvariantCulture)}, " +
             $"panel {host?.GetType().Name ?? "-"} (VirtualizingStackPanel: {host is VirtualizingStackPanel}), " +
             $"IsVirtualizing {VirtualizingPanel.GetIsVirtualizing(items)}, " +
             $"CanContentScroll {(viewer == null ? "-" : viewer.CanContentScroll.ToString())}, " +
@@ -350,7 +377,7 @@ The call is one line.
 VirtualizationReport.Write(OrdersList);
 ```
 
-The output is read with the table in "What the Symptom Narrows Down".
+The output is read with the diagnosis procedure and the table in "What the Symptom Narrows Down".
 
 ---
 
@@ -358,17 +385,19 @@ The output is read with the table in "What the Symptom Narrows Down".
 
 - **It is hard to notice with few items.** When virtualization turns off, the number of containers simply equals the number of items, and no exception is raised. With small sample data during development, the problem appears only with large data. Calling `VirtualizationReport` once with many items catches it early.
 - **`IsVirtualizing` being `True` does not mean the list is virtualized.** It has no effect unless the panel is a `VirtualizingStackPanel` inside a logically scrolling `ScrollViewer` in the template. The number of containers is what decides.
+- **Containers added directly to `Items` cannot be detected by the number of containers.** The panel holds only the visible range and the cache, but the application has created every container. When `own containers` in the output is not 0, the fix is to pass data instead of containers.
 - **Once its drop-down opens, a `ComboBox` keeps a container for every item.** Its default items panel is a `StackPanel`. With many candidates, replacing `ItemsPanel` or switching to an input box that filters the candidates is the better choice.
 - **With virtualization on, items outside the visible range have no container.** Code that relies on container state such as `IsSelected` should keep that state in the data. Selection in a `ListBox` is covered in [How to Prevent SelectedItems from Appearing Lost in a Virtualized WPF ListBox](/articles/wpf-listbox-virtualization-selecteditems/).
-- **The number of containers depends on the environment.** The 10 to 25 containers in the tables depend on the visible range, decided by the item height, and on the cache, and they change with the font and display scaling. For `ListBox` and `TreeView`, removing the cache left 10 and 13, which confirms that the rest was the cache.
+- **The number of containers depends on the environment.** The 10 to 25 containers in the tables depend on the visible range, decided by the item height, and on the cache, and they change with the font and display scaling. For the drop-down of a `ComboBox`, they also change with the screen height, through the default of `MaxDropDownHeight`. For `ListBox` and `TreeView`, removing the cache left 10 and 13, which confirms that the rest was the cache.
 
 ---
 
 ## Summary
 
-When virtualization seems off, the first value to read is the number of realized containers, followed by the height, the panel, a `CanContentScroll` of "-", and the values of `IsVirtualizing` and `CanContentScroll`, in that order.
+When virtualization seems off, the first values to read are the number of realized containers and `own containers`, followed by the height, the panel, a `CanContentScroll` of "-", and the values of `IsVirtualizing` and `CanContentScroll`, in that order.
 When more than one matches, all of them need fixing.
 
+- **`own containers` is not 0:** containers are added directly to `Items`. The fix is to pass data instead of containers.
 - **Height larger than the visible area:** the placement is the cause. The fix is a `*` row of a `Grid` or the last child of a `DockPanel`, or `MaxHeight` if the list cannot move.
 - **Panel other than `VirtualizingStackPanel` (or a derived class):** the items panel is the cause. The fixes are `IsVirtualizing="True"` for `TreeView`, a replaced panel and template for `ItemsControl`, a replaced `ItemsPanel` for `ComboBox`, and `IsVirtualizingWhenGrouping="True"` for grouping with a `GroupStyle`.
 - **`CanContentScroll` is "-":** the template is the cause, with no logically scrolling `ScrollViewer`. For `ItemsControl`, the template is replaced together with the panel.
