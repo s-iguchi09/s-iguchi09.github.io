@@ -1,0 +1,6 @@
+| items | CanContentScroll | ListBoxItem | visuals | layout ms |
+|---|---|---|---|---|
+| 100 | True | 31 | 152 | 47 |
+| 10,000 | True | 31 | 152 | 43 |
+| 100,000 | True | 31 | 152 | 52 |
+| 10,000 | False | 10,000 | 40,028 | 5,158 |

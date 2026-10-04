@@ -52,9 +52,31 @@ internal sealed class LabelVsTextBlockScene : IScene
             MeasureOnce(200, CreateTextBlock);
         }
 
-        await context.ShootAsync(BuildBaselineWindow(), "label-vs-textblock-measurement.png");
-        await context.ShootAsync(BuildVariantWindow(), "label-vs-textblock-variants.png");
-        await context.ShootAsync(BuildVirtualizedWindow(), "label-vs-textblock-virtualized.png");
+        // 同じ値を、記事の OGP にも使う PNG と、日英の表の両方に出す。
+        List<IReadOnlyList<Loc>> baseline = MeasureBaseline();
+        List<IReadOnlyList<Loc>> variants = MeasureVariants();
+        List<IReadOnlyList<Loc>> virtualized = MeasureVirtualized();
+
+        Loc[] baselineHeaders =
+        [
+            Loc.Of("items", "項目数"),
+            Loc.Of("Label visuals", "Label の visual 数"),
+            Loc.Of("Label ms", "Label（ms）"),
+            Loc.Of("TextBlock visuals", "TextBlock の visual 数"),
+            Loc.Of("TextBlock ms", "TextBlock（ms）"),
+        ];
+        Loc[] layoutHeaders = ["", Loc.Of("visuals", "visual 数"), Loc.Of("layout ms", "レイアウト（ms）")];
+        const string baselineTitle = "StackPanel (no virtualization)";
+        string variantsTitle = $"x {ItemCount:N0} in a StackPanel";
+        const string virtualizedTitle = "ListBox, virtualized";
+
+        await context.ShootAsync(DemoLayout.BuildLocTableWindow(baselineTitle, baselineHeaders, baseline), "label-vs-textblock-measurement.png");
+        await context.ShootAsync(DemoLayout.BuildLocTableWindow(variantsTitle, layoutHeaders, variants), "label-vs-textblock-variants.png");
+        await context.ShootAsync(DemoLayout.BuildLocTableWindow(virtualizedTitle, layoutHeaders, virtualized), "label-vs-textblock-virtualized.png");
+
+        await context.SaveTableAsync(baselineTitle, baselineHeaders, baseline, "label-vs-textblock-measurement.svg");
+        await context.SaveTableAsync(variantsTitle, layoutHeaders, variants, "label-vs-textblock-variants.svg");
+        await context.SaveTableAsync(virtualizedTitle, layoutHeaders, virtualized, "label-vs-textblock-virtualized.svg");
 
         await context.SaveTableAsync(
             $"layout ms over {Iterations} runs",
@@ -91,9 +113,9 @@ internal sealed class LabelVsTextBlockScene : IScene
     /// 非仮想化の <see cref="StackPanel"/> に並べたときの、要素数ごとの実測値。
     /// <see cref="Label"/> と <see cref="TextBlock"/> を交互に測り、実行順の影響を避ける。
     /// </summary>
-    private static Window BuildBaselineWindow()
+    private static List<IReadOnlyList<Loc>> MeasureBaseline()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (int count in new[] { 250, 1000, 4000 })
         {
@@ -116,32 +138,29 @@ internal sealed class LabelVsTextBlockScene : IScene
             [
                 count.ToString("N0"),
                 label.Visuals.ToString("N0"),
-                label.BestMilliseconds.ToString("F0"),
+                label.BestMilliseconds.ToString("N0"),
                 textBlock.Visuals.ToString("N0"),
-                textBlock.BestMilliseconds.ToString("F0"),
+                textBlock.BestMilliseconds.ToString("N0"),
             ]);
         }
 
-        return DemoLayout.BuildTableWindow(
-            "StackPanel (no virtualization)",
-            ["items", "Label visuals", "Label ms", "TextBlock visuals", "TextBlock ms"],
-            rows);
+        return rows;
     }
 
     /// <summary>
     /// 1,000 個で固定し、<see cref="Label"/> の構成を変えたときの差を測る。
     /// アクセスキーを含む文字列が <c>AccessText</c> を挟むことによる負荷を示す。
     /// </summary>
-    private static Window BuildVariantWindow()
+    private static List<IReadOnlyList<Loc>> MeasureVariants()
     {
-        (string Name, Func<FrameworkElement> Make)[] variants =
+        (Loc Name, Func<FrameworkElement> Make)[] variants =
         [
             ("Label", CreateLabel),
-            ("Label (Content has '_')", CreateUnderscoreLabel),
+            (Loc.Of("Label (Content has '_')", "Label（Content に '_' を含む）"), CreateUnderscoreLabel),
             ("Label + ContentTemplate", () => new Label { Content = Text, Padding = new Thickness(0), ContentTemplate = TextBlockTemplate() }),
-            ("Label + ContentTemplate, '_'", () => new Label { Content = "Status: _Running", Padding = new Thickness(0), ContentTemplate = TextBlockTemplate() }),
+            (Loc.Of("Label + ContentTemplate, '_'", "Label + ContentTemplate、'_'"), () => new Label { Content = "Status: _Running", Padding = new Thickness(0), ContentTemplate = TextBlockTemplate() }),
             ("ContentPresenter", () => new ContentPresenter { Content = Text }),
-            ("AccessText ('_')", () => new AccessText { Text = "Status: _Running" }),
+            (Loc.Of("AccessText ('_')", "AccessText（'_'）"), () => new AccessText { Text = "Status: _Running" }),
             ("TextBlock", CreateTextBlock),
         ];
 
@@ -160,28 +179,25 @@ internal sealed class LabelVsTextBlockScene : IScene
             }
         }
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         for (int i = 0; i < variants.Length; i++)
         {
             rows.Add(
             [
                 variants[i].Name,
                 results[i].Visuals.ToString("N0"),
-                results[i].BestMilliseconds.ToString("F0"),
+                results[i].BestMilliseconds.ToString("N0"),
             ]);
         }
 
-        return DemoLayout.BuildTableWindow(
-            $"x {ItemCount:N0} in a StackPanel",
-            ["", "visuals", "layout ms"],
-            rows);
+        return rows;
     }
 
     /// <summary>
     /// 仮想化された <see cref="ListBox"/> に 10,000 件を流したときの実測値。
     /// 非仮想化で見えた差が、仮想化すると残らないことを示す。
     /// </summary>
-    private static Window BuildVirtualizedWindow()
+    private static List<IReadOnlyList<Loc>> MeasureVirtualized()
     {
         const string labelItem = """<Label Content="{Binding}" Padding="0" />""";
         const string textBlockItem = """<TextBlock Text="{Binding}" />""";
@@ -202,13 +218,11 @@ internal sealed class LabelVsTextBlockScene : IScene
         Spread.Add(("ListBox 10,000, Label", label));
         Spread.Add(("ListBox 10,000, TextBlock", textBlock));
 
-        return DemoLayout.BuildTableWindow(
-            "ListBox, virtualized",
-            ["", "visuals", "layout ms"],
-            [
-                ["Label", label.Visuals.ToString("N0"), label.BestMilliseconds.ToString("F0")],
-                ["TextBlock", textBlock.Visuals.ToString("N0"), textBlock.BestMilliseconds.ToString("F0")],
-            ]);
+        return
+        [
+            ["Label", label.Visuals.ToString("N0"), label.BestMilliseconds.ToString("N0")],
+            ["TextBlock", textBlock.Visuals.ToString("N0"), textBlock.BestMilliseconds.ToString("N0")],
+        ];
     }
 
     private readonly record struct Sample(int VisualCount, double Milliseconds);

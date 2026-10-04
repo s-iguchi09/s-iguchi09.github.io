@@ -28,7 +28,7 @@ Replacing controls is worth considering only after virtualization has been confi
 - Target screens: lists, dashboards, and other screens displaying many text elements
 - Measurement environment: Windows 11, default theme (Aero2), display scaling 100%
 
-The figures in this article were obtained by running an actual application in the environment above and timing the interval from `Measure` to `UpdateLayout`.
+The values in this article were obtained by running an actual application in the environment above and timing the interval from `Measure` to `UpdateLayout`.
 Each condition was run 15 times in alternation, and the minimum was taken.
 Elapsed time depends on the execution environment, so read the values **as ratios between conditions rather than as absolute numbers**.
 
@@ -71,10 +71,10 @@ The number of visuals processed during measure and arrange quadruples as well.
 
 Placing the same string in a `StackPanel` and measuring the time to complete layout, along with the total number of visuals produced, gives the following.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png" alt="A measurement table comparing Label and TextBlock for 250, 1,000, and 4,000 elements placed in a StackPanel. Label always produces four times the visuals of TextBlock, while layout time is roughly twice as long." width="578" height="190" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 with the default theme (Aero2) <code>ControlTemplate</code>, giving <code>Content</code> a string that contains no access key. Elements are placed in a non-virtualized <code>StackPanel</code>. Visual counts change when the theme or <code>ControlTemplate</code> is replaced, and elapsed time depends on the execution environment, so read the values as ratios rather than absolute numbers.</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.en.md %}
+
+Measured on .NET 10 / Windows 11 with the default theme (Aero2) <code>ControlTemplate</code>, giving <code>Content</code> a string that contains no access key. Elements are placed in a non-virtualized <code>StackPanel</code>. Visual counts change when the theme or <code>ControlTemplate</code> is replaced, and elapsed time depends on the execution environment, so read the values as ratios rather than absolute numbers.
+{: .table-caption}
 
 The visual count scales exactly with the element count, and `Label` is consistently four times that of `TextBlock`.
 The layout time difference, however, stays around a factor of two and does not match the visual ratio.
@@ -96,10 +96,10 @@ When the string contains an underscore (`_`), the `ContentPresenter` produces an
 
 Fixing the count at 1,000 and varying the composition gives the following.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png" alt="A table of visual counts and layout times for 1,000 elements in a StackPanel. Label takes 199 ms, a Label whose content contains an underscore 694 ms, a Label with a ContentTemplate 249 ms and 243 ms when given an underscore, ContentPresenter 147 ms, AccessText alone 234 ms, and TextBlock 129 ms. Only the Label containing an underscore stands out as markedly slower." width="441" height="311" loading="lazy">
-  <figcaption>Measured in the same environment with 1,000 elements in a <code>StackPanel</code>. A <code>Label</code> whose <code>Content</code> contains an underscore has an <code>AccessText</code> inserted, one more visual than without an underscore, and its layout time was roughly 3.5 times as long. How much of the increase comes from the <code>AccessText</code> itself and how much from the extra visual was not measured. A <code>Label</code> with a <code>TextBlock</code> in its <code>ContentTemplate</code> takes no longer when given an underscore. The <code>AccessText</code> row is for comparison.</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.en.md %}
+
+Measured in the same environment with 1,000 elements in a <code>StackPanel</code>. A <code>Label</code> whose <code>Content</code> contains an underscore has an <code>AccessText</code> inserted, one more visual than without an underscore, and its layout time was roughly 3.5 times as long. How much of the increase comes from the <code>AccessText</code> itself and how much from the extra visual was not measured. A <code>Label</code> with a <code>TextBlock</code> in its <code>ContentTemplate</code> takes no longer when given an underscore. The <code>AccessText</code> row is for comparison.
+{: .table-caption}
 
 The visual count grows only 25%, from four to five, yet layout time rises from 199 ms to 694 ms, roughly a factor of 3.5.
 `AccessText` alone took about 1.8 times as long as `TextBlock` alone (234 ms against 129 ms).
@@ -119,10 +119,10 @@ Only the containers within the visible range and the cache area before and after
 
 Binding 10,000 items to a virtualized `ListBox` and swapping only the contents of `ItemTemplate` gives the following.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.png" alt="A table of visual counts and layout times for 10,000 items in a virtualized ListBox. Label and TextBlock differ in visual count, but layout time is essentially the same." width="305" height="160" loading="lazy">
-  <figcaption>Measured in the same environment with 10,000 items bound to a <code>ListBox</code> configured with <code>IsVirtualizing="True"</code> and <code>VirtualizationMode="Recycling"</code>. Only the containers in the visible range are realized, so the total visual count does not depend on the item count. The layout time difference is smaller than the difference between repeated runs of the same condition; the roughly 2x gap seen without virtualization does not survive.</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.en.md %}
+
+Measured in the same environment with 10,000 items bound to a <code>ListBox</code> configured with <code>IsVirtualizing="True"</code> and <code>VirtualizationMode="Recycling"</code>. Only the containers in the visible range and the cache area before and after it, set by <code>VirtualizingPanel.CacheLength</code>, are realized, so the total visual count does not depend on the item count. The layout time difference is smaller than the difference between repeated runs of the same condition; the roughly 2x gap seen without virtualization does not survive.
+{: .table-caption}
 
 Compared with 4,000 elements in a non-virtualized `StackPanel`, the item count here is 2.5 times larger while layout time is two orders of magnitude smaller.
 The gap between `Label` and `TextBlock` is smaller than the difference between repeated runs of the same condition.

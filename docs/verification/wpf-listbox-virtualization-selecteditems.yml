@@ -15,7 +15,13 @@ verifies:
 images:
   - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png"
   - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png"
+  - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.svg"
+  - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.svg"
   - "images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.svg"
 tables:
+  - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.en.md"
+  - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.ja.md"
+  - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.en.md"
+  - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.ja.md"
   - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.en.md"
   - "_includes/tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-events.ja.md"

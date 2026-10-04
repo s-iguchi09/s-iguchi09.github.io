@@ -70,10 +70,10 @@ WPF で `Label` を大量に配置した画面において、初期表示のレ�
 
 同じ文字列を `StackPanel` に並べ、レイアウト完了までの時間と生成された visual の総数を測ると次のようになる。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.png" alt="計測結果の表。StackPanel に 250 個、1,000 個、4,000 個を並べた場合の visual 数とレイアウト時間を Label と TextBlock で比較している。Label の visual 数は常に TextBlock の 4 倍で、レイアウト時間はおよそ 2 倍である。" width="578" height="190" loading="lazy">
-  <figcaption>.NET 10 / Windows 11、既定テーマ（Aero2）の <code>ControlTemplate</code> で、<code>Content</code> にアクセスキーを含まない文字列を与えた場合の実測値。仮想化されない <code>StackPanel</code> に並べている。visual 数はテーマや <code>ControlTemplate</code> の差し替えで変わり、所要時間は実行環境に依存するため、絶対値ではなく比率を目安として読む。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-measurement.ja.md %}
+
+.NET 10 / Windows 11、既定テーマ（Aero2）の <code>ControlTemplate</code> で、<code>Content</code> にアクセスキーを含まない文字列を与えた場合の実測値。仮想化されない <code>StackPanel</code> に並べている。visual 数はテーマや <code>ControlTemplate</code> の差し替えで変わり、所要時間は実行環境に依存するため、絶対値ではなく比率を目安として読む。
+{: .table-caption}
 
 visual 数は要素数に正確に比例し、`Label` は常に `TextBlock` の 4 倍になる。
 一方でレイアウト時間の差はおよそ 2 倍にとどまり、visual 数の比とは一致しない。
@@ -95,10 +95,10 @@ visual の数だけで所要時間が決まるわけではない。
 
 1,000 個で固定し、構成を変えて比較した結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.png" alt="1,000 個を StackPanel に並べた場合の visual 数とレイアウト時間の表。Label は 199 ms、アンダーバーを含む Label は 694 ms、ContentTemplate を指定した Label は 249 ms、それにアンダーバーを含む文字列を与えても 243 ms、ContentPresenter は 147 ms、AccessText 単体は 234 ms、TextBlock は 129 ms。アンダーバーを含む Label だけが突出して遅い。" width="441" height="311" loading="lazy">
-  <figcaption>同一環境で 1,000 個を <code>StackPanel</code> に並べた場合の実測値。<code>Content</code> にアンダーバーを含む <code>Label</code> は <code>AccessText</code> が挟まって visual がアンダーバーなしより 1 個多くなり、レイアウト時間は約 3.5 倍だった。この増分のうち、<code>AccessText</code> 自体と visual の増加がそれぞれどれだけかは測っていない。<code>ContentTemplate</code> に <code>TextBlock</code> を指定した <code>Label</code> は、アンダーバーを含む文字列を与えてもレイアウト時間が増えない。<code>AccessText</code> 単体の行は比較のため。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-variants.ja.md %}
+
+同一環境で 1,000 個を <code>StackPanel</code> に並べた場合の実測値。<code>Content</code> にアンダーバーを含む <code>Label</code> は <code>AccessText</code> が挟まって visual がアンダーバーなしより 1 個多くなり、レイアウト時間は約 3.5 倍だった。この増分のうち、<code>AccessText</code> 自体と visual の増加がそれぞれどれだけかは測っていない。<code>ContentTemplate</code> に <code>TextBlock</code> を指定した <code>Label</code> は、アンダーバーを含む文字列を与えてもレイアウト時間が増えない。<code>AccessText</code> 単体の行は比較のため。
+{: .table-caption}
 
 visual 数は 4 個から 5 個へ 25% 増えるだけだが、レイアウト時間は 199 ms から 694 ms へ、約 3.5 倍に達する。
 `AccessText` 単体でも `TextBlock` 単体の約 1.8 倍（129 ms に対して 234 ms）かかった。
@@ -118,10 +118,10 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 
 仮想化を有効にした `ListBox` に 10,000 件を流し、`ItemTemplate` の中身だけを入れ替えて比較した結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.png" alt="仮想化した ListBox に 10,000 件を流した場合の visual 数とレイアウト時間の表。Label と TextBlock で visual 数に差はあるが、レイアウト時間はほぼ同じである。" width="305" height="160" loading="lazy">
-  <figcaption>同一環境で、<code>IsVirtualizing="True"</code>・<code>VirtualizationMode="Recycling"</code> の <code>ListBox</code> に 10,000 件をバインドした場合の実測値。実体化されるコンテナは表示範囲の分だけであるため、visual の総数は件数に依存しない。レイアウト時間の差は、同じ条件で繰り返した試行どうしの差より小さく、非仮想化時に見えた約 2 倍の差は残らない。</figcaption>
-</figure>
+{% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.ja.md %}
+
+同一環境で、<code>IsVirtualizing="True"</code>・<code>VirtualizationMode="Recycling"</code> の <code>ListBox</code> に 10,000 件をバインドした場合の実測値。実体化されるコンテナは、表示範囲と、その前後の <code>VirtualizingPanel.CacheLength</code> で決まるキャッシュ領域の分だけであるため、visual の総数は件数に依存しない。レイアウト時間の差は、同じ条件で繰り返した試行どうしの差より小さく、非仮想化時に見えた約 2 倍の差は残らない。
+{: .table-caption}
 
 非仮想化の `StackPanel` で 4,000 個を並べた場合と比べると、件数が 2.5 倍でありながらレイアウト時間は 2 桁小さい。
 `Label` と `TextBlock` の差は、同じ条件で繰り返した試行どうしの差より小さい。

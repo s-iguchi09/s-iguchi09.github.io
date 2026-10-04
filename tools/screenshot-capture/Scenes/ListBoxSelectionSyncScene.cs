@@ -40,8 +40,26 @@ internal sealed class ListBoxSelectionSyncScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
-        await context.ShootAsync(BuildSelectionSyncWindow(), "listbox-selection-sync-measurement.png");
-        await context.ShootAsync(BuildVirtualizationCostWindow(), "listbox-virtualization-cost.png");
+        // 同じ値を、記事の OGP にも使う PNG と、日英の表の両方に出す。
+        List<IReadOnlyList<Loc>> sync = MeasureSelectionSync();
+        List<IReadOnlyList<Loc>> cost = MeasureVirtualizationCost();
+
+        string syncTitle = $"ListBox, {ItemCount:N0} items, virtualized";
+        Loc[] syncHeaders = [Loc.Of("", "構成"), Loc.Of("", "操作"), "SelectedItems", "IsSelected"];
+        Loc[] costHeaders =
+        [
+            Loc.Of("items", "項目数"),
+            "CanContentScroll",
+            "ListBoxItem",
+            Loc.Of("visuals", "visual 数"),
+            Loc.Of("layout ms", "レイアウト（ms）"),
+        ];
+
+        await context.ShootAsync(DemoLayout.BuildLocTableWindow(syncTitle, syncHeaders, sync), "listbox-selection-sync-measurement.png");
+        await context.ShootAsync(DemoLayout.BuildLocTableWindow("ListBox", costHeaders, cost), "listbox-virtualization-cost.png");
+
+        await context.SaveTableAsync(syncTitle, syncHeaders, sync, "listbox-selection-sync-measurement.svg");
+        await context.SaveTableAsync("ListBox", costHeaders, cost, "listbox-virtualization-cost.svg");
 
         await context.SaveTableAsync(
             $"ListBox, {ItemCount:N0} items, virtualized: when SelectionChanged is raised",
@@ -289,18 +307,18 @@ internal sealed class ListBoxSelectionSyncScene : IScene
     /// <c>SelectAll</c> の直後と、スクロールでコンテナを作り直した後で、
     /// <c>SelectedItems</c> とデータ側の <c>IsSelected</c> がどれだけ一致するかを測る。
     /// </summary>
-    private static Window BuildSelectionSyncWindow()
+    private static List<IReadOnlyList<Loc>> MeasureSelectionSync()
     {
-        (string Label, bool Bind, bool Handle)[] configurations =
+        (Loc Label, bool Bind, bool Handle)[] configurations =
         [
             ("ItemContainerStyle", true, false),
             ("SelectionChanged", false, true),
-            ("both", true, true),
+            (Loc.Of("both", "両方"), true, true),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        foreach ((string label, bool bind, bool handle) in configurations)
+        foreach ((Loc label, bool bind, bool handle) in configurations)
         {
             List<RowItemViewModel> items = CreateRows();
             ListBox listBox = CreateListBox(items, bind);
@@ -337,13 +355,10 @@ internal sealed class ListBoxSelectionSyncScene : IScene
                 host.Settle();
             }
 
-            rows.Add([label, $"+ PageDown x{PageDownCount}", Format(listBox.SelectedItems.Count), Format(items.Count(x => x.IsSelected))]);
+            rows.Add([label, Loc.Of($"+ PageDown x{PageDownCount}", $"+ PageDown {PageDownCount} 回"), Format(listBox.SelectedItems.Count), Format(items.Count(x => x.IsSelected))]);
         }
 
-        return DemoLayout.BuildTableWindow(
-            $"ListBox, {ItemCount:N0} items, virtualized",
-            ["", "", "SelectedItems", "IsSelected"],
-            rows);
+        return rows;
     }
 
     /// <summary>
@@ -351,7 +366,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
     /// <c>CanContentScroll</c> を <c>False</c> にすると仮想化が止まることを測る。
     /// 前者を示すため、件数を変えた 3 通りを同じ条件で計測する。
     /// </summary>
-    private static Window BuildVirtualizationCostWindow()
+    private static List<IReadOnlyList<Loc>> MeasureVirtualizationCost()
     {
         // CanContentScroll="False" は全件分のコンテナを作るため、
         // 件数を増やした組み合わせは測らない。
@@ -363,7 +378,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             (ItemCount, false),
         ];
 
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // ウィンドウの生成コストを計測に含めないよう、空のウィンドウを先に表示しておく。
         using var host = new HostWindow();
@@ -405,10 +420,7 @@ internal sealed class ListBoxSelectionSyncScene : IScene
             ]);
         }
 
-        return DemoLayout.BuildTableWindow(
-            "ListBox",
-            ["items", "CanContentScroll", "ListBoxItem", "visuals", "layout ms"],
-            rows);
+        return rows;
     }
 
     private static string Format(int value) => value.ToString("N0");

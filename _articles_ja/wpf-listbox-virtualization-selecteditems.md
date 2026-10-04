@@ -57,7 +57,7 @@ WPF の `ListBox` は、大量データを表示するとき `VirtualizingStackP
 
 ### 実体化されるコンテナは件数に依存しない
 
-仮想化が有効なとき、同時に存在する `ListBoxItem` は表示範囲に必要な数だけである。
+仮想化が有効なとき、同時に存在する `ListBoxItem` は、表示範囲と、その前後の `VirtualizingPanel.CacheLength` で決まるキャッシュ領域に必要な数だけである。
 高さ 600px の `ListBox` で計測すると、コレクションの件数を 100 件・10,000 件・100,000 件と変えても、実体化されるコンテナは 31 個で一定であった。
 この計測結果は、後掲の「仮想化を壊さない」の表に示している。
 
@@ -182,10 +182,10 @@ public class MainViewModel
 上の構成に対して、`Ctrl + A`(`SelectAll`)で全件を選択し、そのままページ送りでスクロールしたときに何が起きるかを計測した。
 比較のため、`SelectionChanged` でデータ側へ明示的に書き戻す構成と、両方を併用する構成も同時に測った。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png" alt="仮想化した ListBox で 10,000 件を全選択した後の SelectedItems と IsSelected の件数を、3 つの同期構成で比較した表。ItemContainerStyle のバインドのみの構成では、スクロール後に SelectedItems が 10,000 から 9,845 に減っている。" width="549" height="281" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、10,000 件をバインドした仮想化済み <code>ListBox</code> に対して <code>SelectAll()</code> を実行し、続けて 10 ページ分スクロールしたときの実測値。<code>ItemContainerStyle</code> のバインドだけの構成では、スクロールによって選択が失われている。</figcaption>
-</figure>
+{% include tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.ja.md %}
+
+.NET 10 / Windows 11 で、10,000 件をバインドした仮想化済み <code>ListBox</code> に対して <code>SelectAll()</code> を実行し、続けて 10 ページ分スクロールしたときの実測値。<code>ItemContainerStyle</code> のバインドだけの構成では、スクロールによって選択が失われている。
+{: .table-caption}
 
 読み取れることは 3 点ある。
 
@@ -313,10 +313,10 @@ ViewModel で `IsSelected` を書き換えた場合、その効果は実体化�
 
 その影響を計測した結果が次の表である。
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png" alt="件数と CanContentScroll を変えて計測した表。CanContentScroll が True なら 100 件でも 100,000 件でも ListBoxItem は 31 個、visual は 152 個で一定である。10,000 件で False にすると 10,000 個と 40,028 個に増え、レイアウト時間も 2 桁大きくなる。" width="542" height="221" loading="lazy">
-  <figcaption>.NET 10 / Windows 11 で、件数と <code>ScrollViewer.CanContentScroll</code> を変えて計測した値。5 回試行の最小値を採っている。<code>True</code> の 3 行は、件数を 1,000 倍にしてもコンテナ数・visual 数・レイアウト時間がいずれも変わらないことを示す。<code>False</code> にすると全件分のコンテナが構築され、レイアウト時間は 2 桁大きくなる。所要時間は実行環境に依存するため、絶対値ではなく比率として読む。</figcaption>
-</figure>
+{% include tables/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.ja.md %}
+
+.NET 10 / Windows 11 で、件数と <code>ScrollViewer.CanContentScroll</code> を変えて計測した値。5 回試行の最小値を採っている。<code>True</code> の 3 行は、件数を 1,000 倍にしてもコンテナ数・visual 数・レイアウト時間がいずれも変わらないことを示す。<code>False</code> にすると全件分のコンテナが構築され、レイアウト時間は 2 桁大きくなる。所要時間は実行環境に依存するため、絶対値ではなく比率として読む。
+{: .table-caption}
 
 `True` のままであれば、件数を 100 件から 100,000 件へ 1,000 倍にしても、実体化される `ListBoxItem` は 31 個、visual の総数は 152 個で変わらない。
 仮想化の効果は、まさにこの「コストが件数に依存しない」という点にある。
