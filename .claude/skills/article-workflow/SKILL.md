@@ -499,6 +499,9 @@ GitHub の Website 欄・Qiita・Zenn・X はいずれも `nofollow` を付け�
 実測値の表を `{% include tables/... %}` で載せている記事は、`devto-export.js` が include を展開して
 Markdown の表のまま転載する（dev.to は表を描画できる）。表の直後の `{: .table-caption}` は
 dev.to では文字のまま出てしまうので取り除く。
+また表のセルは kramdown 向けに `"` `'` `$` を `\` でエスケープしてあるが、dev.to の Markdown（Redcarpet）は
+この 3 文字のエスケープを解釈せず `\"abcdefgh\"` のように表示する（2026-10-05 に記事 A の転載で確認）。
+そのため展開するときに、この 3 文字の前の `\` を外す。
 
 #### リンクの扱い
 
