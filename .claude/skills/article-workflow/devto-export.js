@@ -431,7 +431,18 @@ async function fetchDevtoPosts() {
  * dev.to もそのまま表として描画する。Liquid は dev.to では動かないので、ここで展開しておく。
  * 表の直後の説明文に付けた kramdown の属性リスト（{: .table-caption}）は dev.to では
  * 文字のまま出てしまうので取り除く。
+ *
+ * 表のセルは kramdown 向けに " ' $ をバックスラッシュでエスケープしてある。dev.to の
+ * Markdown（Redcarpet）はこの 3 文字のエスケープを解釈せず、\ が文字のまま表示される
+ * （2026-10-05 JST、記事 A の転載で \"abcdefgh\" と表示された）ので、\ を外す。
+ * Redcarpet がエスケープとして扱うのは \`*_{}[]()#+-.!:|&<>^~= だけで、表の生成側が
+ * エスケープする残りの文字（\ | * _ ` [ ] # - .）はすべてこの中に入っている。
  */
+function unescapeForRedcarpet(table) {
+  // 左から 1 組ずつ読む。\\" は「\ そのもの」と「"」なので、\\ を先に消費して残す。
+  return table.replace(/\\([\\"'$])/g, (all, c) => (c === '\\' ? all : c));
+}
+
 function expandTableIncludes(body) {
   // コードブロックとインラインのコードに書かれた include と属性リストは、書き方の例なので触らない。
   return mapOutsideCode(body, (text) => text
@@ -451,7 +462,7 @@ function expandTableIncludes(body) {
       if (!inside(fs.realpathSync(root), realFile)) {
         throw new Error(`include の実体が _includes/tables の外にある: ${include} -> ${realFile}`);
       }
-      return fs.readFileSync(realFile, 'utf8').replace(/\r\n/g, '\n').trimEnd();
+      return unescapeForRedcarpet(fs.readFileSync(realFile, 'utf8').replace(/\r\n/g, '\n').trimEnd());
     })
     .replace(/^\{:\s*\.table-caption\s*\}[ \t]*\r?\n?/gm, ''));
 }
