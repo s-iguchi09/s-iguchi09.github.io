@@ -16,3 +16,6 @@ verifies:
   - "Button の IsEnabled を CheckBox の IsChecked にバインドし、CheckBox を実際にクリックする前と後の IsEnabled"
 images:
   - "images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.ja.md"

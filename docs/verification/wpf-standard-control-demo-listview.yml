@@ -16,3 +16,6 @@ verifies:
   - "1,000 項目の GridView で作られた項目コンテナの数"
 images:
   - "images/wpf-standard-control-demo/verification/listview/listview-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/listview/listview-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/listview/listview-behavior.ja.md"

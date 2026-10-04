@@ -35,16 +35,19 @@ internal sealed class ExpanderDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Expander: type, template, clicks and collapsed content",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureBehaviorAsync(),
             "expander-behavior.svg");
 
         await context.SaveTableAsync(
             "Expander: ExpandDirection, header and the Control properties",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureLayoutAsync(),
             "expander-layout.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static ToggleButton HeaderSite(Expander expander) =>
         Descendants(expander).OfType<ToggleButton>().First();
@@ -52,13 +55,13 @@ internal sealed class ExpanderDemoScene : IScene
     private static FrameworkElement ExpandSite(Expander expander) =>
         (FrameworkElement)expander.Template.FindName("ExpandSite", expander);
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureBehaviorAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureBehaviorAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new Expander();
         var metadata = (FrameworkPropertyMetadata)Expander.IsExpandedProperty.GetMetadata(typeof(Expander));
-        rows.Add(["base class / IsExpanded default, two-way by default / ExpandDirection",
+        rows.Add([T("base class / IsExpanded default, two-way by default / ExpandDirection", "基底クラス / IsExpanded の既定値、既定で双方向か / ExpandDirection"),
             $"{typeof(Expander).BaseType!.Name} / {defaults.IsExpanded}, {metadata.BindsTwoWayByDefault} / {defaults.ExpandDirection}"]);
 
         {
@@ -70,14 +73,14 @@ internal sealed class ExpanderDemoScene : IScene
                 var triggers = expander.Template.Triggers.OfType<Trigger>()
                     .GroupBy(t => t.Property.Name)
                     .Select(g => $"{g.Key}={string.Join(", ", g.Select(t => WpfProbe.Describe(t.Value)))}");
-                rows.Add(["default template: header element / VisualStateGroups",
-                    $"{HeaderSite(expander).GetType().Name} named {HeaderSite(expander).Name} / {groups}"]);
-                rows.Add(["  triggers", string.Join("; ", triggers)]);
+                rows.Add([T("default template: header element / VisualStateGroups", "既定のテンプレート: 見出しの要素 / VisualStateGroups"),
+                    T($"{HeaderSite(expander).GetType().Name} named {HeaderSite(expander).Name} / {groups}", $"{HeaderSite(expander).GetType().Name}（名前 {HeaderSite(expander).Name}） / {groups}")]);
+                rows.Add([T("  triggers", "  トリガー"), string.Join("; ", triggers)]);
 
                 expander.IsExpanded = false;
                 string immediately = ExpandSite(expander).Visibility.ToString();
                 await Capture.SettleAsync(Window.GetWindow(expander)!, 50);
-                rows.Add(["IsExpanded set to False: content Visibility at once / after 50 ms",
+                rows.Add([T("IsExpanded set to False: content Visibility at once / after 50 ms", "IsExpanded を False に: 内容の Visibility（直後 / 50 ms 後）"),
                     $"{immediately} / {ExpandSite(expander).Visibility}"]);
             });
         }
@@ -103,13 +106,13 @@ internal sealed class ExpanderDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["real mouse click on header: IsExpanded / bound CheckBox / events",
+                rows.Add([T("real mouse click on header: IsExpanded / bound CheckBox / events", "見出しを実際にマウスでクリック: IsExpanded / バインドした CheckBox / イベント"),
                     $"{expander.IsExpanded} / {WpfProbe.Describe(check.IsChecked)} / {string.Join(", ", events)}"]);
 
                 events.Clear();
                 check.IsChecked = false;
                 await Capture.SettleAsync(window, 50);
-                rows.Add(["  then the CheckBox cleared: IsExpanded / events", $"{expander.IsExpanded} / {string.Join(", ", events)}"]);
+                rows.Add([T("  then the CheckBox cleared: IsExpanded / events", "  続けて CheckBox を外す: IsExpanded / イベント"), $"{expander.IsExpanded} / {string.Join(", ", events)}"]);
             });
         }
 
@@ -122,20 +125,20 @@ internal sealed class ExpanderDemoScene : IScene
             await ShowAsync(expander, async () =>
             {
                 int containers = Descendants(expander).OfType<ListBoxItem>().Count();
-                rows.Add(["collapsed: child Loaded / measured / items in a 1000-item ListBox",
+                rows.Add([T("collapsed: child Loaded / measured / items in a 1000-item ListBox", "折りたたみ中: 子の Loaded / 測定の回数 / 1000 項目の ListBox で作られた項目の数"),
                     $"{loaded} / {counter.MeasureCount} / {containers}"]);
                 expander.IsExpanded = true;
                 await Capture.SettleAsync(Window.GetWindow(expander)!);
-                rows.Add(["  after expanding", $"{loaded} / {counter.MeasureCount} / {Descendants(expander).OfType<ListBoxItem>().Count()}"]);
+                rows.Add([T("  after expanding", "  展開した後"), $"{loaded} / {counter.MeasureCount} / {Descendants(expander).OfType<ListBoxItem>().Count()}"]);
             });
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureLayoutAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureLayoutAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         foreach (ExpandDirection direction in new[] { ExpandDirection.Down, ExpandDirection.Up, ExpandDirection.Left, ExpandDirection.Right })
         {
@@ -149,7 +152,7 @@ internal sealed class ExpanderDemoScene : IScene
                                 var text = Descendants(header).OfType<ContentPresenter>().First(p => ReferenceEquals(p.Content, expander.Header));
                 // 変形を含めた、Expander から見た見出しの文字の矩形。幅が高さより大きければ横書きのまま。
                 Rect t = Bounds(text, expander);
-                rows.Add([$"ExpandDirection={direction}: header / content / header text",
+                rows.Add([T($"ExpandDirection={direction}: header / content / header text", $"ExpandDirection={direction}: 見出し / 内容 / 見出しの文字"),
                     $"{Format(h)} / {Format(c)} / {Format(t)}"]);
                 await Task.CompletedTask;
             });
@@ -160,7 +163,7 @@ internal sealed class ExpanderDemoScene : IScene
             await ShowAsync(expander, async () =>
             {
                 ToggleButton header = HeaderSite(expander);
-                rows.Add(["Header=null: HasHeader / header ToggleButton Visibility, size",
+                rows.Add([T("Header=null: HasHeader / header ToggleButton Visibility, size", "Header=null: HasHeader / 見出しの ToggleButton の Visibility、大きさ"),
                     $"{expander.HasHeader} / {header.Visibility}, {D(header.ActualWidth)} x {D(header.ActualHeight)}"]);
                 await Task.CompletedTask;
             });
@@ -182,14 +185,14 @@ internal sealed class ExpanderDemoScene : IScene
             };
             await ShowAsync(expander, async () =>
             {
-                rows.Add(["FontWeight=Bold, Foreground=Red: header text / content text",
+                rows.Add([T("FontWeight=Bold, Foreground=Red: header text / content text", "FontWeight=Bold、Foreground=Red: 見出しの文字 / 内容の文字"),
                     $"{headerText.FontWeight}, {headerText.Foreground} / {contentText.FontWeight}, {contentText.Foreground}"]);
                 // Background を描いている要素の範囲が、見出しと内容を含むか。Background は継承しないプロパティなので、子の値は読まない。
                 var painted = Descendants(expander).OfType<Border>().First(b => ReferenceEquals(b.Background, expander.Background));
                 Rect area = Bounds(painted, expander);
                 Rect header = Bounds(HeaderSite(expander), expander);
                 Rect body = Bounds(inner, expander);
-                rows.Add(["Background: painted area / header / content (inside it)",
+                rows.Add([T("Background: painted area / header / content (inside it)", "Background: 塗られる範囲 / 見出し / 内容（範囲の中か）"),
                     $"{Format(area)} / {Format(header)} / {Format(body)} ({area.Contains(header) && area.Contains(body)})"]);
                 await Task.CompletedTask;
             });
@@ -202,7 +205,7 @@ internal sealed class ExpanderDemoScene : IScene
             var expander = new Expander { Header = "Expander", Content = content, IsExpanded = true, Width = 200, Padding = new Thickness(padding), BorderThickness = new Thickness(border), BorderBrush = Brushes.Black };
             await ShowAsync(expander, async () =>
             {
-                rows.Add([$"Padding={D(padding)}, BorderThickness={D(border)}: header / content",
+                rows.Add([T($"Padding={D(padding)}, BorderThickness={D(border)}: header / content", $"Padding={D(padding)}、BorderThickness={D(border)}: 見出し / 内容"),
                     $"{Format(Bounds(HeaderSite(expander), expander))} / {Format(Bounds(content, expander))}"]);
                 await Task.CompletedTask;
             });

@@ -15,10 +15,10 @@ description: "WPF の Button を .NET 10 で実測して解説。UserControl や
 
 `IsDefault` は、<kbd>Enter</kbd> でボタンを押せるようにします。TextBox にフォーカスがあると <kbd>Enter</kbd> で押され、そのときの `IsDefaulted` は `True` でした。`AcceptsReturn="True"` の TextBox にフォーカスがあると、<kbd>Enter</kbd> は改行になり、ボタンは押されませんでした。ほかのボタンにフォーカスがあると、<kbd>Enter</kbd> ではフォーカスのあるボタンが押され、`IsDefaulted` は `False` でした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-keys.svg" alt="IsCancel と IsDefault の計測結果の表。UserControl の中でも Esc で IsCancel のボタンが押されてウィンドウは開いたまま、Enter で IsDefault のボタンが押され、AcceptsReturn の TextBox では改行になって押されず、ほかのボタンにフォーカスがあるとそのボタンが押され、IsCancel のボタンが 2 つあるとフォーカスが移るだけで、ShowDialog で開いたウィンドウは閉じて false を返す" width="889" height="290" loading="lazy">
-  <figcaption>フォーカスの位置とウィンドウの開き方ごとの <code>IsCancel</code> と <code>IsDefault</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-keys.ja.md %}
+
+フォーカスの位置とウィンドウの開き方ごとの <code>IsCancel</code> と <code>IsDefault</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## どの時点でクリックになるか：ClickMode と IsPressed
 
@@ -28,10 +28,10 @@ description: "WPF の Button を .NET 10 で実測して解説。UserControl や
 
 `IsPressed` は読み取り専用です。ボタンの上でマウスボタンを押している間と、<kbd>Space</kbd> を押している間は `True` で、離すと `False` でした。`Hover` のボタンは、ポインターが上にある間押された状態でしたが、キーボードでは押された状態にならず、<kbd>Space</kbd> を押している間も `IsPressed` は `False` のままでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-clickmode.svg" alt="ClickMode の計測結果の表。既定値は Release で IsPressed は読み取り専用、Hover はポインターが入った時点、Press はマウスボタンを押した時点、Release は離した時点でクリックになり、外で離すとクリックにならず、キーボードでは Release は Space を離した時点、Press は押した時点、Enter はどちらも押した時点でクリックになり、Hover は何も起きない" width="1046" height="320" loading="lazy">
-  <figcaption>実際のマウスとキーボードでの <code>ClickMode</code> と <code>IsPressed</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-clickmode.ja.md %}
+
+実際のマウスとキーボードでの <code>ClickMode</code> と <code>IsPressed</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## コマンド：何がボタンを有効にし、いつ問い合わせ直されるか
 
@@ -41,10 +41,10 @@ description: "WPF の Button を .NET 10 で実測して解説。UserControl や
 
 `CommandParameter` は、`CanExecute` と `Execute` に渡す値です。デモアプリは、`Command` の後に TextBox の `Text` へバインドしています。この XAML では、読み込み時の 2 回の `CanExecute` にはどちらも `ShowMessageText` が渡り、`null` は渡りませんでした。パラメーターが変わると、すぐに問い合わせ直されます。コードからテキストを空にすると、`InvalidateRequerySuggested` を呼ばなくても `CanExecute` が 1 回呼ばれ、ボタンは無効になりました。`Execute` には、クリックした時点のテキストが渡りました。一覧では、項目のテンプレートに置いたボタンでその項目を渡せます。`CommandParameter="{Binding}"` にすると、2 行目のボタンを実際にクリックしたとき、`Execute` は `Row 2` を受け取りました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Command の計測結果の表。CanExecute が false なら IsEnabled を True にしても無効、RequerySuggested のコマンドは InvalidateRequerySuggested の後に更新され、ボタン 20 個ではフォーカスの移動 1 回で CanExecute が 20 回呼ばれ、デモアプリの XAML では読み込み時の CanExecute にテキストが渡り、テキストを空にすると CanExecute が 1 回呼ばれ、Execute には現在のテキストが渡る。項目のテンプレートでは行のボタンの実際のクリックで CommandParameter=&quot;{Binding}&quot; によりその行の項目が渡る" width="1046" height="290" loading="lazy">
-  <figcaption><code>Command</code> と <code>CommandParameter</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-command.ja.md %}
+
+<code>Command</code> と <code>CommandParameter</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 内容、アクセスキー、テンプレート
 
@@ -52,10 +52,10 @@ description: "WPF の Button を .NET 10 で実測して解説。UserControl や
 
 既定のテンプレートには表示状態のグループ（VisualStateGroup）がありません。見た目は、`IsDefaulted`・`IsMouseOver`・`IsPressed`・`IsChecked`（いずれも `true`）と `IsEnabled` = `false` のトリガーで切り替えています。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-template.svg" alt="Button の型とテンプレートの計測結果の表。ButtonBase と ContentControl を継承し、既定のテンプレートには表示状態がなく IsDefaulted・IsMouseOver・IsPressed・IsChecked・IsEnabled のトリガーがあり、ContentPresenter はアクセスキーを認識し、UI オートメーションの名前は文字列ならその文字列、_Save なら Save、画像だけなら空、AutomationProperties.Name を付ければその値になる" width="1140" height="290" loading="lazy">
-  <figcaption>基底クラス、既定のテンプレート、UI オートメーションの名前。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-template.ja.md %}
+
+基底クラス、既定のテンプレート、UI オートメーションの名前。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 
