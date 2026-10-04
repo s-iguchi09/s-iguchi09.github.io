@@ -412,6 +412,18 @@ internal static class DemoLayout
         .Replace(">", "&gt;");
 
     /// <summary>
+    /// 日英の組の表から、英語の文言でウィンドウを作る。同じ値を <c>SaveTableAsync</c> で日英の表にも出すためである。
+    /// </summary>
+    public static Window BuildLocTableWindow(
+        string title,
+        IReadOnlyList<Loc> headers,
+        IEnumerable<IReadOnlyList<Loc>> rows) =>
+        BuildTableWindow(
+            title,
+            headers.Select(header => header.En).ToList(),
+            rows.Select(row => (IReadOnlyList<string>)row.Select(cell => cell.En).ToList()).ToList());
+
+    /// <summary>
     /// 実測値を表として並べたウィンドウを作る。
     /// 図中の文言は日英で共有するため、識別子と数値だけで構成する。
     /// 先頭列は左寄せ、それ以外は数値の桁を揃えるため右寄せにする。

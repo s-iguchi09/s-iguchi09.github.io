@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 556 200" width="556" height="200" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="556" height="200" />
+  <text class="title" x="12" y="24">ListBox</text>
+  <rect class="head" x="12" y="38" width="532" height="30" />
+  <text class="cell" x="26" y="57.5">items</text>
+  <text class="cell" x="235" y="57.5" text-anchor="end">CanContentScroll</text>
+  <text class="cell" x="349" y="57.5" text-anchor="end">ListBoxItem</text>
+  <text class="cell" x="432" y="57.5" text-anchor="end">visuals</text>
+  <text class="cell" x="530" y="57.5" text-anchor="end">layout ms</text>
+  <text class="cell" x="26" y="87.5">100</text>
+  <text class="cell" x="235" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="349" y="87.5" text-anchor="end">31</text>
+  <text class="cell" x="432" y="87.5" text-anchor="end">152</text>
+  <text class="cell" x="530" y="87.5" text-anchor="end">47</text>
+  <text class="cell" x="26" y="117.5">10,000</text>
+  <text class="cell" x="235" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="349" y="117.5" text-anchor="end">31</text>
+  <text class="cell" x="432" y="117.5" text-anchor="end">152</text>
+  <text class="cell" x="530" y="117.5" text-anchor="end">43</text>
+  <text class="cell" x="26" y="147.5">100,000</text>
+  <text class="cell" x="235" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="349" y="147.5" text-anchor="end">31</text>
+  <text class="cell" x="432" y="147.5" text-anchor="end">152</text>
+  <text class="cell" x="530" y="147.5" text-anchor="end">52</text>
+  <text class="cell" x="26" y="177.5">10,000</text>
+  <text class="cell" x="235" y="177.5" text-anchor="end">False</text>
+  <text class="cell" x="349" y="177.5" text-anchor="end">10,000</text>
+  <text class="cell" x="432" y="177.5" text-anchor="end">40,028</text>
+  <text class="cell" x="530" y="177.5" text-anchor="end">5,158</text>
+  <line class="line" x1="12" y1="38" x2="544" y2="38" />
+  <line class="line" x1="12" y1="68" x2="544" y2="68" />
+  <line class="line" x1="12" y1="98" x2="544" y2="98" />
+  <line class="line" x1="12" y1="128" x2="544" y2="128" />
+  <line class="line" x1="12" y1="158" x2="544" y2="158" />
+  <line class="line" x1="12" y1="188" x2="544" y2="188" />
+  <line class="line" x1="12" y1="38" x2="12" y2="188" />
+  <line class="line" x1="95" y1="38" x2="95" y2="188" />
+  <line class="line" x1="249" y1="38" x2="249" y2="188" />
+  <line class="line" x1="363" y1="38" x2="363" y2="188" />
+  <line class="line" x1="446" y1="38" x2="446" y2="188" />
+  <line class="line" x1="544" y1="38" x2="544" y2="188" />
+</svg>

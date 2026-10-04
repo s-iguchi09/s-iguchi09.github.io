@@ -35,7 +35,7 @@ The examples below assume UI virtualization is active (the `ListBox` default) an
 `SelectionMode` is `Extended` to handle multiple selection.
 The behavior was checked on .NET 10 and not on other versions.
 
-The figures in this article were obtained by running an actual application in this environment and counting `SelectedItems.Count` alongside the number of items whose `IsSelected` is true.
+The values in this article were obtained by running an actual application in this environment and counting `SelectedItems.Count` alongside the number of items whose `IsSelected` is true.
 
 ---
 
@@ -183,10 +183,10 @@ This is where the commonly published guidance ends.
 Against the configuration above, selecting all items with `Ctrl + A` (`SelectAll`) and then paging down was measured.
 For comparison, a configuration that writes back to the data through `SelectionChanged`, and one that uses both, were measured at the same time.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.png" alt="A table comparing SelectedItems and IsSelected counts across three synchronization configurations after selecting all 10,000 items in a virtualized ListBox. With only the ItemContainerStyle binding, SelectedItems drops from 10,000 to 9,845 after scrolling." width="549" height="281" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 by calling <code>SelectAll()</code> on a virtualized <code>ListBox</code> bound to 10,000 items, then scrolling ten pages. With only the <code>ItemContainerStyle</code> binding, scrolling destroys part of the selection.</figcaption>
-</figure>
+{% include tables/articles/wpf-listbox-virtualization-selecteditems/listbox-selection-sync-measurement.en.md %}
+
+Measured on .NET 10 / Windows 11 by calling <code>SelectAll()</code> on a virtualized <code>ListBox</code> bound to 10,000 items, then scrolling ten pages. With only the <code>ItemContainerStyle</code> binding, scrolling destroys part of the selection.
+{: .table-caption}
 
 Three things follow from the table.
 
@@ -313,10 +313,10 @@ Setting `ScrollViewer.CanContentScroll` to `False` changes the scroll unit from 
 
 The impact was measured as follows.
 
-<figure class="article-figure">
-  <img src="/images/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.png" alt="A table measured across item counts and CanContentScroll values. With CanContentScroll True, ListBoxItem stays at 31 and visuals at 152 for 100 items and for 100,000. Setting False at 10,000 items raises these to 10,000 and 40,028, and layout time grows by two orders of magnitude." width="542" height="221" loading="lazy">
-  <figcaption>Measured on .NET 10 / Windows 11 across item counts and <code>ScrollViewer.CanContentScroll</code> values, taking the minimum of five runs. The three <code>True</code> rows show that a thousandfold increase in item count changes neither the container count, the visual count, nor the layout time. With <code>False</code>, containers are built for every item and layout time grows by two orders of magnitude. Elapsed time depends on the execution environment, so read the values as ratios rather than absolute numbers.</figcaption>
-</figure>
+{% include tables/articles/wpf-listbox-virtualization-selecteditems/listbox-virtualization-cost.en.md %}
+
+Measured on .NET 10 / Windows 11 across item counts and <code>ScrollViewer.CanContentScroll</code> values, taking the minimum of five runs. The three <code>True</code> rows show that a thousandfold increase in item count changes neither the container count, the visual count, nor the layout time. With <code>False</code>, containers are built for every item and layout time grows by two orders of magnitude. Elapsed time depends on the execution environment, so read the values as ratios rather than absolute numbers.
+{: .table-caption}
 
 While `CanContentScroll` stays `True`, raising the item count a thousandfold from 100 to 100,000 leaves realized `ListBoxItem` containers at 31 and the total visual count at 152.
 Cost being independent of item count is precisely what virtualization buys.
