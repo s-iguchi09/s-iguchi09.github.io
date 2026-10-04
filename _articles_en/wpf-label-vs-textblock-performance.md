@@ -121,7 +121,7 @@ Binding 10,000 items to a virtualized `ListBox` and swapping only the contents o
 
 {% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.en.md %}
 
-Measured in the same environment with 10,000 items bound to a <code>ListBox</code> configured with <code>IsVirtualizing="True"</code> and <code>VirtualizationMode="Recycling"</code>. Only the containers in the visible range are realized, so the total visual count does not depend on the item count. The layout time difference is smaller than the difference between repeated runs of the same condition; the roughly 2x gap seen without virtualization does not survive.
+Measured in the same environment with 10,000 items bound to a <code>ListBox</code> configured with <code>IsVirtualizing="True"</code> and <code>VirtualizationMode="Recycling"</code>. Only the containers in the visible range and the cache area before and after it, set by <code>VirtualizingPanel.CacheLength</code>, are realized, so the total visual count does not depend on the item count. The layout time difference is smaller than the difference between repeated runs of the same condition; the roughly 2x gap seen without virtualization does not survive.
 {: .table-caption}
 
 Compared with 4,000 elements in a non-virtualized `StackPanel`, the item count here is 2.5 times larger while layout time is two orders of magnitude smaller.

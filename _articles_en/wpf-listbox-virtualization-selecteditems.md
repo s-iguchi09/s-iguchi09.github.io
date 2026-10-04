@@ -58,7 +58,7 @@ With `VirtualizationMode="Recycling"`, containers are reused, which makes incons
 
 ### Realized Containers Do Not Scale with Item Count
 
-With virtualization active, only as many `ListBoxItem` instances exist as the visible range requires.
+With virtualization active, only as many `ListBoxItem` instances exist as the visible range and the cache area before and after it, set by `VirtualizingPanel.CacheLength`, require.
 Measured on a 600px-tall `ListBox`, the number of realized containers stayed constant at 31 across collections of 100, 10,000, and 100,000 items.
 Those measurements appear in the table under "Keeping Virtualization Intact" below.
 

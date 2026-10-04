@@ -120,7 +120,7 @@ UI 仮想化が有効な `ItemsControl` では前提が変わる。
 
 {% include tables/articles/wpf-label-vs-textblock-performance/label-vs-textblock-virtualized.ja.md %}
 
-同一環境で、<code>IsVirtualizing="True"</code>・<code>VirtualizationMode="Recycling"</code> の <code>ListBox</code> に 10,000 件をバインドした場合の実測値。実体化されるコンテナは表示範囲の分だけであるため、visual の総数は件数に依存しない。レイアウト時間の差は、同じ条件で繰り返した試行どうしの差より小さく、非仮想化時に見えた約 2 倍の差は残らない。
+同一環境で、<code>IsVirtualizing="True"</code>・<code>VirtualizationMode="Recycling"</code> の <code>ListBox</code> に 10,000 件をバインドした場合の実測値。実体化されるコンテナは、表示範囲と、その前後の <code>VirtualizingPanel.CacheLength</code> で決まるキャッシュ領域の分だけであるため、visual の総数は件数に依存しない。レイアウト時間の差は、同じ条件で繰り返した試行どうしの差より小さく、非仮想化時に見えた約 2 倍の差は残らない。
 {: .table-caption}
 
 非仮想化の `StackPanel` で 4,000 個を並べた場合と比べると、件数が 2.5 倍でありながらレイアウト時間は 2 桁小さい。
