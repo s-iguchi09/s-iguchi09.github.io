@@ -326,7 +326,7 @@ foreach (var item in source)
 }
 ```
 
-Neither stores anything, so space complexity is $O(1)$.
+Neither stores anything, so space complexity is O(1).
 Compared with the `Concat(new[] { element })` workaround, no array is allocated for a single element.
 
 ```csharp
@@ -378,7 +378,7 @@ foreach (var item in source)
 ```
 
 The output always trails the input by `count` elements — that is the crux.
-Regardless of the source size, only `count` elements are held at any time, keeping space complexity at $O(count)$.
+Regardless of the source size, only `count` elements are held at any time, keeping space complexity at O(count).
 The double enumeration of the `Count()`-then-`Skip`/`Take` workaround also disappears.
 
 ```csharp
@@ -434,13 +434,13 @@ Using `Append`, `Prepend`, `TakeLast` and `SkipLast` as the subject, this articl
 | Principle | Purpose |
 | --- | --- |
 | Split validation from the iterator | Keep lazy evaluation while throwing at call time |
-| Minimize buffering | $O(1)$ for pass-through, $O(count)$ for tail-based operations |
+| Minimize buffering | O(1) for pass-through, O(count) for tail-based operations |
 | Guard migration with conditional compilation | Switch to built-in LINQ on upgrade without code changes |
 
 | Method | Space complexity | Algorithm |
 | --- | --- | --- |
-| `Append` / `Prepend` | $O(1)$ | Pass-through |
-| `TakeLast` / `SkipLast` | $O(count)$ | Sliding window over a `Queue<T>` |
+| `Append` / `Prepend` | O(1) | Pass-through |
+| `TakeLast` / `SkipLast` | O(count) | Sliding window over a `Queue<T>` |
 
 If these four methods are all that is missing, a hand-rolled polyfill avoids adding an external dependency.
 When methods from .NET 6 and later are also needed, the same principles carry over with version-specific guards layered on top (see the related articles).

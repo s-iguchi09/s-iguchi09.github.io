@@ -53,7 +53,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 | 目的 | 回避イディオム | 実行コスト |
 | --- | --- | --- |
 | 最大サイズで分割 | インデックス付き `Select` + `GroupBy(t => t.i / size)` | 初回列挙時に全要素をグルーピングし、中間タプルを割り当てる |
-| キー基準の最大・最小 | `OrderByDescending(x => x.Key).First()` | .NET Framework では $O(n \log n)$ の全件ソート |
+| キー基準の最大・最小 | `OrderByDescending(x => x.Key).First()` | .NET Framework では O(n log n) の全件ソート |
 | キー基準の重複除去 | `GroupBy(x => x.Key).Select(g => g.First())` | キーごとの要素リストを丸ごと構築 |
 
 問題は記述の冗長さだけではない。
@@ -314,7 +314,7 @@ while (enumerator.MoveNext())
 return maxElement;
 ```
 
-ソートが不要になるため計算量は $O(n \log n)$ から $O(n)$ に下がり、ソート用の作業領域も不要になる。
+ソートが不要になるため計算量は O(n log n) から O(n) に下がり、ソート用の作業領域も不要になる。
 `MinBy` は比較条件が `> 0` から `< 0` に変わるだけで構造は同一である。
 なお `Max()` / `Min()` がキーの値そのものを返すのに対し、`MaxBy` / `MinBy` はキーに対応する**元の要素**を返す。
 
@@ -352,7 +352,7 @@ foreach (var item in source)
 }
 ```
 
-保持するのはキーだけであり、要素本体をため込まない（空間計算量 $O(\text{ユニーク件数})$）。
+保持するのはキーだけであり、要素本体をため込まない（空間計算量 O(ユニーク件数)）。
 `GroupBy` と違って全件を先読みせず、元の順序を保ったまま 1 件ずつ流れる遅延評価になる点も実用上の差である。
 
 ### `Chunk`: インデックス演算のグルーピングから逐次分割へ
@@ -445,9 +445,9 @@ yield return chunk.ToArray();
 
 | メソッド | 回避イディオムのコスト | ポリフィル後のコスト |
 | --- | --- | --- |
-| `MaxBy` / `MinBy` | $O(n \log n)$（全件ソート） | $O(n)$（1 パス走査） |
-| `DistinctBy` | キーごとの要素リスト構築 | キー集合のみ保持（$O(\text{ユニーク件数})$） |
-| `Chunk` | 全件を先読みするグルーピング | チャンク単位の逐次構築（$O(size)$） |
+| `MaxBy` / `MinBy` | O(n log n)（全件ソート） | O(n)（1 パス走査） |
+| `DistinctBy` | キーごとの要素リスト構築 | キー集合のみ保持（O(ユニーク件数)） |
+| `Chunk` | 全件を先読みするグルーピング | チャンク単位の逐次構築（O(size)） |
 
 置き換え自体は本家と同名・同シグネチャのポリフィルを追加するだけで済み、`#if !NET6_0_OR_GREATER` のガードにより .NET 6 移行時には自動で本家実装に切り替わる。
 

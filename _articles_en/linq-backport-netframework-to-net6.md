@@ -54,7 +54,7 @@ Producing the same results without them requires workaround idioms.
 | Goal | Workaround idiom | Runtime cost |
 | --- | --- | --- |
 | Split into chunks | Indexed `Select` + `GroupBy(t => t.i / size)` | Groups all elements on first enumeration, plus intermediate tuples |
-| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full $O(n \log n)$ sort on .NET Framework |
+| Max/min by key | `OrderByDescending(x => x.Key).First()` | Full O(n log n) sort on .NET Framework |
 | Distinct by key | `GroupBy(x => x.Key).Select(g => g.First())` | Full per-key element lists |
 
 The problem is not only verbosity.
@@ -315,7 +315,7 @@ while (enumerator.MoveNext())
 return maxElement;
 ```
 
-Removing the sort drops the complexity from $O(n \log n)$ to $O(n)$ and eliminates the sort workspace.
+Removing the sort drops the complexity from O(n log n) to O(n) and eliminates the sort workspace.
 `MinBy` merely flips the comparison from `> 0` to `< 0`.
 Note that where `Max()` / `Min()` return the key value itself, `MaxBy` / `MinBy` return the **original element** that carries the key.
 
@@ -353,7 +353,7 @@ foreach (var item in source)
 }
 ```
 
-Only keys are retained — element bodies are never accumulated (space complexity $O(\text{unique keys})$).
+Only keys are retained — element bodies are never accumulated (space complexity O(unique keys)).
 Unlike `GroupBy`, nothing is read ahead: elements stream out lazily, one at a time, in their original order.
 
 ### `Chunk`: From Index Arithmetic to Sequential Slicing
@@ -446,9 +446,9 @@ A few dozen items rendered per screen refresh will not expose the problem; as vo
 
 | Method | Workaround cost | Polyfill cost |
 | --- | --- | --- |
-| `MaxBy` / `MinBy` | $O(n \log n)$ full sort | $O(n)$ single pass |
-| `DistinctBy` | Per-key element lists | Key set only ($O(\text{unique keys})$) |
-| `Chunk` | Up-front whole-sequence grouping | Sequential per-chunk build ($O(size)$) |
+| `MaxBy` / `MinBy` | O(n log n) full sort | O(n) single pass |
+| `DistinctBy` | Per-key element lists | Key set only (O(unique keys)) |
+| `Chunk` | Up-front whole-sequence grouping | Sequential per-chunk build (O(size)) |
 
 The replacement itself is just adding polyfills with the original names and signatures, and the `#if !NET6_0_OR_GREATER` guard switches to the built-in implementations automatically upon migrating to .NET 6.
 

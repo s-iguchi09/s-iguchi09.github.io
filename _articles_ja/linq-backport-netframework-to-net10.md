@@ -305,9 +305,9 @@ var result = employees.RightJoin(
 ## `Shuffle` と擬似シャッフルの違い
 
 `OrderBy(_ => Guid.NewGuid())` によるランダム並べ替えは広く使われてきたが、2 つの問題を抱える。
-要素ごとに GUID を生成して $O(n \log n)$ のソートを行うため非効率であり、GUID は一様な乱数のソートキーとして規定されていないため、並び替えが一様になる保証が無い。
+要素ごとに GUID を生成して O(n log n) のソートを行うため非効率であり、GUID は一様な乱数のソートキーとして規定されていないため、並び替えが一様になる保証が無い。
 
-`Shuffle` は Fisher–Yates 法により、各順列が等確率で現れる一様なシャッフルを 1 回の走査（$O(n)$）で行う。
+`Shuffle` は Fisher–Yates 法により、各順列が等確率で現れる一様なシャッフルを 1 回の走査（O(n)）で行う。
 
 ```csharp
 var deck = Enumerable.Range(1, 52);

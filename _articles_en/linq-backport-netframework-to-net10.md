@@ -306,9 +306,9 @@ var result = employees.RightJoin(
 ## `Shuffle` versus Pseudo-Shuffles
 
 Random ordering via `OrderBy(_ => Guid.NewGuid())` is widespread but carries two problems.
-It generates a GUID per element and pays for an $O(n \log n)$ sort, and GUIDs are not specified as a source of uniformly random sort keys, so nothing guarantees a uniform permutation.
+It generates a GUID per element and pays for an O(n log n) sort, and GUIDs are not specified as a source of uniformly random sort keys, so nothing guarantees a uniform permutation.
 
-`Shuffle` uses Fisher–Yates, producing each permutation with equal probability in a single $O(n)$ pass.
+`Shuffle` uses Fisher–Yates, producing each permutation with equal probability in a single O(n) pass.
 
 ```csharp
 var deck = Enumerable.Range(1, 52);
