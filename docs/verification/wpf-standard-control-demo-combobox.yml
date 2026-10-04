@@ -16,3 +16,6 @@ verifies:
   - "同じリストを ItemsSource にした 2 つの ComboBox の、IsSynchronizedWithCurrentItem が True / 未設定のときの初期選択と連動"
 images:
   - "images/wpf-standard-control-demo/verification/combobox/combobox-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/combobox/combobox-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/combobox/combobox-behavior.ja.md"

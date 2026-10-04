@@ -18,3 +18,6 @@ verifies:
   - "キーの組み合わせを持たないコマンドに、ウィンドウの KeyBinding で Ctrl+O を結んだときに、実際の Ctrl+O で実行されるかと、そのコマンドの項目の InputGestureText"
 images:
   - "images/wpf-standard-control-demo/verification/menu/menu-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/menu/menu-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/menu/menu-behavior.ja.md"

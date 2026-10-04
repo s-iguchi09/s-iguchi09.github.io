@@ -27,10 +27,10 @@ ToggleButton には `GroupName` がないので、排他的なトグルには Ra
 
 `IsOpen` を `IsChecked` にバインドした `Popup` は、ボタンをクリックすると開きました。ポップアップが閉じると `IsChecked` も `false` に戻りました。`Popup.IsOpen` が既定で TwoWay にバインドされるためです。`StaysOpen="False"` で実際にクリックすると、ウィンドウの空いた領域のクリックではポップアップが閉じてボタンのチェックも外れました。ポップアップが開いている間にボタン自体をクリックしても閉じず、その後も `IsOpen` と `IsChecked` はどちらも `true` のままでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="ToggleButton の計測結果の表。ButtonBase を継承し CheckBox と RadioButton の基底であり、IsThreeState のときだけ false・true・null と巡回し、既定のテンプレートには表示状態がなく IsChecked true のトリガーだけがあり、UI オートメーションは Off・On・Indeterminate を報告し、ClickMode Press は押した時点で切り替わってそのまま残り、IsChecked にバインドした CommandParameter には新しい値が渡り、UI オートメーションの Toggle ではコマンドが実行されず、バインドした Popup が閉じると IsChecked も戻り、空いた領域の実際のクリックでは閉じるが、開いている間のボタンのクリックでは開いたまま" width="1187" height="530" loading="lazy">
-  <figcaption>状態、テンプレート、<code>ClickMode</code>、<code>Command</code>、バインドした <code>Popup</code>。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.ja.md %}
+
+状態、テンプレート、<code>ClickMode</code>、<code>Command</code>、バインドした <code>Popup</code>。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

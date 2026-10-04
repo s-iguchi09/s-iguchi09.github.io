@@ -37,13 +37,13 @@ internal sealed class RepeatButtonDemoScene : IScene
     {
         await context.SaveTableAsync(
             "RepeatButton: defaults, holding the real mouse button, keyboard",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureRepeatAsync(),
             "repeatbutton-repeat.svg");
 
         await context.SaveTableAsync(
             "RepeatButton: invalid values and where WPF uses it",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureValuesAsync(),
             "repeatbutton-values.svg");
     }
@@ -63,16 +63,19 @@ internal sealed class RepeatButtonDemoScene : IScene
         }
     }
 
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static string Ms(double value) => $"{Math.Round(value)} ms";
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureRepeatAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureRepeatAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new RepeatButton();
-        rows.Add(["default Delay / Interval (KeyboardDelay / KeyboardSpeed on this machine)",
+        rows.Add([T("default Delay / Interval (KeyboardDelay / KeyboardSpeed on this machine)", "Delay / Interval の既定値（このマシンの KeyboardDelay / KeyboardSpeed）"),
             $"{defaults.Delay} / {defaults.Interval} ({SystemParameters.KeyboardDelay} / {SystemParameters.KeyboardSpeed})"]);
-        rows.Add(["default ClickMode", defaults.ClickMode.ToString()]);
+        rows.Add([T("default ClickMode", "ClickMode の既定値"), defaults.ClickMode.ToString()]);
 
         {
             var command = new CountingCommand();
@@ -101,13 +104,13 @@ internal sealed class RepeatButtonDemoScene : IScene
 
                     var gaps = times.Skip(1).Zip(times, (later, earlier) => later - earlier).ToList();
                     var steady = gaps.Skip(1).OrderBy(g => g).ToList();
-                    rows.Add(["Delay=300, Interval=100, mouse held for about 1 s: clicks while held / after release",
+                    rows.Add([T("Delay=300, Interval=100, mouse held for about 1 s: clicks while held / after release", "Delay=300、Interval=100、マウスを約 1 秒押し続ける: 押している間のクリック数 / 離した後"),
                         $"{held} / {times.Count - held}"]);
-                    rows.Add(["  first click after button down / second after the first",
+                    rows.Add([T("  first click after button down / second after the first", "  押してから 1 回目のクリックまで / 1 回目から 2 回目まで"),
                         $"{Ms(times[0])} / {Ms(gaps[0])}"]);
-                    rows.Add(["  gaps after that: min / median / max",
+                    rows.Add([T("  gaps after that: min / median / max", "  その後の間隔: 最小 / 中央値 / 最大"),
                         $"{Ms(steady[0])} / {Ms(steady[steady.Count / 2])} / {Ms(steady[^1])}"]);
-                    rows.Add(["  Command executions / Click events", $"{command.Executed} / {times.Count}"]);
+                    rows.Add([T("  Command executions / Click events", "  Command の実行回数 / Click イベントの回数"), $"{command.Executed} / {times.Count}"]);
 
                     // 押したまま外へ出て、また戻る。
                     times.Clear();
@@ -124,7 +127,7 @@ internal sealed class RepeatButtonDemoScene : IScene
                     await Task.Delay(500);
                     int afterReturning = times.Count - beforeReturning;
                     await RealMouse.LeftUpAsync(window);
-                    rows.Add(["held, moved off for 0.5 s, moved back for 0.5 s: clicks outside (IsPressed) / after returning",
+                    rows.Add([T("held, moved off for 0.5 s, moved back for 0.5 s: clicks outside (IsPressed) / after returning", "押したまま 0.5 秒外に出て、0.5 秒戻る: 外にいる間のクリック数（IsPressed） / 戻った後"),
                         $"{whileOutside} ({pressedOutside}) / {afterReturning}"]);
                 }
             });
@@ -142,26 +145,26 @@ internal sealed class RepeatButtonDemoScene : IScene
                 int held = clicks;
                 SendKey(Key.Space, down: false);
                 await Capture.SettleAsync(Window.GetWindow(button)!, 50);
-                rows.Add(["Space held for 1 s, one key-down event (no OS key repeat): clicks while held / after release",
+                rows.Add([T("Space held for 1 s, one key-down event (no OS key repeat): clicks while held / after release", "Space を 1 秒押し続ける、キーダウンは 1 回（OS のキーリピートなし）: 押している間のクリック数 / 離した後"),
                     $"{held} / {clicks - held}"]);
 
                 clicks = 0;
                 ((IInvokeProvider)new RepeatButtonAutomationPeer(button)).Invoke();
                 await Capture.SettleAsync(Window.GetWindow(button)!, 50);
-                rows.Add(["UI Automation Invoke: clicks", clicks.ToString()]);
+                rows.Add([T("UI Automation Invoke: clicks", "UI オートメーションの Invoke: クリック数"), clicks.ToString()]);
             }, activate: true);
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureValuesAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureValuesAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["Delay = -1 / Delay = 0 set from code",
+        rows.Add([T("Delay = -1 / Delay = 0 set from code", "コードから Delay = -1 / Delay = 0"),
             $"{Throws(() => new RepeatButton { Delay = -1 })} / {Throws(() => new RepeatButton { Delay = 0 })}"]);
-        rows.Add(["Interval = 0 / Interval = 1 set from code",
+        rows.Add([T("Interval = 0 / Interval = 1 set from code", "コードから Interval = 0 / Interval = 1"),
             $"{Throws(() => new RepeatButton { Interval = 0 })} / {Throws(() => new RepeatButton { Interval = 1 })}"]);
 
         {
@@ -183,7 +186,7 @@ internal sealed class RepeatButtonDemoScene : IScene
                     results.Add($"\"{text}\" -> {button.Delay}");
                 }
 
-                rows.Add(["demo binding, Delay from TextBox.Text (in order)", string.Join(", ", results)]);
+                rows.Add([T("demo binding, Delay from TextBox.Text (in order)", "デモのバインド、TextBox.Text から Delay へ（入力した順）"), string.Join(", ", results)]);
 
                 results.Clear();
                 foreach (string text in new[] { "50", "0" })
@@ -193,7 +196,7 @@ internal sealed class RepeatButtonDemoScene : IScene
                     results.Add($"\"{text}\" -> {button.Interval}");
                 }
 
-                rows.Add(["demo binding, Interval from TextBox.Text (in order)", string.Join(", ", results)]);
+                rows.Add([T("demo binding, Interval from TextBox.Text (in order)", "デモのバインド、TextBox.Text から Interval へ（入力した順）"), string.Join(", ", results)]);
             });
         }
 
@@ -206,9 +209,9 @@ internal sealed class RepeatButtonDemoScene : IScene
             {
                 string Commands(Control control) => string.Join(", ", Descendants(control).OfType<RepeatButton>()
                     .Select(r => r.Command is RoutedCommand routed ? routed.Name : WpfProbe.Describe(r.Command)));
-                rows.Add(["RepeatButtons in a vertical ScrollBar template (their commands)", Commands(scrollBar)]);
-                rows.Add(["RepeatButtons in a horizontal ScrollBar template (their commands)", Commands(horizontal)]);
-                rows.Add(["RepeatButtons in the Slider template (their commands)", Commands(slider)]);
+                rows.Add([T("RepeatButtons in a vertical ScrollBar template (their commands)", "縦の ScrollBar のテンプレートの中の RepeatButton（そのコマンド）"), Commands(scrollBar)]);
+                rows.Add([T("RepeatButtons in a horizontal ScrollBar template (their commands)", "横の ScrollBar のテンプレートの中の RepeatButton（そのコマンド）"), Commands(horizontal)]);
+                rows.Add([T("RepeatButtons in the Slider template (their commands)", "Slider のテンプレートの中の RepeatButton（そのコマンド）"), Commands(slider)]);
                 await Task.CompletedTask;
             });
         }

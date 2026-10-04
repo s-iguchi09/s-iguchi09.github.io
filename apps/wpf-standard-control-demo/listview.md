@@ -29,10 +29,10 @@ With 1,000 data items set through `ItemsSource` and a GridView, the rows were vi
 
 In a list 300 wide and 100 high with one column 500 wide, `Disabled` scroll bars left no horizontal scrolling, so the right part of the column could not be reached, but the rows still scrolled vertically: `ScrollToBottom` and the Down key to the last row both moved the vertical offset to 2 rows (the horizontal offset stayed at 0). With `Auto`, the offsets went to 227 DIPs horizontally and 3 rows vertically. Leave the horizontal bar on `Auto` when columns are wide.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/listview/listview-behavior.svg" alt="Table of ListView results: it derives from ListBox with Extended selection and no view by default, an auto-width column stays 84.89 wide after the longest name is scrolled in or a longer one is inserted, a bound width follows the slider, a real header drag reorders the columns only with AllowsColumnReorder, a header click does not sort, DisplayMemberBinding wins over CellTemplate without an exception, Disabled scroll bars leave no horizontal scrolling but still 2 rows vertically, and 1,000 items create 8 containers" width="1132" height="470" loading="lazy">
-  <figcaption>Defaults, GridView columns, reordering, sorting, and scrolling. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/listview/listview-behavior.en.md %}
+
+Defaults, GridView columns, reordering, sorting, and scrolling. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

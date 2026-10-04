@@ -13,7 +13,7 @@ Setting `ToolTip="text"` on an element is enough; WPF wraps the string in a **To
 
 The timing is set through the `ToolTipService` attached properties, and the defaults are not the numbers often quoted. `InitialShowDelay`, the wait before the tooltip opens, was 1000 ms. `BetweenShowDelay`, the time after one tooltip closes during which the next opens without the initial delay, was 100 ms. `ShowDuration` was `Int32.MaxValue`, so a tooltip does not close by itself while the pointer stays. With `ShowDuration="1000"`, it was closed 2.5 seconds after it opened, with the pointer still on the button.
 
-With a real mouse, a tooltip with `InitialShowDelay` 500 opened after about 600 to 700 ms across runs (700 ms in the run in the table below) and one with 2000 after about 2050 ms.
+With a real mouse, a tooltip with `InitialShowDelay` 500 opened after about 550 to 700 ms across runs (600 ms in the run in the table below) and one with 2000 after about 2050 ms.
 
 ## Keyboard focus and disabled elements
 
@@ -29,10 +29,10 @@ A disabled element shows no tooltip unless `ShowOnDisabled` is `True`: over a di
 
 The default of the attached `HasDropShadow`, read on a button, was `False`. Whether a shadow is actually drawn was not measured.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="Table of ToolTip results: defaults of 1000 ms initial delay, Int32.MaxValue duration, 100 ms between delay, Mouse placement, null keyboard setting, ShowOnDisabled and HasDropShadow both False, a tooltip opening after about 700 and 2050 ms for delays of 500 and 2000, a ShowDuration of 1000 closing it, a new ToolTip instance for each opening, a disabled button showing a tooltip only with ShowOnDisabled, Bottom and Mouse positions with a 50 offset, and keyboard focus opening the tooltip except with False" width="1116" height="440" loading="lazy">
-  <figcaption>Defaults, timing, reuse, disabled elements, placement, and keyboard focus. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.en.md %}
+
+Defaults, timing, reuse, disabled elements, placement, and keyboard focus. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

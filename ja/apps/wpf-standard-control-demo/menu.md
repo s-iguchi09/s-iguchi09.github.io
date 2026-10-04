@@ -37,10 +37,10 @@ Menu は `MenuItem` を持ち、各 MenuItem の読み取り専用の `Role` は
 
 `Icon` は左に出す画像、`InputGestureText` は右に出すショートカットの文字です。`InputGestureText` は文字だけで、「Ctrl+O」は表示されましたが、実際に <kbd>Ctrl</kbd>+<kbd>O</kbd> を押しても項目はクリックされませんでした。キーの組み合わせを持つコマンドでは自動で入り、`Copy` の項目は設定しなくても `Ctrl+C` でした。ウィンドウに `KeyBinding` を付けると、キーの組み合わせを持たないコマンドが実際の <kbd>Ctrl</kbd>+<kbd>O</kbd> で実行されましたが、項目の `InputGestureText` は空のままでした。ショートカットは `KeyBinding` で結び、`InputGestureText` も設定します。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Menu の計測結果の表。IsMainMenu の既定値は True、Role の欄の 4 項目はそれぞれの Role で、チェックできない TopLevelItem は子を持つと TopLevelHeader になり、実際のクリックはチェックできる項目にチェックを付けて StaysOpenOnClick でなければサブメニューを閉じ、チェックできる 2 項目は両方チェックされ、Alt はメインメニューにだけ入り、TextBox にフォーカスがあるときの実際の F10 はどちらにも入らないが Button にフォーカスがあるときや入力管理を通したときはメインメニューに入り、Alt+M はどちらも開き、Ctrl+O の文字は出るが Ctrl+O ではクリックされず、Copy の項目には Ctrl+C が入り、Copy の項目は閉じている間は有効と読め、開くと TextBox の選択に従い、マウスの重ね合わせ・押下・解放で見出しの状態が変わる。ウィンドウの KeyBinding では実際の Ctrl+O でコマンドが実行されるが項目の InputGestureText は空のまま" width="1242" height="800" loading="lazy">
-  <figcaption>Role、チェックできる項目、メインメニュー、ショートカット、コマンド、見出しの状態。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/menu/menu-behavior.ja.md %}
+
+Role、チェックできる項目、メインメニュー、ショートカット、コマンド、見出しの状態。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

@@ -36,10 +36,13 @@ internal sealed class ToolTipDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ToolTip: defaults, timing, reuse, keyboard, disabled elements and placement (real mouse)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "tooltip-behavior.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static ToolTip? s_lastOpened;
     private static bool s_registered;
@@ -81,17 +84,19 @@ internal sealed class ToolTipDemoScene : IScene
         return PresentationSource.FromVisual(element)!.CompositionTarget!.TransformFromDevice.Transform(device);
     }
 
-    private static string Ms(double? value) => value is { } v ? $"opened after {Math.Round(v / 50) * 50} ms" : "did not open";
+    private static Loc Ms(double? value) => value is { } v
+        ? T($"opened after {Math.Round(v / 50) * 50} ms", $"{Math.Round(v / 50) * 50} ms 後に開いた")
+        : T("did not open", "開かなかった");
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
         Register();
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var probe = new Button();
-        rows.Add(["defaults: InitialShowDelay / ShowDuration / BetweenShowDelay",
+        rows.Add([T("defaults: InitialShowDelay / ShowDuration / BetweenShowDelay", "既定値: InitialShowDelay / ShowDuration / BetweenShowDelay"),
             $"{ToolTipService.GetInitialShowDelay(probe)} / {ToolTipService.GetShowDuration(probe)} / {ToolTipService.GetBetweenShowDelay(probe)}"]);
-        rows.Add(["defaults: Placement / ShowsToolTipOnKeyboardFocus / ShowOnDisabled / HasDropShadow",
+        rows.Add([T("defaults: Placement / ShowsToolTipOnKeyboardFocus / ShowOnDisabled / HasDropShadow", "既定値: Placement / ShowsToolTipOnKeyboardFocus / ShowOnDisabled / HasDropShadow"),
             $"{ToolTipService.GetPlacement(probe)} / {WpfProbe.Describe(ToolTipService.GetShowsToolTipOnKeyboardFocus(probe))} / {ToolTipService.GetShowOnDisabled(probe)} / {ToolTipService.GetHasDropShadow(probe)}"]);
 
         var blank = new Border { Width = 160, Height = 60, Background = Brushes.White };
@@ -135,16 +140,16 @@ internal sealed class ToolTipDemoScene : IScene
             using (RealMouse.Preserve())
             {
                 await Rest();
-                string a = Ms(await HoverUntilOpenAsync(fast));
+                Loc a = Ms(await HoverUntilOpenAsync(fast));
                 await Rest();
-                string b = Ms(await HoverUntilOpenAsync(slow));
-                rows.Add(["real mouse over a button: InitialShowDelay 500 / 2000", $"{a} / {b}"]);
+                Loc b = Ms(await HoverUntilOpenAsync(slow));
+                rows.Add([T("real mouse over a button: InitialShowDelay 500 / 2000", "実際のマウスをボタンに乗せる: InitialShowDelay 500 / 2000"), T($"{a.En} / {b.En}", $"{a.Ja} / {b.Ja}")]);
 
                 await Rest();
                 await HoverUntilOpenAsync(shortShow);
                 ToolTip? shown = s_lastOpened;
                 await Task.Delay(2500);
-                rows.Add(["ShowDuration=1000, pointer kept on the button: open 2.5 s later", WpfProbe.Describe(shown?.IsOpen)]);
+                rows.Add([T("ShowDuration=1000, pointer kept on the button: open 2.5 s later", "ShowDuration=1000、ポインターをボタンに乗せたまま: 2.5 秒後に開いているか"), WpfProbe.Describe(shown?.IsOpen)]);
 
                 await Rest();
                 await HoverUntilOpenAsync(reused);
@@ -152,15 +157,15 @@ internal sealed class ToolTipDemoScene : IScene
                 await Rest();
                 await HoverUntilOpenAsync(reused);
                 ToolTip? second = s_lastOpened;
-                rows.Add(["string ToolTip opened twice: same ToolTip instance", $"{first is not null && ReferenceEquals(first, second)}"]);
+                rows.Add([T("string ToolTip opened twice: same ToolTip instance", "文字列の ToolTip を 2 回開く: 同じ ToolTip のインスタンスか"), $"{first is not null && ReferenceEquals(first, second)}"]);
 
                 await Rest();
-                string off = Ms(await HoverUntilOpenAsync(disabled, 2000));
+                Loc off = Ms(await HoverUntilOpenAsync(disabled, 2000));
                 await Rest();
-                string on = Ms(await HoverUntilOpenAsync(disabledShown, 2000));
-                rows.Add(["disabled button: ShowOnDisabled False / True", $"{off} / {on}"]);
+                Loc on = Ms(await HoverUntilOpenAsync(disabledShown, 2000));
+                rows.Add([T("disabled button: ShowOnDisabled False / True", "無効なボタン: ShowOnDisabled False / True"), T($"{off.En} / {on.En}", $"{off.Ja} / {on.Ja}")]);
 
-                foreach ((string label, Button target) in new[] { ("Placement=Bottom", bottom), ("Bottom, HorizontalOffset 50", bottomOffset), ("Placement=Mouse (default)", mouse) })
+                foreach ((Loc label, Button target) in new (Loc, Button)[] { ("Placement=Bottom", bottom), (T("Bottom, HorizontalOffset 50", "Bottom、HorizontalOffset 50"), bottomOffset), (T("Placement=Mouse (default)", "Placement=Mouse（既定値）"), mouse) })
                 {
                     await Rest();
                     await HoverUntilOpenAsync(target);
@@ -169,7 +174,7 @@ internal sealed class ToolTipDemoScene : IScene
                         Point t = ScreenDip(tip);
                         Point o = ScreenDip(target);
                         Point center = new(o.X + target.ActualWidth / 2, o.Y + target.ActualHeight / 2);
-                        rows.Add([$"{label}: tooltip from the button's top-left / from the pointer",
+                        rows.Add([T($"{label.En}: tooltip from the button's top-left / from the pointer", $"{label.Ja}: ボタンの左上から見たツールチップの位置 / ポインターから見た位置"),
                             $"({D(t.X - o.X)}, {D(t.Y - o.Y)}) / ({D(t.X - center.X)}, {D(t.Y - center.Y)})"]);
                     }
                 }
@@ -201,7 +206,7 @@ internal sealed class ToolTipDemoScene : IScene
                     await RealKeyboard.PressAsync(window, 0x09);
                     await Capture.SettleAsync(window, 1500);
                     bool focused = target.IsKeyboardFocused;
-                    rows.Add([$"real Tab (mouse on the other button), OnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: focused / mouse over / opened",
+                    rows.Add([T($"real Tab (mouse on the other button), OnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: focused / mouse over / opened", $"実際に Tab（マウスはもう一方のボタンの上）、OnKeyboardFocus={WpfProbe.Describe(showOnFocus)}: フォーカス / マウスが上にあるか / 開いたか"),
                         $"{focused} / {target.IsMouseOver} / {s_lastOpened is { IsOpen: true }}"]);
                     if (s_lastOpened is { } open)
                     {

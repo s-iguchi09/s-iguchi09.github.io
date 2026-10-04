@@ -29,10 +29,10 @@ InkCanvas に送る `ApplicationCommands` は、モードとストロークに�
 
 `Strokes` は、署名を残すときなどに保存できます。2 本のストロークを `Save` で ISF（Ink Serialized Format）として保存すると 66 バイトで、読み込むと 2 本に戻りました。`Strokes.Clear()` ですべて消せます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg" alt="InkCanvas の計測結果の表。既定値は Ink・EraseByStroke・既定のスタイルによるシステムのウィンドウ色（白）の背景・幅約 2 の黒いペン、デモアプリは Ink・InkAndGesture・AliceBlue の上の AntiqueWhite で始まりコントラスト比は 1.09 : 1、実際のドラッグは背景が null でもストロークを 1 本描き、各ストロークはペンのコピーを持ち、None とジェスチャーのモードではストロークが残らず、ジェスチャーのモードでは Right と認識され、EraseByStroke は線を消し EraseByPoint は線を分け、クリックで選択でき、SelectAll は Ink モードでは実行できず Select モードではストロークが要り、Undo は実行できず、2 本のストロークの ISF は 66 バイト" width="1242" height="710" loading="lazy">
-  <figcaption>既定値、デモアプリの初期値、描画、モード、コマンド。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.ja.md %}
+
+既定値、デモアプリの初期値、描画、モード、コマンド。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

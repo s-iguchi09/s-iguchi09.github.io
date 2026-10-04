@@ -17,10 +17,10 @@ description: "WPF の Expander を .NET 10 で実測して解説。折りたた�
 
 既定のテンプレートの見出しは、`HeaderSite` という名前の `ToggleButton` です。テンプレートには表示状態のグループ（VisualStateGroup）もアニメーションもなく、`IsExpanded`・`ExpandDirection`・`IsEnabled` のトリガーで切り替えています。`IsExpanded` を `False` にすると、内容はその場で `Collapsed` になりました。アニメーションを付けるなら独自のテンプレートにします。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/expander/expander-behavior.svg" alt="Expander の動作の計測結果の表。HeaderedContentControl を継承し IsExpanded の既定値は False で既定で TwoWay、見出しは HeaderSite という ToggleButton、テンプレートには表示状態がなくトリガーだけで、折りたたみは即座に行われ、見出しを実際にクリックすると開いてバインドしたチェックボックスにチェックが付き、折りたたんだ内容は読み込まれるが測られず、展開するまで ListBox の項目は作られない" width="1132" height="320" loading="lazy">
-  <figcaption>テンプレート、クリック、折りたたんだ内容。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/expander/expander-behavior.ja.md %}
+
+テンプレート、クリック、折りたたんだ内容。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 見出しと内容の配置
 
@@ -38,10 +38,10 @@ Expander に設定した `Control` のプロパティは、内容だけでなく
 - **`Background`** — 見出しと内容の両方の後ろに塗られます。幅 200 の Expander で、塗られた範囲は 200 × 38.96 で見出しと内容を含んでいました。`Background` 自体は継承されるプロパティではないので、色が付くのは内容の後ろの領域です。見出しと内容をまとめて色付けするなら、Expander に設定します。
 - **`BorderBrush` / `BorderThickness`** — 見出しを含めた Expander 全体を囲む枠です。`Padding` を付けずに単独で測ると、`BorderThickness="5"` では見出しが各辺から 5 内側へ移って (1, 1) から (6, 6) になり、内容も 5 下がりました。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/expander/expander-layout.svg" alt="Expander の配置の計測結果の表。Down・Up・Left・Right での見出しと内容の位置と、見出しの文字が横書きのままであること、見出しが null でも ToggleButton が残ること、FontWeight と Foreground が見出しと内容に届き、Background は見出しと内容の両方の後ろに塗られ、別々に測った Padding と BorderThickness は見出しの周りにも効くこと" width="1163" height="380" loading="lazy">
-  <figcaption><code>ExpandDirection</code>、見出し、<code>Control</code> のプロパティ。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/expander/expander-layout.ja.md %}
+
+<code>ExpandDirection</code>、見出し、<code>Control</code> のプロパティ。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

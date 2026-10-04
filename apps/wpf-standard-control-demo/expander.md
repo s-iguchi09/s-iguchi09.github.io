@@ -17,10 +17,10 @@ description: "WPF Expander measured on .NET 10: what collapsed content costs, wh
 
 The header in the default template is a `ToggleButton` named `HeaderSite`. The template has no visual state groups and no animation: it switches with triggers on `IsExpanded`, `ExpandDirection`, and `IsEnabled`. When `IsExpanded` was set to `False`, the content was `Collapsed` at once. To animate, use a template of your own.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/expander/expander-behavior.svg" alt="Table of Expander behavior: it derives from HeaderedContentControl with IsExpanded False and two-way by default, its header is a ToggleButton named HeaderSite, the template has no visual states and only triggers, collapsing is immediate, a real click on the header expands it and checks the bound CheckBox, and collapsed content is loaded but not measured, with no ListBox items created until it is expanded" width="1132" height="320" loading="lazy">
-  <figcaption>The template, clicks, and collapsed content. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/expander/expander-behavior.en.md %}
+
+The template, clicks, and collapsed content. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Where the header and the content go
 
@@ -38,10 +38,10 @@ The `Control` properties set on the Expander apply to the header too, not only t
 - **`Background`:** it is painted behind both the header and the content. With a 200-wide Expander, the painted area was 200 × 38.96 and contained the header and the content. `Background` itself is not an inherited property, so it is the area behind the content that is colored. Set it on the Expander to color the header and the content together.
 - **`BorderBrush` / `BorderThickness`:** a border around the whole Expander, header included. Measured on its own, without `Padding`, `BorderThickness="5"` moved the header in by 5 from each edge, from (1, 1) to (6, 6), and the content down by 5.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/expander/expander-layout.svg" alt="Table of Expander layout: the header and content positions for Down, Up, Left, and Right, where the header text stays horizontal, a null header that leaves the ToggleButton visible, FontWeight and Foreground reaching the header and the content, Background painted behind both the header and the content, and Padding and BorderThickness, measured separately, applying around the header too" width="1163" height="380" loading="lazy">
-  <figcaption><code>ExpandDirection</code>, the header, and the <code>Control</code> properties. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/expander/expander-layout.en.md %}
+
+<code>ExpandDirection</code>, the header, and the <code>Control</code> properties. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

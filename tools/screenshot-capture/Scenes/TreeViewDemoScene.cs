@@ -45,13 +45,13 @@ internal sealed class TreeViewDemoScene : IScene
     {
         await context.SaveTableAsync(
             "TreeView: types, metadata, selection and focus",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await SelectionAsync(),
             "treeview-selection.svg");
 
         await context.SaveTableAsync(
             "TreeView: expansion, templates, virtualization, keys and context menu",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await StructureAsync(),
             "treeview-structure.svg");
     }
@@ -97,6 +97,9 @@ internal sealed class TreeViewDemoScene : IScene
     }
 
     /// <summary>デモアプリと同じ Desktop / Mobile の 2 階層。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static ObservableCollection<Node> DeviceTree() =>
     [
         new Node("Desktop", new Node("Workstation PC"), new Node("Gaming PC")),
@@ -132,13 +135,13 @@ internal sealed class TreeViewDemoScene : IScene
     private static async Task Settle(FrameworkElement element) =>
         await Capture.SettleAsync(Window.GetWindow(element)!);
 
-    private static async Task<List<IReadOnlyList<string>>> SelectionAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> SelectionAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class of TreeView / TreeViewItem",
+        rows.Add([T("base class of TreeView / TreeViewItem", "TreeView / TreeViewItem の基底クラス"),
             $"{typeof(TreeView).BaseType!.Name} / {typeof(TreeViewItem).BaseType!.Name}"]);
-        rows.Add(["SelectedItem / SelectedValue read-only",
+        rows.Add([T("SelectedItem / SelectedValue read-only", "SelectedItem / SelectedValue が読み取り専用か"),
             $"{TreeView.SelectedItemProperty.ReadOnly} / {TreeView.SelectedValueProperty.ReadOnly}"]);
         rows.Add(["IsExpanded / IsSelected: BindsTwoWayByDefault",
             $"{((FrameworkPropertyMetadata)TreeViewItem.IsExpandedProperty.GetMetadata(typeof(TreeViewItem))).BindsTwoWayByDefault} / " +
@@ -165,7 +168,7 @@ internal sealed class TreeViewDemoScene : IScene
                 var desktop = (TreeViewItem)tree.Items[0]!;
                 var gaming = (TreeViewItem)desktop.Items[1]!;
                 gaming.IsSelected = true;
-                rows.Add(["XAML TreeViewItems, SelectedValuePath=\"Header\"; select \"Gaming PC\": SelectedItem / SelectedValue",
+                rows.Add([T("XAML TreeViewItems, SelectedValuePath=\"Header\"; select \"Gaming PC\": SelectedItem / SelectedValue", "XAML の TreeViewItem、SelectedValuePath=\"Header\"、\"Gaming PC\" を選択: SelectedItem / SelectedValue"),
                     $"{tree.SelectedItem?.GetType().Name} / {WpfProbe.Describe(tree.SelectedValue)}"]);
                 await Task.CompletedTask;
             });
@@ -182,12 +185,12 @@ internal sealed class TreeViewDemoScene : IScene
             {
                 data[0].IsSelected = true;
                 await Settle(tree);
-                rows.Add(["ItemsSource data; source Desktop.IsSelected = true: SelectedItem",
+                rows.Add([T("ItemsSource data; source Desktop.IsSelected = true: SelectedItem", "ItemsSource のデータ、ソースの Desktop.IsSelected = true: SelectedItem"),
                     WpfProbe.Describe(tree.SelectedItem)]);
 
                 data[1].IsSelected = true;
                 await Settle(tree);
-                rows.Add(["  then source Mobile.IsSelected = true: SelectedItem / Desktop.IsSelected / Mobile.IsSelected",
+                rows.Add([T("  then source Mobile.IsSelected = true: SelectedItem / Desktop.IsSelected / Mobile.IsSelected", "  続けてソースの Mobile.IsSelected = true: SelectedItem / Desktop.IsSelected / Mobile.IsSelected"),
                     $"{WpfProbe.Describe(tree.SelectedItem)} / {data[0].IsSelected} / {data[1].IsSelected}"]);
             });
         }
@@ -209,26 +212,26 @@ internal sealed class TreeViewDemoScene : IScene
             await ShowAsync(panel, async () =>
             {
                 var node2 = (TreeViewItem)tree.Items[1]!;
-                rows.Add(["Node 2 IsSelectionActive: nothing selected, no focus", Selector.GetIsSelectionActive(node2).ToString()]);
+                rows.Add([T("Node 2 IsSelectionActive: nothing selected, no focus", "Node 2 の IsSelectionActive: 選択なし、フォーカスなし"), Selector.GetIsSelectionActive(node2).ToString()]);
                 node2.IsSelected = true;
                 await Settle(tree);
-                rows.Add(["  Node 2 selected from code (IsSelected / IsSelectionActive)",
+                rows.Add([T("  Node 2 selected from code (IsSelected / IsSelectionActive)", "  コードで Node 2 を選択（IsSelected / IsSelectionActive）"),
                     $"{node2.IsSelected} / {Selector.GetIsSelectionActive(node2)}"]);
                 node2.Focus();
                 await Settle(tree);
-                rows.Add(["  Node 2 focused", $"{node2.IsSelected} / {Selector.GetIsSelectionActive(node2)}"]);
+                rows.Add([T("  Node 2 focused", "  Node 2 にフォーカス"), $"{node2.IsSelected} / {Selector.GetIsSelectionActive(node2)}"]);
                 other.Focus();
                 await Settle(tree);
-                rows.Add(["  focus moved to a TextBox", $"{node2.IsSelected} / {Selector.GetIsSelectionActive(node2)}"]);
+                rows.Add([T("  focus moved to a TextBox", "  フォーカスを TextBox に移す"), $"{node2.IsSelected} / {Selector.GetIsSelectionActive(node2)}"]);
             }, activate: true);
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> StructureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> StructureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             // デモアプリの IsExpanded 欄と同じく、CheckBox の IsChecked を Mode 指定なしで IsExpanded にバインドする。
@@ -255,13 +258,13 @@ internal sealed class TreeViewDemoScene : IScene
                 ((System.Windows.Automation.Provider.IToggleProvider)new System.Windows.Automation.Peers.ToggleButtonAutomationPeer(expander)).Toggle();
                 await Settle(panel);
                 bool kept = BindingOperations.GetBindingExpression(node1, TreeViewItem.IsExpandedProperty) is not null;
-                rows.Add(["demo IsExpanded section, node collapsed by its expander: IsExpanded / CheckBox / binding",
-                    $"{node1.IsExpanded} / {check.IsChecked} / {(kept ? "kept" : "removed")}"]);
+                rows.Add([T("demo IsExpanded section, node collapsed by its expander: IsExpanded / CheckBox / binding", "デモの IsExpanded の欄、展開ボタンでノードを折りたたむ: IsExpanded / CheckBox / バインド"),
+                    T($"{node1.IsExpanded} / {check.IsChecked} / {(kept ? "kept" : "removed")}", $"{node1.IsExpanded} / {check.IsChecked} / {(kept ? "残る" : "外れる")}")]);
 
                 check.IsChecked = false;
                 check.IsChecked = true;
                 await Settle(panel);
-                rows.Add(["  then the CheckBox unchecked and checked again: IsExpanded", node1.IsExpanded.ToString()]);
+                rows.Add([T("  then the CheckBox unchecked and checked again: IsExpanded", "  続けて CheckBox を外してもう一度チェック: IsExpanded"), node1.IsExpanded.ToString()]);
             }, activate: true);
         }
 
@@ -278,12 +281,12 @@ internal sealed class TreeViewDemoScene : IScene
             await ShowAsync(tree, async () =>
             {
                 TreeViewItem rootItem = Container(tree, root);
-                string before = Container(rootItem, child) is null ? "not created" : "created";
+                Loc before = Container(rootItem, child) is null ? T("not created", "作られていない") : T("created", "作られている");
                 root.IsExpanded = true;
                 await Settle(tree);
                 TreeViewItem? childItem = Container(rootItem, child);
-                rows.Add(["child IsExpanded=true (source) under a collapsed parent: container before / after expanding",
-                    $"{before} / created, IsExpanded {childItem?.IsExpanded}, leaf {(childItem is not null && Container(childItem, leaf) is not null ? "created" : "not created")}"]);
+                rows.Add([T("child IsExpanded=true (source) under a collapsed parent: container before / after expanding", "折りたたまれた親の下の子が IsExpanded=true（ソース）: コンテナー（展開前 / 展開後）"),
+                    T($"{before.En} / created, IsExpanded {childItem?.IsExpanded}, leaf {(childItem is not null && Container(childItem, leaf) is not null ? "created" : "not created")}", $"{before.Ja} / 作られている、IsExpanded {childItem?.IsExpanded}、葉 {(childItem is not null && Container(childItem, leaf) is not null ? "作られている" : "作られていない")}")]);
             });
         }
 
@@ -301,7 +304,7 @@ internal sealed class TreeViewDemoScene : IScene
                 TreeViewItem desktop = Container(tree, data[0]);
                 TreeViewItem workstation = Container(desktop, data[0].Children[0]);
                 string shown = Descendants(workstation).OfType<TextBlock>().FirstOrDefault()?.Text ?? "(none)";
-                rows.Add(["explicit HierarchicalDataTemplate: text of a second-level node", $"\"{shown}\""]);
+                rows.Add([T("explicit HierarchicalDataTemplate: text of a second-level node", "明示した HierarchicalDataTemplate: 2 階層目のノードの文字"), $"\"{shown}\""]);
                 await Task.CompletedTask;
             });
         }
@@ -320,8 +323,8 @@ internal sealed class TreeViewDemoScene : IScene
             {
                 var first = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromIndex(0);
                 string shown = Descendants(first).OfType<TextBlock>().FirstOrDefault()?.Text ?? "(none)";
-                rows.Add([$"implicit HierarchicalDataTemplate, DataType={dataType.Name} (items are Node)",
-                    $"first node shows \"{shown}\", expandable {first.HasItems}"]);
+                rows.Add([T($"implicit HierarchicalDataTemplate, DataType={dataType.Name} (items are Node)", $"暗黙の HierarchicalDataTemplate、DataType={dataType.Name}（項目は Node）"),
+                    T($"first node shows \"{shown}\", expandable {first.HasItems}", $"最初のノードの表示 \"{shown}\"、展開できるか {first.HasItems}")]);
                 await Task.CompletedTask;
             });
         }
@@ -338,7 +341,7 @@ internal sealed class TreeViewDemoScene : IScene
 
                 await ShowAsync(tree, async () =>
                 {
-                    rows.Add([$"1,000 root nodes, IsVirtualizing {(virtualizing is null ? "not set" : virtualizing.ToString())}: value, panel, TreeViewItems",
+                    rows.Add([T($"1,000 root nodes, IsVirtualizing {(virtualizing is null ? "not set" : virtualizing.ToString())}: value, panel, TreeViewItems", $"ルートのノード 1,000 個、IsVirtualizing {(virtualizing is null ? "指定なし" : virtualizing.ToString())}: 値, パネル, TreeViewItem の数"),
                         $"{VirtualizingPanel.GetIsVirtualizing(tree)}, {Descendants(tree).OfType<Panel>().First(p => p.IsItemsHost).GetType().Name}, " +
                         $"{Descendants(tree).OfType<TreeViewItem>().Count()}"]);
                     await Task.CompletedTask;
@@ -346,10 +349,10 @@ internal sealed class TreeViewDemoScene : IScene
             }
         }
 
-        foreach ((string label, Key key) in new[]
+        foreach ((Loc label, Key key) in new (Loc, Key)[]
         {
-            ("Down", Key.Down), ("Right", Key.Right), ("Left (after Right)", Key.Left),
-            ("Space", Key.Space), ("Enter", Key.Enter), ("numpad *", Key.Multiply),
+            ("Down", Key.Down), ("Right", Key.Right), (T("Left (after Right)", "Left（Right の後）"), Key.Left),
+            ("Space", Key.Space), ("Enter", Key.Enter), (T("numpad *", "テンキーの *"), Key.Multiply),
         })
         {
             ObservableCollection<Node> data =
@@ -376,9 +379,11 @@ internal sealed class TreeViewDemoScene : IScene
 
                 PressKey(a, key);
                 await Settle(tree);
-                string expanded = string.Join(", ", new[] { data[0], data[0].Children[0] }.Select(n => $"{n.Name} {(n.IsExpanded ? "open" : "closed")}"));
-                rows.Add([$"key {label} on A (selected, focused)",
-                    $"selected {(tree.SelectedItem as Node)?.Name ?? "none"}; {expanded}"]);
+                Node[] watched = [data[0], data[0].Children[0]];
+                string expanded = string.Join(", ", watched.Select(n => $"{n.Name} {(n.IsExpanded ? "open" : "closed")}"));
+                string expandedJa = string.Join(", ", watched.Select(n => $"{n.Name} {(n.IsExpanded ? "展開" : "折りたたみ")}"));
+                rows.Add([T($"key {label.En} on A (selected, focused)", $"A（選択、フォーカスあり）で {label.Ja} キー"),
+                    T($"selected {(tree.SelectedItem as Node)?.Name ?? "none"}; {expanded}", $"選択 {(tree.SelectedItem as Node)?.Name ?? "なし"}; {expandedJa}")]);
             }, activate: true);
         }
 
@@ -399,7 +404,7 @@ internal sealed class TreeViewDemoScene : IScene
                 await Settle(tree);
                 string open = WpfProbe.Describe(contextMenu.DataContext);
                 contextMenu.IsOpen = false;
-                rows.Add(["ContextMenu from ItemContainerStyle (Mobile): DataContext before / while open",
+                rows.Add([T("ContextMenu from ItemContainerStyle (Mobile): DataContext before / while open", "ItemContainerStyle の ContextMenu（Mobile）: DataContext（開く前 / 開いている間）"),
                     $"{before} / {open}"]);
             });
         }
@@ -409,7 +414,7 @@ internal sealed class TreeViewDemoScene : IScene
             var host = new Grid();
             host.Children.Add(tree);
             Layout(host, 200, 100);
-            rows.Add(["ScrollViewer.HorizontalScrollBarVisibility / VerticalScrollBarVisibility (value source)",
+            rows.Add([T("ScrollViewer.HorizontalScrollBarVisibility / VerticalScrollBarVisibility (value source)", "ScrollViewer.HorizontalScrollBarVisibility / VerticalScrollBarVisibility（値の出どころ）"),
                 $"{WpfProbe.ValueAndSource(tree, ScrollViewer.HorizontalScrollBarVisibilityProperty)} / " +
                 WpfProbe.ValueAndSource(tree, ScrollViewer.VerticalScrollBarVisibilityProperty)]);
         }
@@ -444,7 +449,7 @@ internal sealed class TreeViewDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["placeholder replaced in Expanded: before; after real click on expander (loads)",
+                rows.Add([T("placeholder replaced in Expanded: before; after real click on expander (loads)", "Expanded で仮の項目を置き換える: 前; 展開ボタンを実際にクリックした後（読み込みの回数）"),
                     $"{before}; {Children()} ({loads})"]);
             });
         }

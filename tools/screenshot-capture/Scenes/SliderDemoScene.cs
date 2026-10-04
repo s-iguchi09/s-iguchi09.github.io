@@ -44,37 +44,37 @@ internal sealed class SliderDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Slider: type, defaults and Value metadata",
-            ["item", "value"],
+            [T("item", "項目"), T("value", "値")],
             Defaults(),
             "slider-defaults.svg");
 
         await context.SaveTableAsync(
             "Slider: range coercion",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             Coercion(),
             "slider-range.svg");
 
         await context.SaveTableAsync(
             "Slider (0 to 100): where the thumb is at Value = Maximum",
-            ["Orientation", "IsDirectionReversed", "thumb center (fraction of the track, from left / top)"],
+            ["Orientation", "IsDirectionReversed", T("thumb center (fraction of the track, from left / top)", "つまみの中心（トラックに対する割合、左 / 上から）")],
             Direction(),
             "slider-direction.svg");
 
         await context.SaveTableAsync(
             "Slider (0 to 100, SmallChange 1, LargeChange 10, Value 50): keys and track",
-            ["case", "Value after"],
+            [T("case", "条件"), T("measured", "計測値")],
             await KeysAsync(),
             "slider-keys.svg");
 
         await context.SaveTableAsync(
             "Slider: Value after dragging the thumb",
-            ["case", "Value"],
+            [T("case", "条件"), T("measured", "計測値")],
             await SnappingAsync(),
             "slider-snap.svg");
 
         await context.SaveTableAsync(
             "Slider: tick marks, selection range and auto tooltip",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await TicksAndToolTipAsync(),
             "slider-ticks-tooltip.svg");
     }
@@ -82,6 +82,9 @@ internal sealed class SliderDemoScene : IScene
     // ------------------------------------------------------------------
     // 共通
     // ------------------------------------------------------------------
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static Slider NewSlider(double maximum = 100, Orientation orientation = Orientation.Horizontal)
     {
@@ -145,14 +148,14 @@ internal sealed class SliderDemoScene : IScene
     // 計測
     // ------------------------------------------------------------------
 
-    private static List<IReadOnlyList<string>> Defaults()
+    private static List<IReadOnlyList<Loc>> Defaults()
     {
         var slider = new Slider();
         var metadata = (FrameworkPropertyMetadata)RangeBase.ValueProperty.GetMetadata(typeof(Slider));
 
         return
         [
-            ["base class of Slider / ProgressBar / ScrollBar",
+            [T("base class of Slider / ProgressBar / ScrollBar", "Slider / ProgressBar / ScrollBar の基底クラス"),
                 $"{typeof(Slider).BaseType!.Name} / {typeof(ProgressBar).BaseType!.Name} / {typeof(ScrollBar).BaseType!.Name}"],
             ["Minimum / Maximum / Value", $"{D(slider.Minimum)} / {D(slider.Maximum)} / {D(slider.Value)}"],
             ["SmallChange / LargeChange", $"{D(slider.SmallChange)} / {D(slider.LargeChange)}"],
@@ -164,38 +167,38 @@ internal sealed class SliderDemoScene : IScene
             ["AutoToolTipPlacement / AutoToolTipPrecision", $"{slider.AutoToolTipPlacement} / {slider.AutoToolTipPrecision}"],
             ["Delay / Interval (ms)", $"{slider.Delay} / {slider.Interval}"],
             // 既定値が Windows のキーボードの設定から来ているかを、設定値と並べて確かめる。
-            ["SystemParameters.KeyboardDelay / KeyboardSpeed on this machine",
+            [T("SystemParameters.KeyboardDelay / KeyboardSpeed on this machine", "このマシンの SystemParameters.KeyboardDelay / KeyboardSpeed"),
                 $"{SystemParameters.KeyboardDelay} / {SystemParameters.KeyboardSpeed}"],
-            ["(KeyboardDelay + 1) x 250 / Slider.Delay default",
+            [T("(KeyboardDelay + 1) x 250 / Slider.Delay default", "(KeyboardDelay + 1) x 250 / Slider.Delay の既定値"),
                 $"{(SystemParameters.KeyboardDelay + 1) * 250} / {slider.Delay}"],
             ["Value: BindsTwoWayByDefault / DefaultUpdateSourceTrigger",
                 $"{metadata.BindsTwoWayByDefault} / {metadata.DefaultUpdateSourceTrigger}"],
             // デモアプリの Value 欄は、TextBox.Text 側のバインドに UpdateSourceTrigger を指定している。比較のため並べる。
             ["TextBox.Text: DefaultUpdateSourceTrigger",
                 ((FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(typeof(TextBox))).DefaultUpdateSourceTrigger.ToString()],
-            ["public Slider properties named AutoToolTip*", string.Join(", ",
+            [T("public Slider properties named AutoToolTip*", "AutoToolTip で始まる Slider の public プロパティ"), string.Join(", ",
                 typeof(Slider).GetProperties().Where(p => p.Name.StartsWith("AutoToolTip")).Select(p => p.Name))],
         ];
     }
 
-    private static List<IReadOnlyList<string>> Coercion()
+    private static List<IReadOnlyList<Loc>> Coercion()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             Slider slider = NewSlider();
             slider.Value = 150;
             string first = D(slider.Value);
             slider.Maximum = 200;
-            rows.Add(["Maximum 100, Value = 150; then Maximum = 200", $"Value {first}; then {D(slider.Value)}"]);
+            rows.Add([T("Maximum 100, Value = 150; then Maximum = 200", "Maximum 100、Value = 150、続けて Maximum = 200"), T($"Value {first}; then {D(slider.Value)}", $"Value {first}、続けて {D(slider.Value)}")]);
         }
 
         {
             Slider slider = NewSlider();
             string thrown = Throws(() => { slider.Minimum = 50; slider.Maximum = 10; });
-            rows.Add(["Minimum = 50, Maximum = 10", $"{thrown}; effective Maximum {D(slider.Maximum)}, Value {D(slider.Value)}"]);
+            rows.Add([T("Minimum = 50, Maximum = 10", "Minimum = 50、Maximum = 10"), T($"{thrown}; effective Maximum {D(slider.Maximum)}, Value {D(slider.Value)}", $"{thrown}、実効の Maximum {D(slider.Maximum)}、Value {D(slider.Value)}")]);
             slider.Maximum = 80;
-            rows.Add(["  then Maximum = 80", $"Maximum {D(slider.Maximum)}"]);
+            rows.Add([T("  then Maximum = 80", "  続けて Maximum = 80"), $"Maximum {D(slider.Maximum)}"]);
         }
 
         foreach (bool minimumFirst in new[] { true, false })
@@ -215,7 +218,7 @@ internal sealed class SliderDemoScene : IScene
                     slider.Minimum = 100;
                 }
             });
-            rows.Add([$"0..10 to 100..200, {(minimumFirst ? "Minimum first" : "Maximum first")}",
+            rows.Add([T($"0..10 to 100..200, {(minimumFirst ? "Minimum first" : "Maximum first")}", $"0..10 から 100..200 へ、{(minimumFirst ? "Minimum が先" : "Maximum が先")}"),
                 $"{thrown}; Minimum {D(slider.Minimum)}, Maximum {D(slider.Maximum)}, Value {D(slider.Value)}"]);
         }
 
@@ -224,16 +227,16 @@ internal sealed class SliderDemoScene : IScene
             var source = new Source { Value = 150 };
             Slider slider = NewSlider();
             slider.SetBinding(RangeBase.ValueProperty, new Binding(nameof(Source.Value)) { Source = source, Mode = BindingMode.TwoWay });
-            rows.Add(["source 150 bound TwoWay to Value (Maximum 100)",
-                $"slider Value {D(slider.Value)}, source {D(source.Value)}"]);
+            rows.Add([T("source 150 bound TwoWay to Value (Maximum 100)", "ソースの 150 を Value に TwoWay でバインド（Maximum 100）"),
+                T($"slider Value {D(slider.Value)}, source {D(source.Value)}", $"Slider の Value {D(slider.Value)}、ソース {D(source.Value)}")]);
         }
 
         return rows;
     }
 
-    private static List<IReadOnlyList<string>> Direction()
+    private static List<IReadOnlyList<Loc>> Direction()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         foreach (Orientation orientation in new[] { Orientation.Horizontal, Orientation.Vertical })
         {
             foreach (bool reversed in new[] { false, true })
@@ -250,35 +253,35 @@ internal sealed class SliderDemoScene : IScene
                 double fraction = orientation == Orientation.Horizontal
                     ? (thumb.X + thumb.Width / 2) / track.ActualWidth
                     : (thumb.Y + thumb.Height / 2) / track.ActualHeight;
-                string side = (orientation, fraction > 0.5) switch
+                Loc side = (orientation, fraction > 0.5) switch
                 {
-                    (Orientation.Horizontal, true) => "right end",
-                    (Orientation.Horizontal, false) => "left end",
-                    (Orientation.Vertical, true) => "bottom end",
-                    _ => "top end",
+                    (Orientation.Horizontal, true) => T("right end", "右端"),
+                    (Orientation.Horizontal, false) => T("left end", "左端"),
+                    (Orientation.Vertical, true) => T("bottom end", "下端"),
+                    _ => T("top end", "上端"),
                 };
-                rows.Add([orientation.ToString(), reversed.ToString(), $"{fraction:0.00} ({side})"]);
+                rows.Add([orientation.ToString(), reversed.ToString(), T($"{fraction:0.00} ({side.En})", $"{fraction:0.00}（{side.Ja}）")]);
             }
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> KeysAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> KeysAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        foreach ((string label, Key key, bool reversed, bool snap) in new[]
+        foreach ((Loc label, Key key, bool reversed, bool snap) in new (Loc, Key, bool, bool)[]
         {
-            ("Right arrow", Key.Right, false, false),
-            ("Left arrow", Key.Left, false, false),
-            ("Up arrow", Key.Up, false, false),
+            (T("Right arrow", "右矢印キー"), Key.Right, false, false),
+            (T("Left arrow", "左矢印キー"), Key.Left, false, false),
+            (T("Up arrow", "上矢印キー"), Key.Up, false, false),
             ("PageUp", Key.PageUp, false, false),
             ("PageDown", Key.PageDown, false, false),
             ("Home", Key.Home, false, false),
             ("End", Key.End, false, false),
-            ("Right arrow, IsDirectionReversed=True", Key.Right, true, false),
-            ("Right arrow, IsSnapToTickEnabled=True, TickFrequency=10", Key.Right, false, true),
+            (T("Right arrow, IsDirectionReversed=True", "右矢印キー、IsDirectionReversed=True"), Key.Right, true, false),
+            (T("Right arrow, IsSnapToTickEnabled=True, TickFrequency=10", "右矢印キー、IsSnapToTickEnabled=True、TickFrequency=10"), Key.Right, false, true),
         })
         {
             Slider slider = NewSlider();
@@ -302,11 +305,11 @@ internal sealed class SliderDemoScene : IScene
 
         // トラック（つまみ以外の部分）のクリック。実際のマウスで、つまみの右側（トラックの 85% の位置）を 1 回クリックする。
         // 押している時間は Delay（既定 500 ms）より短いので、繰り返しは起きない。
-        foreach ((string label, bool moveToPoint, bool snap) in new[]
+        foreach ((Loc label, bool moveToPoint, bool snap) in new (Loc, bool, bool)[]
         {
-            ("real mouse click on the track at 85% (right of the thumb)", false, false),
-            ("  same, IsMoveToPointEnabled=True", true, false),
-            ("  same, LargeChange 7, IsSnapToTickEnabled, TickFrequency=10", false, true),
+            (T("real mouse click on the track at 85% (right of the thumb)", "トラックの 85% の位置（つまみの右）を実際にマウスでクリック"), false, false),
+            (T("  same, IsMoveToPointEnabled=True", "  同じ操作、IsMoveToPointEnabled=True"), true, false),
+            (T("  same, LargeChange 7, IsSnapToTickEnabled, TickFrequency=10", "  同じ操作、LargeChange 7、IsSnapToTickEnabled、TickFrequency=10"), false, true),
         })
         {
             Slider slider = NewSlider();
@@ -346,7 +349,7 @@ internal sealed class SliderDemoScene : IScene
             host.Children.Add(slider);
             Layout(host, 300, 100);
             Track track = TrackOf(slider);
-            rows.Add(["Delay 1000 / Interval 50: values on the track's two RepeatButtons",
+            rows.Add([T("Delay 1000 / Interval 50: values on the track's two RepeatButtons", "Delay 1000 / Interval 50: トラックの 2 つの RepeatButton の値"),
                 $"{track.DecreaseRepeatButton.Delay} / {track.DecreaseRepeatButton.Interval}, " +
                 $"{track.IncreaseRepeatButton.Delay} / {track.IncreaseRepeatButton.Interval}"]);
         }
@@ -354,11 +357,11 @@ internal sealed class SliderDemoScene : IScene
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> SnappingAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> SnappingAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        async Task Case(string label, double maximum, double start, double rawDelta, Action<Slider> configure)
+        async Task Case(Loc label, double maximum, double start, double rawDelta, Action<Slider> configure)
         {
             Slider slider = NewSlider(maximum);
             slider.Value = start;
@@ -371,15 +374,15 @@ internal sealed class SliderDemoScene : IScene
             });
         }
 
-        await Case("0..100, dragged to 23.4, no snapping", 100, 0, 23.4, _ => { });
-        await Case("  TickPlacement=BottomRight only", 100, 0, 23.4, s => s.TickPlacement = TickPlacement.BottomRight);
-        await Case("  IsSnapToTickEnabled, TickFrequency=10", 100, 0, 23.4, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 10; });
-        await Case("  IsSnapToTickEnabled, TickFrequency=1", 100, 0, 23.4, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 1; });
-        await Case("0..100, TickFrequency=30, snapping, dragged to 94", 100, 0, 94, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 30; });
-        await Case("0..100, TickFrequency=30, snapping, dragged to 97", 100, 0, 97, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 30; });
-        await Case("0..10, Ticks=1,3,5,7,9, snapping, dragged to 5.8", 10, 0, 5.8,
+        await Case(T("0..100, dragged to 23.4, no snapping", "0..100、23.4 までドラッグ、スナップなし"), 100, 0, 23.4, _ => { });
+        await Case(T("  TickPlacement=BottomRight only", "  TickPlacement=BottomRight だけ"), 100, 0, 23.4, s => s.TickPlacement = TickPlacement.BottomRight);
+        await Case(T("  IsSnapToTickEnabled, TickFrequency=10", "  IsSnapToTickEnabled、TickFrequency=10"), 100, 0, 23.4, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 10; });
+        await Case(T("  IsSnapToTickEnabled, TickFrequency=1", "  IsSnapToTickEnabled、TickFrequency=1"), 100, 0, 23.4, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 1; });
+        await Case(T("0..100, TickFrequency=30, snapping, dragged to 94", "0..100、TickFrequency=30、スナップあり、94 までドラッグ"), 100, 0, 94, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 30; });
+        await Case(T("0..100, TickFrequency=30, snapping, dragged to 97", "0..100、TickFrequency=30、スナップあり、97 までドラッグ"), 100, 0, 97, s => { s.IsSnapToTickEnabled = true; s.TickFrequency = 30; });
+        await Case(T("0..10, Ticks=1,3,5,7,9, snapping, dragged to 5.8", "0..10、Ticks=1,3,5,7,9、スナップあり、5.8 までドラッグ"), 10, 0, 5.8,
             s => { s.IsSnapToTickEnabled = true; s.Ticks = new DoubleCollection([1, 3, 5, 7, 9]); });
-        await Case("0..10, Ticks=1,3,5,7,9, snapping, dragged to 0.2", 10, 0, 0.2,
+        await Case(T("0..10, Ticks=1,3,5,7,9, snapping, dragged to 0.2", "0..10、Ticks=1,3,5,7,9、スナップあり、0.2 までドラッグ"), 10, 0, 0.2,
             s => { s.IsSnapToTickEnabled = true; s.Ticks = new DoubleCollection([1, 3, 5, 7, 9]); });
 
         {
@@ -387,7 +390,7 @@ internal sealed class SliderDemoScene : IScene
             slider.IsSnapToTickEnabled = true;
             slider.TickFrequency = 10;
             slider.Value = 23.4;
-            rows.Add(["Value = 23.4 set from code, IsSnapToTickEnabled, TickFrequency=10", D(slider.Value)]);
+            rows.Add([T("Value = 23.4 set from code, IsSnapToTickEnabled, TickFrequency=10", "コードから Value = 23.4、IsSnapToTickEnabled、TickFrequency=10"), D(slider.Value)]);
         }
 
         // バインドしたソースが、ドラッグ中（DragCompleted の前）に更新されるか。
@@ -399,19 +402,19 @@ internal sealed class SliderDemoScene : IScene
             {
                 DragThumb(slider, 40);
                 await Task.CompletedTask;
-                rows.Add(["Value bound with default settings: source during the drag (before release)", D(source.Value)]);
+                rows.Add([T("Value bound with default settings: source during the drag (before release)", "既定の設定で Value をバインド: ドラッグ中（離す前）のソース"), D(source.Value)]);
             });
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> TicksAndToolTipAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> TicksAndToolTipAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // 目盛りは TickBar の OnRender が描く。描画内容から線の位置を読む。
-        foreach ((string label, double maximum, double frequency, DoubleCollection? ticks, bool reversed) in new (string, double, double, DoubleCollection?, bool)[]
+        foreach ((Loc label, double maximum, double frequency, DoubleCollection? ticks, bool reversed) in new (Loc, double, double, DoubleCollection?, bool)[]
         {
             ("0..100, TickFrequency=30", 100, 30, null, false),
             ("0..10, Ticks=1,3,5,7,9", 10, 1, new DoubleCollection([1, 3, 5, 7, 9]), false),
@@ -439,7 +442,7 @@ internal sealed class SliderDemoScene : IScene
                 double start = thumbWidth / 2;
                 double length = track.ActualWidth - thumbWidth;
                 IEnumerable<string> values = xs.Select(x => D(Math.Round((x - start) / length * maximum, 1)));
-                rows.Add([$"{label}: tick marks, left to right (as values of a non-reversed track)",
+                rows.Add([T($"{label.En}: tick marks, left to right (as values of a non-reversed track)", $"{label.Ja}: 目盛り、左から右へ（反転していないトラックの値として）"),
                     $"{xs.Count}: {string.Join(", ", values)}"]);
                 await Task.CompletedTask;
             });
@@ -452,7 +455,7 @@ internal sealed class SliderDemoScene : IScene
             var panel = new StackPanel();
             panel.Children.Add(slider);
             Layout(panel, 300, 200);
-            rows.Add([$"TickPlacement={placement}: height", D(slider.ActualHeight)]);
+            rows.Add([T($"TickPlacement={placement}: height", $"TickPlacement={placement}: 高さ"), D(slider.ActualHeight)]);
         }
 
         foreach (bool enabled in new[] { false, true })
@@ -472,20 +475,20 @@ internal sealed class SliderDemoScene : IScene
             double thumbWidth = track.Thumb.ActualWidth;
             double start = trackBounds.Left + thumbWidth / 2;
             double length = track.ActualWidth - thumbWidth;
-            string span = "";
+            Loc span = "";
             if (range.Visibility == Visibility.Visible)
             {
                 Rect bounds = Bounds(range, slider);
-                span = $", spans {D(Math.Round((bounds.Left - start) / length * 10, 1))} to {D(Math.Round((bounds.Right - start) / length * 10, 1))}";
+                span = T($", spans {D(Math.Round((bounds.Left - start) / length * 10, 1))} to {D(Math.Round((bounds.Right - start) / length * 10, 1))}", $"、{D(Math.Round((bounds.Left - start) / length * 10, 1))}〜{D(Math.Round((bounds.Right - start) / length * 10, 1))} の範囲");
             }
 
-            rows.Add([$"0..10, Selection 2..8, IsSelectionRangeEnabled={enabled}", range.Visibility + span]);
+            rows.Add([T($"0..10, Selection 2..8, IsSelectionRangeEnabled={enabled}", $"0..10、Selection 2..8、IsSelectionRangeEnabled={enabled}"), T(range.Visibility + span.En, range.Visibility + span.Ja)]);
 
             if (enabled)
             {
                 // 選択範囲が Value を制限するか。
                 slider.Value = 9.5;
-                rows.Add(["  Value = 9.5 outside the selection", D(slider.Value)]);
+                rows.Add([T("  Value = 9.5 outside the selection", "  選択範囲の外の Value = 9.5"), D(slider.Value)]);
             }
         }
 
@@ -509,8 +512,8 @@ internal sealed class SliderDemoScene : IScene
                 DragThumb(slider, target);
                 var toolTip = (ToolTip?)toolTipField.GetValue(slider);
                 string exact = slider.Value.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
-                rows.Add([$"AutoToolTipPlacement={placement}, Precision={precision}, Value {exact}",
-                    toolTip is null ? "no tooltip" : $"\"{toolTip.Content}\", IsOpen={toolTip.IsOpen}"]);
+                rows.Add([T($"AutoToolTipPlacement={placement}, Precision={precision}, Value {exact}", $"AutoToolTipPlacement={placement}、Precision={precision}、Value {exact}"),
+                    toolTip is null ? T("no tooltip", "ツールチップなし") : $"\"{toolTip.Content}\", IsOpen={toolTip.IsOpen}"]);
                 TrackOf(slider).Thumb.RaiseEvent(new DragCompletedEventArgs(0, 0, false));
                 await Task.CompletedTask;
             });
@@ -530,7 +533,7 @@ internal sealed class SliderDemoScene : IScene
                 {
                     DragThumb(slider, 1234.56);
                     var toolTip = (ToolTip?)toolTipField.GetValue(slider);
-                    rows.Add([$"CurrentCulture {culture}, Precision=1, Value 1234.56", $"\"{toolTip?.Content}\""]);
+                    rows.Add([T($"CurrentCulture {culture}, Precision=1, Value 1234.56", $"CurrentCulture {culture}、Precision=1、Value 1234.56"), $"\"{toolTip?.Content}\""]);
                     TrackOf(slider).Thumb.RaiseEvent(new DragCompletedEventArgs(0, 0, false));
                     await Task.CompletedTask;
                 });

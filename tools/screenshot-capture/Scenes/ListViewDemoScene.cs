@@ -38,7 +38,7 @@ internal sealed class ListViewDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ListView: defaults, GridView columns, reordering, sorting and scrolling",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "listview-behavior.svg");
     }
@@ -50,6 +50,9 @@ internal sealed class ListViewDemoScene : IScene
 
         public object? Value { get; } = value;
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static List<StaticItem> BrushItems() =>
         typeof(Brushes).GetProperties(BindingFlags.Public | BindingFlags.Static)
@@ -85,16 +88,16 @@ internal sealed class ListViewDemoScene : IScene
 
     private static string Order(GridView view) => string.Join(", ", view.Columns.Select(c => c.Header));
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var plain = new ListView { Width = 200, Height = 100, ItemsSource = new[] { "Item 1", "Item 2" } };
             await ShowAsync(plain, async () =>
             {
                 await Task.CompletedTask;
-                rows.Add(["base class; defaults SelectionMode, View; View null: column headers; container",
+                rows.Add([T("base class; defaults SelectionMode, View; View null: column headers; container", "基底クラス; 既定値 SelectionMode, View; View が null: 列見出しの数; コンテナー"),
                     $"{typeof(ListView).BaseType!.Name}; {plain.SelectionMode}, {WpfProbe.Describe(plain.View)}; {Descendants<GridViewColumnHeader>(plain).Count()}; {plain.ItemContainerGenerator.ContainerFromIndex(0)?.GetType().Name}"]);
             });
         }
@@ -116,9 +119,9 @@ internal sealed class ListViewDemoScene : IScene
                 observable.Insert(0, new StaticItem("A much longer brush name than any other", null));
                 list.ScrollIntoView(observable[0]);
                 await Capture.SettleAsync(window, 100);
-                rows.Add([$"auto width, {items.Count} brushes: at start; {widest.Name} (shown at start {visibleAtStart}) scrolled in",
+                rows.Add([T($"auto width, {items.Count} brushes: at start; {widest.Name} (shown at start {visibleAtStart}) scrolled in", $"幅は自動、ブラシ {items.Count} 個: 最初; {widest.Name}（最初に表示されているか {visibleAtStart}）までスクロール"),
                     $"{D(start)}; {D(scrolled)}"]);
-                rows.Add(["  a longer name inserted at the top: width", D(name.ActualWidth)]);
+                rows.Add([T("  a longer name inserted at the top: width", "  より長い名前を先頭に挿入: 幅"), D(name.ActualWidth)]);
             });
         }
 
@@ -133,7 +136,7 @@ internal sealed class ListViewDemoScene : IScene
                 double start = value.ActualWidth;
                 slider.Value = 300;
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 50);
-                rows.Add(["column Width bound to the demo's slider: 150 (start); 300", $"{D(start)}; {D(value.ActualWidth)}"]);
+                rows.Add([T("column Width bound to the demo's slider: 150 (start); 300", "列の Width をデモのスライダーにバインド: 150（初期値）; 300"), $"{D(start)}; {D(value.ActualWidth)}"]);
             });
         }
 
@@ -159,7 +162,7 @@ internal sealed class ListViewDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add([$"AllowsColumnReorder {allows} (default {new GridView().AllowsColumnReorder}): real drag of Name past Value: order",
+                rows.Add([T($"AllowsColumnReorder {allows} (default {new GridView().AllowsColumnReorder}): real drag of Name past Value: order", $"AllowsColumnReorder {allows}（既定値 {new GridView().AllowsColumnReorder}）: Name を Value の先まで実際にドラッグ: 列の順序"),
                     Order(view)]);
             });
         }
@@ -179,7 +182,7 @@ internal sealed class ListViewDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["real click on the Name header: first item before; after; sort descriptions",
+                rows.Add([T("real click on the Name header: first item before; after; sort descriptions", "Name の見出しを実際にクリック: 先頭の項目（前; 後）; SortDescriptions の数"),
                     $"{before}; {((StaticItem)list.Items[0]).Name}; {list.Items.SortDescriptions.Count}"]);
             });
         }
@@ -197,7 +200,7 @@ internal sealed class ListViewDemoScene : IScene
                 await Task.CompletedTask;
                 var row = (ListViewItem)list.ItemContainerGenerator.ContainerFromIndex(0);
                 string shown = string.Join(" / ", Descendants<TextBlock>(row).Select(t => t.Text));
-                rows.Add(["DisplayMemberBinding and CellTemplate both set: exception; first row shows", $"{thrown}; {shown}"]);
+                rows.Add([T("DisplayMemberBinding and CellTemplate both set: exception; first row shows", "DisplayMemberBinding と CellTemplate を両方設定: 例外; 最初の行の表示"), $"{thrown}; {shown}"]);
             });
         }
 
@@ -215,13 +218,13 @@ internal sealed class ListViewDemoScene : IScene
             {
                 Window window = Window.GetWindow(list)!;
                 ScrollViewer viewer = Descendants<ScrollViewer>(list).First();
-                string range = $"{D(viewer.ScrollableWidth)} DIP; {D(viewer.ScrollableHeight)} items";
+                Loc range = T($"{D(viewer.ScrollableWidth)} DIP; {D(viewer.ScrollableHeight)} items", $"{D(viewer.ScrollableWidth)} DIP; {D(viewer.ScrollableHeight)} 項目");
 
                 // コードから末尾まで動かしたときの位置。横は DIP、縦は論理スクロールなので項目単位。
                 viewer.ScrollToRightEnd();
                 viewer.ScrollToBottom();
                 await Capture.SettleAsync(window, 50);
-                string toEnd = $"{D(viewer.HorizontalOffset)} DIP, {D(viewer.VerticalOffset)} items";
+                Loc toEnd = T($"{D(viewer.HorizontalOffset)} DIP, {D(viewer.VerticalOffset)} items", $"{D(viewer.HorizontalOffset)} DIP, {D(viewer.VerticalOffset)} 項目");
 
                 // 利用者の操作に近い経路として、先頭の項目から下矢印キーで最後の項目まで移ったときの縦の位置。
                 viewer.ScrollToHome();
@@ -235,10 +238,10 @@ internal sealed class ListViewDemoScene : IScene
                     await Capture.SettleAsync(window, 30);
                 }
 
-                rows.Add([$"demo's scroll section (column 500 in a 300 list), both bars {visibility}: scrollable width; height",
+                rows.Add([T($"demo's scroll section (column 500 in a 300 list), both bars {visibility}: scrollable width; height", $"デモのスクロールの欄（幅 300 の一覧に幅 500 の列）、両方のバーが {visibility}: スクロールできる幅; 高さ"),
                     range]);
-                rows.Add(["  ScrollToRightEnd + ScrollToBottom: offsets; Down key to the last item: vertical offset",
-                    $"{toEnd}; {D(viewer.VerticalOffset)} items"]);
+                rows.Add([T("  ScrollToRightEnd + ScrollToBottom: offsets; Down key to the last item: vertical offset", "  ScrollToRightEnd + ScrollToBottom: 位置; 下矢印キーで最後の項目まで: 縦の位置"),
+                    T($"{toEnd.En}; {D(viewer.VerticalOffset)} items", $"{toEnd.Ja}; {D(viewer.VerticalOffset)} 項目")]);
             }, activate: true);
         }
 
@@ -254,7 +257,7 @@ internal sealed class ListViewDemoScene : IScene
             {
                 await Task.CompletedTask;
                 int created = Enumerable.Range(0, 1000).Count(i => list.ItemContainerGenerator.ContainerFromIndex(i) is not null);
-                rows.Add(["1,000 items in a GridView 150 high: containers created", created.ToString()]);
+                rows.Add([T("1,000 items in a GridView 150 high: containers created", "高さ 150 の GridView に 1,000 項目: 作られたコンテナーの数"), created.ToString()]);
             });
         }
 

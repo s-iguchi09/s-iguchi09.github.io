@@ -31,10 +31,10 @@ The `Checked`, `Unchecked`, and `Indeterminate` events bubble. A single `Checked
 
 `VerticalContentAlignment` decides where the box and the label are placed vertically inside the CheckBox. The default is `Top`, from the property's default value. With a label that wrapped to three lines, `Top` put the box next to the first line (y = 1, the label at y = -1). `Center` centered both in the CheckBox, so the box lined up with the middle of the label whatever the CheckBox's height: the centers were both at about 100 in a CheckBox 200 high, and at 23.44 and 22.94 in one 46.88 high, as high as the label.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="Table of CheckBox results: it derives from ToggleButton, IsChecked binds two-way by default, the events bubble, VerticalContentAlignment defaults to Top, three-state clicks cycle false, true, null, a bool source rejects null with a binding error, Space toggles the box, the label is part of the clickable area, and Center centers the box and the label in the CheckBox, lining the box up with the middle of a wrapped label, and a button whose IsEnabled is bound to IsChecked becomes enabled on a real click on the check box" width="1140" height="590" loading="lazy">
-  <figcaption>States, bindings, keyboard, hit testing, and layout. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.en.md %}
+
+States, bindings, keyboard, hit testing, and layout. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

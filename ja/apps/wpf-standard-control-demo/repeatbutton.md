@@ -13,10 +13,10 @@ description: "WPF の RepeatButton を .NET 10 と実際のマウスで実測し
 
 ポインターがボタンの外へ出ると繰り返しは止まります。マウスボタンを押したまま外にいる間はクリックがなく、`IsPressed` は `False` でした。ポインターが戻るとクリックが再開しました。<kbd>Space</kbd> を押し続けても繰り返します。Windows のキーリピートなしで、キーを押したイベント 1 回だけでも、1 秒で 8 回クリックになりました。UI オートメーションの `Invoke` では 1 回のクリックでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg" alt="RepeatButton の時間の計測結果の表。キーボードの設定が 1 と 31 のマシンで既定値は Delay 500、Interval 33、ClickMode の既定値は Press、Delay 300・Interval 100 で約 1 秒押すと 8 回クリックになり、最初はすぐ、2 回目は約 320 ms 後、以後は約 110 ms ごと、離したときのクリックはなく、コマンドはクリックごとに 1 回実行され、ポインターが外にある間はクリックがなく、Space を押し続けると 8 回クリックになる" width="998" height="350" loading="lazy">
-  <figcaption>既定値と、マウスボタンや <kbd>Space</kbd> を押し続けたときのクリック。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.ja.md %}
+
+既定値と、マウスボタンや <kbd>Space</kbd> を押し続けたときのクリック。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## Delay と Interval は利用者のキーボードの設定で決まる
 
@@ -28,10 +28,10 @@ description: "WPF の RepeatButton を .NET 10 と実際のマウスで実測し
 
 デモアプリは `Delay` と `Interval` をテキストボックスにバインドしています。使えない値を入れても、直前の値は保たれません。`"200"` の後に `"-1"`、空文字、`"abc"` を入れると、いずれも `Delay` は既定値の 500 になりました。`"50"` の後で `"0"` を入れると、`Interval` は既定値の 33 になりました。値はボタンに渡す前に検証します。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg" alt="RepeatButton の値の計測結果の表。コードから Delay に -1、Interval に 0 を設定すると ArgumentException になり、テキストボックスからバインドした不正な値では Delay は 500、Interval は 33 に戻り、ScrollBar のテンプレートには LineUp・PageUp・PageDown・LineDown の、Slider のテンプレートには DecreaseLarge・IncreaseLarge の RepeatButton がある" width="983" height="290" loading="lazy">
-  <figcaption>不正な値と、WPF 自身のテンプレートの中の RepeatButton。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.ja.md %}
+
+不正な値と、WPF 自身のテンプレートの中の RepeatButton。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## WPF 自身が RepeatButton を使っている場所
 

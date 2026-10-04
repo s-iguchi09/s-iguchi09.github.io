@@ -31,10 +31,10 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 
 既定値が 1 の `TickFrequency` は、吸着位置の間隔を決めます。`Maximum` も吸着位置になり、0〜100 の Slider で `TickFrequency="30"` とすると、94 までのドラッグは 90 に、97 までのドラッグは 100 に吸着しました。`Ticks` は位置を個別に指定し、`TickFrequency` の代わりに使われます。サイズやレベルを段階的に選ばせるなら、ここに並べて吸着を有効にします。0〜10 の Slider に `1,3,5,7,9` を指定すると、5.8 までのドラッグは 5 に、0.2 までのドラッグは 0 になりました。`Minimum` と `Maximum` は、`Ticks` に含めなくても吸着位置になります。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/slider/slider-snap.svg" alt="つまみをドラッグした後の Slider の値を示す表。吸着なしや TickPlacement だけでは 23.4、TickFrequency 10 で 20、1 で 23、TickFrequency 30 では 90 または 100、Ticks 1,3,5,7,9 では 5 と 0、コードから設定した値は吸着せず、バインドしたソースはドラッグ中に更新される" width="700" height="380" loading="lazy">
-  <figcaption>吸着の有無によるドラッグ後の値。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/slider/slider-snap.ja.md %}
+
+吸着の有無によるドラッグ後の <code>Value</code>。最後の行だけは、<code>Value</code> にバインドしたソースのドラッグ中の値である。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 目盛り、選択範囲、ツールチップ
 
@@ -44,10 +44,10 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 
 `AutoToolTipPlacement` は、つまみのドラッグ中に現在値のツールチップを表示します。既定値の `None` では表示されません。表示されるのは数値だけです。Slider には書式を指定するプロパティがなく、関係するのは `AutoToolTipPlacement` と `AutoToolTipPrecision` だけです。数値は現在のカルチャに従い、1234.56 を小数 1 桁で表示すると、en-US では `1,234.6`、de-DE では `1.234,6` になりました。既定値が 0 の `AutoToolTipPrecision` は、切り捨てではなく四捨五入します。0 のとき、33.6 は `34`、33.4 は `33` と表示されました。2 のとき、33.456 は `33.46` と表示されました。丸められるのはツールチップの表示だけで、`Value` は元の精度のままです。「%」などの単位を付けたい場合は、`StringFormat` を使った別の `TextBlock` で値を表示します。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="目盛り、選択範囲、自動ツールチップを示す表。目盛りは 測った場合では Minimum と Maximum に描かれ、IsDirectionReversed で反転し、TickPlacement で高さが変わり、選択範囲は有効なときだけ表示されて Value を制限せず、ツールチップは AutoToolTipPrecision の桁で四捨五入される" width="1046" height="590" loading="lazy">
-  <figcaption>目盛りの位置（左から順に、値に換算）、高さ、選択範囲、自動ツールチップの文字列。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.ja.md %}
+
+目盛りの位置（左から順に、値に換算）、高さ、選択範囲、自動ツールチップの文字列。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 
