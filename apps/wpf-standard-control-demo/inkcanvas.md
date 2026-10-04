@@ -29,10 +29,10 @@ Check the pen color against the background. The demo app starts with the pen col
 
 `Strokes` can be saved, for example to keep a signature. Two strokes saved in ISF (Ink Serialized Format) with `Save` took 66 bytes and loaded back as two strokes. `Strokes.Clear()` removes them all.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg" alt="Table of InkCanvas results: defaults are Ink, EraseByStroke and the system window color (white) from the default style with a black pen about 2 wide, the demo starts with Ink, InkAndGesture, AntiqueWhite on AliceBlue at a contrast of 1.09 to 1, a real drag draws one stroke even with a null background, each stroke keeps a copy of the pen, None and the gesture modes keep no stroke, the gesture modes recognizing Right, EraseByStroke removes the line and EraseByPoint splits it, a click selects it, SelectAll cannot execute in Ink mode and needs a stroke in Select mode, Undo cannot execute, and two strokes saved as ISF take 66 bytes" width="1242" height="710" loading="lazy">
-  <figcaption>Defaults, the demo's start, drawing, modes, and commands. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.en.md %}
+
+Defaults, the demo's start, drawing, modes, and commands. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

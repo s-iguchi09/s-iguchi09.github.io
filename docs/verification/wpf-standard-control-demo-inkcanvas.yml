@@ -17,3 +17,6 @@ verifies:
   - "StrokeCollection を ISF で保存して読み込んだときのストロークの数"
 images:
   - "images/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/inkcanvas/inkcanvas-behavior.ja.md"

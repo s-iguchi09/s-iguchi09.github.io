@@ -47,25 +47,25 @@ internal sealed class ButtonDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Button: IsCancel and IsDefault (keys sent through the input pipeline)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureKeysAsync(),
             "button-keys.svg");
 
         await context.SaveTableAsync(
             "Button: ClickMode and IsPressed (real mouse, keyboard)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureClickModeAsync(),
             "button-clickmode.svg");
 
         await context.SaveTableAsync(
             "Button: Command and CommandParameter",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureCommandAsync(),
             "button-command.svg");
 
         await context.SaveTableAsync(
             "Button: type, default template and UI Automation name",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureTemplateAsync(),
             "button-template.svg");
     }
@@ -79,17 +79,22 @@ internal sealed class ButtonDemoScene : IScene
             button.Click += (_, _) => _clicked.Add((string)button.Content);
 
         /// <summary>前回読んでから押されたボタン。読むと空にする。</summary>
-        public string Take()
+        public Loc Take()
         {
-            string result = _clicked.Count == 0 ? "(none)" : string.Join(", ", _clicked);
+            Loc result = _clicked.Count == 0 ? Loc.Of("(none)", "（なし）") : string.Join(", ", _clicked);
             _clicked.Clear();
             return result;
         }
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureKeysAsync()
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    /// <summary>計測値を " / " で並べたセル。日本語でも区切りは同じにする。</summary>
+    private static Loc Both(Loc first, Loc second) => T($"{first.En} / {second.En}", $"{first.Ja} / {second.Ja}");
+
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureKeysAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         var log = new ClickLog();
 
         {
@@ -113,25 +118,27 @@ internal sealed class ButtonDemoScene : IScene
                 bool defaultedInText = ok.IsDefaulted;
                 SendKey(Key.Escape);
                 await Capture.SettleAsync(window, 50);
-                rows.Add(["in a UserControl, focus in a TextBox: Esc -> clicked / window still open",
-                    $"{log.Take()} / {window.IsVisible}"]);
+                rows.Add([T("in a UserControl, focus in a TextBox: Esc -> clicked / window still open", "UserControl の中、TextBox にフォーカス: Esc で押されたボタン / ウィンドウが開いたままか"),
+                    Both(log.Take(), window.IsVisible.ToString())]);
 
                 SendKey(Key.Enter);
                 await Capture.SettleAsync(window, 50);
-                rows.Add(["  Enter -> clicked (IsDefaulted before the key)", $"{log.Take()} ({defaultedInText})"]);
+                Loc entered = log.Take();
+                rows.Add([T("  Enter -> clicked (IsDefaulted before the key)", "  Enter で押されたボタン（キーを押す前の IsDefaulted）"), T($"{entered.En} ({defaultedInText})", $"{entered.Ja}（{defaultedInText}）")]);
 
                 await FocusAsync(multiLine);
                 SendKey(Key.Enter);
                 await Capture.SettleAsync(window, 50);
-                rows.Add(["focus in a TextBox with AcceptsReturn: Enter -> clicked / line breaks in the text",
-                    $"{log.Take()} / {multiLine.Text.Count(c => c == '\n')}"]);
+                rows.Add([T("focus in a TextBox with AcceptsReturn: Enter -> clicked / line breaks in the text", "AcceptsReturn の TextBox にフォーカス: Enter で押されたボタン / 文字列の改行の数"),
+                    Both(log.Take(), multiLine.Text.Count(c => c == '\n').ToString())]);
 
                 await FocusAsync(other);
                 bool defaultedOnOther = ok.IsDefaulted;
                 SendKey(Key.Enter);
                 await Capture.SettleAsync(window, 50);
-                rows.Add(["focus on another Button: Enter -> clicked (IsDefaulted of the IsDefault button)",
-                    $"{log.Take()} ({defaultedOnOther})"]);
+                Loc onOther = log.Take();
+                rows.Add([T("focus on another Button: Enter -> clicked (IsDefaulted of the IsDefault button)", "別の Button にフォーカス: Enter で押されたボタン（IsDefault のボタンの IsDefaulted）"),
+                    T($"{onOther.En} ({defaultedOnOther})", $"{onOther.Ja}（{defaultedOnOther}）")]);
             }, activate: true);
         }
 
@@ -148,12 +155,12 @@ internal sealed class ButtonDemoScene : IScene
                 SendKey(Key.Escape);
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 50);
                 string focused = Keyboard.FocusedElement is Button { Content: string name } ? name : Keyboard.FocusedElement?.GetType().Name ?? "null";
-                rows.Add(["two IsCancel buttons: Esc -> clicked / keyboard focus", $"{log.Take()} / {focused}"]);
+                rows.Add([T("two IsCancel buttons: Esc -> clicked / keyboard focus", "IsCancel のボタンが 2 つ: Esc で押されたボタン / キーボードフォーカス"), Both(log.Take(), focused)]);
 
                 SendKey(Key.Escape);
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 50);
                 focused = Keyboard.FocusedElement is Button { Content: string again } ? again : Keyboard.FocusedElement?.GetType().Name ?? "null";
-                rows.Add(["  Esc again -> clicked / keyboard focus", $"{log.Take()} / {focused}"]);
+                rows.Add([T("  Esc again -> clicked / keyboard focus", "  もう一度 Esc: 押されたボタン / キーボードフォーカス"), Both(log.Take(), focused)]);
             }, activate: true);
         }
 
@@ -201,19 +208,19 @@ internal sealed class ButtonDemoScene : IScene
 
             bool? result = dialog.ShowDialog();
             await handled.Task;
-            rows.Add(["IsCancel in a window shown with ShowDialog: Esc -> window closed / ShowDialog returned",
+            rows.Add([T("IsCancel in a window shown with ShowDialog: Esc -> window closed / ShowDialog returned", "ShowDialog で開いたウィンドウの IsCancel: Esc でウィンドウが閉じたか / ShowDialog の戻り値"),
                 $"{closedByKey} / {WpfProbe.Describe(result)}"]);
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureClickModeAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureClickModeAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         var log = new ClickLog();
 
-        rows.Add(["default ClickMode / IsPressed is read-only",
+        rows.Add([T("default ClickMode / IsPressed is read-only", "ClickMode の既定値 / IsPressed が読み取り専用か"),
             $"{new Button().ClickMode} / {ButtonBase.IsPressedProperty.ReadOnly}"]);
 
         {
@@ -239,31 +246,31 @@ internal sealed class ButtonDemoScene : IScene
                     log.Take();
 
                     await RealMouse.MoveToAsync(hover);
-                    string entered = $"{log.Take()}, IsPressed {hover.IsPressed}";
+                    Loc entered = Pressed(log.Take(), hover.IsPressed);
                     await RealMouse.MoveToAsync(blank);
-                    rows.Add(["Hover (mouse): pointer enters / pointer leaves",
-                        $"{entered} / {log.Take()}, IsPressed {hover.IsPressed}"]);
+                    rows.Add([T("Hover (mouse): pointer enters / pointer leaves", "Hover（マウス）: ポインターが入る / 出る"),
+                        Both(entered, Pressed(log.Take(), hover.IsPressed))]);
 
                     await RealMouse.MoveToAsync(press);
                     await RealMouse.LeftDownAsync(window);
-                    string down = $"{log.Take()}, IsPressed {press.IsPressed}";
+                    Loc down = Pressed(log.Take(), press.IsPressed);
                     await RealMouse.LeftUpAsync(window);
-                    rows.Add(["Press (mouse): button down / button up", $"{down} / {log.Take()}, IsPressed {press.IsPressed}"]);
+                    rows.Add([T("Press (mouse): button down / button up", "Press（マウス）: ボタンを押す / 離す"), Both(down, Pressed(log.Take(), press.IsPressed))]);
 
                     await RealMouse.MoveToAsync(release);
                     await RealMouse.LeftDownAsync(window);
-                    down = $"{log.Take()}, IsPressed {release.IsPressed}";
+                    down = Pressed(log.Take(), release.IsPressed);
                     await RealMouse.LeftUpAsync(window);
-                    rows.Add(["Release (mouse): button down / button up", $"{down} / {log.Take()}, IsPressed {release.IsPressed}"]);
+                    rows.Add([T("Release (mouse): button down / button up", "Release（マウス）: ボタンを押す / 離す"), Both(down, Pressed(log.Take(), release.IsPressed))]);
 
                     await RealMouse.MoveToAsync(release);
                     await RealMouse.LeftDownAsync(window);
                     log.Take();
                     await RealMouse.MoveToAsync(blank);
-                    string outside = $"IsPressed {release.IsPressed}";
+                    bool outside = release.IsPressed;
                     await RealMouse.LeftUpAsync(window);
-                    rows.Add(["Release (mouse): down on the button, moved off, released outside",
-                        $"{outside} after moving off / {log.Take()}"]);
+                    rows.Add([T("Release (mouse): down on the button, moved off, released outside", "Release（マウス）: ボタンの上で押し、外へ動かして離す"),
+                        Both(T($"IsPressed {outside} after moving off", $"外へ動かした後の IsPressed {outside}"), log.Take())]);
                 }
             });
         }
@@ -279,15 +286,15 @@ internal sealed class ButtonDemoScene : IScene
 
                 SendKey(Key.Space);
                 await Capture.SettleAsync(window, 50);
-                string down = $"{log.Take()}, IsPressed {button.IsPressed}";
+                Loc down = Pressed(log.Take(), button.IsPressed);
                 SendKey(Key.Space, down: false);
                 await Capture.SettleAsync(window, 50);
-                string up = $"{log.Take()}, IsPressed {button.IsPressed}";
+                Loc up = Pressed(log.Take(), button.IsPressed);
                 SendKey(Key.Enter);
                 await Capture.SettleAsync(window, 50);
-                string enter = log.Take();
+                Loc enter = log.Take();
                 SendKey(Key.Enter, down: false);
-                rows.Add([$"{mode} (keyboard): Space down / Space up / Enter down", $"{down} / {up} / {enter}"]);
+                rows.Add([T($"{mode} (keyboard): Space down / Space up / Enter down", $"{mode}（キーボード）: Space を押す / Space を離す / Enter を押す"), Both(Both(down, up), enter)]);
             }, activate: true);
         }
 
@@ -326,9 +333,12 @@ internal sealed class ButtonDemoScene : IScene
         public ICommand? Command { get; init; }
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureCommandAsync()
+    /// <summary>押されたボタンと、その時点の IsPressed。</summary>
+    private static Loc Pressed(Loc clicked, bool isPressed) => T($"{clicked.En}, IsPressed {isPressed}", $"{clicked.Ja}、IsPressed {isPressed}");
+
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureCommandAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             bool allowed = false;
@@ -339,7 +349,7 @@ internal sealed class ButtonDemoScene : IScene
             await ShowAsync(panel, async () =>
             {
                 Window window = Window.GetWindow(panel)!;
-                rows.Add(["CanExecute false: IsEnabled / with IsEnabled=\"True\" set",
+                rows.Add([T("CanExecute false: IsEnabled / with IsEnabled=\"True\" set", "CanExecute が false: IsEnabled / IsEnabled=\"True\" を指定したボタン"),
                     $"{plain.IsEnabled} / {forced.IsEnabled}"]);
 
                 allowed = true;
@@ -347,7 +357,7 @@ internal sealed class ButtonDemoScene : IScene
                 string before = plain.IsEnabled.ToString();
                 CommandManager.InvalidateRequerySuggested();
                 await Capture.SettleAsync(window);
-                rows.Add(["CanExecute turns true: IsEnabled / after InvalidateRequerySuggested",
+                rows.Add([T("CanExecute turns true: IsEnabled / after InvalidateRequerySuggested", "CanExecute が true に変わる: IsEnabled / InvalidateRequerySuggested の後"),
                     $"{before} / {plain.IsEnabled}"]);
             });
         }
@@ -368,7 +378,7 @@ internal sealed class ButtonDemoScene : IScene
                 command.CanExecuteCalls = 0;
                 await FocusAsync(second);
                 await Capture.SettleAsync(Window.GetWindow(panel)!);
-                rows.Add(["20 buttons, same command: CanExecute calls per focus change",
+                rows.Add([T("20 buttons, same command: CanExecute calls per focus change", "同じコマンドのボタンが 20 個: フォーカスが 1 回移るごとの CanExecute の呼び出し回数"),
                     command.CanExecuteCalls.ToString()]);
             }, activate: true);
         }
@@ -393,20 +403,20 @@ internal sealed class ButtonDemoScene : IScene
             await ShowAsync(root, async () =>
             {
                 Window window = Window.GetWindow(root)!;
-                rows.Add(["demo XAML: parameters passed to CanExecute while loading",
+                rows.Add([T("demo XAML: parameters passed to CanExecute while loading", "デモの XAML: 読み込み中に CanExecute へ渡された引数"),
                     string.Join(", ", command.Parameters)]);
 
                 int calls = command.CanExecuteCalls;
                 text.Text = "";
                 await Capture.SettleAsync(window);
-                rows.Add(["  TextBox.Text set to empty from code: CanExecute calls / IsEnabled",
+                rows.Add([T("  TextBox.Text set to empty from code: CanExecute calls / IsEnabled", "  コードから TextBox.Text を空にする: CanExecute の呼び出し回数 / IsEnabled"),
                     $"{command.CanExecuteCalls - calls} / {button.IsEnabled}"]);
 
                 text.Text = "Hello";
                 await Capture.SettleAsync(window);
                 ((IInvokeProvider)new ButtonAutomationPeer(button)).Invoke();
                 await Capture.SettleAsync(window);
-                rows.Add(["  TextBox.Text set to Hello, then clicked: parameter of Execute", command.Executed]);
+                rows.Add([T("  TextBox.Text set to Hello, then clicked: parameter of Execute", "  TextBox.Text を Hello にしてクリック: Execute の引数"), command.Executed]);
             });
         }
 
@@ -432,16 +442,16 @@ internal sealed class ButtonDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["item template, CommandParameter=\"{Binding}\": real click on the second row: Execute received", command.Executed]);
+                rows.Add([T("item template, CommandParameter=\"{Binding}\": real click on the second row: Execute received", "項目のテンプレート、CommandParameter=\"{Binding}\": 2 行目を実際にクリック: Execute が受け取った値"), command.Executed]);
             });
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureTemplateAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureTemplateAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var button = new Button { Content = "Button" };
@@ -452,8 +462,8 @@ internal sealed class ButtonDemoScene : IScene
                 var triggers = button.Template.Triggers.OfType<Trigger>()
                     .Select(t => $"{t.Property.Name}={WpfProbe.Describe(t.Value)}");
                 var presenter = Descendants(button).OfType<ContentPresenter>().First();
-                rows.Add(["base classes", $"{typeof(Button).BaseType!.Name} -> {typeof(ButtonBase).BaseType!.Name}"]);
-                rows.Add(["default template: VisualStateGroups / triggers",
+                rows.Add([T("base classes", "基底クラス"), $"{typeof(Button).BaseType!.Name} -> {typeof(ButtonBase).BaseType!.Name}"]);
+                rows.Add([T("default template: VisualStateGroups / triggers", "既定のテンプレート: VisualStateGroups の数 / トリガー"),
                     $"{groups} / {string.Join(", ", triggers)}"]);
                 rows.Add(["  ContentPresenter.RecognizesAccessKey", presenter.RecognizesAccessKey.ToString()]);
                 await Task.CompletedTask;
@@ -471,11 +481,13 @@ internal sealed class ButtonDemoScene : IScene
             await ShowAsync(panel, async () =>
             {
                 string Name(Button b) => WpfProbe.Describe(new ButtonAutomationPeer(b).GetName());
-                string key = Descendants(access).OfType<AccessText>().FirstOrDefault() is { } accessText ? $"access key {accessText.AccessKey}" : "no AccessText";
-                rows.Add(["UI Automation name: Content \"Save\"", Name(text)]);
-                rows.Add(["  Content \"_Save\"", $"{Name(access)} ({key})"]);
-                rows.Add(["  Content is an Image", Name(image)]);
-                rows.Add(["  an Image with AutomationProperties.Name=\"Save\"", Name(named)]);
+                Loc key = Descendants(access).OfType<AccessText>().FirstOrDefault() is { } accessText
+                    ? T($"access key {accessText.AccessKey}", $"アクセスキー {accessText.AccessKey}")
+                    : T("no AccessText", "AccessText なし");
+                rows.Add([T("UI Automation name: Content \"Save\"", "UI オートメーションの名前: Content が \"Save\""), Name(text)]);
+                rows.Add([T("  Content \"_Save\"", "  Content が \"_Save\""), T($"{Name(access)} ({key.En})", $"{Name(access)}（{key.Ja}）")]);
+                rows.Add([T("  Content is an Image", "  Content が Image"), Name(image)]);
+                rows.Add([T("  an Image with AutomationProperties.Name=\"Save\"", "  AutomationProperties.Name=\"Save\" を付けた Image"), Name(named)]);
                 await Task.CompletedTask;
             });
         }

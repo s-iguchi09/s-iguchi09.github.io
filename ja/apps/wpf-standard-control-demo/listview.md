@@ -29,10 +29,10 @@ GridView は並べ替えをしません。実際のマウスで Name の見出�
 
 幅 500 の列が 1 つある、幅 300・高さ 100 の一覧では、スクロールバーを `Disabled` にすると横にスクロールできず、列の右側には届きませんでしたが、縦にはスクロールできました。`ScrollToBottom` でも、下矢印キーで最後の行へ移っても、縦の位置は 2 行分になりました（横の位置は 0 のまま）。`Auto` では、横は 227 DIP、縦は 3 行分まで動きました。列が広いときは、横のスクロールバーを `Auto` にしておきます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/listview/listview-behavior.svg" alt="ListView の計測結果の表。ListBox から派生し、既定では選択モードが Extended でビューがなく、自動幅の列はいちばん長い名前までスクロールしても長い名前を挿入しても 84.89 のまま、バインドした幅はスライダーに従い、実際の見出しのドラッグは AllowsColumnReorder のときだけ列を並べ替え、見出しのクリックでは並べ替わらず、DisplayMemberBinding は例外なく CellTemplate より優先され、Disabled のスクロールバーでは横にスクロールできないが縦には 2 行スクロールでき、1,000 項目で作られるコンテナは 8 個" width="1132" height="470" loading="lazy">
-  <figcaption>既定値、GridView の列、並べ替え、見出しのクリック、スクロール。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/listview/listview-behavior.ja.md %}
+
+既定値、GridView の列、並べ替え、見出しのクリック、スクロール。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

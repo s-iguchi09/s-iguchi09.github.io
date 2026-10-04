@@ -40,7 +40,7 @@ internal sealed class CheckBoxDemoScene : IScene
     {
         await context.SaveTableAsync(
             "CheckBox: type, states, bindings, keyboard and layout",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "checkbox-behavior.svg");
     }
@@ -62,19 +62,22 @@ internal sealed class CheckBoxDemoScene : IScene
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static void Click(CheckBox box) =>
         ((IToggleProvider)new CheckBoxAutomationPeer(box)).Toggle();
 
     private static string State(bool? value) => value switch { null => "null", true => "true", false => "false" };
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class of CheckBox / RadioButton", $"{typeof(CheckBox).BaseType!.Name} / {typeof(RadioButton).BaseType!.Name}"]);
+        rows.Add([T("base class of CheckBox / RadioButton", "CheckBox / RadioButton の基底クラス"), $"{typeof(CheckBox).BaseType!.Name} / {typeof(RadioButton).BaseType!.Name}"]);
         rows.Add(["IsChecked: BindsTwoWayByDefault",
             ((FrameworkPropertyMetadata)ToggleButton.IsCheckedProperty.GetMetadata(typeof(CheckBox))).BindsTwoWayByDefault.ToString()]);
-        rows.Add(["Checked / Unchecked / Indeterminate routing",
+        rows.Add([T("Checked / Unchecked / Indeterminate routing", "Checked / Unchecked / Indeterminate のルーティング"),
             $"{ToggleButton.CheckedEvent.RoutingStrategy} / {ToggleButton.UncheckedEvent.RoutingStrategy} / {ToggleButton.IndeterminateEvent.RoutingStrategy}"]);
 
         {
@@ -82,7 +85,7 @@ internal sealed class CheckBoxDemoScene : IScene
             var host = new Grid();
             host.Children.Add(box);
             Layout(host, 200, 50);
-            rows.Add(["VerticalContentAlignment (value source)", WpfProbe.ValueAndSource(box, Control.VerticalContentAlignmentProperty)]);
+            rows.Add([T("VerticalContentAlignment (value source)", "VerticalContentAlignment（値の出どころ）"), WpfProbe.ValueAndSource(box, Control.VerticalContentAlignmentProperty)]);
         }
 
         foreach ((bool threeState, bool? start) in new (bool, bool?)[] { (true, false), (false, false), (false, null), (true, null) })
@@ -97,7 +100,7 @@ internal sealed class CheckBoxDemoScene : IScene
                     states.Add(State(box.IsChecked));
                 }
 
-                rows.Add([$"IsThreeState={threeState}, starting at {State(start)}: IsChecked after 3 clicks",
+                rows.Add([T($"IsThreeState={threeState}, starting at {State(start)}: IsChecked after 3 clicks", $"IsThreeState={threeState}、{State(start)} から開始: 3 回クリックした後の IsChecked"),
                     string.Join(" -> ", states)]);
                 await Task.CompletedTask;
             });
@@ -118,9 +121,9 @@ internal sealed class CheckBoxDemoScene : IScene
                 Click(boxNullable);
                 Click(boxPlain);
                 BindingExpression? plainBinding = BindingOperations.GetBindingExpression(boxPlain, ToggleButton.IsCheckedProperty);
-                rows.Add(["IsThreeState, bound to bool? (true), clicked to null: IsChecked / source",
+                rows.Add([T("IsThreeState, bound to bool? (true), clicked to null: IsChecked / source", "IsThreeState、bool?（true）にバインド、クリックで null に: IsChecked / ソース"),
                     $"{State(boxNullable.IsChecked)} / {State(nullable.Value)}"]);
-                rows.Add(["IsThreeState, bound to bool (true), clicked to null: IsChecked / source / binding error",
+                rows.Add([T("IsThreeState, bound to bool (true), clicked to null: IsChecked / source / binding error", "IsThreeState、bool（true）にバインド、クリックで null に: IsChecked / ソース / バインドのエラー"),
                     $"{State(boxPlain.IsChecked)} / {plain.Value.ToString().ToLowerInvariant()} / HasError {plainBinding?.HasError}"]);
                 await Task.CompletedTask;
             });
@@ -135,7 +138,7 @@ internal sealed class CheckBoxDemoScene : IScene
                 box.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Space) { RoutedEvent = Keyboard.KeyDownEvent });
                 box.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Space) { RoutedEvent = Keyboard.KeyUpEvent });
                 await Capture.SettleAsync(Window.GetWindow(box)!);
-                rows.Add(["Space pressed and released on a focused CheckBox (false before)", State(box.IsChecked)]);
+                rows.Add([T("Space pressed and released on a focused CheckBox (false before)", "フォーカスのある CheckBox で Space を押して離す（前は false）"), State(box.IsChecked)]);
             }, activate: true);
         }
 
@@ -148,7 +151,7 @@ internal sealed class CheckBoxDemoScene : IScene
             Rect label = Bounds(content, host);
             DependencyObject? hit = VisualTreeHelper.HitTest(host, new Point(label.X + label.Width / 2, label.Y + label.Height / 2))?.VisualHit;
             bool inside = hit is not null && (ReferenceEquals(hit, box) || box.IsAncestorOf(hit));
-            rows.Add(["hit test in the middle of the label: element hit / inside the CheckBox",
+            rows.Add([T("hit test in the middle of the label: element hit / inside the CheckBox", "ラベルの中央のヒットテスト: 当たった要素 / CheckBox の中か"),
                 $"{hit?.GetType().Name ?? "(nothing)"} / {inside}"]);
         }
 
@@ -174,8 +177,8 @@ internal sealed class CheckBoxDemoScene : IScene
             var content = Descendants(box).OfType<ContentPresenter>().First();
             Rect g = Bounds(glyph, box);
             Rect c = Bounds(content, box);
-            rows.Add([$"3-line label, VerticalContentAlignment={alignment}, CheckBox {D(box.ActualHeight)} high: glyph y / label y",
-                $"{D(g.Y)} (height {D(g.Height)}) / {D(c.Y)} (height {D(c.Height)})"]);
+            rows.Add([T($"3-line label, VerticalContentAlignment={alignment}, CheckBox {D(box.ActualHeight)} high: glyph y / label y", $"3 行のラベル、VerticalContentAlignment={alignment}、CheckBox の高さ {D(box.ActualHeight)}: 記号の y / ラベルの y"),
+                T($"{D(g.Y)} (height {D(g.Height)}) / {D(c.Y)} (height {D(c.Height)})", $"{D(g.Y)}（高さ {D(g.Height)}） / {D(c.Y)}（高さ {D(c.Height)}）")]);
         }
 
         {
@@ -187,7 +190,7 @@ internal sealed class CheckBoxDemoScene : IScene
             await ShowAsync(panel, async () =>
             {
                 Click(box);
-                rows.Add(["Checked handler on the parent StackPanel, child clicked: handler calls", received.ToString()]);
+                rows.Add([T("Checked handler on the parent StackPanel, child clicked: handler calls", "親の StackPanel の Checked ハンドラー、子をクリック: ハンドラーの呼び出し回数"), received.ToString()]);
                 await Task.CompletedTask;
             });
         }
@@ -210,7 +213,7 @@ internal sealed class CheckBoxDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["Button IsEnabled bound to a CheckBox's IsChecked: before / after a real click on the CheckBox",
+                rows.Add([T("Button IsEnabled bound to a CheckBox's IsChecked: before / after a real click on the CheckBox", "CheckBox の IsChecked にバインドした Button の IsEnabled: CheckBox を実際にクリックする前 / 後"),
                     $"{before} / {next.IsEnabled}"]);
             });
         }

@@ -36,7 +36,7 @@ internal sealed class ComboBoxDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ComboBox: selection, editing, drop-down and synchronization (the demo's DayOfWeek items)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "combobox-behavior.svg");
     }
@@ -48,6 +48,9 @@ internal sealed class ComboBoxDemoScene : IScene
 
         public object? Value { get; } = value;
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static List<EnumItem> Days() =>
         Enum.GetValues<DayOfWeek>().Select(d => new EnumItem(d.ToString(), d)).ToList();
@@ -71,15 +74,15 @@ internal sealed class ComboBoxDemoScene : IScene
         }
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaults = new ComboBox();
         var metadata = (FrameworkPropertyMetadata)ComboBox.IsDropDownOpenProperty.GetMetadata(typeof(ComboBox));
-        rows.Add(["defaults: IsEditable, IsReadOnly, StaysOpenOnEdit", $"{defaults.IsEditable}, {defaults.IsReadOnly}, {defaults.StaysOpenOnEdit}"]);
-        rows.Add(["  ShouldPreserveUserEnteredPrefix, IsTextSearchEnabled", $"{defaults.ShouldPreserveUserEnteredPrefix}, {defaults.IsTextSearchEnabled}"]);
-        rows.Add(["MaxDropDownHeight (screen height / 3) / IsDropDownOpen two-way",
+        rows.Add([T("defaults: IsEditable, IsReadOnly, StaysOpenOnEdit", "既定値: IsEditable、IsReadOnly、StaysOpenOnEdit"), $"{defaults.IsEditable}, {defaults.IsReadOnly}, {defaults.StaysOpenOnEdit}"]);
+        rows.Add([T("  ShouldPreserveUserEnteredPrefix, IsTextSearchEnabled", "  ShouldPreserveUserEnteredPrefix、IsTextSearchEnabled"), $"{defaults.ShouldPreserveUserEnteredPrefix}, {defaults.IsTextSearchEnabled}"]);
+        rows.Add([T("MaxDropDownHeight (screen height / 3) / IsDropDownOpen two-way", "MaxDropDownHeight（画面の高さ / 3） / IsDropDownOpen が既定で双方向か"),
             $"{D(defaults.MaxDropDownHeight)} ({D(SystemParameters.PrimaryScreenHeight / 3)}) / {metadata.BindsTwoWayByDefault}"]);
 
         {
@@ -98,9 +101,9 @@ internal sealed class ComboBoxDemoScene : IScene
                 SendKey(Key.Down);
                 SendKey(Key.Enter);
                 await Capture.SettleAsync(window, 100);
-                rows.Add(["bound CheckBox opens it; Down, Down, Enter: selected / open / CheckBox",
-                    $"{opened}; {((EnumItem?)combo.SelectedItem)?.Name ?? "none"} / {combo.IsDropDownOpen} / {WpfProbe.Describe(check.IsChecked)}"]);
-                rows.Add(["  Text / SelectedValue / SelectedItem.ToString()",
+                rows.Add([T("bound CheckBox opens it; Down, Down, Enter: selected / open / CheckBox", "バインドした CheckBox で開く、Down、Down、Enter: 選ばれた項目 / 開いているか / CheckBox"),
+                    T($"{opened}; {((EnumItem?)combo.SelectedItem)?.Name ?? "none"} / {combo.IsDropDownOpen} / {WpfProbe.Describe(check.IsChecked)}", $"{opened}、{((EnumItem?)combo.SelectedItem)?.Name ?? "なし"} / {combo.IsDropDownOpen} / {WpfProbe.Describe(check.IsChecked)}")]);
+                rows.Add([T("  Text / SelectedValue / SelectedItem.ToString()", "  Text / SelectedValue / SelectedItem.ToString()"),
                     $"{WpfProbe.Describe(combo.Text)} / {WpfProbe.Describe(combo.SelectedValue)} / {combo.SelectedItem?.ToString()}"]);
             }, activate: true);
         }
@@ -115,13 +118,13 @@ internal sealed class ComboBoxDemoScene : IScene
                 TextBox box = EditBox(combo);
                 await FocusAsync(box);
                 await TypeAsync(box, "tue");
-                rows.Add([$"editable, \"tue\" typed, preserve prefix {preserve}: Text / SelectedValue",
+                rows.Add([T($"editable, \"tue\" typed, preserve prefix {preserve}: Text / SelectedValue", $"編集可能、\"tue\" を入力、入力した前方一致を保つ {preserve}: Text / SelectedValue"),
                     $"{WpfProbe.Describe(combo.Text)} / {WpfProbe.Describe(combo.SelectedValue)}"]);
                 if (!preserve)
                 {
                     box.SelectAll();
                     await TypeAsync(box, "xyz");
-                    rows.Add(["  then \"xyz\" typed over it: Text / index / SelectedValue",
+                    rows.Add([T("  then \"xyz\" typed over it: Text / index / SelectedValue", "  続けて \"xyz\" で上書き: Text / インデックス / SelectedValue"),
                         $"{WpfProbe.Describe(combo.Text)} / {combo.SelectedIndex} / {WpfProbe.Describe(combo.SelectedValue)}"]);
                 }
             }, activate: true);
@@ -139,8 +142,8 @@ internal sealed class ComboBoxDemoScene : IScene
                 string typed = $"{WpfProbe.Describe(combo.Text)} / {combo.SelectedIndex}";
                 SendKey(Key.Down);
                 await Capture.SettleAsync(Window.GetWindow(combo)!, 50);
-                rows.Add(["editable + IsReadOnly: \"tue\" typed: Text / index; then Down",
-                    $"{typed}; {WpfProbe.Describe(combo.Text)} / {combo.SelectedIndex}"]);
+                rows.Add([T("editable + IsReadOnly: \"tue\" typed: Text / index; then Down", "編集可能 + IsReadOnly: \"tue\" を入力: Text / インデックス、続けて Down"),
+                    T($"{typed}; {WpfProbe.Describe(combo.Text)} / {combo.SelectedIndex}", $"{typed}、{WpfProbe.Describe(combo.Text)} / {combo.SelectedIndex}")]);
             }, activate: true);
         }
 
@@ -158,7 +161,7 @@ internal sealed class ComboBoxDemoScene : IScene
                 await Capture.SettleAsync(Window.GetWindow(combo)!, 150);
                 var popup = (Popup)combo.Template.FindName("PART_Popup", combo);
                 var child = (FrameworkElement)popup.Child;
-                rows.Add([$"MaxDropDownHeight {(double.IsNaN(max) ? "default" : D(max) + " (demo start)")}: drop-down height",
+                rows.Add([T($"MaxDropDownHeight {(double.IsNaN(max) ? "default" : D(max) + " (demo start)")}: drop-down height", $"MaxDropDownHeight {(double.IsNaN(max) ? "既定値" : D(max) + "（デモの初期値）")}: ドロップダウンの高さ"),
                     D(child.ActualHeight)]);
                 combo.IsDropDownOpen = false;
             });
@@ -185,7 +188,7 @@ internal sealed class ComboBoxDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add([$"open, real click in edit box, StaysOpenOnEdit={staysOpen}: still open",
+                rows.Add([T($"open, real click in edit box, StaysOpenOnEdit={staysOpen}: still open", $"開いた状態で編集欄を実際にクリック、StaysOpenOnEdit={staysOpen}: 開いたままか"),
                     combo.IsDropDownOpen.ToString()]);
                 combo.IsDropDownOpen = false;
             }, activate: true);
@@ -208,8 +211,8 @@ internal sealed class ComboBoxDemoScene : IScene
                 string initial = $"{first.SelectedIndex}, {second.SelectedIndex}";
                 first.SelectedIndex = 3;
                 await Capture.SettleAsync(Window.GetWindow(panel)!, 20);
-                rows.Add([$"shared list, IsSynchronizedWithCurrentItem={WpfProbe.Describe(sync)}: start; first set to 3",
-                    $"{initial}; {first.SelectedIndex}, {second.SelectedIndex}"]);
+                rows.Add([T($"shared list, IsSynchronizedWithCurrentItem={WpfProbe.Describe(sync)}: start; first set to 3", $"一覧を共有、IsSynchronizedWithCurrentItem={WpfProbe.Describe(sync)}: 最初、1 つ目を 3 にした後"),
+                    T($"{initial}; {first.SelectedIndex}, {second.SelectedIndex}", $"{initial}、{first.SelectedIndex}, {second.SelectedIndex}")]);
             });
         }
 

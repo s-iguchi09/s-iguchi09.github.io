@@ -23,3 +23,12 @@ images:
   - "images/wpf-standard-control-demo/verification/button/button-clickmode.svg"
   - "images/wpf-standard-control-demo/verification/button/button-command.svg"
   - "images/wpf-standard-control-demo/verification/button/button-template.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-keys.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-keys.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-clickmode.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-clickmode.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-command.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-command.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-template.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/button/button-template.ja.md"

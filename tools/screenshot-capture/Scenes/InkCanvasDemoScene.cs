@@ -38,10 +38,13 @@ internal sealed class InkCanvasDemoScene : IScene
     {
         await context.SaveTableAsync(
             "InkCanvas: defaults, the demo's start, drawing with the real mouse, modes and commands",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "inkcanvas-behavior.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static InkCanvas Canvas(InkCanvasEditingMode mode = InkCanvasEditingMode.Ink) => new()
     {
@@ -102,22 +105,22 @@ internal sealed class InkCanvasDemoScene : IScene
         return 0.2126 * Channel(c.R) + 0.7152 * Channel(c.G) + 0.0722 * Channel(c.B);
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             var plain = new InkCanvas();
             DrawingAttributes a = plain.DefaultDrawingAttributes;
-            rows.Add(["defaults: EditingMode, EditingModeInverted, ActiveEditingMode, Background",
+            rows.Add([T("defaults: EditingMode, EditingModeInverted, ActiveEditingMode, Background", "既定値: EditingMode, EditingModeInverted, ActiveEditingMode, Background"),
                 $"{plain.EditingMode}, {plain.EditingModeInverted}, {plain.ActiveEditingMode}, {WpfProbe.Describe(plain.Background)}"]);
-            rows.Add(["  pen: Color; Width, Height; StylusTip, IsHighlighter; recognizer",
-                $"{Name(a.Color)}; {a.Width:R}, {(a.Height == a.Width ? "same" : a.Height.ToString("R"))}; {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}"]);
+            rows.Add([T("  pen: Color; Width, Height; StylusTip, IsHighlighter; recognizer", "  ペン: Color; Width, Height; StylusTip, IsHighlighter; 認識エンジンがあるか"),
+                T($"{Name(a.Color)}; {a.Width:R}, {(a.Height == a.Width ? "same" : a.Height.ToString("R"))}; {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}", $"{Name(a.Color)}; {a.Width:R}, {(a.Height == a.Width ? "同じ" : a.Height.ToString("R"))}; {a.StylusTip}, {a.IsHighlighter}; {plain.IsGestureRecognizerAvailable}")]);
 
             // 既定のスタイルが適用された後の Background と、その出どころ。システムのウィンドウ色と同じか。
             var styled = new InkCanvas();
             Layout(new Grid { Children = { styled } }, 100, 100);
-            rows.Add(["  Background after style (source) / SystemColors.WindowBrush; metadata",
+            rows.Add([T("  Background after style (source) / SystemColors.WindowBrush; metadata", "  スタイル適用後の Background（出どころ） / SystemColors.WindowBrush; メタデータの既定値"),
                 $"{WpfProbe.ValueAndSource(styled, InkCanvas.BackgroundProperty)} / {SystemColors.WindowBrush}; {WpfProbe.Describe(InkCanvas.BackgroundProperty.GetMetadata(typeof(InkCanvas)).DefaultValue)}"]);
         }
 
@@ -130,9 +133,9 @@ internal sealed class InkCanvasDemoScene : IScene
             double l1 = Luminance(pen);
             double l2 = Luminance(background);
             double contrast = (Math.Max(l1, l2) + 0.05) / (Math.Min(l1, l2) + 0.05);
-            rows.Add(["demo's start: EditingMode, EditingModeInverted",
+            rows.Add([T("demo's start: EditingMode, EditingModeInverted", "デモの初期値: EditingMode, EditingModeInverted"),
                 $"{modes[1]}, {modes[3]}"]);
-            rows.Add(["  pen color, background; contrast ratio",
+            rows.Add([T("  pen color, background; contrast ratio", "  ペンの色, 背景; コントラスト比"),
                 $"{colors[1].Name} ({pen}), {brushes[0].Name} ({background}); {D(contrast)} : 1"]);
         }
 
@@ -143,28 +146,28 @@ internal sealed class InkCanvasDemoScene : IScene
                 Window window = await FrontAsync(canvas);
                 string during = await DragAsync(window, canvas, Horizontal(60), () => canvas.ActiveEditingMode.ToString());
                 DrawingAttributes first = canvas.Strokes[0].DrawingAttributes;
-                rows.Add(["Ink, real drag: strokes; ActiveEditingMode while dragging; stroke color, width",
+                rows.Add([T("Ink, real drag: strokes; ActiveEditingMode while dragging; stroke color, width", "Ink、実際にドラッグ: ストローク数; ドラッグ中の ActiveEditingMode; ストロークの色, 幅"),
                     $"{canvas.Strokes.Count}; {during}; {Name(first.Color)}, {D(first.Width)}"]);
 
                 canvas.DefaultDrawingAttributes.Color = Colors.Red;
                 canvas.DefaultDrawingAttributes.Width = 10;
                 await DragAsync(window, canvas, Horizontal(140));
                 DrawingAttributes second = canvas.Strokes[1].DrawingAttributes;
-                rows.Add(["  DefaultDrawingAttributes changed in place (as the demo does): 1st stroke; 2nd stroke",
+                rows.Add([T("  DefaultDrawingAttributes changed in place (as the demo does): 1st stroke; 2nd stroke", "  DefaultDrawingAttributes をその場で変更（デモと同じ）: 1 本目; 2 本目"),
                     $"{Name(canvas.Strokes[0].DrawingAttributes.Color)}, {D(canvas.Strokes[0].DrawingAttributes.Width)}; {Name(second.Color)}, {D(second.Width)}"]);
-                rows.Add(["  same DrawingAttributes object: default and 1st stroke; 1st and 2nd",
+                rows.Add([T("  same DrawingAttributes object: default and 1st stroke; 1st and 2nd", "  同じ DrawingAttributes のオブジェクトか: 既定値と 1 本目; 1 本目と 2 本目"),
                     $"{ReferenceEquals(canvas.DefaultDrawingAttributes, first)}; {ReferenceEquals(first, second)}"]);
             });
         }
 
-        foreach ((string name, InkCanvasEditingMode mode, Brush? background, bool cancel, bool onlyCircle) in new[]
+        foreach ((Loc name, InkCanvasEditingMode mode, Brush? background, bool cancel, bool onlyCircle) in new (Loc, InkCanvasEditingMode, Brush?, bool, bool)[]
                  {
-                     ("Background null", InkCanvasEditingMode.Ink, (Brush?)null, false, false),
+                     (T("Background null", "Background が null"), InkCanvasEditingMode.Ink, (Brush?)null, false, false),
                      ("None", InkCanvasEditingMode.None, Brushes.White, false, false),
                      ("GestureOnly", InkCanvasEditingMode.GestureOnly, Brushes.White, false, false),
                      ("InkAndGesture", InkCanvasEditingMode.InkAndGesture, Brushes.White, false, false),
-                     ("InkAndGesture, Gesture handler sets Cancel", InkCanvasEditingMode.InkAndGesture, Brushes.White, true, false),
-                     ("InkAndGesture, SetEnabledGestures(Circle)", InkCanvasEditingMode.InkAndGesture, Brushes.White, false, true),
+                     (T("InkAndGesture, Gesture handler sets Cancel", "InkAndGesture、Gesture のハンドラーで Cancel を設定"), InkCanvasEditingMode.InkAndGesture, Brushes.White, true, false),
+                     (T("InkAndGesture, SetEnabledGestures(Circle)", "InkAndGesture、SetEnabledGestures(Circle)"), InkCanvasEditingMode.InkAndGesture, Brushes.White, false, true),
                  })
         {
             InkCanvas canvas = Canvas(mode);
@@ -175,7 +178,7 @@ internal sealed class InkCanvasDemoScene : IScene
                 canvas.SetEnabledGestures([ApplicationGesture.Circle]);
             }
 
-            string gesture = "none";
+            Loc gesture = T("none", "なし");
             canvas.Gesture += (_, e) =>
             {
                 gesture = e.GetGestureRecognitionResults()[0].ApplicationGesture.ToString();
@@ -190,7 +193,8 @@ internal sealed class InkCanvasDemoScene : IScene
             {
                 Window window = await FrontAsync(host);
                 await DragAsync(window, canvas, Horizontal(100));
-                rows.Add([$"{name}, real drag left to right: strokes; Gesture event", $"{canvas.Strokes.Count}; {gesture}"]);
+                rows.Add([T($"{name.En}, real drag left to right: strokes; Gesture event", $"{name.Ja}、左から右へ実際にドラッグ: ストローク数; Gesture イベント"),
+                    T($"{canvas.Strokes.Count}; {gesture.En}", $"{canvas.Strokes.Count}; {gesture.Ja}")]);
             });
         }
 
@@ -202,13 +206,14 @@ internal sealed class InkCanvasDemoScene : IScene
             {
                 Window window = await FrontAsync(canvas);
                 await DragAsync(window, canvas, Vertical(150));
-                string pieces = string.Join(" and ", canvas.Strokes.Select(s =>
-                {
-                    Rect bounds = s.GetBounds();
-                    return $"x {D(Math.Round(bounds.Left))} to {D(Math.Round(bounds.Right))}";
-                }));
-                rows.Add([$"{mode}, one line from x 50 to 250, real drag across x 150: strokes",
-                    $"{canvas.Strokes.Count}{(pieces.Length > 0 ? $" ({pieces})" : "")}"]);
+                List<(string Left, string Right)> pieces = canvas.Strokes
+                    .Select(s => s.GetBounds())
+                    .Select(b => (D(Math.Round(b.Left)), D(Math.Round(b.Right))))
+                    .ToList();
+                string en = string.Join(" and ", pieces.Select(p => $"x {p.Left} to {p.Right}"));
+                string ja = string.Join(" と ", pieces.Select(p => $"x {p.Left}〜{p.Right}"));
+                rows.Add([T($"{mode}, one line from x 50 to 250, real drag across x 150: strokes", $"{mode}、x 50〜250 の線 1 本を、x 150 を横切るように実際にドラッグ: ストローク数"),
+                    T($"{canvas.Strokes.Count}{(en.Length > 0 ? $" ({en})" : "")}", $"{canvas.Strokes.Count}{(ja.Length > 0 ? $"（{ja}）" : "")}")]);
             });
         }
 
@@ -225,7 +230,7 @@ internal sealed class InkCanvasDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["Select, real click on the line: selected strokes; Copy can execute",
+                rows.Add([T("Select, real click on the line: selected strokes; Copy can execute", "Select、線を実際にクリック: 選択されたストローク数; Copy が実行できるか"),
                     $"{canvas.GetSelectedStrokes().Count}; {ApplicationCommands.Copy.CanExecute(null, canvas)}"]);
             });
         }
@@ -240,11 +245,11 @@ internal sealed class InkCanvasDemoScene : IScene
                 string oneStroke = ApplicationCommands.SelectAll.CanExecute(null, canvas).ToString();
                 ApplicationCommands.SelectAll.Execute(null, canvas);
                 await Capture.SettleAsync(Window.GetWindow(canvas)!, 50);
-                rows.Add([$"{mode} mode, SelectAll can execute: no strokes; one stroke; executed: selected",
+                rows.Add([T($"{mode} mode, SelectAll can execute: no strokes; one stroke; executed: selected", $"{mode} モード、SelectAll が実行できるか: ストロークなし; 1 本; 実行後の選択数"),
                     $"{empty}; {oneStroke}; {canvas.GetSelectedStrokes().Count}"]);
                 if (mode == InkCanvasEditingMode.Select)
                 {
-                    rows.Add(["  after SelectAll: Copy can execute; Undo can execute",
+                    rows.Add([T("  after SelectAll: Copy can execute; Undo can execute", "  SelectAll の後: Copy が実行できるか; Undo が実行できるか"),
                         $"{ApplicationCommands.Copy.CanExecute(null, canvas)}; {ApplicationCommands.Undo.CanExecute(null, canvas)}"]);
                 }
             });
@@ -257,7 +262,7 @@ internal sealed class InkCanvasDemoScene : IScene
             long length = stream.Length;
             stream.Position = 0;
             var loaded = new StrokeCollection(stream);
-            rows.Add(["2 strokes saved as ISF and loaded: bytes; strokes", $"{length}; {loaded.Count}"]);
+            rows.Add([T("2 strokes saved as ISF and loaded: bytes; strokes", "ストローク 2 本を ISF で保存して読み込む: バイト数; ストローク数"), $"{length}; {loaded.Count}"]);
         }
 
         return rows;
