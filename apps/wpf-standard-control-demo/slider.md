@@ -31,10 +31,10 @@ Drawing tick marks does not snap to them: with only `TickPlacement="BottomRight"
 
 `TickFrequency`, whose default is 1, sets the spacing of the snap positions. `Maximum` was also a snap position: with `TickFrequency="30"` on 0–100, a drag to 94 snapped to 90, and a drag to 97 snapped to 100. `Ticks` lists the positions explicitly and replaces `TickFrequency`; for discrete sizes or levels, list them there with snapping on. With `1,3,5,7,9` on a 0–10 Slider, a drag to 5.8 gave 5, and a drag to 0.2 gave 0: `Minimum` and `Maximum` are snap positions even when they are not in `Ticks`.
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/slider/slider-snap.svg" alt="Table of Slider values after dragging the thumb: 23.4 without snapping or with only TickPlacement, 20 with TickFrequency 10 and 23 with TickFrequency 1, 90 or 100 with TickFrequency 30, 5 and 0 with Ticks 1,3,5,7,9, a value set from code that is not snapped, and a bound source updated during the drag" width="700" height="380" loading="lazy">
-  <figcaption>Values after dragging the thumb, with and without snapping. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/slider/slider-snap.en.md %}
+
+Values after dragging the thumb, with and without snapping. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Tick marks, the selection range, and the tooltip
 
@@ -44,10 +44,10 @@ In the cases measured, tick marks were drawn at `Minimum` and `Maximum` even whe
 
 `AutoToolTipPlacement` shows a tooltip with the current value while the thumb is dragged; the default `None` shows none. The text is a plain number. Slider has no property for its format, as the only related properties are `AutoToolTipPlacement` and `AutoToolTipPrecision`. The number follows the current culture: 1234.56 with one decimal was shown as `1,234.6` with en-US and as `1.234,6` with de-DE. `AutoToolTipPrecision`, whose default is 0, rounds rather than truncates: with 0, a value of 33.6 was shown as `34` and 33.4 as `33`. With 2, 33.456 was shown as `33.46`. Only the tooltip is rounded; `Value` keeps its full precision. For units such as "%", show the value in a separate `TextBlock` with a `StringFormat`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.svg" alt="Table of tick marks, selection range, and automatic tooltip: tick marks were drawn at Minimum and Maximum in the cases measured and are mirrored by IsDirectionReversed, tick placement changes the height, the selection range is shown only when enabled, and the tooltip rounds the value to AutoToolTipPrecision" width="1046" height="590" loading="lazy">
-  <figcaption>Tick marks (as values, left to right), heights, the selection range, and the automatic tooltip text. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/slider/slider-ticks-tooltip.en.md %}
+
+Tick marks (as values, left to right), heights, the selection range, and the automatic tooltip text. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

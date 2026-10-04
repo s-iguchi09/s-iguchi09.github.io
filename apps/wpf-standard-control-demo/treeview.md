@@ -39,10 +39,10 @@ A `ContextMenu` set in `ItemContainerStyle` had no `DataContext` before it opene
 
 With node A selected and focused (A has children, the first of which has its own child), the down arrow selected the next node. The right arrow expanded A, and the left arrow collapsed it again. The numpad `*` expanded A and everything under it. Space and Enter changed neither the selection nor the expansion.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="Table of TreeView results: the demo app's IsExpanded binding is removed when the node is collapsed with its expander, a child expanded in the data opens when its parent opens, a HierarchicalDataTemplate applies at every level, a mismatched DataType shows ToString, the tree is not virtualized by default, arrow keys and numpad asterisk expand or collapse while Space and Enter do nothing, a ContextMenu gets the node as DataContext while open, and a placeholder child replaced in the Expanded handler shows the real children after a real click on the expander button" width="1210" height="590" loading="lazy">
-  <figcaption>Expansion, templates, virtualization, keys, and context menus. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/treeview/treeview-structure.en.md %}
+
+Expansion, templates, virtualization, keys, and context menus. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

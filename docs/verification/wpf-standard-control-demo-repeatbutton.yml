@@ -15,3 +15,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg"
   - "images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.ja.md"

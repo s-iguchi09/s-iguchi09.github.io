@@ -27,10 +27,10 @@ These are not on the demo app's ToggleButton screen, but they are common with to
 
 A `Popup` whose `IsOpen` is bound to `IsChecked` opened when the button was clicked. When the popup closed, `IsChecked` returned to `false`, because `Popup.IsOpen` binds two-way by default. With `StaysOpen="False"` and real clicks, clicking an empty area of the window closed the popup and cleared the button. Clicking the button itself while the popup was open did not close it: afterwards `IsOpen` and `IsChecked` were both still `true`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg" alt="Table of ToggleButton results: it derives from ButtonBase and is the base of CheckBox and RadioButton, clicks cycle false, true, null only with IsThreeState, the default template has no visual states and only an IsChecked true trigger, UI Automation reports Off, On, Indeterminate, ClickMode Press toggles on button down and stays, a CommandParameter bound to IsChecked receives the new value, a UI Automation toggle does not run the command, and a bound Popup resets IsChecked when it closes, which a real click on an empty area does, while a click on the button while open leaves it open" width="1187" height="530" loading="lazy">
-  <figcaption>States, template, <code>ClickMode</code>, <code>Command</code>, and a bound <code>Popup</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.en.md %}
+
+States, template, <code>ClickMode</code>, <code>Command</code>, and a bound <code>Popup</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

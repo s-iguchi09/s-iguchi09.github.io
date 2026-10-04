@@ -16,3 +16,6 @@ verifies:
   - "StaysOpen=False の Popup を、実際のマウスでウィンドウの空いた領域をクリックして閉じたとき・開いたままボタンを再クリックしたときの IsOpen と IsChecked"
 images:
   - "images/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/togglebutton/togglebutton-behavior.ja.md"

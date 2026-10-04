@@ -21,10 +21,10 @@ description: "WPF の TabItem の選択、TabStripPlacement、無効なタブ、
 
 一方、コードからは選べます。`SelectedIndex = 1` で無効なタブが選ばれ、その内容が表示されました。前の手順が終わるまで後のタブを無効にしておく場合は、選択を変えるコードの側でも、開かせたくないタブを選ばないようにします。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="TabItem の選択に関する計測結果の表。基底クラスは HeaderedContentControl、IsSelected は既定で TwoWay、TabStripPlacement は TabControl に従い、XAML で IsSelected を書いた 2 つのうち先のタブと、コードから順に設定した 2 つのうち後のタブが選ばれ、バインドしたソースは SelectedIndex の変更にも実際のマウスでのタブのクリックにも追従し、無効なタブはコードからは選べるが UI オートメーションの ISelectionItemProvider.Select でも実際のマウスのクリックでも選べない" width="1030" height="470" loading="lazy">
-  <figcaption>選択、メタデータ、無効なタブ。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabitem/tabitem-selection.ja.md %}
+
+選択、メタデータ、無効なタブ。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 内容が作られる時点と、使い回される場合
 
@@ -34,10 +34,10 @@ description: "WPF の TabItem の選択、TabStripPlacement、無効なタブ、
 
 生成したタブのヘッダーは `ItemTemplate` で決めます。TabControl には `HeaderTemplate` プロパティがありません。TabControl に設定するテンプレートは、`ItemTemplate`（ヘッダー）、`ContentTemplate`（ページ）、`Template` です。`SelectedContentTemplate` は、選択中のタブで使われているテンプレートを返す読み取り専用のプロパティです。`HeaderTemplate` は TabItem 側のプロパティです。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg" alt="タブの内容の寿命を示す表。要素として書いた内容は起動時に 3 つとも Loaded が発生するが測られるのは選択中の 1 つだけで、ItemsSource と ContentTemplate では内容の要素が 1 つだけ作られてすべてのタブで使い回される" width="1128" height="170" loading="lazy">
-  <figcaption>3 つのタブを 1 &rarr; 2 &rarr; 1 と切り替えたときの、内容が読み込まれるタイミングと使い回し。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.ja.md %}
+
+3 つのタブを 1 &rarr; 2 &rarr; 1 と切り替えたときの、内容が読み込まれるタイミングと使い回し。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## ヘッダー、タブの帯の位置、テンプレート
 

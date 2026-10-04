@@ -21,10 +21,10 @@ A tab with `IsEnabled="False"` cannot be selected by the user. Selecting it with
 
 Code is not blocked: `SelectedIndex = 1` selected the disabled tab and displayed its content. If later tabs stay disabled until earlier steps are complete, keep the code that changes the selection from choosing a tab that must stay closed.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg" alt="Table of TabItem selection results: the base class HeaderedContentControl, IsSelected binding two-way by default, TabStripPlacement following the TabControl, the first of two tabs marked IsSelected in XAML and the last of two set from code being selected, a bound source following SelectedIndex and a real mouse click on a tab, and a disabled tab selectable from code but not through UI Automation's ISelectionItemProvider.Select or a real mouse click" width="1030" height="470" loading="lazy">
-  <figcaption>Selection, metadata, and disabled tabs. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabitem/tabitem-selection.en.md %}
+
+Selection, metadata, and disabled tabs. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## When the content is created, and when it is reused
 
@@ -34,10 +34,10 @@ With `ItemsSource` and a `ContentTemplate`, the TabControl created one content e
 
 For generated tabs, the headers come from `ItemTemplate`. TabControl has no `HeaderTemplate` property. The templates you set on it are `ItemTemplate` (headers), `ContentTemplate` (pages), and `Template`. `SelectedContentTemplate` is read-only: it returns the template used by the selected tab. `HeaderTemplate` exists on TabItem.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg" alt="Table of tab content lifetime: content written as elements receives Loaded for all three tabs at start while only the selected one is measured, and ItemsSource with a ContentTemplate creates a single content instance that is reused for every tab" width="1128" height="170" loading="lazy">
-  <figcaption>When tab content is loaded and whether it is reused, for three tabs switched 1 &rarr; 2 &rarr; 1. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.en.md %}
+
+When tab content is loaded and whether it is reused, for three tabs switched 1 &rarr; 2 &rarr; 1. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## The header, the strip position, and the template
 

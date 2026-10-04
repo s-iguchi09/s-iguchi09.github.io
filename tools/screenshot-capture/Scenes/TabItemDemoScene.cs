@@ -38,22 +38,28 @@ internal sealed class TabItemDemoScene : IScene
     {
         await context.SaveTableAsync(
             "TabItem: type, metadata, selection and IsEnabled",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await SelectionAsync(),
             "tabitem-selection.svg");
 
         await context.SaveTableAsync(
             "TabItem: header and template",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await HeaderAndTemplateAsync(),
             "tabitem-header.svg");
 
         await context.SaveTableAsync(
             "TabItem content: when it is loaded, and whether it is reused (three tabs, switching 1 -> 2 -> 1)",
-            ["how the content is given", "Loaded count per tab", "same instance after switching back"],
+            [T("how the content is given", "内容の渡し方"), T("Loaded count per tab", "タブごとの Loaded の回数"), T("same instance after switching back", "戻したときに同じインスタンスか")],
             await ContentLifetimeAsync(),
             "tabitem-content-lifetime.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
+    /// <summary>TemplateProperties の " (read-only)" の印を、日本語の表では日本語にする。</summary>
+    private static Loc ReadOnlyMarked(string properties) => T(properties, properties.Replace(" (read-only)", "（読み取り専用）"));
 
     private static TabControl NewTabs(int count, Action<int, TabItem>? configure = null)
     {
@@ -104,21 +110,21 @@ internal sealed class TabItemDemoScene : IScene
         public event PropertyChangedEventHandler? PropertyChanged;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> SelectionAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> SelectionAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
         var isSelected = (FrameworkPropertyMetadata)TabItem.IsSelectedProperty.GetMetadata(typeof(TabItem));
 
-        rows.Add(["base class", typeof(TabItem).BaseType!.Name]);
+        rows.Add([T("base class", "基底クラス"), typeof(TabItem).BaseType!.Name]);
         rows.Add(["IsSelected: BindsTwoWayByDefault", isSelected.BindsTwoWayByDefault.ToString()]);
-        rows.Add(["TabStripPlacement on TabItem: read-only", TabItem.TabStripPlacementProperty.ReadOnly.ToString()]);
+        rows.Add([T("TabStripPlacement on TabItem: read-only", "TabItem の TabStripPlacement: 読み取り専用か"), TabItem.TabStripPlacementProperty.ReadOnly.ToString()]);
 
         {
             TabControl tabs = NewTabs(2);
             tabs.TabStripPlacement = Dock.Left;
             await ShowAsync(tabs, async () =>
             {
-                rows.Add(["TabControl.TabStripPlacement=Left: TabItem.TabStripPlacement of both tabs",
+                rows.Add([T("TabControl.TabStripPlacement=Left: TabItem.TabStripPlacement of both tabs", "TabControl.TabStripPlacement=Left: 両方のタブの TabItem.TabStripPlacement"),
                     $"{Item(tabs, 0).TabStripPlacement} / {Item(tabs, 1).TabStripPlacement}"]);
                 await Task.CompletedTask;
             });
@@ -129,7 +135,7 @@ internal sealed class TabItemDemoScene : IScene
             await ShowAsync(tabs, async () =>
             {
                 Item(tabs, 2).IsSelected = true;
-                rows.Add(["Tab3.IsSelected = true: SelectedIndex / IsSelected of Tab1..3",
+                rows.Add([T("Tab3.IsSelected = true: SelectedIndex / IsSelected of Tab1..3", "Tab3.IsSelected = true: SelectedIndex / Tab1..3 の IsSelected"),
                     $"{tabs.SelectedIndex} / {string.Join(", ", tabs.Items.Cast<TabItem>().Select(t => t.IsSelected))}"]);
                 await Task.CompletedTask;
             });
@@ -147,7 +153,7 @@ internal sealed class TabItemDemoScene : IScene
                 """);
             await ShowAsync(tabs, async () =>
             {
-                rows.Add(["XAML: IsSelected=\"True\" on Tab2 and Tab3: SelectedIndex / IsSelected of Tab1..3",
+                rows.Add([T("XAML: IsSelected=\"True\" on Tab2 and Tab3: SelectedIndex / IsSelected of Tab1..3", "XAML: Tab2 と Tab3 に IsSelected=\"True\": SelectedIndex / Tab1..3 の IsSelected"),
                     $"{tabs.SelectedIndex} / {string.Join(", ", tabs.Items.Cast<TabItem>().Select(t => t.IsSelected))}"]);
                 await Task.CompletedTask;
             });
@@ -159,7 +165,7 @@ internal sealed class TabItemDemoScene : IScene
             {
                 Item(tabs, 1).IsSelected = true;
                 Item(tabs, 2).IsSelected = true;
-                rows.Add(["code: Tab2 then Tab3 set to IsSelected=true: SelectedIndex",
+                rows.Add([T("code: Tab2 then Tab3 set to IsSelected=true: SelectedIndex", "コード: Tab2、続けて Tab3 を IsSelected=true に: SelectedIndex"),
                     tabs.SelectedIndex.ToString()]);
                 await Task.CompletedTask;
             });
@@ -175,12 +181,12 @@ internal sealed class TabItemDemoScene : IScene
             await ShowAsync(tabs, async () =>
             {
                 tabs.SelectedIndex = 1;
-                rows.Add(["IsSelected bound without Mode; SelectedIndex = 1: source values of Tab1 / Tab2",
+                rows.Add([T("IsSelected bound without Mode; SelectedIndex = 1: source values of Tab1 / Tab2", "Mode なしで IsSelected をバインド、SelectedIndex = 1: Tab1 / Tab2 のソースの値"),
                     $"{flag1.Value} / {flag2.Value}"]);
 
                 // デモアプリで Tab1 のチェックボックスをオンにする操作に当たる。
                 flag1.Value = true;
-                rows.Add(["  then Tab1's source set to True: SelectedIndex / source values of Tab1 / Tab2",
+                rows.Add([T("  then Tab1's source set to True: SelectedIndex / source values of Tab1 / Tab2", "  続けて Tab1 のソースを True に: SelectedIndex / Tab1 / Tab2 のソースの値"),
                     $"{tabs.SelectedIndex} / {flag1.Value} / {flag2.Value}"]);
 
                 // 実際のマウスで Tab2 の見出しをクリックする。
@@ -194,7 +200,7 @@ internal sealed class TabItemDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["  then Tab2's header clicked with the real mouse: SelectedIndex / sources of Tab1 / Tab2",
+                rows.Add([T("  then Tab2's header clicked with the real mouse: SelectedIndex / sources of Tab1 / Tab2", "  続けて Tab2 の見出しを実際にマウスでクリック: SelectedIndex / Tab1 / Tab2 のソースの値"),
                     $"{tabs.SelectedIndex} / {flag1.Value} / {flag2.Value}"]);
             });
         }
@@ -206,14 +212,14 @@ internal sealed class TabItemDemoScene : IScene
                 tabs.SelectedIndex = 1;
                 tabs.UpdateLayout();
                 var host = (ContentPresenter)tabs.Template.FindName("PART_SelectedContentHost", tabs);
-                rows.Add(["Tab2 IsEnabled=False; SelectedIndex = 1 from code: SelectedIndex / content shown",
+                rows.Add([T("Tab2 IsEnabled=False; SelectedIndex = 1 from code: SelectedIndex / content shown", "Tab2 が IsEnabled=False、コードから SelectedIndex = 1: SelectedIndex / 表示される内容"),
                     $"{tabs.SelectedIndex} / {WpfProbe.Describe(host.Content)}"]);
 
                 tabs.SelectedIndex = 0;
                 var peer = (TabItemAutomationPeer)UIElementAutomationPeer.CreatePeerForElement(tabs)
                     .GetChildren().OfType<TabItemAutomationPeer>().ElementAt(1);
                 string thrown = Throws(() => ((ISelectionItemProvider)peer).Select());
-                rows.Add(["Tab2 IsEnabled=False; UI Automation ISelectionItemProvider.Select(): result / SelectedIndex",
+                rows.Add([T("Tab2 IsEnabled=False; UI Automation ISelectionItemProvider.Select(): result / SelectedIndex", "Tab2 が IsEnabled=False、UI オートメーションの ISelectionItemProvider.Select(): 結果 / SelectedIndex"),
                     $"{thrown} / {tabs.SelectedIndex}"]);
 
                 // 実際のマウスで、無効な Tab2 の見出しをクリックする。
@@ -227,16 +233,16 @@ internal sealed class TabItemDemoScene : IScene
                     await RealMouse.LeftUpAsync(window);
                 }
 
-                rows.Add(["Tab2 IsEnabled=False; header clicked with the real mouse: SelectedIndex", tabs.SelectedIndex.ToString()]);
+                rows.Add([T("Tab2 IsEnabled=False; header clicked with the real mouse: SelectedIndex", "Tab2 が IsEnabled=False、見出しを実際にマウスでクリック: SelectedIndex"), tabs.SelectedIndex.ToString()]);
             });
         }
 
         return rows;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> HeaderAndTemplateAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> HeaderAndTemplateAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         {
             TabControl tabs = NewTabs(2, (i, item) => item.Header = i == 0 ? "File_Name" : "A");
@@ -246,25 +252,25 @@ internal sealed class TabItemDemoScene : IScene
                 var presenter = Descendants(first).OfType<ContentPresenter>()
                     .First(p => ReferenceEquals(p.Content, first.Header));
                 DependencyObject? shown = Descendants(presenter).FirstOrDefault(d => d is TextBlock or AccessText);
-                string text = shown switch
+                Loc text = shown switch
                 {
                     // アンダースコアが表示から消えることは、記事 wpf-label-underscore-issue の
                     // LabelUnderscoreScene で撮影して確かめている。ここでは AccessText が作られることと
                     // アクセスキーだけを読む。
-                    AccessText access => $"AccessText, access key '{access.AccessKey}'",
-                    TextBlock block => $"TextBlock, Text \"{block.Text}\"",
+                    AccessText access => T($"AccessText, access key '{access.AccessKey}'", $"AccessText、アクセスキー '{access.AccessKey}'"),
+                    TextBlock block => T($"TextBlock, Text \"{block.Text}\"", $"TextBlock、Text \"{block.Text}\""),
                     _ => "(none)",
                 };
-                rows.Add(["Header=\"File_Name\": element that shows it", text]);
-                rows.Add(["Header \"File_Name\" vs \"A\": tab widths",
+                rows.Add([T("Header=\"File_Name\": element that shows it", "Header=\"File_Name\": 表示する要素"), text]);
+                rows.Add([T("Header \"File_Name\" vs \"A\": tab widths", "Header \"File_Name\" と \"A\": タブの幅"),
                     $"{D(first.ActualWidth)} / {D(Item(tabs, 1).ActualWidth)}"]);
                 await Task.CompletedTask;
             });
         }
 
         // 名前だけでなく、対応する依存関係プロパティが読み取り専用かどうかも示す。
-        rows.Add(["TabControl *Template properties (read-only marked)", TemplateProperties(typeof(TabControl))]);
-        rows.Add(["TabItem *Template properties (read-only marked)", TemplateProperties(typeof(TabItem))]);
+        rows.Add([T("TabControl *Template properties (read-only marked)", "TabControl の *Template プロパティ（読み取り専用には印）"), ReadOnlyMarked(TemplateProperties(typeof(TabControl)))]);
+        rows.Add([T("TabItem *Template properties (read-only marked)", "TabItem の *Template プロパティ（読み取り専用には印）"), ReadOnlyMarked(TemplateProperties(typeof(TabItem)))]);
 
         {
             TabControl tabs = NewTabs(2);
@@ -273,9 +279,9 @@ internal sealed class TabItemDemoScene : IScene
                 TabItem item = Item(tabs, 0);
                 var root = (FrameworkElement)VisualTreeHelper.GetChild(item, 0);
                 var groups = VisualStateManager.GetVisualStateGroups(root)?.Cast<VisualStateGroup>().ToList() ?? [];
-                rows.Add(["default TabItem template: VisualStateGroups on the root",
-                    groups.Count == 0 ? "none" : string.Join("; ", groups.Select(g => $"{g.Name}: {string.Join(", ", g.States.Cast<VisualState>().Select(s => s.Name))}"))]);
-                rows.Add(["default TabItem template: number of Triggers", item.Template.Triggers.Count.ToString()]);
+                rows.Add([T("default TabItem template: VisualStateGroups on the root", "既定の TabItem テンプレート: ルートの VisualStateGroups"),
+                    groups.Count == 0 ? T("none", "なし") : string.Join("; ", groups.Select(g => $"{g.Name}: {string.Join(", ", g.States.Cast<VisualState>().Select(s => s.Name))}"))]);
+                rows.Add([T("default TabItem template: number of Triggers", "既定の TabItem テンプレート: Triggers の数"), item.Template.Triggers.Count.ToString()]);
                 await Task.CompletedTask;
             });
         }
@@ -306,9 +312,9 @@ internal sealed class TabItemDemoScene : IScene
         }
     }
 
-    private static async Task<List<IReadOnlyList<string>>> ContentLifetimeAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> ContentLifetimeAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         // XAML に直接書いた内容（要素そのものが Content）。
         {
@@ -323,10 +329,10 @@ internal sealed class TabItemDemoScene : IScene
                 await Switch(tabs, 1);
                 await Switch(tabs, 0);
                 object? again = Descendants(host).OfType<LoadCounter>().FirstOrDefault();
-                rows.Add(["elements as TabItem.Content",
-                    $"at start {atStart}; after 1 -> 2 -> 1: {string.Join(" / ", counters.Select(c => c.Loads))}",
+                rows.Add([T("elements as TabItem.Content", "TabItem.Content に要素"),
+                    T($"at start {atStart}; after 1 -> 2 -> 1: {string.Join(" / ", counters.Select(c => c.Loads))}", $"最初 {atStart}、1 -> 2 -> 1 の後: {string.Join(" / ", counters.Select(c => c.Loads))}"),
                     ReferenceEquals(first, again).ToString()]);
-                rows.Add(["  same, measure calls per tab at start", measuredAtStart, "-"]);
+                rows.Add([T("  same, measure calls per tab at start", "  同じ条件、最初のタブごとの測定の回数"), measuredAtStart, "-"]);
             });
         }
 
@@ -349,7 +355,7 @@ internal sealed class TabItemDemoScene : IScene
                     created.Add(first);
                 }
 
-                string atStart = $"{created.Count} created";
+                Loc atStart = T($"{created.Count} created", $"{created.Count} 個作成");
                 await Switch(tabs, 1);
                 LoadCounter? second = Descendants(host).OfType<LoadCounter>().FirstOrDefault();
                 await Switch(tabs, 0);
@@ -363,7 +369,7 @@ internal sealed class TabItemDemoScene : IScene
                 }
 
                 rows.Add(["ItemsSource + ContentTemplate",
-                    $"at start {atStart}; after 1 -> 2 -> 1: {created.Count} instances created",
+                    T($"at start {atStart.En}; after 1 -> 2 -> 1: {created.Count} instances created", $"最初 {atStart.Ja}、1 -> 2 -> 1 の後: {created.Count} 個作成"),
                     ReferenceEquals(first, again).ToString()]);
             });
         }

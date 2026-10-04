@@ -13,7 +13,7 @@ description: "WPF の ToolTip を .NET 10 と実際のマウス・キーボー�
 
 時間は `ToolTipService` の添付プロパティで設定し、既定値はよく書かれている数値とは違います。開くまでの待ち時間の `InitialShowDelay` は 1000 ms でした。ツールチップが閉じたあと、次のツールチップが最初の待ち時間なしに開く時間の `BetweenShowDelay` は 100 ms でした。`ShowDuration` は `Int32.MaxValue` で、ポインターがとどまっている間、ツールチップは自分では閉じません。`ShowDuration="1000"` では、ポインターをボタンに乗せたままでも、開いて 2.5 秒後には閉じていました。
 
-実際のマウスで試すと、`InitialShowDelay` 500 のツールチップは回によって約 600〜700 ms 後（下の表の回では 700 ms 後）、2000 では約 2050 ms 後に開きました。
+実際のマウスで試すと、`InitialShowDelay` 500 のツールチップは回によって約 550〜700 ms 後（下の表の回では 600 ms 後）、2000 では約 2050 ms 後に開きました。
 
 ## キーボードフォーカスと無効な要素
 
@@ -29,10 +29,10 @@ description: "WPF の ToolTip を .NET 10 と実際のマウス・キーボー�
 
 ボタンで読んだ添付プロパティ `HasDropShadow` の既定値は `False` でした。実際に影が描かれるかは計測していません。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg" alt="ToolTip の計測結果の表。既定値は開くまで 1000 ms、表示時間 Int32.MaxValue、間隔 100 ms、位置は Mouse、キーボードの設定は null、ShowOnDisabled と HasDropShadow はどちらも False、待ち時間 500 と 2000 でそれぞれ約 700 と 2050 ms 後に開き、ShowDuration 1000 で閉じ、開くたびに新しい ToolTip のインスタンスになり、無効なボタンでは ShowOnDisabled のときだけ開き、Bottom と Mouse の位置と 50 のずらし、キーボードフォーカスでは False 以外で開く" width="1116" height="440" loading="lazy">
-  <figcaption>既定値、時間、再利用、無効な要素、位置、キーボードフォーカス。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.ja.md %}
+
+既定値、時間、再利用、無効な要素、位置、キーボードフォーカス。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

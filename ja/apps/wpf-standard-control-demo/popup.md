@@ -27,10 +27,10 @@ ComboBox と最上位の MenuItem の既定のテンプレートには、`PART_P
 
 `PopupAnimation` が動くかどうかもこれで決まります。`Fade` で `AllowsTransparency="True"` のとき、ポップアップのルートの不透明度は、開いた直後にはまだ途中で（計測した回では開いて約 100 ms 後に 0.48。値は回ごとに変わります）、約 0.5 秒後に 1 になりました。`False` では最初から 1 で、フェードしませんでした。`PopupAnimation` には `AllowsTransparency="True"` を組み合わせます。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/popup/popup-behavior.svg" alt="Popup の動作の計測結果の表。FrameworkElement を継承し StaysOpen の既定値は True、子は別のウィンドウにあり、ComboBox と MenuItem のテンプレートには PART_Popup があり、StaysOpen が False なら外側のクリックで閉じてバインドしたチェックボックスも外れ、True なら閉じず、子はウィンドウと一緒に動かず、AllowsTransparency が True のときだけレイヤードのウィンドウになって Fade が動く" width="1085" height="320" loading="lazy">
-  <figcaption>既定値、別のウィンドウ、<code>StaysOpen</code>、透過。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/popup/popup-behavior.ja.md %}
+
+既定値、別のウィンドウ、<code>StaysOpen</code>、透過。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## 子が出る位置
 
@@ -42,10 +42,10 @@ ComboBox と最上位の MenuItem の既定のテンプレートには、`PART_P
 
 `PlacementTarget` は明示します。ないと、Popup を置いた要素が基準になり、200 × 60 の Grid に置いた Popup を `Bottom` にすると、子は Grid から見て (0, 60) に出ました。`PlacementRectangle` は基準の要素の範囲の代わりに使う矩形で、(0, 0, 100, 50) では、子は矩形の下の (0, 50) に出ました。
 
-<figure class="article-figure">
-  <img src="/images/wpf-standard-control-demo/verification/popup/popup-placement.svg" alt="基準 150 × 30、子 120 × 40 の Popup の位置の計測結果の表。Bottom は (0, 30)、Top は (0, -40)、Right は (150, 0)、Left は (-120, 0)、Center は (15, -5)、正のずらし量は右と下へ動かし、作業領域の下端の近くでは下に出て作業領域の外へはみ出し、画面の下端の近くでは基準の上に移り、矩形なしの Absolute は (0, 0)、PlacementTarget なしでは Popup を置いた Grid が基準になる" width="818" height="380" loading="lazy">
-  <figcaption>配置ごとに子が出る位置。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/popup/popup-placement.ja.md %}
+
+配置ごとに子が出る位置。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

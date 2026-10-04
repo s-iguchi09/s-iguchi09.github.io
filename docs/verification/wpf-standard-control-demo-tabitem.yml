@@ -20,3 +20,10 @@ images:
   - "images/wpf-standard-control-demo/verification/tabitem/tabitem-selection.svg"
   - "images/wpf-standard-control-demo/verification/tabitem/tabitem-header.svg"
   - "images/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/tabitem/tabitem-selection.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabitem/tabitem-selection.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabitem/tabitem-header.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabitem/tabitem-header.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tabitem/tabitem-content-lifetime.ja.md"
