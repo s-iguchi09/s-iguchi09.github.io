@@ -17,3 +17,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/expander/expander-behavior.svg"
   - "images/wpf-standard-control-demo/verification/expander/expander-layout.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/expander/expander-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/expander/expander-behavior.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/expander/expander-layout.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/expander/expander-layout.ja.md"

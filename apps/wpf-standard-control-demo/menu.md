@@ -37,10 +37,10 @@ A submenu item's `IsEnabled` is not up to date while its menu is closed. With th
 
 `Icon` is an image at the left, and `InputGestureText` a shortcut text at the right. `InputGestureText` is only text: "Ctrl+O" was shown, but a real <kbd>Ctrl</kbd>+<kbd>O</kbd> did not click the item. For a command with a key gesture it is filled in: the `Copy` item's text was `Ctrl+C` without being set. With a `KeyBinding` on the window, a real <kbd>Ctrl</kbd>+<kbd>O</kbd> ran a command that has no key gesture of its own, but the item's `InputGestureText` stayed empty. Bind the shortcut with a `KeyBinding`, and set `InputGestureText` too.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/menu/menu-behavior.svg" alt="Table of Menu results: IsMainMenu defaults to True, the four items of the Role section have the four roles and a TopLevelItem that is not checkable becomes a TopLevelHeader when given a child, a real click checks a checkable item and closes the submenu unless StaysOpenOnClick, two checkable items are both checked, Alt enters only a main menu, a real F10 with a TextBox focused enters neither while F10 with a Button focused or through the input manager enters a main menu, Alt+M opens both, Ctrl+O text is shown but Ctrl+O does not click, the Copy item gets Ctrl+C, the Copy item reads enabled while closed and follows the TextBox selection once opened, and hover, press and release set the header states, and a window KeyBinding runs a command on a real Ctrl+O while the item's InputGestureText stays empty" width="1242" height="800" loading="lazy">
-  <figcaption>Roles, checkable items, the main menu, gestures, commands, and header states. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/menu/menu-behavior.en.md %}
+
+Roles, checkable items, the main menu, gestures, commands, and header states. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

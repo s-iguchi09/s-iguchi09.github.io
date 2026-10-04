@@ -31,10 +31,10 @@ description: "WPF の CheckBox の 3 状態の切り替え、IsChecked のバイ
 
 `VerticalContentAlignment` は、四角い部分とラベルを、CheckBox の中で縦方向のどこに置くかを決めます。既定値はプロパティの既定値から来る `Top` です。3 行に折り返すラベルでは、`Top` のとき四角い部分は 1 行目の横に並びました（四角い部分は y = 1、ラベルは y = -1）。`Center` のときは両方が CheckBox の中央に置かれるので、CheckBox の高さによらず、四角い部分はラベルの中央に揃いました。高さ 200 の CheckBox では中心がどちらも約 100、ラベルと同じ高さ 46.88 では 23.44 と 22.94 でした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.svg" alt="CheckBox の計測結果の表。ToggleButton を継承し、IsChecked は既定で TwoWay、イベントはバブルし、VerticalContentAlignment の既定値は Top、3 状態のクリックは false・true・null と巡回し、bool 型のソースは null をバインドエラーにし、Space キーで切り替わり、ラベルもクリックできる範囲に含まれ、Center では四角い部分とラベルが CheckBox の中央に置かれ、四角い部分が折り返したラベルの中央に揃う。IsEnabled を IsChecked にバインドしたボタンは CheckBox の実際のクリックで有効になる" width="1140" height="590" loading="lazy">
-  <figcaption>状態、バインド、キー操作、ヒットテスト、配置。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/checkbox/checkbox-behavior.ja.md %}
+
+状態、バインド、キー操作、ヒットテスト、配置。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

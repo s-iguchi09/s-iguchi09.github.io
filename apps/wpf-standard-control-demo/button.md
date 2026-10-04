@@ -15,10 +15,10 @@ Keep one `IsCancel` button per window. With two, <kbd>Esc</kbd> clicked neither:
 
 `IsDefault` makes <kbd>Enter</kbd> click the button. With the focus in a TextBox, <kbd>Enter</kbd> clicked it, and its `IsDefaulted` was `True`. With the focus in a TextBox that has `AcceptsReturn="True"`, <kbd>Enter</kbd> added a line break and did not click it. With the focus on another button, <kbd>Enter</kbd> clicked that button instead, and `IsDefaulted` was `False`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-keys.svg" alt="Table of IsCancel and IsDefault results: in a UserControl Esc clicks the IsCancel button and the window stays open, Enter clicks the IsDefault button, Enter in a TextBox with AcceptsReturn adds a line break without a click, Enter on another button clicks that button, two IsCancel buttons only move the focus, and a dialog opened with ShowDialog closes and returns false" width="889" height="290" loading="lazy">
-  <figcaption><code>IsCancel</code> and <code>IsDefault</code> by where the focus is and how the window was opened. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-keys.en.md %}
+
+<code>IsCancel</code> and <code>IsDefault</code> by where the focus is and how the window was opened. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## When a click happens: ClickMode and IsPressed
 
@@ -28,10 +28,10 @@ The keyboard follows different rules. <kbd>Space</kbd> clicked on key up with `R
 
 `IsPressed` is read-only. It was `True` while the mouse button was held down on the button and while <kbd>Space</kbd> was held down, and `False` after release. A `Hover` button was pressed while the pointer was over it, but the keyboard does not press it: `IsPressed` stayed `False` while <kbd>Space</kbd> was held down.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-clickmode.svg" alt="Table of ClickMode results: the default is Release and IsPressed is read-only, Hover clicks when the pointer enters, Press clicks on button down, Release clicks on button up and not when released outside, and from the keyboard Release clicks on Space up, Press on Space down, Enter clicks both on key down, and a Hover button does nothing" width="1046" height="320" loading="lazy">
-  <figcaption><code>ClickMode</code> and <code>IsPressed</code> with a real mouse and with the keyboard. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-clickmode.en.md %}
+
+<code>ClickMode</code> and <code>IsPressed</code> with a real mouse and with the keyboard. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Commands: what enables the button, and when it is checked again
 
@@ -41,10 +41,10 @@ The demo app's `RelayCommand` passes `CanExecuteChanged` on to `CommandManager.R
 
 `CommandParameter` is the value passed to `CanExecute` and `Execute`. The demo app binds it to a TextBox's `Text`, after `Command`. With that XAML, both `CanExecute` calls during loading received `ShowMessageText`, never `null`. A change of the parameter is checked at once: when the text was cleared from code, `CanExecute` ran once and the button became disabled, with no `InvalidateRequerySuggested`. `Execute` received the text at the time of the click. In a list, a button in an item template can pass its item: with `CommandParameter="{Binding}"`, a real click on the button of the second row passed `Row 2` to `Execute`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-command.svg" alt="Table of Command results: CanExecute false disables the button even with IsEnabled True, a RequerySuggested command updates only after InvalidateRequerySuggested, one focus change calls CanExecute 20 times for 20 buttons, the demo XAML passes the text to CanExecute while loading, clearing the text re-queries CanExecute once, Execute receives the current text, and in an item template a real click on a row's button passed that row's item through CommandParameter=&quot;{Binding}&quot;" width="1046" height="290" loading="lazy">
-  <figcaption><code>Command</code> and <code>CommandParameter</code>. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-command.en.md %}
+
+<code>Command</code> and <code>CommandParameter</code>. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Content, access keys, and the template
 
@@ -52,10 +52,10 @@ The demo app's `RelayCommand` passes `CanExecuteChanged` on to `CommandManager.R
 
 The default template has no visual state groups. It changes its look with triggers on `IsDefaulted`, `IsMouseOver`, `IsPressed`, and `IsChecked` (all `true`) and on `IsEnabled` = `false`.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/button/button-template.svg" alt="Table of Button type and template results: Button derives from ButtonBase and ContentControl, the default template has no visual state groups and triggers on IsDefaulted, IsMouseOver, IsPressed, IsChecked, and IsEnabled, the ContentPresenter recognizes access keys, and the UI Automation name is the text, Save for _Save, empty for an image, and the AutomationProperties.Name when set" width="1140" height="290" loading="lazy">
-  <figcaption>Base classes, the default template, and UI Automation names. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/button/button-template.en.md %}
+
+Base classes, the default template, and UI Automation names. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Trying it in the demo app
 

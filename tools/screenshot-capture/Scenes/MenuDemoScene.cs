@@ -48,12 +48,15 @@ internal sealed class MenuDemoScene : IScene
     {
         await context.SaveTableAsync(
             "Menu: roles, checkable items, the main menu, gestures and commands (the demo's menus)",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "menu-behavior.svg");
     }
 
     /// <summary>F10 のようなシステムキーを、WPF の入力管理（InputManager）を通してフォーカスのある要素へ送る。</summary>
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     private static void SendSystemKey(Key key, bool down)
     {
         var target = (DependencyObject)Keyboard.FocusedElement!;
@@ -127,12 +130,12 @@ internal sealed class MenuDemoScene : IScene
         return null;
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
         var defaultItem = new MenuItem();
-        rows.Add(["defaults: IsMainMenu; IsCheckable, IsChecked, StaysOpenOnClick, InputGestureText",
+        rows.Add([T("defaults: IsMainMenu; IsCheckable, IsChecked, StaysOpenOnClick, InputGestureText", "既定値: IsMainMenu; IsCheckable, IsChecked, StaysOpenOnClick, InputGestureText"),
             $"{new Menu().IsMainMenu}; {defaultItem.IsCheckable}, {defaultItem.IsChecked}, {defaultItem.StaysOpenOnClick}, {WpfProbe.Describe(defaultItem.InputGestureText)}"]);
 
         {
@@ -143,11 +146,11 @@ internal sealed class MenuDemoScene : IScene
             Menu menu = MenuOf(false, topHeader, topItem);
             await ShowAsync(menu, async () =>
             {
-                rows.Add(["demo's Role section: the four items",
+                rows.Add([T("demo's Role section: the four items", "デモの Role の欄: 4 つの項目"),
                     $"{topHeader.Role}, {subHeader.Role}, {subItem.Role}, {topItem.Role}"]);
                 topItem.Items.Add(new MenuItem { Header = "added" });
                 await Capture.SettleAsync(Window.GetWindow(menu)!, 20);
-                rows.Add(["  a child added to TopLevelItem: its Role", topItem.Role.ToString()]);
+                rows.Add([T("  a child added to TopLevelItem: its Role", "  TopLevelItem に子を追加: その Role"), topItem.Role.ToString()]);
             });
         }
 
@@ -177,7 +180,7 @@ internal sealed class MenuDemoScene : IScene
                         second = $"{interactive.IsChecked} / {options.IsSubmenuOpen}";
                     }
 
-                    rows.Add([$"IsCheckable {checkable}, StaysOpenOnClick {staysOpen}: opened; click: checked / CheckBox / open; again",
+                    rows.Add([T($"IsCheckable {checkable}, StaysOpenOnClick {staysOpen}: opened; click: checked / CheckBox / open; again", $"IsCheckable {checkable}、StaysOpenOnClick {staysOpen}: 開いたか; クリック: チェック / CheckBox / 開いたままか; もう一度"),
                         $"{opened}; {first}; {second}"]);
                 }
 
@@ -187,7 +190,7 @@ internal sealed class MenuDemoScene : IScene
                 await Capture.SettleAsync(window, 20);
                 if (checkable && staysOpen)
                 {
-                    rows.Add(["  the CheckBox checked in code: item IsChecked", interactive.IsChecked.ToString()]);
+                    rows.Add([T("  the CheckBox checked in code: item IsChecked", "  コードで CheckBox をチェック: 項目の IsChecked"), interactive.IsChecked.ToString()]);
                 }
             });
         }
@@ -210,7 +213,7 @@ internal sealed class MenuDemoScene : IScene
                     await ClickAsync(window, Container(options, 1));
                 }
 
-                rows.Add(["two checkable items, both clicked: IsChecked", $"{first.IsChecked}, {second.IsChecked}"]);
+                rows.Add([T("two checkable items, both clicked: IsChecked", "チェックできる項目 2 つを両方クリック: IsChecked"), $"{first.IsChecked}, {second.IsChecked}"]);
                 options.IsSubmenuOpen = false;
                 await Capture.SettleAsync(window, 50);
             });
@@ -233,7 +236,7 @@ internal sealed class MenuDemoScene : IScene
                     Window window = await FrontAsync(panel);
                     await FocusAsync(box);
                     await RealKeyboard.PressAsync(window, key, modifiers);
-                    rows.Add([$"IsMainMenu {isMainMenu}, real {name}: highlighted / submenu open / TextBox keeps focus",
+                    rows.Add([T($"IsMainMenu {isMainMenu}, real {name}: highlighted / submenu open / TextBox keeps focus", $"IsMainMenu {isMainMenu}、実際に {name}: 強調表示 / サブメニューが開くか / TextBox がフォーカスを保つか"),
                         $"{main.IsHighlighted} / {main.IsSubmenuOpen} / {box.IsKeyboardFocused}"]);
                     if (main.IsHighlighted || main.IsSubmenuOpen)
                     {
@@ -245,10 +248,10 @@ internal sealed class MenuDemoScene : IScene
         }
 
         // 公式ドキュメントは IsMainMenu を「ALT と F10 の通知を受けるか」と説明している。F10 が効かなかった条件を切り分ける。
-        foreach ((string name, bool onButton, bool throughInputManager) in new[]
+        foreach ((Loc name, bool onButton, bool throughInputManager) in new (Loc, bool, bool)[]
                  {
-                     ("real F10, Button", true, false),
-                     ("F10 via InputManager, TextBox", false, true),
+                     (T("real F10, Button", "実際に F10、Button にフォーカス"), true, false),
+                     (T("F10 via InputManager, TextBox", "InputManager 経由で F10、TextBox にフォーカス"), false, true),
                  })
         {
             MenuItem main = Item("Main Menu(_M)", Item("Item 1"));
@@ -271,7 +274,7 @@ internal sealed class MenuDemoScene : IScene
                     await RealKeyboard.PressAsync(window, VkF10);
                 }
 
-                rows.Add([$"IsMainMenu True, {name}: highlighted / open / focus in menu",
+                rows.Add([T($"IsMainMenu True, {name.En}: highlighted / open / focus in menu", $"IsMainMenu True、{name.Ja}: 強調表示 / 開くか / メニューにフォーカスがあるか"),
                     $"{main.IsHighlighted} / {main.IsSubmenuOpen} / {main.IsKeyboardFocusWithin}"]);
                 if (main.IsHighlighted || main.IsKeyboardFocusWithin)
                 {
@@ -296,16 +299,16 @@ internal sealed class MenuDemoScene : IScene
                 file.IsSubmenuOpen = true;
                 await Capture.SettleAsync(window, 150);
                 MenuItem openContainer = Container(file, 0);
-                string shown = Find<TextBlock>(openContainer, t => t.Text == "Ctrl+O") is { } gesture
-                    ? $"shown ({D(gesture.ActualWidth)} wide)"
-                    : "not shown";
-                rows.Add(["InputGestureText \"Ctrl+O\": shown / InputGestureText of the Copy item",
-                    $"{shown} / {WpfProbe.Describe(copy.InputGestureText)}"]);
+                Loc shown = Find<TextBlock>(openContainer, t => t.Text == "Ctrl+O") is { } gesture
+                    ? T($"shown ({D(gesture.ActualWidth)} wide)", $"表示される（幅 {D(gesture.ActualWidth)}）")
+                    : T("not shown", "表示されない");
+                rows.Add([T("InputGestureText \"Ctrl+O\": shown / InputGestureText of the Copy item", "InputGestureText \"Ctrl+O\": 表示されるか / Copy の項目の InputGestureText"),
+                    T($"{shown.En} / {WpfProbe.Describe(copy.InputGestureText)}", $"{shown.Ja} / {WpfProbe.Describe(copy.InputGestureText)}")]);
                 file.IsSubmenuOpen = false;
                 await Capture.SettleAsync(window, 50);
                 await FocusAsync(box);
                 await RealKeyboard.PressAsync(window, VkO, VkControl);
-                rows.Add(["  real Ctrl+O with a TextBox focused: Click count", clicks.ToString()]);
+                rows.Add([T("  real Ctrl+O with a TextBox focused: Click count", "  TextBox にフォーカスがある状態で実際に Ctrl+O: Click の回数"), clicks.ToString()]);
             });
         }
 
@@ -329,7 +332,7 @@ internal sealed class MenuDemoScene : IScene
                     }
 
                     bool state = copy.IsEnabled;
-                    focusWhileOpen = Keyboard.FocusedElement?.GetType().Name ?? "none";
+                    focusWhileOpen = Keyboard.FocusedElement?.GetType().Name ?? "(none)";
                     execute.IsSubmenuOpen = false;
                     await Capture.SettleAsync(window, 50);
                     return state;
@@ -339,7 +342,7 @@ internal sealed class MenuDemoScene : IScene
                 box.Select(0, 0);
                 CommandManager.InvalidateRequerySuggested();
                 await Capture.SettleAsync(window, 50);
-                rows.Add(["Copy item, menu closed, TextBox focused, no selection: IsEnabled / CanExecute",
+                rows.Add([T("Copy item, menu closed, TextBox focused, no selection: IsEnabled / CanExecute", "Copy の項目、メニューは閉じたまま、TextBox にフォーカス、選択なし: IsEnabled / CanExecute"),
                     $"{copy.IsEnabled} / {ApplicationCommands.Copy.CanExecute(null, copy)}"]);
                 bool none = await OpenedAsync();
                 await FocusAsync(box);
@@ -348,7 +351,7 @@ internal sealed class MenuDemoScene : IScene
                 string focusSelected = focusWhileOpen;
                 await FocusAsync(button);
                 bool onButton = await OpenedAsync();
-                rows.Add(["  opened by real click: no selection; all selected (focus); Button focused",
+                rows.Add([T("  opened by real click: no selection; all selected (focus); Button focused", "  実際のクリックで開く: 選択なし; 全選択（フォーカス）; Button にフォーカス"),
                     $"{none}; {selected} ({focusSelected}); {onButton}"]);
             });
         }
@@ -371,9 +374,9 @@ internal sealed class MenuDemoScene : IScene
                     string down = State();
                     await RealMouse.LeftUpAsync(window);
                     string up = State();
-                    rows.Add(["Observation Target: Highlighted / Pressed / SubmenuOpen / Suspending: before; hover",
+                    rows.Add([T("Observation Target: Highlighted / Pressed / SubmenuOpen / Suspending: before; hover", "Observation Target: Highlighted / Pressed / SubmenuOpen / Suspending: 前; ホバー"),
                         $"{before}; {hover}"]);
-                    rows.Add(["  real button down; up", $"{down}; {up}"]);
+                    rows.Add([T("  real button down; up", "  実際にボタンを押す; 離す"), $"{down}; {up}"]);
                 }
 
                 target.IsSubmenuOpen = false;
@@ -393,7 +396,7 @@ internal sealed class MenuDemoScene : IScene
                     await ClickAsync(window, file);
                     string opened = $"{file.IsSubmenuOpen} / {file.IsSuspendingPopupAnimation}";
                     await RealMouse.MoveToAsync(edit);
-                    rows.Add(["click File: open / suspending; hover Edit: File open; Edit open / suspending",
+                    rows.Add([T("click File: open / suspending; hover Edit: File open; Edit open / suspending", "File をクリック: 開くか / Suspending; Edit にホバー: File が開いているか; Edit が開くか / Suspending"),
                         $"{opened}; {file.IsSubmenuOpen}; {edit.IsSubmenuOpen} / {edit.IsSuspendingPopupAnimation}"]);
                 }
 
@@ -418,7 +421,7 @@ internal sealed class MenuDemoScene : IScene
                 window.InputBindings.Add(new KeyBinding(open, Key.O, ModifierKeys.Control));
                 await FocusAsync(box);
                 await RealKeyboard.PressAsync(window, VkO, VkControl);
-                rows.Add(["window KeyBinding Ctrl+O, real Ctrl+O: executed / item's InputGestureText",
+                rows.Add([T("window KeyBinding Ctrl+O, real Ctrl+O: executed / item's InputGestureText", "ウィンドウの KeyBinding Ctrl+O、実際に Ctrl+O: 実行されたか / 項目の InputGestureText"),
                     $"{executed} / {WpfProbe.Describe(item.InputGestureText)}"]);
             });
         }
