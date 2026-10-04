@@ -50,7 +50,7 @@ internal sealed class TabItemDemoScene : IScene
 
         await context.SaveTableAsync(
             "TabItem content: when it is loaded, and whether it is reused (three tabs, switching 1 -> 2 -> 1)",
-            [T("how the content is given", "内容の渡し方"), T("Loaded count per tab", "タブごとの Loaded の回数"), T("same instance after switching back", "戻したときに同じインスタンスか")],
+            [T("how the content is given", "内容の渡し方"), T("measured", "計測値"), T("same instance after switching back", "戻したときに同じインスタンスか")],
             await ContentLifetimeAsync(),
             "tabitem-content-lifetime.svg");
     }
@@ -329,7 +329,7 @@ internal sealed class TabItemDemoScene : IScene
                 await Switch(tabs, 1);
                 await Switch(tabs, 0);
                 object? again = Descendants(host).OfType<LoadCounter>().FirstOrDefault();
-                rows.Add([T("elements as TabItem.Content", "TabItem.Content に要素"),
+                rows.Add([T("elements as TabItem.Content: Loaded count per tab", "TabItem.Content に要素: タブごとの Loaded の回数"),
                     T($"at start {atStart}; after 1 -> 2 -> 1: {string.Join(" / ", counters.Select(c => c.Loads))}", $"最初 {atStart}、1 -> 2 -> 1 の後: {string.Join(" / ", counters.Select(c => c.Loads))}"),
                     ReferenceEquals(first, again).ToString()]);
                 rows.Add([T("  same, measure calls per tab at start", "  同じ条件、最初のタブごとの測定の回数"), measuredAtStart, "-"]);
@@ -368,8 +368,8 @@ internal sealed class TabItemDemoScene : IScene
                     }
                 }
 
-                rows.Add(["ItemsSource + ContentTemplate",
-                    T($"at start {atStart.En}; after 1 -> 2 -> 1: {created.Count} instances created", $"最初 {atStart.Ja}、1 -> 2 -> 1 の後: {created.Count} 個作成"),
+                rows.Add([T("ItemsSource + ContentTemplate: content instances created", "ItemsSource + ContentTemplate: 作られた内容のインスタンスの数"),
+                    T($"at start {atStart.En}; after 1 -> 2 -> 1: {created.Count} created", $"最初 {atStart.Ja}、1 -> 2 -> 1 の後: {created.Count} 個作成"),
                     ReferenceEquals(first, again).ToString()]);
             });
         }

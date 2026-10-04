@@ -62,13 +62,13 @@ internal sealed class SliderDemoScene : IScene
 
         await context.SaveTableAsync(
             "Slider (0 to 100, SmallChange 1, LargeChange 10, Value 50): keys and track",
-            [T("case", "条件"), T("Value after", "操作後の Value")],
+            [T("case", "条件"), T("measured", "計測値")],
             await KeysAsync(),
             "slider-keys.svg");
 
         await context.SaveTableAsync(
             "Slider: Value after dragging the thumb",
-            [T("case", "条件"), "Value"],
+            [T("case", "条件"), T("measured", "計測値")],
             await SnappingAsync(),
             "slider-snap.svg");
 

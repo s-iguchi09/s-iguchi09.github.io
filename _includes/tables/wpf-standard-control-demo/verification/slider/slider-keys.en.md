@@ -1,4 +1,4 @@
-| case | Value after |
+| case | measured |
 |---|---|
 | Right arrow | 51 |
 | Left arrow | 49 |

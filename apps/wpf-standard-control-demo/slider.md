@@ -33,7 +33,7 @@ Drawing tick marks does not snap to them: with only `TickPlacement="BottomRight"
 
 {% include tables/wpf-standard-control-demo/verification/slider/slider-snap.en.md %}
 
-Values after dragging the thumb, with and without snapping. Measured on .NET 10 / Windows 11.
+<code>Value</code> after dragging the thumb, with and without snapping. Only the last row is the value of the source bound to <code>Value</code>, read during the drag. Measured on .NET 10 / Windows 11.
 {: .table-caption}
 
 ## Tick marks, the selection range, and the tooltip

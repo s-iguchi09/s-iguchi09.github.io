@@ -1,4 +1,4 @@
-| case | Value |
+| case | measured |
 |---|---|
 | 0\.\.100, dragged to 23.4, no snapping | 23.4 |
 | TickPlacement=BottomRight only | 23.4 |

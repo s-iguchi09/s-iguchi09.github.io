@@ -33,7 +33,7 @@ description: "WPF の Slider の範囲の補正、目盛りへの吸着、キー
 
 {% include tables/wpf-standard-control-demo/verification/slider/slider-snap.ja.md %}
 
-吸着の有無によるドラッグ後の値。.NET 10 / Windows 11 で計測。
+吸着の有無によるドラッグ後の <code>Value</code>。最後の行だけは、<code>Value</code> にバインドしたソースのドラッグ中の値である。.NET 10 / Windows 11 で計測。
 {: .table-caption}
 
 ## 目盛り、選択範囲、ツールチップ
