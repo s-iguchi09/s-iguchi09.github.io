@@ -19,3 +19,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/popup/popup-placement.svg"
   - "images/wpf-standard-control-demo/verification/popup/popup-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/popup/popup-placement.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/popup/popup-placement.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/popup/popup-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/popup/popup-behavior.ja.md"

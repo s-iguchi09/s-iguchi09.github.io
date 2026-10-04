@@ -15,3 +15,6 @@ verifies:
   - "Placement=Bottom と Mouse で、ボタンとカーソルに対するツールチップの位置、HorizontalOffset 50 を加えたときの位置"
 images:
   - "images/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/tooltip/tooltip-behavior.ja.md"

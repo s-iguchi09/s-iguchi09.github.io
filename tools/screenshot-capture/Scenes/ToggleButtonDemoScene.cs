@@ -39,10 +39,13 @@ internal sealed class ToggleButtonDemoScene : IScene
     {
         await context.SaveTableAsync(
             "ToggleButton: type, states, template, ClickMode, Command and Popup",
-            ["case", "measured"],
+            [T("case", "条件"), T("measured", "計測値")],
             await MeasureAsync(),
             "togglebutton-behavior.svg");
     }
+
+    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     private static string State(bool? value) => value switch { null => "null", true => "true", false => "false" };
 
@@ -51,12 +54,12 @@ internal sealed class ToggleButtonDemoScene : IScene
 
     private sealed class RecordingCommand(ToggleButton owner) : ICommand
     {
-        public string Record { get; private set; } = "not executed";
+        public Loc Record { get; private set; } = T("not executed", "実行されない");
 
         public bool CanExecute(object? parameter) => true;
 
         public void Execute(object? parameter) =>
-            Record = $"IsChecked {State(owner.IsChecked)}, parameter {WpfProbe.Describe(parameter)}";
+            Record = T($"IsChecked {State(owner.IsChecked)}, parameter {WpfProbe.Describe(parameter)}", $"IsChecked {State(owner.IsChecked)}、パラメーター {WpfProbe.Describe(parameter)}");
 
         public event EventHandler? CanExecuteChanged
         {
@@ -65,13 +68,13 @@ internal sealed class ToggleButtonDemoScene : IScene
         }
     }
 
-    private static async Task<List<IReadOnlyList<string>>> MeasureAsync()
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync()
     {
-        var rows = new List<IReadOnlyList<string>>();
+        var rows = new List<IReadOnlyList<Loc>>();
 
-        rows.Add(["base class / derived: CheckBox, RadioButton",
+        rows.Add([T("base class / derived: CheckBox, RadioButton", "基底クラス / 派生クラス: CheckBox, RadioButton"),
             $"{typeof(ToggleButton).BaseType!.Name} / {typeof(CheckBox).BaseType!.Name}, {typeof(RadioButton).BaseType!.Name}"]);
-        rows.Add(["IsChecked: BindsTwoWayByDefault / GroupName property on ToggleButton",
+        rows.Add([T("IsChecked: BindsTwoWayByDefault / GroupName property on ToggleButton", "IsChecked: BindsTwoWayByDefault / ToggleButton に GroupName プロパティがあるか"),
             $"{((FrameworkPropertyMetadata)ToggleButton.IsCheckedProperty.GetMetadata(typeof(ToggleButton))).BindsTwoWayByDefault} / " +
             $"{typeof(ToggleButton).GetProperty("GroupName") is not null}"]);
 
@@ -87,7 +90,7 @@ internal sealed class ToggleButtonDemoScene : IScene
                     states.Add(State(button.IsChecked));
                 }
 
-                rows.Add([$"IsThreeState={threeState}, start {State(start)}: 3 clicks", string.Join(" -> ", states)]);
+                rows.Add([T($"IsThreeState={threeState}, start {State(start)}: 3 clicks", $"IsThreeState={threeState}、最初は {State(start)}: 3 回クリック"), string.Join(" -> ", states)]);
                 await Task.CompletedTask;
             });
         }
@@ -101,7 +104,7 @@ internal sealed class ToggleButtonDemoScene : IScene
                 var triggers = button.Template.Triggers.OfType<Trigger>()
                     .Where(t => t.Property == ToggleButton.IsCheckedProperty)
                     .Select(t => State((bool?)t.Value));
-                rows.Add(["default template: VisualStateGroups / triggers on IsChecked (values)",
+                rows.Add([T("default template: VisualStateGroups / triggers on IsChecked (values)", "既定のテンプレート: VisualStateGroups / IsChecked のトリガー（値）"),
                     $"{groups} / {string.Join(", ", triggers)}"]);
 
                 var states = new List<string>();
@@ -112,7 +115,7 @@ internal sealed class ToggleButtonDemoScene : IScene
                     states.Add($"{State(value)} -> {peer.ToggleState}");
                 }
 
-                rows.Add(["UI Automation ToggleState", string.Join(", ", states)]);
+                rows.Add([T("UI Automation ToggleState", "UI オートメーションの ToggleState"), string.Join(", ", states)]);
                 await Task.CompletedTask;
             });
         }
@@ -126,7 +129,7 @@ internal sealed class ToggleButtonDemoScene : IScene
                 button.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left) { RoutedEvent = UIElement.MouseLeftButtonDownEvent });
                 string down = State(button.IsChecked);
                 button.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left) { RoutedEvent = UIElement.MouseLeftButtonUpEvent });
-                rows.Add(["ClickMode=Press: IsChecked after button down / after button up (false before)",
+                rows.Add([T("ClickMode=Press: IsChecked after button down / after button up (false before)", "ClickMode=Press: ボタンを押した後の IsChecked / 離した後（前は false）"),
                     $"{down} / {State(button.IsChecked)}"]);
                 await Task.CompletedTask;
             }, activate: true);
@@ -143,12 +146,12 @@ internal sealed class ToggleButtonDemoScene : IScene
             {
                 typeof(ToggleButton).GetMethod("OnClick", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
                     .Invoke(button, null);
-                rows.Add(["Command, CommandParameter bound to its own IsChecked; clicked (OnClick) from false: in Execute", command.Record]);
+                rows.Add([T("Command, CommandParameter bound to its own IsChecked; clicked (OnClick) from false: in Execute", "Command、CommandParameter を自身の IsChecked にバインド、false からクリック（OnClick）: Execute の中で"), command.Record]);
 
                 var withoutClick = new RecordingCommand(button);
                 button.Command = withoutClick;
                 Toggle(button);
-                rows.Add(["  the same button toggled through UI Automation's Toggle: Command", withoutClick.Record]);
+                rows.Add([T("  the same button toggled through UI Automation's Toggle: Command", "  同じボタンを UI オートメーションの Toggle で切り替え: Command"), withoutClick.Record]);
                 await Task.CompletedTask;
             });
         }
@@ -167,7 +170,7 @@ internal sealed class ToggleButtonDemoScene : IScene
                 string opened = $"IsChecked {State(button.IsChecked)}, IsOpen {popup.IsOpen}";
                 popup.IsOpen = false;
                 await Capture.SettleAsync(Window.GetWindow(button)!);
-                rows.Add(["Popup.IsOpen bound to IsChecked (Mode not set): after click / after the popup closes",
+                rows.Add([T("Popup.IsOpen bound to IsChecked (Mode not set): after click / after the popup closes", "Popup.IsOpen を IsChecked にバインド（Mode なし）: クリックの後 / ポップアップが閉じた後"),
                     $"{opened} / IsChecked {State(button.IsChecked)}"]);
                 rows.Add(["  Popup.IsOpen: BindsTwoWayByDefault",
                     ((FrameworkPropertyMetadata)Popup.IsOpenProperty.GetMetadata(typeof(Popup))).BindsTwoWayByDefault.ToString()]);
@@ -203,12 +206,12 @@ internal sealed class ToggleButtonDemoScene : IScene
                     await ClickAsync(button);
                     string opened = Now();
                     await ClickAsync(blank);
-                    rows.Add(["StaysOpen=False, real clicks (IsOpen, IsChecked): button / empty area", $"{opened} / {Now()}"]);
+                    rows.Add([T("StaysOpen=False, real clicks (IsOpen, IsChecked): button / empty area", "StaysOpen=False、実際のクリック（IsOpen, IsChecked）: ボタン / 何も無い所"), $"{opened} / {Now()}"]);
 
                     await ClickAsync(button);
                     string reopened = Now();
                     await ClickAsync(button);
-                    rows.Add(["  button again / button while open", $"{reopened} / {Now()}"]);
+                    rows.Add([T("  button again / button while open", "  もう一度ボタン / 開いている間にボタン"), $"{reopened} / {Now()}"]);
                 }
 
                 popup.IsOpen = false;

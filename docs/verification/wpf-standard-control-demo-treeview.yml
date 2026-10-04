@@ -22,3 +22,8 @@ verifies:
 images:
   - "images/wpf-standard-control-demo/verification/treeview/treeview-selection.svg"
   - "images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg"
+tables:
+  - "_includes/tables/wpf-standard-control-demo/verification/treeview/treeview-selection.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/treeview/treeview-selection.ja.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/treeview/treeview-structure.en.md"
+  - "_includes/tables/wpf-standard-control-demo/verification/treeview/treeview-structure.ja.md"

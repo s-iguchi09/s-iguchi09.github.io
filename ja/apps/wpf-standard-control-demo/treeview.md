@@ -39,10 +39,10 @@ TreeViewItem の `IsExpanded` は、ノードが子を表示しているかど�
 
 ノード A（子を持ち、最初の子にもさらに子がある）を選び、フォーカスを置いた状態で試すと、下矢印キーで次のノードが選ばれました。右矢印キーで A が展開され、左矢印キーで再び折りたたまれました。テンキーの `*` で、A とその下のすべてのノードが展開されました。Space キーと Enter キーでは、選択も展開も変わりませんでした。
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/treeview/treeview-structure.svg" alt="TreeView の計測結果の表。デモアプリの IsExpanded のバインドは展開ボタンで折りたたむと外れ、データで展開した子は親を開くと展開され、HierarchicalDataTemplate はすべての階層に適用され、DataType が合わないと ToString が表示され、既定では仮想化されず、矢印キーとテンキーの * で展開・折りたたみが変わり Space と Enter では何も起きず、ContextMenu は開いている間ノードを DataContext にする。Expanded のハンドラーで仮の子を入れ替えると展開ボタンの実際のクリックで本来の子が表示される" width="1210" height="590" loading="lazy">
-  <figcaption>展開、テンプレート、仮想化、キー操作、コンテキストメニュー。.NET 10 / Windows 11 で計測。</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/treeview/treeview-structure.ja.md %}
+
+展開、テンプレート、仮想化、キー操作、コンテキストメニュー。.NET 10 / Windows 11 で計測。
+{: .table-caption}
 
 ## デモアプリで試す
 

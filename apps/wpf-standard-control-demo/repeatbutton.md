@@ -13,10 +13,10 @@ description: "WPF RepeatButton measured on .NET 10 with a real mouse: when click
 
 The repetition stops when the pointer leaves the button: with the mouse button still held, there was no click while the pointer was outside, and `IsPressed` was `False`. Clicks resumed when the pointer came back. Holding <kbd>Space</kbd> also repeats. A single key-down event, with no key repeat from Windows, gave 8 clicks in a second. UI Automation's `Invoke` gave one click.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.svg" alt="Table of RepeatButton timing: the defaults were Delay 500 and Interval 33 with keyboard delay 1 and speed 31, ClickMode defaults to Press, holding for about a second with Delay 300 and Interval 100 gave 8 clicks with the first at once, the second about 320 ms later and the rest about 110 ms apart, no click on release, one command execution per click, no clicks while the pointer was outside, and 8 clicks for a held Space key" width="998" height="350" loading="lazy">
-  <figcaption>Defaults, and clicks while the mouse button or <kbd>Space</kbd> is held. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-repeat.en.md %}
+
+Defaults, and clicks while the mouse button or <kbd>Space</kbd> is held. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Delay and Interval come from the user's keyboard settings
 
@@ -28,10 +28,10 @@ A negative `Delay` set from code threw `ArgumentException`; 0 was accepted. `Int
 
 The demo app binds `Delay` and `Interval` to text boxes. A value that cannot be used does not keep the previous one. After `"200"`, entering `"-1"`, an empty string, or `"abc"` each set `Delay` to the default, 500. Entering `"0"` after `"50"` set `Interval` to the default, 33. Validate the values before they reach the button.
 
-<figure class="article-figure article-figure--wide">
-  <img src="/images/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.svg" alt="Table of RepeatButton values: Delay -1 and Interval 0 throw ArgumentException from code, invalid text bound from a TextBox resets Delay to 500 and Interval to 33, the ScrollBar template has RepeatButtons for LineUp, PageUp, PageDown, and LineDown, and the Slider template has DecreaseLarge and IncreaseLarge" width="983" height="290" loading="lazy">
-  <figcaption>Invalid values, and the RepeatButtons in WPF's own templates. Measured on .NET 10 / Windows 11.</figcaption>
-</figure>
+{% include tables/wpf-standard-control-demo/verification/repeatbutton/repeatbutton-values.en.md %}
+
+Invalid values, and the RepeatButtons in WPF's own templates. Measured on .NET 10 / Windows 11.
+{: .table-caption}
 
 ## Where WPF itself uses RepeatButton
 
