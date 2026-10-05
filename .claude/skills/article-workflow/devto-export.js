@@ -503,6 +503,9 @@ function buildExport(slug) {
     // 拡張子はクエリとフラグメントを除いて判定する。
     fm.image && !/\.svg$/i.test(fm.image.replace(/[?#].*$/, '')) ? `cover_image: ${SITE}${fm.image}` : null,
     `canonical_url: ${SITE}/articles/${slug}/`,
+    // dev.to は AI を使った記事に開示を求め、未開示はアカウント停止の対象になりうる。
+    // 書かないと Not Disclosed になるので、AI-Assisted（some_ai）を明示する。
+    'ai_disclosure: some_ai',
     '---',
     '',
     `> Originally published at [s-iguchi09.github.io](${SITE}/articles/${slug}/).`,
