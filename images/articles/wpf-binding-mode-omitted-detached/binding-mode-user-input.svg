@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2052 590" width="2052" height="590" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="2052" height="590" />
+  <text class="title" x="12" y="24">Bindings after real mouse and keyboard input</text>
+  <rect class="head" x="12" y="38" width="2028" height="30" />
+  <text class="cell" x="26" y="57.5">binding and input</text>
+  <text class="cell" x="1106" y="57.5" text-anchor="end">after the input: displayed / source</text>
+  <text class="cell" x="1314" y="57.5" text-anchor="end">binding after the input</text>
+  <text class="cell" x="1562" y="57.5" text-anchor="end">value source after the input</text>
+  <text class="cell" x="1889" y="57.5" text-anchor="end">displayed after the source is assigned</text>
+  <text class="cell" x="2026" y="57.5" text-anchor="end">binding errors</text>
+  <text class="cell" x="26" y="87.5">ItemContainerStyle {Binding IsExpanded}, click the expander button</text>
+  <text class="cell" x="1106" y="87.5" text-anchor="end">True / False</text>
+  <text class="cell" x="1314" y="87.5" text-anchor="end">removed</text>
+  <text class="cell" x="1562" y="87.5" text-anchor="end">Local</text>
+  <text class="cell" x="1889" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="2026" y="87.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="117.5">ItemContainerStyle {Binding IsExpanded}, select the node and press the right arrow key</text>
+  <text class="cell" x="1106" y="117.5" text-anchor="end">True / False</text>
+  <text class="cell" x="1314" y="117.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="117.5" text-anchor="end">Style, expression, current</text>
+  <text class="cell" x="1889" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="117.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="147.5">ItemContainerStyle {Binding IsExpanded}, double-click the header</text>
+  <text class="cell" x="1106" y="147.5" text-anchor="end">True / False</text>
+  <text class="cell" x="1314" y="147.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="147.5" text-anchor="end">Style, expression, current</text>
+  <text class="cell" x="1889" y="147.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="147.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="177.5">ItemContainerStyle {Binding IsExpanded}, set IsChecked of the expander button to True from code</text>
+  <text class="cell" x="1106" y="177.5" text-anchor="end">True / False</text>
+  <text class="cell" x="1314" y="177.5" text-anchor="end">removed</text>
+  <text class="cell" x="1562" y="177.5" text-anchor="end">Local</text>
+  <text class="cell" x="1889" y="177.5" text-anchor="end">True</text>
+  <text class="cell" x="2026" y="177.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="207.5">ItemContainerStyle {Binding IsExpanded}, click the expander button, then ClearValue(IsExpanded)</text>
+  <text class="cell" x="1106" y="207.5" text-anchor="end">False / False</text>
+  <text class="cell" x="1314" y="207.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="207.5" text-anchor="end">Style, expression</text>
+  <text class="cell" x="1889" y="207.5" text-anchor="end">True</text>
+  <text class="cell" x="2026" y="207.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="237.5">ItemContainerStyle {Binding IsExpanded, Mode=TwoWay}, click the expander button</text>
+  <text class="cell" x="1106" y="237.5" text-anchor="end">True / True</text>
+  <text class="cell" x="1314" y="237.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="237.5" text-anchor="end">Style, expression</text>
+  <text class="cell" x="1889" y="237.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="237.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="267.5">ItemContainerStyle {Binding IsExpanded, Mode=TwoWay}, select the node and press the right arrow key</text>
+  <text class="cell" x="1106" y="267.5" text-anchor="end">True / True</text>
+  <text class="cell" x="1314" y="267.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="267.5" text-anchor="end">Style, expression</text>
+  <text class="cell" x="1889" y="267.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="267.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="297.5">ItemContainerStyle {Binding IsExpanded, Mode=TwoWay}, double-click the header</text>
+  <text class="cell" x="1106" y="297.5" text-anchor="end">True / True</text>
+  <text class="cell" x="1314" y="297.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="297.5" text-anchor="end">Style, expression</text>
+  <text class="cell" x="1889" y="297.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="297.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="327.5">TreeViewItem IsExpanded="{Binding Value}" written on the item, click the expander button</text>
+  <text class="cell" x="1106" y="327.5" text-anchor="end">True / False</text>
+  <text class="cell" x="1314" y="327.5" text-anchor="end">removed</text>
+  <text class="cell" x="1562" y="327.5" text-anchor="end">Local</text>
+  <text class="cell" x="1889" y="327.5" text-anchor="end">True</text>
+  <text class="cell" x="2026" y="327.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="357.5">TreeViewItem IsExpanded="{Binding Value}" written on the item, click, then ClearValue(IsExpanded)</text>
+  <text class="cell" x="1106" y="357.5" text-anchor="end">False / False</text>
+  <text class="cell" x="1314" y="357.5" text-anchor="end">removed</text>
+  <text class="cell" x="1562" y="357.5" text-anchor="end">Default</text>
+  <text class="cell" x="1889" y="357.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="357.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="387.5">Expander IsExpanded="{Binding Value}", click the header</text>
+  <text class="cell" x="1106" y="387.5" text-anchor="end">True / True</text>
+  <text class="cell" x="1314" y="387.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="387.5" text-anchor="end">Local, expression</text>
+  <text class="cell" x="1889" y="387.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="387.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="417.5">Expander IsExpanded="{Binding Value, Mode=OneWay}", click the header</text>
+  <text class="cell" x="1106" y="417.5" text-anchor="end">True / False</text>
+  <text class="cell" x="1314" y="417.5" text-anchor="end">removed</text>
+  <text class="cell" x="1562" y="417.5" text-anchor="end">Local</text>
+  <text class="cell" x="1889" y="417.5" text-anchor="end">True</text>
+  <text class="cell" x="2026" y="417.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="447.5">MenuItem IsCheckable IsChecked="{Binding Value}", click it</text>
+  <text class="cell" x="1106" y="447.5" text-anchor="end">True / True</text>
+  <text class="cell" x="1314" y="447.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="447.5" text-anchor="end">Local, expression</text>
+  <text class="cell" x="1889" y="447.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="447.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="477.5">CheckBox IsChecked="{Binding Value}", click it</text>
+  <text class="cell" x="1106" y="477.5" text-anchor="end">True / True</text>
+  <text class="cell" x="1314" y="477.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="477.5" text-anchor="end">Local, expression</text>
+  <text class="cell" x="1889" y="477.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="477.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="507.5">ColumnDefinition Width="{Binding Value}", drag the GridSplitter 60 DIP to the right</text>
+  <text class="cell" x="1106" y="507.5" text-anchor="end">160 / 100</text>
+  <text class="cell" x="1314" y="507.5" text-anchor="end">removed</text>
+  <text class="cell" x="1562" y="507.5" text-anchor="end">Local</text>
+  <text class="cell" x="1889" y="507.5" text-anchor="end">160</text>
+  <text class="cell" x="2026" y="507.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="537.5">ColumnDefinition Width="{Binding Value, Mode=TwoWay}", drag the GridSplitter 60 DIP to the right</text>
+  <text class="cell" x="1106" y="537.5" text-anchor="end">160 / 160</text>
+  <text class="cell" x="1314" y="537.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="537.5" text-anchor="end">Local, expression</text>
+  <text class="cell" x="1889" y="537.5" text-anchor="end">100</text>
+  <text class="cell" x="2026" y="537.5" text-anchor="end">0</text>
+  <text class="cell" x="26" y="567.5">check of the error count: TreeViewItem IsExpanded="{Binding Missing}" (no such property), no input</text>
+  <text class="cell" x="1106" y="567.5" text-anchor="end">False / False</text>
+  <text class="cell" x="1314" y="567.5" text-anchor="end">kept</text>
+  <text class="cell" x="1562" y="567.5" text-anchor="end">Local, expression</text>
+  <text class="cell" x="1889" y="567.5" text-anchor="end">False</text>
+  <text class="cell" x="2026" y="567.5" text-anchor="end">1</text>
+  <line class="line" x1="12" y1="38" x2="2040" y2="38" />
+  <line class="line" x1="12" y1="68" x2="2040" y2="68" />
+  <line class="line" x1="12" y1="98" x2="2040" y2="98" />
+  <line class="line" x1="12" y1="128" x2="2040" y2="128" />
+  <line class="line" x1="12" y1="158" x2="2040" y2="158" />
+  <line class="line" x1="12" y1="188" x2="2040" y2="188" />
+  <line class="line" x1="12" y1="218" x2="2040" y2="218" />
+  <line class="line" x1="12" y1="248" x2="2040" y2="248" />
+  <line class="line" x1="12" y1="278" x2="2040" y2="278" />
+  <line class="line" x1="12" y1="308" x2="2040" y2="308" />
+  <line class="line" x1="12" y1="338" x2="2040" y2="338" />
+  <line class="line" x1="12" y1="368" x2="2040" y2="368" />
+  <line class="line" x1="12" y1="398" x2="2040" y2="398" />
+  <line class="line" x1="12" y1="428" x2="2040" y2="428" />
+  <line class="line" x1="12" y1="458" x2="2040" y2="458" />
+  <line class="line" x1="12" y1="488" x2="2040" y2="488" />
+  <line class="line" x1="12" y1="518" x2="2040" y2="518" />
+  <line class="line" x1="12" y1="548" x2="2040" y2="548" />
+  <line class="line" x1="12" y1="578" x2="2040" y2="578" />
+  <line class="line" x1="12" y1="38" x2="12" y2="578" />
+  <line class="line" x1="817" y1="38" x2="817" y2="578" />
+  <line class="line" x1="1120" y1="38" x2="1120" y2="578" />
+  <line class="line" x1="1328" y1="38" x2="1328" y2="578" />
+  <line class="line" x1="1576" y1="38" x2="1576" y2="578" />
+  <line class="line" x1="1903" y1="38" x2="1903" y2="578" />
+  <line class="line" x1="2040" y1="38" x2="2040" y2="578" />
+</svg>
