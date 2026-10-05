@@ -484,11 +484,18 @@ GitHub の Website 欄・Qiita・Zenn・X はいずれも `nofollow` を付け�
 dev.to は AI を使った記事を認めるが、**開示を必須にしている**。未開示の AI 生成記事は
 アカウント停止の対象になりうる（[ガイドライン](https://dev.to/guidelines-for-ai-assisted-articles-on-dev)）。
 front matter に `ai_disclosure` を書かないと区分は Not Disclosed になるため、
-`devto-export.js` は `ai_disclosure: some_ai`（AI-Assisted）を必ず出力する。
+`devto-export.js` は `ai_disclosure` を必ず出力する。
 
-> ⚠️ 2026-10-06 JST の時点で、それまでに転載した 8 本がすべて Not Disclosed のままだった。
-> 同日に全記事の front matter へ追記して解消した。値は `no_ai` / `some_ai` / `fully_autonomous` の
-> 3 つで、`fully_autonomous` はホームのフィードで不利に扱われる。
+- 値は記事（`_articles_en` / `_articles_ja`）の front matter の `ai_disclosure` を使う。
+  書いていなければ `some_ai`（AI-Assisted）になる。
+- 指定できる値は `no_ai` / `some_ai` / `fully_autonomous` の 3 つ。`fully_autonomous` はホームの
+  フィードで不利に扱われる。AI を使わずに書いた記事には `ai_disclosure: no_ai` を書く。
+- 値が不正なとき、英語版と日本語版で値が食い違うとき、dev.to の別名のキー
+  （`ai_disclosure_level` / `ai_generated` / `ai_assisted`）が書かれているときは、出力せずに止まる。
+
+> ⚠️ 2026-10-06 JST（2026-10-05 UTC）の時点で、それまでに転載した 8 本がすべて Not Disclosed の
+> ままだった。同日に dev.to 上で 8 本の front matter へ `ai_disclosure: some_ai` を追記し、
+> API で `ai_disclosure_level` が `some_ai` になったことを確認した。
 >
 > 転載先を増やす場合は、リンクの扱いより先に **AI 方針を確認する**。
 > DZone は AI を一部でも使った記事を受け付けない。

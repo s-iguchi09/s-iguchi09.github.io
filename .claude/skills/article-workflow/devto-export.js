@@ -489,8 +489,40 @@ function replaceSvgFigures(body, slug) {
   }));
 }
 
+// dev.to の AI 利用の開示区分。not_disclosed は開示しないのと同じなので受け付けない。
+const AI_DISCLOSURE_VALUES = ['no_ai', 'some_ai', 'fully_autonomous'];
+// 記事が front matter で指定しないときの区分。このサイトの記事は AI を使って書いている。
+const DEFAULT_AI_DISCLOSURE = 'some_ai';
+// dev.to が ai_disclosure の別名として読むキー。記事側に書かれると、どちらが効くのか分からなくなる。
+const AI_DISCLOSURE_ALIASES = ['ai_disclosure_level', 'ai_generated', 'ai_assisted'];
+
+/**
+ * 記事の front matter の ai_disclosure から dev.to の開示区分を決める。書いていなければ some_ai。
+ * 誤った区分のまま公開するとガイドライン違反になるので、迷う値は既定に倒さず throw する。
+ */
+function resolveAiDisclosure(slug, fm) {
+  for (const key of AI_DISCLOSURE_ALIASES) {
+    if (key in fm) throw new Error(`${slug}: front matter の ${key} は使わず ai_disclosure に書く`);
+  }
+  if (!('ai_disclosure' in fm)) return DEFAULT_AI_DISCLOSURE;
+  const value = fm.ai_disclosure;
+  if (!AI_DISCLOSURE_VALUES.includes(value)) {
+    throw new Error(`${slug}: ai_disclosure の値が不正: "${value}"（${AI_DISCLOSURE_VALUES.join(' / ')} のいずれか）`);
+  }
+  return value;
+}
+
 function buildExport(slug) {
   const { fm, body } = readArticle(slug, 'en');
+  const aiDisclosure = resolveAiDisclosure(slug, fm);
+  // 日本語版と区分が食い違うと、どちらが事実なのか分からない。
+  const jaFile = path.join(REPO, '_articles_ja', `${slug}.md`);
+  if (fs.existsSync(jaFile)) {
+    const jaDisclosure = resolveAiDisclosure(`${slug}（日本語版）`, readArticle(slug, 'ja').fm);
+    if (jaDisclosure !== aiDisclosure) {
+      throw new Error(`${slug}: ai_disclosure が英語版（${aiDisclosure}）と日本語版（${jaDisclosure}）で食い違っている`);
+    }
+  }
   const title = fm.title;
   const head = [
     '---',
@@ -504,8 +536,8 @@ function buildExport(slug) {
     fm.image && !/\.svg$/i.test(fm.image.replace(/[?#].*$/, '')) ? `cover_image: ${SITE}${fm.image}` : null,
     `canonical_url: ${SITE}/articles/${slug}/`,
     // dev.to は AI を使った記事に開示を求め、未開示はアカウント停止の対象になりうる。
-    // 書かないと Not Disclosed になるので、AI-Assisted（some_ai）を明示する。
-    'ai_disclosure: some_ai',
+    // 書かないと Not Disclosed になるので、区分を必ず明示する（resolveAiDisclosure）。
+    `ai_disclosure: ${aiDisclosure}`,
     '---',
     '',
     `> Originally published at [s-iguchi09.github.io](${SITE}/articles/${slug}/).`,
