@@ -46,6 +46,7 @@ internal static class Program
         new NaturalSortScene(),
         new InputLimitsFromCodeScene(),
         new VirtualizationLostConditionsScene(),
+        new BindingModeOmittedScene(),
         new CollectionViewFilterRefreshScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),

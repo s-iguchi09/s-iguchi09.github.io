@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 728 920" width="728" height="920" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="728" height="920" />
+  <text class="title" x="12" y="24">Default binding direction of properties often bound without Mode</text>
+  <rect class="head" x="12" y="38" width="704" height="30" />
+  <text class="cell" x="26" y="57.5">property</text>
+  <text class="cell" x="470" y="57.5" text-anchor="end">BindsTwoWayByDefault</text>
+  <text class="cell" x="702" y="57.5" text-anchor="end">DefaultUpdateSourceTrigger</text>
+  <text class="cell" x="26" y="87.5">TreeViewItem.IsExpanded</text>
+  <text class="cell" x="470" y="87.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="87.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="117.5">TreeViewItem.IsSelected</text>
+  <text class="cell" x="470" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="117.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="147.5">Expander.IsExpanded</text>
+  <text class="cell" x="470" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="147.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="177.5">ToggleButton.IsChecked</text>
+  <text class="cell" x="470" y="177.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="177.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="207.5">ToggleButton.IsChecked (CheckBox)</text>
+  <text class="cell" x="470" y="207.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="207.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="237.5">MenuItem.IsChecked</text>
+  <text class="cell" x="470" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="237.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="267.5">MenuItem.IsSubmenuOpen</text>
+  <text class="cell" x="470" y="267.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="267.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="297.5">ComboBox.IsDropDownOpen</text>
+  <text class="cell" x="470" y="297.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="297.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="327.5">ComboBox.Text</text>
+  <text class="cell" x="470" y="327.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="327.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="357.5">Popup.IsOpen</text>
+  <text class="cell" x="470" y="357.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="357.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="387.5">ContextMenu.IsOpen</text>
+  <text class="cell" x="470" y="387.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="387.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="417.5">ToolTip.IsOpen</text>
+  <text class="cell" x="470" y="417.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="417.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="447.5">Selector.SelectedIndex (ListBox)</text>
+  <text class="cell" x="470" y="447.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="447.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="477.5">Selector.SelectedItem (ListBox)</text>
+  <text class="cell" x="470" y="477.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="477.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="507.5">ListBoxItem.IsSelected</text>
+  <text class="cell" x="470" y="507.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="507.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="537.5">TabItem.IsSelected</text>
+  <text class="cell" x="470" y="537.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="537.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="567.5">TextBox.Text</text>
+  <text class="cell" x="470" y="567.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="567.5" text-anchor="end">LostFocus</text>
+  <text class="cell" x="26" y="597.5">RangeBase.Value (Slider)</text>
+  <text class="cell" x="470" y="597.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="597.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="627.5">DatePicker.SelectedDate</text>
+  <text class="cell" x="470" y="627.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="627.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="657.5">DatePicker.Text</text>
+  <text class="cell" x="470" y="657.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="657.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="687.5">DatePicker.IsDropDownOpen</text>
+  <text class="cell" x="470" y="687.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="687.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="717.5">Calendar.SelectedDate</text>
+  <text class="cell" x="470" y="717.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="717.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="747.5">ColumnDefinition.Width</text>
+  <text class="cell" x="470" y="747.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="747.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="777.5">RowDefinition.Height</text>
+  <text class="cell" x="470" y="777.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="777.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="807.5">Window.WindowState</text>
+  <text class="cell" x="470" y="807.5" text-anchor="end">True</text>
+  <text class="cell" x="702" y="807.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="837.5">Window.Left</text>
+  <text class="cell" x="470" y="837.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="837.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="867.5">Window.Top</text>
+  <text class="cell" x="470" y="867.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="867.5" text-anchor="end">PropertyChanged</text>
+  <text class="cell" x="26" y="897.5">FrameworkElement.Width (Window)</text>
+  <text class="cell" x="470" y="897.5" text-anchor="end">False</text>
+  <text class="cell" x="702" y="897.5" text-anchor="end">PropertyChanged</text>
+  <line class="line" x1="12" y1="38" x2="716" y2="38" />
+  <line class="line" x1="12" y1="68" x2="716" y2="68" />
+  <line class="line" x1="12" y1="98" x2="716" y2="98" />
+  <line class="line" x1="12" y1="128" x2="716" y2="128" />
+  <line class="line" x1="12" y1="158" x2="716" y2="158" />
+  <line class="line" x1="12" y1="188" x2="716" y2="188" />
+  <line class="line" x1="12" y1="218" x2="716" y2="218" />
+  <line class="line" x1="12" y1="248" x2="716" y2="248" />
+  <line class="line" x1="12" y1="278" x2="716" y2="278" />
+  <line class="line" x1="12" y1="308" x2="716" y2="308" />
+  <line class="line" x1="12" y1="338" x2="716" y2="338" />
+  <line class="line" x1="12" y1="368" x2="716" y2="368" />
+  <line class="line" x1="12" y1="398" x2="716" y2="398" />
+  <line class="line" x1="12" y1="428" x2="716" y2="428" />
+  <line class="line" x1="12" y1="458" x2="716" y2="458" />
+  <line class="line" x1="12" y1="488" x2="716" y2="488" />
+  <line class="line" x1="12" y1="518" x2="716" y2="518" />
+  <line class="line" x1="12" y1="548" x2="716" y2="548" />
+  <line class="line" x1="12" y1="578" x2="716" y2="578" />
+  <line class="line" x1="12" y1="608" x2="716" y2="608" />
+  <line class="line" x1="12" y1="638" x2="716" y2="638" />
+  <line class="line" x1="12" y1="668" x2="716" y2="668" />
+  <line class="line" x1="12" y1="698" x2="716" y2="698" />
+  <line class="line" x1="12" y1="728" x2="716" y2="728" />
+  <line class="line" x1="12" y1="758" x2="716" y2="758" />
+  <line class="line" x1="12" y1="788" x2="716" y2="788" />
+  <line class="line" x1="12" y1="818" x2="716" y2="818" />
+  <line class="line" x1="12" y1="848" x2="716" y2="848" />
+  <line class="line" x1="12" y1="878" x2="716" y2="878" />
+  <line class="line" x1="12" y1="908" x2="716" y2="908" />
+  <line class="line" x1="12" y1="38" x2="12" y2="908" />
+  <line class="line" x1="299" y1="38" x2="299" y2="908" />
+  <line class="line" x1="484" y1="38" x2="484" y2="908" />
+  <line class="line" x1="716" y1="38" x2="716" y2="908" />
+</svg>

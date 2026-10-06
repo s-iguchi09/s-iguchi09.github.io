@@ -1,0 +1,31 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-binding-mode-omitted-detached
+slug: "wpf-binding-mode-omitted-detached"
+scene: "BindingModeOmittedScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "TreeViewItem.IsExpanded・ColumnDefinition.Width・RowDefinition.Height・DatePicker.Text・Window.Left・Window.Top・Window の FrameworkElement.Width の BindsTwoWayByDefault が False で、TreeViewItem.IsSelected・Expander.IsExpanded・ToggleButton.IsChecked（ToggleButton と CheckBox）・MenuItem.IsChecked・ComboBox.IsDropDownOpen・Popup.IsOpen・Selector.SelectedIndex・Selector.SelectedItem・TextBox.Text・RangeBase.Value・DatePicker.SelectedDate・Window.WindowState などは True であること"
+  - "TreeViewItem の既定のテンプレートで、展開ボタン（ToggleButton \"Expander\"）の IsChecked は Mode を書かない {Binding IsExpanded}（RelativeSource TemplatedParent）で、Expander の既定のテンプレートの見出し（ToggleButton \"HeaderSite\"）は Mode=TwoWay であること"
+  - "ItemContainerStyle の Setter で Mode を書かずに IsExpanded をバインドした TreeView は、実際のマウスで展開ボタンをクリックすると、値の供給元が Local になってバインドが働かなくなり、ソースは更新されず、ソースを戻しても表示は戻らないこと。バインドのエラーと警告は 0 件であること"
+  - "同じ TreeView で、展開ボタンの IsChecked にコードで True を設定しても、クリックと同じく Local になってソースは更新されないこと"
+  - "同じ TreeView で、展開ボタンのクリックの後に ClearValue を呼ぶと、値の供給元が Style のバインドの式に戻り、その後にソースを True にすると表示も True になること（Setter のバインドは隠れるだけであること）"
+  - "同じ TreeView で、実際のキー（→）や見出しのダブルクリックで展開すると、バインドは残り、値は SetCurrentValue の現在値（IsCurrent）になり、ソースは更新されず、ソースが変更を通知すると表示がソースの値に戻ること"
+  - "ItemContainerStyle の Setter に Mode=TwoWay を書くと、展開ボタンのクリック・→ キー・見出しのダブルクリックのどれでもバインドが残り、ソースが更新され、値の供給元に現在値（IsCurrent）は付かないこと"
+  - "TreeViewItem に属性で直接 IsExpanded=\"{Binding Value}\" と書いた場合は、展開ボタンのクリックでバインドが外れて Local になり、ClearValue の後は Default になって、ソースを True にしても表示は False のままであること"
+  - "BindsTwoWayByDefault が True の Expander.IsExpanded・MenuItem.IsChecked・CheckBox.IsChecked は、Mode を書かなくても実際のクリックでソースが更新され、バインドが残ること"
+  - "Expander の IsExpanded に Mode=OneWay を書くと、テンプレートの見出しが Mode=TwoWay でも、実際のクリックで Local になってソースは更新されないこと"
+  - "Mode を書かずに ColumnDefinition.Width をバインドした列は、実際のマウスで GridSplitter を 60 DIP ドラッグするとバインドが外れてソースは更新されず、Mode=TwoWay を書くとバインドが残ってソースが更新されること"
+  - "存在しないパスへのバインドは、同じトレースの数え方で 1 件以上と数えられること"
+images:
+  - "images/articles/wpf-binding-mode-omitted-detached/binding-mode-defaults.svg"
+  - "images/articles/wpf-binding-mode-omitted-detached/binding-mode-template-buttons.svg"
+  - "images/articles/wpf-binding-mode-omitted-detached/binding-mode-user-input.svg"
+tables:
+  - "_includes/tables/articles/wpf-binding-mode-omitted-detached/binding-mode-defaults.en.md"
+  - "_includes/tables/articles/wpf-binding-mode-omitted-detached/binding-mode-defaults.ja.md"
+  - "_includes/tables/articles/wpf-binding-mode-omitted-detached/binding-mode-template-buttons.en.md"
+  - "_includes/tables/articles/wpf-binding-mode-omitted-detached/binding-mode-template-buttons.ja.md"
+  - "_includes/tables/articles/wpf-binding-mode-omitted-detached/binding-mode-user-input.en.md"
+  - "_includes/tables/articles/wpf-binding-mode-omitted-detached/binding-mode-user-input.ja.md"
