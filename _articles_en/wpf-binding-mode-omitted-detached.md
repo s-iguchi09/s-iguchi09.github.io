@@ -2,7 +2,7 @@
 layout: article-en
 title: "How User Input Silently Removes a WPF Binding Written Without Mode"
 seo_title: "WPF Bindings Without Mode Removed by User Input"
-date: 2026-10-07
+date: 2026-10-06
 category: WPF
 excerpt: "Bindings to TreeViewItem.IsExpanded or ColumnDefinition.Width without Mode break after the expander button or a GridSplitter is used. Mode=TwoWay keeps them."
 image: /images/articles/wpf-binding-mode-omitted-detached/binding-mode-user-input.svg

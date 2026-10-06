@@ -1,7 +1,7 @@
 ---
 layout: article-ja
 title: "WPF で Mode を書かないバインドが、ユーザー操作で黙って外れる仕組み"
-date: 2026-10-07
+date: 2026-10-06
 category: WPF
 excerpt: "Mode を書かずに TreeViewItem の IsExpanded や ColumnDefinition の Width をバインドすると、展開ボタンや GridSplitter の操作でバインドが黙って外れる。既定の向きと書き込みの経路を実測し、外れる条件と避け方を示す。"
 image: /images/articles/wpf-binding-mode-omitted-detached/binding-mode-user-input.svg
