@@ -1280,6 +1280,26 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
+    <lastmod>2026-10-06T06:34:51Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
+    <lastmod>2026-10-06T06:34:51Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-binding-stringformat-number-currency-date/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-binding-stringformat-number-currency-date/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-stringformat-number-currency-date/" />
