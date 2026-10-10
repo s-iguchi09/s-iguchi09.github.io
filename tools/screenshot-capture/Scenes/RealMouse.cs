@@ -116,6 +116,17 @@ internal static class RealMouse
         await Capture.SettleAsync(window, 100);
     }
 
+    /// <summary>
+    /// 要素の中心へカーソルを動かし、左ボタンを押して離す。
+    /// ポップアップの中の要素も押せるよう、<see cref="MoveToAsync"/> には常に <paramref name="window"/> を渡す。
+    /// </summary>
+    public static async Task ClickAsync(Window window, FrameworkElement target)
+    {
+        await MoveToAsync(target, null, window);
+        await LeftDownAsync(window, target);
+        await LeftUpAsync(window);
+    }
+
     /// <summary>要素を表示しているトップレベルの HWND（ポップアップの中ならポップアップの HWND）。</summary>
     private static IntPtr HandleOf(FrameworkElement element) =>
         (PresentationSource.FromVisual(element) as HwndSource)?.Handle

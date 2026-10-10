@@ -47,6 +47,7 @@ internal static class Program
         new InputLimitsFromCodeScene(),
         new VirtualizationLostConditionsScene(),
         new BindingModeOmittedScene(),
+        new DataGridEditNotCommittedScene(),
         new CollectionViewFilterRefreshScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),

@@ -100,13 +100,6 @@ internal sealed class MenuDemoScene : IScene
         return menu;
     }
 
-    private static async Task ClickAsync(Window window, FrameworkElement target)
-    {
-        await RealMouse.MoveToAsync(target, null, window);
-        await RealMouse.LeftDownAsync(window, target);
-        await RealMouse.LeftUpAsync(window);
-    }
-
     /// <summary>開いたサブメニューの中の項目のコンテナ（ポップアップの中にある）。</summary>
     private static MenuItem Container(MenuItem parent, int index) =>
         (MenuItem)parent.ItemContainerGenerator.ContainerFromIndex(index);
@@ -169,14 +162,14 @@ internal sealed class MenuDemoScene : IScene
                 Window window = await FrontAsync(panel);
                 using (RealMouse.Preserve())
                 {
-                    await ClickAsync(window, options);
+                    await RealMouse.ClickAsync(window, options);
                     bool opened = options.IsSubmenuOpen;
-                    await ClickAsync(window, Container(options, 0));
+                    await RealMouse.ClickAsync(window, Container(options, 0));
                     string first = $"{interactive.IsChecked} / {WpfProbe.Describe(check.IsChecked)} / {options.IsSubmenuOpen}";
                     string second = "-";
                     if (options.IsSubmenuOpen)
                     {
-                        await ClickAsync(window, Container(options, 0));
+                        await RealMouse.ClickAsync(window, Container(options, 0));
                         second = $"{interactive.IsChecked} / {options.IsSubmenuOpen}";
                     }
 
@@ -208,9 +201,9 @@ internal sealed class MenuDemoScene : IScene
                 Window window = await FrontAsync(panel);
                 using (RealMouse.Preserve())
                 {
-                    await ClickAsync(window, options);
-                    await ClickAsync(window, Container(options, 0));
-                    await ClickAsync(window, Container(options, 1));
+                    await RealMouse.ClickAsync(window, options);
+                    await RealMouse.ClickAsync(window, Container(options, 0));
+                    await RealMouse.ClickAsync(window, Container(options, 1));
                 }
 
                 rows.Add([T("two checkable items, both clicked: IsChecked", "チェックできる項目 2 つを両方クリック: IsChecked"), $"{first.IsChecked}, {second.IsChecked}"]);
@@ -328,7 +321,7 @@ internal sealed class MenuDemoScene : IScene
                 {
                     using (RealMouse.Preserve())
                     {
-                        await ClickAsync(window, execute);
+                        await RealMouse.ClickAsync(window, execute);
                     }
 
                     bool state = copy.IsEnabled;
@@ -393,7 +386,7 @@ internal sealed class MenuDemoScene : IScene
                 Window window = await FrontAsync(panel);
                 using (RealMouse.Preserve())
                 {
-                    await ClickAsync(window, file);
+                    await RealMouse.ClickAsync(window, file);
                     string opened = $"{file.IsSubmenuOpen} / {file.IsSuspendingPopupAnimation}";
                     await RealMouse.MoveToAsync(edit);
                     rows.Add([T("click File: open / suspending; hover Edit: File open; Edit open / suspending", "File をクリック: 開くか / Suspending; Edit にホバー: File が開いているか; Edit が開くか / Suspending"),

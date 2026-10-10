@@ -94,7 +94,8 @@ description: 記事案を1件自動で選び、その記事を作成〜レビュ
      満たされ、確認の再表示も `RUN_MODE` 未設定も起こらない。
    - 以降は `article-workflow` の定義どおり:
      - Phase 1: 日英ペアの記事を作成(ルール準拠)。
-     - Phase 2: サブエージェントによる文体・構成レビュー + 技術検証専任パスを **指摘ゼロまで** 反復。
+     - Phase 2: サブエージェントによる文体・構成レビュー + 技術検証専任パスを **指摘ゼロまで** 反復し、
+       続けて `/code-review high` で PR に入る差分全体（シーンのコードを含む）をレビューして指摘を直す。
      - Phase 3: `auto` のため **内容確認をスキップ** して Phase 4 へ。
      - Phase 4: PR 作成 → CI 監視 → CodeRabbit 再レビュー → 指摘・失敗ゼロまで修正ループ、
        対応済みスレッドを解決済みに。
@@ -112,7 +113,7 @@ Step 1  article-ideas で案を 5〜10 件生成(既存 slug と重複回避)  �
 Step 2  基準に基づき 1 件を自動選定 → 選定理由を日本語で報告      ┘ 無ければ Step 1 へ戻る
           (承認は求めない / Step 1 の再生成は最大 3 回、3 回目でも不可なら停止して確認)
 Step 3  article-workflow を RUN_MODE=auto で起動(モード確認はスキップ、選定案をテーマに)
-          Phase 1 作成 → Phase 2 反復レビュー → Phase 3(auto=確認スキップ)
+          Phase 1 作成 → Phase 2 反復レビュー + /code-review high → Phase 3(auto=確認スキップ)
           → Phase 4 PR・CI・再レビュー → Phase 5 マージ・完了報告
 ```
 
