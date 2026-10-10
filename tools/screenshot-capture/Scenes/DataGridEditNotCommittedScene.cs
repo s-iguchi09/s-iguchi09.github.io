@@ -178,8 +178,9 @@ internal sealed class DataGridEditNotCommittedScene : IScene
             Items.Add(new Item { Name = "beta", Quantity = 2 });
             SaveCommand = new DelegateCommand(() =>
             {
-                LastSaved = $"saved: Name = {Items[0].Name}";
+                // 記事の実装と同じく、確定（OnSave）の後に値を読む。図を撮るときは OnSave が無いので、確定されていない値が出る。
                 OnSave?.Invoke();
+                LastSaved = $"saved: Name = {Items[0].Name}";
             });
         }
 
