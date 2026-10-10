@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2498 410" width="2498" height="410" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="2498" height="410" />
+  <text class="title" x="12" y="24">Saving while a DataGrid cell is being edited</text>
+  <rect class="head" x="12" y="38" width="2474" height="30" />
+  <text class="cell" x="26" y="57.5">save input</text>
+  <text class="cell" x="1051" y="57.5" text-anchor="end">called in the save handler</text>
+  <text class="cell" x="1409" y="57.5" text-anchor="end">where focus went when it left the DataGrid</text>
+  <text class="cell" x="1641" y="57.5" text-anchor="end">keyboard focus when saving</text>
+  <text class="cell" x="1763" y="57.5" text-anchor="end">return value</text>
+  <text class="cell" x="1885" y="57.5" text-anchor="end">source value</text>
+  <text class="cell" x="1968" y="57.5" text-anchor="end">EndEdit</text>
+  <text class="cell" x="2192" y="57.5" text-anchor="end">Refresh</text>
+  <text class="cell" x="2472" y="57.5" text-anchor="end">after saving: cell / row editing</text>
+  <text class="cell" x="26" y="87.5">click the Button in the ToolBar</text>
+  <text class="cell" x="1051" y="87.5" text-anchor="end">nothing</text>
+  <text class="cell" x="1409" y="87.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="87.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="87.5" text-anchor="end">-</text>
+  <text class="cell" x="1885" y="87.5" text-anchor="end">"alpha"</text>
+  <text class="cell" x="1968" y="87.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="87.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="87.5" text-anchor="end">True / True</text>
+  <text class="cell" x="26" y="117.5">click the MenuItem in the Menu</text>
+  <text class="cell" x="1051" y="117.5" text-anchor="end">nothing</text>
+  <text class="cell" x="1409" y="117.5" text-anchor="end">MenuItem in the Menu</text>
+  <text class="cell" x="1641" y="117.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="117.5" text-anchor="end">-</text>
+  <text class="cell" x="1885" y="117.5" text-anchor="end">"alpha"</text>
+  <text class="cell" x="1968" y="117.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="117.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="117.5" text-anchor="end">True / True</text>
+  <text class="cell" x="26" y="147.5">Ctrl+S (KeyBinding on the Window)</text>
+  <text class="cell" x="1051" y="147.5" text-anchor="end">nothing</text>
+  <text class="cell" x="1409" y="147.5" text-anchor="end">did not leave</text>
+  <text class="cell" x="1641" y="147.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="147.5" text-anchor="end">-</text>
+  <text class="cell" x="1885" y="147.5" text-anchor="end">"alpha"</text>
+  <text class="cell" x="1968" y="147.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="147.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="147.5" text-anchor="end">True / True</text>
+  <text class="cell" x="26" y="177.5">click a Button outside the ToolBar</text>
+  <text class="cell" x="1051" y="177.5" text-anchor="end">nothing</text>
+  <text class="cell" x="1409" y="177.5" text-anchor="end">Button outside the ToolBar</text>
+  <text class="cell" x="1641" y="177.5" text-anchor="end">Button outside the ToolBar</text>
+  <text class="cell" x="1763" y="177.5" text-anchor="end">-</text>
+  <text class="cell" x="1885" y="177.5" text-anchor="end">"edited"</text>
+  <text class="cell" x="1968" y="177.5" text-anchor="end">2</text>
+  <text class="cell" x="2192" y="177.5" text-anchor="end">succeeds</text>
+  <text class="cell" x="2472" y="177.5" text-anchor="end">False / False</text>
+  <text class="cell" x="26" y="207.5">click the Button in the ToolBar</text>
+  <text class="cell" x="1051" y="207.5" text-anchor="end">CommitEdit()</text>
+  <text class="cell" x="1409" y="207.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="207.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="207.5" text-anchor="end">True</text>
+  <text class="cell" x="1885" y="207.5" text-anchor="end">"alpha"</text>
+  <text class="cell" x="1968" y="207.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="207.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="207.5" text-anchor="end">False / True</text>
+  <text class="cell" x="26" y="237.5">click the Button in the ToolBar</text>
+  <text class="cell" x="1051" y="237.5" text-anchor="end">CommitEdit(DataGridEditingUnit.Row, true)</text>
+  <text class="cell" x="1409" y="237.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="237.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1885" y="237.5" text-anchor="end">"edited"</text>
+  <text class="cell" x="1968" y="237.5" text-anchor="end">2</text>
+  <text class="cell" x="2192" y="237.5" text-anchor="end">succeeds</text>
+  <text class="cell" x="2472" y="237.5" text-anchor="end">False / False</text>
+  <text class="cell" x="26" y="267.5">click the Button in the ToolBar (item without IEditableObject)</text>
+  <text class="cell" x="1051" y="267.5" text-anchor="end">CommitEdit()</text>
+  <text class="cell" x="1409" y="267.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="267.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="267.5" text-anchor="end">True</text>
+  <text class="cell" x="1885" y="267.5" text-anchor="end">"alpha"</text>
+  <text class="cell" x="1968" y="267.5" text-anchor="end">-</text>
+  <text class="cell" x="2192" y="267.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="267.5" text-anchor="end">False / True</text>
+  <text class="cell" x="26" y="297.5">click the Button in the ToolBar (item without IEditableObject)</text>
+  <text class="cell" x="1051" y="297.5" text-anchor="end">CommitEdit(DataGridEditingUnit.Row, true)</text>
+  <text class="cell" x="1409" y="297.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="297.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="297.5" text-anchor="end">True</text>
+  <text class="cell" x="1885" y="297.5" text-anchor="end">"edited"</text>
+  <text class="cell" x="1968" y="297.5" text-anchor="end">-</text>
+  <text class="cell" x="2192" y="297.5" text-anchor="end">succeeds</text>
+  <text class="cell" x="2472" y="297.5" text-anchor="end">False / False</text>
+  <text class="cell" x="26" y="327.5">click the Button in the ToolBar (Name column with UpdateSourceTrigger=PropertyChanged)</text>
+  <text class="cell" x="1051" y="327.5" text-anchor="end">nothing</text>
+  <text class="cell" x="1409" y="327.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="327.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="327.5" text-anchor="end">-</text>
+  <text class="cell" x="1885" y="327.5" text-anchor="end">"edited"</text>
+  <text class="cell" x="1968" y="327.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="327.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="327.5" text-anchor="end">True / True</text>
+  <text class="cell" x="26" y="357.5">click the Button in the ToolBar ("abc" typed into the int Quantity column)</text>
+  <text class="cell" x="1051" y="357.5" text-anchor="end">CommitEdit(DataGridEditingUnit.Row, true)</text>
+  <text class="cell" x="1409" y="357.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="357.5" text-anchor="end">TextBox in the cell</text>
+  <text class="cell" x="1763" y="357.5" text-anchor="end">False</text>
+  <text class="cell" x="1885" y="357.5" text-anchor="end">1</text>
+  <text class="cell" x="1968" y="357.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="357.5" text-anchor="end">InvalidOperationException</text>
+  <text class="cell" x="2472" y="357.5" text-anchor="end">True / True</text>
+  <text class="cell" x="26" y="387.5">click the Button in the ToolBar (no cell has been edited)</text>
+  <text class="cell" x="1051" y="387.5" text-anchor="end">CommitEdit(DataGridEditingUnit.Row, true)</text>
+  <text class="cell" x="1409" y="387.5" text-anchor="end">Button in the ToolBar</text>
+  <text class="cell" x="1641" y="387.5" text-anchor="end">DataGrid</text>
+  <text class="cell" x="1763" y="387.5" text-anchor="end">True</text>
+  <text class="cell" x="1885" y="387.5" text-anchor="end">"alpha"</text>
+  <text class="cell" x="1968" y="387.5" text-anchor="end">0</text>
+  <text class="cell" x="2192" y="387.5" text-anchor="end">succeeds</text>
+  <text class="cell" x="2472" y="387.5" text-anchor="end">False / False</text>
+  <line class="line" x1="12" y1="38" x2="2486" y2="38" />
+  <line class="line" x1="12" y1="68" x2="2486" y2="68" />
+  <line class="line" x1="12" y1="98" x2="2486" y2="98" />
+  <line class="line" x1="12" y1="128" x2="2486" y2="128" />
+  <line class="line" x1="12" y1="158" x2="2486" y2="158" />
+  <line class="line" x1="12" y1="188" x2="2486" y2="188" />
+  <line class="line" x1="12" y1="218" x2="2486" y2="218" />
+  <line class="line" x1="12" y1="248" x2="2486" y2="248" />
+  <line class="line" x1="12" y1="278" x2="2486" y2="278" />
+  <line class="line" x1="12" y1="308" x2="2486" y2="308" />
+  <line class="line" x1="12" y1="338" x2="2486" y2="338" />
+  <line class="line" x1="12" y1="368" x2="2486" y2="368" />
+  <line class="line" x1="12" y1="398" x2="2486" y2="398" />
+  <line class="line" x1="12" y1="38" x2="12" y2="398" />
+  <line class="line" x1="715" y1="38" x2="715" y2="398" />
+  <line class="line" x1="1065" y1="38" x2="1065" y2="398" />
+  <line class="line" x1="1423" y1="38" x2="1423" y2="398" />
+  <line class="line" x1="1655" y1="38" x2="1655" y2="398" />
+  <line class="line" x1="1777" y1="38" x2="1777" y2="398" />
+  <line class="line" x1="1899" y1="38" x2="1899" y2="398" />
+  <line class="line" x1="1982" y1="38" x2="1982" y2="398" />
+  <line class="line" x1="2206" y1="38" x2="2206" y2="398" />
+  <line class="line" x1="2486" y1="38" x2="2486" y2="398" />
+</svg>
