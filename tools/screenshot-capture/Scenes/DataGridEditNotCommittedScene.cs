@@ -223,7 +223,7 @@ internal sealed class DataGridEditNotCommittedScene : IScene
         }
 
         await Capture.SettleAsync(window, 100);
-        if (Keyboard.FocusedElement is not TextBox box || CellOf(box) is not { IsEditing: true } cell || cell.Column != grid.Columns[column])
+        if (Keyboard.FocusedElement is not TextBox box || CellOf(box) is not { IsEditing: true } cell || cell.Column != grid.Columns[column] || cell.DataContext != grid.Items[0])
         {
             throw new InvalidOperationException($"1 行目の {grid.Columns[column].Header} 列の編集中のセルの TextBox にフォーカスが無い（{Keyboard.FocusedElement?.GetType().Name ?? "なし"}）。");
         }

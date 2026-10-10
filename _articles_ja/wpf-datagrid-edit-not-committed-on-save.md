@@ -110,7 +110,7 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 `ToolBar` と `Menu` は既定でフォーカス スコープである（[FocusManager](https://learn.microsoft.com/dotnet/api/system.windows.input.focusmanager)）。
 キーボードフォーカスがスコープの外へ出ても、元のスコープの中の要素は論理フォーカスを保ち、フォーカスが戻るとその要素がキーボードフォーカスを取り戻す（[フォーカスの概要](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/focus-overview#logical-focus)）。
 スコープが原因であることは、`ToolBar` と `Menu` にそれぞれ `FocusManager.IsFocusScope="False"` を付けた行で確かめられる。
-どちらも、クリックしたフォーカスはそのコントロールに移ったまま戻らず、セルと行の編集が終わってソースに `edited` が届いた。
+どちらも、クリックするとフォーカスはそのコントロールに移ったまま戻らず、セルと行の編集が終わってソースに `edited` が届いた。
 
 `Ctrl+S` を `Window` の `KeyBinding` で受ける場合は、フォーカスは `DataGrid` から一度も出ない。
 フォーカスの移動に確定を任せる限り、保存の操作の種類によって結果が変わる。
@@ -231,7 +231,7 @@ null 許容参照型を有効にしたプロジェクトでは、`CommitPendingE
   ツールバーの外にボタンを置く回避も同じである。
   さらに、この設定ではクリックした後もフォーカスがボタンや項目に残る。
   `CommandTarget` を指定しないルーティング コマンドは、キーボードフォーカスのある要素を対象にする（[コマンド実行の概要](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/commanding-overview#command-target)）。
-  このため、同じツールバーに置いた `ApplicationCommands.Copy` などが、編集中のテキストを対象にしなくなると考えられる（測っていない）。
+  このため、同じツールバーやメニューに置いた `ApplicationCommands.Copy` などが、編集中のテキストを対象にしなくなると考えられる（測っていない）。
 - **`IEditableObject.EndEdit` は 1 回とは限らない。**
   今回の計測では、行を 1 回確定すると `EndEdit` が 2 回呼ばれた。
   `EndEdit` で保存や通知を行う場合は、複数回呼ばれても結果が変わらない形にする。

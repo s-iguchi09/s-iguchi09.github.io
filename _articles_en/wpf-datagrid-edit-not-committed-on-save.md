@@ -213,7 +213,7 @@ public partial class ItemsWindow : Window
 }
 ```
 
-In a project with nullable reference types enabled, declare `CommitPendingEdits` as `Func<bool>?` so that the unset state is allowed.
+In a project with nullable reference types enabled, `CommitPendingEdits` should be declared as `Func<bool>?` so that the unset state is allowed.
 
 Calling this logic when no cell had been edited also returned `True` (the "no cell has been edited" row, measured with `CanUserAddRows="False"`).
 The official documentation does not state that this overload returns `True` when nothing is being edited.
@@ -232,7 +232,7 @@ Because the commit happens inside the command, the result does not depend on the
   Placing the button outside the toolbar has the same limitation.
   In addition, with this setting focus stays on the button or menu item after the click.
   A routed command without a `CommandTarget` targets the element with keyboard focus ([Commanding Overview](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/commanding-overview#command-target)).
-  Commands such as `ApplicationCommands.Copy` placed in the same toolbar would therefore no longer target the text being edited (not measured).
+  Commands such as `ApplicationCommands.Copy` placed in the same toolbar or menu would therefore no longer target the text being edited (not measured).
 - **`IEditableObject.EndEdit` is not always called once.**
   In this measurement, committing a row once called `EndEdit` twice.
   If `EndEdit` saves data or raises notifications, it should be safe to call more than once.
