@@ -197,6 +197,9 @@ public sealed class ItemsViewModel : INotifyPropertyChanged
 
 `RelayCommand` は、`Action` を実行する一般的な `ICommand` の実装を想定している。
 `CommitPendingEdits` が `null` のとき（ビューが設定していないとき）は、確定せずに保存へ進む。
+これは編集できる `DataGrid` を持たないビューのための扱いである。
+`DataGrid` で編集するビューでは必ず設定する。
+設定を忘れると確定が呼ばれず、第一の壁と同じく入力前の値が保存される。
 
 ビューのコードビハインドでは、行を確定する処理を渡す。
 

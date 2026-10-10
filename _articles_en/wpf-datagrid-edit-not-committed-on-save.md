@@ -198,6 +198,9 @@ public sealed class ItemsViewModel : INotifyPropertyChanged
 
 `RelayCommand` stands for a typical `ICommand` implementation that runs an `Action`.
 When `CommitPendingEdits` is `null` (the view has not set it), the save proceeds without committing.
+This is meant for views that have no editable `DataGrid`.
+A view that edits data in a `DataGrid` must always set it.
+If it is forgotten, no commit is called, and the value from before the edit is saved, just as in the first obstacle.
 
 The view's code-behind passes the logic that commits the row.
 
