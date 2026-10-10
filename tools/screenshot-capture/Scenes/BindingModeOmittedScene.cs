@@ -296,29 +296,8 @@ internal sealed class BindingModeOmittedScene : IScene
         return rows;
     }
 
-    /// <summary>
-    /// 計測用のウィンドウを作業領域の中央へ移してから前面に出す。
-    /// 画面の左上には他のアプリのウィンドウが重なっていることがあり、実際のマウスの安全確認で止まるためである。
-    /// </summary>
-    private static async Task<Window> FrontCenteredAsync(FrameworkElement content)
-    {
-        Window window = Window.GetWindow(content)!;
-        Rect area = SystemParameters.WorkArea;
-        window.Left = area.Left + (area.Width - window.ActualWidth) / 2;
-        window.Top = area.Top + (area.Height - window.ActualHeight) / 2;
-        await Capture.SettleAsync(window, 100);
-        return await FrontAsync(content);
-    }
-
     private static ToggleButton ExpanderButton(TreeViewItem node) =>
         Descendants(node).OfType<ToggleButton>().First(button => button.TemplatedParent == node);
-
-    private static async Task ClickAsync(Window window, FrameworkElement target)
-    {
-        await RealMouse.MoveToAsync(target);
-        await RealMouse.LeftDownAsync(window, target);
-        await RealMouse.LeftUpAsync(window);
-    }
 
     /// <summary>記事の XAML のデータ。ノードの名前・子・開閉の状態を持つ。</summary>
     private sealed class Folder : INotifyPropertyChanged
@@ -393,7 +372,7 @@ internal sealed class BindingModeOmittedScene : IScene
                 {
                     case FolderInput.ExpanderButton:
                     case FolderInput.ExpanderButtonThenClear:
-                        await ClickAsync(window, ExpanderButton(node));
+                        await RealMouse.ClickAsync(window, ExpanderButton(node));
                         if (input == FolderInput.ExpanderButtonThenClear)
                         {
                             node.ClearValue(TreeViewItem.IsExpandedProperty);
@@ -411,7 +390,7 @@ internal sealed class BindingModeOmittedScene : IScene
                         break;
                     case FolderInput.DoubleClick:
                         FrameworkElement header = Descendants(node).OfType<ContentPresenter>().First(p => p.Name == "PART_Header");
-                        await ClickAsync(window, header);
+                        await RealMouse.ClickAsync(window, header);
                         await RealMouse.LeftDownAsync(window, header);
                         await RealMouse.LeftUpAsync(window);
                         break;
@@ -452,7 +431,7 @@ internal sealed class BindingModeOmittedScene : IScene
             int before = s_errors.Count;
             using (RealMouse.Preserve())
             {
-                await ClickAsync(window, ExpanderButton(node));
+                await RealMouse.ClickAsync(window, ExpanderButton(node));
             }
 
             if (clearAfter)
@@ -496,7 +475,7 @@ internal sealed class BindingModeOmittedScene : IScene
             int before = s_errors.Count;
             using (RealMouse.Preserve())
             {
-                await ClickAsync(window, header);
+                await RealMouse.ClickAsync(window, header);
             }
 
             row = await ReportAsync(label, window, expander, Expander.IsExpandedProperty, () => source.Value, () => source.Value = false, before);
@@ -518,7 +497,7 @@ internal sealed class BindingModeOmittedScene : IScene
             int before = s_errors.Count;
             using (RealMouse.Preserve())
             {
-                await ClickAsync(window, item);
+                await RealMouse.ClickAsync(window, item);
             }
 
             row = await ReportAsync(label, window, item, MenuItem.IsCheckedProperty, () => source.Value, () => source.Value = false, before);
@@ -538,7 +517,7 @@ internal sealed class BindingModeOmittedScene : IScene
             int before = s_errors.Count;
             using (RealMouse.Preserve())
             {
-                await ClickAsync(window, box);
+                await RealMouse.ClickAsync(window, box);
             }
 
             row = await ReportAsync(label, window, box, ToggleButton.IsCheckedProperty, () => source.Value, () => source.Value = false, before);

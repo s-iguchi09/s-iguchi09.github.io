@@ -5,6 +5,7 @@
 | Ctrl+S（Window の KeyBinding） | なし | 出ない | セルの TextBox | - | \"alpha\" | 0 | InvalidOperationException | True / True |
 | ToolBar の外の Button をクリック | なし | ToolBar の外の Button | ToolBar の外の Button | - | \"edited\" | 2 | 成功 | False / False |
 | FocusManager.IsFocusScope=\"False\" の ToolBar の Button をクリック | なし | ToolBar の Button | ToolBar の Button | - | \"edited\" | 2 | 成功 | False / False |
+| FocusManager.IsFocusScope=\"False\" の Menu の MenuItem をクリック | なし | Menu の MenuItem | Menu の MenuItem | - | \"edited\" | 2 | 成功 | False / False |
 | ToolBar の Button をクリック | CommitEdit() | ToolBar の Button | セルの TextBox | True | \"alpha\" | 0 | InvalidOperationException | False / True |
 | ToolBar の Button をクリック | CommitEdit() を 2 回 | ToolBar の Button | セルの TextBox | True, True | \"edited\" | 2 | 成功 | False / False |
 | ToolBar の Button をクリック | CommitEdit(DataGridEditingUnit.Row, true) | ToolBar の Button | セルの TextBox | True | \"edited\" | 2 | 成功 | False / False |

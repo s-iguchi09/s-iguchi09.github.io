@@ -5,6 +5,7 @@
 | Ctrl+S (KeyBinding on the Window) | nothing | did not leave | TextBox in the cell | - | \"alpha\" | 0 | InvalidOperationException | True / True |
 | click a Button outside the ToolBar | nothing | Button outside the ToolBar | Button outside the ToolBar | - | \"edited\" | 2 | succeeds | False / False |
 | click the Button in a ToolBar with FocusManager.IsFocusScope=\"False\" | nothing | Button in the ToolBar | Button in the ToolBar | - | \"edited\" | 2 | succeeds | False / False |
+| click the MenuItem in a Menu with FocusManager.IsFocusScope=\"False\" | nothing | MenuItem in the Menu | MenuItem in the Menu | - | \"edited\" | 2 | succeeds | False / False |
 | click the Button in the ToolBar | CommitEdit() | Button in the ToolBar | TextBox in the cell | True | \"alpha\" | 0 | InvalidOperationException | False / True |
 | click the Button in the ToolBar | CommitEdit() twice | Button in the ToolBar | TextBox in the cell | True, True | \"edited\" | 2 | succeeds | False / False |
 | click the Button in the ToolBar | CommitEdit(DataGridEditingUnit.Row, true) | Button in the ToolBar | TextBox in the cell | True | \"edited\" | 2 | succeeds | False / False |

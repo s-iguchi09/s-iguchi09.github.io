@@ -11,7 +11,7 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 ## Overview
 
 When a value is typed into a `DataGrid` cell and Save in the toolbar is clicked without leaving the cell, the value that gets saved is the one from before the edit.
-The cell on screen still shows the new value, so users report that "it went back after saving".
+The cell on screen still shows the new value, so to the user it looks as if the value reverted after saving.
 No exception is thrown.
 
 The cause is that the `DataGrid` has not committed the edit yet when the save command runs.
@@ -26,11 +26,11 @@ It then works through these three obstacles in order and shows a save handler th
 ## Prerequisites and Environment
 
 - Framework: WPF (.NET Framework 4.0 or later / .NET Core 3.0 or later, where `DataGrid` is part of WPF)
-- Scope: `DataGridTextColumn` in a `DataGrid`, a save command placed in a `ToolBar` and a `Menu`, and `DataGrid.CommitEdit`
+- Scope: `DataGridTextColumn` in a `DataGrid`, a save command placed in a `ToolBar`, a `Menu`, a `Button` outside the toolbar, and a `KeyBinding` on the `Window`, and `DataGrid.CommitEdit`
 - Architecture: MVVM (the view model implements `INotifyPropertyChanged` and exposes saving as an `ICommand`)
 - Verified on: .NET 10 / Windows 11 (default theme; the Fluent theme was not measured)
 - Method: the cell edit was started with `BeginEdit()`, and text was typed through WPF's `InputManager`.
-  Each save input was performed once with OS mouse and keyboard input (`SendInput`).
+  Each save input was performed once per row (twice only in the row that corrects the input and saves again) with OS mouse and keyboard input (`SendInput`).
   When the save command ran, the scene read the keyboard focus, the return value of `CommitEdit`, the source value, the number of `IEditableObject.EndEdit` calls, the result of `ICollectionView.Refresh` on the default view, and `IsEditing` of the cell and row.
   The measurement is implemented as a scene in `tools/screenshot-capture`.
 
@@ -84,7 +84,7 @@ In rows without a note, the item implements `IEditableObject`.
 
 {% include tables/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-save-while-editing.en.md %}
 
-Measured on .NET 10 / Windows 11. Each row used a new window. "source value" and "EndEdit" are read after the commit called in the save handler, and "Refresh" is the result of calling <code>ICollectionView.Refresh</code> on the default view after that. A <code>-</code> in "return value" means no commit was called, and a <code>-</code> in "EndEdit" means the item does not implement <code>IEditableObject</code>.
+Measured on .NET 10 / Windows 11. Each row used a new window. "source value" and "EndEdit" are read after the commit called in the save handler, and "Refresh" is the result of calling <code>ICollectionView.Refresh</code> on the default view after that. A <code>-</code> in "return value" means no commit was called, and a <code>-</code> in "EndEdit" means the item does not implement <code>IEditableObject</code>. In "return value", <code>,</code> separates return values of calls made in one save, and <code>→</code> separates return values of separate saves. In the row that saves again, "where focus went when it left the DataGrid" is from the first save, and the other columns are from the second save.
 {: .table-caption}
 
 Without a commit, "click a Button outside the ToolBar" delivers the typed value, while the toolbar, the menu, and `Ctrl+S` do not.
@@ -110,8 +110,8 @@ Read on .NET 10 / Windows 11 by showing the XAML above, reading <code>Focusable<
 
 `ToolBar` and `Menu` are focus scopes by default ([FocusManager](https://learn.microsoft.com/dotnet/api/system.windows.input.focusmanager)).
 When keyboard focus leaves a focus scope, the focused element in that scope keeps logical focus, and it regains keyboard focus when focus returns to the scope ([Focus Overview](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/focus-overview#logical-focus)).
-The row with `FocusManager.IsFocusScope="False"` on the `ToolBar` confirms that the scope is the cause.
-Clicking the button in that `ToolBar` left focus on the button, ended both the cell and row edits, and delivered `edited` to the source.
+The rows with `FocusManager.IsFocusScope="False"` on the `ToolBar` and on the `Menu` confirm that the scope is the cause.
+In both cases, focus stayed on the clicked control, both the cell and row edits ended, and `edited` reached the source.
 
 When `Ctrl+S` is handled by a `KeyBinding` on the `Window`, focus never leaves the `DataGrid` at all.
 As long as committing is left to focus movement, the result depends on how the user triggers Save.
@@ -213,6 +213,8 @@ public partial class ItemsWindow : Window
 }
 ```
 
+In a project with nullable reference types enabled, declare `CommitPendingEdits` as `Func<bool>?` so that the unset state is allowed.
+
 Calling this logic when no cell had been edited also returned `True` (the "no cell has been edited" row, measured with `CanUserAddRows="False"`).
 The official documentation does not state that this overload returns `True` when nothing is being edited.
 Because the commit happens inside the command, the result does not depend on the save input, as the table shows.
@@ -222,12 +224,15 @@ Because the commit happens inside the command, the result does not depend on the
 ## Caveats
 
 - **`UpdateSourceTrigger=PropertyChanged` is not a substitute for the commit.**
-  Adding it to the column binding updates the source on every keystroke without a commit (the "Name column with UpdateSourceTrigger=PropertyChanged" row).
+  Adding it to the column binding updates the source without a commit (the "Name column with UpdateSourceTrigger=PropertyChanged" row).
   However, the row stays in edit mode, `EndEdit` is not called, and `Refresh` throws `InvalidOperationException`.
   In addition, whether pressing Esc restores the original value depends on how the item is implemented (the table below).
-- **Setting `FocusManager.IsFocusScope="False"` on the `ToolBar` still relies on focus movement.**
-  The toolbar button then triggers the commit, but `Ctrl+S` does not, because focus does not move.
+- **Setting `FocusManager.IsFocusScope="False"` on the `ToolBar` or `Menu` still relies on focus movement.**
+  The toolbar button or menu item then triggers the commit, but `Ctrl+S` does not, because focus does not move.
   Placing the button outside the toolbar has the same limitation.
+  In addition, with this setting focus stays on the button or menu item after the click.
+  A routed command without a `CommandTarget` targets the element with keyboard focus ([Commanding Overview](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/commanding-overview#command-target)).
+  Commands such as `ApplicationCommands.Copy` placed in the same toolbar would therefore no longer target the text being edited (not measured).
 - **`IEditableObject.EndEdit` is not always called once.**
   In this measurement, committing a row once called `EndEdit` twice.
   If `EndEdit` saves data or raises notifications, it should be safe to call more than once.

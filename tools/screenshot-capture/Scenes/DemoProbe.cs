@@ -134,6 +134,21 @@ internal static class DemoProbe
         return window;
     }
 
+    /// <summary>
+    /// <see cref="FrontAsync"/> の前に、ウィンドウを作業領域の中央へ移す。
+    /// 画面の左上には他のアプリのウィンドウが重なっていることがあり、実際のマウスの安全確認で止まるためである。
+    /// </summary>
+    public static async Task<Window> FrontCenteredAsync(FrameworkElement content)
+    {
+        Window window = Window.GetWindow(content)
+            ?? throw new InvalidOperationException("ウィンドウに表示していない要素は前面に出せない。");
+        Rect area = SystemParameters.WorkArea;
+        window.Left = area.Left + (area.Width - window.ActualWidth) / 2;
+        window.Top = area.Top + (area.Height - window.ActualHeight) / 2;
+        await Capture.SettleAsync(window, 100);
+        return await FrontAsync(content);
+    }
+
     /// <summary>表示中の要素へキー押下のイベントを送る。</summary>
     public static void PressKey(UIElement target, System.Windows.Input.Key key)
     {

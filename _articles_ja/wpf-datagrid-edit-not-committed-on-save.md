@@ -10,7 +10,7 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 ## 概要
 
 `DataGrid` のセルに値を入力し、そのままツールバーの「保存」を押すと、保存されるのは入力する前の値である。
-画面のセルには入力した値が見えているため、利用者からは「保存したのに戻った」と報告される。
+画面のセルには入力した値が見えているため、利用者には保存したのに値が戻ったように見える。
 例外は出ない。
 
 原因は、保存のコマンドが実行された時点で、`DataGrid` がまだ編集を確定していないことにある。
@@ -25,11 +25,11 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 ## 前提・対象環境
 
 - フレームワーク: WPF（.NET Framework 4.0 以降 / .NET Core 3.0 以降。`DataGrid` が標準に含まれる範囲）
-- 対象: `DataGrid` の `DataGridTextColumn`、`ToolBar` と `Menu` に置いた保存のコマンド、`DataGrid.CommitEdit`
+- 対象: `DataGrid` の `DataGridTextColumn`、`ToolBar`・`Menu`・ツールバーの外の `Button`・`Window` の `KeyBinding` に置いた保存のコマンド、`DataGrid.CommitEdit`
 - アーキテクチャ: MVVM（ビューモデルは `INotifyPropertyChanged` を実装し、保存を `ICommand` で公開する）
 - 検証環境: .NET 10 / Windows 11（既定のテーマ。Fluent テーマは測っていない）
 - 計測方法: セルの編集を `BeginEdit()` で始め、文字を WPF の `InputManager` を通して入力した。
-  保存の操作は OS のマウスとキーボードの入力（`SendInput`）で各 1 回行った。
+  保存の操作は OS のマウスとキーボードの入力（`SendInput`）で、各行 1 回（入力を直して保存し直す行だけ 2 回）行った。
   保存のコマンドの実行時に、キーボードフォーカス・`CommitEdit` の戻り値・ソースの値・`IEditableObject.EndEdit` の回数・既定のビューの `ICollectionView.Refresh` の結果・セルと行の `IsEditing` を読んだ。
   この計測は `tools/screenshot-capture` のシーンとして実装している。
 
@@ -83,7 +83,7 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 
 {% include tables/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-save-while-editing.ja.md %}
 
-.NET 10 / Windows 11 で実測。各行は新しいウィンドウで操作した。「ソースの値」「EndEdit」は保存処理で確定を呼んだ後の値で、「Refresh」はその後に既定のビューの <code>ICollectionView.Refresh</code> を呼んだ結果である。「戻り値」の <code>-</code> は確定を呼んでいないこと、「EndEdit」の <code>-</code> はアイテムが <code>IEditableObject</code> を実装していないことを示す。
+.NET 10 / Windows 11 で実測。各行は新しいウィンドウで操作した。「ソースの値」「EndEdit」は保存処理で確定を呼んだ後の値で、「Refresh」はその後に既定のビューの <code>ICollectionView.Refresh</code> を呼んだ結果である。「戻り値」の <code>-</code> は確定を呼んでいないこと、「EndEdit」の <code>-</code> はアイテムが <code>IEditableObject</code> を実装していないことを示す。「戻り値」の <code>,</code> は 1 回の保存で続けて呼んだ戻り値、<code>→</code> は保存ごとの戻り値である。保存し直す行では、「DataGrid から出たフォーカスの移り先」は 1 回目の保存、それ以外の列は 2 回目の保存の時点の値である。
 {: .table-caption}
 
 確定を呼ばない場合、「ToolBar の外の Button をクリック」では入力した値が届き、ツールバー・メニュー・`Ctrl+S` では届かない。
@@ -109,8 +109,8 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 
 `ToolBar` と `Menu` は既定でフォーカス スコープである（[FocusManager](https://learn.microsoft.com/dotnet/api/system.windows.input.focusmanager)）。
 キーボードフォーカスがスコープの外へ出ても、元のスコープの中の要素は論理フォーカスを保ち、フォーカスが戻るとその要素がキーボードフォーカスを取り戻す（[フォーカスの概要](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/focus-overview#logical-focus)）。
-スコープが原因であることは、`ToolBar` に `FocusManager.IsFocusScope="False"` を付けた行で確かめられる。
-この `ToolBar` のボタンをクリックすると、フォーカスはボタンに移ったまま戻らず、セルと行の編集が終わってソースに `edited` が届いた。
+スコープが原因であることは、`ToolBar` と `Menu` にそれぞれ `FocusManager.IsFocusScope="False"` を付けた行で確かめられる。
+どちらも、クリックしたフォーカスはそのコントロールに移ったまま戻らず、セルと行の編集が終わってソースに `edited` が届いた。
 
 `Ctrl+S` を `Window` の `KeyBinding` で受ける場合は、フォーカスは `DataGrid` から一度も出ない。
 フォーカスの移動に確定を任せる限り、保存の操作の種類によって結果が変わる。
@@ -212,6 +212,8 @@ public partial class ItemsWindow : Window
 }
 ```
 
+null 許容参照型を有効にしたプロジェクトでは、`CommitPendingEdits` を `Func<bool>?` と宣言する（未設定の状態を許すため）。
+
 セルを編集していない状態でこの処理を呼んでも、戻り値は `True` だった（表の「セルを編集していない」の行。`CanUserAddRows="False"` で実測）。
 ただし、このオーバーロードが編集中でないときに `True` を返すことは、公式ドキュメントには書かれていない。
 確定はコマンドの中で行うため、表のとおり、保存の操作の種類によらず同じ結果になる。
@@ -221,12 +223,15 @@ public partial class ItemsWindow : Window
 ## 注意点
 
 - **`UpdateSourceTrigger=PropertyChanged` は確定の代わりにならない。**
-  列のバインドに書くと、確定しなくても入力のたびにソースが更新される（「Name 列に UpdateSourceTrigger=PropertyChanged」の行）。
+  列のバインドに書くと、確定しなくてもソースが更新される（「Name 列に UpdateSourceTrigger=PropertyChanged」の行）。
   しかし行は編集中のままで、`EndEdit` は呼ばれず、`Refresh` は `InvalidOperationException` になる。
   さらに、Esc キーで取り消したときに元の値へ戻るかどうかが、アイテムの実装で変わる（下の表）。
-- **`ToolBar` に `FocusManager.IsFocusScope="False"` を付ける回避は、フォーカスの移動に依存する。**
-  ツールバーのボタンでは確定が起きるが、`Ctrl+S` ではフォーカスが動かないため確定しない。
+- **`ToolBar` や `Menu` に `FocusManager.IsFocusScope="False"` を付ける回避は、フォーカスの移動に依存する。**
+  ツールバーのボタンやメニューの項目では確定が起きるが、`Ctrl+S` ではフォーカスが動かないため確定しない。
   ツールバーの外にボタンを置く回避も同じである。
+  さらに、この設定ではクリックした後もフォーカスがボタンや項目に残る。
+  `CommandTarget` を指定しないルーティング コマンドは、キーボードフォーカスのある要素を対象にする（[コマンド実行の概要](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/commanding-overview#command-target)）。
+  このため、同じツールバーに置いた `ApplicationCommands.Copy` などが、編集中のテキストを対象にしなくなると考えられる（測っていない）。
 - **`IEditableObject.EndEdit` は 1 回とは限らない。**
   今回の計測では、行を 1 回確定すると `EndEdit` が 2 回呼ばれた。
   `EndEdit` で保存や通知を行う場合は、複数回呼ばれても結果が変わらない形にする。

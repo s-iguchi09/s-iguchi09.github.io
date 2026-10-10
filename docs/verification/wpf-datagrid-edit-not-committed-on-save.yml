@@ -8,9 +8,10 @@ environment:
 verifies:
   - "ToolBar の Button と Menu の MenuItem は Focusable が True で、属するフォーカス スコープがそれぞれ ToolBar と Menu であり、ToolBar の外の Button は Window であること"
   - "セルを編集中のまま実際のマウスで ToolBar の Button・Menu の MenuItem をクリックすると、キーボードフォーカスは一度そのコントロールへ移るが、保存のコマンドの実行時にはセルの TextBox に戻っており、ソースは更新されず、セルと行は編集中のままであること"
-  - "実際のキーボードの Ctrl+S（Window の KeyBinding）では、フォーカスは DataGrid から出ず、ソースは更新されないこと"
+  - "実際のキーボードの Ctrl+S（Window の DataContext から {Binding SaveCommand} で解決する KeyBinding）では、フォーカスは DataGrid から出ず、ソースは更新されないこと"
   - "ToolBar の外の Button をクリックすると、フォーカスがその Button へ移り、コマンドの実行時にはソースが更新され、IEditableObject.EndEdit が呼ばれ、セルと行の編集が終わっていること"
   - "ToolBar に FocusManager.IsFocusScope=\"False\" を付けると、Button のクリックでフォーカスはその Button に移ったままになり、ソースが更新され、セルと行の編集が終わること"
+  - "Menu に FocusManager.IsFocusScope=\"False\" を付けると、MenuItem のクリックでフォーカスはその MenuItem に移ったままになり、ソースが更新され、セルと行の編集が終わること"
   - "セルの編集中に保存処理で CommitEdit() を 1 回呼ぶと True が返りセルの編集は終わるが、行は編集中のままで、ソースは更新されず、EndEdit も呼ばれないこと（IEditableObject の有無によらない）"
   - "セルの編集中に CommitEdit() を 2 回続けて呼ぶと、どちらも True が返り、ソースが更新され、セルと行の編集が終わること"
   - "保存処理で CommitEdit(DataGridEditingUnit.Row, true) を呼ぶと、ToolBar の Button・Menu の MenuItem・Ctrl+S・ToolBar の外の Button のどれで保存しても True が返り、ソースが更新され、セルと行の編集が終わること（ToolBar の Button では IEditableObject の有無によらない）"
