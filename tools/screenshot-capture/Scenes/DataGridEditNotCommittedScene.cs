@@ -25,10 +25,13 @@ internal sealed class DataGridEditNotCommittedScene : IScene
         "セルを編集中のまま実際のマウスで ToolBar の Button・Menu の MenuItem をクリックすると、キーボードフォーカスは一度そのコントロールへ移るが、保存のコマンドの実行時にはセルの TextBox に戻っており、ソースは更新されず、セルと行は編集中のままであること",
         "実際のキーボードの Ctrl+S（Window の KeyBinding）では、フォーカスは DataGrid から出ず、ソースは更新されないこと",
         "ToolBar の外の Button をクリックすると、フォーカスがその Button へ移り、コマンドの実行時にはソースが更新され、IEditableObject.EndEdit が呼ばれ、セルと行の編集が終わっていること",
-        "保存処理で CommitEdit() を呼ぶと True が返りセルの編集は終わるが、行は編集中のままで、ソースは更新されず、EndEdit も呼ばれないこと（IEditableObject の有無によらない）",
-        "保存処理で CommitEdit(DataGridEditingUnit.Row, true) を呼ぶと True が返り、ソースが更新され、セルと行の編集が終わること（IEditableObject の有無によらない）",
+        "ToolBar に FocusManager.IsFocusScope=\"False\" を付けると、Button のクリックでフォーカスはその Button に移ったままになり、ソースが更新され、セルと行の編集が終わること",
+        "セルの編集中に保存処理で CommitEdit() を 1 回呼ぶと True が返りセルの編集は終わるが、行は編集中のままで、ソースは更新されず、EndEdit も呼ばれないこと（IEditableObject の有無によらない）",
+        "セルの編集中に CommitEdit() を 2 回続けて呼ぶと、どちらも True が返り、ソースが更新され、セルと行の編集が終わること",
+        "保存処理で CommitEdit(DataGridEditingUnit.Row, true) を呼ぶと、ToolBar の Button・Menu の MenuItem・Ctrl+S・ToolBar の外の Button のどれで保存しても True が返り、ソースが更新され、セルと行の編集が終わること（ToolBar の Button では IEditableObject の有無によらない）",
         "行が編集中のまま ICollectionView.Refresh を呼ぶと InvalidOperationException になり、行の編集を確定した後は成功すること",
         "Name 列に UpdateSourceTrigger=PropertyChanged を書くと、確定しなくてもソースは更新されるが、セルと行は編集中のままで、EndEdit は呼ばれず、Refresh は InvalidOperationException になること",
+        "int の列に \"abc\" を入力して確定が False になった後、5 に直してもう一度保存すると True が返り、ソースが 5 になり、行の編集が終わること",
         "セルを編集していない状態で CommitEdit(DataGridEditingUnit.Row, true) を呼ぶと True が返ること",
         "int の列に \"abc\" を入力したまま CommitEdit(DataGridEditingUnit.Row, true) を呼ぶと False が返り、ソースは更新されず、セルと行は編集中のままであること",
         "セルに入力した後に実際の Esc を 2 回押すと、既定のバインドではソースは入力中も変わらず元の値のままで、UpdateSourceTrigger=PropertyChanged では IEditableObject を実装したアイテムだけが CancelEdit で元の値に戻り、INotifyPropertyChanged だけのアイテムは入力した値のまま残ること",
@@ -79,13 +82,13 @@ internal sealed class DataGridEditNotCommittedScene : IScene
 
     // ---------------------------------------------------------------- 記事の XAML とデータ
 
-    /// <summary>記事の XAML。{0} は Name 列のバインドに足す設定。</summary>
+    /// <summary>記事の XAML。{0} は Name 列のバインドに足す設定、{1} は ToolBar に足す属性。</summary>
     private const string PageXaml = """
         <DockPanel Width="400">
           <Menu DockPanel.Dock="Top">
             <MenuItem x:Name="menuSave" Header="Save" Command="{Binding SaveCommand}" />
           </Menu>
-          <ToolBar DockPanel.Dock="Top">
+          <ToolBar DockPanel.Dock="Top"{1}>
             <Button x:Name="toolBarSave" Content="Save" Command="{Binding SaveCommand}" />
           </ToolBar>
           <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
@@ -198,9 +201,9 @@ internal sealed class DataGridEditNotCommittedScene : IScene
         ? new EditableItem { Name = "alpha", Quantity = 1 }
         : new Item { Name = "alpha", Quantity = 1 };
 
-    private static (DockPanel Root, DataGrid Grid, Page Page) Build(Item first, string nameBinding = "")
+    private static (DockPanel Root, DataGrid Grid, Page Page) Build(Item first, string nameBinding = "", string toolBarAttributes = "")
     {
-        var root = SceneContext.LoadXaml<DockPanel>(PageXaml.Replace("{0}", nameBinding));
+        var root = SceneContext.LoadXaml<DockPanel>(PageXaml.Replace("{0}", nameBinding).Replace("{1}", toolBarAttributes));
         var page = new Page(first);
         root.DataContext = page;
         return (root, (DataGrid)root.FindName("grid"), page);
@@ -329,6 +332,7 @@ internal sealed class DataGridEditNotCommittedScene : IScene
     {
         None,
         Cell,
+        CellTwice,
         Row,
     }
 
@@ -344,6 +348,7 @@ internal sealed class DataGridEditNotCommittedScene : IScene
     {
         Commit.None => T("nothing", "なし"),
         Commit.Cell => "CommitEdit()",
+        Commit.CellTwice => T("CommitEdit() twice", "CommitEdit() を 2 回"),
         _ => "CommitEdit(DataGridEditingUnit.Row, true)",
     };
 
@@ -355,9 +360,18 @@ internal sealed class DataGridEditNotCommittedScene : IScene
             rows.Add(await SaveAsync(Describe(input), input, Commit.None, editable: true));
         }
 
+        rows.Add(await SaveAsync(
+            T("click the Button in a ToolBar with FocusManager.IsFocusScope=\"False\"", "FocusManager.IsFocusScope=\"False\" の ToolBar の Button をクリック"),
+            SaveInput.ToolBarButton, Commit.None, editable: true, toolBarAttributes: " FocusManager.IsFocusScope=\"False\""));
+
         Loc toolBar = Describe(SaveInput.ToolBarButton);
         rows.Add(await SaveAsync(toolBar, SaveInput.ToolBarButton, Commit.Cell, editable: true));
-        rows.Add(await SaveAsync(toolBar, SaveInput.ToolBarButton, Commit.Row, editable: true));
+        rows.Add(await SaveAsync(toolBar, SaveInput.ToolBarButton, Commit.CellTwice, editable: true));
+        foreach (SaveInput input in Enum.GetValues<SaveInput>())
+        {
+            rows.Add(await SaveAsync(Describe(input), input, Commit.Row, editable: true));
+        }
+
         rows.Add(await SaveAsync(
             T("click the Button in the ToolBar (item without IEditableObject)", "ToolBar の Button をクリック（IEditableObject の無いアイテム）"),
             SaveInput.ToolBarButton, Commit.Cell, editable: false));
@@ -371,16 +385,21 @@ internal sealed class DataGridEditNotCommittedScene : IScene
             T("click the Button in the ToolBar (\"abc\" typed into the int Quantity column)", "ToolBar の Button をクリック（int の Quantity 列に \"abc\" を入力）"),
             SaveInput.ToolBarButton, Commit.Row, editable: true, quantity: true));
         rows.Add(await SaveAsync(
+            T("click the Button in the ToolBar (\"abc\" in Quantity, then corrected to 5 and clicked again)", "ToolBar の Button をクリック（Quantity に \"abc\"、5 に直してもう一度クリック）"),
+            SaveInput.ToolBarButton, Commit.Row, editable: true, quantity: true, retryWith: '5'));
+        rows.Add(await SaveAsync(
             T("click the Button in the ToolBar (no cell has been edited)", "ToolBar の Button をクリック（セルを編集していない）"),
             SaveInput.ToolBarButton, Commit.Row, editable: true, typeFirst: false));
         return rows;
     }
 
     private static async Task<IReadOnlyList<Loc>> SaveAsync(
-        Loc label, SaveInput input, Commit commit, bool editable, string nameBinding = "", bool quantity = false, bool typeFirst = true)
+        Loc label, SaveInput input, Commit commit, bool editable, string nameBinding = "", bool quantity = false, bool typeFirst = true,
+        string toolBarAttributes = "", char? retryWith = null)
     {
         Item first = NewFirst(editable);
-        (DockPanel root, DataGrid grid, Page page) = Build(first, nameBinding);
+        (DockPanel root, DataGrid grid, Page page) = Build(first, nameBinding, toolBarAttributes);
+        var returns = new List<string>();
         IReadOnlyList<Loc>? row = null;
         Loc? focusLeft = null;
         bool armed = false;
@@ -395,12 +414,15 @@ internal sealed class DataGridEditNotCommittedScene : IScene
         page.OnSave = () =>
         {
             Loc focus = DescribeFocus(grid);
-            Loc returned = commit switch
+            // 保存し直す行では、保存ごとの戻り値を矢印でつなぐ。
+            returns.Add(commit switch
             {
                 Commit.None => "-",
                 Commit.Cell => YesNo(grid.CommitEdit()),
+                Commit.CellTwice => $"{YesNo(grid.CommitEdit())}, {YesNo(grid.CommitEdit())}",
                 _ => YesNo(grid.CommitEdit(DataGridEditingUnit.Row, true)),
-            };
+            });
+            Loc returned = string.Join(" → ", returns);
             string value = quantity ? first.Quantity.ToString() : $"\"{first.Name}\"";
             string endEdits = first is EditableItem e ? e.EndEdits.ToString() : "-";
             Loc refresh;
@@ -437,6 +459,13 @@ internal sealed class DataGridEditNotCommittedScene : IScene
                 {
                     case SaveInput.ToolBarButton:
                         await ClickAsync(window, (Button)root.FindName("toolBarSave"));
+                        if (retryWith is char digit)
+                        {
+                            await Capture.SettleAsync(window, 100);
+                            TypeDigit(digit);
+                            await ClickAsync(window, (Button)root.FindName("toolBarSave"));
+                        }
+
                         break;
                     case SaveInput.MenuItem:
                         await ClickAsync(window, (MenuItem)root.FindName("menuSave"));
@@ -454,6 +483,28 @@ internal sealed class DataGridEditNotCommittedScene : IScene
         }, activate: true);
 
         return row ?? throw new InvalidOperationException($"保存のコマンドが実行されなかった: {label.En}");
+    }
+
+    /// <summary>
+    /// フォーカスのある TextBox の文字をすべて選び、数字 1 文字に置き換える。
+    /// <see cref="DemoProbe.TypeLetters"/> と同じく、キーと文字を InputManager を通して送る（英小文字以外も打つため、ここで書く）。
+    /// </summary>
+    private static void TypeDigit(char digit)
+    {
+        if (Keyboard.FocusedElement is not TextBox box)
+        {
+            throw new InvalidOperationException($"数字を打つ TextBox にフォーカスが無い（{Keyboard.FocusedElement?.GetType().Name ?? "なし"}）。");
+        }
+
+        box.SelectAll();
+        var key = (Key)((int)Key.D0 + (digit - '0'));
+        SendKey(key);
+        TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, box, digit.ToString()));
+        SendKey(key, down: false);
+        if (box.Text != digit.ToString())
+        {
+            throw new InvalidOperationException($"数字が TextBox に届いていない（Text = \"{box.Text}\"）。");
+        }
     }
 
     // ---------------------------------------------------------------- Esc での取り消し
