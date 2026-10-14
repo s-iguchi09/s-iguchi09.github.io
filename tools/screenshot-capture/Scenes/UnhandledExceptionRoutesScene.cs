@@ -350,9 +350,20 @@ internal sealed class UnhandledExceptionRoutesScene : IScene
                 // 待たれない Task の例外は、GC がファイナライザーを走らせるまでどこにも通知されない。
                 // 2 秒の間に GC が自然に走ると結果が揺れるため、Task の経路では GC を抑止して測る。
                 bool suppressGc = _route is "task-run" or "task-run-gc" or "async-task-discarded";
-                if (suppressGc && !GC.TryStartNoGCRegion(32 * 1024 * 1024))
+                if (suppressGc)
                 {
-                    Record("nogc-lost");
+                    try
+                    {
+                        if (!GC.TryStartNoGCRegion(32 * 1024 * 1024))
+                        {
+                            Record("nogc-lost");
+                        }
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        // 要求サイズが ephemeral セグメントを超える環境では、開始できずに例外になる。
+                        Record("nogc-lost");
+                    }
                 }
 
                 switch (_route)

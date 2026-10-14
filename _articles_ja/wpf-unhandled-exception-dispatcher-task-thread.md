@@ -16,7 +16,8 @@ WPF アプリケーションの未処理例外対策として、`App.xaml.cs` �
 原因はハンドラの書き方ではなく、**例外の届き先が、その例外を最初に受け止める層で決まる**ことにある。
 `DispatcherUnhandledException` が受け取るのは、メインの UI スレッドの `Dispatcher` が受け止めた例外だけである。
 どの層にも受け止められずにスレッドの最上位へ達した例外（`new Thread` やスレッドプールで開始した `async void` の例外）は、`AppDomain.CurrentDomain.UnhandledException` に届いてプロセスを終わらせる。
-`Task` や `System.Timers.Timer` が受け止めた例外はその内部で止まり、GC の後に `UnobservedTaskException` が呼ばれる場合を除いて、どのハンドラにも届かない。
+誰も `await` しない `Task` や `System.Timers.Timer` が受け止めた例外はその内部で止まり、GC の後に `UnobservedTaskException` が呼ばれる場合を除いて、どのハンドラにも届かない。
+`Task` を `await` すれば、例外は `await` した呼び出し元で投げ直される。
 
 本記事では、例外の経路と条件を 16 通り用意して、例外を投げたスレッドと、3 つのハンドラのどれが呼ばれ、プロセスが動き続けるかを実測した結果を示す。
 そのうえで、経路ごとに例外を確実に拾うための登録先と書き方を整理する。
@@ -210,6 +211,8 @@ private async void SaveButton_Click(object sender, RoutedEventArgs e)
 `ImplicitUsings` を有効にしても、WPF のプロジェクトでは `System.IO` が暗黙の `using` に含まれない（[暗黙的な using ディレクティブ](https://learn.microsoft.com/ja-jp/dotnet/core/project-sdk/overview#implicit-using-directives)）。
 このため、`IOException` を使うファイルの先頭に `using System.IO;` を書く。
 `catch` で想定した例外だけを受け、それ以外は `DispatcherUnhandledException` へ流す構成である。
+`catch` で受けた例外は未処理例外ではないため、3 つのハンドラのどれにも届かない。
+記録が必要な場合は、`catch` の中で記録する。
 `Task.Run(...)` を `await` しないと、例外は `DispatcherUnhandledException` にも `AppDomain.UnhandledException` にも届かない。
 届くとしても、GC の後の `UnobservedTaskException` だけである。
 
@@ -236,7 +239,7 @@ private async void SaveButton_Click(object sender, RoutedEventArgs e)
 未処理例外の届き先は、例外を最初に受け止める層で決まる。
 `DispatcherUnhandledException` が受け取るのはメインの `Dispatcher` が受け止めた例外だけであり、どの層にも受け止められずにスレッドの最上位へ達した例外はプロセスを終了させ、待たれない `Task` の例外は GC が走るまでどのハンドラにも届かない。
 
-アプリケーションを落とさず、例外を確実にログへ残すには、例外を `DispatcherUnhandledException` へ集める構成を基本にする。
+アプリケーションを落とさず、未処理の例外を確実にログへ残すには、例外を `DispatcherUnhandledException` へ集める構成を基本にする。
 バックグラウンドの処理は UI のイベントハンドラから `await` の連鎖を切らさずに呼び、UI スレッドで実行してよい周期処理は `DispatcherTimer` で書く。
 この形に乗らない `new Thread` や `System.Timers.Timer` は、処理の内側で `try` / `catch` する。
 `AppDomain.UnhandledException` は終了前の記録、`UnobservedTaskException` は待ち忘れの検出として登録し、どちらも例外から回復する手段としては使わない。

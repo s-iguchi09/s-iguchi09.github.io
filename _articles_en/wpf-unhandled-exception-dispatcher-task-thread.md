@@ -17,7 +17,8 @@ The cause is not how the handler is written.
 **Where an exception ends up is decided by the layer that first catches it.**
 `DispatcherUnhandledException` only receives exceptions caught by the `Dispatcher` of the main UI thread.
 Exceptions that no layer catches before they reach the top of their thread (from `new Thread`, or from an `async void` method started on the thread pool) reach `AppDomain.CurrentDomain.UnhandledException` and end the process.
-Exceptions caught by a `Task` or a `System.Timers.Timer` stop inside it and reach none of the handlers, except that `UnobservedTaskException` may be raised after a GC.
+Exceptions caught by a `Task` that nobody awaits, or by a `System.Timers.Timer`, stop inside it and reach none of the handlers, except that `UnobservedTaskException` may be raised after a GC.
+When the `Task` is awaited, the exception is rethrown at the caller's `await`.
 
 This article sets up 16 throwing routes and conditions, and measures the thread that throws, which of the three handlers is called, and whether the process keeps running in each case.
 It then lays out where to subscribe and how to write the code so that every route is actually caught.
@@ -211,6 +212,8 @@ private async void SaveButton_Click(object sender, RoutedEventArgs e)
 
 Even with `ImplicitUsings` enabled, WPF projects do not include `System.IO` in their implicit `using` directives ([Implicit using directives](https://learn.microsoft.com/en-us/dotnet/core/project-sdk/overview#implicit-using-directives)), so a file that uses `IOException` needs `using System.IO;` at the top.
 The `catch` handles only the expected exception and leaves everything else to `DispatcherUnhandledException`.
+An exception handled by `catch` is no longer unhandled, so it reaches none of the three handlers.
+If it needs to be recorded, record it inside the `catch`.
 Without the `await` on `Task.Run(...)`, the exception reaches neither `DispatcherUnhandledException` nor `AppDomain.UnhandledException`.
 If it reaches anything at all, it is `UnobservedTaskException` after a GC.
 
@@ -238,7 +241,7 @@ The destination of an unhandled exception is decided by the layer that first cat
 `DispatcherUnhandledException` receives only exceptions caught by the main `Dispatcher`.
 Exceptions that no layer catches before the top of their thread end the process, and exceptions from unawaited `Task` objects reach no handler until a GC runs.
 
-To keep the application alive and get every exception into the log, build around routing exceptions to `DispatcherUnhandledException`.
+To keep the application alive and get every unhandled exception into the log, build around routing exceptions to `DispatcherUnhandledException`.
 Call background work from UI event handlers through an unbroken chain of `await`, and write periodic work that may run on the UI thread with `DispatcherTimer`.
 For `new Thread` and `System.Timers.Timer`, which do not fit that pattern, use `try` / `catch` inside the work.
 Subscribe to `AppDomain.UnhandledException` for a final record before termination and to `UnobservedTaskException` for detecting missing `await`s, and use neither as a way to recover from an exception.
