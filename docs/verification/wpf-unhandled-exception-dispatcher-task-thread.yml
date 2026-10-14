@@ -1,0 +1,25 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-unhandled-exception-dispatcher-task-thread
+slug: "wpf-unhandled-exception-dispatcher-task-thread"
+scene: "UnhandledExceptionRoutesScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "例外の経路ごとに、例外を投げたスレッド・3 つのハンドラのどれが呼ばれたか・プロセスが動き続けるかを別プロセスで測り、期待値と照合する"
+  - "Click ハンドラと DispatcherTimer.Tick の例外は DispatcherUnhandledException に届き、Handled = true でプロセスが動き続けること"
+  - "Handled を立てないと AppDomain.UnhandledException が IsTerminating = true で呼ばれ、プロセスが終了すること"
+  - "new Thread の例外は DispatcherUnhandledException に届かず、AppDomain.UnhandledException の後にプロセスが終了すること"
+  - "2 つ目の UI スレッドの例外は Application.DispatcherUnhandledException に届かず、そのスレッドの Dispatcher.UnhandledException で Handled = true にすればプロセスが動き続けること"
+  - "待たれない Task の例外は、Task.Run でも UI スレッドで投げた async Task でも、GC が走らない限りどのハンドラにも届かないこと（GC を TryStartNoGCRegion で抑止して確かめる）"
+  - "待たれない Task の例外は、GC.Collect と GC.WaitForPendingFinalizers の後に UnobservedTaskException だけを呼び、プロセスは動き続けること"
+  - "System.Timers.Timer の同期の Elapsed の例外はどのハンドラにも届かず、async の Elapsed の例外はプロセスを終了させること"
+  - "UI スレッドで開始した async void の Click では、await した Task.Run の例外も ConfigureAwait(false) の後にスレッドプールで投げた例外も DispatcherUnhandledException に届くこと"
+  - "async void の Click から async Task のメソッドを await すると、そのメソッドの中で投げた例外も DispatcherUnhandledException に届くこと"
+  - "await を try / catch で囲むと、Task.Run の例外は catch で受けられ、どのハンドラも呼ばれないこと"
+  - "スレッドプールで開始した async void の例外はプロセスを終了させること"
+images:
+  - "images/articles/wpf-unhandled-exception-dispatcher-task-thread/unhandled-exception-routes.svg"
+tables:
+  - "_includes/tables/articles/wpf-unhandled-exception-dispatcher-task-thread/unhandled-exception-routes.en.md"
+  - "_includes/tables/articles/wpf-unhandled-exception-dispatcher-task-thread/unhandled-exception-routes.ja.md"
