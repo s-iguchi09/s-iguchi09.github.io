@@ -16,8 +16,10 @@ WPF アプリケーションの未処理例外対策として、`App.xaml.cs` �
 原因はハンドラの書き方ではなく、**例外の届き先が、その例外を最初に受け止める層で決まる**ことにある。
 `DispatcherUnhandledException` が受け取るのは、メインの UI スレッドの `Dispatcher` が受け止めた例外だけである。
 どの層にも受け止められずにスレッドの最上位へ達した例外（`new Thread` やスレッドプールで開始した `async void` の例外）は、`AppDomain.CurrentDomain.UnhandledException` に届いてプロセスを終わらせる。
-誰も `await` しない `Task` や `System.Timers.Timer` が受け止めた例外はその内部で止まり、GC の後に `UnobservedTaskException` が呼ばれる場合を除いて、どのハンドラにも届かない。
+誰も `await` しない `Task` が受け止めた例外はその内部で止まり、GC の後に `UnobservedTaskException` が呼ばれる場合を除いて、どのハンドラにも届かない。
 `Task` を `await` すれば、例外は `await` した呼び出し元で投げ直される。
+`System.Timers.Timer` は同期の `Elapsed` ハンドラの例外を抑制するため、その例外もどのハンドラにも届かない。
+ただし `await` を含む `async` の `Elapsed` ハンドラの例外は抑制されない。
 
 本記事では、例外の経路と条件を 16 通り用意して、例外を投げたスレッドと、3 つのハンドラのどれが呼ばれ、プロセスが動き続けるかを実測した結果を示す。
 そのうえで、経路ごとに例外を確実に拾うための登録先と書き方を整理する。

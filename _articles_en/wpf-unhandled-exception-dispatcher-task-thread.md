@@ -17,8 +17,10 @@ The cause is not how the handler is written.
 **Where an exception ends up is decided by the layer that first catches it.**
 `DispatcherUnhandledException` only receives exceptions caught by the `Dispatcher` of the main UI thread.
 Exceptions that no layer catches before they reach the top of their thread (from `new Thread`, or from an `async void` method started on the thread pool) reach `AppDomain.CurrentDomain.UnhandledException` and end the process.
-Exceptions caught by a `Task` that nobody awaits, or by a `System.Timers.Timer`, stop inside it and reach none of the handlers, except that `UnobservedTaskException` may be raised after a GC.
+Exceptions caught by a `Task` that nobody awaits stop inside it and reach none of the handlers, except that `UnobservedTaskException` may be raised after a GC.
 When the `Task` is awaited, the exception is rethrown at the caller's `await`.
+`System.Timers.Timer` suppresses exceptions from a synchronous `Elapsed` handler, so those reach none of the handlers either.
+Exceptions from an `async` `Elapsed` handler that uses `await` are not suppressed, however.
 
 This article sets up 16 throwing routes and conditions, and measures the thread that throws, which of the three handlers is called, and whether the process keeps running in each case.
 It then lays out where to subscribe and how to write the code so that every route is actually caught.
