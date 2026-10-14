@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1605 560" width="1605" height="560" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1605" height="560" />
+  <text class="title" x="12" y="24">which handler receives the exception</text>
+  <rect class="head" x="12" y="38" width="1581" height="30" />
+  <text class="cell" x="26" y="57.5">where the exception is thrown</text>
+  <text class="cell" x="556" y="57.5" text-anchor="end">throwing thread</text>
+  <text class="cell" x="985" y="57.5" text-anchor="end">DispatcherUnhandledException</text>
+  <text class="cell" x="1240" y="57.5" text-anchor="end">AppDomain.UnhandledException</text>
+  <text class="cell" x="1449" y="57.5" text-anchor="end">UnobservedTaskException</text>
+  <text class="cell" x="1579" y="57.5" text-anchor="end">process</text>
+  <text class="cell" x="26" y="87.5">Click handler (Handled = true)</text>
+  <text class="cell" x="556" y="87.5" text-anchor="end">UI</text>
+  <text class="cell" x="985" y="87.5" text-anchor="end">called</text>
+  <text class="cell" x="1240" y="87.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="87.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="87.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="117.5">Click handler (Handled not set)</text>
+  <text class="cell" x="556" y="117.5" text-anchor="end">UI</text>
+  <text class="cell" x="985" y="117.5" text-anchor="end">called</text>
+  <text class="cell" x="1240" y="117.5" text-anchor="end">called (IsTerminating = true)</text>
+  <text class="cell" x="1449" y="117.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="117.5" text-anchor="end">terminated</text>
+  <text class="cell" x="26" y="147.5">DispatcherTimer.Tick</text>
+  <text class="cell" x="556" y="147.5" text-anchor="end">UI</text>
+  <text class="cell" x="985" y="147.5" text-anchor="end">called</text>
+  <text class="cell" x="1240" y="147.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="147.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="147.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="177.5">new Thread(...)</text>
+  <text class="cell" x="556" y="177.5" text-anchor="end">dedicated</text>
+  <text class="cell" x="985" y="177.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="177.5" text-anchor="end">called (IsTerminating = true)</text>
+  <text class="cell" x="1449" y="177.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="177.5" text-anchor="end">terminated</text>
+  <text class="cell" x="26" y="207.5">2nd UI thread (Dispatcher.Run)</text>
+  <text class="cell" x="556" y="207.5" text-anchor="end">2nd UI</text>
+  <text class="cell" x="985" y="207.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="207.5" text-anchor="end">called (IsTerminating = true)</text>
+  <text class="cell" x="1449" y="207.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="207.5" text-anchor="end">terminated</text>
+  <text class="cell" x="26" y="237.5">+ its own Dispatcher.UnhandledException</text>
+  <text class="cell" x="556" y="237.5" text-anchor="end">2nd UI</text>
+  <text class="cell" x="985" y="237.5" text-anchor="end">— (its own Dispatcher.UnhandledException is called)</text>
+  <text class="cell" x="1240" y="237.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="237.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="237.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="267.5">Task.Run(...), not awaited (no GC)</text>
+  <text class="cell" x="556" y="267.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="267.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="267.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="267.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="267.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="297.5">+ GC.Collect()</text>
+  <text class="cell" x="556" y="297.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="297.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="297.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="297.5" text-anchor="end">called</text>
+  <text class="cell" x="1579" y="297.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="327.5">async Task called from Click, not awaited (no GC)</text>
+  <text class="cell" x="556" y="327.5" text-anchor="end">UI</text>
+  <text class="cell" x="985" y="327.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="327.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="327.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="327.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="357.5">System.Timers.Timer.Elapsed (sync)</text>
+  <text class="cell" x="556" y="357.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="357.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="357.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="357.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="357.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="387.5">System.Timers.Timer.Elapsed (async)</text>
+  <text class="cell" x="556" y="387.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="387.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="387.5" text-anchor="end">called (IsTerminating = true)</text>
+  <text class="cell" x="1449" y="387.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="387.5" text-anchor="end">terminated</text>
+  <text class="cell" x="26" y="417.5">async void Click, await Task.Run</text>
+  <text class="cell" x="556" y="417.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="417.5" text-anchor="end">called</text>
+  <text class="cell" x="1240" y="417.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="417.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="417.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="447.5">async void Click, after ConfigureAwait(false)</text>
+  <text class="cell" x="556" y="447.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="447.5" text-anchor="end">called</text>
+  <text class="cell" x="1240" y="447.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="447.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="447.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="477.5">async void Click, await async Task</text>
+  <text class="cell" x="556" y="477.5" text-anchor="end">UI</text>
+  <text class="cell" x="985" y="477.5" text-anchor="end">called</text>
+  <text class="cell" x="1240" y="477.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="477.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="477.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="507.5">async void Click, try / catch around await</text>
+  <text class="cell" x="556" y="507.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="507.5" text-anchor="end">— (caught by catch)</text>
+  <text class="cell" x="1240" y="507.5" text-anchor="end">—</text>
+  <text class="cell" x="1449" y="507.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="507.5" text-anchor="end">keeps running</text>
+  <text class="cell" x="26" y="537.5">async void started on the thread pool</text>
+  <text class="cell" x="556" y="537.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="985" y="537.5" text-anchor="end">—</text>
+  <text class="cell" x="1240" y="537.5" text-anchor="end">called (IsTerminating = true)</text>
+  <text class="cell" x="1449" y="537.5" text-anchor="end">—</text>
+  <text class="cell" x="1579" y="537.5" text-anchor="end">terminated</text>
+  <line class="line" x1="12" y1="38" x2="1593" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1593" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1593" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1593" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1593" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1593" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1593" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1593" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1593" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1593" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1593" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1593" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1593" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1593" y2="428" />
+  <line class="line" x1="12" y1="458" x2="1593" y2="458" />
+  <line class="line" x1="12" y1="488" x2="1593" y2="488" />
+  <line class="line" x1="12" y1="518" x2="1593" y2="518" />
+  <line class="line" x1="12" y1="548" x2="1593" y2="548" />
+  <line class="line" x1="12" y1="38" x2="12" y2="548" />
+  <line class="line" x1="425" y1="38" x2="425" y2="548" />
+  <line class="line" x1="570" y1="38" x2="570" y2="548" />
+  <line class="line" x1="999" y1="38" x2="999" y2="548" />
+  <line class="line" x1="1254" y1="38" x2="1254" y2="548" />
+  <line class="line" x1="1463" y1="38" x2="1463" y2="548" />
+  <line class="line" x1="1593" y1="38" x2="1593" y2="548" />
+</svg>

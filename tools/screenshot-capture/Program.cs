@@ -63,6 +63,7 @@ internal static class Program
         new UpdateSourcePitfallScene(),
         new ExtensionReceiverMatrixScene(),
         new FluentThemeModeSwitchScene(),
+        new UnhandledExceptionRoutesScene(),
 
         // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
         new GridDemoScene(),
