@@ -43,6 +43,7 @@ articles_en:
   "wpf-tray-contextmenu-close-on-focus-loss": "2026-10-03T21:41:55+09:00"
   "wpf-treeview-select-item-programmatically": "2026-10-03T21:41:55+09:00"
   "wpf-ui-virtualization-lost-conditions": "2026-10-04T01:17:29+09:00"
+  "wpf-unhandled-exception-dispatcher-task-thread": "2026-10-15T04:56:53+09:00"
   "wpf-usercontrol-dependencyproperty-binding-not-working": "2026-10-03T21:41:55+09:00"
   "wpf-validation-error-not-displayed": "2026-10-03T21:41:55+09:00"
 articles_ja:
@@ -88,5 +89,6 @@ articles_ja:
   "wpf-tray-contextmenu-close-on-focus-loss": "2026-10-03T21:41:55+09:00"
   "wpf-treeview-select-item-programmatically": "2026-10-04T06:07:30+09:00"
   "wpf-ui-virtualization-lost-conditions": "2026-10-04T01:17:29+09:00"
+  "wpf-unhandled-exception-dispatcher-task-thread": "2026-10-15T04:56:53+09:00"
   "wpf-usercontrol-dependencyproperty-binding-not-working": "2026-10-03T21:41:55+09:00"
   "wpf-validation-error-not-displayed": "2026-10-03T21:41:55+09:00"

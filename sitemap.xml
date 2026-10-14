@@ -1978,6 +1978,26 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-unhandled-exception-dispatcher-task-thread/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-unhandled-exception-dispatcher-task-thread/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-unhandled-exception-dispatcher-task-thread/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-unhandled-exception-dispatcher-task-thread/" />
+    <lastmod>2026-10-14T19:56:53Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-unhandled-exception-dispatcher-task-thread/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-unhandled-exception-dispatcher-task-thread/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-unhandled-exception-dispatcher-task-thread/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-unhandled-exception-dispatcher-task-thread/" />
+    <lastmod>2026-10-14T19:56:53Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/" />
