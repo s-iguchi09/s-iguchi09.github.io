@@ -206,11 +206,17 @@ internal sealed class TaskResultDeadlockScene : IScene
                 break;
             }
 
-            if (ReadLines(log).Contains("hung") || limit.Elapsed > Timeout)
+            bool timedOut = limit.Elapsed > Timeout;
+            if (ReadLines(log).Contains("hung") || timedOut)
             {
                 // Kill は終了を待たない。次の計測に影響しないよう、終わるまで待つ。
                 process.Kill(entireProcessTree: true);
                 process.WaitForExit();
+                if (timedOut && !ReadLines(log).Contains("hung"))
+                {
+                    throw new InvalidOperationException($"{route}: 監視スレッドが判定を書かないまま {Timeout.TotalSeconds} 秒が過ぎた。");
+                }
+
                 break;
             }
 
