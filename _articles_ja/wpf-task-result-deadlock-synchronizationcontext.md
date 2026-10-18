@@ -1,7 +1,7 @@
 ---
 layout: article-ja
 title: "WPF で Task.Result を呼ぶと画面が固まる原因と、ConfigureAwait(false) で直らない条件"
-date: 2026-10-19
+date: 2026-10-18
 category: WPF
 excerpt: "await の後で UI スレッドへ戻る async メソッドを UI スレッドで .Result で待つと、後続が UI スレッドの空きを待ち続けて画面が固まる。回避策の ConfigureAwait(false) と Task.Run も、書き方しだいで同じように固まる。"
 image: /images/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.svg

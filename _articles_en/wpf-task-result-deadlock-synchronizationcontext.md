@@ -2,7 +2,7 @@
 layout: article-en
 title: "Why Task.Result Freezes a WPF App and When ConfigureAwait(false) Does Not Help"
 seo_title: "Task.Result Freezes WPF: Where ConfigureAwait(false) Fails"
-date: 2026-10-19
+date: 2026-10-18
 category: WPF
 excerpt: "Blocking on .Result on the WPF UI thread freezes the window when the code after an await must resume there. ConfigureAwait(false) and Task.Run can fail too."
 image: /images/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.svg
