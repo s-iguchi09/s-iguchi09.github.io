@@ -11,7 +11,8 @@ image: /images/articles/wpf-task-result-deadlock-synchronizationcontext/task-res
 ## Overview
 
 Inside a synchronous method such as a button's Click handler, writing `LoadAsync().Result` to get the result of an asynchronous method makes a WPF window stop responding the moment the button is clicked, if that method returns to the UI thread after an `await`.
-No exception is thrown, no timeout fires, and the window never comes back.
+No exception is thrown, and the wait in `.Result` itself has no timeout, so the window never comes back.
+In the measurements for this article, a watchdog thread detects this state after 2.5 seconds and terminates the process from outside (see Prerequisites and Environment).
 
 The `await` tries to send the rest of the method back to the UI thread it started on, and that UI thread is sitting inside `.Result` waiting for the rest of the method.
 Each waits for the other, so neither makes progress.
