@@ -4,13 +4,13 @@ title: "Why Task.Result Freezes a WPF App and When ConfigureAwait(false) Does No
 seo_title: "Task.Result Freezes WPF: Where ConfigureAwait(false) Fails"
 date: 2026-10-19
 category: WPF
-excerpt: "Calling .Result on an async method from the WPF UI thread freezes the window. The usual fixes, ConfigureAwait(false) and Task.Run, can freeze it the same way."
+excerpt: "Blocking on .Result on the WPF UI thread freezes the window when the code after an await must resume there. ConfigureAwait(false) and Task.Run can fail too."
 image: /images/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.svg
 ---
 
 ## Overview
 
-Inside a synchronous method such as a button's Click handler, writing `LoadAsync().Result` to get the result of an asynchronous method makes a WPF window stop responding the moment the button is clicked.
+Inside a synchronous method such as a button's Click handler, writing `LoadAsync().Result` to get the result of an asynchronous method makes a WPF window stop responding the moment the button is clicked, if that method returns to the UI thread after an `await`.
 No exception is thrown, no timeout fires, and the window never comes back.
 
 The `await` tries to send the rest of the method back to the UI thread it started on, and that UI thread is sitting inside `.Result` waiting for the rest of the method.
@@ -268,8 +268,10 @@ public async Task RefreshAsync()
 The caller of `RefreshAsync` also waits with `await`.
 Reverting to `.Result` at even one point in the chain freezes at that point in the same way.
 
-When writing a library, add `ConfigureAwait(false)` to every `await` in methods that do not touch the UI.
-This reduces the paths that freeze when a caller waits with `.Result`, but it does not keep the caller's UI thread from blocking during the wait.
+When writing a library, add `ConfigureAwait(false)` to every `await` in methods whose code after the `await` does not need the original context.
+Even a method that never touches the window should first be checked for callbacks or events supplied by the caller that it runs after an `await`, since those may assume the UI thread.
+The official guidance likewise excludes code that needs to resume on the captured context.
+Adding it reduces the paths that freeze when a caller waits with `.Result`, but it does not keep the caller's UI thread from blocking during the wait.
 The fix on the application side is still to wait with `await`.
 
 ---
@@ -287,14 +289,15 @@ The fix on the application side is still to wait with `await`.
 
 ## Summary
 
-Calling `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()` on the UI thread freezes the window, because the code after `await` keeps waiting for the UI thread to become free.
+Calling `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()` on the UI thread always blocks the UI thread while it waits.
+On top of that, if an incomplete `await` has captured the UI thread's context, the continuation keeps waiting for the UI thread to become free and the call never returns.
+Even when the call returns, as with `LoadAllConfigureAwaitAsync`, the UI thread still stops for the duration of the wait.
 Within the measured cases, the calls with `ConfigureAwait(false)` that returned were those in which no `await` without it suspended on the UI thread.
 Adding it only to an `await` on an already-completed `Task` or only to the outer `await` did not help.
 Offloading with `Task.Run` also freezes as soon as the work inside calls `Dispatcher.Invoke`.
-With every approach, the UI thread stops until the call returns.
 
 In a WPF application, make the event handler `async void`, use `await`, and carry `async` up through the callers.
-Treat `ConfigureAwait(false)` as something added to every `await` in library code that does not touch the UI.
+Treat `ConfigureAwait(false)` as something added to every `await` in library code whose continuations do not need the original context.
 Reserve `Task.Run(...).Result` for cases where rewriting is not possible, such as implementing an interface that requires a synchronous method, and use it only after confirming that the wrapped work never calls into the UI thread synchronously and that a frozen window is acceptable for the duration of the wait.
 
 ---

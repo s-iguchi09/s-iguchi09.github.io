@@ -3,13 +3,13 @@ layout: article-ja
 title: "WPF で Task.Result を呼ぶと画面が固まる原因と、ConfigureAwait(false) で直らない条件"
 date: 2026-10-19
 category: WPF
-excerpt: "UI スレッドで async メソッドの .Result を呼ぶと、await の後の処理が UI スレッドの空きを待ち続けて画面が固まる。回避策の ConfigureAwait(false) と Task.Run も、付け方と中身によっては同じように固まる。"
+excerpt: "await の後で UI スレッドへ戻る async メソッドを UI スレッドで .Result で待つと、後続が UI スレッドの空きを待ち続けて画面が固まる。回避策の ConfigureAwait(false) と Task.Run も、書き方しだいで同じように固まる。"
 image: /images/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.svg
 ---
 
 ## 概要
 
-ボタンの Click ハンドラのような同期メソッドの中で、`LoadAsync().Result` と書いて非同期メソッドの結果を受け取ると、WPF ではクリックした瞬間に画面が応答しなくなる。
+ボタンの Click ハンドラのような同期メソッドの中で、`LoadAsync().Result` と書いて非同期メソッドの結果を受け取ると、その非同期メソッドが `await` の後で UI スレッドへ戻る作りであれば、WPF ではクリックした瞬間に画面が応答しなくなる。
 例外もタイムアウトも起きず、ウィンドウは二度と戻らない。
 
 `await` は始まったときの UI スレッドへ後続の処理を戻そうとし、その UI スレッドは `.Result` の中で後続を待っている。
@@ -266,8 +266,10 @@ public async Task RefreshAsync()
 `RefreshAsync` を呼ぶ側も `await` で待つ。
 途中の 1 か所でも `.Result` に戻すと、その場所で同じように固まる。
 
-ライブラリを書く側では、UI に触れないメソッドのすべての `await` に `ConfigureAwait(false)` を付ける。
-これは呼び出し元が `.Result` で待ったときに固まる経路を減らすが、待っている間に呼び出し元の UI スレッドが止まることは防げない。
+ライブラリを書く側では、`await` の後の処理が元のコンテキストを必要としないメソッドのすべての `await` に `ConfigureAwait(false)` を付ける。
+画面に触れないメソッドでも、`await` の後で呼び出し元から渡されたコールバックやイベントを実行するなら、それが UI スレッドを前提にしていないかを先に確かめる。
+公式の説明も、元のコンテキストで再開する必要がある場合を除外している。
+`ConfigureAwait(false)` を付けることは、呼び出し元が `.Result` で待ったときに固まる経路を減らすが、待っている間に呼び出し元の UI スレッドが止まることは防げない。
 アプリケーション側の対策は、あくまで `await` で待つことである。
 
 ---
@@ -285,14 +287,15 @@ public async Task RefreshAsync()
 
 ## まとめ
 
-UI スレッドで `.Result`・`.Wait()`・`.GetAwaiter().GetResult()` を呼ぶと、`await` の後の処理が UI スレッドの空きを待ち続けて画面が固まる。
+UI スレッドで `.Result`・`.Wait()`・`.GetAwaiter().GetResult()` を呼ぶと、待っている間は必ず UI スレッドが止まる。
+そのうえで、未完了の `await` が UI スレッドのコンテキストを取り込んでいれば、後続が UI スレッドの空きを待ち続けて、戻らなくなる。
+`LoadAllConfigureAwaitAsync` のように戻る場合でも、待ち時間のあいだ UI スレッドが止まることは変わらない。
 測った範囲では、`ConfigureAwait(false)` を付けて戻ったのは、付いていない `await` が UI スレッドの上で中断しない場合だった。
 完了済みの `Task` の `await` や外側の `await` にだけ付けたものは効かなかった。
 `Task.Run` で逃がす方法も、中で `Dispatcher.Invoke` を呼んだ時点で固まる。
-いずれの方法でも、戻るまでの間は UI スレッドが止まる。
 
 WPF のアプリケーションでは、イベントハンドラを `async void` にして `await` し、`async` を呼び出し元まで通す方法を選ぶ。
-`ConfigureAwait(false)` は、UI に触れないライブラリのコードで、すべての `await` に付けるものとして扱う。
+`ConfigureAwait(false)` は、`await` の後の処理が元のコンテキストを必要としないライブラリのコードで、すべての `await` に付けるものとして扱う。
 `Task.Run(...).Result` は、同期メソッドを要求するインターフェイスを実装するなど書き換えができない場合に限り、包む処理が UI スレッドを同期的に呼ばないことと、待っている間に画面が止まってよいことを確かめたうえで使う。
 
 ---
