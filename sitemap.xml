@@ -1870,6 +1870,26 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-task-result-deadlock-synchronizationcontext/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-task-result-deadlock-synchronizationcontext/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-task-result-deadlock-synchronizationcontext/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-task-result-deadlock-synchronizationcontext/" />
+    <lastmod>2026-10-18T19:59:55Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-task-result-deadlock-synchronizationcontext/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-task-result-deadlock-synchronizationcontext/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-task-result-deadlock-synchronizationcontext/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-task-result-deadlock-synchronizationcontext/" />
+    <lastmod>2026-10-18T19:59:55Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-textbox-updatesource-from-view-pitfalls/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-textbox-updatesource-from-view-pitfalls/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/" />
