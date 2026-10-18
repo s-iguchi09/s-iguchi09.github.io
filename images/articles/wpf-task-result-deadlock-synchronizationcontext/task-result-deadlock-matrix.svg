@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1478 440" width="1478" height="440" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1478" height="440" />
+  <text class="title" x="12" y="24">blocking on an async method from the UI thread</text>
+  <rect class="head" x="12" y="38" width="1454" height="30" />
+  <text class="cell" x="26" y="57.5">how the Click handler waits</text>
+  <text class="cell" x="729" y="57.5" text-anchor="end">UI thread</text>
+  <text class="cell" x="1189" y="57.5" text-anchor="end">code after the inner await</text>
+  <text class="cell" x="1452" y="57.5" text-anchor="end">UI work queued during the wait</text>
+  <text class="cell" x="26" y="87.5">LoadAsync().Result</text>
+  <text class="cell" x="729" y="87.5" text-anchor="end">stays blocked</text>
+  <text class="cell" x="1189" y="87.5" text-anchor="end">does not run (Task.Delay already completed)</text>
+  <text class="cell" x="1452" y="87.5" text-anchor="end">stays Pending</text>
+  <text class="cell" x="26" y="117.5">LoadAsync().GetAwaiter().GetResult()</text>
+  <text class="cell" x="729" y="117.5" text-anchor="end">stays blocked</text>
+  <text class="cell" x="1189" y="117.5" text-anchor="end">does not run (Task.Delay already completed)</text>
+  <text class="cell" x="1452" y="117.5" text-anchor="end">stays Pending</text>
+  <text class="cell" x="26" y="147.5">LoadAsync().Wait()</text>
+  <text class="cell" x="729" y="147.5" text-anchor="end">stays blocked</text>
+  <text class="cell" x="1189" y="147.5" text-anchor="end">does not run (Task.Delay already completed)</text>
+  <text class="cell" x="1452" y="147.5" text-anchor="end">stays Pending</text>
+  <text class="cell" x="26" y="177.5">LoadAsync().Wait(TimeSpan.FromSeconds(1))</text>
+  <text class="cell" x="729" y="177.5" text-anchor="end">blocked 1,005 ms, Wait returns false</text>
+  <text class="cell" x="1189" y="177.5" text-anchor="end">UI (after Wait returned)</text>
+  <text class="cell" x="1452" y="177.5" text-anchor="end">runs after the Click returns</text>
+  <text class="cell" x="26" y="207.5">LoadAllConfigureAwaitAsync().Result</text>
+  <text class="cell" x="729" y="207.5" text-anchor="end">blocked 324 ms, then returns</text>
+  <text class="cell" x="1189" y="207.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="1452" y="207.5" text-anchor="end">runs after the Click returns</text>
+  <text class="cell" x="26" y="237.5">LoadFirstSuspendConfigureAwaitAsync().Result</text>
+  <text class="cell" x="729" y="237.5" text-anchor="end">blocked 634 ms, then returns</text>
+  <text class="cell" x="1189" y="237.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="1452" y="237.5" text-anchor="end">runs after the Click returns</text>
+  <text class="cell" x="26" y="267.5">LoadCachedFirstAsync().Result</text>
+  <text class="cell" x="729" y="267.5" text-anchor="end">stays blocked</text>
+  <text class="cell" x="1189" y="267.5" text-anchor="end">does not run (Task.Delay already completed)</text>
+  <text class="cell" x="1452" y="267.5" text-anchor="end">stays Pending</text>
+  <text class="cell" x="26" y="297.5">LoadCachedFirstAllConfigureAwaitAsync().Result</text>
+  <text class="cell" x="729" y="297.5" text-anchor="end">blocked 332 ms, then returns</text>
+  <text class="cell" x="1189" y="297.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="1452" y="297.5" text-anchor="end">runs after the Click returns</text>
+  <text class="cell" x="26" y="327.5">LoadOuterAsync().Result</text>
+  <text class="cell" x="729" y="327.5" text-anchor="end">stays blocked</text>
+  <text class="cell" x="1189" y="327.5" text-anchor="end">does not run (Task.Delay already completed)</text>
+  <text class="cell" x="1452" y="327.5" text-anchor="end">stays Pending</text>
+  <text class="cell" x="26" y="357.5">Task.Run(() =&gt; LoadAsync()).Result</text>
+  <text class="cell" x="729" y="357.5" text-anchor="end">blocked 317 ms, then returns</text>
+  <text class="cell" x="1189" y="357.5" text-anchor="end">thread pool</text>
+  <text class="cell" x="1452" y="357.5" text-anchor="end">runs after the Click returns</text>
+  <text class="cell" x="26" y="387.5">Task.Run(() =&gt; LoadWithInvokeAsync()).Result</text>
+  <text class="cell" x="729" y="387.5" text-anchor="end">stays blocked</text>
+  <text class="cell" x="1189" y="387.5" text-anchor="end">thread pool (then never returns from Dispatcher.Invoke)</text>
+  <text class="cell" x="1452" y="387.5" text-anchor="end">stays Pending</text>
+  <text class="cell" x="26" y="417.5">await LoadAsync() in async void Click</text>
+  <text class="cell" x="729" y="417.5" text-anchor="end">not blocked (queued work ran after 6 ms)</text>
+  <text class="cell" x="1189" y="417.5" text-anchor="end">UI</text>
+  <text class="cell" x="1452" y="417.5" text-anchor="end">runs while waiting</text>
+  <line class="line" x1="12" y1="38" x2="1466" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1466" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1466" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1466" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1466" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1466" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1466" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1466" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1466" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1466" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1466" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1466" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1466" y2="398" />
+  <line class="line" x1="12" y1="428" x2="1466" y2="428" />
+  <line class="line" x1="12" y1="38" x2="12" y2="428" />
+  <line class="line" x1="401" y1="38" x2="401" y2="428" />
+  <line class="line" x1="743" y1="38" x2="743" y2="428" />
+  <line class="line" x1="1203" y1="38" x2="1203" y2="428" />
+  <line class="line" x1="1466" y1="38" x2="1466" y2="428" />
+</svg>

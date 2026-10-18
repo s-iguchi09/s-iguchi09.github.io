@@ -64,6 +64,7 @@ internal static class Program
         new ExtensionReceiverMatrixScene(),
         new FluentThemeModeSwitchScene(),
         new UnhandledExceptionRoutesScene(),
+        new TaskResultDeadlockScene(),
 
         // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
         new GridDemoScene(),

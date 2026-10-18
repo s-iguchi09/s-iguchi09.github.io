@@ -1,0 +1,24 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-task-result-deadlock-synchronizationcontext
+slug: "wpf-task-result-deadlock-synchronizationcontext"
+scene: "TaskResultDeadlockScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Click ハンドラの中では SynchronizationContext.Current が DispatcherSynchronizationContext であること"
+  - "UI スレッドで async メソッドの Task に .Result・.GetAwaiter().GetResult()・.Wait() を呼ぶと、いずれも戻らないこと"
+  - "固まったとき、内側の Task.Delay は完了しているのに await の後の処理は走っておらず、UI スレッドへ Normal と Render の優先度で積んだ処理も Pending のままであること"
+  - "Wait(TimeSpan) はタイムアウトで false を返し、その後で await の後の処理が UI スレッドで走ること（記録の順序で確かめる）"
+  - "呼び出し先のすべての await に ConfigureAwait(false) を付けると .Result が戻り、await の後の処理はスレッドプールで走ること。UI スレッドは Task.Delay の合計の時間だけ止まり、待っている間に積んだ処理は戻った後に走ること"
+  - "最初に中断する await にだけ ConfigureAwait(false) を付け、後続の await に付けなくても .Result が戻ること。2 つの await の間で SynchronizationContext.Current が null であること"
+  - "最初の await が完了済みの Task だと ConfigureAwait(false) を付けても UI スレッドに留まり、付いていない次の await で固まること。次の await にも付けていれば戻ること"
+  - "外側の await にだけ ConfigureAwait(false) を付けても、内側のメソッドの await が UI スレッドを捕まえて固まり、外側の await の後には到達しないこと"
+  - "Task.Run の中では SynchronizationContext.Current が null で、Task.Run で包んで .Result を呼ぶと戻ること（await の後はスレッドプール）"
+  - "Task.Run で包んでも、その中で Dispatcher.Invoke を呼ぶと Invoke から戻らずに固まること"
+  - "async void の Click で await すると UI スレッドは止まらず、待っている間に積んだ処理がすぐに走り、await の後は UI スレッドで走ること"
+images:
+  - "images/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.svg"
+tables:
+  - "_includes/tables/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.en.md"
+  - "_includes/tables/articles/wpf-task-result-deadlock-synchronizationcontext/task-result-deadlock-matrix.ja.md"
