@@ -110,6 +110,7 @@ internal static class Program
         new BookACh02InputLimitsScene(),
         new BookACh03DataGridCommitOnSaveScene(),
         new BookACh04CanExecuteScene(),
+        new BookACh05ValidationScene(),
     ];
 
     [STAThread]

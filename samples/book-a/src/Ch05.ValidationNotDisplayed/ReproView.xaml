@@ -1,0 +1,18 @@
+<!--
+  再現版。ビューモデルは IDataErrorInfo を実装しているが、バインドに ValidatesOnDataErrors=True を書いていない。
+  IDataErrorInfo は実装しただけでは検証に参加しないため、名前が空でも赤枠もメッセージも出ない。
+-->
+<UserControl x:Class="Ch05.ValidationNotDisplayed.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch05.ValidationNotDisplayed"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ReproAccountViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="16">
+    <TextBlock Text="名前（必須）" />
+    <TextBox x:Name="nameBox" Width="240" HorizontalAlignment="Left"
+             Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+  </StackPanel>
+</UserControl>

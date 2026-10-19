@@ -1,0 +1,12 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch05-validation-not-displayed
+slug: "book-a-ch05-validation-not-displayed"
+scene: "BookACh05ValidationScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 5 章の再現版（IDataErrorInfo を実装し、ValidatesOnDataErrors を書かない）で、名前が空でも Validation.HasError が False、Validation.Errors が 0 件、アドーナーが 0 個であること（記事の表の「IDataErrorInfo だけ」の行と同じ）"
+  - "付録サンプル第 5 章の修正版（INotifyDataErrorInfo）で、起動直後に Validation.HasError が True、Validation.Errors が 1 件、アドーナーが 1 個で、ErrorTemplate のメッセージにビューモデルのエラー（名前は必須です。）が出ること（記事の表の「INotifyDataErrorInfo だけ」の行と、実装例の節と同じ）"
+  - "修正版で 21 文字を入力するとメッセージが長さのエラーに替わり、正しい名前を入力するとアドーナーが 0 個になって消えること（記事の実装例の節と同じ）"
+images:

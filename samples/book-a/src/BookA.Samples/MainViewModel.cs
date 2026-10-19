@@ -24,4 +24,8 @@ public sealed class MainViewModel
     public Ch04.CanExecuteNotUpdating.ReproSaveViewModel Ch04Repro { get; } = new();
 
     public Ch04.CanExecuteNotUpdating.SaveViewModel Ch04Fixed { get; } = new();
+
+    public Ch05.ValidationNotDisplayed.ReproAccountViewModel Ch05Repro { get; } = new();
+
+    public Ch05.ValidationNotDisplayed.AccountViewModel Ch05Fixed { get; } = new();
 }

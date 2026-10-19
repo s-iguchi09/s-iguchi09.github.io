@@ -1,0 +1,38 @@
+<!--
+  修正版。ビューモデルは INotifyDataErrorInfo を実装する（既定で検証に参加する）。
+  既定の ErrorTemplate は赤枠だけでメッセージを出さないため、メッセージを出すテンプレートを Style で当てる。
+  起動直後から「名前は必須です。」が出て、正しい値を入力すると消える。
+-->
+<UserControl x:Class="Ch05.ValidationNotDisplayed.FixedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch05.ValidationNotDisplayed"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:AccountViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="16">
+    <StackPanel.Resources>
+      <ControlTemplate x:Key="FieldErrorTemplate">
+        <StackPanel>
+          <Border BorderBrush="#D13438" BorderThickness="1">
+            <AdornedElementPlaceholder x:Name="Adorned" />
+          </Border>
+          <!-- (Validation.Errors)[0] ではなく /ErrorContent（現在の項目）で読む。エラーが消えたときにバインドのエラーを出さない。 -->
+          <TextBlock x:Name="errorMessage" Margin="2,2,0,0" FontSize="11" Foreground="#D13438"
+                     Text="{Binding ElementName=Adorned, Path=AdornedElement.(Validation.Errors)/ErrorContent}" />
+        </StackPanel>
+      </ControlTemplate>
+
+      <Style TargetType="TextBox">
+        <Setter Property="Validation.ErrorTemplate" Value="{StaticResource FieldErrorTemplate}" />
+        <!-- アドーナーはレイアウトに参加しないため、メッセージの分の余白を取っておく。 -->
+        <Setter Property="Margin" Value="0,0,0,22" />
+      </Style>
+    </StackPanel.Resources>
+
+    <TextBlock Text="名前（必須、20 文字まで）" />
+    <TextBox x:Name="nameBox" Width="240" HorizontalAlignment="Left"
+             Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+  </StackPanel>
+</UserControl>
