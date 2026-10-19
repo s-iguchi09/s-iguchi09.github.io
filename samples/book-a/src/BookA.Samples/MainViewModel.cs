@@ -32,4 +32,8 @@ public sealed class MainViewModel
     public Ch06.StyleTriggerLocalValue.StatusViewModel Ch06Repro { get; } = new();
 
     public Ch06.StyleTriggerLocalValue.StatusViewModel Ch06Fixed { get; } = new();
+
+    public Ch07.DataTemplateParentBinding.MeasurementListViewModel Ch07Repro { get; } = new();
+
+    public Ch07.DataTemplateParentBinding.MeasurementListViewModel Ch07Fixed { get; } = new();
 }

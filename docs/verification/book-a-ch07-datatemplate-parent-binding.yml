@@ -1,0 +1,11 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch07-datatemplate-parent-binding
+slug: "book-a-ch07-datatemplate-parent-binding"
+scene: "BookACh07DataTemplateParentScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 7 章の再現版（テンプレートの中で素の {Binding DeleteCommand}）で、削除ボタンの Command が null で IsEnabled が True のままであり（記事の表の 1 行目と同じ）、単位は空で、実際のマウスでクリックしても行が消えないこと（記事の「問題」の節と同じ）"
+  - "付録サンプル第 7 章の修正版（RelativeSource AncestorType=ItemsControl で DataContext を経由）で、削除ボタンの Command が解決されて IsEnabled が True であり（記事の表の 2 行目と同じ）、単位が kg と表示され、クリックするとその行が消えること（記事の実装例と図と同じ）"
+images:

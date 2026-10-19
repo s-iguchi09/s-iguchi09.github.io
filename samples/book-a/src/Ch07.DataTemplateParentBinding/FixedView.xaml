@@ -1,0 +1,28 @@
+<!--
+  修正版。RelativeSource で ItemsControl まで上り、その DataContext（親のビューモデル）を経由する。
+  再現版との違いは、テンプレートの中の 2 つのバインドだけである。CommandParameter は素の {Binding} のまま（押した行の項目を渡す）。
+-->
+<UserControl x:Class="Ch07.DataTemplateParentBinding.FixedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch07.DataTemplateParentBinding"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:MeasurementListViewModel}"
+             mc:Ignorable="d">
+  <ItemsControl x:Name="list" ItemsSource="{Binding Items}" Margin="8">
+    <ItemsControl.ItemTemplate>
+      <DataTemplate>
+        <StackPanel Orientation="Horizontal" Margin="0,2">
+          <TextBlock Text="{Binding Name}" Width="30" />
+          <TextBlock Text="{Binding Value}" Width="40" TextAlignment="Right" />
+          <TextBlock x:Name="unitText" Width="30" Margin="4,0,0,0"
+                     Text="{Binding DataContext.Unit, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+          <Button x:Name="deleteButton" Content="削除" Padding="8,0"
+                  Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+                  CommandParameter="{Binding}" />
+        </StackPanel>
+      </DataTemplate>
+    </ItemsControl.ItemTemplate>
+  </ItemsControl>
+</UserControl>

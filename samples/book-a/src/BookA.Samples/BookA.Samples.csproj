@@ -14,6 +14,7 @@
     <ProjectReference Include="..\Ch04.CanExecuteNotUpdating\Ch04.CanExecuteNotUpdating.csproj" />
     <ProjectReference Include="..\Ch05.ValidationNotDisplayed\Ch05.ValidationNotDisplayed.csproj" />
     <ProjectReference Include="..\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
+    <ProjectReference Include="..\Ch07.DataTemplateParentBinding\Ch07.DataTemplateParentBinding.csproj" />
   </ItemGroup>
 
 </Project>
