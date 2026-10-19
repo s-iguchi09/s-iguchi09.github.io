@@ -1,0 +1,38 @@
+<!--
+  再現版。メニュー・ツールバー・ツールバーの外のボタン・Ctrl+S に同じ SaveCommand を置いただけ。
+  セルを編集中のままツールバーやメニュー、Ctrl+S で保存すると、編集中の値はソースに届かず、入力前の値が保存される。
+-->
+<UserControl x:Class="Ch03.DataGridCommitOnSave.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch03.DataGridCommitOnSave"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ItemsViewModel}"
+             mc:Ignorable="d">
+  <UserControl.InputBindings>
+    <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
+  </UserControl.InputBindings>
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem x:Name="menuSave" Header="保存" Command="{Binding SaveCommand}" />
+    </Menu>
+    <ToolBar DockPanel.Dock="Top">
+      <Button x:Name="toolBarSave" Content="保存" Command="{Binding SaveCommand}" />
+    </ToolBar>
+    <StackPanel DockPanel.Dock="Bottom" Margin="4">
+      <StackPanel Orientation="Horizontal">
+        <Button x:Name="plainSave" Content="保存" Command="{Binding SaveCommand}" Padding="12,2" />
+        <TextBlock Text="{Binding LastSaved, StringFormat='保存した値: {0}'}" Margin="8,0" VerticalAlignment="Center" />
+      </StackPanel>
+      <TextBlock Text="{Binding StatusMessage}" Foreground="#D13438" />
+    </StackPanel>
+    <DataGrid x:Name="grid" ItemsSource="{Binding Items}"
+              AutoGenerateColumns="False" CanUserAddRows="False" Height="100">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+        <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}" Width="90" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>

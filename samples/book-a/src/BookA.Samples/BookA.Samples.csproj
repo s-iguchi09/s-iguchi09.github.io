@@ -10,6 +10,7 @@
     <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
     <ProjectReference Include="..\Ch01.BindingModeOmitted\Ch01.BindingModeOmitted.csproj" />
     <ProjectReference Include="..\Ch02.InputLimits\Ch02.InputLimits.csproj" />
+    <ProjectReference Include="..\Ch03.DataGridCommitOnSave\Ch03.DataGridCommitOnSave.csproj" />
   </ItemGroup>
 
 </Project>

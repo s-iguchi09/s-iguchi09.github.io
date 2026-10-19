@@ -16,4 +16,8 @@ public sealed class MainViewModel
     public ReproCustomerViewModel Ch02Repro { get; } = new();
 
     public CustomerViewModel Ch02Fixed { get; } = new();
+
+    public Ch03.DataGridCommitOnSave.ItemsViewModel Ch03Repro { get; } = new();
+
+    public Ch03.DataGridCommitOnSave.ItemsViewModel Ch03Fixed { get; } = new();
 }
