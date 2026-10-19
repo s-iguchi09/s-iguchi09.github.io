@@ -111,6 +111,7 @@ internal static class Program
         new BookACh03DataGridCommitOnSaveScene(),
         new BookACh04CanExecuteScene(),
         new BookACh05ValidationScene(),
+        new BookACh06StyleTriggerScene(),
     ];
 
     [STAThread]

@@ -28,4 +28,8 @@ public sealed class MainViewModel
     public Ch05.ValidationNotDisplayed.ReproAccountViewModel Ch05Repro { get; } = new();
 
     public Ch05.ValidationNotDisplayed.AccountViewModel Ch05Fixed { get; } = new();
+
+    public Ch06.StyleTriggerLocalValue.StatusViewModel Ch06Repro { get; } = new();
+
+    public Ch06.StyleTriggerLocalValue.StatusViewModel Ch06Fixed { get; } = new();
 }

@@ -1,0 +1,11 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch06-style-trigger-local-value
+slug: "book-a-ch06-style-trigger-local-value"
+scene: "BookACh06StyleTriggerScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 6 章の再現版（Border に Background をローカル値で書く）で、ビューモデルの HasError を true にしても背景は #FFFFFFFF のままで、値の供給元は Local であること（記事の表の「ローカルの Background + トリガー」の行と同じ）"
+  - "付録サンプル第 6 章の修正版（既定値をスタイルの Setter に置く）で、HasError が true のとき背景が #FFFFD4D4（StyleTrigger）になり、false に戻すと #FFFFFFFF（Style）になること（記事の表の「Setter の既定値 + トリガー」と「トリガーの条件を満たさない」の行と同じ）"
+images:
