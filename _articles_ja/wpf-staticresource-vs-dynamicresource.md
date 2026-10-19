@@ -21,6 +21,9 @@ WPF のリソース参照には `StaticResource` と `DynamicResource` の2種�
 - 言語: C#
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、「原因・背景」の節の実測の表のうち、`StaticResource` と `DynamicResource` の差し替え前と差し替え後の 4 行（サンプルは記事と別の色を使う）を確かめ、.NET 10 と同じ結果を得た。
+  `brush.Color` を変更する 2 行は .NET Framework では測っていない。
 
 本記事の図と表は、上記の環境で同じリソースを `StaticResource` と `DynamicResource` の両方から参照した画面を実際に表示し、実行中にリソースを差し替えて得たものである。
 この環境で確認しているのは次の点である。

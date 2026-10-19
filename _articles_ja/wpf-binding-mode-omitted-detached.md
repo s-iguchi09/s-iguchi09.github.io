@@ -28,6 +28,9 @@ image: /images/articles/wpf-binding-mode-omitted-detached/binding-mode-user-inpu
 - 対象: `Mode` を省略した `{Binding}`、`TreeViewItem.IsExpanded`、`ColumnDefinition.Width` と `GridSplitter`、`Expander.IsExpanded` など
 - アーキテクチャ: MVVM（ビューモデルは `INotifyPropertyChanged` を実装する）
 - 検証環境: .NET 10 / Windows 11（既定のテーマで、Fluent テーマは測っていない）
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、最初の表のうち、`ItemContainerStyle` で `{Binding IsExpanded}`（`Mode` の省略と `Mode=TwoWay`）を書いたノードを 3 通りの操作で開いた 6 行と、`GridSplitter` で `ColumnDefinition.Width` を動かした 2 行を確かめ、.NET 10 と同じ結果を得た。
+  最初の表の他の行と、既定値の表、テンプレートの中のバインドの表は .NET Framework では測っていない。
 - 計測方法: OS のマウスとキーボードの入力（`SendInput`）で、各条件を 1 回ずつ操作した。
   操作の後に、`BindingOperations.GetBindingExpressionBase`・`DependencyPropertyHelper.GetValueSource`・ソースの値を読んだ。
   さらにソースに値を代入して（変更を通知させて）表示を読み、操作の間に出たバインドのエラーと警告を `PresentationTraceSources.DataBindingSource` で数えた。

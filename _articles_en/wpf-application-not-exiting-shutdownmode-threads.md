@@ -24,12 +24,16 @@ Every value quoted here was obtained by running the code in the environment desc
 
 ## Prerequisites / Environment
 
-- Framework: .NET 6 or later / WPF (all measurements taken on .NET 10 / Windows 11)
+- Framework: .NET 6 or later / WPF (the measured table and figures were produced on .NET 10 / Windows 11)
 - Language: C# (all code shown uses syntax valid from C# 7.0 onward)
 - Target features: `Application.ShutdownMode`, `Application.Windows`, `System.Threading.Thread`, `Dispatcher`
 - Architecture: standalone desktop application (identical for MVVM and code-behind)
 - Diagnostic tool: `dotnet-stack`, installed separately with `dotnet tool install --global dotnet-stack`
 - Verification environment: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed the `new Thread(...)` row and the `IsBackground = true` row of the measured table in the "Measured progress through the gates" section, with the same results as on .NET 10.
+  The time until the process exited was not compared as a value; only whether the process exited right after the window closed or stayed until the sleep ended was compared.
+  The other rows of the measured table were not measured on .NET Framework.
 - Measurement method: a test application with an explicit `Main` closes its window automatically after a fixed delay and records the process lifetime and the timestamp of each event to a file. The measurement is implemented as a `tools/screenshot-capture` scene, so the figure is re-measured every time it is captured
 
 The code below is reduced to the parts relevant to the topic.

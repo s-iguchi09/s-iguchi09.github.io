@@ -23,6 +23,10 @@ image: /images/articles/wpf-input-limits-not-applied-to-code/input-limits-by-pat
 
 - フレームワーク: .NET 6 以降 / WPF
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、経路ごとの制限の表のうち `TextBox` の `MaxLength` の行（利用者の操作とバインドした値の列）と `Slider` の 2 行（バインドした値の列）、ビューモデルで制限する表の 5 行を確かめ、.NET 10 と同じ結果を得た。
+  ビューモデルで制限する表の `Slider` の行は、「利用者の操作」の列のうち送った値（200 と 55）を比べていない。
+  `CharacterCasing`・`PasswordBox`・`DatePicker`・`TabItem` の行と、`DisplayDateStart` / `DisplayDateEnd` のバインドの表は .NET Framework では測っていない。
 - 言語: C# 10 以降 / XAML（コード例は nullable 参照型と暗黙の using の有効化を前提とする）
 - 対象コントロール: `TextBox` / `PasswordBox` / `DatePicker` / `Slider` / `TabControl` と `TabItem`
 - アーキテクチャ: 入力値をビューモデルに双方向でバインドする MVVM の構成

@@ -17,12 +17,15 @@ WPF で `Style.Triggers` に定義した `Trigger` や `DataTrigger` が、条�
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（値優先順位の規則は .NET Framework 4.x の WPF でも同じ）
+- フレームワーク: .NET 6 以降 / WPF
 - 言語: C#
 - 対象機能: `Style.Triggers` に置く `Trigger` / `DataTrigger` / `MultiTrigger`
 - 既定テーマ: Aero2（.NET 9 以降で選択できる Fluent テーマでは、後述する標準コントロールの色や既定テンプレートの構造が異なる）
 - アーキテクチャ: MVVM・コードビハインドのいずれにも適用可能
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、構成ごとの実効値の表のうち、ローカル値の `Background` にトリガーを置いた行と、`Setter` の既定値にトリガーを置いた 2 行（条件を満たす場合と満たさない場合）を確かめ、.NET 10 と同じ結果を得た。
+  `ClearValue` の行と、`SetCurrentValue` やバインドを扱う 2 つ目の表は .NET Framework では測っていない。
 
 本記事の表は、上記の環境で実効値と、その `BaseValueSource` を読み出して得たものである。
 この環境で確認しているのは次の点である。

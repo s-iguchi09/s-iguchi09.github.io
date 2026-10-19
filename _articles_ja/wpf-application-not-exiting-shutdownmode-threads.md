@@ -23,12 +23,16 @@ WPF の終了処理には**「アプリケーションが終了する」段階**
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（実測はすべて .NET 10 / Windows 11 で取得）
+- フレームワーク: .NET 6 以降 / WPF（実測の表と図は .NET 10 / Windows 11 で取得）
 - 言語: C#（掲載するコードは C# 7.0 以降で動作する構文のみを使う）
 - 対象機能: `Application.ShutdownMode`、`Application.Windows`、`System.Threading.Thread`、`Dispatcher`
 - アーキテクチャ: 単体で動作するデスクトップアプリケーション（MVVM・コードビハインドのいずれでも同じ）
 - 診断ツール: `dotnet-stack`（`dotnet tool install --global dotnet-stack` で別途インストールする）
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、「実測: 条件別の到達段階」の節の実測の表のうち、`new Thread(...)` の行と `IsBackground = true` を足した行を確かめ、.NET 10 と同じ結果を得た。
+  プロセスが終わるまでの時間は、値そのものではなく、閉じた直後に終わるかスリープが尽きるまで残るかで比べた。
+  実測の表の他の行は .NET Framework では測っていない。
 - 計測方法: 明示的な `Main` を持つ検証用アプリケーションで、ウィンドウを一定時間後に自動で閉じ、プロセスの生存時間と各イベントの発生時刻をファイルへ記録した。この計測は `tools/screenshot-capture` のシーンとして実装しており、図は撮影のたびに測り直している
 
 掲載するコードは記事の主題に関わる部分だけを抜き出している。

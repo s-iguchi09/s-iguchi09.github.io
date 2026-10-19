@@ -32,6 +32,9 @@ image: /images/articles/wpf-usercontrol-dependencyproperty-binding-not-working/u
 - アーキテクチャ: MVVM（利用側のウィンドウに ViewModel を `DataContext` として設定する構成）
 - その他制約: `UserControl` を XAML ファイルとコードビハインドの組で定義する構成を基準とする
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、「注意点」の節の条件ごとの表のうち、呼び出し側で `Title` をバインドして内側で `{Binding Title}` と書く行、`DataContext` を内側の `Grid` に引き継ぐ行、`BindsTwoWayByDefault` の行の 3 行を確かめ、.NET 10 と同じ結果を得た。
+  この表の残りの行と、ほかの 2 つの実測の表は .NET Framework では測っていない。
 
 掲載する XAML の `...` は、標準の `xmlns` 宣言など本題に関係しない属性の省略を示す。
 そのまま貼り付けても解析できないため、実際のファイルでは通常の宣言に置き換える。

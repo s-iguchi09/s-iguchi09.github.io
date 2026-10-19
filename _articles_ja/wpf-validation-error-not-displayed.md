@@ -26,6 +26,10 @@ image: /images/articles/wpf-validation-error-not-displayed/validation-error-disp
 ## 前提・対象環境
 
 - フレームワーク: .NET 6 以降 / WPF（挙動の確認環境は .NET 10 / Windows 11 の日本語環境）
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、「3 つの段階と、止まる場所」の節の実測の表の「`IDataErrorInfo` だけ」と「`INotifyDataErrorInfo` だけ」の 2 行と、`INotifyDataErrorInfo` の実装例を確かめ、.NET 10 と同じ結果を得た。
+  実装例では、起動直後に必須のメッセージが出て、21 文字で長さのメッセージに替わり、正しい値で消えた。
+  この実測の表の他の行と、「注意点」の節の表は .NET Framework では測っていない。
 - 言語: C# 12 以降 / XAML（コード例はコレクション式を使う。`net6.0` など既定の言語バージョンが C# 11 以前になる対象では、`[]` を `new()` に、スプレッド要素の `[.. messages]` を `new List<string>(messages)` に読み替える）
 - 対象機能: `Binding` の検証（`Validation` 添付プロパティ、`ValidationRule` 派生クラス、`IDataErrorInfo`、`INotifyDataErrorInfo`、`ValidatesOnExceptions`）
 - アーキテクチャ: MVVM（ViewModel が検証結果を保持する構成）

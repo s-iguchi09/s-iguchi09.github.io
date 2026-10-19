@@ -17,12 +17,16 @@ WPF の MVVM では、ボタンを ViewModel の `ICommand` にバインドし�
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（.NET Framework 4.5 以降でも同様）
+- フレームワーク: .NET 6 以降 / WPF
 - 言語: C# / XAML（コード例は nullable 参照型有効を前提とする。C# 7 以前では nullable 注釈を外して読む）
 - 対象機能: `System.Windows.Input.ICommand` を実装した自作 `RelayCommand`、`Button.Command` バインド
 - アーキテクチャ: MVVM（コマンドロジックを ViewModel に置く構成）
 - 名前空間: `System`、`System.Windows.Input`
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、表のうち、`CanExecuteChanged` を独自のイベントとして実装した場合の 3 行（`InvalidateRequerySuggested`・`RaiseCanExecuteChanged`・`TextBox` へのキー入力）を確かめ、.NET 10 と同じ結果を得た。
+  記事は条件をコードで変えてから隣の `TextBox` に 1 キー入力したが、サンプルは条件（名前）そのものをキーで入力している。
+  `RequerySuggested` に委譲した実装の行、独自のイベントで何も呼ばない行、`Command = null` の行は .NET Framework では測っていない。
 
 本記事の表は、上記の環境で `CanExecute` の戻り値を切り替えながら実際にボタンを表示し、`Button.IsEnabled` を読み出して得たものである。
 この環境で確認しているのは次の点である。

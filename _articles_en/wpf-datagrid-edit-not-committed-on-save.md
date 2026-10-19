@@ -29,6 +29,10 @@ It then works through these three obstacles in order and shows a save handler th
 - Scope: `DataGridTextColumn` in a `DataGrid`, a save command placed in a `ToolBar`, a `Menu`, a `Button` outside the toolbar, and a `KeyBinding` on the `Window`, and `DataGrid.CommitEdit`
 - Architecture: MVVM (the view model implements `INotifyPropertyChanged` and exposes saving as an `ICommand`)
 - Verified on: .NET 10 / Windows 11 (default theme; the Fluent theme was not measured)
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed eleven rows of the first table, with the same results as on .NET 10: four rows where the save handler calls nothing (excluding the two `IsFocusScope="False"` rows), four rows that call `CommitEdit(DataGridEditingUnit.Row, true)`, two rows that type `"abc"` into `Quantity`, and the row with no cell edited.
+  Only the "source value", "Refresh", and "after saving: cell / row editing" columns were compared; the "where focus went when it left the DataGrid", "keyboard focus when saving", "return value", and "EndEdit" columns were not.
+  The other rows of the first table (parameterless `CommitEdit()`, `IsFocusScope="False"`, items without `IEditableObject`, and `UpdateSourceTrigger=PropertyChanged`), the focus scope table, and the Esc table were not measured on .NET Framework.
 - Method: the cell edit was started with `BeginEdit()`, and text was typed through WPF's `InputManager`.
   Each save input was performed once per row (twice only in the row that corrects the input and saves again) with OS mouse and keyboard input (`SendInput`).
   When the save command ran, the scene read the keyboard focus, the return value of `CommitEdit`, the source value, the number of `IEditableObject.EndEdit` calls, the result of `ICollectionView.Refresh` on the default view, and `IsEditing` of the cell and row.

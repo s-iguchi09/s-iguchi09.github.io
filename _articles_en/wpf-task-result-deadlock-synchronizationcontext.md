@@ -29,14 +29,19 @@ The table is then used to work out which `await`s actually need `ConfigureAwait(
 
 ## Prerequisites and Environment
 
-- Framework: .NET 6 or later / WPF (measured on .NET 10 only)
+- Framework: .NET 6 or later / WPF (measured on .NET 10; .NET Framework 4.8.1 only within the "Also tested on" item below)
 - Language: C# (uses `async` / `await`)
 - Features covered: `Task.Result`, `Task.Wait`, `Task.GetAwaiter().GetResult()`, `Task.ConfigureAwait`, `Task.Run`, `Dispatcher.Invoke`, `DispatcherSynchronizationContext`
-- Architecture: measured with a code-behind Click handler. Calling from an MVVM `ICommand` also waits on the UI thread, but it was not measured
+- Architecture: the table was measured with a code-behind Click handler.
+  Calling from an MVVM `ICommand` was measured only for `.Result` and `async void`, with the sample in the "Also tested on" item below, on both .NET 10 and .NET Framework 4.8.1.
 - Verified on: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions from a command confirmed the table's rows for `LoadAsync().Result` and for `await LoadAsync()` in an `async void` Click handler, with the same results as on .NET 10.
+  The "code after the inner await" column and the delay before the queued work ran were not compared.
+  The other rows of the table were not measured on .NET Framework.
 - Method: for each way of waiting, a separate WPF test application was started, a window was shown, and Click was raised through `ButtonAutomationPeer.Invoke`. The Click handler first queues two items of work on the UI thread (`Dispatcher.BeginInvoke`, at `Normal` priority and at `Render`, the priority used for rendering) and then waits for the asynchronous method. A watchdog thread treats the handler as "stays blocked" if it has not returned after 2.5 seconds, and records the state of the `Task.Delay` and of the queued work at that moment. A frozen process is terminated from outside. The measurement is implemented as a scene in `tools/screenshot-capture`; the table is re-measured on every run, and the run fails if any result differs from the expected one
 
-.NET Framework and application models other than WPF were not tested.
+On .NET Framework, only the "Also tested on" item above was run, and application models other than WPF were not tested.
 
 ---
 

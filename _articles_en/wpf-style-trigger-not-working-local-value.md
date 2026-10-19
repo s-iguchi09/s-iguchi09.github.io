@@ -18,12 +18,15 @@ This article explains the cause in terms of dependency property value precedence
 
 ## Prerequisites / Environment
 
-- Framework: .NET 6 or later / WPF (the precedence rules are identical on WPF for .NET Framework 4.x)
+- Framework: .NET 6 or later / WPF
 - Language: C#
 - Target feature: `Trigger` / `DataTrigger` / `MultiTrigger` declared in `Style.Triggers`
 - Default theme: Aero2 (the Fluent theme available from .NET 9 differs from what is described below in both the standard control colors and the structure of the default templates)
 - Architecture: applicable to both MVVM and code-behind
 - Verification environment: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed three rows of the effective-value table, with the same results as on .NET 10: a local `Background` with a trigger, and a `Setter` default with a trigger (condition met and not met).
+  The `ClearValue` row and the second table, which covers `SetCurrentValue` and bindings, were not measured on .NET Framework.
 
 The tables in this article come from reading the effective value and its `BaseValueSource` in the environment above.
 The following points were confirmed in that environment:
