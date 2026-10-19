@@ -22,6 +22,7 @@ internal sealed class BookACh03DataGridCommitOnSaveScene : IScene
 {
     public IReadOnlyList<string> Verifies =>
     [
+        "付録サンプル第 3 章のどの保存の操作でも、保存処理（SaveCommand）が読んだ 1 行目の値は、そのときのソースの値と同じであり、確定できた場合はエラー表示が出ず、Quantity の確定に失敗した場合は保存されずに「入力に誤りがある行は保存できない。」が出ること",
         "付録サンプル第 3 章の再現版で、1 行目の Name セルを編集中のまま実際のマウスで ToolBar の保存・Menu の保存をクリックし、実際のキーボードで Ctrl+S を押すと、ソースは入力前の \"alpha\" のままで、Refresh は InvalidOperationException、セルと行は編集中のままであること（記事の表の 1〜3 行目と同じ）",
         "同じ再現版で、ToolBar の外の保存ボタンをクリックすると、ソースが \"edited\" になり、Refresh が成功し、セルと行の編集が終わること（記事の表の 4 行目と同じ）",
         "付録サンプル第 3 章の修正版（DataGrid に PendingEdits.Host を付け、保存のコマンドで CommitEdit(DataGridEditingUnit.Row, true) を呼ぶ）で、ToolBar・Menu・Ctrl+S・ToolBar の外のボタンのどれで保存しても、ソースが \"edited\" になり、Refresh が成功し、セルと行の編集が終わること（記事の表の 9〜12 行目と同じ）",
@@ -44,23 +45,31 @@ internal sealed class BookACh03DataGridCommitOnSaveScene : IScene
     {
         const string Kept = "\"alpha\"、InvalidOperationException、True / True";
         const string Committed = "\"edited\"、成功、False / False";
-        var checks = new List<BookACheck>
+        const string SavedAlpha = "Name = alpha、Quantity = 1｜エラー表示なし";
+        const string SavedEdited = "Name = edited、Quantity = 1｜エラー表示なし";
+        var checks = new List<BookACheck>();
+
+        async Task AddAsync(string label, string row, string expected, string expectedSaved, Task<(string Article, string Saved)> run)
         {
-            new("再現版、編集中に ToolBar の保存をクリック", "1 行目", Kept, await SaveAsync(fixedView: false, SaveInput.ToolBar)),
-            new("再現版、編集中に Menu の保存をクリック", "2 行目", Kept, await SaveAsync(fixedView: false, SaveInput.Menu)),
-            new("再現版、編集中に Ctrl+S", "3 行目", Kept, await SaveAsync(fixedView: false, SaveInput.CtrlS)),
-            new("再現版、編集中に ToolBar の外の保存をクリック", "4 行目", Committed, await SaveAsync(fixedView: false, SaveInput.Plain)),
-            new("修正版、編集中に ToolBar の保存をクリック", "9 行目", Committed, await SaveAsync(fixedView: true, SaveInput.ToolBar)),
-            new("修正版、編集中に Menu の保存をクリック", "10 行目", Committed, await SaveAsync(fixedView: true, SaveInput.Menu)),
-            new("修正版、編集中に Ctrl+S", "11 行目", Committed, await SaveAsync(fixedView: true, SaveInput.CtrlS)),
-            new("修正版、編集中に ToolBar の外の保存をクリック", "12 行目", Committed, await SaveAsync(fixedView: true, SaveInput.Plain)),
-            new("修正版、Quantity に abc を入力して ToolBar の保存をクリック", "16 行目", "1、InvalidOperationException、True / True",
-                await SaveAsync(fixedView: true, SaveInput.ToolBar, quantity: true)),
-            new("修正版、Quantity に abc、5 に直してもう一度クリック", "17 行目", "5、成功、False / False",
-                await SaveAsync(fixedView: true, SaveInput.ToolBar, quantity: true, retryWith: '5')),
-            new("修正版、セルを編集せずに ToolBar の保存をクリック", "18 行目", "\"alpha\"、成功、False / False",
-                await SaveAsync(fixedView: true, SaveInput.ToolBar, typeFirst: false)),
-        };
+            (string article, string saved) = await run;
+            checks.Add(new(label, row, expected, article));
+            checks.Add(new(label + "（保存処理が読んだ値とエラー表示）", row + "に対応するサンプルの保存処理（記事の表には無い列）", expectedSaved, saved));
+        }
+
+        await AddAsync("再現版、編集中に ToolBar の保存をクリック", "1 行目", Kept, SavedAlpha, SaveAsync(fixedView: false, SaveInput.ToolBar));
+        await AddAsync("再現版、編集中に Menu の保存をクリック", "2 行目", Kept, SavedAlpha, SaveAsync(fixedView: false, SaveInput.Menu));
+        await AddAsync("再現版、編集中に Ctrl+S", "3 行目", Kept, SavedAlpha, SaveAsync(fixedView: false, SaveInput.CtrlS));
+        await AddAsync("再現版、編集中に ToolBar の外の保存をクリック", "4 行目", Committed, SavedEdited, SaveAsync(fixedView: false, SaveInput.Plain));
+        await AddAsync("修正版、編集中に ToolBar の保存をクリック", "9 行目", Committed, SavedEdited, SaveAsync(fixedView: true, SaveInput.ToolBar));
+        await AddAsync("修正版、編集中に Menu の保存をクリック", "10 行目", Committed, SavedEdited, SaveAsync(fixedView: true, SaveInput.Menu));
+        await AddAsync("修正版、編集中に Ctrl+S", "11 行目", Committed, SavedEdited, SaveAsync(fixedView: true, SaveInput.CtrlS));
+        await AddAsync("修正版、編集中に ToolBar の外の保存をクリック", "12 行目", Committed, SavedEdited, SaveAsync(fixedView: true, SaveInput.Plain));
+        await AddAsync("修正版、Quantity に abc を入力して ToolBar の保存をクリック", "16 行目", "1、InvalidOperationException、True / True",
+            "（まだ保存していない）｜入力に誤りがある行は保存できない。", SaveAsync(fixedView: true, SaveInput.ToolBar, quantity: true));
+        await AddAsync("修正版、Quantity に abc、5 に直してもう一度クリック", "17 行目", "5、成功、False / False",
+            "Name = alpha、Quantity = 5｜エラー表示なし", SaveAsync(fixedView: true, SaveInput.ToolBar, quantity: true, retryWith: '5'));
+        await AddAsync("修正版、セルを編集せずに ToolBar の保存をクリック", "18 行目", "\"alpha\"、成功、False / False",
+            SavedAlpha, SaveAsync(fixedView: true, SaveInput.ToolBar, typeFirst: false));
 
         BookAReport.WriteAndAssert(
             "ch03.md", Slug, "第 3 章",
@@ -70,14 +79,14 @@ internal sealed class BookACh03DataGridCommitOnSaveScene : IScene
             checks);
     }
 
-    private static async Task<string> SaveAsync(bool fixedView, SaveInput input, bool quantity = false, bool typeFirst = true, char? retryWith = null)
+    private static async Task<(string Article, string Saved)> SaveAsync(bool fixedView, SaveInput input, bool quantity = false, bool typeFirst = true, char? retryWith = null)
     {
         var vm = new ItemsViewModel();
         UserControl view = fixedView ? new FixedView() : new ReproView();
         view.DataContext = vm;
         view.Width = 400;
         var grid = (DataGrid)view.FindName("grid");
-        string result = "";
+        (string, string) result = default;
         await ShowAsync(view, async () =>
         {
             Window window = await FrontCenteredAsync(view);
@@ -117,6 +126,9 @@ internal sealed class BookACh03DataGridCommitOnSaveScene : IScene
             }
 
             await Capture.SettleAsync(window, 100);
+
+            // 保存処理（SaveCommand）が読んだ値とエラー表示。Refresh より前に読む（Refresh は表示に関係しないが、順序を記事の計測に合わせる）。
+            string saved = $"{vm.LastSaved}｜{(vm.StatusMessage.Length == 0 ? "エラー表示なし" : vm.StatusMessage)}";
             ItemViewModel first = vm.Items[0];
             string value = quantity ? first.Quantity.ToString() : $"\"{first.Name}\"";
             string refresh;
@@ -130,7 +142,7 @@ internal sealed class BookACh03DataGridCommitOnSaveScene : IScene
                 refresh = ex.GetType().Name;
             }
 
-            result = $"{value}、{refresh}、{YesNo(CellEditing(grid))} / {YesNo(RowEditing(grid))}";
+            result = ($"{value}、{refresh}、{YesNo(CellEditing(grid))} / {YesNo(RowEditing(grid))}", saved);
         }, activate: true);
         return result;
     }

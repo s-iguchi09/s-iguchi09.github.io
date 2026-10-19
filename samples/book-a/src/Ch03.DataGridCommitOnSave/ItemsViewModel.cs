@@ -6,6 +6,7 @@ namespace Ch03.DataGridCommitOnSave;
 /// <summary>
 /// 一覧を編集して保存する画面のビューモデル。再現版と修正版で共通に使う。
 /// 違いは、ビューが <see cref="CommitPendingEdits"/> を設定するかどうか（修正版のビューだけが PendingEdits.Host で設定する）。
+/// 編集だけの画面なので、ビューの DataGrid は行の追加も削除も許さない（一覧は常に 2 行で、保存は 1 行目を読む）。
 /// </summary>
 public sealed class ItemsViewModel : ObservableObject, IPendingEditsHost
 {
