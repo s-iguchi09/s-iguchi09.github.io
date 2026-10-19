@@ -1,0 +1,13 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch02-input-limits
+slug: "book-a-ch02-input-limits"
+scene: "BookACh02InputLimitsScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 2 章の再現版（制限は TextBox.MaxLength=5 と Slider の 0〜100・10 刻みだけ）で、利用者の入力は 5 文字で止まるが、ビューモデルの読み込みで入った 8 文字の顧客コードはそのまま表示され、音量 150 は Slider が 100、ビューモデルが 150 のまま、23.4 は 23.4 のままであること（記事の表 1 の 1・6・7 行目と同じ）"
+  - "付録サンプル第 2 章の修正版（ビューモデルの INotifyDataErrorInfo）で、上限を超えた顧客コードの読み込みは HasErrors と Validation.HasError が True になり、入力では 5 文字で止まってエラーにならず、読み込み後の末尾への入力は追加されず、Backspace 1 回ではエラーが残ること（記事の表 2 の 1・2 行目と同じ）"
+  - "修正版の保存ボタン（SaveCommand の CanExecute がエラーの無いこと）は、上限を超えた値で無効、5 文字に直すと有効になり、Backspace 3 回での編集にも追従すること（記事の表 2 の 3 行目と同じ。記事は IsEnabled を HasErrors の反転にバインドしていた）"
+  - "修正版の音量は、ビューモデルからの 150 と 23.4 が 100 と 20 に、End キーと 50 からの右矢印キーの値が 100 と 60 に丸められ、ビューモデルと Slider が一致すること（記事の表 2 の 4・5 行目と同じ。記事と同じく Slider を 0〜200・刻みなし・SmallChange 5 にして測る）"
+images:

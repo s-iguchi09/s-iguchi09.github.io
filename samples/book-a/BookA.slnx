@@ -3,5 +3,6 @@
     <Project Path="src/BookA.Mvvm/BookA.Mvvm.csproj" />
     <Project Path="src/BookA.Samples/BookA.Samples.csproj" />
     <Project Path="src/Ch01.BindingModeOmitted/Ch01.BindingModeOmitted.csproj" />
+    <Project Path="src/Ch02.InputLimits/Ch02.InputLimits.csproj" />
   </Folder>
 </Solution>

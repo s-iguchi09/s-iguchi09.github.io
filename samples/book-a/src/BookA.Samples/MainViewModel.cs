@@ -1,4 +1,5 @@
 using Ch01.BindingModeOmitted;
+using Ch02.InputLimits;
 
 namespace BookA.Samples;
 
@@ -11,4 +12,8 @@ public sealed class MainViewModel
     public FolderBrowserViewModel Ch01Repro { get; } = new();
 
     public FolderBrowserViewModel Ch01Fixed { get; } = new();
+
+    public ReproCustomerViewModel Ch02Repro { get; } = new();
+
+    public CustomerViewModel Ch02Fixed { get; } = new();
 }

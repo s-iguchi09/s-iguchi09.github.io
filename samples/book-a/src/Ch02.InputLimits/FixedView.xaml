@@ -1,0 +1,36 @@
+<!--
+  修正版。値の範囲はビューモデル（CustomerViewModel）で保証し、MaxLength と Slider の設定は入力の補助として残す。
+  上限を超えた顧客コードを読み込むとエラーになり、5 文字以下に直すまで保存ボタンは押せない。
+  音量はどの経路で入っても 0〜100・10 刻みに丸められ、画面とビューモデルの値が一致する。
+-->
+<UserControl x:Class="Ch02.InputLimits.FixedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch02.InputLimits"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:CustomerViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8">
+    <TextBlock Text="顧客コード（5 文字まで）" />
+    <!-- MaxLength はビューモデルの上限と同じ値を使う。入力の補助で、値の保証はビューモデルが行う。 -->
+    <TextBox x:Name="codeBox" Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}"
+             MaxLength="{x:Static local:CustomerViewModel.MaxCodeLength}" Width="200" HorizontalAlignment="Left" />
+    <!-- 既定の ErrorTemplate は赤枠だけでメッセージを出さないため、エラーの内容を下に表示する。 -->
+    <TextBlock Foreground="#D13438" TextWrapping="Wrap"
+               Text="{Binding ElementName=codeBox, Path=(Validation.Errors)/ErrorContent}" />
+
+    <TextBlock Text="音量（0〜100、10 刻み）" Margin="0,8,0,0" />
+    <Slider x:Name="volumeSlider" Value="{Binding Volume, Mode=TwoWay}" Minimum="0" Maximum="100"
+            IsSnapToTickEnabled="True" TickFrequency="10" TickPlacement="BottomRight" Width="200" HorizontalAlignment="Left" />
+    <TextBlock Text="{Binding Volume, StringFormat='ビューモデルの音量: {0}'}" />
+
+    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+      <Button Content="上限を超えたデータを読み込む" Command="{Binding LoadOverLimitCommand}" Padding="8,2" />
+      <Button Content="刻みに合わないデータを読み込む" Command="{Binding LoadOffStepCommand}" Padding="8,2" Margin="8,0,0,0" />
+    </StackPanel>
+    <!-- 押せるかどうかは SaveCommand の CanExecute（エラーが無いこと）で決まる。 -->
+    <Button x:Name="saveButton" Content="保存" Command="{Binding SaveCommand}" Padding="8,2" Margin="0,8,0,0" HorizontalAlignment="Left" />
+    <TextBlock Text="{Binding LastSaved, StringFormat='保存した内容: {0}'}" TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>
