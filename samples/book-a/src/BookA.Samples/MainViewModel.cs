@@ -40,4 +40,8 @@ public sealed class MainViewModel
     public Ch08.UserControlDependencyProperty.PageViewModel Ch08Repro { get; } = new();
 
     public Ch08.UserControlDependencyProperty.PageViewModel Ch08Fixed { get; } = new();
+
+    public Ch09.StaticResourceNotUpdating.ThemeViewModel Ch09Repro { get; } = new();
+
+    public Ch09.StaticResourceNotUpdating.ThemeViewModel Ch09Fixed { get; } = new();
 }

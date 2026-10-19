@@ -10,6 +10,7 @@
         xmlns:ch06="clr-namespace:Ch06.StyleTriggerLocalValue;assembly=Ch06.StyleTriggerLocalValue"
         xmlns:ch07="clr-namespace:Ch07.DataTemplateParentBinding;assembly=Ch07.DataTemplateParentBinding"
         xmlns:ch08="clr-namespace:Ch08.UserControlDependencyProperty;assembly=Ch08.UserControlDependencyProperty"
+        xmlns:ch09="clr-namespace:Ch09.StaticResourceNotUpdating;assembly=Ch09.StaticResourceNotUpdating"
         Title="エラーも出ずに壊れる WPF ― 付録サンプル" Width="760" Height="420">
   <Window.DataContext>
     <local:MainViewModel />
@@ -125,6 +126,20 @@
         </GroupBox>
         <GroupBox Grid.Column="1" Header="修正版（中の Grid に DataContext を委譲）" Margin="8,0,0,0">
           <ch08:FixedView DataContext="{Binding Ch08Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+    <TabItem Header="第 9 章 StaticResource が更新されない">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（StaticResource）">
+          <ch09:ReproView DataContext="{Binding Ch09Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（DynamicResource）" Margin="8,0,0,0">
+          <ch09:FixedView DataContext="{Binding Ch09Fixed}" />
         </GroupBox>
       </Grid>
     </TabItem>

@@ -16,6 +16,7 @@
     <ProjectReference Include="..\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
     <ProjectReference Include="..\Ch07.DataTemplateParentBinding\Ch07.DataTemplateParentBinding.csproj" />
     <ProjectReference Include="..\Ch08.UserControlDependencyProperty\Ch08.UserControlDependencyProperty.csproj" />
+    <ProjectReference Include="..\Ch09.StaticResourceNotUpdating\Ch09.StaticResourceNotUpdating.csproj" />
   </ItemGroup>
 
 </Project>
