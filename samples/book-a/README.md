@@ -10,6 +10,8 @@
 
 ## 実行方法
 
+リポジトリのルートで次を実行する。
+
 ```bash
 dotnet run --project samples/book-a/src/BookA.Samples
 ```
@@ -27,12 +29,13 @@ dotnet run --project samples/book-a/src/BookA.Samples
 
 各章のプロジェクトは、ビューモデル（`*ViewModel.cs`）と、再現版・修正版のビュー（`ReproView.xaml`・`FixedView.xaml`）を持つ。
 ビューのコードビハインドには `InitializeComponent` しか書かない。
-再現版と修正版は同じビューモデルを使い、違いはビューの XAML だけにしてある。
+再現版と修正版は同じビューモデルのクラスを使い（インスタンスは別）、違いはビューの XAML だけにしてある。
 
 ## 記事の実測と同じ動作であることの検証
 
 各章のサンプルは、記事の計測と同じ実際のマウスとキーボードの操作で動かし、記事の表と同じ結果になることを確かめている。
 検証は `tools/screenshot-capture/Scenes/BookA/` のシーンで、結果は `verification/` に書き出す。
+リポジトリのルートで次を実行する。
 
 ```bash
 dotnet run --project tools/screenshot-capture -c Release -- book-a-ch01-binding-mode-omitted

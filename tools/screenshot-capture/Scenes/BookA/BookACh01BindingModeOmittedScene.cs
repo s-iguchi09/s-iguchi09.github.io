@@ -119,7 +119,7 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
                     window, column, ColumnDefinition.WidthProperty,
                     () => viewModel.NavigationWidth,
                     () => viewModel.ResetWidthCommand.Execute(null),
-                    errors.Count - before);
+                    () => errors.Count - before);
                 return;
             }
 
@@ -155,7 +155,7 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
                 window, node, TreeViewItem.IsExpandedProperty,
                 () => documents.IsExpanded,
                 () => viewModel.CollapseAllCommand.Execute(null),
-                errors.Count - before);
+                () => errors.Count - before);
         }, activate: true);
 
         return outcome ?? throw new InvalidOperationException("計測が実行されなかった: " + item.Label);
@@ -164,10 +164,11 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
     /// <summary>
     /// 操作の後の状態を読み、ビューモデルのコマンドを実行してから表示をもう一度読む。
     /// 記事の計測の「ソースに代入した後の表示」に当たるのが、ここではコマンドの実行後の表示である。
+    /// バインドのエラーの数は、コマンドの実行と描画の後に読む（コマンドの実行中に出たエラーも数えるため）。
     /// </summary>
     private static async Task<Outcome> ReadAsync(
         Window window, DependencyObject target, DependencyProperty property,
-        Func<object> readViewModel, Action runCommand, int errors)
+        Func<object> readViewModel, Action runCommand, Func<int> readErrors)
     {
         string displayed = Describe(target.GetValue(property));
         string sourced = Describe(readViewModel());
@@ -179,7 +180,7 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
         await Capture.SettleAsync(window, 100);
         string after = Describe(target.GetValue(property));
 
-        return new Outcome($"{displayed} / {sourced}", kept ? "残る" : "外れる", from, after, errors);
+        return new Outcome($"{displayed} / {sourced}", kept ? "残る" : "外れる", from, after, readErrors());
     }
 
     private static string Describe(object? value) => value switch

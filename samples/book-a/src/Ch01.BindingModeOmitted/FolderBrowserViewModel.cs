@@ -23,7 +23,7 @@ public sealed class FolderBrowserViewModel : ObservableObject
             new FolderViewModel("Pictures", new FolderViewModel("2026")),
         ];
         CollapseAllCommand = new RelayCommand(CollapseAll);
-        ResetWidthCommand = new RelayCommand(() => NavigationWidth = DefaultNavigationWidth);
+        ResetWidthCommand = new RelayCommand(ResetWidth);
     }
 
     public ObservableCollection<FolderViewModel> Folders { get; }
@@ -49,5 +49,16 @@ public sealed class FolderBrowserViewModel : ObservableObject
         {
             folder.Collapse();
         }
+    }
+
+    /// <summary>
+    /// 幅を初期値に戻す。値が既に初期値でも変更を通知する。
+    /// 片方向のバインドでユーザーが幅を変えた後など、表示がビューモデルとずれていても、
+    /// 通知を受けたバインドが表示を合わせ直すためである（<see cref="FolderViewModel.Collapse"/> と同じ扱い）。
+    /// </summary>
+    private void ResetWidth()
+    {
+        _navigationWidth = DefaultNavigationWidth;
+        OnPropertyChanged(nameof(NavigationWidth));
     }
 }
