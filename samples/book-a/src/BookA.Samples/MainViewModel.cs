@@ -36,4 +36,8 @@ public sealed class MainViewModel
     public Ch07.DataTemplateParentBinding.MeasurementListViewModel Ch07Repro { get; } = new();
 
     public Ch07.DataTemplateParentBinding.MeasurementListViewModel Ch07Fixed { get; } = new();
+
+    public Ch08.UserControlDependencyProperty.PageViewModel Ch08Repro { get; } = new();
+
+    public Ch08.UserControlDependencyProperty.PageViewModel Ch08Fixed { get; } = new();
 }

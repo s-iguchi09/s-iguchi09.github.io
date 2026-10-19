@@ -1,0 +1,17 @@
+<!--
+  再現版の画面。カード（ReproInfoCard）の Title に、ビューモデルの HeaderText をバインドする。
+  利用側の書き方は再現版と修正版で同じで、違いはカードの中の XAML だけである。
+-->
+<UserControl x:Class="Ch08.UserControlDependencyProperty.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch08.UserControlDependencyProperty"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:PageViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8">
+    <local:ReproInfoCard x:Name="card" Title="{Binding HeaderText}" />
+    <TextBlock Text="{Binding HeaderText, StringFormat='ビューモデルの HeaderText: {0}'}" Margin="0,8,0,0" />
+  </StackPanel>
+</UserControl>

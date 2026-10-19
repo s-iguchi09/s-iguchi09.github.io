@@ -113,6 +113,7 @@ internal static class Program
         new BookACh05ValidationScene(),
         new BookACh06StyleTriggerScene(),
         new BookACh07DataTemplateParentScene(),
+        new BookACh08UserControlScene(),
     ];
 
     [STAThread]

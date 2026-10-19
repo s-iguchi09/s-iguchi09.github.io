@@ -1,0 +1,12 @@
+<!--
+  再現版のカード。中の TextBlock に {Binding Title} と書いている。
+  起点はカードの DataContext（利用側から引き継いだ PageViewModel）なので、PageViewModel.Title を探して失敗する。
+  カードの Title には値が入っているのに、見出しは空のままになる（出力ウィンドウに Error 40 が出る）。
+-->
+<UserControl x:Class="Ch08.UserControlDependencyProperty.ReproInfoCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Border BorderBrush="Gray" BorderThickness="1" Padding="6">
+    <TextBlock x:Name="titleText" Text="{Binding Title}" />
+  </Border>
+</UserControl>

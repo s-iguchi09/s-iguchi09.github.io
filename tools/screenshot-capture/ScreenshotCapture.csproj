@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\samples\book-a\src\Ch05.ValidationNotDisplayed\Ch05.ValidationNotDisplayed.csproj" />
     <ProjectReference Include="..\..\samples\book-a\src\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
     <ProjectReference Include="..\..\samples\book-a\src\Ch07.DataTemplateParentBinding\Ch07.DataTemplateParentBinding.csproj" />
+    <ProjectReference Include="..\..\samples\book-a\src\Ch08.UserControlDependencyProperty\Ch08.UserControlDependencyProperty.csproj" />
   </ItemGroup>
 
 </Project>
