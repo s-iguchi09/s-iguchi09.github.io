@@ -40,10 +40,17 @@ internal static class BookAReport
         Write(
             fileName, slug,
             $"{chapter} 付録サンプルと記事の実測の突き合わせ",
-            $"記事: [{articleTitle}](https://s-iguchi09.github.io/ja/articles/{articleSlug}/)。{note}",
-            "| 操作 | 記事の該当箇所 | 記事の値 | サンプルの実測 | 記事と一致 |",
+            $"記事: [{articleTitle}](https://s-iguchi09.github.io/ja/articles/{articleSlug}/)。{note}{ExpectedNote}",
+            "| 操作 | 記事の該当箇所 | 記事から期待する値 | サンプルの実測 | 期待と一致 |",
             $"{chapter}の付録サンプルが記事の実測と一致しない", "記事",
             checks);
+
+    /// <summary>
+    /// 記事の表の値と、比べる値（<see cref="BookACheck.Expected"/>）の関係。サンプルは色・文言・データを記事と変えている章があるため、
+    /// 比べる値は記事の結果をサンプルの値で書き直したものとし、記事の値そのものと違う場合は「記事の該当箇所」に記事の値を書く。
+    /// </summary>
+    private const string ExpectedNote =
+        "「記事から期待する値」は、記事の実測の結果をサンプルの値（色・文言・データなど）で書き直したもの。記事の表の値そのものと違う場合は、「記事の該当箇所」に記事の値を書いている。";
 
     /// <summary>
     /// MVVM ライブラリ（CommunityToolkit.Mvvm・Prism）で書いた場合の結果を書き出す。記事に値が無いので、

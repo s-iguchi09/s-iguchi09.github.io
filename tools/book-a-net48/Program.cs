@@ -65,13 +65,17 @@ internal static class Program
 
     private static async Task<int> RunAsync(string[] args)
     {
+        // 知らない slug が 1 つでもあれば、残りを測らずに失敗にする（測っていない章を測ったと見誤らないため）。
+        var unknown = args.Where(arg => !AllScenes.Any(scene => string.Equals(scene.Slug, arg, StringComparison.OrdinalIgnoreCase))).ToList();
+        if (unknown.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"登録されていない slug: {string.Join(", ", unknown)}。登録済み slug: {string.Join(", ", AllScenes.Select(s => s.Slug))}");
+        }
+
         var targets = args.Length == 0
             ? AllScenes.ToList()
             : AllScenes.Where(scene => args.Contains(scene.Slug, StringComparer.OrdinalIgnoreCase)).ToList();
-        if (targets.Count == 0)
-        {
-            throw new InvalidOperationException($"該当する章が無い。登録済み slug: {string.Join(", ", AllScenes.Select(s => s.Slug))}");
-        }
 
         var failures = new List<string>();
         foreach (IScene scene in targets)

@@ -19,7 +19,7 @@ internal sealed class BookACh10UnhandledExceptionScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "付録サンプル第 10 章の再現版（Task.Run を待たない）で、取り込みの例外は DispatcherUnhandledException・AppDomain.UnhandledException・UnobservedTaskException（GC なし）のどれにも届かず、画面にも出ず、プロセスは動き続けること（記事の表の Task.Run(...) を待たない（GC なし）の行と同じ）",
-        "付録サンプル第 10 章の修正版（AsyncRelayCommand の中で await し、try / catch で受ける）で、例外は catch で受けられて画面に理由が出て、DispatcherUnhandledException などには届かず、プロセスは動き続けること（記事の表の async void の Click で await を try / catch の行と同じ）",
+        "付録サンプル第 10 章の修正版（AsyncRelayCommand の中で await し、try / catch で受ける）で、例外は catch で受けられて画面に理由が出て、DispatcherUnhandledException などには届かず、プロセスは動き続けること（記事の表には無い。本文の「catch で受ける」に当たり、表の「async void の Click で await Task.Run」の行に try / catch を足したもの）",
     ];
 
     public string Slug => "book-a-ch10-unhandled-exception-routes";
@@ -33,7 +33,7 @@ internal sealed class BookACh10UnhandledExceptionScene : IScene
             new("再現版、「取り込む」のコマンドを実行", "Task.Run(...) を待たない（GC なし）の行",
                 "DispatcherUnhandledException —、AppDomain.UnhandledException —、UnobservedTaskException —、画面: （なし）、プロセス: 動き続ける",
                 await RunAsync(new ReproView { DataContext = new ReproImportViewModel() })),
-            new("修正版、「取り込む」のコマンドを実行", "async void の Click で await を try / catch の行",
+            new("修正版、「取り込む」のコマンドを実行", "本文の「catch で受ける」（表には無い。表の「async void の Click で await Task.Run」の行に try / catch を足したもので、その行では DispatcherUnhandledException が呼ばれる）。画面の文言はサンプルの値",
                 $"DispatcherUnhandledException —、AppDomain.UnhandledException —、UnobservedTaskException —、画面: {Importer.FailureMessage}、プロセス: 動き続ける",
                 await RunAsync(new FixedView { DataContext = new ImportViewModel() })),
         };

@@ -7,5 +7,5 @@ environment:
   os: "Microsoft Windows 10.0.26200"
 verifies:
   - "付録サンプル第 11 章の再現版（同期のコマンドの中で LoadAsync().Result）で、コマンドの実行後に UI スレッドが止まったまま、後から積んだ処理が 2.5 秒経っても Pending のままで、読み込みの結果も出ないこと（記事の表の LoadAsync().Result の行と同じ）"
-  - "付録サンプル第 11 章の修正版（AsyncRelayCommand の中で await）で、UI スレッドが止まらず、後から積んだ処理が読み込みの終わる前に走り、その後に結果の 42 が出ること（記事の表の async void の Click で await LoadAsync() の行と同じ）"
+  - "付録サンプル第 11 章の修正版（AsyncRelayCommand の中で await）で、UI スレッドが止まらず、後から積んだ処理が読み込みの終わる前に走り、その後に結果の 42 が出ること（UI スレッドと積んだ処理は記事の表の async void の Click で await LoadAsync() の行と同じ。結果の 42 はサンプルで足した確認）"
 images:

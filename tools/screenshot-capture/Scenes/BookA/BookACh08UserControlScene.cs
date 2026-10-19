@@ -40,7 +40,7 @@ internal sealed class BookACh08UserControlScene : IScene
                 await Settle(view);
                 var card = (ReproInfoCard)view.FindName("card");
                 var title = (TextBlock)card.FindName("titleText");
-                checks.Add(new("再現版、利用側から Title に HeaderText をバインド", "3 つ目の表 1 行目",
+                checks.Add(new("再現版、利用側から Title に HeaderText をバインド", "3 つ目の表 1 行目（記事の値は「Title from PageViewModel、内側 （空）、Error 40 が 1 件」）",
                     "Title from PageViewModel、内側 （空）、エラー 1 件",
                     $"Title {card.Title}、内側 {Text(title)}、エラー {errors.Count - before} 件"));
             });
@@ -57,7 +57,7 @@ internal sealed class BookACh08UserControlScene : IScene
                 var card = (FixedInfoCard)view.FindName("card");
                 var root = (Grid)card.FindName("cardRoot");
                 var title = (TextBlock)card.FindName("titleText");
-                checks.Add(new("修正版、利用側から Title に HeaderText をバインド", "3 つ目の表 4 行目（DataContext を内側の Grid に引き継ぐ）",
+                checks.Add(new("修正版、利用側から Title に HeaderText をバインド", "3 つ目の表 4 行目（DataContext を内側の Grid に引き継ぐ。記事の値は「内側の DataContext は InfoCard、カードの DataContext は PageViewModel、エラー 0 件」。見出しの値はサンプルで足した確認）",
                     "内側の DataContext はカード、カードの DataContext は PageViewModel、見出し from PageViewModel、エラー 0 件",
                     $"内側の DataContext は{(root.DataContext == card ? "カード" : root.DataContext?.GetType().Name)}、カードの DataContext は {card.DataContext?.GetType().Name}、見出し {Text(title)}、エラー {errors.Count - before} 件"));
 

@@ -36,7 +36,7 @@ internal sealed class BookACh07DataTemplateParentScene : IScene
             new("再現版、1 行目の削除ボタンをクリック", "「問題」の節（押しても何も起きない）", "行は 3 件のまま", reproClick),
             new("修正版、1 行目の削除ボタン", "表 2 行目（RelativeSource AncestorType=ItemsControl）", "Command 解決できた、IsEnabled True", fixedBinding),
             new("修正版、1 行目の単位", "実装例の図（RelativeSource は kg を表示）", "kg", fixedUnit),
-            new("修正版、1 行目の削除ボタンをクリック", "実装例（押した行を削除する）", "行は 2 件、先頭は B", fixedClick),
+            new("修正版、1 行目の削除ボタンをクリック", "実装例（押した行を削除する。先頭の B はサンプルのデータ）", "行は 2 件、先頭は B", fixedClick),
         };
 
         BookAReport.WriteAndAssert(

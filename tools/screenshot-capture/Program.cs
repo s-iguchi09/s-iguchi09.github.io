@@ -157,6 +157,15 @@ internal static class Program
     private static async Task RunAsync(string[] args)
     {
         string repositoryRoot = FindRepositoryRoot();
+
+        // 知らない slug が 1 つでもあれば、どのシーンも動かさずに失敗にする（取っていない図や測っていない検証を、取ったと見誤らないため）。
+        var unknown = args.Where(arg => !AllScenes.Any(scene => string.Equals(scene.Slug, arg, StringComparison.OrdinalIgnoreCase))).ToList();
+        if (unknown.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"登録されていない slug: {string.Join(", ", unknown)}。登録済み slug: {string.Join(", ", AllScenes.Select(s => s.Slug))}");
+        }
+
         IEnumerable<IScene> scenes = args.Length == 0
             ? AllScenes
             : AllScenes.Where(scene => args.Contains(scene.Slug, StringComparer.OrdinalIgnoreCase));

@@ -12,7 +12,7 @@ internal sealed class BookACh11TaskResultScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "付録サンプル第 11 章の再現版（同期のコマンドの中で LoadAsync().Result）で、コマンドの実行後に UI スレッドが止まったまま、後から積んだ処理が 2.5 秒経っても Pending のままで、読み込みの結果も出ないこと（記事の表の LoadAsync().Result の行と同じ）",
-        "付録サンプル第 11 章の修正版（AsyncRelayCommand の中で await）で、UI スレッドが止まらず、後から積んだ処理が読み込みの終わる前に走り、その後に結果の 42 が出ること（記事の表の async void の Click で await LoadAsync() の行と同じ）",
+        "付録サンプル第 11 章の修正版（AsyncRelayCommand の中で await）で、UI スレッドが止まらず、後から積んだ処理が読み込みの終わる前に走り、その後に結果の 42 が出ること（UI スレッドと積んだ処理は記事の表の async void の Click で await LoadAsync() の行と同じ。結果の 42 はサンプルで足した確認）",
     ];
 
     public string Slug => "book-a-ch11-task-result-deadlock";
@@ -23,9 +23,9 @@ internal sealed class BookACh11TaskResultScene : IScene
     {
         var checks = new List<BookACheck>
         {
-            new("再現版、「読み込む」のコマンドを実行", "LoadAsync().Result の行",
+            new("再現版、「読み込む」のコマンドを実行", "LoadAsync().Result の行（2.5 秒後の結果は記事の表に無い列で、サンプルで足した確認）",
                 "UI スレッド: 止まったまま、積んだ処理: Pending のまま、2.5 秒後の結果: （なし）", await RunAsync("ch11-repro")),
-            new("修正版、「読み込む」のコマンドを実行", "async void の Click で await LoadAsync() の行",
+            new("修正版、「読み込む」のコマンドを実行", "async void の Click で await LoadAsync() の行（記事の値は「止まらない（積んだ処理は 6 ms 後に走る）」「待っている間に走る」。結果の 42 はサンプルの値）",
                 "UI スレッド: 止まらない、積んだ処理: 待っている間に走る、2.5 秒後の結果: 42", await RunAsync("ch11-fixed")),
         };
 
