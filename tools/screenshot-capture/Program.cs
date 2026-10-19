@@ -115,9 +115,9 @@ internal static class Program
         new BookACh07DataTemplateParentScene(),
         new BookACh08UserControlScene(),
         new BookACh09StaticResourceScene(),
+        new BookACh10UnhandledExceptionScene(),
         new BookACh11TaskResultScene(),
         new BookACh12ProcessNotExitingScene(),
-        new BookACh10UnhandledExceptionScene(),
     ];
 
     [STAThread]

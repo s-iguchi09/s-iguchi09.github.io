@@ -45,6 +45,10 @@ public sealed class MainViewModel
 
     public Ch09.StaticResourceNotUpdating.ThemeViewModel Ch09Fixed { get; } = new();
 
+    public Ch10.UnhandledExceptionRoutes.ReproImportViewModel Ch10Repro { get; } = new();
+
+    public Ch10.UnhandledExceptionRoutes.ImportViewModel Ch10Fixed { get; } = new();
+
     public Ch11.TaskResultDeadlock.ReproLoadViewModel Ch11Repro { get; } = new();
 
     public Ch11.TaskResultDeadlock.LoadViewModel Ch11Fixed { get; } = new();
@@ -52,8 +56,4 @@ public sealed class MainViewModel
     public Ch12.ProcessNotExiting.ReproMonitorViewModel Ch12Repro { get; } = new();
 
     public Ch12.ProcessNotExiting.MonitorViewModel Ch12Fixed { get; } = new();
-
-    public Ch10.UnhandledExceptionRoutes.ReproImportViewModel Ch10Repro { get; } = new();
-
-    public Ch10.UnhandledExceptionRoutes.ImportViewModel Ch10Fixed { get; } = new();
 }

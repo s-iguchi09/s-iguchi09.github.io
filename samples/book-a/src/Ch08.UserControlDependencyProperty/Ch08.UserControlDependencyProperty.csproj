@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 8 章「UserControl に定義した依存関係プロパティへ、中からバインドできない」の再現版と修正版。 -->
+  <!-- 第 8 章「UserControl の中の素のバインドは、自身の依存関係プロパティに届かない（起点が利用側の DataContext になる）」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch08.UserControlDependencyProperty</RootNamespace>
   </PropertyGroup>

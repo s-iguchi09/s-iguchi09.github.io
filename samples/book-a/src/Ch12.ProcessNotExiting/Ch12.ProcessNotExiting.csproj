@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 12 章「ウィンドウを閉じてもプロセスが終了しない」の再現版と修正版。 -->
+  <!-- 第 12 章「フォアグラウンドのスレッドが残ると、ウィンドウを閉じてもプロセスが終了しない」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch12.ProcessNotExiting</RootNamespace>
   </PropertyGroup>
