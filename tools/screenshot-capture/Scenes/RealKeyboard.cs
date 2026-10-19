@@ -80,7 +80,8 @@ internal static class RealKeyboard
         inputs.AddRange(modifiers.Select(m => new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = m } } }));
         inputs.Add(new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = virtualKey } } });
         inputs.Add(new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = virtualKey, Flags = KeyEventKeyUp } } });
-        inputs.AddRange(modifiers.Reverse().Select(m => new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = m, Flags = KeyEventKeyUp } } }));
+        // modifiers.Reverse() と書くと、System.Memory を参照する環境（tools/book-a-net48）では C# 14 が Span の Reverse（void）を選ぶ。
+        inputs.AddRange(Enumerable.Reverse(modifiers).Select(m => new Input { Type = InputKeyboard, Data = new InputUnion { Keyboard = new KeyboardInput { VirtualKey = m, Flags = KeyEventKeyUp } } }));
         if (SendInput((uint)inputs.Count, inputs.ToArray(), Marshal.SizeOf<Input>()) != inputs.Count)
         {
             int error = Marshal.GetLastWin32Error();

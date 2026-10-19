@@ -33,9 +33,9 @@ internal sealed class BookACh09StaticResourceScene : IScene
         string dark = ThemeResources.DarkColor.ToString();
         var checks = new List<BookACheck>
         {
-            new("再現版、「テーマを切り替える」の前と後", "StaticResource、差し替え前と差し替え後（同じ値のまま）",
+            new("再現版、「テーマを切り替える」の前と後", "記事の表の StaticResource、差し替え前と差し替え後（記事の値は #FFFFFFFF → #FFFFFFFF。同じ値のまま）",
                 $"前 {light}、後 {light}", await ToggleAsync(new ReproView())),
-            new("修正版、「テーマを切り替える」の前と後", "DynamicResource、差し替え前と差し替え後（差し替えた値になる）",
+            new("修正版、「テーマを切り替える」の前と後", "記事の表の DynamicResource、差し替え前と差し替え後（記事の値は #FFFFFFFF → #FFFF0000。差し替えた値になる）",
                 $"前 {light}、後 {dark}", await ToggleAsync(new FixedView())),
         };
 
@@ -43,7 +43,7 @@ internal sealed class BookACh09StaticResourceScene : IScene
             "ch09.md", Slug, "第 9 章",
             "WPF で StaticResource を変更しても画面が更新されない原因と解決方法",
             "wpf-staticresource-vs-dynamicresource",
-            "記事の表は White から Red への差し替え、サンプルは SkyBlue（#FF87CEEB）から DarkSlateGray（#FF2F4F4F）への差し替えで、色の値は違う。比べているのは、差し替えの後も元の色のままか、差し替えた色になるか。",
+            "記事の表は White（#FFFFFFFF）から Red（#FFFF0000）への差し替え、サンプルは SkyBlue（#FF87CEEB）から DarkSlateGray（#FF2F4F4F）への差し替えで、色の値は違う。比べているのは、差し替えの後も元の色のままか、差し替えた色になるか。",
             checks);
     }
 

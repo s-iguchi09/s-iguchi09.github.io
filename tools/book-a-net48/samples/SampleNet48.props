@@ -1,0 +1,24 @@
+<Project>
+
+  <!--
+    付録サンプルの 1 プロジェクトを、ソースと XAML をそのまま取り込んで .NET Framework 4.8 でビルドする。
+    ディレクトリ名を samples/book-a/src のプロジェクト名と同じにしておく。
+    プロジェクト名ではなくディレクトリ名を使うのは、XAML の一時ビルド（*_wpftmp.csproj）でプロジェクト名が変わるため。
+  -->
+  <PropertyGroup>
+    <SampleName>$([System.IO.Path]::GetFileName($(MSBuildProjectDirectory)))</SampleName>
+    <SampleSource>$(MSBuildThisFileDirectory)..\..\..\samples\book-a\src\$(SampleName)\</SampleSource>
+    <RootNamespace>$(SampleName)</RootNamespace>
+    <AssemblyName>$(SampleName)</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SampleSource)**\*.cs" Exclude="$(SampleSource)obj\**;$(SampleSource)bin\**" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Page Include="$(SampleSource)**\*.xaml" Exclude="$(SampleSource)obj\**;$(SampleSource)bin\**" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SampleName)' != 'BookA.Mvvm'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

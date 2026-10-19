@@ -1,0 +1,13 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-libraries
+slug: "book-a-libraries"
+scene: "BookALibrariesScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "第 4 章のビューで、CommunityToolkit.Mvvm の RelayCommand は CanExecute が依存するプロパティを変えても、NotifyCanExecuteChanged を呼ばなければボタンの IsEnabled が変わらず、CommandManager.InvalidateRequerySuggested でも変わらないこと。[NotifyCanExecuteChangedFor] を付けると変わること"
+  - "第 4 章のビューで、Prism の DelegateCommand は RaiseCanExecuteChanged を呼ばなければボタンの IsEnabled が変わらず、CommandManager.InvalidateRequerySuggested でも変わらないこと。ObservesProperty を付けると変わること"
+  - "第 5 章のビューで、CommunityToolkit.Mvvm の ObservableValidator は SetProperty(..., validate: true) だけでは起動直後にエラーが出ず、コンストラクターで ValidateAllProperties を呼ぶと出ること。属性のメッセージが ErrorTemplate に出て、正しい値で消えること"
+  - "第 10 章のビューで、CommunityToolkit.Mvvm の AsyncRelayCommand は既定では取り込みの例外が DispatcherUnhandledException に届き、FlowExceptionsToTaskScheduler を付けると DispatcherUnhandledException・AppDomain.UnhandledException に届かず（GC を呼ばない 1 秒の間は UnobservedTaskException にも届かず）、ExecutionTask が Faulted になること。Prism の DelegateCommand に async のラムダを渡すと DispatcherUnhandledException に届くこと"
+images:

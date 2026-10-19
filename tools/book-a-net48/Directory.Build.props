@@ -1,0 +1,23 @@
+<Project>
+
+  <!-- tools/book-a-net48 の全プロジェクトに共通する設定。付録サンプル（samples/book-a）の設定を .NET Framework 4.8 に置き換えたもの。 -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- .NET Framework では System.Net.Http が既定で参照されない。 -->
+    <Using Remove="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- record・範囲演算子・nullable 属性など、.NET Framework に無い言語機能の型を補う。 -->
+    <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

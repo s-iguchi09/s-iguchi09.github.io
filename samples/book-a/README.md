@@ -63,3 +63,27 @@ dotnet run --project tools/screenshot-capture -c Release -- book-a-ch01-binding-
 実行中はウィンドウが前面に出て、マウスカーソルが動く。
 第 11 章と第 12 章は、UI スレッドが固まる・プロセスが終わらない挙動を測るため、計測ツール自身を子プロセスとして起動して外から監視する。
 結果が記事の表と 1 か所でも食い違うと、レポートを書いたうえで失敗（終了コード 1）になる。
+
+### .NET Framework 4.8 での検証
+
+`tools/book-a-net48` は、各章のソースと XAML をそのまま取り込んで .NET Framework 4.8 でビルドし、上と同じシーン・同じ期待値で測る。
+結果は `verification/net48/` に書き出す。
+サンプルのうち .NET Framework に無い API は第 2 章の `Math.Clamp` だけで、4.8 の側に同じ意味の代わりを置いている（サンプル自体は .NET 10 向けのまま）。
+
+```bash
+dotnet run --project tools/book-a-net48 -c Release
+```
+
+この検証は、記事の値と食い違った章があっても残りの章を続け、最後に食い違った章をまとめて出す。
+
+### MVVM ライブラリで書いた場合の検証
+
+第 4・5・10 章について、ビュー（XAML）はそのままにしてビューモデルだけを CommunityToolkit.Mvvm 8.4.0 と Prism.Core 8.1.97 で書き直し、同じ手順で測る（`tools/screenshot-capture/Scenes/BookA/BookALibrariesScene.cs`）。
+記事に値が無いので、公式文書などから予想した値と比べる。
+結果は `verification/libraries.md`（.NET 10）と `verification/net48/libraries.md`（.NET Framework 4.8）に書き出す。
+
+```bash
+dotnet run --project tools/screenshot-capture -c Release -- book-a-libraries
+```
+
+.NET Framework 4.8 で測るときは、`tools/book-a-net48` に同じ slug を渡す。

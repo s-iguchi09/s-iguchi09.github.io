@@ -40,12 +40,12 @@ internal sealed class BookACh05ValidationScene : IScene
         {
             TextBox box = Box(view);
             checks.Add(new("修正版、起動直後（名前は空）", "表「INotifyDataErrorInfo だけ」", "HasError True、Errors 1、装飾 1", Stages(box)));
-            checks.Add(new("修正版、起動直後のメッセージ", "実装例の節（起動直後に必須のメッセージが出る）", "名前は必須です。", Message(box)));
+            checks.Add(new("修正版、起動直後のメッセージ", "実装例の節（起動直後に必須のメッセージが出る。記事の文言は「名前は必須である。」）", "名前は必須です。", Message(box)));
 
             await FocusAsync(box);
             TypeLetters(box, "abcdefghijklmnopqrstu");
             await Settle(view);
-            checks.Add(new("修正版、21 文字を入力", "実装例の節（21 文字で長さのメッセージに替わる）", "名前は 20 文字以内にしてください。", Message(box)));
+            checks.Add(new("修正版、21 文字を入力", "実装例の節（21 文字で長さのメッセージに替わる。記事の文言は「名前は 20 文字以内である。」）", "名前は 20 文字以内にしてください。", Message(box)));
 
             box.SelectAll();
             TypeLetters(box, "taro");
@@ -57,11 +57,11 @@ internal sealed class BookACh05ValidationScene : IScene
             "ch05.md", Slug, "第 5 章",
             "WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け",
             "wpf-validation-error-not-displayed",
-            "「表」は記事の検証の段階の表（HasError・Errors の数・装飾（adorner）の数）。記事の実装例のメッセージは英語（Name is required. など）で、サンプルでは同じ内容を日本語にしている。",
+            "「表」は記事の検証の段階の表（HasError・Errors の数・装飾（adorner）の数）。記事の実装例のメッセージは「名前は必須である。」「名前は 20 文字以内である。」で、サンプルでは同じ内容を「です・ください」の言い回しにしている。",
             checks);
     }
 
-    private static async Task ShowViewAsync(UserControl view, Func<UserControl, Task> act)
+    internal static async Task ShowViewAsync(UserControl view, Func<UserControl, Task> act)
     {
         view.Width = 320;
         await ShowAsync(view, async () =>
@@ -71,21 +71,21 @@ internal sealed class BookACh05ValidationScene : IScene
         }, activate: true);
     }
 
-    private static string Stages(TextBox box)
+    internal static string Stages(TextBox box)
     {
         int adorners = AdornerLayer.GetAdornerLayer(box)?.GetAdorners(box)?.Length ?? 0;
         return $"HasError {Validation.GetHasError(box)}、Errors {Validation.GetErrors(box).Count}、装飾 {adorners}";
     }
 
     /// <summary>ErrorTemplate の中のメッセージ（errorMessage）の文字列。アドーナーが無ければ「（なし）」。</summary>
-    private static string Message(TextBox box)
+    internal static string Message(TextBox box)
     {
         Adorner[]? adorners = AdornerLayer.GetAdornerLayer(box)?.GetAdorners(box);
         TextBlock? message = adorners?.SelectMany(a => Descendants(a)).OfType<TextBlock>().FirstOrDefault(t => t.Name == "errorMessage");
         return message?.Text ?? "（なし）";
     }
 
-    private static TextBox Box(FrameworkElement view) => (TextBox)view.FindName("nameBox");
+    internal static TextBox Box(FrameworkElement view) => (TextBox)view.FindName("nameBox");
 
-    private static Task Settle(FrameworkElement view) => Capture.SettleAsync(Window.GetWindow(view)!, 100);
+    internal static Task Settle(FrameworkElement view) => Capture.SettleAsync(Window.GetWindow(view)!, 100);
 }

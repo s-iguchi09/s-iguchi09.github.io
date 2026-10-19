@@ -45,7 +45,7 @@ internal sealed class BookACh04CanExecuteScene : IScene
             checks);
     }
 
-    private static async Task<string> TypeAsync(UserControl view, bool requery)
+    internal static async Task<string> TypeAsync(UserControl view, bool requery)
     {
         view.Width = 320;
         string result = "";

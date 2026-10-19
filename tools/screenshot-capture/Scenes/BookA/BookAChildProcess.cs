@@ -22,7 +22,7 @@ internal static class BookAChildProcess
     /// <summary>子を起動し、標準出力の「キー=値」と、起動から終了までの時間を返す。</summary>
     public static async Task<(Dictionary<string, string> Values, TimeSpan Elapsed, bool Exited)> RunAsync(string scenario, TimeSpan limit)
     {
-        var start = new ProcessStartInfo(Environment.ProcessPath!, $"{Flag} {scenario}")
+        var start = new ProcessStartInfo(CurrentExecutable, $"{Flag} {scenario}")
         {
             RedirectStandardOutput = true,
             UseShellExecute = false,
@@ -47,7 +47,8 @@ internal static class BookAChildProcess
         }
 
         TimeSpan elapsed = watch.Elapsed;
-        foreach (string line in (await output).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        // StringSplitOptions.TrimEntries は .NET Framework に無い（tools/book-a-net48 でも同じソースを使う）ので、Trim を自分で行う。
+        foreach (string line in (await output).Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0))
         {
             int equals = line.IndexOf('=');
             if (equals > 0)
@@ -58,6 +59,10 @@ internal static class BookAChildProcess
 
         return (values, elapsed, exited);
     }
+
+    /// <summary>自分自身の実行ファイル。Environment.ProcessPath は .NET Framework に無い（tools/book-a-net48 でも同じソースを使う）。</summary>
+    private static string CurrentExecutable =>
+        Process.GetCurrentProcess().MainModule?.FileName ?? throw new InvalidOperationException("実行ファイルのパスが取れない。");
 
     // ---------------------------------------------------------------- 子の側
 
