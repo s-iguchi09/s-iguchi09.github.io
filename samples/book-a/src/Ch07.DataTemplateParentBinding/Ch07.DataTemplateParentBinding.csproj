@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 7 章「DataTemplate の中の素のバインドは、親の DataContext に届かない（起点が行の項目になる）」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch07.DataTemplateParentBinding</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

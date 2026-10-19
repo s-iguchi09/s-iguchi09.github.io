@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 12 章「フォアグラウンドのスレッドが動いている間は、ウィンドウを閉じてもプロセスが終了しない」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch12.ProcessNotExiting</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

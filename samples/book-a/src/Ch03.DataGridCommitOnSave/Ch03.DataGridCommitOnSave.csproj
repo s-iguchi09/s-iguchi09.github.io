@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 3 章「DataGrid で編集中の値が保存ボタンで ViewModel に届かない」の再現版と修正版。 -->
+  <!-- 第 3 章「DataGrid のセルを編集中のまま、ツールバー・メニュー・Ctrl+S から保存すると、編集中の値が ViewModel に届かない」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch03.DataGridCommitOnSave</RootNamespace>
   </PropertyGroup>

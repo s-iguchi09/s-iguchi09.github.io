@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 10 章「Task.Run を待たずに投げた例外は、DispatcherUnhandledException に届かない」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch10.UnhandledExceptionRoutes</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

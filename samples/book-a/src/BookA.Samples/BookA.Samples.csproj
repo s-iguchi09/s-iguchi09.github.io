@@ -14,6 +14,12 @@
     <ProjectReference Include="..\Ch04.CanExecuteNotUpdating\Ch04.CanExecuteNotUpdating.csproj" />
     <ProjectReference Include="..\Ch05.ValidationNotDisplayed\Ch05.ValidationNotDisplayed.csproj" />
     <ProjectReference Include="..\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
+    <ProjectReference Include="..\Ch07.DataTemplateParentBinding\Ch07.DataTemplateParentBinding.csproj" />
+    <ProjectReference Include="..\Ch08.UserControlDependencyProperty\Ch08.UserControlDependencyProperty.csproj" />
+    <ProjectReference Include="..\Ch09.StaticResourceNotUpdating\Ch09.StaticResourceNotUpdating.csproj" />
+    <ProjectReference Include="..\Ch10.UnhandledExceptionRoutes\Ch10.UnhandledExceptionRoutes.csproj" />
+    <ProjectReference Include="..\Ch11.TaskResultDeadlock\Ch11.TaskResultDeadlock.csproj" />
+    <ProjectReference Include="..\Ch12.ProcessNotExiting\Ch12.ProcessNotExiting.csproj" />
   </ItemGroup>
 
 </Project>

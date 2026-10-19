@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 5 章「入力検証のエラーが表示されない」の再現版と修正版。 -->
+  <!-- 第 5 章「IDataErrorInfo を実装しても、バインドに ValidatesOnDataErrors=True が無いと入力検証のエラーが表示されない」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch05.ValidationNotDisplayed</RootNamespace>
   </PropertyGroup>

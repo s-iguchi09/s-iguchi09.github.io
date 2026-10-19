@@ -1,0 +1,11 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch09-staticresource-not-updating
+slug: "book-a-ch09-staticresource-not-updating"
+scene: "BookACh09StaticResourceScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 9 章の再現版（StaticResource で参照）で、ビューモデルのコマンドでテーマを切り替えてリソースのエントリを差し替えても、枠の背景は元の SkyBlue のままであること（記事の表の StaticResource の差し替え前と差し替え後の行と同じ振る舞い）"
+  - "付録サンプル第 9 章の修正版（DynamicResource で参照）で、同じ操作で枠の背景が差し替えた DarkSlateGray になること（記事の表の DynamicResource の差し替え前と差し替え後の行と同じ振る舞い）"
+images:

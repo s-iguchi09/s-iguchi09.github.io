@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 2 章「MaxLength などの入力制限が、コードやバインドから入る値に効かない」の再現版と修正版。 -->
+  <!-- 第 2 章「MaxLength などの入力制限は利用者の操作を制限するもので、コードやバインドから入る値の範囲は保証しない」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch02.InputLimits</RootNamespace>
   </PropertyGroup>

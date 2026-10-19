@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 1 章「Mode を書かないバインドが、ユーザー操作で黙って外れる」の再現版と修正版。 -->
+  <!-- 第 1 章「既定が片方向のプロパティに Mode を書かずにバインドすると、展開ボタンや GridSplitter の操作でバインドが黙って外れる」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch01.BindingModeOmitted</RootNamespace>
   </PropertyGroup>

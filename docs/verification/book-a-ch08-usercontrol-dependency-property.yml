@@ -1,0 +1,12 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch08-usercontrol-dependency-property
+slug: "book-a-ch08-usercontrol-dependency-property"
+scene: "BookACh08UserControlScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 8 章の再現版（カードの中で素の {Binding Title}）で、利用側から Title に HeaderText をバインドすると、カードの Title は from PageViewModel になるが中の見出しは空で、バインドのエラーが 1 件出ること（記事の 3 つ目の表の 1 行目と同じ）"
+  - "付録サンプル第 8 章の修正版（カードの直下の Grid の DataContext をカード自身に向ける）で、中の DataContext はカード、カード要素の DataContext は PageViewModel のままで、見出しに from PageViewModel が出て、エラーは 0 件であること（記事の 3 つ目の表の 4 行目と同じ）"
+  - "修正版で Title を既定で双方向に登録したカードの中の TextBox に xyz と入力すると、ビューモデルの HeaderText が xyz になり、エラーは 0 件であること（記事の 3 つ目の表の 6 行目と同じ）"
+images:

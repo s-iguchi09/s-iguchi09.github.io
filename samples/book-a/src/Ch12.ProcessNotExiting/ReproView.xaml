@@ -1,0 +1,16 @@
+<!--
+  再現版。「監視を始める」でフォアグラウンドのスレッドを起動する。ウィンドウを閉じても、スレッドが終わるまでプロセスは残る。
+-->
+<UserControl x:Class="Ch12.ProcessNotExiting.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch12.ProcessNotExiting"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ReproMonitorViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8" Orientation="Horizontal">
+    <Button x:Name="startButton" Content="監視を始める" Command="{Binding StartMonitoringCommand}" Padding="12,2" />
+    <TextBlock Text="{Binding Status}" Margin="8,0,0,0" VerticalAlignment="Center" />
+  </StackPanel>
+</UserControl>

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 4 章「RelayCommand の CanExecute がボタンの有効・無効に反映されない」の再現版と修正版。 -->
+  <!-- 第 4 章「CanExecuteChanged を発行しないコマンドでは、CanExecute の結果が変わってもボタンの有効・無効が更新されない」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch04.CanExecuteNotUpdating</RootNamespace>
   </PropertyGroup>
