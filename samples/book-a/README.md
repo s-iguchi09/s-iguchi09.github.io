@@ -21,24 +21,31 @@ dotnet run --project samples/book-a/src/BookA.Samples
 
 ## 構成
 
-| プロジェクト | 中身 |
-|---|---|
-| `src/BookA.Mvvm` | 全章が使う最小の MVVM の基盤（`ObservableObject`・`RelayCommand`）。外部のライブラリは使わない |
-| `src/Ch01.BindingModeOmitted` | 第 1 章: Mode を書かないバインドが、ユーザー操作で黙って外れる |
-| `src/BookA.Samples` | 起動用のアプリ |
+| プロジェクト | 中身 | 再現版と修正版の違い |
+|---|---|---|
+| `src/BookA.Mvvm` | 全章が使う最小の MVVM の基盤（`ObservableObject`・`RelayCommand`・`RelayCommand<T>`）。外部のライブラリは使わない | — |
+| `src/Ch01.BindingModeOmitted` | 第 1 章: Mode を書かないバインドが、ユーザー操作で黙って外れる | ビューの XAML（`Mode=TwoWay` の有無） |
+| `src/Ch02.InputLimits` | 第 2 章: MaxLength などの入力制限が、コードやバインドから入る値に効かない | ビューモデル（値の検証と丸めをビューモデルで行うか） |
+| `src/Ch03.DataGridCommitOnSave` | 第 3 章: DataGrid で編集中の値が保存ボタンで ViewModel に届かない | ビューの XAML（DataGrid に `PendingEdits.Host` を付けるか） |
+| `src/Ch04.CanExecuteNotUpdating` | 第 4 章: RelayCommand の CanExecute がボタンの有効・無効に反映されない | ビューモデル（`CanExecuteChanged` を発行するか） |
+| `src/Ch05.ValidationNotDisplayed` | 第 5 章: 入力検証のエラーが表示されない | ビューモデルとビュー（`INotifyDataErrorInfo` と ErrorTemplate） |
+| `src/Ch06.StyleTriggerLocalValue` | 第 6 章: Style の Trigger・DataTrigger が効かない | ビューの XAML（背景の既定値をローカル値と Setter のどちらに置くか） |
+| `src/BookA.Samples` | 起動用のアプリ | — |
 
 各章のプロジェクトは、ビューモデル（`*ViewModel.cs`）と、再現版・修正版のビュー（`ReproView.xaml`・`FixedView.xaml`）を持つ。
 ビューのコードビハインドには `InitializeComponent` しか書かない。
-再現版と修正版は同じビューモデルのクラスを使い（インスタンスは別）、違いはビューの XAML だけにしてある。
+修正がビューにある章では、再現版と修正版は同じビューモデルのクラスを使い（インスタンスは別）、違いはビューの XAML だけにしてある。
+修正がビューモデルにある章では、再現版と修正版でビューモデルのクラスが分かれ、ビューはほぼ同じにしてある。
+添付プロパティ（第 3 章の `PendingEdits`）は、画面の処理ではなく再利用する部品のコードとして章のプロジェクトに置く。
 
 ## 記事の実測と同じ動作であることの検証
 
-各章のサンプルは、記事の計測と同じ実際のマウスとキーボードの操作で動かし、記事の表と同じ結果になることを確かめている。
-検証は `tools/screenshot-capture/Scenes/BookA/` のシーンで、結果は `verification/` に書き出す。
-リポジトリのルートで次を実行する。
+各章のサンプルは、記事の計測と同じ入力の経路（実際のマウスとキーボード、または InputManager）で動かし、記事の表と同じ結果になることを確かめている。
+検証は `tools/screenshot-capture/Scenes/BookA/` のシーンで、結果は `verification/` に章ごとに書き出す。
+リポジトリのルートで次を実行する（章の slug を並べると、その章だけを検証する）。
 
 ```bash
-dotnet run --project tools/screenshot-capture -c Release -- book-a-ch01-binding-mode-omitted
+dotnet run --project tools/screenshot-capture -c Release -- book-a-ch01-binding-mode-omitted book-a-ch02-input-limits book-a-ch03-datagrid-commit-on-save book-a-ch04-canexecute-not-updating book-a-ch05-validation-not-displayed book-a-ch06-style-trigger-local-value
 ```
 
 実行中はウィンドウが前面に出て、マウスカーソルが動く。
