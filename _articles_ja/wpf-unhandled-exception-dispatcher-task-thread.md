@@ -28,14 +28,18 @@ WPF アプリケーションの未処理例外対策として、`App.xaml.cs` �
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（実測は .NET 10 のみ）
+- フレームワーク: .NET 6 以降 / WPF（実測は .NET 10 で、.NET Framework 4.8.1 は下記の追検証の範囲だけ）
 - 言語: C#（`async` / `await` を使う）
 - 対象機能: `Application.DispatcherUnhandledException`、`Dispatcher.UnhandledException`、`AppDomain.CurrentDomain.UnhandledException`、`TaskScheduler.UnobservedTaskException`
 - アーキテクチャ: MVVM・コードビハインドのいずれでも同じ（例外の届き先は例外を受け止める層で決まり、UI の組み立て方には依存しない）
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件をコマンドから再現した MVVM のサンプルで、表のうち `Task.Run(...)` を待たない行（GC なし）と、「`async void` の Click で `await` を `try` / `catch`」の行を確かめ、.NET 10 と同じ結果を得た。
+  「投げたスレッド」の列は比べていない。
+  表の他の行は .NET Framework では測っていない。
 - 計測方法: `Startup` で 3 つのハンドラを登録した検証用アプリを、例外の経路ごとに別プロセスとして起動し、各経路を 1 回ずつ実行した。例外を投げたスレッドの種類と呼ばれたハンドラをファイルに記録し、経路を始めてから 2 秒後に UI スレッドがまだ動いていれば「動き続ける」とした。Click は `ButtonAutomationPeer` の `Invoke` で非同期に発生させ、Click ハンドラが UI スレッドの `Dispatcher` の処理の中で実行されるようにしている。この計測は `tools/screenshot-capture` のシーンとして実装しており、表は実行のたびに測り直し、想定と異なる結果が出た場合は失敗するようにしている
 
-.NET Framework では検証していない。
+.NET Framework では、上記の追検証の範囲しか確かめていない。
 とくに待たれない `Task` の例外の扱いは、.NET Framework では構成ファイルの [`ThrowUnobservedTaskExceptions`](https://learn.microsoft.com/ja-jp/dotnet/framework/configure-apps/file-schema/runtime/throwunobservedtaskexceptions-element) 要素で変わるため、本記事の結果をそのまま当てはめない。
 
 ---

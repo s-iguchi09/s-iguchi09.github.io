@@ -28,6 +28,10 @@ image: /images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar
 - 対象: `DataGrid` の `DataGridTextColumn`、`ToolBar`・`Menu`・ツールバーの外の `Button`・`Window` の `KeyBinding` に置いた保存のコマンド、`DataGrid.CommitEdit`
 - アーキテクチャ: MVVM（ビューモデルは `INotifyPropertyChanged` を実装し、保存を `ICommand` で公開する）
 - 検証環境: .NET 10 / Windows 11（既定のテーマ。Fluent テーマは測っていない）
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、最初の表のうち、保存処理で何も呼ばない 4 行（`IsFocusScope="False"` の 2 行を除く）、`CommitEdit(DataGridEditingUnit.Row, true)` を呼ぶ 4 行、`Quantity` に `"abc"` を入れる 2 行、セルを編集していない行を確かめ、.NET 10 と同じ結果を得た。
+  比べたのは「ソースの値」「Refresh」「保存後の編集中: セル / 行」の列で、「DataGrid から出たフォーカスの移り先」「保存時のキーボードフォーカス」「戻り値」「EndEdit」の列は比べていない。
+  最初の表の他の行（引数の無い `CommitEdit()`、`IsFocusScope="False"`、`IEditableObject` の無いアイテム、`UpdateSourceTrigger=PropertyChanged`）と、フォーカス スコープの表、Esc の表は .NET Framework では測っていない。
 - 計測方法: セルの編集を `BeginEdit()` で始め、文字を WPF の `InputManager` を通して入力した。
   保存の操作は OS のマウスとキーボードの入力（`SendInput`）で、各行 1 回（入力を直して保存し直す行だけ 2 回）行った。
   保存のコマンドの実行時に、キーボードフォーカス・`CommitEdit` の戻り値・ソースの値・`IEditableObject.EndEdit` の回数・既定のビューの `ICollectionView.Refresh` の結果・セルと行の `IsEditing` を読んだ。

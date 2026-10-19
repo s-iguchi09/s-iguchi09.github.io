@@ -27,6 +27,10 @@ Every behavior and default value described here was measured on .NET 10 / Window
 ## Prerequisites / Environment
 
 - Framework: .NET 6 or later / WPF (behavior verified on .NET 10 / Windows 11)
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed the "`IDataErrorInfo` only" and "`INotifyDataErrorInfo` only" rows of the measured table in "The Three Stages, and Where It Stops" section and the `INotifyDataErrorInfo` implementation example, with the same results as on .NET 10.
+  In the implementation example, the required-field message appeared at startup, changed to the length message at 21 characters, and disappeared on a valid value.
+  The other rows of that measured table and the table in the Notes section were not measured on .NET Framework.
 - Language: C# 12 or later / XAML (samples use collection expressions; on targets whose default language version is C# 11 or earlier, such as `net6.0`, read `[]` as `new()` and the spread element `[.. messages]` as `new List<string>(messages)`)
 - Target features: `Binding` validation (`Validation` attached properties, `ValidationRule` subclasses, `IDataErrorInfo`, `INotifyDataErrorInfo`, `ValidatesOnExceptions`)
 - Architecture: MVVM, with the view model holding validation results

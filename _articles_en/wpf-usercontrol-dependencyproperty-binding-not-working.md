@@ -32,6 +32,9 @@ Every value reported here as measured was obtained by running the code in the en
 - Architecture: MVVM, with a view model assigned to the consuming window's `DataContext`
 - Other constraints: the `UserControl` is defined as a XAML file paired with code-behind
 - Verification environment: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed three rows of the per-condition table in the Notes section (the caller binds `Title` while the control's inner XAML uses `{Binding Title}`, the `DataContext` is passed to the inner `Grid`, and `BindsTwoWayByDefault`), with the same results as on .NET 10.
+  The remaining rows of that table and the other two measured tables were not measured on .NET Framework.
 
 The tables in this article were measured in the environment above.
 Each caption states how its table was measured.

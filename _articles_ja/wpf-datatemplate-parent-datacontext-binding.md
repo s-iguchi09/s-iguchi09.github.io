@@ -23,6 +23,9 @@ image: /images/articles/wpf-datatemplate-parent-datacontext-binding/datatemplate
 - 対象機能: `ItemsControl` 系コントロールの `ItemTemplate` / `DataTemplate`、および `ContextMenu` / `ToolTip`
 - アーキテクチャ: MVVM（コマンドや共通の表示情報を、各アイテムではなく親の ViewModel が持つ構成）
 - 挙動の確認環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件を再現した MVVM のサンプルで、「原因・背景」の節の表のうち `{Binding DeleteCommand}` と `RelativeSource AncestorType=ItemsControl` の 2 行と、実装例の図の単位の表示、削除ボタンを押した結果を確かめ、.NET 10 と同じ結果を得た。
+  `ElementName=Root` の行は .NET Framework では測っていない。
 
 ---
 

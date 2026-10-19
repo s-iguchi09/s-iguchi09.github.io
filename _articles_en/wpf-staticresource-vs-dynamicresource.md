@@ -21,6 +21,9 @@ This article explains the internal behavior of both mechanisms and provides crit
 - Framework / Language: .NET 6 or later / WPF / C#
 - Architecture: Applicable to both MVVM and code-behind patterns
 - Verification environment: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed the four before-and-after rows for `StaticResource` and `DynamicResource` in the measured table of the Cause / Background section (the sample uses different colors from the article), with the same results as on .NET 10.
+  The two rows that change `brush.Color` were not measured on .NET Framework.
 
 The figure and table in this article come from displaying a screen in the environment above that references the same resource through both `StaticResource` and `DynamicResource`, then swapping the resource at run time.
 The following points were confirmed in that environment:

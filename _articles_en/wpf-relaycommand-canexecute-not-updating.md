@@ -18,12 +18,16 @@ This article explains that the cause is a missing `ICommand.CanExecuteChanged` n
 
 ## Prerequisites / Environment
 
-- Framework: .NET 6 or later / WPF (the same applies to .NET Framework 4.5 and later)
+- Framework: .NET 6 or later / WPF
 - Language: C# / XAML (samples assume nullable reference types are enabled; on C# 7 or earlier, drop the nullable annotations)
 - Target feature: a custom `RelayCommand` implementing `System.Windows.Input.ICommand`, bound through `Button.Command`
 - Architecture: MVVM (command logic lives in the view model)
 - Namespaces: `System`, `System.Windows.Input`
 - Verification environment: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed the three rows of the table for an implementation with its own `CanExecuteChanged` event (`InvalidateRequerySuggested`, `RaiseCanExecuteChanged`, and a key typed into a `TextBox`), with the same results as on .NET 10.
+  The article changes the condition in code and then types one key into a neighboring `TextBox`; the sample types the condition (the name) itself.
+  The rows for the implementation that delegates to `RequerySuggested`, the own-event row that calls nothing, and the `Command = null` row were not measured on .NET Framework.
 
 The table in this article comes from displaying buttons in the environment above while toggling what `CanExecute` returns, and reading `Button.IsEnabled`.
 The following points were confirmed in that environment:

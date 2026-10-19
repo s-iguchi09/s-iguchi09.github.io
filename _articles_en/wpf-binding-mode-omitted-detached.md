@@ -29,6 +29,9 @@ It then shows the conditions under which the binding is removed, and how to writ
 - Scope: `{Binding}` without `Mode`, `TreeViewItem.IsExpanded`, `ColumnDefinition.Width` with `GridSplitter`, `Expander.IsExpanded`, and similar properties
 - Architecture: MVVM (the view model implements `INotifyPropertyChanged`)
 - Verification environment: .NET 10 / Windows 11 (default theme; the Fluent theme was not measured)
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed eight rows of the first table, with the same results as on .NET 10: six rows where `IsExpanded` is bound through `ItemContainerStyle` (with `Mode` omitted and with `Mode=TwoWay`) and the node is expanded with each of three inputs, and two rows that drag a `GridSplitter` to resize a bound `ColumnDefinition.Width`.
+  The other rows of the first table, the table of defaults, and the table of bindings inside templates were not measured on .NET Framework.
 - Measurement: Each condition was operated once with operating system mouse and keyboard input (`SendInput`).
   After each input, `BindingOperations.GetBindingExpressionBase`, `DependencyPropertyHelper.GetValueSource`, and the source value were read.
   A value was then assigned to the source (raising a change notification) and the displayed value was read, and the binding errors and warnings raised during the input were counted through `PresentationTraceSources.DataBindingSource`.

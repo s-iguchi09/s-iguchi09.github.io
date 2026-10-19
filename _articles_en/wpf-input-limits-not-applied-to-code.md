@@ -26,6 +26,10 @@ All values in the tables were measured by running the code on .NET 10 / Windows 
 
 - Framework: .NET 6 or later / WPF
 - Tested on: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed the `TextBox` `MaxLength` row of the per-path table (the "user input" and "value from a binding" columns), its two `Slider` rows (the "value from a binding" column), and the five rows of the view-model table, with the same results as on .NET 10.
+  In the "user input" column of the `Slider` rows in the view-model table, the sent values (200 and 55) were not compared.
+  The `CharacterCasing`, `PasswordBox`, `DatePicker`, and `TabItem` rows, and the table of `DisplayDateStart` / `DisplayDateEnd` bindings, were not measured on .NET Framework.
 - Language: C# 10 or later / XAML (the code assumes nullable reference types and implicit usings are enabled)
 - Controls: `TextBox` / `PasswordBox` / `DatePicker` / `Slider` / `TabControl` and `TabItem`
 - Architecture: MVVM, with input values bound two-way to a view model

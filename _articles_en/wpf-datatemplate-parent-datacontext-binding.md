@@ -23,6 +23,9 @@ This article explains the cause in terms of `DataContext` inheritance and compar
 - Target features: `ItemTemplate` / `DataTemplate` of `ItemsControl`-derived controls, plus `ContextMenu` and `ToolTip`
 - Architecture: MVVM, where commands and shared display values belong to the parent view model rather than to each item
 - Behavior verified on: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions confirmed the `{Binding DeleteCommand}` and `RelativeSource AncestorType=ItemsControl` rows of the table in the Cause / Background section, the unit text in the implementation figure, and the result of pressing the delete button, with the same results as on .NET 10.
+  The `ElementName=Root` row was not measured on .NET Framework.
 
 ---
 

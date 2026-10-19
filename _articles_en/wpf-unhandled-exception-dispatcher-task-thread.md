@@ -29,14 +29,18 @@ It then lays out where to subscribe and how to write the code so that every rout
 
 ## Prerequisites / Environment
 
-- Framework: .NET 6 or later / WPF (measured on .NET 10 only)
+- Framework: .NET 6 or later / WPF (measured on .NET 10; .NET Framework 4.8.1 only within the "Also tested on" item below)
 - Language: C# (uses `async` / `await`)
 - Features covered: `Application.DispatcherUnhandledException`, `Dispatcher.UnhandledException`, `AppDomain.CurrentDomain.UnhandledException`, `TaskScheduler.UnobservedTaskException`
 - Architecture: the same for MVVM and code-behind (the destination of an exception depends on the layer that catches it, not on how the UI is built)
 - Verified on: .NET 10 / Windows 11
+- Also tested on: .NET Framework 4.8.1 (4.8.9363) / Windows 11 (built for .NET Framework 4.8)
+  A separate MVVM sample that reproduces the article's conditions from a command confirmed the table's rows for `Task.Run(...)` not awaited (no GC) and for an `async void` Click with `try` / `catch` around the `await`, with the same results as on .NET 10.
+  The "throwing thread" column was not compared.
+  The other rows of the table were not measured on .NET Framework.
 - Measurement: a probe application that subscribes to all three handlers in `Startup` was started as a separate process for each route, and each route was run once. The kind of thread that threw and every handler call were written to a file, and the process was marked as "keeps running" if the UI thread was still alive two seconds after the route started. `Click` was raised asynchronously through `ButtonAutomationPeer`'s `Invoke`, so the `Click` handler runs inside the processing of the UI thread's `Dispatcher`. The measurement is implemented as a scene in `tools/screenshot-capture`; the table is re-measured on every run, and the run fails if any result differs from what the article states
 
-.NET Framework was not tested.
+On .NET Framework, only the "Also tested on" item above was run.
 In particular, the handling of exceptions from unawaited `Task` objects there depends on the [`ThrowUnobservedTaskExceptions`](https://learn.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/throwunobservedtaskexceptions-element) element in the configuration file, so the results here should not be applied to it as-is.
 
 ---

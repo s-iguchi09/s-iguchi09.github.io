@@ -27,14 +27,19 @@ Microsoft Learn は、同期的に待つことが避けられない場合の緩�
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降 / WPF（実測は .NET 10 のみ）
+- フレームワーク: .NET 6 以降 / WPF（実測は .NET 10 で、.NET Framework 4.8.1 は下記の追検証の範囲だけ）
 - 言語: C#（`async` / `await` を使う）
 - 対象機能: `Task.Result`、`Task.Wait`、`Task.GetAwaiter().GetResult()`、`Task.ConfigureAwait`、`Task.Run`、`Dispatcher.Invoke`、`DispatcherSynchronizationContext`
-- アーキテクチャ: コードビハインドの Click ハンドラで測った。MVVM の `ICommand` から呼ぶ場合も UI スレッドで待つ点は同じだが、計測はしていない
+- アーキテクチャ: 表はコードビハインドの Click ハンドラで測った。
+  MVVM の `ICommand` から呼ぶ場合は、下記の追検証のサンプルで `.Result` と `async void` の 2 通りだけを、.NET 10 と .NET Framework 4.8.1 の両方で測った。
 - 検証環境: .NET 10 / Windows 11
+- 追検証: .NET Framework 4.8.1（4.8.9363）/ Windows 11（.NET Framework 4.8 向けのビルド）
+  記事の条件をコマンドから再現した MVVM のサンプルで、表の `LoadAsync().Result` の行と、`async void` の Click で `await LoadAsync()` の行を確かめ、.NET 10 と同じ結果を得た。
+  「内側の await の後」の列と、積んだ処理が走るまでの時間は比べていない。
+  表の他の行は .NET Framework では測っていない。
 - 計測方法: 待ち方ごとに検証用の WPF アプリケーションを別プロセスで起動し、ウィンドウを表示した後に `ButtonAutomationPeer` の `Invoke` で Click を発生させた。Click ハンドラは最初に UI スレッドへ処理を 2 つ積み（`Dispatcher.BeginInvoke`。優先度は `Normal` と、描画と同じ優先度の `Render`）、そのうえで非同期メソッドを待つ。監視用のスレッドが 2.5 秒後に Click ハンドラが戻っていなければ「止まったまま」とし、その時点の `Task.Delay` と積んだ処理の状態を記録した。固まったプロセスは外から終了させている。この計測は `tools/screenshot-capture` のシーンとして実装しており、表は実行のたびに測り直し、想定と異なる結果が出た場合は失敗するようにしている
 
-.NET Framework と、WPF 以外のアプリケーションモデルでは検証していない。
+.NET Framework では上記の追検証の範囲しか確かめておらず、WPF 以外のアプリケーションモデルでは検証していない。
 
 ---
 
