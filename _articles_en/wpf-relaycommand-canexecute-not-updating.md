@@ -204,6 +204,7 @@ public class SaveViewModel
 
 With this approach, only `SaveCommand` is re-evaluated, and the timing is explicit.
 The `RelayCommand` in `CommunityToolkit.Mvvm` uses this approach, exposing an equivalent trigger through the `NotifyCanExecuteChanged()` method and the `[NotifyCanExecuteChangedFor]` attribute.
+The Prism `DelegateCommand` likewise keeps its own event, so `CommandManager.InvalidateRequerySuggested()` has no effect on commands from either library ([Why InvalidateRequerySuggested Does Not Update CommunityToolkit.Mvvm and Prism Commands in WPF](/articles/wpf-mvvm-library-command-requery/)).
 
 ---
 

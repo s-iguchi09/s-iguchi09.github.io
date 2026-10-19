@@ -203,6 +203,7 @@ public class SaveViewModel
 
 この方式では、再評価されるのは `SaveCommand` だけであり、発火のタイミングも明確である。
 `CommunityToolkit.Mvvm` の `RelayCommand` はこの方式を採用しており、`NotifyCanExecuteChanged()` メソッドや `[NotifyCanExecuteChangedFor]` 属性で同等の発火を行う。
+Prism の `DelegateCommand` も同じく自前のイベントを持つため、両ライブラリのコマンドには `CommandManager.InvalidateRequerySuggested()` が効かない（[WPF で CommunityToolkit.Mvvm と Prism のコマンドに InvalidateRequerySuggested が効かない理由](/ja/articles/wpf-mvvm-library-command-requery/)）。
 
 ---
 

@@ -1,0 +1,23 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-mvvm-library-command-requery
+slug: "wpf-mvvm-library-command-requery"
+scene: "MvvmLibraryCommandRequeryScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "CommunityToolkit.Mvvm 8.4.0 の RelayCommand は、CanExecute が依存するプロパティを SetProperty で変えただけでは、名前をキーで入力しても、CommandManager.InvalidateRequerySuggested を呼んでも、フォーカスを別の TextBox へ移しても、ボタンの IsEnabled が False のままであること"
+  - "Prism.Core 8.1.97 の DelegateCommand も、SetProperty だけでは同じ 3 つの操作のどれでも IsEnabled が False のままであること"
+  - "Toolkit の setter で NotifyCanExecuteChanged を呼ぶ書き方と [NotifyCanExecuteChangedFor] を付けた書き方、Prism の setter で RaiseCanExecuteChanged を呼ぶ書き方と ObservesProperty を付けた書き方は、名前を入力した時点で IsEnabled が True になること"
+  - "CanExecuteChanged を CommandManager.RequerySuggested へ転送した自作のコマンドは、何も呼ばなくても名前をキーで入力した時点で IsEnabled が True になること（対照）"
+  - "同じ自作のコマンドで、名前をキー入力ではなくビューモデルのプロパティへの代入で変えると IsEnabled は False のままで、InvalidateRequerySuggested を呼んだ後に True になること（InvalidateRequerySuggested が届く対照）"
+  - "CommunityToolkit.Mvvm と Prism.Core の、実行時に読み込まれたアセンブリが PresentationCore・PresentationFramework・WindowsBase のどれも参照していないこと（CommandManager は PresentationCore にある）"
+  - "図は、Toolkit の RelayCommand と Prism の DelegateCommand（どちらも SetProperty だけ）と、転送した自作のコマンドの 3 つに同じ名前をキーで入力し、InvalidateRequerySuggested を呼び、キャレットを写さないためにキーボードフォーカスを外した後に撮っていること"
+images:
+  - "images/articles/wpf-mvvm-library-command-requery/library-command-requery-matrix.svg"
+  - "images/articles/wpf-mvvm-library-command-requery/library-command-references.svg"
+tables:
+  - "_includes/tables/articles/wpf-mvvm-library-command-requery/library-command-requery-matrix.en.md"
+  - "_includes/tables/articles/wpf-mvvm-library-command-requery/library-command-requery-matrix.ja.md"
+  - "_includes/tables/articles/wpf-mvvm-library-command-requery/library-command-references.en.md"
+  - "_includes/tables/articles/wpf-mvvm-library-command-requery/library-command-references.ja.md"
