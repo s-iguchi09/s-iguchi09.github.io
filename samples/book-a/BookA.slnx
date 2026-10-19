@@ -11,5 +11,8 @@
     <Project Path="src/Ch07.DataTemplateParentBinding/Ch07.DataTemplateParentBinding.csproj" />
     <Project Path="src/Ch08.UserControlDependencyProperty/Ch08.UserControlDependencyProperty.csproj" />
     <Project Path="src/Ch09.StaticResourceNotUpdating/Ch09.StaticResourceNotUpdating.csproj" />
+    <Project Path="src/Ch10.UnhandledExceptionRoutes/Ch10.UnhandledExceptionRoutes.csproj" />
+    <Project Path="src/Ch11.TaskResultDeadlock/Ch11.TaskResultDeadlock.csproj" />
+    <Project Path="src/Ch12.ProcessNotExiting/Ch12.ProcessNotExiting.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,16 @@
+<!--
+  再現版。「取り込む」を押すと取り込みは失敗するが、エラーはどこにも出ない（待たない Task の中に閉じ込められる）。
+-->
+<UserControl x:Class="Ch10.UnhandledExceptionRoutes.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch10.UnhandledExceptionRoutes"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ReproImportViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8">
+    <Button x:Name="importButton" Content="取り込む" Command="{Binding StartImportCommand}" Padding="12,2" HorizontalAlignment="Left" />
+    <TextBlock x:Name="errorText" Text="{Binding ErrorMessage}" Foreground="#D13438" Margin="0,8,0,0" />
+  </StackPanel>
+</UserControl>

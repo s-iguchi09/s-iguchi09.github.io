@@ -115,11 +115,20 @@ internal static class Program
         new BookACh07DataTemplateParentScene(),
         new BookACh08UserControlScene(),
         new BookACh09StaticResourceScene(),
+        new BookACh11TaskResultScene(),
+        new BookACh12ProcessNotExitingScene(),
+        new BookACh10UnhandledExceptionScene(),
     ];
 
     [STAThread]
     private static int Main(string[] args)
     {
+        // 付録サンプルの検証で、固まる・終わらない挙動を子プロセスで測るときの入口（Scenes/BookA/BookAChildProcess.cs）。
+        if (args.Length == 2 && args[0] == BookAChildProcess.Flag)
+        {
+            return BookAChildProcess.Run(args[1]);
+        }
+
         int exitCode = 0;
 
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };

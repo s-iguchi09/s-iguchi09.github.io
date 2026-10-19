@@ -1,0 +1,11 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch12-process-not-exiting
+slug: "book-a-ch12-process-not-exiting"
+scene: "BookACh12ProcessNotExitingScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 12 章の再現版（監視のスレッドを new Thread の既定のまま起動）で、起動から 2 秒後にウィンドウを閉じると Application.Exit が発生して Run が戻るが、プロセスは 6 秒のスリープが尽きるまで残ること（記事の表の new Thread(...) の行と同じ）"
+  - "付録サンプル第 12 章の修正版（IsBackground = true）で、Application.Exit が発生して Run が戻り、プロセスはウィンドウを閉じた直後に終わること（記事の表の + IsBackground = true の行と同じ）"
+images:

@@ -1,0 +1,16 @@
+<!--
+  再現版。「読み込む」を押すと、ビューモデルのコマンドが LoadAsync().Result で待ち、画面が固まったまま戻らない。
+-->
+<UserControl x:Class="Ch11.TaskResultDeadlock.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch11.TaskResultDeadlock"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ReproLoadViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8" Orientation="Horizontal">
+    <Button x:Name="loadButton" Content="読み込む" Command="{Binding LoadCommand}" Padding="12,2" />
+    <TextBlock Text="{Binding Status, StringFormat='結果: {0}'}" Margin="8,0,0,0" VerticalAlignment="Center" />
+  </StackPanel>
+</UserControl>
