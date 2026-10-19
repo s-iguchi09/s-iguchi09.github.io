@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch01-binding-mode-omitted
+slug: "book-a-ch01-binding-mode-omitted"
+scene: "BookACh01BindingModeOmittedScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 1 章の再現版（Setter と ColumnDefinition に Mode を書かない）で、実際のマウスで展開ボタンをクリックすると、記事の表の 1 行目と同じく表示 True・ビューモデル False・バインドが外れて Local になり、ビューモデルの「すべて閉じる」の後も表示は True のままであること"
+  - "同じ再現版で、実際の → キーと見出しのダブルクリックでは、記事の表の 2・3 行目と同じくバインドが残って Style・式・現在値になり、ビューモデルは False のまま、「すべて閉じる」で表示が False に戻ること"
+  - "付録サンプル第 1 章の修正版（Mode=TwoWay）で、展開ボタン・→ キー・見出しのダブルクリックのどれでも、記事の表の 6〜8 行目と同じくビューモデルが True になり、バインドが残って Style・式になり、「すべて閉じる」で表示が False になること"
+  - "再現版で GridSplitter を 60 DIP ドラッグすると、記事の表の 15 行目と同じく表示 160・ビューモデル 100・バインドが外れて Local になり、「幅を戻す」の後も表示は 160 のままで、修正版では 16 行目と同じくビューモデルが 160 になって「幅を戻す」で 100 に戻ること"
+  - "上の操作の間に、バインドのエラーと警告が 1 件も出ないこと"
+images:

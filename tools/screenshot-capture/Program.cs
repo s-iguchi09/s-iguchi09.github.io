@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using ScreenshotCapture.Scenes;
+using ScreenshotCapture.Scenes.BookA;
 
 namespace ScreenshotCapture;
 
@@ -103,6 +104,9 @@ internal static class Program
         new ImageDemoScene(),
         new InkCanvasDemoScene(),
         new ListViewDemoScene(),
+
+        // 本の付録サンプル（samples/book-a/）が、記事の実測と同じ結果になることの検証。
+        new BookACh01BindingModeOmittedScene(),
     ];
 
     [STAThread]

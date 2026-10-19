@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 1 章「Mode を書かないバインドが、ユーザー操作で黙って外れる」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch01.BindingModeOmitted</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

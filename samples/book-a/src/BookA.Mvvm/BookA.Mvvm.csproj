@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 全章が使う最小の MVVM の基盤。外部のライブラリには頼らない。 -->
+  <PropertyGroup>
+    <RootNamespace>BookA.Mvvm</RootNamespace>
+  </PropertyGroup>
+
+</Project>

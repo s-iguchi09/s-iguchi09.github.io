@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BookA.Mvvm/BookA.Mvvm.csproj" />
+    <Project Path="src/BookA.Samples/BookA.Samples.csproj" />
+    <Project Path="src/Ch01.BindingModeOmitted/Ch01.BindingModeOmitted.csproj" />
+  </Folder>
+</Solution>

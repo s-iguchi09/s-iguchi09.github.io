@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- 付録サンプルの全プロジェクトに共通する設定。記事の検証環境（.NET 10 / Windows 11）に合わせる。 -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+</Project>
