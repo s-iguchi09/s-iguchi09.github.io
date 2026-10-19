@@ -1,0 +1,11 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch04-canexecute-not-updating
+slug: "book-a-ch04-canexecute-not-updating"
+scene: "BookACh04CanExecuteScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 4 章の再現版（CanExecuteChanged を宣言しただけで発行しないコマンド）で、名前の TextBox にキーで入力して CanExecute が true になっても、保存ボタンの IsEnabled は False のままで、CommandManager.InvalidateRequerySuggested を呼んでも False のままであること（記事の表の own event / key typed と own event / InvalidateRequerySuggested の行と同じ）"
+  - "付録サンプル第 4 章の修正版（名前の setter で RaiseCanExecuteChanged を呼ぶ）で、同じ入力をすると保存ボタンの IsEnabled が False から True になること（記事の表の own event / RaiseCanExecuteChanged の行と同じ）"
+images:

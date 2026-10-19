@@ -109,6 +109,7 @@ internal static class Program
         new BookACh01BindingModeOmittedScene(),
         new BookACh02InputLimitsScene(),
         new BookACh03DataGridCommitOnSaveScene(),
+        new BookACh04CanExecuteScene(),
     ];
 
     [STAThread]

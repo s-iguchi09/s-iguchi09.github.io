@@ -20,4 +20,8 @@ public sealed class MainViewModel
     public Ch03.DataGridCommitOnSave.ItemsViewModel Ch03Repro { get; } = new();
 
     public Ch03.DataGridCommitOnSave.ItemsViewModel Ch03Fixed { get; } = new();
+
+    public Ch04.CanExecuteNotUpdating.ReproSaveViewModel Ch04Repro { get; } = new();
+
+    public Ch04.CanExecuteNotUpdating.SaveViewModel Ch04Fixed { get; } = new();
 }

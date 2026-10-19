@@ -1,0 +1,21 @@
+<!--
+  再現版。名前を入力しても保存ボタンが無効のまま。ビューモデルのコマンドが CanExecuteChanged を発行しないため、
+  ボタンは最初に問い合わせた CanExecute の結果（false）のまま、問い合わせ直さない。
+-->
+<UserControl x:Class="Ch04.CanExecuteNotUpdating.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch04.CanExecuteNotUpdating"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ReproSaveViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8">
+    <TextBlock Text="名前（入力すると保存できる）" />
+    <StackPanel Orientation="Horizontal">
+      <TextBox x:Name="nameBox" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+      <Button x:Name="saveButton" Content="保存" Command="{Binding SaveCommand}" Padding="12,2" Margin="8,0,0,0" />
+    </StackPanel>
+    <TextBlock Text="{Binding LastSaved}" Margin="0,8,0,0" />
+  </StackPanel>
+</UserControl>

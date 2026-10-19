@@ -5,5 +5,6 @@
     <Project Path="src/Ch01.BindingModeOmitted/Ch01.BindingModeOmitted.csproj" />
     <Project Path="src/Ch02.InputLimits/Ch02.InputLimits.csproj" />
     <Project Path="src/Ch03.DataGridCommitOnSave/Ch03.DataGridCommitOnSave.csproj" />
+    <Project Path="src/Ch04.CanExecuteNotUpdating/Ch04.CanExecuteNotUpdating.csproj" />
   </Folder>
 </Solution>

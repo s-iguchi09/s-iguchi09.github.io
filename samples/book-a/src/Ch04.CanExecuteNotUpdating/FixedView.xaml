@@ -1,0 +1,21 @@
+<!--
+  修正版。ビューは再現版と同じで、違いはビューモデル（名前が変わったら RaiseCanExecuteChanged を呼ぶ）だけである。
+  名前を入力すると保存ボタンが有効になり、空にすると無効に戻る。
+-->
+<UserControl x:Class="Ch04.CanExecuteNotUpdating.FixedView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch04.CanExecuteNotUpdating"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:SaveViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8">
+    <TextBlock Text="名前（入力すると保存できる）" />
+    <StackPanel Orientation="Horizontal">
+      <TextBox x:Name="nameBox" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+      <Button x:Name="saveButton" Content="保存" Command="{Binding SaveCommand}" Padding="12,2" Margin="8,0,0,0" />
+    </StackPanel>
+    <TextBlock Text="{Binding LastSaved}" Margin="0,8,0,0" />
+  </StackPanel>
+</UserControl>
