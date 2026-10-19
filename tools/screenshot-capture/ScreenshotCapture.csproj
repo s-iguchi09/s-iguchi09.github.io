@@ -21,4 +21,9 @@
     <Using Include="System.IO" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 本の付録サンプル（samples/book-a）を、記事の計測と同じ実入力で検証する（Scenes/BookA/）。 -->
+    <ProjectReference Include="..\..\samples\book-a\src\Ch01.BindingModeOmitted\Ch01.BindingModeOmitted.csproj" />
+  </ItemGroup>
+
 </Project>

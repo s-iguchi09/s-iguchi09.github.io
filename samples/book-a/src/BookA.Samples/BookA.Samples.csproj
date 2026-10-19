@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 各章の再現版と修正版を並べて開く起動用のアプリ。 -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>BookA.Samples</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+    <ProjectReference Include="..\Ch01.BindingModeOmitted\Ch01.BindingModeOmitted.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -19,9 +19,11 @@ include:
 # CLAUDE.md / AGENTS.md も同様にエージェント向けの指示であり、公開する意味がない。
 # tools 配下は記事用スクリーンショットを生成する .NET プロジェクトであり、
 # サイトの公開物ではない。
+# samples 配下は本の付録サンプル（.NET のソリューション）で、同じくサイトの公開物ではない。
 exclude:
   - docs
   - tools
+  - samples
   - CLAUDE.md
   - AGENTS.md
 

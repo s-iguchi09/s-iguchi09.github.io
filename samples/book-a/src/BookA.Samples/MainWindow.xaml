@@ -1,0 +1,27 @@
+<Window x:Class="BookA.Samples.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:BookA.Samples"
+        xmlns:ch01="clr-namespace:Ch01.BindingModeOmitted;assembly=Ch01.BindingModeOmitted"
+        Title="エラーも出ずに壊れる WPF ― 付録サンプル" Width="760" Height="420">
+  <Window.DataContext>
+    <local:MainViewModel />
+  </Window.DataContext>
+
+  <TabControl Margin="8">
+    <TabItem Header="第 1 章 Mode を書かないバインド">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（Mode を書かない）">
+          <ch01:ReproView DataContext="{Binding Ch01Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（Mode=TwoWay）" Margin="8,0,0,0">
+          <ch01:FixedView DataContext="{Binding Ch01Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+  </TabControl>
+</Window>
