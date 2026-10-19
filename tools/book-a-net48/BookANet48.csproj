@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    本の付録サンプル（samples/book-a）を .NET Framework 4.8 で検証する。
+    samples/ の下の各プロジェクトが付録サンプルのソースと XAML をそのまま取り込んで 4.8 でビルドし、
+    ここに tools/screenshot-capture の BookA の検証シーンを取り込んで、.NET 10 と同じ手順・同じ期待値で動かす。
+    結果は samples/book-a/verification/net48/ に書き出す。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>BookANet48</AssemblyName>
+    <RootNamespace>ScreenshotCapture</RootNamespace>
+    <!-- samples/ の下は別プロジェクト（その obj の生成コードを取り込まない）。 -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);samples\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Reference Include="System.Drawing" />
+    <!-- MVVM ライブラリで書いた場合の検証（BookALibrariesScene）。tools/screenshot-capture と同じ版。 -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="samples\Ch01.BindingModeOmitted\Ch01.BindingModeOmitted.csproj" />
+    <ProjectReference Include="samples\Ch02.InputLimits\Ch02.InputLimits.csproj" />
+    <ProjectReference Include="samples\Ch03.DataGridCommitOnSave\Ch03.DataGridCommitOnSave.csproj" />
+    <ProjectReference Include="samples\Ch04.CanExecuteNotUpdating\Ch04.CanExecuteNotUpdating.csproj" />
+    <ProjectReference Include="samples\Ch05.ValidationNotDisplayed\Ch05.ValidationNotDisplayed.csproj" />
+    <ProjectReference Include="samples\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
+    <ProjectReference Include="samples\Ch07.DataTemplateParentBinding\Ch07.DataTemplateParentBinding.csproj" />
+    <ProjectReference Include="samples\Ch08.UserControlDependencyProperty\Ch08.UserControlDependencyProperty.csproj" />
+    <ProjectReference Include="samples\Ch09.StaticResourceNotUpdating\Ch09.StaticResourceNotUpdating.csproj" />
+    <ProjectReference Include="samples\Ch10.UnhandledExceptionRoutes\Ch10.UnhandledExceptionRoutes.csproj" />
+    <ProjectReference Include="samples\Ch11.TaskResultDeadlock\Ch11.TaskResultDeadlock.csproj" />
+    <ProjectReference Include="samples\Ch12.ProcessNotExiting\Ch12.ProcessNotExiting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- .NET 10 の検証と同じシーンと土台。 -->
+    <Compile Include="..\screenshot-capture\Scenes\BookA\*.cs" Link="Scenes\BookA\%(Filename)%(Extension)" />
+    <Compile Include="..\screenshot-capture\Scenes\DemoProbe.cs" Link="Scenes\DemoProbe.cs" />
+    <Compile Include="..\screenshot-capture\Scenes\WpfProbe.cs" Link="Scenes\WpfProbe.cs" />
+    <Compile Include="..\screenshot-capture\Scenes\RealMouse.cs" Link="Scenes\RealMouse.cs" />
+    <Compile Include="..\screenshot-capture\Scenes\RealKeyboard.cs" Link="Scenes\RealKeyboard.cs" />
+    <Compile Include="..\screenshot-capture\Capture.cs" Link="Capture.cs" />
+    <Compile Include="..\screenshot-capture\Loc.cs" Link="Loc.cs" />
+  </ItemGroup>
+
+</Project>

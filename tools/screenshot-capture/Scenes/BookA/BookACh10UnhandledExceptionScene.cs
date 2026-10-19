@@ -46,7 +46,7 @@ internal sealed class BookACh10UnhandledExceptionScene : IScene
             checks);
     }
 
-    private static async Task<string> RunAsync(UserControl view)
+    internal static async Task<string> RunAsync(UserControl view)
     {
         // 前の回で待たずに残した Task が、この回の計測中に回収されて UnobservedTaskException を出さないよう、
         // ハンドラーを付ける前に回収しきっておく（この回で作る Task には GC を呼ばない）。

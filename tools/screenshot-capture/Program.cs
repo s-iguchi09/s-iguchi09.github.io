@@ -118,6 +118,7 @@ internal static class Program
         new BookACh10UnhandledExceptionScene(),
         new BookACh11TaskResultScene(),
         new BookACh12ProcessNotExitingScene(),
+        new BookALibrariesScene(),
     ];
 
     [STAThread]

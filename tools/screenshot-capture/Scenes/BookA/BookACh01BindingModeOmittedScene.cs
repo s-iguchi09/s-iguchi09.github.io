@@ -190,17 +190,17 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
     };
 
     /// <summary>
-    /// 突き合わせの結果を <c>samples/book-a/verification/ch01.md</c> に書き出し、その内容を返す。
+    /// 突き合わせの結果を <c>samples/book-a/verification/ch01.md</c>（.NET Framework では <c>net48/ch01.md</c>）に書き出し、その内容を返す。
     /// </summary>
     private static string WriteReport(List<(Case Case, Outcome Actual)> results)
     {
         var builder = new System.Text.StringBuilder();
-        builder.AppendLine("<!-- tools/screenshot-capture が実行時に自動生成する。手で編集しない。 -->");
-        builder.AppendLine("<!-- 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch01-binding-mode-omitted -->");
+        builder.AppendLine($"<!-- {BookAReport.Tool} が実行時に自動生成する。手で編集しない。 -->");
+        builder.AppendLine($"<!-- 再生成: dotnet run --project {BookAReport.Tool} -c Release -- book-a-ch01-binding-mode-omitted -->");
         builder.AppendLine();
         builder.AppendLine("# 第 1 章 付録サンプルと記事の実測の突き合わせ");
         builder.AppendLine();
-        builder.AppendLine($"環境: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription} / {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
+        builder.AppendLine($"環境: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription} / {System.Runtime.InteropServices.RuntimeInformation.OSDescription.Trim()}");
         builder.AppendLine();
         builder.AppendLine("記事: [WPF で Mode を書かないバインドが、ユーザー操作で黙って外れる仕組み](https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/)。「記事の行」は記事の実測表の行番号。「コマンド後の表示」は、ビューモデルの「すべて閉じる」または「幅を戻す」を実行した後の表示で、記事の表の「ソースに代入した後の表示」に当たる。");
         builder.AppendLine();
@@ -213,20 +213,7 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
         }
 
         string text = builder.ToString();
-        string directory = Path.Combine(FindRepositoryRoot(), "samples", "book-a", "verification");
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "ch01.md"), text, new System.Text.UTF8Encoding(false));
+        File.WriteAllText(BookAReport.ReportPath("ch01.md"), text, new System.Text.UTF8Encoding(false));
         return text;
-    }
-
-    private static string FindRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "_config.yml")))
-        {
-            directory = directory.Parent;
-        }
-
-        return directory?.FullName ?? throw new InvalidOperationException("リポジトリルートが見つからない。");
     }
 }
