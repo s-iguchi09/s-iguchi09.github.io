@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 3 章「DataGrid で編集中の値が保存ボタンで ViewModel に届かない」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch03.DataGridCommitOnSave</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

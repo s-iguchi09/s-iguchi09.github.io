@@ -1,0 +1,14 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- book-a-ch03-datagrid-commit-on-save
+slug: "book-a-ch03-datagrid-commit-on-save"
+scene: "BookACh03DataGridCommitOnSaveScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "付録サンプル第 3 章のどの保存の操作でも、保存処理（SaveCommand）が読んだ 1 行目の値は、そのときのソースの値と同じであり、確定できた場合はエラー表示が出ず、Quantity の確定に失敗した場合は保存されずに「入力に誤りがある行は保存できない。」が出ること"
+  - "付録サンプル第 3 章の再現版で、1 行目の Name セルを編集中のまま実際のマウスで ToolBar の保存・Menu の保存をクリックし、実際のキーボードで Ctrl+S を押すと、ソースは入力前の \"alpha\" のままで、Refresh は InvalidOperationException、セルと行は編集中のままであること（記事の表の 1〜3 行目と同じ）"
+  - "同じ再現版で、ToolBar の外の保存ボタンをクリックすると、ソースが \"edited\" になり、Refresh が成功し、セルと行の編集が終わること（記事の表の 4 行目と同じ）"
+  - "付録サンプル第 3 章の修正版（DataGrid に PendingEdits.Host を付け、保存のコマンドで CommitEdit(DataGridEditingUnit.Row, true) を呼ぶ）で、ToolBar・Menu・Ctrl+S・ToolBar の外のボタンのどれで保存しても、ソースが \"edited\" になり、Refresh が成功し、セルと行の編集が終わること（記事の表の 9〜12 行目と同じ）"
+  - "修正版で、int の Quantity 列に \"abc\" を入力して ToolBar の保存をクリックすると確定できず、ソースは 1 のまま、Refresh は InvalidOperationException、セルと行は編集中のままで、5 に直してもう一度クリックするとソースが 5 になること。セルを編集していないときに保存しても、ソースは \"alpha\" のまま、Refresh が成功すること（記事の表の 16〜18 行目と同じ）"
+images:

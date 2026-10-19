@@ -107,6 +107,11 @@ internal static class Program
 
         // 本の付録サンプル（samples/book-a/）が、記事の実測と同じ結果になることの検証。
         new BookACh01BindingModeOmittedScene(),
+        new BookACh02InputLimitsScene(),
+        new BookACh03DataGridCommitOnSaveScene(),
+        new BookACh04CanExecuteScene(),
+        new BookACh05ValidationScene(),
+        new BookACh06StyleTriggerScene(),
     ];
 
     [STAThread]

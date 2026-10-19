@@ -24,6 +24,11 @@
   <ItemGroup>
     <!-- 本の付録サンプル（samples/book-a）を、記事の計測と同じ実入力で検証する（Scenes/BookA/）。 -->
     <ProjectReference Include="..\..\samples\book-a\src\Ch01.BindingModeOmitted\Ch01.BindingModeOmitted.csproj" />
+    <ProjectReference Include="..\..\samples\book-a\src\Ch02.InputLimits\Ch02.InputLimits.csproj" />
+    <ProjectReference Include="..\..\samples\book-a\src\Ch03.DataGridCommitOnSave\Ch03.DataGridCommitOnSave.csproj" />
+    <ProjectReference Include="..\..\samples\book-a\src\Ch04.CanExecuteNotUpdating\Ch04.CanExecuteNotUpdating.csproj" />
+    <ProjectReference Include="..\..\samples\book-a\src\Ch05.ValidationNotDisplayed\Ch05.ValidationNotDisplayed.csproj" />
+    <ProjectReference Include="..\..\samples\book-a\src\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
   </ItemGroup>
 
 </Project>

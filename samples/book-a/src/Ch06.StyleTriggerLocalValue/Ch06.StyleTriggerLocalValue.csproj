@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 6 章「Style の Trigger・DataTrigger が効かない（依存関係プロパティの値の優先順位）」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch06.StyleTriggerLocalValue</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -3,6 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:BookA.Samples"
         xmlns:ch01="clr-namespace:Ch01.BindingModeOmitted;assembly=Ch01.BindingModeOmitted"
+        xmlns:ch02="clr-namespace:Ch02.InputLimits;assembly=Ch02.InputLimits"
+        xmlns:ch03="clr-namespace:Ch03.DataGridCommitOnSave;assembly=Ch03.DataGridCommitOnSave"
+        xmlns:ch04="clr-namespace:Ch04.CanExecuteNotUpdating;assembly=Ch04.CanExecuteNotUpdating"
+        xmlns:ch05="clr-namespace:Ch05.ValidationNotDisplayed;assembly=Ch05.ValidationNotDisplayed"
+        xmlns:ch06="clr-namespace:Ch06.StyleTriggerLocalValue;assembly=Ch06.StyleTriggerLocalValue"
         Title="エラーも出ずに壊れる WPF ― 付録サンプル" Width="760" Height="420">
   <Window.DataContext>
     <local:MainViewModel />
@@ -20,6 +25,76 @@
         </GroupBox>
         <GroupBox Grid.Column="1" Header="修正版（Mode=TwoWay）" Margin="8,0,0,0">
           <ch01:FixedView DataContext="{Binding Ch01Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+    <TabItem Header="第 2 章 入力制限とコードからの値">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（制限はビューだけ）">
+          <ch02:ReproView DataContext="{Binding Ch02Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（ビューモデルで保証）" Margin="8,0,0,0">
+          <ch02:FixedView DataContext="{Binding Ch02Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+    <TabItem Header="第 3 章 DataGrid の保存">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（確定しない）">
+          <ch03:ReproView DataContext="{Binding Ch03Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（保存の中で行を確定）" Margin="8,0,0,0">
+          <ch03:FixedView DataContext="{Binding Ch03Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+    <TabItem Header="第 4 章 CanExecute が反映されない">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（通知しないコマンド）">
+          <ch04:ReproView DataContext="{Binding Ch04Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（RaiseCanExecuteChanged）" Margin="8,0,0,0">
+          <ch04:FixedView DataContext="{Binding Ch04Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+    <TabItem Header="第 5 章 検証のエラーが出ない">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（ValidatesOnDataErrors なし）">
+          <ch05:ReproView DataContext="{Binding Ch05Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（INotifyDataErrorInfo）" Margin="8,0,0,0">
+          <ch05:FixedView DataContext="{Binding Ch05Fixed}" />
+        </GroupBox>
+      </Grid>
+    </TabItem>
+    <TabItem Header="第 6 章 Trigger が効かない">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="再現版（ローカル値）">
+          <ch06:ReproView DataContext="{Binding Ch06Repro}" />
+        </GroupBox>
+        <GroupBox Grid.Column="1" Header="修正版（Setter の既定値）" Margin="8,0,0,0">
+          <ch06:FixedView DataContext="{Binding Ch06Fixed}" />
         </GroupBox>
       </Grid>
     </TabItem>

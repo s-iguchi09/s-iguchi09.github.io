@@ -1,0 +1,30 @@
+<!--
+  再現版。制限を MaxLength と Slider の設定だけに任せている。
+  これらは利用者の操作を制限するもので、プロパティの値は制限しない。
+  「上限を超えたデータを読み込む」を押すと、8 文字の顧客コードがそのまま表示され、音量のソースは 150 のまま残り、そのまま保存できる。
+-->
+<UserControl x:Class="Ch02.InputLimits.ReproView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Ch02.InputLimits"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             d:DataContext="{d:DesignInstance Type=local:ReproCustomerViewModel}"
+             mc:Ignorable="d">
+  <StackPanel Margin="8">
+    <TextBlock Text="顧客コード（5 文字まで）" />
+    <TextBox x:Name="codeBox" Text="{Binding Code, UpdateSourceTrigger=PropertyChanged}" MaxLength="5" Width="200" HorizontalAlignment="Left" />
+
+    <TextBlock Text="音量（0〜100、10 刻み）" Margin="0,8,0,0" />
+    <Slider x:Name="volumeSlider" Value="{Binding Volume, Mode=TwoWay}" Minimum="0" Maximum="100"
+            IsSnapToTickEnabled="True" TickFrequency="10" TickPlacement="BottomRight" Width="200" HorizontalAlignment="Left" />
+    <TextBlock Text="{Binding Volume, StringFormat='ビューモデルの音量: {0}'}" />
+
+    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+      <Button Content="上限を超えたデータを読み込む" Command="{Binding LoadOverLimitCommand}" Padding="8,2" />
+      <Button Content="刻みに合わないデータを読み込む" Command="{Binding LoadOffStepCommand}" Padding="8,2" Margin="8,0,0,0" />
+    </StackPanel>
+    <Button x:Name="saveButton" Content="保存" Command="{Binding SaveCommand}" Padding="8,2" Margin="0,8,0,0" HorizontalAlignment="Left" />
+    <TextBlock Text="{Binding LastSaved, StringFormat='保存した内容: {0}'}" TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

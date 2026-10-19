@@ -3,5 +3,10 @@
     <Project Path="src/BookA.Mvvm/BookA.Mvvm.csproj" />
     <Project Path="src/BookA.Samples/BookA.Samples.csproj" />
     <Project Path="src/Ch01.BindingModeOmitted/Ch01.BindingModeOmitted.csproj" />
+    <Project Path="src/Ch02.InputLimits/Ch02.InputLimits.csproj" />
+    <Project Path="src/Ch03.DataGridCommitOnSave/Ch03.DataGridCommitOnSave.csproj" />
+    <Project Path="src/Ch04.CanExecuteNotUpdating/Ch04.CanExecuteNotUpdating.csproj" />
+    <Project Path="src/Ch05.ValidationNotDisplayed/Ch05.ValidationNotDisplayed.csproj" />
+    <Project Path="src/Ch06.StyleTriggerLocalValue/Ch06.StyleTriggerLocalValue.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 第 5 章「入力検証のエラーが表示されない」の再現版と修正版。 -->
+  <PropertyGroup>
+    <RootNamespace>Ch05.ValidationNotDisplayed</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
+  </ItemGroup>
+
+</Project>

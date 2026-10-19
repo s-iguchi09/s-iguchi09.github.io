@@ -9,6 +9,11 @@
   <ItemGroup>
     <ProjectReference Include="..\BookA.Mvvm\BookA.Mvvm.csproj" />
     <ProjectReference Include="..\Ch01.BindingModeOmitted\Ch01.BindingModeOmitted.csproj" />
+    <ProjectReference Include="..\Ch02.InputLimits\Ch02.InputLimits.csproj" />
+    <ProjectReference Include="..\Ch03.DataGridCommitOnSave\Ch03.DataGridCommitOnSave.csproj" />
+    <ProjectReference Include="..\Ch04.CanExecuteNotUpdating\Ch04.CanExecuteNotUpdating.csproj" />
+    <ProjectReference Include="..\Ch05.ValidationNotDisplayed\Ch05.ValidationNotDisplayed.csproj" />
+    <ProjectReference Include="..\Ch06.StyleTriggerLocalValue\Ch06.StyleTriggerLocalValue.csproj" />
   </ItemGroup>
 
 </Project>

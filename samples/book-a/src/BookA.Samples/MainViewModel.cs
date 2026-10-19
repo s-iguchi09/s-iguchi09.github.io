@@ -1,4 +1,5 @@
 using Ch01.BindingModeOmitted;
+using Ch02.InputLimits;
 
 namespace BookA.Samples;
 
@@ -11,4 +12,24 @@ public sealed class MainViewModel
     public FolderBrowserViewModel Ch01Repro { get; } = new();
 
     public FolderBrowserViewModel Ch01Fixed { get; } = new();
+
+    public ReproCustomerViewModel Ch02Repro { get; } = new();
+
+    public CustomerViewModel Ch02Fixed { get; } = new();
+
+    public Ch03.DataGridCommitOnSave.ItemsViewModel Ch03Repro { get; } = new();
+
+    public Ch03.DataGridCommitOnSave.ItemsViewModel Ch03Fixed { get; } = new();
+
+    public Ch04.CanExecuteNotUpdating.ReproSaveViewModel Ch04Repro { get; } = new();
+
+    public Ch04.CanExecuteNotUpdating.SaveViewModel Ch04Fixed { get; } = new();
+
+    public Ch05.ValidationNotDisplayed.ReproAccountViewModel Ch05Repro { get; } = new();
+
+    public Ch05.ValidationNotDisplayed.AccountViewModel Ch05Fixed { get; } = new();
+
+    public Ch06.StyleTriggerLocalValue.StatusViewModel Ch06Repro { get; } = new();
+
+    public Ch06.StyleTriggerLocalValue.StatusViewModel Ch06Fixed { get; } = new();
 }
