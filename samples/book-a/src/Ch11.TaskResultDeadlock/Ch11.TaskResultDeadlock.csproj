@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 11 章「UI スレッドで Task.Result を待つと、画面が固まる」の再現版と修正版。 -->
+  <!-- 第 11 章「UI スレッドで未完了の Task の Result を待つと、その Task が await の後を UI スレッドで再開する場合に画面が固まる」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch11.TaskResultDeadlock</RootNamespace>
   </PropertyGroup>

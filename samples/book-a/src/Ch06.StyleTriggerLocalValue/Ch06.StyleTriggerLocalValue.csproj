@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- 第 6 章「ローカル値があると、Style の Trigger・DataTrigger が効かない」の再現版と修正版。 -->
+  <!-- 第 6 章「ローカル値は、同じプロパティに対する Style の Trigger・DataTrigger の Setter を上書きする」の再現版と修正版。 -->
   <PropertyGroup>
     <RootNamespace>Ch06.StyleTriggerLocalValue</RootNamespace>
   </PropertyGroup>

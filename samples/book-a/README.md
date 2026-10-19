@@ -24,18 +24,18 @@ dotnet run --project samples/book-a/src/BookA.Samples
 | プロジェクト | 中身 | 再現版と修正版の違い |
 |---|---|---|
 | `src/BookA.Mvvm` | 全章が使う最小の MVVM の基盤（`ObservableObject`・`RelayCommand`・`RelayCommand<T>`・`AsyncRelayCommand`）。外部のライブラリは使わない | — |
-| `src/Ch01.BindingModeOmitted` | 第 1 章: Mode を書かないバインドが、ユーザー操作で黙って外れる | ビューの XAML（`Mode=TwoWay` の有無） |
-| `src/Ch02.InputLimits` | 第 2 章: MaxLength などの入力制限が、コードやバインドから入る値に効かない | ビューモデル（値の検証と丸めをビューモデルで行うか） |
-| `src/Ch03.DataGridCommitOnSave` | 第 3 章: DataGrid のセルを編集中のまま保存すると、編集中の値が ViewModel に届かない | ビューの XAML（DataGrid に `PendingEdits.Host` を付けるか） |
-| `src/Ch04.CanExecuteNotUpdating` | 第 4 章: CanExecuteChanged を発行しないコマンドでは、CanExecute がボタンの有効・無効に反映されない | ビューモデル（`CanExecuteChanged` を発行するか） |
-| `src/Ch05.ValidationNotDisplayed` | 第 5 章: IDataErrorInfo を実装しただけでは、入力検証のエラーが表示されない | ビューモデルとビュー（`INotifyDataErrorInfo` と ErrorTemplate） |
-| `src/Ch06.StyleTriggerLocalValue` | 第 6 章: ローカル値があると、Style の Trigger・DataTrigger が効かない | ビューの XAML（背景の既定値をローカル値と Setter のどちらに置くか） |
+| `src/Ch01.BindingModeOmitted` | 第 1 章: 既定が片方向のプロパティに Mode を書かずにバインドすると、展開ボタンや GridSplitter の操作でバインドが黙って外れる | ビューの XAML（`Mode=TwoWay` の有無） |
+| `src/Ch02.InputLimits` | 第 2 章: MaxLength などの入力制限は利用者の操作を制限するもので、コードやバインドから入る値の範囲は保証しない | ビューモデル（値の検証と丸めをビューモデルで行うか） |
+| `src/Ch03.DataGridCommitOnSave` | 第 3 章: DataGrid のセルを編集中のまま、ツールバー・メニュー・Ctrl+S から保存すると、編集中の値が ViewModel に届かない | ビューの XAML（DataGrid に `PendingEdits.Host` を付けるか） |
+| `src/Ch04.CanExecuteNotUpdating` | 第 4 章: CanExecuteChanged を発行しないコマンドでは、CanExecute の結果が変わってもボタンの有効・無効が更新されない | ビューモデル（`CanExecuteChanged` を発行するか） |
+| `src/Ch05.ValidationNotDisplayed` | 第 5 章: IDataErrorInfo を実装しても、バインドに ValidatesOnDataErrors=True が無いと入力検証のエラーが表示されない | ビューモデルとビュー（`INotifyDataErrorInfo` と ErrorTemplate） |
+| `src/Ch06.StyleTriggerLocalValue` | 第 6 章: ローカル値は、同じプロパティに対する Style の Trigger・DataTrigger の Setter を上書きする | ビューの XAML（背景の既定値をローカル値と Setter のどちらに置くか） |
 | `src/Ch07.DataTemplateParentBinding` | 第 7 章: DataTemplate の中の素のバインドは、親の DataContext に届かない（起点が行の項目になる） | ビューの XAML（テンプレートの中で RelativeSource を使うか） |
 | `src/Ch08.UserControlDependencyProperty` | 第 8 章: UserControl の中の素のバインドは、自身の依存関係プロパティに届かない（起点が利用側の DataContext になる） | カード（UserControl）の XAML（中の Grid に DataContext を委譲するか） |
 | `src/Ch09.StaticResourceNotUpdating` | 第 9 章: StaticResource で参照したリソースを辞書で差し替えても、画面が更新されない | ビューの XAML（StaticResource と DynamicResource のどちらで参照するか） |
 | `src/Ch10.UnhandledExceptionRoutes` | 第 10 章: Task.Run を待たずに投げた例外は、DispatcherUnhandledException に届かない | ビューモデル（Task を待って try / catch で受けるか） |
-| `src/Ch11.TaskResultDeadlock` | 第 11 章: UI スレッドで Task.Result を待つと、画面が固まる | ビューモデル（Result で待つか、await で待つか） |
-| `src/Ch12.ProcessNotExiting` | 第 12 章: フォアグラウンドのスレッドが残ると、ウィンドウを閉じてもプロセスが終了しない | ビューモデル（監視のスレッドに IsBackground を立てるか） |
+| `src/Ch11.TaskResultDeadlock` | 第 11 章: UI スレッドで未完了の Task の Result を待つと、その Task が await の後を UI スレッドで再開する場合に画面が固まる | ビューモデル（Result で待つか、await で待つか） |
+| `src/Ch12.ProcessNotExiting` | 第 12 章: フォアグラウンドのスレッドが動いている間は、ウィンドウを閉じてもプロセスが終了しない | ビューモデル（監視のスレッドに IsBackground を立てるか） |
 | `src/BookA.Samples` | 起動用のアプリ | — |
 
 各章のプロジェクトは、ビューモデル（`*ViewModel.cs`）と、再現版・修正版のビュー（`ReproView.xaml`・`FixedView.xaml`）を持つ。
