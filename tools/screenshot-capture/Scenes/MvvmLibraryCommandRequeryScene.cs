@@ -47,7 +47,8 @@ internal sealed partial class MvvmLibraryCommandRequeryScene : IScene
 
     /// <summary>
     /// コマンドの型を含むアセンブリが、CommandManager を含む PresentationCore を参照しているかを読む。
-    /// 参照していなければ、そのコマンドは CommandManager.RequerySuggested を購読できない。
+    /// 参照していなければ、そのコマンドは CommandManager.RequerySuggested を静的なコードでは購読していない。
+    /// 実際に購読していないことは、SaveMatrixAsync の実測（InvalidateRequerySuggested の後も False）で確かめる。
     /// </summary>
     private static async Task SaveReferencesAsync(SceneContext context)
     {

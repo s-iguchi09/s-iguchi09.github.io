@@ -117,8 +117,9 @@ public event EventHandler? CanExecuteChanged
 ```
 
 The Toolkit and Prism.Core commands keep `CanExecuteChanged` as their own event and do not forward it to `RequerySuggested`.
-They cannot forward it at all, because neither library's assembly references `PresentationCore`, which contains `CommandManager`.
+Neither library's assembly statically references `PresentationCore`, which contains `CommandManager`, so neither has code that uses `CommandManager` directly.
 The table below shows the references read from the assemblies loaded at run time.
+The table shows only whether a static reference exists; that the commands do not subscribe was confirmed by the `IsEnabled` measurements that follow.
 
 {% include tables/articles/wpf-mvvm-library-command-requery/library-command-references.en.md %}
 
@@ -139,7 +140,8 @@ Neither `InvalidateRequerySuggested` nor moving focus changes it.
 The hand-written command used as a control does receive the `InvalidateRequerySuggested` notification.
 In the second row, where the name was assigned in code, the button stays `False` after the assignment and becomes `True` after `InvalidateRequerySuggested`.
 In the first row, where the name was typed, it becomes `True` as soon as the name is typed, without any call.
-WPF raises `RequerySuggested` in response to key input; [Fixing a RelayCommand Whose CanExecute Does Not Update the Button State in WPF](/articles/wpf-relaycommand-canexecute-not-updating/) measured the same result.
+On this screen, WPF raised `RequerySuggested` after the name was typed, and the forwarded button handler called `CanExecute` again.
+[Fixing a RelayCommand Whose CanExecute Does Not Update the Button State in WPF](/articles/wpf-relaycommand-canexecute-not-updating/) measured the same result with key input into a `TextBox`.
 
 Screens whose buttons stop working after moving from a hand-written command to the Toolkit or Prism are the ones that reflected `CanExecute` only through this input-driven requery.
 
@@ -147,7 +149,8 @@ Screens whose buttons stop working after moving from a hand-written command to t
 
 ## When the Button Does Update
 
-`InvalidateRequerySuggested` works only for commands that forward `CanExecuteChanged` subscriptions to `RequerySuggested` (the second row of the previous table).
+`InvalidateRequerySuggested` works for commands that subscribe to `RequerySuggested` and raise their own `CanExecuteChanged` in response.
+The hand-written command that forwards subscriptions to `RequerySuggested` (the second row of the previous table) is one of them, and so is the WPF `RoutedCommand`, which the [API reference](https://learn.microsoft.com/en-us/dotnet/api/system.windows.input.routedcommand.canexecutechanged) describes as raising `CanExecuteChanged` when it receives `RequerySuggested`.
 The Toolkit and Prism commands are not among them, so the command's own `CanExecuteChanged` has to be raised.
 As the previous table shows, each of the following four approaches made the button `True` as soon as the name was set.
 
@@ -249,7 +252,8 @@ No notification call is needed in the setter, so a setter that only calls `SetPr
 
 ## Summary
 
-The Toolkit `RelayCommand` and the Prism `DelegateCommand` do not forward `CanExecuteChanged` to `CommandManager.RequerySuggested`, and their assemblies do not reference WPF at all.
+The Toolkit `RelayCommand` and the Prism `DelegateCommand` keep `CanExecuteChanged` as their own event and were not notified by `CommandManager.RequerySuggested`.
+Neither library's assembly statically references any of the three WPF assemblies checked (`PresentationCore`, `PresentationFramework`, and `WindowsBase`).
 As a result, when the setter only calls `SetProperty`, neither calling `CommandManager.InvalidateRequerySuggested()` nor key input nor a focus change alters the button's enabled state.
 
 To update the button, the command's own `CanExecuteChanged` has to be raised.

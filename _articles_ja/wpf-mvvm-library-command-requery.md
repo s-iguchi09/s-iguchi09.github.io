@@ -117,9 +117,9 @@ public event EventHandler? CanExecuteChanged
 ```
 
 Toolkit と Prism.Core のコマンドは、`CanExecuteChanged` を自分のイベントとして持ち、`RequerySuggested` へは転送しない。
-そもそも転送できない。
-両ライブラリのアセンブリは、`CommandManager` を含む `PresentationCore` を参照していないためである。
+両ライブラリのアセンブリは、`CommandManager` を含む `PresentationCore` を静的には参照しておらず、`CommandManager` を直接使うコードを持たない。
 実行時に読み込まれたアセンブリの参照を読んだ結果が次の表である。
+この表は静的な参照の有無を示すだけで、購読していないことそのものは、続く `IsEnabled` の実測で確かめた。
 
 {% include tables/articles/wpf-mvvm-library-command-requery/library-command-references.ja.md %}
 
@@ -140,7 +140,8 @@ Toolkit と Prism.Core のコマンドは、`CanExecuteChanged` を自分のイ�
 対照の自作のコマンドは、`InvalidateRequerySuggested` の通知を受け取る。
 名前をコードで代入した 2 行目は、代入しただけでは `False` のままで、`InvalidateRequerySuggested` を呼んだ後に `True` になった。
 名前をキーで入力した 1 行目は、何も呼ばなくても入力した時点で `True` になる。
-WPF はキー入力を受けて `RequerySuggested` を発生させるためで、[WPF で RelayCommand の CanExecute がボタンの有効・無効に反映されない問題の解決方法](/ja/articles/wpf-relaycommand-canexecute-not-updating/)でも同じ結果を測っている。
+この画面では、名前をキーで入力した後に WPF が `RequerySuggested` を発生させ、転送されたボタンのハンドラーが `CanExecute` を呼び直した。
+[WPF で RelayCommand の CanExecute がボタンの有効・無効に反映されない問題の解決方法](/ja/articles/wpf-relaycommand-canexecute-not-updating/)でも、`TextBox` へのキー入力で同じ結果を測っている。
 
 自作のコマンドから Toolkit や Prism へ移してボタンが動かなくなるのは、この入力による再問い合わせだけで `CanExecute` を反映していた画面である。
 
@@ -148,7 +149,8 @@ WPF はキー入力を受けて `RequerySuggested` を発生させるためで�
 
 ## 効く条件
 
-`InvalidateRequerySuggested` が効くのは、`CanExecuteChanged` の登録を `RequerySuggested` へ転送するコマンドだけである（前節の表の 2 行目）。
+`InvalidateRequerySuggested` が効くのは、`RequerySuggested` を購読して自分の `CanExecuteChanged` を発生させるコマンドである。
+登録を `RequerySuggested` へ転送する自作のコマンド（前節の表の 2 行目）や、[公式のリファレンス](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.input.routedcommand.canexecutechanged)が `RequerySuggested` を受けて `CanExecuteChanged` を発生させると説明している WPF の `RoutedCommand` がこれに当たる。
 Toolkit と Prism のコマンドはこれに当たらないため、コマンド自身の `CanExecuteChanged` を発生させる。
 前節の表のとおり、次の 4 つの書き方は、いずれも名前を入れた時点で `True` になった。
 
@@ -250,7 +252,8 @@ setter に通知の呼び出しを書かなくてよいので、`SetProperty` �
 
 ## まとめ
 
-Toolkit の `RelayCommand` と Prism の `DelegateCommand` は、`CanExecuteChanged` を `CommandManager.RequerySuggested` に転送せず、そもそも WPF のアセンブリを参照していない。
+Toolkit の `RelayCommand` と Prism の `DelegateCommand` は、`CanExecuteChanged` を自分のイベントとして持ち、`CommandManager.RequerySuggested` からは通知されなかった。
+両ライブラリのアセンブリは、確かめた 3 つの WPF のアセンブリ（`PresentationCore`・`PresentationFramework`・`WindowsBase`）をどれも静的に参照していない。
 そのため setter が `SetProperty` だけなら、`CommandManager.InvalidateRequerySuggested()` を呼んでも、キー入力やフォーカスの移動があっても、ボタンの有効・無効は変わらない。
 
 ボタンを更新するには、そのコマンド自身の `CanExecuteChanged` を発生させる。
