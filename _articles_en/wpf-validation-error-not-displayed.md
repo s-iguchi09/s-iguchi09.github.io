@@ -292,7 +292,7 @@ public abstract class ValidatableBase : INotifyPropertyChanged, INotifyDataError
 Omitting that leaves the red border in place.
 The change notification for `HasErrors` supports binding the enabled state of a save button directly to that property.
 Driving `CanExecute` of an `ICommand` instead requires a separate trigger for re-evaluation, such as `CommandManager.InvalidateRequerySuggested`, because the notification alone does not re-query the command ([Fixing a RelayCommand Whose CanExecute Does Not Update the Button State in WPF](/articles/wpf-relaycommand-canexecute-not-updating/)).
-However, `InvalidateRequerySuggested` only reaches commands that subscribe to `CommandManager.RequerySuggested`; CommunityToolkit.Mvvm and Prism commands need their own `NotifyCanExecuteChanged()` or `RaiseCanExecuteChanged()` call instead ([Why InvalidateRequerySuggested Does Not Update CommunityToolkit.Mvvm and Prism Commands in WPF](/articles/wpf-mvvm-library-command-requery/)).
+However, `InvalidateRequerySuggested` only reaches commands that subscribe to `CommandManager.RequerySuggested`; CommunityToolkit.Mvvm and Prism commands instead need their own `NotifyCanExecuteChanged()` or `RaiseCanExecuteChanged()` call, either written by hand or made automatically through `[NotifyCanExecuteChangedFor]` (from the generated setter) or `ObservesProperty` (on the property's change notification) ([Why InvalidateRequerySuggested Does Not Update CommunityToolkit.Mvvm and Prism Commands in WPF](/articles/wpf-mvvm-library-command-requery/)).
 
 The property name passed to `SetErrors` must match the binding path exactly; the behavior on mismatch is covered in the notes.
 

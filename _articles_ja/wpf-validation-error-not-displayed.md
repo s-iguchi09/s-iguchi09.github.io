@@ -293,7 +293,7 @@ public abstract class ValidatableBase : INotifyPropertyChanged, INotifyDataError
 発生させないと赤枠が残り続ける。
 `HasErrors` の変更通知を併せて発生させているのは、保存ボタンの活性状態を `HasErrors` へバインドする構成を想定したものである。
 `ICommand` の `CanExecute` に連動させる場合は、通知だけでは再評価されないため `CommandManager.InvalidateRequerySuggested` などの再評価の契機が別途必要になる（[WPF で RelayCommand の CanExecute がボタンの有効・無効に反映されない問題の解決方法](/ja/articles/wpf-relaycommand-canexecute-not-updating/)）。
-ただし `InvalidateRequerySuggested` が届くのは `CommandManager.RequerySuggested` を購読するコマンドだけで、CommunityToolkit.Mvvm や Prism のコマンドでは、コマンド自身の `NotifyCanExecuteChanged()` / `RaiseCanExecuteChanged()` を呼ぶ（[WPF で CommunityToolkit.Mvvm と Prism のコマンドに InvalidateRequerySuggested が効かない理由](/ja/articles/wpf-mvvm-library-command-requery/)）。
+ただし `InvalidateRequerySuggested` が届くのは `CommandManager.RequerySuggested` を購読するコマンドだけで、CommunityToolkit.Mvvm や Prism のコマンドでは、コマンド自身の `NotifyCanExecuteChanged()` / `RaiseCanExecuteChanged()` を呼ぶか、それを自動で呼ばせる `[NotifyCanExecuteChangedFor]`（生成された setter から呼ぶ）/ `ObservesProperty`（プロパティの変更通知を受けて呼ぶ）を使う（[WPF で CommunityToolkit.Mvvm と Prism のコマンドに InvalidateRequerySuggested が効かない理由](/ja/articles/wpf-mvvm-library-command-requery/)）。
 
 `SetErrors` に渡すプロパティ名は、バインディングのパスと完全に一致させる。
 不一致の場合の挙動は「注意点」で扱う。
