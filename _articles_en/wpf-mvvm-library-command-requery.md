@@ -96,7 +96,7 @@ CommandManager.InvalidateRequerySuggested();
 This advice does not work for the Toolkit `RelayCommand` or the Prism `DelegateCommand`.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-mvvm-library-command-requery/library-command-requery.png" alt="Three rows, each with a text box, a button, and a second text box. For the Toolkit RelayCommand and the Prism DelegateCommand, the button stays disabled after a name is typed and InvalidateRequerySuggested is called. Only the hand-written command that forwards CanExecuteChanged to CommandManager.RequerySuggested is enabled." width="0" height="0" loading="lazy">
+  <img src="/images/articles/wpf-mvvm-library-command-requery/library-command-requery.png" alt="Three rows, each with a text box, a button, and a second text box. For the Toolkit RelayCommand and the Prism DelegateCommand, the button stays disabled after a name is typed and InvalidateRequerySuggested is called. Only the hand-written command that forwards CanExecuteChanged to CommandManager.RequerySuggested is enabled." width="513" height="267" loading="lazy">
   <figcaption>On .NET 10 / Windows 11 with CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97, the same name (taro) was typed into three view models through WPF input processing (<code>InputManager</code>), and <code>CommandManager.InvalidateRequerySuggested()</code> was called. Keyboard focus was then cleared so the caret would not appear in the capture. The top two view models only call <code>SetProperty</code> in the setter; the bottom one is a hand-written command that forwards <code>CanExecuteChanged</code> to <code>CommandManager.RequerySuggested</code>.</figcaption>
 </figure>
 

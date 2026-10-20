@@ -96,7 +96,7 @@ CommandManager.InvalidateRequerySuggested();
 Toolkit の `RelayCommand` と Prism の `DelegateCommand` には、この対処は効かない。
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-mvvm-library-command-requery/library-command-requery.png" alt="入力欄・ボタン・入力欄を 1 組とした 3 組の画面。Toolkit の RelayCommand と Prism の DelegateCommand は、名前を入力して InvalidateRequerySuggested を呼んだ後もボタンが無効のまま。CanExecuteChanged を CommandManager.RequerySuggested へ転送した自作のコマンドだけが有効になっている。" width="0" height="0" loading="lazy">
+  <img src="/images/articles/wpf-mvvm-library-command-requery/library-command-requery.png" alt="入力欄・ボタン・入力欄を 1 組とした 3 組の画面。Toolkit の RelayCommand と Prism の DelegateCommand は、名前を入力して InvalidateRequerySuggested を呼んだ後もボタンが無効のまま。CanExecuteChanged を CommandManager.RequerySuggested へ転送した自作のコマンドだけが有効になっている。" width="513" height="267" loading="lazy">
   <figcaption>.NET 10 / Windows 11、CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97 で、3 つのビューモデルに同じ名前（taro）を WPF の入力処理（<code>InputManager</code>）を通して入力し、<code>CommandManager.InvalidateRequerySuggested()</code> を呼んだ後の画面。撮影の前に、キャレットを写さないためキーボードフォーカスを外している。上の 2 つは setter で <code>SetProperty</code> だけを呼ぶ書き方、下は <code>CanExecuteChanged</code> を <code>CommandManager.RequerySuggested</code> へ転送する自作のコマンドである。</figcaption>
 </figure>
 

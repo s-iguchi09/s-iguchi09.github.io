@@ -14,6 +14,7 @@ verifies:
   - "CommunityToolkit.Mvvm と Prism.Core の、実行時に読み込まれたアセンブリが PresentationCore・PresentationFramework・WindowsBase のどれも参照していないこと（CommandManager は PresentationCore にある）"
   - "図は、Toolkit の RelayCommand と Prism の DelegateCommand（どちらも SetProperty だけ）と、転送した自作のコマンドの 3 つに同じ名前をキーで入力し、InvalidateRequerySuggested を呼び、キャレットを写さないためにキーボードフォーカスを外した後に撮っていること"
 images:
+  - "images/articles/wpf-mvvm-library-command-requery/library-command-requery.png"
   - "images/articles/wpf-mvvm-library-command-requery/library-command-requery-matrix.svg"
   - "images/articles/wpf-mvvm-library-command-requery/library-command-references.svg"
 tables:
