@@ -78,17 +78,23 @@ internal static class BookAReport
         }
 
         using Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full");
-        int release = key?.GetValue("Release") is int value ? value : 0;
+        string target = Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName ?? "不明";
+
+        // 値が取れないことは、どの版で動いたかの証拠にならない。取れたときだけ版を判定する。
+        if (key?.GetValue("Release") is not int release)
+        {
+            return $"{description}（ランタイムの版は不明: レジストリの Release を読めない。ビルドの対象は {target}）";
+        }
+
         // 版と Release の最小値の対応は Microsoft Learn の「インストールされている .NET Framework のバージョンを確認する」による。
         string version = release switch
         {
-            >= 533320 => "4.8.1",
-            >= 528040 => "4.8",
-            >= 461808 => "4.7.2",
-            _ => "4.7.1 以前",
+            >= 533320 => ".NET Framework 4.8.1",
+            >= 528040 => ".NET Framework 4.8",
+            >= 461808 => ".NET Framework 4.7.2",
+            _ => ".NET Framework 4.7.1 以前",
         };
-        string target = Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName ?? "不明";
-        return $"{description}（ランタイムは .NET Framework {version}、Release {release}。ビルドの対象は {target}）";
+        return $"{description}（ランタイムは {version}、Release {release}。ビルドの対象は {target}）";
     }
 
     private static void Write(string fileName, string slug, string heading, string intro, string header, string mismatchMessage, string expectedWord, IReadOnlyList<BookACheck> checks)
