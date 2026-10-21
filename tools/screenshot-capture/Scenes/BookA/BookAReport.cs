@@ -77,11 +77,10 @@ internal static class BookAReport
             return description;
         }
 
-        using Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full");
         string target = Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName ?? "不明";
 
         // 値が取れないことは、どの版で動いたかの証拠にならない。取れたときだけ版を判定する。
-        if (key?.GetValue("Release") is not int release)
+        if (ReadFrameworkRelease() is not int release)
         {
             return $"{description}（ランタイムの版は不明: レジストリの Release を読めない。ビルドの対象は {target}）";
         }
@@ -95,6 +94,22 @@ internal static class BookAReport
             _ => ".NET Framework 4.7.1 以前",
         };
         return $"{description}（ランタイムは {version}、Release {release}。ビルドの対象は {target}）";
+    }
+
+    /// <summary>
+    /// レジストリから .NET Framework 4.x の Release を読む。キーや値が無いとき、権限不足などで読めないときは null を返す。
+    /// </summary>
+    private static int? ReadFrameworkRelease()
+    {
+        try
+        {
+            using Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full");
+            return key?.GetValue("Release") as int?;
+        }
+        catch (Exception exception) when (exception is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return null;
+        }
     }
 
     private static void Write(string fileName, string slug, string heading, string intro, string header, string mismatchMessage, string expectedWord, IReadOnlyList<BookACheck> checks)
