@@ -1714,6 +1714,28 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-mvvm-library-command-requery/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-library-command-requery/library-command-requery.png</image:loc></image:image>
+    <lastmod>2026-10-20T14:20:26Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-mvvm-library-command-requery/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-mvvm-library-command-requery/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-library-command-requery/library-command-requery.png</image:loc></image:image>
+    <lastmod>2026-10-20T14:20:26Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
@@ -1765,7 +1787,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-relaycommand-canexecute-not-updating/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-relaycommand-canexecute-not-updating/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-10-19T23:06:36Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1776,7 +1798,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-relaycommand-canexecute-not-updating/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-relaycommand-canexecute-not-updating/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-relaycommand-canexecute-not-updating/relaycommand-canexecute-button-state.png</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-10-19T23:06:36Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2048,7 +2070,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-validation-error-not-displayed/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/validation-error-display.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/adorner-layer-required.png</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-10-20T16:44:51Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2060,7 +2082,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-validation-error-not-displayed/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/validation-error-display.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/adorner-layer-required.png</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-10-20T16:44:51Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
