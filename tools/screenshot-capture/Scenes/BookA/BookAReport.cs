@@ -1,4 +1,6 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace ScreenshotCapture.Scenes.BookA;
@@ -63,6 +65,32 @@ internal static class BookAReport
             $"{title}が予想と一致しない", "予想",
             checks);
 
+    /// <summary>
+    /// 実行したランタイムの説明。.NET Framework では FrameworkDescription（4.8.9xxx など）だけでは
+    /// 4.8 と 4.8.1 の区別が付かないため、レジストリの Release の値から版を求め、ビルドの対象と並べて書く。
+    /// </summary>
+    internal static string DescribeRuntime()
+    {
+        string description = RuntimeInformation.FrameworkDescription;
+        if (!description.StartsWith(".NET Framework", StringComparison.Ordinal))
+        {
+            return description;
+        }
+
+        using Microsoft.Win32.RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full");
+        int release = key?.GetValue("Release") is int value ? value : 0;
+        // 版と Release の最小値の対応は Microsoft Learn の「インストールされている .NET Framework のバージョンを確認する」による。
+        string version = release switch
+        {
+            >= 533320 => "4.8.1",
+            >= 528040 => "4.8",
+            >= 461808 => "4.7.2",
+            _ => "4.7.1 以前",
+        };
+        string target = Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName ?? "不明";
+        return $"{description}（ランタイムは .NET Framework {version}、Release {release}。ビルドの対象は {target}）";
+    }
+
     private static void Write(string fileName, string slug, string heading, string intro, string header, string mismatchMessage, string expectedWord, IReadOnlyList<BookACheck> checks)
     {
         var builder = new StringBuilder();
@@ -71,7 +99,7 @@ internal static class BookAReport
         builder.AppendLine();
         builder.AppendLine($"# {heading}");
         builder.AppendLine();
-        builder.AppendLine($"環境: {RuntimeInformation.FrameworkDescription} / {RuntimeInformation.OSDescription.Trim()}");
+        builder.AppendLine($"環境: {DescribeRuntime()} / {RuntimeInformation.OSDescription.Trim()}");
         builder.AppendLine();
         builder.AppendLine(intro);
         builder.AppendLine();

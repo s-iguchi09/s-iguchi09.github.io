@@ -25,6 +25,8 @@ internal static class BookAChildProcess
         var start = new ProcessStartInfo(CurrentExecutable, $"{Flag} {scenario}")
         {
             RedirectStandardOutput = true,
+            // 子は UTF-8 で書く（Output）。既定の文字コードは起動のしかた（コンソールかパイプか）で変わり、日本語の値が化ける。
+            StandardOutputEncoding = new System.Text.UTF8Encoding(false),
             UseShellExecute = false,
             CreateNoWindow = true,
         };
@@ -77,10 +79,12 @@ internal static class BookAChildProcess
         _ => throw new ArgumentException($"未知のシナリオ: {scenario}", nameof(scenario)),
     };
 
+    /// <summary>標準出力を、親が読む文字コード（BOM なしの UTF-8）で書く。</summary>
+    private static readonly StreamWriter Output = new(Console.OpenStandardOutput(), new System.Text.UTF8Encoding(false)) { AutoFlush = true };
+
     private static void Write(string key, string value)
     {
-        Console.Out.WriteLine($"{key}={value}");
-        Console.Out.Flush();
+        Output.WriteLine($"{key}={value}");
     }
 
     /// <summary>

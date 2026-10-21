@@ -3,7 +3,7 @@
 
 # MVVM ライブラリで書いた場合の第 4・5・10 章
 
-環境: .NET Framework 4.8.9363.0 / Microsoft Windows 10.0.26200
+環境: .NET Framework 4.8.9363.0（ランタイムは .NET Framework 4.8.1、Release 533509。ビルドの対象は .NETFramework,Version=v4.8） / Microsoft Windows 10.0.26200
 
 付録サンプルのビュー（XAML）はそのままにして、ビューモデルだけを CommunityToolkit.Mvvm 8.4.0 と Prism.Core 8.1.97 で書き直し、各章のシーンと同じ手順で測った。記事に値が無いので、公式文書などから予想した値と比べる。第 4 章の値は保存ボタンの IsEnabled の「入力前 → 入力後」、第 5 章は HasError・Errors の数・装飾（adorner）の数かメッセージ。第 10 章は計測のために DispatcherUnhandledException を Handled にしている。実際のアプリでハンドラーが無ければ、そこに届いた例外でプロセスが終わる。
 

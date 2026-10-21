@@ -7,5 +7,5 @@ environment:
   os: "Microsoft Windows 10.0.26200"
 verifies:
   - "付録サンプル第 10 章の再現版（Task.Run を待たない）で、取り込みの例外は DispatcherUnhandledException・AppDomain.UnhandledException・UnobservedTaskException（GC なし）のどれにも届かず、画面にも出ず、プロセスは動き続けること（記事の表の Task.Run(...) を待たない（GC なし）の行と同じ）"
-  - "付録サンプル第 10 章の修正版（AsyncRelayCommand の中で await し、try / catch で受ける）で、例外は catch で受けられて画面に理由が出て、DispatcherUnhandledException などには届かず、プロセスは動き続けること（記事の表には無い。本文の「catch で受ける」に当たり、表の「async void の Click で await Task.Run」の行に try / catch を足したもの）"
+  - "付録サンプル第 10 章の修正版（AsyncRelayCommand の中で await し、try / catch で受ける）で、例外は catch で受けられて画面に理由が出て、DispatcherUnhandledException などには届かず、プロセスは動き続けること（記事の表の「async void の Click で await を try / catch」の行と同じ。投げたスレッドの列は比べない）"
 images:

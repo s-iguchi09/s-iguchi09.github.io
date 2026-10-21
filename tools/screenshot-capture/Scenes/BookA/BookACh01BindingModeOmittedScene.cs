@@ -200,7 +200,7 @@ internal sealed class BookACh01BindingModeOmittedScene : IScene
         builder.AppendLine();
         builder.AppendLine("# 第 1 章 付録サンプルと記事の実測の突き合わせ");
         builder.AppendLine();
-        builder.AppendLine($"環境: {System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription} / {System.Runtime.InteropServices.RuntimeInformation.OSDescription.Trim()}");
+        builder.AppendLine($"環境: {BookAReport.DescribeRuntime()} / {System.Runtime.InteropServices.RuntimeInformation.OSDescription.Trim()}");
         builder.AppendLine();
         builder.AppendLine("記事: [WPF で Mode を書かないバインドが、ユーザー操作で黙って外れる仕組み](https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/)。「記事の行」は記事の実測表の行番号。「コマンド後の表示」は、ビューモデルの「すべて閉じる」または「幅を戻す」を実行した後の表示で、記事の表の「ソースに代入した後の表示」に当たる。");
         builder.AppendLine();
