@@ -338,6 +338,8 @@ public sealed class AccountViewModel : ValidatableBase
 
 コンストラクターで `Validate` を呼んでいるのは、`HasErrors` を初期状態から正しくするためである。
 これにより、起動直後から保存操作を抑止できる。
+CommunityToolkit.Mvvm の `ObservableValidator` でも、setter で検証するだけでは起動直後にエラーが出ない。
+コンストラクターと保存処理のどちらで検証するかは次の記事で扱う（[WPF で CommunityToolkit.Mvvm の ObservableValidator が起動直後に検証エラーを出さない理由](/ja/articles/wpf-observablevalidator-no-error-on-startup/)）。
 
 XAML 側では、メッセージを描く `ErrorTemplate` を定義して `Style` から適用する。
 `AdornedElementPlaceholder` が元のコントロールの位置を示し、その前後に任意の装飾を置ける。

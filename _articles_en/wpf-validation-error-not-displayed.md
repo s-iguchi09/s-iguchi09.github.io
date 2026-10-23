@@ -335,6 +335,8 @@ public sealed class AccountViewModel : ValidatableBase
 ```
 
 `Validate` is called from the constructor so that `HasErrors` is correct from the initial state, which blocks the save operation immediately after startup.
+With the `ObservableValidator` of CommunityToolkit.Mvvm, validating only in the setter also leaves no errors on startup.
+Whether to validate in the constructor or in the save logic is covered in [Why CommunityToolkit.Mvvm ObservableValidator Shows No Validation Error on Startup in WPF](/articles/wpf-observablevalidator-no-error-on-startup/).
 
 On the XAML side, define an `ErrorTemplate` that draws the message and apply it through a `Style`.
 `AdornedElementPlaceholder` marks where the original control sits, and any decoration can be placed around it.
