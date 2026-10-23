@@ -250,6 +250,10 @@ internal sealed partial class ObservableValidatorStartupScene : IScene
             await Capture.SettleAsync(window, 100);
             values[0] = save.IsEnabled.ToString();
             values[1] = Validation.GetHasError(box).ToString();
+            if (values[1] == "True" && Message(box) != RequiredMessage)
+            {
+                throw new InvalidOperationException($"起動直後のメッセージが想定と異なる（{Message(box)}）。");
+            }
 
             if (!save.IsEnabled)
             {
@@ -294,33 +298,24 @@ internal sealed partial class ObservableValidatorStartupScene : IScene
         </StackPanel.Resources>
         """;
 
-    private static FrameworkElement BuildNameView(object viewModel)
-    {
-        var view = SceneContext.LoadXaml<StackPanel>(
-            $"""
-            <StackPanel Margin="8">
-              {ErrorTemplateResources}
-              <TextBlock Text="Name (required, up to 20 characters)" />
-              <TextBox x:Name="nameBox" Width="240" HorizontalAlignment="Left"
-                       Text="{"{"}Binding Name, UpdateSourceTrigger=PropertyChanged{"}"}" />
-            </StackPanel>
-            """);
-        view.DataContext = viewModel;
-        return view;
-    }
+    private static FrameworkElement BuildNameView(object viewModel) => BuildView(viewModel, withSaveButton: false);
 
-    private static FrameworkElement BuildSaveView(object viewModel)
+    private static FrameworkElement BuildSaveView(object viewModel) => BuildView(viewModel, withSaveButton: true);
+
+    /// <summary>記事の XAML。表示の表は保存ボタンを除いた同じビューで測る。</summary>
+    private static FrameworkElement BuildView(object viewModel, bool withSaveButton)
     {
+        string saveButton = withSaveButton
+            ? """<Button x:Name="saveButton" Content="Save" Command="{Binding SaveCommand}" Padding="14,2" Margin="12,0,0,22" />"""
+            : "";
         var view = SceneContext.LoadXaml<StackPanel>(
-            $"""
+            $$"""
             <StackPanel Margin="8">
-              {ErrorTemplateResources}
+              {{ErrorTemplateResources}}
               <TextBlock Text="Name (required, up to 20 characters)" />
               <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="nameBox" Width="240"
-                         Text="{"{"}Binding Name, UpdateSourceTrigger=PropertyChanged{"}"}" />
-                <Button x:Name="saveButton" Content="Save" Command="{"{"}Binding SaveCommand{"}"}"
-                        Padding="14,2" Margin="12,0,0,22" />
+                <TextBox x:Name="nameBox" Width="240" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                {{saveButton}}
               </StackPanel>
             </StackPanel>
             """);
@@ -330,13 +325,8 @@ internal sealed partial class ObservableValidatorStartupScene : IScene
 
     private static TextBox NameBox(FrameworkElement view) => (TextBox)view.FindName("nameBox");
 
-    /// <summary>ErrorTemplate に描かれたメッセージ。装飾（adorner）が無ければ「（なし）」。</summary>
-    private static string Message(TextBox box)
-    {
-        System.Windows.Documents.Adorner[]? adorners = System.Windows.Documents.AdornerLayer.GetAdornerLayer(box)?.GetAdorners(box);
-        TextBlock? message = adorners?.SelectMany(adorner => Descendants(adorner)).OfType<TextBlock>().FirstOrDefault(text => text.Name == "errorMessage");
-        return message?.Text ?? "（なし）";
-    }
+    /// <summary>ErrorTemplate に描かれたメッセージ。付録サンプルの第 5 章と同じく、errorMessage という名前の TextBlock を読む。</summary>
+    private static string Message(TextBox box) => BookA.BookACh05ValidationScene.Message(box);
 
     /// <summary>ボタンを UI オートメーションの Invoke で押す。無効なボタンには ElementNotEnabledException が出る。</summary>
     private static void Click(Button button)
