@@ -129,7 +129,7 @@ For each variant, `Validation.HasError` was measured on startup, after typing 21
 .NET 10 / Windows 11, CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97, using the same view without the Save button (the name field only). 21 characters were typed into the name field through the WPF input pipeline (`InputManager`), then the text was selected with `SelectAll()` and deleted by sending a Backspace key event to the field. `Validation.HasError` of the field was read after each step. For the `True` steps, the test also confirmed that the `ErrorTemplate` drew the required message on startup and after clearing, and the length message after 21 characters.
 {: .table-caption}
 
-**Rows 1, 3, and 5, which validate in the setter but not in the constructor, are `False` on startup and become `True` when the field is cleared after typing 21 characters.**
+**Rows 1, 3, and 5, which validate in the setter but not in the constructor, are `False` on startup, become `True` after typing 21 characters (length error), and stay `True` after clearing the field (required error).**
 The required error appears only after the value has been changed once and then emptied.
 Prism.Core 8.1.97 has no base class that reads validation attributes, so rows 5 and 6 check the rules in the setter and pass the result to `ErrorsContainer.SetErrors`.
 When validation is called only from the setter, this Prism variant behaves the same way.

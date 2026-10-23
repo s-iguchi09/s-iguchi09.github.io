@@ -129,7 +129,7 @@ public sealed partial class AccountViewModel : ObservableValidator
 .NET 10 / Windows 11、CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97 で、保存ボタンを除いた同じビュー（名前の入力欄だけ）を使った。名前の入力欄に WPF の入力処理（`InputManager`）を通して 21 文字を入力し、続けて `SelectAll()` で全選択して、入力欄に Backspace のキー操作のイベントを送って消した。各段階の後に入力欄の `Validation.HasError` を読んだ。`True` の段階では、起動直後と空にした後は必須のメッセージ、21 文字の後は長さのメッセージが `ErrorTemplate` に描かれていることも確かめた。
 {: .table-caption}
 
-**setter で検証し、コンストラクターでは検証しない 1・3・5 行目は、起動直後は `False` で、21 文字を入力した後に空へ戻すと `True` になる。**
+**setter で検証し、コンストラクターでは検証しない 1・3・5 行目は、起動直後は `False` で、21 文字を入力した後に `True`（長さのエラー）になり、空にした後も `True`（必須のエラー）のままである。**
 必須のエラーは、値を一度変えてから空に戻したときにしか出ない。
 Prism.Core 8.1.97 には検証属性を読む基底クラスが無いため、5・6 行目は setter で規則を確かめて `ErrorsContainer.SetErrors` に渡す処理を書いた。
 setter でだけ検証を呼ぶ実装なら、この Prism の書き方でも同じになる。
