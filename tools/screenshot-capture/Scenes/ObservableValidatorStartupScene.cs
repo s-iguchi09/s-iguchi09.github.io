@@ -37,7 +37,7 @@ internal sealed partial class ObservableValidatorStartupScene : IScene
         "保存ボタンの CanExecute を「HasErrors が False」にし、ErrorsChanged で NotifyCanExecuteChanged を呼んでも、コンストラクターで検証しなければ起動直後のボタンは有効で、押すと空の名前のまま保存まで進むこと。コンストラクターで ValidateAllProperties() を呼ぶと（ErrorsChanged の購読より前に呼んでも）起動直後のボタンは無効になること",
         "CanExecute も ErrorsChanged の購読も持たず、保存処理の先頭で ValidateAllProperties() を呼んで HasErrors なら戻る書き方は、起動直後にはエラーを出さず、保存ボタンを押した時点で保存まで進まずに必須のメッセージを出すこと",
         "保存の表のどの書き方でも、続けて正しい名前（taro）を入力すると保存ボタンの IsEnabled が True になること（コンストラクターで検証した書き方では、無効から有効に戻る）",
-        "図は、[NotifyDataErrorInfo] だけの書き方とコンストラクターで ValidateAllProperties() を呼ぶ書き方の起動直後、および保存処理の先頭で検証する書き方で保存ボタンを押した後に撮っていること",
+        "図は、[NotifyDataErrorInfo] だけの書き方とコンストラクターで ValidateAllProperties() を呼ぶ書き方の起動直後、および保存処理の先頭で検証する書き方で保存ボタンを押した後に撮っていること。保存ボタンは上から有効・無効・有効であること",
     ];
 
     public string Slug => "wpf-observablevalidator-no-error-on-startup";
@@ -85,6 +85,12 @@ internal sealed partial class ObservableValidatorStartupScene : IScene
             if (messages.Any(message => message != RequiredMessage))
             {
                 throw new InvalidOperationException($"図のメッセージが想定と異なる（{string.Join(", ", messages)}）。");
+            }
+
+            bool[] enabled = views.Select(view => ((Button)view.FindName("saveButton")).IsEnabled).ToArray();
+            if (enabled is not [true, false, true])
+            {
+                throw new InvalidOperationException($"図の保存ボタンの状態が想定と異なる（{string.Join(", ", enabled)}）。");
             }
         });
     }
