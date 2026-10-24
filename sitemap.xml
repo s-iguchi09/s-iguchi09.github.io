@@ -1758,6 +1758,28 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-observablevalidator-no-error-on-startup/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-observablevalidator-no-error-on-startup/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablevalidator-no-error-on-startup/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablevalidator-no-error-on-startup/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-startup.png</image:loc></image:image>
+    <lastmod>2026-10-23T17:01:40Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-observablevalidator-no-error-on-startup/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-observablevalidator-no-error-on-startup/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablevalidator-no-error-on-startup/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablevalidator-no-error-on-startup/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-startup.png</image:loc></image:image>
+    <lastmod>2026-10-23T17:01:40Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-radiobutton-enum-binding/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-radiobutton-enum-binding/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-radiobutton-enum-binding/" />
@@ -2070,7 +2092,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-validation-error-not-displayed/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/validation-error-display.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/adorner-layer-required.png</image:loc></image:image>
-    <lastmod>2026-10-20T16:44:51Z</lastmod>
+    <lastmod>2026-10-23T16:52:35Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -2082,7 +2104,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-validation-error-not-displayed/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/validation-error-display.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-validation-error-not-displayed/adorner-layer-required.png</image:loc></image:image>
-    <lastmod>2026-10-20T16:44:51Z</lastmod>
+    <lastmod>2026-10-23T16:52:35Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
