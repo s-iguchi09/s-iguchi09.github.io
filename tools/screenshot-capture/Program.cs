@@ -37,6 +37,7 @@ internal static class Program
         new FluentCustomStyleScene(),
         new RelayCommandCanExecuteScene(),
         new MvvmLibraryCommandRequeryScene(),
+        new ObservableValidatorStartupScene(),
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),
         new TrayContextMenuScene(),

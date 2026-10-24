@@ -1,0 +1,25 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-observablevalidator-no-error-on-startup
+slug: "wpf-observablevalidator-no-error-on-startup"
+scene: "ObservableValidatorStartupScene"
+environment:
+  runtime: ".NET 10.0.10"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "CommunityToolkit.Mvvm 8.4.0 の ObservableValidator で、setter が SetProperty(ref field, value, true) を呼ぶ書き方と、[ObservableProperty] に [NotifyDataErrorInfo] を付けた書き方は、起動直後（名前は空）には Validation.HasError が False で、21 文字を入力すると True になり、入力を消して空にしても True であること"
+  - "[ObservableProperty] に検証属性（[Required]・[MaxLength]）だけを付け、[NotifyDataErrorInfo] を付けない書き方は、起動直後・21 文字の入力後・空にした後のどれでも Validation.HasError が False のままであること"
+  - "コンストラクターで ValidateAllProperties() を呼ぶと、起動直後から Validation.HasError が True になり、必須のメッセージが ErrorTemplate に描かれること"
+  - "Prism.Core 8.1.97 の BindableBase と ErrorsContainer で setter から検証する書き方も、起動直後は False で、コンストラクターで検証すると起動直後から True になること"
+  - "保存ボタンの CanExecute を「HasErrors が False」にし、ErrorsChanged で NotifyCanExecuteChanged を呼んでも、コンストラクターで検証しなければ起動直後のボタンは有効で、押すと空の名前のまま保存まで進むこと。コンストラクターで ValidateAllProperties() を呼ぶと（ErrorsChanged の購読より前に呼んでも）起動直後のボタンは無効になること"
+  - "CanExecute も ErrorsChanged の購読も持たず、保存処理の先頭で ValidateAllProperties() を呼んで HasErrors なら戻る書き方は、起動直後にはエラーを出さず、保存ボタンを押した時点で保存まで進まずに必須のメッセージを出すこと"
+  - "保存の表のどの書き方でも、続けて正しい名前（taro）を入力すると保存ボタンの IsEnabled が True になること（コンストラクターで検証した書き方では、無効から有効に戻る）"
+  - "図は、[NotifyDataErrorInfo] だけの書き方とコンストラクターで ValidateAllProperties() を呼ぶ書き方の起動直後、および保存処理の先頭で検証する書き方で保存ボタンを押した後に撮っていること。保存ボタンは上から有効・無効・有効であること"
+images:
+  - "images/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-startup.png"
+  - "images/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-display-matrix.svg"
+  - "images/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-save-matrix.svg"
+tables:
+  - "_includes/tables/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-display-matrix.en.md"
+  - "_includes/tables/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-display-matrix.ja.md"
+  - "_includes/tables/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-save-matrix.en.md"
+  - "_includes/tables/articles/wpf-observablevalidator-no-error-on-startup/observablevalidator-save-matrix.ja.md"
