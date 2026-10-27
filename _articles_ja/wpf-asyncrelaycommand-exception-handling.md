@@ -141,7 +141,7 @@ ImportCommand = new DelegateCommand(async () => await Task.Run(ReadImportFile));
 
 {% include tables/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-exception-routes.ja.md %}
 
-.NET 10.0.13 / Windows 11、CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97 で、「現象」の節のビュー（5 行目だけはボタンを呼び出し側のコマンドに結び付ける）を表示し、ボタンを UI オートメーションの `Invoke` で押した（`Invoke` は `ButtonBase.OnClick` を呼び、`OnClick` が `Click` イベントの後にコマンドを実行する）。取り込みはどの書き方でも `Task.Run` の中で `InvalidOperationException` を投げる。押してから GC を呼ばずに 1 秒待ち、「GC の後」と「2 回目を押して GC の後」を除く列を読んだ。続けて `GC.Collect()`・`GC.WaitForPendingFinalizers()`・`GC.Collect()` を呼んで「GC の後」を読み、最後にもう一度押して 1 秒待ち、同じく GC を呼んで「2 回目を押して GC の後」を読んだ。`UnobservedTaskException` の回数は 1 回目からの累計で、それ以外の列は 1 回目を押した後の値である。ビューモデルはウィンドウに表示したまま GC を呼んでいる。`DispatcherUnhandledException` のハンドラーは `e.Handled = true` に、`UnobservedTaskException` のハンドラーは `e.SetObserved()` にしている。計測の前には、前の書き方の `Task` が数に入らないよう、`UnobservedTaskException` が出なくなるまで GC を繰り返した。各書き方 1 回の記録である。
+.NET 10.0.13 / Windows 11、CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97 で、「現象」の節のビュー（5 行目だけはボタンを呼び出し側のコマンドに結び付ける）を表示し、ボタンを UI オートメーションの `Invoke` で押した（`Invoke` は `ButtonBase.OnClick` を呼び、`OnClick` が `Click` イベントの後にコマンドを実行する）。取り込みはどの書き方でも `Task.Run` の中で `InvalidOperationException` を投げる。押してから GC を呼ばずに 1 秒待ち、「GC の後」と「2 回目を押して GC の後」を除く列を読んだ。続けて `GC.Collect()`・`GC.WaitForPendingFinalizers()`・`GC.Collect()` を呼んで「GC の後」を読み、最後にもう一度押して 1 秒待ち、同じく GC を呼んで「2 回目を押して GC の後」を読んだ。`UnobservedTaskException` の回数は 1 回目からの累計で、それ以外の列は 1 回目を押した後の値である。ビューモデルはウィンドウに表示したまま GC を呼んでいる。`DispatcherUnhandledException` のハンドラーは `e.Handled = true` に、`UnobservedTaskException` のハンドラーは `e.SetObserved()` にしている。計測の前には、前の書き方の `Task` が数に入らないよう、`UnobservedTaskException` が出なくなるまで GC を繰り返した。各書き方 1 回の記録で、暖機の実行や複数回の結果の集計はしていない。
 {: .table-caption}
 
 **既定の 1 行目と Prism の 3 行目では、`DispatcherUnhandledException` が 1 回呼ばれた。**
@@ -250,7 +250,7 @@ public sealed partial class ImportViewModel : ObservableObject
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-after-failure.png" alt="Import ボタンと ExecutionTask の状態の行を 1 組とした 3 組の画面。既定の上の組と FlowExceptionsToTaskScheduler の中の組は、どちらも ExecutionTask: Faulted と出ているだけで、エラーのメッセージは無い。ImportAsync の中で try / catch する下の組は、ExecutionTask: RanToCompletion の下に赤い文字で The import file was not found. と出ている。3 つの Import ボタンはどれも押せる状態である。" width="414" height="410" loading="lazy">
-  <figcaption>.NET 10.0.13 / Windows 11、CommunityToolkit.Mvvm 8.4.0 で、「現象」の節のビューに <code>ExecutionTask.Status</code> の行を足したビュー 3 つに、それぞれ別のビューモデルを渡し、Import ボタンを押して 1 秒待った後に撮った。上は「現象」の節の既定の書き方（<code>DispatcherUnhandledException</code> は計測のハンドラーで <code>Handled</code> にした）、中は <code>FlowExceptionsToTaskScheduler</code> を付けた書き方、下は本節のコードである。各組の見出しは撮影のために付けたもので、ビューの XAML には含まれない。</figcaption>
+  <figcaption>.NET 10.0.13 / Windows 11、CommunityToolkit.Mvvm 8.4.0 で、「現象」の節のビューに <code>ExecutionTask.Status</code> の行を足したビュー 3 つに、それぞれ別のビューモデルを渡し、Import ボタンを 1 回ずつ押して 1 秒待った後に 1 回だけ撮った（暖機の実行や、複数回の結果の集計はしていない）。上は「現象」の節の既定の書き方（<code>DispatcherUnhandledException</code> は計測のハンドラーで <code>Handled</code> にした）、中は <code>FlowExceptionsToTaskScheduler</code> を付けた書き方、下は本節のコードである。各組の見出しは撮影のために付けたもので、ビューの XAML には含まれない。</figcaption>
 </figure>
 
 上の 2 組の画面は同じに見える。
