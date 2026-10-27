@@ -4,7 +4,7 @@ title: "WPF で CommunityToolkit.Mvvm の AsyncRelayCommand が投げた例外�
 seo_title: "WPF の AsyncRelayCommand の例外の届き先と FlowExceptionsToTaskScheduler"
 date: 2026-10-27
 category: WPF
-excerpt: "AsyncRelayCommand の例外は既定では DispatcherUnhandledException に届くが、FlowExceptionsToTaskScheduler を付けると、ビューモデルを残した計測では次の実行の後の GC までどこにも届かなかった。"
+excerpt: "ボタンから実行した AsyncRelayCommand の未捕捉の例外は既定で DispatcherUnhandledException に届き、FlowExceptionsToTaskScheduler 付きではビューモデルを残した計測で次の実行後の GC まで届かなかった。"
 image: /images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-after-failure.png
 ---
 
