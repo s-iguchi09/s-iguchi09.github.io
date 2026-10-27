@@ -1,6 +1,7 @@
 ---
 layout: article-ja
 title: "WPF で StaticResource を変更しても画面が更新されない原因と解決方法"
+seo_title: "WPF の StaticResource と DynamicResource の違い｜変更が反映されない原因"
 date: 2026-06-11
 category: WPF
 excerpt: "StaticResource は XAML ロード時に参照先を確定するため、実行時にリソースを差し替えても参照側に反映されない。差し替えに追随させるには DynamicResource を使う。両者の評価タイミングの違いと、OS 設定との連動を含む使い分けの基準を解説する。"

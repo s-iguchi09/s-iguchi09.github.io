@@ -178,6 +178,26 @@ WPF のコード例は MVVM の形で書く。
 
 `seo_title` を導入する前の 2026-09-23（日本時間）の計測では、接尾辞込み 70 字を超える記事が 36 本あった（導入後は 0 本）。Bing の報告に挙がったのはそのうち 14 件だけだったため、報告の件数ではなく全ページの実測で判断する。
 
+### 8.3 検索語をタイトルの先頭に置く
+
+検索結果でクリックされるかどうかは、順位の次にタイトルで決まる。タイトル（既存記事では `seo_title`）を決めるときは、次の観点で見直す。
+
+| 観点 | 見ること |
+|---|---|
+| 検索語が先頭にある | 読者が検索欄に打つ API 名・クラス名・プロパティ名（`SetCurrentValue`、`ICollectionView`、`StrCmpLogicalW` など）が、タイトルの先頭近くにある。現象（「効かない」「Not Working」）や括弧書きの後ろに埋もれていない |
+| 日本語記事でも API 名は英語のまま前に出す | 日本語ページも `staticresource wpf` `strcmplogicalw` のように英単語で検索されている。日本語の説明を前に置き、API 名を末尾の括弧に回すと、検索語との一致が見えにくくなる |
+| 比較記事は比較する両方を入れる | `StaticResource` の記事が `dynamicresource` で 2 位に表示されてもクリックされていなかった。両方の名前を入れる |
+| 先頭 30 字前後で主題が伝わる（日本語） | Google は表示幅でタイトルを切るため、長い日本語タイトルは後半が見えない。字数の上限は §8.1 の 70 字のままとし、主題を前半に寄せる |
+| 本文で扱っている語だけを使う | タイトルに入れる API・値は本文で実際に説明しているものに限る（§3）。検索語に合わせるために扱っていない語を足さない |
+| CTR が高い記事は変えない | 掲載順位に対して CTR が高い記事（2026-10 時点で 5% 超の Label・Fluent・DataGrid の並び替えなど）は、今のタイトルを見本として残す |
+| 既存記事は `seo_title` で直す | `title` は他記事のアンカーテキストや転載先と揃っているため変えない（§8.1） |
+
+> 根拠と検証状況：2026-10-28（日本時間）に Search Console の直近 28 日を確認したところ、CTR は英語ページ 1.4%・日本語ページ 3.2% だった。CTR が 5% を超える記事は検索語がタイトルの先頭にあり、掲載順位 5〜9 位で CTR が 1% 前後の記事は、検索されている API 名がタイトルに無いか後ろにあった。
+>
+> この観点は、まだ効果を確かめていない仮説である。同日、英語 6 本（`wpf-staticresource-vs-dynamicresource`、`wpf-style-trigger-not-working-local-value`、`wpf-treeview-select-item-programmatically`、`wpf-collectionviewsource-filter-not-refreshing`、`wpf-textbox-updatesourcetrigger-binding-timing`、`wpf-observablecollection-cross-thread-update`）と日本語 2 本（`wpf-staticresource-vs-dynamicresource`、`csharp-natural-sort-strcmplogicalw-icomparer`）の `seo_title` をこの観点で変更した。反映から 28 日後に、変更前の 28 日と CTR を比べ、結果をここに追記する。
+>
+> 8 月〜9 月の Search Console には、1 日で数千回表示されクリックが 0 の急増が繰り返し記録されている。表示された検索語には 10 語を超える文や先頭に `%` `+` の付く文が多く、自動化された検索とみられる。CTR を比べるときは、この期間を含めない。
+
 ### 8.2 excerpt の長さ
 
 `excerpt` は `<meta name="description">` に出力され、記事冒頭の導入文としても表示される。

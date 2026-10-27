@@ -1,7 +1,7 @@
 ---
 layout: article-en
 title: "Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence"
-seo_title: "Why WPF Style Triggers and DataTriggers Do Not Apply"
+seo_title: "WPF Trigger Not Working: Local Values and SetCurrentValue"
 date: 2026-08-03
 category: WPF
 excerpt: "A style trigger that never applies is usually outranked by a local value in XAML. Covers value precedence and the Setter, SetCurrentValue and ClearValue fixes."
