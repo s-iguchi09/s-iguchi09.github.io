@@ -256,3 +256,4 @@ private async void SaveButton_Click(object sender, RoutedEventArgs e)
 
 - [WPF でウィンドウを閉じてもプロセスが終了しない原因の切り分けと ShutdownMode・フォアグラウンドスレッドの扱い](/ja/articles/wpf-application-not-exiting-shutdownmode-threads/)
 - [WPF で ObservableCollection をバックグラウンドスレッドから更新するとクロススレッド例外が発生する問題の解決方法](/ja/articles/wpf-observablecollection-cross-thread-update/)
+- [WPF で CommunityToolkit.Mvvm の AsyncRelayCommand が投げた例外の届き先と FlowExceptionsToTaskScheduler](/ja/articles/wpf-asyncrelaycommand-exception-handling/)

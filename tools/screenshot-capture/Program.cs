@@ -38,6 +38,7 @@ internal static class Program
         new RelayCommandCanExecuteScene(),
         new MvvmLibraryCommandRequeryScene(),
         new ObservableValidatorStartupScene(),
+        new AsyncRelayCommandExceptionScene(),
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),
         new TrayContextMenuScene(),

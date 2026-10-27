@@ -1,0 +1,23 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-asyncrelaycommand-exception-handling
+slug: "wpf-asyncrelaycommand-exception-handling"
+scene: "AsyncRelayCommandExceptionScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "CommunityToolkit.Mvvm 8.4.0 の [RelayCommand] を async Task のメソッドに付けた既定のコマンドは、ボタンから実行して取り込みが例外を投げると、DispatcherUnhandledException が 1 回呼ばれ、UnobservedTaskException は GC の前後とも、2 回目を押して GC した後も呼ばれないこと。ExecutionTask.Status は Faulted になること"
+  - "[RelayCommand(FlowExceptionsToTaskScheduler = true)] は、DispatcherUnhandledException が呼ばれず、UnobservedTaskException は 1 回目の後には GC を呼んでも呼ばれず、2 回目を押して GC した後に 1 回呼ばれること。ExecutionTask.Status は Faulted になること"
+  - "Prism.Core 8.1.97 の DelegateCommand に async のラムダを渡すと、DispatcherUnhandledException が 1 回呼ばれ、UnobservedTaskException は呼ばれないこと"
+  - "既定のコマンドでも、メソッドの中で await を try / catch すれば、DispatcherUnhandledException も UnobservedTaskException も呼ばれず、メッセージが画面に出て、ExecutionTask.Status は RanToCompletion になること"
+  - "既定のコマンドを別のコマンドから ExecuteAsync で await し、呼び出し側で try / catch すると、DispatcherUnhandledException も UnobservedTaskException も呼ばれず、メッセージが画面に出ること。ImportCommand.ExecutionTask.Status は Faulted になること"
+  - "どの書き方でも、例外の後のボタンの IsEnabled は True であること"
+  - "Toolkit の 4 つの書き方のどれでも、1 回目の ExecutionTask は 1 回目の後の GC では回収されず、2 回目を押して ExecutionTask が差し替わった後の GC で回収されること（弱参照の IsAlive で確かめた）"
+  - "ExecutionTask.Status にバインドした行は、押す前（ExecutionTask が null）には FallbackValue の ExecutionTask: (not run) を出し、実行が終わると Faulted または RanToCompletion に変わること"
+  - "図は、既定・FlowExceptionsToTaskScheduler・メソッドの中で try / catch の 3 つのビューでボタンを押した後に撮っていること。ExecutionTask の行は上から Faulted・Faulted・RanToCompletion で、メッセージは下のビューにだけ出ており、ボタンはどれも有効で、DispatcherUnhandledException は（既定のビューの分の）1 回だけ呼ばれたこと"
+images:
+  - "images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-after-failure.png"
+  - "images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-exception-routes.svg"
+tables:
+  - "_includes/tables/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-exception-routes.en.md"
+  - "_includes/tables/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-exception-routes.ja.md"
