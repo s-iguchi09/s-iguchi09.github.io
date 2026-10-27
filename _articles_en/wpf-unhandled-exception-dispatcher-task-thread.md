@@ -258,3 +258,4 @@ Subscribe to `AppDomain.UnhandledException` for a final record before terminatio
 
 - [Diagnosing a WPF Process That Stays Alive After the Window Closes — ShutdownMode and Foreground Threads](/articles/wpf-application-not-exiting-shutdownmode-threads/)
 - [Fixing the Cross-Thread Exception When Updating an ObservableCollection in WPF](/articles/wpf-observablecollection-cross-thread-update/)
+- [Where Exceptions from CommunityToolkit.Mvvm AsyncRelayCommand Go in WPF, and What FlowExceptionsToTaskScheduler Changes](/articles/wpf-asyncrelaycommand-exception-handling/)
