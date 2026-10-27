@@ -4,7 +4,7 @@ title: "Where Exceptions from CommunityToolkit.Mvvm AsyncRelayCommand Go in WPF,
 seo_title: "Where AsyncRelayCommand Exceptions Go in WPF"
 date: 2026-10-27
 category: WPF
-excerpt: "AsyncRelayCommand exceptions reach DispatcherUnhandledException by default. With FlowExceptionsToTaskScheduler they went nowhere until a GC after the next run."
+excerpt: "Default AsyncRelayCommand errors hit DispatcherUnhandledException. With FlowExceptionsToTaskScheduler and a live view model, none arrived before a rerun and GC."
 image: /images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-after-failure.png
 ---
 
