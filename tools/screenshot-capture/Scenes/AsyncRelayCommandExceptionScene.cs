@@ -11,7 +11,7 @@ using static ScreenshotCapture.Scenes.DemoProbe;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// 記事「CommunityToolkit.Mvvm の AsyncRelayCommand が投げた例外はどこに届くか」の図と表。
+/// 記事「WPF で CommunityToolkit.Mvvm の AsyncRelayCommand が投げた例外の届き先と FlowExceptionsToTaskScheduler」の図と表。
 ///
 /// 取り込みのボタンと、エラーのメッセージを出す TextBlock だけのビューに、コマンドの書き方が違うビューモデルを渡し、
 /// ボタンを UI オートメーションの Invoke で押して、DispatcherUnhandledException と TaskScheduler.UnobservedTaskException が呼ばれた回数、
@@ -307,7 +307,7 @@ internal sealed partial class AsyncRelayCommandExceptionScene : IScene
                 }
 
                 int before = Volatile.Read(ref late);
-                await Dispatcher.CurrentDispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+                await Application.Current.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                 await Task.Delay(200);
                 CollectGarbage();
                 quiet = Volatile.Read(ref late) == before ? quiet + 1 : 0;
@@ -317,7 +317,6 @@ internal sealed partial class AsyncRelayCommandExceptionScene : IScene
         {
             TaskScheduler.UnobservedTaskException -= onLate;
         }
-
     }
 
     /// <summary>UnobservedTaskException はファイナライザーから呼ばれるので、ファイナライザーの完了まで待つ。</summary>
@@ -380,7 +379,6 @@ internal sealed partial class AsyncRelayCommandExceptionScene : IScene
             throw new InvalidOperationException("想定と異なる結果が出た。" + Environment.NewLine + string.Join(Environment.NewLine, mismatches));
         }
     }
-
 
     private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
