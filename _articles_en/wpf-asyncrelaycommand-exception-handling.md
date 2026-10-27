@@ -4,7 +4,7 @@ title: "Where Exceptions from CommunityToolkit.Mvvm AsyncRelayCommand Go in WPF,
 seo_title: "Where AsyncRelayCommand Exceptions Go in WPF"
 date: 2026-10-27
 category: WPF
-excerpt: "AsyncRelayCommand exceptions reach DispatcherUnhandledException by default. With FlowExceptionsToTaskScheduler they reach nothing until a GC after the next run."
+excerpt: "AsyncRelayCommand exceptions reach DispatcherUnhandledException by default. With FlowExceptionsToTaskScheduler they went nowhere until a GC after the next run."
 image: /images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-after-failure.png
 ---
 
@@ -31,7 +31,7 @@ The comparison also includes passing an `async` lambda to Prism 8's `DelegateCom
 
 The measurements set `e.Handled = true` in the `DispatcherUnhandledException` handler so that the tool's process keeps running.
 That the application terminates when `Handled` is not set was not measured in this article.
-.NET Framework and the asynchronous command available in Prism 9 and later were not measured either.
+.NET Framework and `AsyncDelegateCommand`, available in Prism 9 and later, were not measured either.
 
 ---
 
@@ -126,7 +126,7 @@ With `FlowExceptionsToTaskScheduler`, `AwaitAndThrowIfFailed` is not called.
 An internal routine (`MonitorTask`) still waits for the `Task` in order to notify that `ExecutionTask` completed, but it waits in a way that does not check the result (`GetAwaitableWithoutEndValidation`), so the exception is not received.
 The exception stays inside the failed `Task`, and that `Task` remains stored in the `ExecutionTask` property.
 
-Prism 8 has no asynchronous command, and `DelegateCommand` takes an `Action`.
+Prism 8 has no dedicated asynchronous command type such as `AsyncDelegateCommand`, and `DelegateCommand` takes an `Action`.
 An `async` lambda passed there becomes `async void`, and the exception is rethrown on the `Dispatcher` along the same path as the Toolkit default.
 
 ```csharp
@@ -141,7 +141,7 @@ For each way of writing the command, the destinations after one click and `Unobs
 
 {% include tables/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-exception-routes.en.md %}
 
-On .NET 10.0.13 / Windows 11 with CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97, the view from the "Symptom" section was shown (only in row 5 is the button bound to the calling command), and the button was clicked through UI Automation `Invoke` (`Invoke` calls `ButtonBase.OnClick`, which executes the command after raising the `Click` event). In every row the import throws `InvalidOperationException` inside `Task.Run`. After the click, all columns except "after GC" and "after a 2nd click and GC" were read after waiting 1 second without a GC. Then `GC.Collect()`, `GC.WaitForPendingFinalizers()` and `GC.Collect()` were called and "after GC" was read; finally the button was clicked again, 1 second elapsed, the same GC calls were made, and "after a 2nd click and GC" was read. `UnobservedTaskException` counts are cumulative from the first click; the other columns are the values after the first click. The GC calls were made while the view model was still shown in the window. The `DispatcherUnhandledException` handler sets `e.Handled = true`, and the `UnobservedTaskException` handler calls `e.SetObserved()`. Before each row, GC was repeated until `UnobservedTaskException` stopped firing so that tasks from the previous row were not counted. Each row is a single recording.
+On .NET 10.0.13 / Windows 11 with CommunityToolkit.Mvvm 8.4.0 / Prism.Core 8.1.97, the view from the "Symptom" section was shown (only in row 5 is the button bound to the calling command), and the button was clicked through UI Automation `Invoke` (`Invoke` calls `ButtonBase.OnClick`, which executes the command after raising the `Click` event). In every row the import throws `InvalidOperationException` inside `Task.Run`. After the click, all columns except "after GC" and "after a 2nd click and GC" were read after waiting 1 second without calling the GC explicitly. Then `GC.Collect()`, `GC.WaitForPendingFinalizers()` and `GC.Collect()` were called and "after GC" was read; finally the button was clicked again, 1 second elapsed, the same GC calls were made, and "after a 2nd click and GC" was read. `UnobservedTaskException` counts are cumulative from the first click; the other columns are the values after the first click. The GC calls were made while the view model was still shown in the window. The `DispatcherUnhandledException` handler sets `e.Handled = true`, and the `UnobservedTaskException` handler calls `e.SetObserved()`. Before each row, GC was repeated until `UnobservedTaskException` stopped firing so that tasks from the previous row were not counted. Each row is a single recording.
 {: .table-caption}
 
 **In the default row 1 and the Prism row 3, `DispatcherUnhandledException` was raised once.**
@@ -268,7 +268,7 @@ Catching everything with `catch (Exception)` mixes defects unrelated to the impo
   The [RelayCommand attribute documentation](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/generators/relaycommand#handling-asynchronous-exceptions) warns that this setting also stops unrelated exceptions from being rethrown automatically, so each scenario needs a deliberate decision.
   In the measurement, `UnobservedTaskException` was not raised until the next run replaced `ExecutionTask` and a GC ran.
   For a command that runs only once, the `Task` is presumably not reclaimed until the view model holding the command is reclaimed, but this article did not measure that.
-  `UnobservedTaskException` alone cannot be relied on to log the exceptions of a command with this setting, because the last failure is not recorded until the next run and a GC.
+  While the view model holding the command is alive, the last failure does not reach `UnobservedTaskException` until the next run and a GC, so the event cannot be relied on to log the exceptions of a command with this setting.
 - **When `UnobservedTaskException` is raised depends on the GC.**
   The measurement called the GC explicitly.
   In a real application, when the GC runs depends on memory conditions (the "Exceptions that stop inside a Task or a Timer" section of [the article above](/articles/wpf-unhandled-exception-dispatcher-task-thread/)).
@@ -276,7 +276,7 @@ Catching everything with `catch (Exception)` mixes defects unrelated to the impo
   The exception reaches `DispatcherUnhandledException`, as with the Toolkit default (row 3 of the table).
   `DelegateCommand` has nothing equivalent to `ExecutionTask`, so there is no way to read the failure afterward either.
   Catching the exception requires wrapping the `await` inside the lambda in `try` / `catch`, as in the Toolkit implementation example.
-  That pattern in Prism, and the asynchronous command in Prism 9 and later, were not measured.
+  That pattern in Prism, and `AsyncDelegateCommand` in Prism 9 and later, were not measured.
 - **The measurement covers only an import exception thrown inside `Task.Run`.**
   Exceptions thrown synchronously before the first `await`, and cancellation in methods that take a `CancellationToken`, were not measured.
 
@@ -289,8 +289,9 @@ When the command runs from a button, that is the UI thread's `Dispatcher`, so by
 An `async` lambda passed to Prism 8's `DelegateCommand` followed the same path because the lambda becomes `async void`.
 
 `FlowExceptionsToTaskScheduler` removes the rethrow, and the failed `Task` remains in `ExecutionTask`.
-While `ExecutionTask` references it, the `Task` is not reclaimed, so `UnobservedTaskException` was not raised until the GC after the next run.
-If neither the view nor the code looks at `ExecutionTask`, the exception reaches nothing until the command runs again and a GC follows.
+While `ExecutionTask` references it, the `Task` is not reclaimed, so in the measurement, made with the view model still shown, `UnobservedTaskException` was not raised until the GC after the next run.
+Once the view model holding the command becomes collectable, the event may be raised after a GC without another run, but this article did not measure that.
+If neither the view nor the code looks at `ExecutionTask`, then while the command stays in use, the exception reaches nothing until the command runs again and a GC follows.
 
 For exceptions that are known to happen, keep the default, wrap the work in `try` / `catch` inside the command method, and show the failure on screen through view model state.
 Use `FlowExceptionsToTaskScheduler` only when something reads the failure from `ExecutionTask`, such as a view bound to it that displays the result.

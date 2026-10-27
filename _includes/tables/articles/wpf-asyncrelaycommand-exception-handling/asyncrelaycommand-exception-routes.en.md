@@ -1,4 +1,4 @@
-| how the command is written | DispatcherUnhandledException (calls) | UnobservedTaskException, 1 s without GC | UnobservedTaskException after GC | UnobservedTaskException after a 2nd click and GC | ImportCommand.ExecutionTask.Status | message on screen | button IsEnabled after the failure |
+| how the command is written | DispatcherUnhandledException (calls) | UnobservedTaskException, 1 s without an explicit GC | UnobservedTaskException after GC | UnobservedTaskException after a 2nd click and GC | ImportCommand.ExecutionTask.Status | message on screen | button IsEnabled after the failure |
 |---|---|---|---|---|---|---|---|
 | Toolkit \[RelayCommand\] on async Task (default) | 1 | 0 | 0 | 0 | Faulted | (none) | True |
 | Toolkit \[RelayCommand(FlowExceptionsToTaskScheduler = true)\] | 0 | 0 | 0 | 1 | Faulted | (none) | True |

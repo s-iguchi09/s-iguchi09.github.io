@@ -19,7 +19,7 @@ namespace ScreenshotCapture.Scenes;
 /// UnobservedTaskException は、GC を呼ばずに 1 秒待った後、GC の後、2 回目を押して GC した後の 3 回読む。
 /// 取り込みはどの書き方でも Task.Run の中で InvalidOperationException を投げる。
 /// 計測は DispatcherUnhandledException を Handled にするので、プロセスは落ちない。
-/// Prism は MIT ライセンスの最後の版（8.1.97）を使う（csproj の注記を参照）。Prism 8 に非同期のコマンドは無い。
+/// Prism は MIT ライセンスの最後の版（8.1.97）を使う（csproj の注記を参照）。Prism 8 に AsyncDelegateCommand のような非同期専用のコマンドの型は無い。
 /// </summary>
 internal sealed partial class AsyncRelayCommandExceptionScene : IScene
 {
@@ -158,7 +158,7 @@ internal sealed partial class AsyncRelayCommandExceptionScene : IScene
             [
                 Loc.Of("how the command is written", "コマンドの書き方"),
                 Loc.Of("DispatcherUnhandledException (calls)", "DispatcherUnhandledException（回数）"),
-                Loc.Of("UnobservedTaskException, 1 s without GC", "UnobservedTaskException（GC なしで 1 秒）"),
+                Loc.Of("UnobservedTaskException, 1 s without an explicit GC", "UnobservedTaskException（GC を明示的に呼ばずに 1 秒）"),
                 Loc.Of("UnobservedTaskException after GC", "UnobservedTaskException（GC の後）"),
                 Loc.Of("UnobservedTaskException after a 2nd click and GC", "UnobservedTaskException（2 回目を押して GC の後）"),
                 Loc.Of("ImportCommand.ExecutionTask.Status", "ImportCommand.ExecutionTask.Status"),

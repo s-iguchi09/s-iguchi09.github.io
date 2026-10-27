@@ -4,7 +4,7 @@ title: "WPF で CommunityToolkit.Mvvm の AsyncRelayCommand が投げた例外�
 seo_title: "WPF の AsyncRelayCommand の例外の届き先と FlowExceptionsToTaskScheduler"
 date: 2026-10-27
 category: WPF
-excerpt: "AsyncRelayCommand の例外は既定では DispatcherUnhandledException に届くが、FlowExceptionsToTaskScheduler を付けると、次の実行の後に GC が走るまでどこにも届かない。"
+excerpt: "AsyncRelayCommand の例外は既定では DispatcherUnhandledException に届くが、FlowExceptionsToTaskScheduler を付けると、計測では次の実行の後に GC が走るまでどこにも届かなかった。"
 image: /images/articles/wpf-asyncrelaycommand-exception-handling/asyncrelaycommand-after-failure.png
 ---
 
@@ -31,7 +31,7 @@ CommunityToolkit.Mvvm（以下 Toolkit）の `AsyncRelayCommand` では、この
 
 計測では、ツールのプロセスを落とさないために `DispatcherUnhandledException` のハンドラーで `e.Handled = true` にしている。
 `Handled` にしなかったときにアプリが終了することは、本記事では測っていない。
-.NET Framework と、Prism 9 以降にある非同期のコマンドも測っていない。
+.NET Framework と、Prism 9 以降にある `AsyncDelegateCommand` も測っていない。
 
 ---
 
@@ -126,7 +126,7 @@ internal static async void AwaitAndThrowIfFailed(Task executionTask)
 `ExecutionTask` の完了を通知するために `Task` を待つ内部の処理（`MonitorTask`）は残るが、結果を確かめない待ち方（`GetAwaitableWithoutEndValidation`）なので、例外は受け取られない。
 例外は失敗した `Task` の中に残り、その `Task` は `ExecutionTask` プロパティに入れられたままである。
 
-Prism 8 には非同期のコマンドが無く、`DelegateCommand` は `Action` を受け取る。
+Prism 8 には `AsyncDelegateCommand` のような非同期専用のコマンドの型が無く、`DelegateCommand` は `Action` を受け取る。
 ここに `async` のラムダを渡すと、ラムダは `async void` になり、Toolkit の既定と同じ経路で例外が `Dispatcher` に投げ直される。
 
 ```csharp
@@ -268,7 +268,7 @@ public sealed partial class ImportViewModel : ObservableObject
   [RelayCommand 属性の解説](https://learn.microsoft.com/ja-jp/dotnet/communitytoolkit/mvvm/generators/relaycommand#handling-asynchronous-exceptions)は、この設定では想定していない例外も自動では投げ直されなくなるので、場面ごとに扱いを決めるよう注意している。
   実測では、`UnobservedTaskException` は次に実行して `ExecutionTask` が差し替わり、GC が走るまで呼ばれなかった。
   一度しか実行しないコマンドでは、コマンドを持つビューモデルごと回収されるまで `Task` は回収されないと考えられるが、本記事では測っていない。
-  `UnobservedTaskException` だけでは、最後の失敗が次の実行と GC まで記録されないので、この設定の例外を記録する手段として当てにできない。
+  コマンドを持つビューモデルが生きている間は、最後の失敗が次の実行と GC まで `UnobservedTaskException` に届かないので、この設定の例外を記録する手段として当てにできない。
 - **`UnobservedTaskException` が呼ばれる時期は GC 次第である。**
   計測では GC を明示的に呼んだ。
   実際のアプリで GC がいつ走るかはメモリの状況で決まる（[前述の記事](/ja/articles/wpf-unhandled-exception-dispatcher-task-thread/)の「Task と Timer の内部で止まる例外」の節）。
@@ -276,7 +276,7 @@ public sealed partial class ImportViewModel : ObservableObject
   例外は Toolkit の既定と同じく `DispatcherUnhandledException` に届く（表の 3 行目）。
   `DelegateCommand` には `ExecutionTask` に当たるものが無いので、失敗を後から読む手段も無い。
   例外を受けるには、Toolkit の実装例と同じく、ラムダの中で `await` を `try` / `catch` で囲むことになる。
-  Prism でのこの書き方と、Prism 9 以降の非同期のコマンドは測っていない。
+  Prism でのこの書き方と、Prism 9 以降の `AsyncDelegateCommand` は測っていない。
 - **計測は、取り込みの例外が `Task.Run` の中で投げられる場合だけである。**
   `await` より前に同期的に投げる場合や、`CancellationToken` を受け取るメソッドで取り消した場合は測っていない。
 
@@ -289,11 +289,12 @@ public sealed partial class ImportViewModel : ObservableObject
 Prism 8 の `DelegateCommand` に `async` のラムダを渡した場合も、ラムダが `async void` になるので同じ経路をたどった。
 
 `FlowExceptionsToTaskScheduler` を付けると投げ直しが無くなり、失敗した `Task` は `ExecutionTask` に残る。
-`ExecutionTask` が参照している間は回収されないので、`UnobservedTaskException` は次に実行した後の GC まで呼ばれなかった。
-`ExecutionTask` を画面やコードで見ないのであれば、次に実行して GC が走るまで、例外はどこにも届かない。
+`ExecutionTask` が参照している間は回収されないので、ビューモデルを表示したまま測った計測では、`UnobservedTaskException` は次に実行した後の GC まで呼ばれなかった。
+コマンドを持つビューモデルごと回収できる状態になれば、次の実行が無くても GC の後に呼ばれうるが、本記事では測っていない。
+`ExecutionTask` を画面やコードで見ないのであれば、コマンドが使われ続けている間、例外は次に実行して GC が走るまでどこにも届かない。
 
 起きることが分かっている例外は、既定のままコマンドのメソッドの中で `try` / `catch` し、ビューモデルの状態にして画面に出す。
-`FlowExceptionsToTaskScheduler` は、`ExecutionTask` にバインドして結果を表示するなど、失敗を `ExecutionTask` から読む仕組みを用意した場合に限って使う。
+`FlowExceptionsToTaskScheduler` は、`ExecutionTask` にバインドして結果を表示するなど、失敗を `ExecutionTask` から読み取る仕組みを用意した場合に限って使う。
 
 ---
 
