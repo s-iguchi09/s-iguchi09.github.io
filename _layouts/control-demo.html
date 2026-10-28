@@ -4,7 +4,9 @@
   WPF Standard Control Demo App のコントロール別ページ（日英共通）のレイアウト。
   本文は Markdown で書き、ページ固有の値は front matter に置く。
 
-    title       … コントロール名（<title>・パンくず・<h1> に使う）
+    title       … コントロール名（<title>・パンくず・<h1> に使う）。
+                  <title> は検索語（「WPF」＋コントロール名）を先頭に置く（docs/rules/article/guidelines.md §8.3 の観点を準用）。
+                  パンくずと <h1> はコントロール名のまま。
     badge       … <h1> 横のカテゴリ表示（Inputs など）
     lead        … <h1> 直下のリード文（HTML として出力する。<code> を使ってよい）
     description … <meta name="description">
@@ -17,16 +19,18 @@
   {%- assign lang = 'ja' -%}
   {%- assign app_name = 'WPF 標準コントロールデモアプリ' -%}
   {%- assign app_url = '/ja/apps/wpf-standard-control-demo.html' -%}
+  {%- capture page_title -%}WPF {{ page.title | escape }} の挙動を .NET 10 で実測 | 標準コントロールデモ{%- endcapture -%}
 {%- else -%}
   {%- assign lang = 'en' -%}
   {%- assign app_name = 'WPF Standard Control Demo App' -%}
   {%- assign app_url = '/apps/wpf-standard-control-demo.html' -%}
+  {%- capture page_title -%}WPF {{ page.title | escape }}: Behavior Measured on .NET 10 | Control Demo{%- endcapture -%}
 {%- endif -%}
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8">
-  <title>{{ page.title }} | {{ app_name }} (.NET 10)</title>
+  <title>{{ page_title }}</title>
   {% include head.html %}
 
   <meta name="description" content="{{ page.description | escape }}">
