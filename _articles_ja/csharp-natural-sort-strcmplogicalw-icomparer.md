@@ -1,7 +1,7 @@
 ---
 layout: article-ja
 title: "C# で Windows エクスプローラー風の並び順を実装する（StrCmpLogicalW と IComparer）"
-seo_title: "StrCmpLogicalW で C# にエクスプローラー風の自然順ソートを実装する"
+seo_title: "StrCmpLogicalW を使って C# でエクスプローラー風の自然順ソートを実装する"
 date: 2026-07-24
 category: C#
 excerpt: "既定の文字列ソートでは item10 が item2 より前に並ぶ。Win32 API の StrCmpLogicalW を P/Invoke で呼び出して IComparer を実装し、エクスプローラーに近い自然順ソートを実現する方法を、利点と欠点とともに解説する。"

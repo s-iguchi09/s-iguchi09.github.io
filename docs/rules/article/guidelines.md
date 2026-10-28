@@ -212,6 +212,7 @@ WPF のコード例は MVVM の形で書く。
 > 掲載順位 5〜9 位で CTR が 1% 前後の記事の一部は、表示された検索語の API 名がタイトルに無いか後ろにあった。
 > 同日、英語 4 本（`wpf-staticresource-vs-dynamicresource`、`wpf-style-trigger-not-working-local-value`、`wpf-treeview-select-item-programmatically`、`wpf-textbox-updatesourcetrigger-binding-timing`）と日本語 2 本（`wpf-staticresource-vs-dynamicresource`、`csharp-natural-sort-strcmplogicalw-icomparer`）の `seo_title` をこの観点で変更した。
 > 変更前後の CTR の比較結果は、この節に追記する。
+> あわせて、各記事を再クロールさせた後に実際の検索結果へ出たタイトルを確かめ、`seo_title` がそのまま使われたか、Google に書き換えられたかも記録する。
 > 2026-08-01〜2026-09-30 には、クリックが 0 のまま 1 日に数千回表示される日が繰り返しあり、自動化された検索とみられる。
 > 上記の根拠の集計期間は先頭 3 日（2026-09-28〜2026-09-30）がこれに重なっているため、値にその影響が残っている可能性がある。
 > 変更前後の比較に使う期間には、2026-09-30 以前の日を含めない。
