@@ -1,13 +1,15 @@
 ---
+title: "About - s-iguchi"
+description: "About s-iguchi and this site: hands-on WPF, XAML, C# and .NET desktop development knowledge, published as technical articles and open-source Windows tools."
 ---
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>About - s-iguchi</title>
+  <title>{{ page.title | escape }}</title>
   {% include head.html %}
-  <meta name="description" content="About s-iguchi and this site: hands-on WPF, XAML, C# and .NET desktop development knowledge, published as technical articles and open-source Windows tools.">
+  <meta name="description" content="{{ page.description | escape }}">
   <link rel="stylesheet" href="/style.css">
 
   <script type="application/ld+json">

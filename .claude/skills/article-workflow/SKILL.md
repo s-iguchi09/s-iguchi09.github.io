@@ -87,6 +87,12 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 4. **lint を確認する。** markdownlint が利用可能なら実行し、警告が無いことを確認する
    (`npx -y markdownlint-cli2 "<file>"` など)。利用不可の場合はチェックリストの目視確認で代替する。
 
+5. **OGP 画像を生成する。** `cd tools/og-image && npm ci && node generate.mjs` を実行し、
+   新しい記事の `images/og/articles/<slug>.png`・`images/og/ja/articles/<slug>.png` と `images/og/manifest.json` をコミットに含める。
+   生成した画像は開いて、タイトルが切れていないかを目で確かめる。
+   Chrome / Edge の無い環境では、先に `tools/og-image` で `npx playwright-core install chromium` を実行して Chromium を入れる。
+   Phase 2 でタイトル・カテゴリ・日付を変えたら、もう一度実行する(変わったページだけ作り直す)。
+
 ---
 
 ## Phase 2. サブエージェントによる反復レビュー(指摘ゼロまで)
@@ -256,6 +262,7 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
          `**/*.md` / `.markdownlint.json` / 当該ワークフローの変更時のみ起動する。
          **これらを変更しない PR ではチェックが起動しない**ため、その場合は check run 不在(未実行)を
          許容し、この項目は満たされたものとして扱う(記事 PR では必ず `.md` を変更するため通常は起動する)。
+   - [ ] `cd tools/og-image && npm ci && node generate.mjs --check` が終了コード 0(OGP 画像の生成・削除・コミットの漏れが無い。Phase 1 手順 5)。
    - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
          actionable な未解決指摘がゼロ。
    - [ ] **全レビュースレッドが解決済みである**(作成者に関係なく `is_resolved == true`)。

@@ -123,3 +123,4 @@
 - [ ] `excerpt` が設定されており、日本語 120〜140 字 / 英語 120〜160 字である（`guidelines.md` §8.2）
 - [ ] `layout` が言語に合っている（`article-ja` または `article-en`）
 - [ ] 代表となるスクリーンショットがある場合、`image` にそのサイト絶対パスが設定されている（SVG は指定しない）
+- [ ] OGP 画像（`images/og/articles/<slug>.png` と日本語版）を `tools/og-image/generate.mjs` で生成し、タイトルが切れていないことを目で確かめた（`article-workflow` の Phase 1 手順 5）
