@@ -10,3 +10,6 @@ obj/
 # Python のバイトコードキャッシュ（.github/scripts 配下のスクリプト実行時に生成される）
 __pycache__/
 *.py[cod]
+
+# Node の依存（tools/og-image の画像生成スクリプト）
+node_modules/
