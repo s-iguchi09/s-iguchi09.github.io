@@ -3,7 +3,8 @@
 //   cd tools/og-image && npm ci
 //   node generate.mjs           # 新しいページと、内容が変わったページだけ生成する。対応するページが無い PNG は消す
 //   node generate.mjs --all     # 全ページを生成し直す（テンプレートを変えたとき）
-//   node generate.mjs --check   # 生成・削除・コミットの漏れを一覧し、あれば終了コード 1（ブラウザを起動しない）
+//   node generate.mjs --check   # 生成・削除・コミットの漏れ（manifest に残った削除済みのページを含む）を一覧し、
+//                               # あれば終了コード 1（ブラウザを起動しない）
 //
 // 出力先は images/og/<ページの URL>.png（例: /articles/<slug>/ → images/og/articles/<slug>.png）。
 // _includes/head.html が同じ規則でパスを組み立て、ファイルが無いページには
@@ -190,14 +191,17 @@ async function main() {
   const stale = cards.filter((c) => args.has("--all") || manifest[c.url] !== hashOf(c) || !fs.existsSync(path.join(outDir, c.file)));
   const expected = new Set(cards.map((c) => c.file));
   const orphans = listPngs().filter((f) => !expected.has(f));
+  const urls = new Set(cards.map((c) => c.url));
+  const staleEntries = Object.keys(manifest).filter((u) => !urls.has(u));
 
   if (args.has("--check")) {
     for (const c of stale) console.log(`要生成: ${c.url}`);
     for (const f of orphans) console.log(`対応するページが無い: images/og/${f}`);
+    for (const u of staleEntries) console.log(`manifest に残っている削除済みのページ: ${u}`);
     // 生成してもコミットし忘れると公開されないので、作業ツリーとの差も見る
     const dirty = execFileSync("git", ["status", "--porcelain", "--", "images/og"], { cwd: root, encoding: "utf8" }).trim();
     if (dirty) console.log(`コミットされていない変更がある:\n${dirty}`);
-    process.exitCode = stale.length || orphans.length || dirty ? 1 : 0;
+    process.exitCode = stale.length || orphans.length || staleEntries.length || dirty ? 1 : 0;
     return;
   }
 
@@ -221,9 +225,8 @@ async function main() {
     console.log("生成が必要なページはありません");
   }
 
-  // 削除したページの記録を残さない
-  const urls = new Set(cards.map((c) => c.url));
-  const sorted = Object.fromEntries(Object.entries(manifest).filter(([u]) => urls.has(u)).sort(([a], [b]) => a.localeCompare(b)));
+  // 削除したページの記録を残さない。キーはロケールに依らない順（UTF-16 のコード単位順）で並べ、出力を環境に依らず同じにする
+  const sorted = Object.fromEntries(Object.entries(manifest).filter(([u]) => urls.has(u)).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(manifestPath, JSON.stringify(sorted, null, 2) + "\n");
 }

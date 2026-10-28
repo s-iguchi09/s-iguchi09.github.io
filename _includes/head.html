@@ -57,8 +57,10 @@
   記事やデモを追加・改題したら generate.mjs を実行して画像を作り直すこと（--check で漏れを確かめられる）。
 
   og:title はコントロールデモではレイアウトが組み立てた page_title（<title> と同じ文言）、それ以外は page.title を使う。
-  page.title が無い固定ページ（トップ・一覧・about など）では、X がタイトルの無いカードを出さないことがあるため、
-  サイト名と言語ごとの説明を代わりに出す。page_title はエスケープ前の値なので、ここで 1 回だけエスケープする。
+  og:description は page.description、無ければ page.excerpt を使う。
+  固定ページ（トップ・一覧・about など）も front matter に title と description を書き、<title> と meta description もそこから出す。
+  それぞれ無いときは、X がタイトルの無いカードを出さないことがあるため、言語ごとの定型文を代わりに出す。
+  page_title はエスケープ前の値なので、ここで 1 回だけエスケープする。
 {% endcomment %}
 {%- assign og_path = page.url | replace: 'index.html', '' -%}
 {%- assign og_last = og_path | slice: -1, 1 -%}
