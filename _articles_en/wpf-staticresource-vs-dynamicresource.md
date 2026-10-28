@@ -1,7 +1,7 @@
 ---
 layout: article-en
 title: "Why StaticResource Changes Are Not Reflected in WPF and How to Fix It"
-seo_title: "Why StaticResource Ignores Replaced Resources in WPF"
+seo_title: "StaticResource vs DynamicResource in WPF: When Each Updates"
 date: 2026-06-11
 category: WPF
 excerpt: "StaticResource resolves at XAML load time, so replacing the resource at runtime leaves existing references unchanged. DynamicResource follows such replacements."

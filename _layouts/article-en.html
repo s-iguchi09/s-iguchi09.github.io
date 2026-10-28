@@ -6,7 +6,7 @@
   <meta charset="UTF-8">
   {%- comment -%}
     検索結果のタイトルは接尾辞込みで 70 字以内に収める（Bing Webmaster Tools の報告に基づく本サイトの目安）。
-    title が長い記事は front matter の seo_title に短縮版を書き、<h1> や本文リンクは title のまま残す。
+    title が長い記事や、§8.3 の観点でタイトルを直した既存記事は front matter の seo_title を書き、<h1> や本文リンクは title のまま残す。
   {%- endcomment %}
   <title>{{ page.seo_title | default: page.title }} - Articles</title>
   {% include head.html %}
