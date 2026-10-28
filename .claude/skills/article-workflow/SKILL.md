@@ -25,6 +25,7 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 - 英語記事: `_articles_en/<slug>.md`(`layout: article-en`)
 - 既存記事はすべて日英で対になっている。**原則、日本語版と英語版を両方作成する**。
 - フロントマターは `title` / `date`(UTC) / `category` / `excerpt`(日本語 120〜140 字・英語 120〜160 字) / `layout` を設定する。`title` が日本語 63 字・英語 59 字を超える場合は `seo_title` も設定する(`docs/rules/article/guidelines.md` §8.1)。
+- `<title>` に出るタイトル(`seo_title` があればそちら)は `guidelines.md` §8.3 の観点に合わせる。既存記事を直すときの手順も同じ節に従う。観点の一覧は §8.3 だけに書き、ここやチェックリストには書き写さない(書き分けると、片方を直したときにもう片方とずれるため)。
 - 日英の対応記事間には相互リンクを **張らない**(`guidelines.md` §7)。
 
 ---

@@ -48,7 +48,7 @@
 
 - `layout` — 言語に一致させる(日本語 `article-ja` / 英語 `article-en`)
 - `title` — 技術テーマが即座に伝わるもの
-- `seo_title` — 任意。`title` が日本語 63 字 / 英語 59 字を超える場合に、`<title>` 用の短縮版を書く(`guidelines.md` §8.1)
+- `seo_title` — 任意。`title` が日本語 63 字 / 英語 59 字を超える場合、または §8.3 の観点で既存記事のタイトルを直す場合に、`<title>` 用のタイトルを書く(`guidelines.md` §8.1・§8.3)
 - `date` — UTC 日付(`YYYY-MM-DD`)
 - `category` — 自由文字列。既存は主に `WPF` / `C#` の 2 値
 - `excerpt` — 記事の要約。日本語 120〜140 字 / 英語 120〜160 字。meta description と記事冒頭の両方に出る(`guidelines.md` §8.2)
