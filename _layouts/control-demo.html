@@ -19,18 +19,18 @@
   {%- assign lang = 'ja' -%}
   {%- assign app_name = 'WPF 標準コントロールデモアプリ' -%}
   {%- assign app_url = '/ja/apps/wpf-standard-control-demo.html' -%}
-  {%- capture page_title -%}WPF {{ page.title | escape }} の挙動を .NET 10 で実測 | 標準コントロールデモ{%- endcapture -%}
+  {%- capture page_title -%}WPF {{ page.title }} の挙動を .NET 10 で実測 | 標準コントロールデモ{%- endcapture -%}
 {%- else -%}
   {%- assign lang = 'en' -%}
   {%- assign app_name = 'WPF Standard Control Demo App' -%}
   {%- assign app_url = '/apps/wpf-standard-control-demo.html' -%}
-  {%- capture page_title -%}WPF {{ page.title | escape }}: Behavior Measured on .NET 10 | Control Demo{%- endcapture -%}
+  {%- capture page_title -%}WPF {{ page.title }}: Behavior Measured on .NET 10 | Control Demo{%- endcapture -%}
 {%- endif -%}
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8">
-  <title>{{ page_title }}</title>
+  <title>{{ page_title | escape }}</title>
   {% include head.html %}
 
   <meta name="description" content="{{ page.description | escape }}">

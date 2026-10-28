@@ -1,0 +1,14 @@
+{
+  "name": "og-image",
+  "private": true,
+  "type": "module",
+  "description": "記事とコントロールデモの OGP 画像（1200x630）を生成する",
+  "scripts": {
+    "generate": "node generate.mjs"
+  },
+  "dependencies": {
+    "budoux": "0.9.3",
+    "js-yaml": "4.1.0",
+    "playwright-core": "1.56.1"
+  }
+}

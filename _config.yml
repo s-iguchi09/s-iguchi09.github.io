@@ -24,6 +24,8 @@ exclude:
   - docs
   - tools
   - samples
+  # OGP 画像の生成記録（tools/og-image/generate.mjs が差分生成に使う）。サイトの公開物ではない。
+  - images/og/manifest.json
   - CLAUDE.md
   - AGENTS.md
 

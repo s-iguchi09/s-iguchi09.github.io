@@ -49,6 +49,56 @@
 {% endif %}
 
 {% comment %}
+  OGP と X（Twitter）のカード。SNS に URL を貼ったときに出るタイトル・説明・画像を指定する。
+
+  画像は tools/og-image/generate.mjs が生成する 1200x630 の PNG で、置き場所は images/og/<ページの URL>.png
+  （/articles/<slug>/ → /images/og/articles/<slug>.png、.html で終わる URL は拡張子を外す）。
+  生成していないページ（一覧・固定ページなど）は言語ごとの既定画像を使う。
+  記事やデモを追加・改題したら generate.mjs を実行して画像を作り直すこと（--check で漏れを確かめられる）。
+
+  og:title はコントロールデモではレイアウトが組み立てた page_title（<title> と同じ文言）、それ以外は page.title を使う。
+  page.title が無い固定ページ（トップ・一覧・about など）では、X がタイトルの無いカードを出さないことがあるため、
+  サイト名と言語ごとの説明を代わりに出す。page_title はエスケープ前の値なので、ここで 1 回だけエスケープする。
+{% endcomment %}
+{%- assign og_path = page.url | replace: 'index.html', '' -%}
+{%- assign og_last = og_path | slice: -1, 1 -%}
+{%- if og_last == '/' -%}
+  {%- assign og_size = og_path | size | minus: 1 -%}
+  {%- assign og_path = og_path | slice: 0, og_size -%}
+{%- endif -%}
+{%- assign og_path = og_path | replace: '.html', '' -%}
+{%- assign og_candidate = '/images/og' | append: og_path | append: '.png' -%}
+{%- assign og_file = site.static_files | where: 'path', og_candidate | first -%}
+{%- if og_file -%}
+  {%- assign og_image = og_candidate -%}
+{%- elsif page.url contains '/ja/' -%}
+  {%- assign og_image = '/images/og/ja/default.png' -%}
+{%- else -%}
+  {%- assign og_image = '/images/og/default.png' -%}
+{%- endif -%}
+{%- if page.url contains '/ja/' -%}
+  {%- assign og_fallback = 'WPF と .NET の技術記事' -%}
+{%- else -%}
+  {%- assign og_fallback = 'WPF and .NET technical articles' -%}
+{%- endif -%}
+{%- assign og_title = page_title | default: page.title | default: og_fallback -%}
+{%- assign og_description = page.description | default: page.excerpt | strip_html | strip_newlines | strip -%}
+{%- if og_description == '' -%}
+  {%- assign og_description = og_fallback -%}
+{%- endif -%}
+<meta property="og:site_name" content="s-iguchi">
+<meta property="og:type" content="{% if page.collection contains 'articles' %}article{% else %}website{% endif %}">
+<meta property="og:url" content="{{ site.url }}{{ page.url | replace: 'index.html', '' }}">
+<meta property="og:locale" content="{% if page.url contains '/ja/' %}ja_JP{% else %}en_US{% endif %}">
+<meta property="og:title" content="{{ og_title | escape }}">
+<meta property="og:description" content="{{ og_description | escape }}">
+<meta property="og:image" content="{{ site.url }}{{ og_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ og_title | escape }}">
+<meta name="twitter:card" content="summary_large_image">
+
+{% comment %}
   Atom フィードの自動検出。RSS リーダーがこのリンクを見てフィードを拾う。
 
   Search Console が sitemap.xml を「読み込めませんでした」と返し検出ページ数が 0 の
