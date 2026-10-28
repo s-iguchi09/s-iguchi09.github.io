@@ -1,7 +1,7 @@
 ---
 layout: article-en
 title: "Selecting and Expanding a WPF TreeView Node from Code, and Why SelectedItem Is Read-Only"
-seo_title: "WPF TreeView SelectedItem: Select and Expand Nodes in Code"
+seo_title: "WPF TreeView SelectedItem Is Read-Only: Selecting from Code"
 date: 2026-08-10
 category: WPF
 excerpt: "TreeView.SelectedItem cannot be assigned or data-bound: the selection lives on TreeViewItem. Style binding and ItemContainerGenerator are compared."

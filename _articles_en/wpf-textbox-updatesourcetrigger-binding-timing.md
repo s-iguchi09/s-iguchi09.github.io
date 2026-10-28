@@ -1,7 +1,7 @@
 ---
 layout: article-en
 title: "Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF"
-seo_title: "UpdateSourceTrigger in WPF: PropertyChanged vs LostFocus"
+seo_title: "WPF TextBox UpdateSourceTrigger and Source Update Timing"
 date: 2026-07-21
 category: WPF
 excerpt: "TextBox.Text defaults to LostFocus, so typed input may never reach the ViewModel. This covers the three UpdateSourceTrigger values, their timing, and pitfalls."
