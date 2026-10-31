@@ -75,7 +75,8 @@ internal sealed class BindingNonInpcLeakScene : IScene
         "ウィンドウを閉じて GC すると、BindingExpression は回収されるが、登録（キーと記録の _source）とソースは残ること。250 ms ごとに GC を呼びながら 5 秒待っても残ること",
         "その後、別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC すると、登録が 0 件になり、ソースが回収されること",
         "PropertyDescriptor._valueChangedHandlers は宣言も実体も ConcurrentDictionary<object, EventHandler> で、ValueChangedRecord._source の宣言の型は object であること（どちらも弱い参照の型ではない）",
-        "TimelineViewModel.Title の PropertyDescriptor の具象型は System.ComponentModel.ReflectPropertyDescriptor で、シーンが弱参照だけを残して GC した後も、TypeDescriptor から同じインスタンスが返ること",
+        "TimelineViewModel.Title の PropertyDescriptor の具象型は System.ComponentModel.ReflectPropertyDescriptor で、シーンが弱参照だけを残して GC した後も、TypeDescriptor から同じインスタンスが返ること。一度もバインドしていない UnboundViewModel.Title の PropertyDescriptor でも同じであること",
+        "ValueChangedRecord のインスタンスフィールドは _eventArgs・_listeners・_manager・_pd（PropertyDescriptor）・_source（object）と、HasIgnorableListeners の自動実装のフィールドであること",
         "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor は別のインスタンスであること。TextBox.Text の BindsTwoWayByDefault は true であること",
         "閉じたウィンドウの BindingExpression が回収され登録だけが残った状態で次のウィンドウを開くと、INPC のビューモデル・別の型の通知なしのプロパティ・同じ型の別のインスタンスに OneWay でバインドしたウィンドウでは、開いて表示が落ち着いた時点（GC の前）で登録が外れ、最初のソースが回収されること",
         "最初の BindingExpression が回収される前（強い参照で保持）に、同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れないこと。参照を放した後の GC で BindingExpression は回収されること",
@@ -143,6 +144,15 @@ internal sealed class BindingNonInpcLeakScene : IScene
         await IdleAsync(5, 100);
         bool descriptorKept = weakTitle.IsAlive && IsSameTitle(weakTitle);
 
+        // 登録が一度も無い型の記述子でも同じことを確かめ、記述子を持っているのが登録（記録）ではなく TypeDescriptor であることを切り分ける。
+        WeakReference weakUnbound = WeakUnbound();
+        await IdleAsync(5, 100);
+        bool unboundKept = weakUnbound.IsAlive && IsSameUnbound(weakUnbound);
+        string recordFields = string.Join(", ", recordType
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
+            .OrderBy(field => field.Name, StringComparer.Ordinal)
+            .Select(field => $"{field.Name}: {TypeName(field.FieldType)}"));
+
         bool twoWayByDefault = ((FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(typeof(TextBox))).BindsTwoWayByDefault;
 
         List<IReadOnlyList<Loc>> rows =
@@ -151,14 +161,19 @@ internal sealed class BindingNonInpcLeakScene : IScene
             [T("Actual type of _valueChangedHandlers while registered", "登録がある間の _valueChangedHandlers の実際の型"), handlersType],
             [T("Declared type of ValueChangedRecord._source", "ValueChangedRecord._source の宣言の型"), TypeName(sourceField.FieldType)],
             [T("Concrete type of the PropertyDescriptor for TimelineViewModel.Title", "TimelineViewModel.Title の PropertyDescriptor の具象型"), TypeName(TimelineTitle().GetType())],
-            [T("Same PropertyDescriptor returned after keeping only a weak reference and running the GC", "弱参照だけを残して GC した後も、同じ PropertyDescriptor が返る"), descriptorKept.ToString()],
+            [T("Same PropertyDescriptor returned after keeping only a weak reference and running the GC (registration still present)", "弱参照だけを残して GC した後も、同じ PropertyDescriptor が返る（登録が残っている状態）"), descriptorKept.ToString()],
+            [T("Same as above for UnboundViewModel.Title, which was never bound", "同上。一度もバインドしていない UnboundViewModel.Title"), unboundKept.ToString()],
+            [T("Instance fields of ValueChangedRecord", "ValueChangedRecord のインスタンスフィールド"), recordFields],
             [T("OtherViewModel.Name and TimelineViewModel.Title share one PropertyDescriptor", "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor が同一"), ReferenceEquals(TimelineTitle(), TypeDescriptor.GetProperties(typeof(OtherViewModel))[nameof(OtherViewModel.Name)]).ToString()],
             [T("TextBox.Text BindsTwoWayByDefault", "TextBox.Text の BindsTwoWayByDefault"), twoWayByDefault.ToString()],
         ];
 
+        const string RecordFields = "<HasIgnorableListeners>k__BackingField: System.Boolean, _eventArgs: MS.Internal.Data.ValueChangedEventArgs, "
+            + "_listeners: System.Windows.WeakEventManager+ListenerList<MS.Internal.Data.ValueChangedEventArgs>, "
+            + "_manager: MS.Internal.Data.ValueChangedEventManager, _pd: System.ComponentModel.PropertyDescriptor, _source: System.Object";
         const string Handlers = "System.Collections.Concurrent.ConcurrentDictionary<System.Object, System.EventHandler>";
         string[] actual = rows.Select(row => row[1].En).ToArray();
-        string[] expected = [Handlers, Handlers, "System.Object", "System.ComponentModel.ReflectPropertyDescriptor", "True", "False", "True"];
+        string[] expected = [Handlers, Handlers, "System.Object", "System.ComponentModel.ReflectPropertyDescriptor", "True", "True", RecordFields, "False", "True"];
         if (!actual.SequenceEqual(expected))
         {
             throw new InvalidOperationException($"内部の型と既定値が想定と異なる: {string.Join(" | ", actual)}");
@@ -173,6 +188,15 @@ internal sealed class BindingNonInpcLeakScene : IScene
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference WeakTitle() => new(TimelineTitle());
+
+    private static PropertyDescriptor UnboundTitle() =>
+        TypeDescriptor.GetProperties(typeof(UnboundViewModel))[nameof(UnboundViewModel.Title)]!;
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference WeakUnbound() => new(UnboundTitle());
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool IsSameUnbound(WeakReference weak) => ReferenceEquals(weak.Target, UnboundTitle());
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static bool IsSameTitle(WeakReference weakTitle) => ReferenceEquals(weakTitle.Target, TimelineTitle());
@@ -796,6 +820,12 @@ internal sealed class BindingNonInpcLeakScene : IScene
         public string Title { get; set; } = "Monthly report";
 
         public byte[] Data { get; } = new byte[1_000_000];
+    }
+
+    /// <summary>表 3 だけで使う型。一度もバインドせず、PropertyDescriptor に登録が無い状態を作る。</summary>
+    private sealed class UnboundViewModel
+    {
+        public string Title { get; set; } = "Unbound";
     }
 
     private sealed class OtherViewModel

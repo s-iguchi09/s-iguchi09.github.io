@@ -125,13 +125,16 @@ The following table shows the types of these two references.
 
 Table 3: Types of the non-public fields and the default direction of `TextBox.Text`.
 The fields were only read through reflection and never modified.
-The actual type of the registration table was read while a window bound to `TimelineViewModel` was open (.NET 10.0.13 / Windows 11).
+The actual type of the registration table was read while a window bound to `TimelineViewModel` was open.
+Whether the same descriptor keeps being returned was compared in two states: after the window was closed and the GC was run (registration still present), and for `Title` of `UnboundViewModel`, which was never bound (no registration). In each case, the scene kept only a weak reference to the descriptor, ran the GC, and compared it with the one returned again by `TypeDescriptor` (.NET 10.0.13 / Windows 11).
 {: .table-caption}
 
 The registration table is a `ConcurrentDictionary<object, EventHandler>`, which holds its keys with ordinary (strong) references.
 The record's `_source` is also a field of type `object`, not a `WeakReference`.
-As Table 3 shows, `TypeDescriptor` returned the same `PropertyDescriptor` even after the scene kept only a weak reference to it and ran the GC.
-Because `TypeDescriptor` keeps holding the descriptor, the source stays reachable through these two strong references and is not collected as long as the registration remains.
+As Table 3 shows, even for a type that was never bound, `TypeDescriptor` returned the same `PropertyDescriptor` after the scene kept only a weak reference to it and ran the GC.
+The descriptor is reachable from `TypeDescriptor` regardless of whether a registration exists.
+As long as the registration remains, the source is therefore reachable from the descriptor through the registration key and is not collected.
+Besides `_source`, the record also points to the descriptor (`_pd`) and to the `ValueChangedEventManager` (`_manager`) (Table 3).
 In Tables 2 and 4 as well, the source was alive at the sampling points where the registration remained and had been collected at the points after the registration was removed.
 
 <figure class="article-figure">
@@ -166,8 +169,8 @@ It was removed when one more `OneWay` window was opened after that.
 The rows for the window without bindings and for `OneTime` were also removed when one more window was opened.
 Because the Table 1 scene explicitly runs the GC only at checkpoints, many rounds opened the next window before the previous round's `BindingExpression` was collected ("Windows opened before the previous BindingExpression was collected" in Table 1).
 In those rounds, the registration is not removed at the point of opening.
-The sources that did not remain in Table 1 were collected after their registrations were removed (they are not collected while registered).
-The only way of removal confirmed in Table 4 is opening a `OneWay` window after the `BindingExpression` has been collected, so the number left in Table 1 depends on the order of the open/close cycles and the GCs that run automatically at run time.
+In the rows that were keys, the sources that did not remain were collected after their registrations were removed (they are not collected while registered).
+The way of removal confirmed in Table 4 is opening a `OneWay` window after the `BindingExpression` has been collected, and the number left in Table 1 can be explained by the order of the open/close cycles and the GCs that run automatically at run time.
 
 ---
 

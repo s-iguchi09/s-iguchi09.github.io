@@ -123,13 +123,16 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 表 3: 非公開のフィールドの型と、`TextBox.Text` の既定の向き。
 フィールドはリフレクションで読むだけで、書き換えていない。
-登録表の実際の型は、`TimelineViewModel` にバインドしたウィンドウを開いている間に読んだ（.NET 10.0.13 / Windows 11）。
+登録表の実際の型は、`TimelineViewModel` にバインドしたウィンドウを開いている間に読んだ。
+記述子が返り続けるかは、ウィンドウを閉じて GC を呼んだ後（登録が残っている状態）と、一度もバインドしていない `UnboundViewModel` の `Title`（登録が無い状態）のそれぞれで、記述子を弱参照だけで持って GC を呼び、`TypeDescriptor` から取り直したものと同じかを比べた（.NET 10.0.13 / Windows 11）。
 {: .table-caption}
 
 登録表は `ConcurrentDictionary<object, EventHandler>` で、キーを通常の（強い）参照で持つ。
 記録の `_source` も `object` 型のフィールドで、`WeakReference` ではない。
-表 3 のとおり、シーンが記述子を弱参照だけで持って GC を呼んだ後も、`TypeDescriptor` は同じ `PropertyDescriptor` を返した。
-`TypeDescriptor` が記述子を持ち続けているので、登録が残っている限り、ソースはこの 2 つの強い参照から到達でき、回収されない。
+表 3 のとおり、一度もバインドしていない型でも、シーンが記述子を弱参照だけで持って GC を呼んだ後に、`TypeDescriptor` は同じ `PropertyDescriptor` を返した。
+記述子は、登録の有無にかかわらず `TypeDescriptor` から到達できる。
+そのため、登録が残っている限り、ソースは記述子から登録表のキーをたどって到達でき、回収されない。
+記録は `_source` に加えて記述子（`_pd`）と `ValueChangedEventManager`（`_manager`）も指している（表 3）。
 表 2 と表 4 でも、登録が残っていた測定点ではソースは残り、登録が外れた後の測定点では回収されていた。
 
 <figure class="article-figure">
@@ -164,8 +167,8 @@ INPC のビューモデルは `PropertyDescriptor` の登録表に入らない�
 バインドの無いウィンドウの行と `OneTime` の行も、同じくもう 1 つ開いたときに外れた。
 表 1 のシーンは GC をチェックポイントでしか明示的に呼ばないため、前の回の `BindingExpression` が回収される前に次のウィンドウを開いた回が多い（表 1 の「前の BindingExpression が回収される前に開いた回数」）。
 そうした回では、開いた時点では登録が外れない。
-表 1 で残らなかった分は、登録が外れてから回収されたものである（登録がある間は回収されないため）。
-表 4 で確かめた外れ方は、`BindingExpression` が回収された後に `OneWay` のウィンドウを開くことだけなので、表 1 で残る数は、開閉と、実行時に自動で走る GC との前後関係で決まる。
+キーになっていた行で残らなかった分は、登録が外れてから回収されたものである（登録がある間は回収されないため）。
+表 4 で確かめた外れ方は、`BindingExpression` が回収された後に `OneWay` のウィンドウを開くことであり、表 1 で残る数は、開閉と、実行時に自動で走る GC との前後関係で説明できる。
 
 ---
 
