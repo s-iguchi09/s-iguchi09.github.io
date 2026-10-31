@@ -90,7 +90,7 @@ Every row that left objects behind is a row whose tracked object was a key in th
 Microsoft Learn's "[Optimizing Performance: Data Binding](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-data-binding)" names two ways to provide property change notifications: INPC and the change notifications associated with `TypeDescriptor`.
 In the measurement, when the object owning the bound property did not implement INPC and the binding was not `Mode=OneTime`, that object was in the registration table of the property's `PropertyDescriptor` (objects in the middle of the path are covered later).
 That is the "Key in \_valueChangedHandlers while open" column in Table 1.
-When the object owning the property implemented INPC (the view model or `ObservableCollection<T>`), or when the binding was `Mode=OneTime`, nothing was in that registration table.
+When the object owning the property implemented INPC (the view model or `ObservableCollection<T>`), or when the binding was `Mode=OneTime`, that object was not in that registration table.
 
 For the measured type, a `PropertyDescriptor` was not created per object.
 Calling `TypeDescriptor.GetProperties` twice with the type, or once with an instance, returned the same instance for the same property.
@@ -159,7 +159,7 @@ If `Rows` in `{Binding Rows.Count}` is a `List<T>`, the `List<T>` that owns `Cou
 The "List&lt;T&gt;.Count" row in Table 1 uses `ReadOnlyRowsViewModel`, shown later, with one 1 MB array in `Rows`, without `RowCount`, and with `{Binding Rows.Count}`.
 In Table 1, the `List<T>` was a key in the registration table while the first window was open, and the `List<T>` and its contents stayed after the window closed.
 
-`ObservableCollection<T>` implements INPC, so with the same path it did not become a key and did not stay.
+In Table 1, `ObservableCollection<T>` implements INPC, so with the same path it did not become a key and did not stay.
 Keeping the `List<T>` but reading the count from a `RowCount` property on the INPC view model kept the view model out of the registration table, and no `List<T>` was left behind either.
 
 ### Properties Without a Setter Are Watched Too
@@ -285,7 +285,7 @@ This approach is limited to display-only elements.
 
 ## Summary
 
-In the measurement, when the object owning a property bound with `OneWay` or `TwoWay` did not implement INPC, that object became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
+In the measurement (the registration was checked for the first window), when the object owning a property bound with `OneWay` or `TwoWay` did not implement INPC, that object became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
 That object is not necessarily the `DataContext`; it can be an object in the middle of the path, such as the `List<T>` in `{Binding Rows.Count}`.
 On .NET 10, the `BindingExpression` and the window are collected, but in Table 2 that object was not collected until the registration was removed.
 In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.

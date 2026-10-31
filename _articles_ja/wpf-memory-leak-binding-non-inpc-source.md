@@ -158,8 +158,8 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 表 1 の「List&lt;T&gt;.Count」の行は、後で示す `ReadOnlyRowsViewModel` の `Rows` に 1 MB の配列を 1 つ入れ、`RowCount` を除いて `{Binding Rows.Count}` にしたものである。
 表 1 では、1 回目のウィンドウを開いている間に `List<T>` が登録表のキーになっており、閉じた後も `List<T>` とその中身が残った。
 
-`ObservableCollection<T>` は INPC を実装しているため、同じパスでもキーにならず、残らなかった。
-`List<T>` のままでも、件数を INPC のビューモデルの `RowCount` から読むようにすると、ビューモデルは登録表のキーにならず、`List<T>` も残らなかった。
+表 1 では、`ObservableCollection<T>` は INPC を実装しているため、同じパスでもキーにならず、残らなかった。
+表 1 では、`List<T>` のままでも、件数を INPC のビューモデルの `RowCount` から読むようにすると、ビューモデルは登録表のキーにならず、`List<T>` も残らなかった。
 
 ### set の無いプロパティも監視される
 
@@ -284,7 +284,7 @@ XAML は `{Binding RowCount}` にする。
 
 ## まとめ
 
-計測では、`OneWay`・`TwoWay` でバインドしたプロパティを持つオブジェクトが INPC を実装していないと、そのオブジェクトは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
+計測（登録は 1 回目のウィンドウで調べた）では、`OneWay`・`TwoWay` でバインドしたプロパティを持つオブジェクトが INPC を実装していないと、そのオブジェクトは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
 このオブジェクトは `DataContext` とは限らず、`{Binding Rows.Count}` の `List<T>` のようにパスの途中のオブジェクトのこともある。
 .NET 10 では、`BindingExpression` とウィンドウは回収されるが、表 2 ではそのオブジェクトは登録が外れるまで回収されなかった。
 計測では、5 秒の待機と GC では外れず、別の型の通知なしのソースにバインドしたウィンドウを開いて GC を呼んだ後に外れた。
