@@ -1285,7 +1285,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-10-03T07:57:19Z</lastmod>
+    <lastmod>2026-10-31T14:35:47Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1296,7 +1296,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-error-debugging-output-window/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-error-debugging-output-window/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-binding-error-debugging-output-window/binding-error-message-anatomy.svg</image:loc></image:image>
-    <lastmod>2026-10-03T07:57:19Z</lastmod>
+    <lastmod>2026-10-31T14:35:47Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1306,7 +1306,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-10-31T14:35:47Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1316,7 +1316,7 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-binding-mode-omitted-detached/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-binding-mode-omitted-detached/" />
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-10-31T14:35:47Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1736,6 +1736,28 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-memory-leak-binding-non-inpc-source/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg</image:loc></image:image>
+    <lastmod>2026-10-31T21:29:29Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-memory-leak-binding-non-inpc-source/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-memory-leak-binding-non-inpc-source/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg</image:loc></image:image>
+    <lastmod>2026-10-31T21:29:29Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-mvvm-library-command-requery/" />
@@ -1763,7 +1785,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg</image:loc></image:image>
-    <lastmod>2026-10-03T18:46:40Z</lastmod>
+    <lastmod>2026-10-31T14:35:47Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1774,7 +1796,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-observablecollection-cross-thread-update/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-observablecollection-cross-thread-update/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-observablecollection-cross-thread-update/collectionview-thread-affinity.svg</image:loc></image:image>
-    <lastmod>2026-10-03T18:46:40Z</lastmod>
+    <lastmod>2026-10-31T14:35:47Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
