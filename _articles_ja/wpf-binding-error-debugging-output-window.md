@@ -255,4 +255,5 @@ WPF のバインディングエラーは例外を出さないため、出力ウ�
 
 <!-- 関連記事 -->
 - [WPF で RadioButton を enum にバインドすると初期選択が表示されない問題と GroupName の役割](/ja/articles/wpf-radiobutton-enum-binding/)
+- [WPF のバインドで INotifyPropertyChanged の無いソースがメモリに残る仕組み](/ja/articles/wpf-memory-leak-binding-non-inpc-source/)
 <!-- - [WPF ComboBox の ItemsSource バインドパターンと選択値の取得方法](/articles/wpf-combobox-itemssource-patterns) -->

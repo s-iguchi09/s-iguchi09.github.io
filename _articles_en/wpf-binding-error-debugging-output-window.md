@@ -257,4 +257,5 @@ Selecting among these by situation makes it possible to locate a failing binding
 
 <!-- Related articles -->
 - [Why a WPF RadioButton Bound to an Enum Shows No Initial Selection — The Role of GroupName](/articles/wpf-radiobutton-enum-binding/)
+- [WPF Binding Without INotifyPropertyChanged: Why the Source Stays in Memory](/articles/wpf-memory-leak-binding-non-inpc-source/)
 <!-- - [WPF ComboBox ItemsSource Binding Patterns and Selected Value Retrieval](/en/articles/wpf-combobox-itemssource-patterns) -->

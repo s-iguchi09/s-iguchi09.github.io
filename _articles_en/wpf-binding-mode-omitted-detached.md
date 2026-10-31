@@ -284,5 +284,6 @@ Whether the binding has been removed can be checked with `BindingOperations.GetB
 - [Why WPF Style Triggers and DataTriggers Do Not Apply — Dependency Property Value Precedence](/articles/wpf-style-trigger-not-working-local-value/)
 - [Binding to a WPF UserControl's Own Dependency Property from Inside the Control](/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)
 - [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/)
+- [WPF Binding Without INotifyPropertyChanged: Why the Source Stays in Memory](/articles/wpf-memory-leak-binding-non-inpc-source/)
 - [TreeView (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/treeview.html): the default directions of `IsExpanded` and `IsSelected`, and the binding removed by the expander button
 - [GridSplitter (WPF Standard Control Demo App)](/apps/wpf-standard-control-demo/gridsplitter.html): the default `HorizontalAlignment` and which pair of columns is resized
