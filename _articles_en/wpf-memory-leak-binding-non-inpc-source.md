@@ -15,7 +15,7 @@ If the remaining object holds large data, repeated opening and closing can look 
 One cause is a binding to a property of an object that does not implement `INotifyPropertyChanged` (INPC below).
 
 Since something survives the window, it is natural to assume that the whole window survives.
-Counting over 100 open/close cycles on .NET 10, however, shows that the objects left uncollected are neither the windows nor the bindings, but the binding sources.
+Counting over 100 open/close cycles on .NET 10, however, shows that the objects left uncollected are neither the windows nor the `BindingExpression` objects, but the binding sources.
 In this measurement, the number left behind did not grow in proportion to the number of windows opened.
 
 This article traces the reference path that keeps the source alive by reading WPF's internal table.
@@ -79,7 +79,7 @@ In the first three "No INPC" rows (the settable property with a TextBlock and wi
 At 100 cycles, every one of these rows left fewer than the number opened (100).
 On the other hand, no row left any `BindingExpression` or window alive after 100 cycles.
 The INPC view model, `Mode=OneTime`, the `RowCount` property, and `ObservableCollection<T>.Count` left no source at any checkpoint.
-Every row that left objects behind is a row whose remaining object was a key in the registration table while the window was open.
+Every row that left objects behind is a row whose tracked object was a key in the registration table while the first window was open (the registration was checked only for the first window).
 
 ---
 
@@ -136,7 +136,7 @@ However, whether opening a window itself or adding a registration for another ty
 That internal processing, and whether a window without bindings, an INPC source, or a `OneTime` binding also removes it, were not checked either.
 
 In Table 2, the next window is opened after the first window's `BindingExpression` has been collected by the GC.
-In Table 1, the GC runs only at checkpoints, so when the next window opens, the previous window's binding might not have been collected yet.
+In Table 1, the GC runs only at checkpoints, so when the next window opens, the previous window's `BindingExpression` might not have been collected yet.
 Assuming that such registrations stay is consistent with only part of the opened sources remaining at 100 cycles in Table 1, but neither this hypothesis nor how the registrations change after each open/close cycle was measured.
 
 ---
@@ -157,7 +157,7 @@ Report data, images, and lists of search results stay together with the source.
 The key is not necessarily the `DataContext`; it is the object that owns the bound property.
 If `Rows` in `{Binding Rows.Count}` is a `List<T>`, the `List<T>` that owns `Count` does not implement INPC, even when the view model does, so the `List<T>` becomes the key when `Count` is watched.
 The "List&lt;T&gt;.Count" row in Table 1 uses `ReadOnlyRowsViewModel`, shown later, with one 1 MB array in `Rows`, without `RowCount`, and with `{Binding Rows.Count}`.
-In Table 1, the `List<T>` was a key in the registration table while the window was open, and the `List<T>` and its contents stayed after the window closed.
+In Table 1, the `List<T>` was a key in the registration table while the first window was open, and the `List<T>` and its contents stayed after the window closed.
 
 `ObservableCollection<T>` implements INPC, so with the same path it did not become a key and did not stay.
 Keeping the `List<T>` but reading the count from a `RowCount` property on the INPC view model kept the view model out of the registration table, and no `List<T>` was left behind either.
@@ -287,7 +287,7 @@ This approach is limited to display-only elements.
 
 In the measurement, when the object owning a property bound with `OneWay` or `TwoWay` did not implement INPC, that object became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
 That object is not necessarily the `DataContext`; it can be an object in the middle of the path, such as the `List<T>` in `{Binding Rows.Count}`.
-On .NET 10, the binding and the window are collected, but in Table 2 that object was not collected until the registration was removed.
+On .NET 10, the `BindingExpression` and the window are collected, but in Table 2 that object was not collected until the registration was removed.
 In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.
 Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-`PropertyDescriptor` registration table but on a side that works across types (what triggered it was not isolated).
 
