@@ -7,7 +7,7 @@ environment:
   os: "Microsoft Windows 10.0.26200"
 verifies:
   - "INotifyPropertyChanged を実装しないビューモデルの書き込み可能なプロパティに TextBlock.Text を OneWay でバインドしたウィンドウを 100 回開閉すると、10・50・100 回のいずれかの時点でビューモデルが 1 個以上回収されずに残り、100 回の時点で残る数は開いた数（100）より少ないこと"
-  - "同じビューモデルに TextBox.Text を（既定の TwoWay で）バインドした場合と、get だけのプロパティにバインドした場合も、同じく 1 個以上残り、100 回の時点では開いた数より少ないこと"
+  - "INotifyPropertyChanged を実装しない別のビューモデル（TextBox.Text を既定の TwoWay でバインドした ReportViewModel と、get だけのプロパティを持つ ReadOnlyReportViewModel）でも、同じく 1 個以上残り、100 回の時点では開いた数より少ないこと"
   - "INotifyPropertyChanged を実装したビューモデルに {Binding Rows.Count} で List<T> の Count にバインドすると、List<T> が同じように残ること"
   - "INotifyPropertyChanged を実装したビューモデル、Mode=OneTime、ObservableCollection<T> の Count では、10・50・100 回のどの時点でも残るソースが 0 であること"
   - "List<T> を持つ INotifyPropertyChanged のビューモデルに件数を返す RowCount を用意して {Binding RowCount} にすると、List<T> は 10・50・100 回のどの時点でも残らないこと"

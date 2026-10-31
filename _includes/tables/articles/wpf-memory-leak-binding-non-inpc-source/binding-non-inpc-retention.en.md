@@ -1,7 +1,7 @@
 | Source and target element | Binding | Rounds in which it was a key in \_valueChangedHandlers while open | Windows opened before the previous BindingExpression was collected | Sources alive after 10 | after 50 | after 100 | BindingExpressions alive after 100 | Windows alive after 100 |
 |---|---|---|---|---|---|---|---|---|
-| No INPC, settable property, TextBlock | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 8 | 3 | 20 | 0 | 0 |
-| No INPC, settable property, TextBox (TwoWay by default) | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 10 | 1 | 5 | 0 | 0 |
+| No INPC, settable property, TextBlock | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 3 | 15 | 20 | 0 | 0 |
+| No INPC, settable property, TextBox (TwoWay by default) | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 10 | 1 | 6 | 0 | 0 |
 | No INPC, get-only property | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 10 | 1 | 1 | 0 | 0 |
 | No INPC, Mode=OneTime | &#123;Binding Title, Mode=OneTime&#125; | 0 / 100 | 97 / 99 | 0 | 0 | 0 | 0 | 0 |
 | INPC view model (PropertyChanged never raised) | &#123;Binding Title&#125; | 0 / 100 | 97 / 99 | 0 | 0 | 0 | 0 | 0 |

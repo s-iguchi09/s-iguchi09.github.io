@@ -1,7 +1,7 @@
 | ソースとバインド先の要素 | バインド | 開いている間に \_valueChangedHandlers のキーだった回数 | 前の BindingExpression が回収される前に開いた回数 | 10 回後に残るソース | 50 回後 | 100 回後 | 100 回後に残る BindingExpression | 100 回後に残るウィンドウ |
 |---|---|---|---|---|---|---|---|---|
-| 通知なし、set のあるプロパティ、TextBlock | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 8 | 3 | 20 | 0 | 0 |
-| 通知なし、set のあるプロパティ、TextBox（既定で TwoWay） | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 10 | 1 | 5 | 0 | 0 |
+| 通知なし、set のあるプロパティ、TextBlock | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 3 | 15 | 20 | 0 | 0 |
+| 通知なし、set のあるプロパティ、TextBox（既定で TwoWay） | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 10 | 1 | 6 | 0 | 0 |
 | 通知なし、get だけのプロパティ | &#123;Binding Title&#125; | 100 / 100 | 97 / 99 | 10 | 1 | 1 | 0 | 0 |
 | 通知なし、Mode=OneTime | &#123;Binding Title, Mode=OneTime&#125; | 0 / 100 | 97 / 99 | 0 | 0 | 0 | 0 | 0 |
 | INPC のビューモデル（PropertyChanged は一度も発行しない） | &#123;Binding Title&#125; | 0 / 100 | 97 / 99 | 0 | 0 | 0 | 0 | 0 |
