@@ -11,7 +11,7 @@ image: /images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc
 
 帳票の画面を開いて閉じると、閉じたはずの画面のビューモデルが GC で回収されずに残ることがある。
 残ったオブジェクトが大きなデータを抱えていれば、開閉を繰り返したときにメモリリークとして見える。
-原因の一つは、`INotifyPropertyChanged`（以下 INPC）を実装していないオブジェクトのプロパティへのバインドである。
+原因の一つは、`INotifyPropertyChanged`（以下 INPC）を実装していないオブジェクトのプロパティへの `OneWay`・`TwoWay` のバインドである。
 
 画面を閉じたのに残るのだから、画面ごと残っていると考えやすい。
 しかし .NET 10 で 100 回開閉して数えると、回収されずに残ったのはウィンドウでも `BindingExpression` でもなく、バインドのソースの側だった。

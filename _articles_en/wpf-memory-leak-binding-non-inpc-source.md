@@ -12,7 +12,7 @@ image: /images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc
 
 After a report window is opened and closed, the view model of the closed window can remain uncollected by the GC.
 If the remaining object holds large data, repeated opening and closing can look like a memory leak.
-One cause is a binding to a property of an object that does not implement `INotifyPropertyChanged` (INPC below).
+One cause is a `OneWay` or `TwoWay` binding to a property of an object that does not implement `INotifyPropertyChanged` (INPC below).
 
 Since something survives the window, it is natural to assume that the whole window survives.
 Counting over 100 open/close cycles on .NET 10, however, shows that the objects left uncollected are neither the windows nor the `BindingExpression` objects, but the binding sources.
