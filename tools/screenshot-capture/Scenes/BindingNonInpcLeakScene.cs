@@ -16,7 +16,8 @@ namespace ScreenshotCapture.Scenes;
 /// バインドの書き方とソースの型が違うウィンドウを 100 回ずつ開いて閉じ、10・50・100 回の時点で
 /// GC を呼んでから、ソース（またはバインドしたプロパティを持つオブジェクト）・BindingExpression・ウィンドウが
 /// いくつ回収されずに残っているかを弱参照で数える。ソースはどれも 1 MB の配列を持つ。
-/// もう 1 つの表は、ソースが PropertyDescriptor の内部の表に登録されてから外れるまでを、
+/// ほかの表は、ソースが PropertyDescriptor の内部の表に登録されてから外れるまでと、外れるきっかけ・内部の参照の型・
+/// OneTime と TwoWay の更新の動きを、
 /// 非公開のフィールドをリフレクションで読んで確かめる（観察のためだけに読み、書き換えない）。
 ///
 /// ビューは XAML の文字列から作り、バインドだけで値を表示する（記事に載せる XAML と、ShowInTaskbar と xmlns を除いて同じ）。
@@ -72,15 +73,291 @@ internal sealed class BindingNonInpcLeakScene : IScene
         "通知なしのソースにバインドしたウィンドウを開いている間、PropertyDescriptor の _valueChangedHandlers にそのソースをキーとする登録が 1 件あり、ハンドラーの Target が MS.Internal.Data.ValueChangedEventManager+ValueChangedRecord で、その記録の _source フィールドもソースそのものであること",
         "ウィンドウを閉じて GC すると、BindingExpression は回収されるが、登録（キーと記録の _source）とソースは残ること。250 ms ごとに GC を呼びながら 5 秒待っても残ること",
         "その後、別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC すると、登録が 0 件になり、ソースが回収されること",
+        "PropertyDescriptor._valueChangedHandlers は宣言も実体も ConcurrentDictionary<object, EventHandler> で、ValueChangedRecord._source の宣言の型は object であること（どちらも弱い参照の型ではない）",
+        "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor は別のインスタンスであること。TextBox.Text の BindsTwoWayByDefault は true であること",
+        "閉じたウィンドウの BindingExpression が回収され登録だけが残った状態で次のウィンドウを開くと、INPC のビューモデル・別の型の通知なしのプロパティ・同じ型の別のインスタンスに OneWay でバインドしたウィンドウでは、開いて表示が落ち着いた時点（GC の前）で登録が外れ、最初のソースが回収されること",
+        "最初のウィンドウを閉じた後に GC を呼ばず、最初の BindingExpression が残っているうちに同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
+        "同じ状態で、バインドの無いウィンドウと Mode=OneTime でバインドしたウィンドウでは、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
+        "INPC のソースに OneWay でバインドした TextBlock はソースの PropertyChanged で表示が変わり、Mode=OneTime では変わらないこと。どちらも DataContext を差し替えると表示が変わること",
+        "TextBox に入力して UpdateSource を呼ぶと、既定（TwoWay）のバインドではソースに値が入り、Mode=OneTime ではソースが変わらないこと（どちらもバインドは外れない）",
     ];
 
     public string Slug => "wpf-memory-leak-binding-non-inpc-source";
+
+    private const string NoBindingView = """
+        <Window Width="240" Height="100" ShowInTaskbar="False">
+          <TextBlock Text="No binding" />
+        </Window>
+        """;
+
+    private const string NameView = """
+        <Window Width="240" Height="100" ShowInTaskbar="False">
+          <TextBlock Text="{Binding Name}" />
+        </Window>
+        """;
+
+    private const string OneTimeTextBoxView = """
+        <Window Width="240" Height="100" ShowInTaskbar="False">
+          <TextBox Text="{Binding Title, Mode=OneTime}" />
+        </Window>
+        """;
 
     public async Task CaptureAsync(SceneContext context)
     {
         // 内部の表を読む計測は、他の計測が同じ仕組みを動かす前に行う。
         await SaveCleanupTimelineAsync(context);
+        await SaveCleanupTriggerAsync(context);
+        await SaveInternalsAsync(context);
+        await SaveUpdateBehaviorAsync(context);
         await SaveRetentionMatrixAsync(context);
+    }
+
+    // ------------------------------------------------------------ 表 3: 内部の型と既定値
+
+    private static async Task SaveInternalsAsync(SceneContext context)
+    {
+        PropertyDescriptor title = TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
+        PropertyDescriptor name = TypeDescriptor.GetProperties(typeof(OtherViewModel))[nameof(OtherViewModel.Name)]!;
+        FieldInfo handlersField = typeof(PropertyDescriptor).GetField("_valueChangedHandlers", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        Type recordType = typeof(FrameworkElement).Assembly.GetType("MS.Internal.Data.ValueChangedEventManager+ValueChangedRecord")
+            ?? throw new InvalidOperationException("ValueChangedRecord が見つからない。");
+        FieldInfo sourceField = recordType.GetField("_source", BindingFlags.NonPublic | BindingFlags.Instance)
+            ?? throw new InvalidOperationException("ValueChangedRecord._source が見つからない。");
+
+        // 登録表の実体の型は、登録がある状態で読む。
+        string handlersType = "(null)";
+        await OpenAndCloseAsync(
+            TextBlockView,
+            () => new TimelineViewModel(),
+            vm => vm,
+            (_, _) =>
+            {
+                handlersType = TypeName(HandlersOf(title)?.GetType());
+                return Task.CompletedTask;
+            });
+        await IdleAsync(5, 100);
+
+        bool twoWayByDefault = ((FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(typeof(TextBox))).BindsTwoWayByDefault;
+
+        List<IReadOnlyList<Loc>> rows =
+        [
+            [T("Declared type of PropertyDescriptor._valueChangedHandlers", "PropertyDescriptor._valueChangedHandlers の宣言の型"), TypeName(handlersField.FieldType)],
+            [T("Actual type of _valueChangedHandlers while registered", "登録がある間の _valueChangedHandlers の実際の型"), handlersType],
+            [T("Declared type of ValueChangedRecord._source", "ValueChangedRecord._source の宣言の型"), TypeName(sourceField.FieldType)],
+            [T("OtherViewModel.Name and TimelineViewModel.Title share one PropertyDescriptor", "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor が同一"), ReferenceEquals(title, name).ToString()],
+            [T("TextBox.Text BindsTwoWayByDefault", "TextBox.Text の BindsTwoWayByDefault"), twoWayByDefault.ToString()],
+        ];
+
+        const string Handlers = "System.Collections.Concurrent.ConcurrentDictionary<System.Object, System.EventHandler>";
+        string[] actual = rows.Select(row => row[1].En).ToArray();
+        string[] expected = [Handlers, Handlers, "System.Object", "False", "True"];
+        if (!actual.SequenceEqual(expected))
+        {
+            throw new InvalidOperationException($"内部の型と既定値が想定と異なる: {string.Join(" | ", actual)}");
+        }
+
+        await context.SaveTableAsync(
+            $"Internal field types and defaults ({RuntimeLabel()})",
+            [T("Item", "項目"), T("Value", "値")],
+            rows,
+            "binding-non-inpc-internals.svg");
+    }
+
+    private static string TypeName(Type? type)
+    {
+        if (type is null)
+        {
+            return "(null)";
+        }
+
+        if (!type.IsGenericType)
+        {
+            return type.FullName ?? type.Name;
+        }
+
+        string name = type.GetGenericTypeDefinition().FullName!;
+        return $"{name[..name.IndexOf('`')]}<{string.Join(", ", type.GetGenericArguments().Select(TypeName))}>";
+    }
+
+    // ------------------------------------------------------------ 表 4: 登録が外れるきっかけ
+
+    /// <param name="GcBeforeOpening">次のウィンドウを開く前に GC を呼んで、最初の BindingExpression を回収しておくか。</param>
+    private sealed record Trigger(Loc Label, string Xaml, Func<object> CreateSource, bool GcBeforeOpening = true);
+
+    private static async Task SaveCleanupTriggerAsync(SceneContext context)
+    {
+        PropertyDescriptor descriptor = TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
+        Trigger[] triggers =
+        [
+            new(T("Window without bindings", "バインドの無いウィンドウ"), NoBindingView, () => new OtherViewModel()),
+            new(T("Window bound to an INPC view model", "INPC のビューモデルにバインドしたウィンドウ"), TextBlockView, () => new NotifyingReportViewModel()),
+            new(T("Window bound with Mode=OneTime to a non-INPC type", "通知なしの型に Mode=OneTime でバインドしたウィンドウ"), OneTimeView, () => new ReportViewModel()),
+            new(T("Window bound to a non-INPC property of another type", "別の型の通知なしのプロパティにバインドしたウィンドウ"), NameView, () => new OtherViewModel()),
+            new(T("Window bound to another instance of the same non-INPC type", "同じ通知なしの型の別のインスタンスにバインドしたウィンドウ"), TextBlockView, () => new TimelineViewModel()),
+            new(T("Same as above, but opened without running the GC after closing the first window", "同上。ただし最初のウィンドウを閉じた後、GC を呼ばずに開く"), TextBlockView, () => new TimelineViewModel(), GcBeforeOpening: false),
+        ];
+
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach (Trigger trigger in triggers)
+        {
+            // 最初のウィンドウを開いて閉じる。GcBeforeOpening なら GC して、BindingExpression が回収され登録だけが残る状態にする。
+            Opened first = await OpenAndCloseAsync(TextBlockView, () => new TimelineViewModel(), vm => vm);
+            if (trigger.GcBeforeOpening)
+            {
+                await IdleAsync(5, 100);
+            }
+            bool before = IsKeyOf(descriptor, first.Source!);
+            bool beforeBinding = first.Binding.IsAlive;
+
+            bool afterOpen = false;
+            bool afterGc = false;
+            await OpenAndCloseAsync(
+                trigger.Xaml,
+                trigger.CreateSource,
+                _ => null,
+                async (_, _) =>
+                {
+                    afterOpen = IsKeyOf(descriptor, first.Source!);
+                    await IdleAsync(5, 100);
+                    afterGc = IsKeyOf(descriptor, first.Source!);
+                },
+                requireBinding: trigger.Xaml != NoBindingView);
+            await IdleAsync(5, 100);
+            bool afterClose = IsKeyOf(descriptor, first.Source!);
+
+            rows.Add(
+            [
+                trigger.Label,
+                before.ToString(),
+                beforeBinding.ToString(),
+                afterOpen.ToString(),
+                afterGc.ToString(),
+                afterClose.ToString(),
+                first.Source!.IsAlive.ToString(),
+            ]);
+        }
+
+        // 開く前は、GC を挟む行では「登録あり・BindingExpression は回収済み」。外れる行は、開いて表示が落ち着いた時点（GC の前）で外れている。
+        // GC を挟まない行では最初の BindingExpression がまだ残っており、登録は最後まで外れない。
+        string[] kept = ["True", "False", "True", "True", "True", "True"];
+        string[] removed = ["True", "False", "False", "False", "False", "False"];
+        string[] keptWithBinding = ["True", "True", "True", "True", "True", "True"];
+        string[][] expectedTriggers = [kept, removed, kept, removed, removed, keptWithBinding];
+        string[][] actualTriggers = rows.Select(row => row.Skip(1).Select(cell => cell.En).ToArray()).ToArray();
+        if (!actualTriggers.Zip(expectedTriggers).All(pair => pair.First.SequenceEqual(pair.Second)))
+        {
+            throw new InvalidOperationException(
+                $"登録が外れるきっかけが想定と異なる: {string.Join("; ", actualTriggers.Select(row => string.Join(" / ", row)))}");
+        }
+
+        await context.SaveTableAsync(
+            $"What removes the registration of a closed window's source from TimelineViewModel.Title ({RuntimeLabel()})",
+            [
+                T("Window opened next", "次に開いたウィンドウ"),
+                T("Registered before opening", "開く前に登録あり"),
+                T("First BindingExpression alive before opening", "開く前に最初の BindingExpression が残っている"),
+                T("Registered right after opening (before GC)", "開いた直後（GC の前）に登録あり"),
+                T("Registered after GC while open", "開いたまま GC した後に登録あり"),
+                T("Registered after closing and GC", "閉じて GC した後に登録あり"),
+                T("First source alive at the end", "最後に最初のソースが残っている"),
+            ],
+            rows,
+            "binding-non-inpc-cleanup-trigger.svg");
+    }
+
+    /// <summary>登録表に、弱参照の先のオブジェクトがキーとして入っているか。強い参照はこのメソッドの外へ持ち出さない。</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool IsKeyOf(PropertyDescriptor descriptor, WeakReference source)
+    {
+        object? target = source.Target;
+        return target is not null && HandlersOf(descriptor)?.Contains(target) == true;
+    }
+
+    // ------------------------------------------------------------ 表 5: OneTime と TwoWay の更新
+
+    private static async Task SaveUpdateBehaviorAsync(SceneContext context)
+    {
+        var rows = new List<IReadOnlyList<Loc>>();
+
+        // ソースの変更（PropertyChanged を発行する）と DataContext の差し替えで、ターゲットが変わるか。
+        foreach ((string xaml, string mode) in new[] { (TextBlockView, "OneWay"), (OneTimeView, "OneTime") })
+        {
+            var window = SceneContext.LoadXaml<Window>(xaml);
+            var source = new NotifyingReportViewModel();
+            window.DataContext = source;
+            window.Show();
+            await IdleAsync(1, 0);
+            var text = (TextBlock)window.Content;
+            string initial = text.Text;
+            source.Title = "Changed";
+            await IdleAsync(1, 0);
+            string afterChange = text.Text;
+            window.DataContext = new NotifyingReportViewModel { Title = "Replaced" };
+            await IdleAsync(1, 0);
+            string afterReplace = text.Text;
+            window.Close();
+            rows.Add([$"TextBlock, {mode}", T("Displayed text: set Title (raises PropertyChanged), then replace DataContext", "表示: Title を変更（PropertyChanged を発行）→ DataContext を差し替え"), initial, afterChange, afterReplace]);
+        }
+
+        // TextBox に入力したときと同じ経路で文字を変え、UpdateSource でソースへ送れるか。
+        foreach ((string xaml, string mode) in new[] { (TextBoxView, "TwoWay (default)"), (OneTimeTextBoxView, "OneTime") })
+        {
+            var window = SceneContext.LoadXaml<Window>(xaml);
+            var source = new NotifyingReportViewModel();
+            window.DataContext = source;
+            window.Show();
+            await IdleAsync(1, 0);
+            var box = (TextBox)window.Content;
+            string initial = source.Title;
+            box.SelectAll();
+            box.SelectedText = "Edited";
+            string result;
+            try
+            {
+                BindingOperations.GetBindingExpressionBase(box, TextBox.TextProperty)?.UpdateSource();
+                await IdleAsync(1, 0);
+                result = source.Title;
+            }
+            catch (Exception ex)
+            {
+                result = ex.GetType().Name;
+            }
+
+            if (BindingOperations.GetBindingExpressionBase(box, TextBox.TextProperty) is null)
+            {
+                throw new InvalidOperationException($"{mode} の TextBox で、入力の後にバインドが外れた。");
+            }
+
+            window.Close();
+            rows.Add([$"TextBox, {mode}", T("Source Title: type \"Edited\", then call UpdateSource", "ソースの Title: 「Edited」と入力して UpdateSource を呼ぶ"), initial, result, "-"]);
+        }
+
+        await IdleAsync(5, 100);
+        string[][] actualUpdates = rows.Select(row => row.Skip(2).Select(cell => cell.En).ToArray()).ToArray();
+        string[][] expectedUpdates =
+        [
+            ["Monthly report", "Changed", "Replaced"],
+            ["Monthly report", "Monthly report", "Replaced"],
+            ["Monthly report", "Edited", "-"],
+            ["Monthly report", "Monthly report", "-"],
+        ];
+        if (!actualUpdates.Zip(expectedUpdates).All(pair => pair.First.SequenceEqual(pair.Second)))
+        {
+            throw new InvalidOperationException(
+                $"更新の動きが想定と異なる: {string.Join("; ", actualUpdates.Select(row => string.Join(" / ", row)))}");
+        }
+
+        await context.SaveTableAsync(
+            $"How OneWay, OneTime, and TwoWay bindings update ({RuntimeLabel()})",
+            [
+                T("Target and mode", "ターゲットとモード"),
+                T("Operation", "操作"),
+                T("Before", "操作の前"),
+                T("After step 1", "1 つ目の操作の後"),
+                T("After step 2", "2 つ目の操作の後"),
+            ],
+            rows,
+            "binding-non-inpc-update-behavior.svg");
     }
 
     // ------------------------------------------------------------ 表 1: 100 回開閉して残る数
@@ -334,9 +611,10 @@ internal sealed class BindingNonInpcLeakScene : IScene
         string xaml,
         Func<object> createSource,
         Func<object, object?> tracked,
-        Func<Opened, object, Task>? whileOpen = null)
+        Func<Opened, object, Task>? whileOpen = null,
+        bool requireBinding = true)
     {
-        (Window window, Opened opened) = Create(xaml, createSource, tracked);
+        (Window window, Opened opened) = Create(xaml, createSource, tracked, requireBinding);
         window.Show();
         await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         if (whileOpen is not null)
@@ -365,14 +643,18 @@ internal sealed class BindingNonInpcLeakScene : IScene
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static (Window Window, Opened Opened) Create(string xaml, Func<object> createSource, Func<object, object?> tracked)
+    private static (Window Window, Opened Opened) Create(string xaml, Func<object> createSource, Func<object, object?> tracked, bool requireBinding)
     {
         object source = createSource();
         var window = SceneContext.LoadXaml<Window>(xaml);
         window.DataContext = source;
         DependencyProperty text = window.Content is TextBox ? TextBox.TextProperty : TextBlock.TextProperty;
-        BindingExpressionBase expression = BindingOperations.GetBindingExpressionBase((DependencyObject)window.Content, text)
-            ?? throw new InvalidOperationException("Text にバインドが無い。");
+        BindingExpressionBase? expression = BindingOperations.GetBindingExpressionBase((DependencyObject)window.Content, text);
+        if (requireBinding && expression is null)
+        {
+            throw new InvalidOperationException("Text にバインドが無い。");
+        }
+
         object? target = tracked(source);
         return (window, new Opened(target is null ? null : new WeakReference(target), new WeakReference(expression), new WeakReference(window)));
     }

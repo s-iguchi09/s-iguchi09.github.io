@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2418 260" width="2418" height="260" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="2418" height="260" />
+  <text class="title" x="12" y="24">What removes the registration of a closed window's source from TimelineViewModel.Title (.NET 10.0.13)</text>
+  <rect class="head" x="12" y="38" width="2394" height="30" />
+  <text class="cell" x="26" y="57.5">Window opened next</text>
+  <text class="cell" x="870" y="57.5" text-anchor="end">Registered before opening</text>
+  <text class="cell" x="1244" y="57.5" text-anchor="end">First BindingExpression alive before opening</text>
+  <text class="cell" x="1602" y="57.5" text-anchor="end">Registered right after opening (before GC)</text>
+  <text class="cell" x="1865" y="57.5" text-anchor="end">Registered after GC while open</text>
+  <text class="cell" x="2136" y="57.5" text-anchor="end">Registered after closing and GC</text>
+  <text class="cell" x="2392" y="57.5" text-anchor="end">First source alive at the end</text>
+  <text class="cell" x="26" y="87.5">Window without bindings</text>
+  <text class="cell" x="870" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="1244" y="87.5" text-anchor="end">False</text>
+  <text class="cell" x="1602" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="1865" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="2136" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="2392" y="87.5" text-anchor="end">True</text>
+  <text class="cell" x="26" y="117.5">Window bound to an INPC view model</text>
+  <text class="cell" x="870" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="1244" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="1602" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="1865" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="2136" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="2392" y="117.5" text-anchor="end">False</text>
+  <text class="cell" x="26" y="147.5">Window bound with Mode=OneTime to a non-INPC type</text>
+  <text class="cell" x="870" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="1244" y="147.5" text-anchor="end">False</text>
+  <text class="cell" x="1602" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="1865" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="2136" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="2392" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="26" y="177.5">Window bound to a non-INPC property of another type</text>
+  <text class="cell" x="870" y="177.5" text-anchor="end">True</text>
+  <text class="cell" x="1244" y="177.5" text-anchor="end">False</text>
+  <text class="cell" x="1602" y="177.5" text-anchor="end">False</text>
+  <text class="cell" x="1865" y="177.5" text-anchor="end">False</text>
+  <text class="cell" x="2136" y="177.5" text-anchor="end">False</text>
+  <text class="cell" x="2392" y="177.5" text-anchor="end">False</text>
+  <text class="cell" x="26" y="207.5">Window bound to another instance of the same non-INPC type</text>
+  <text class="cell" x="870" y="207.5" text-anchor="end">True</text>
+  <text class="cell" x="1244" y="207.5" text-anchor="end">False</text>
+  <text class="cell" x="1602" y="207.5" text-anchor="end">False</text>
+  <text class="cell" x="1865" y="207.5" text-anchor="end">False</text>
+  <text class="cell" x="2136" y="207.5" text-anchor="end">False</text>
+  <text class="cell" x="2392" y="207.5" text-anchor="end">False</text>
+  <text class="cell" x="26" y="237.5">Same as above, but opened without running the GC after closing the first window</text>
+  <text class="cell" x="870" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1244" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1602" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1865" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="2136" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="2392" y="237.5" text-anchor="end">True</text>
+  <line class="line" x1="12" y1="38" x2="2406" y2="38" />
+  <line class="line" x1="12" y1="68" x2="2406" y2="68" />
+  <line class="line" x1="12" y1="98" x2="2406" y2="98" />
+  <line class="line" x1="12" y1="128" x2="2406" y2="128" />
+  <line class="line" x1="12" y1="158" x2="2406" y2="158" />
+  <line class="line" x1="12" y1="188" x2="2406" y2="188" />
+  <line class="line" x1="12" y1="218" x2="2406" y2="218" />
+  <line class="line" x1="12" y1="248" x2="2406" y2="248" />
+  <line class="line" x1="12" y1="38" x2="12" y2="248" />
+  <line class="line" x1="660" y1="38" x2="660" y2="248" />
+  <line class="line" x1="884" y1="38" x2="884" y2="248" />
+  <line class="line" x1="1258" y1="38" x2="1258" y2="248" />
+  <line class="line" x1="1616" y1="38" x2="1616" y2="248" />
+  <line class="line" x1="1879" y1="38" x2="1879" y2="248" />
+  <line class="line" x1="2150" y1="38" x2="2150" y2="248" />
+  <line class="line" x1="2406" y1="38" x2="2406" y2="248" />
+</svg>
