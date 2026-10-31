@@ -283,5 +283,6 @@ BindingReport.Write(item, TreeViewItem.IsExpandedProperty);
 - [WPF で Style の Trigger・DataTrigger が効かない原因と依存関係プロパティの値優先順位](/ja/articles/wpf-style-trigger-not-working-local-value/)
 - [WPF の UserControl に定義した DependencyProperty へ内部からバインドできない原因と DataContext の設計](/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/)
 - [WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/)
+- [WPF のバインドで INotifyPropertyChanged の無いソースがメモリに残る仕組み](/ja/articles/wpf-memory-leak-binding-non-inpc-source/)
 - [TreeView（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/treeview.html)：`IsExpanded` と `IsSelected` の既定の向き、展開ボタンで外れるバインド
 - [GridSplitter（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/gridsplitter.html)：`HorizontalAlignment` の既定と、調整される列の組み合わせ

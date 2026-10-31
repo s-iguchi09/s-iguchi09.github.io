@@ -39,6 +39,7 @@ internal static class Program
         new MvvmLibraryCommandRequeryScene(),
         new ObservableValidatorStartupScene(),
         new AsyncRelayCommandExceptionScene(),
+        new BindingNonInpcLeakScene(),
         new StaticVsDynamicResourceScene(),
         new StyleTriggerLocalValueScene(),
         new TrayContextMenuScene(),
