@@ -4,7 +4,7 @@ title: "WPF Binding Without INotifyPropertyChanged: Why the Source Stays in Memo
 seo_title: "WPF Binding Memory Leak Without INotifyPropertyChanged"
 date: 2026-10-31
 category: WPF
-excerpt: "On .NET 10, a closed window bound to a non-INotifyPropertyChanged source is collected, but a PropertyDescriptor table keeps the source. Nine bindings compared."
+excerpt: "On .NET 10, a closed window bound to a non-INotifyPropertyChanged source is collected, but a PropertyDescriptor table keeps the source. Nine cases compared."
 image: /images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-retention.svg
 ---
 
@@ -16,7 +16,7 @@ One cause is a binding to a property of an object that does not implement `INoti
 
 Since something survives the window, it is natural to assume that the whole window survives.
 Counting over 100 open/close cycles on .NET 10, however, shows that the objects left uncollected are neither the windows nor the bindings, but the binding sources.
-The number left behind fell and rose again between checkpoints.
+In this measurement, the number left behind did not grow in proportion to the number of windows opened.
 
 This article traces the reference path that keeps the source alive by reading WPF's internal table.
 It then compares, by measurement, which bindings leave the source behind and which do not, and shows view model implementations that avoid it.
@@ -88,20 +88,21 @@ Every row that left sources behind is a row whose source was a key in the regist
 ### How WPF Watches a Source That Does Not Notify
 
 Microsoft Learn's "[Optimizing Performance: Data Binding](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-data-binding)" names two ways to provide property change notifications: INPC and the change notifications associated with `TypeDescriptor`.
-In the measurement, when the source did not implement INPC, the source was in the registration table of the bound property's `PropertyDescriptor`.
+In the measurement, when the source did not implement INPC and the binding was not `Mode=OneTime`, the source was in the registration table of the bound property's `PropertyDescriptor`.
 That is the "Key in \_valueChangedHandlers while open" column in Table 1.
 Sources that implement INPC and bindings with `Mode=OneTime` were not in that registration table.
 
 A `PropertyDescriptor` is not created per object.
 In the measurement, calling `TypeDescriptor.GetProperties` twice with the type, or once with an instance, returned the same instance for the same property.
-Subscribers are registered in a table inside this single instance per property of a type, **keyed by the object being watched**.
+Subscribers are registered in a table inside the instance returned for that property, **keyed by the object being watched**.
 The following table shows what the non-public field `_valueChangedHandlers` held, starting while the window was open.
 
 {% include tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-cleanup-timeline.en.md %}
 
 Table 2: How `_valueChangedHandlers` changed for one window, from while it was open until the registration was removed.
 `TimelineViewModel` has the same shape as `ReportViewModel` in Table 1 and is used only for this measurement.
-`_valueChangedHandlers` and the `_source` field of the record stored as its value were only read through reflection and never modified (.NET 10.0.13 / Windows 11).
+`_valueChangedHandlers` and the `_source` field of the record stored as its value were only read through reflection and never modified.
+"GC" means the same procedure as in Table 1: draining the dispatcher, waiting 100 ms, and running the GC, five times in a row (.NET 10.0.13 / Windows 11).
 {: .table-caption}
 
 The `Target` of the handler stored as the value is `MS.Internal.Data.ValueChangedEventManager+ValueChangedRecord`, not the binding itself.
@@ -112,27 +113,29 @@ After the window was closed and the GC was run, the `BindingExpression` was coll
 
 Microsoft Learn's "[Weak event patterns](https://learn.microsoft.com/dotnet/desktop/wpf/events/weak-event-patterns)" explains that many aspects of WPF data binding already apply the weak event pattern.
 On this path too, what is registered directly in the `PropertyDescriptor` is not the binding but a `ValueChangedEventManager` record (Table 2).
-The record and the binding are connected in a way that does not prevent the binding from being collected, and after the window closed, the `BindingExpression` was collected (Tables 1 and 2), and so was the window (Table 1).
+Even while the registration and the record remained, after the window closed, the `BindingExpression` was collected (Tables 1 and 2), and so was the window (Table 1).
 
-The source, on the other hand, is held by ordinary references: as a key in the registration table and as the record's `_source`.
+The source, on the other hand, is pointed to from inside the registration: as a key in the registration table and as the record's `_source`.
 In Table 2, the source was not collected until that registration was cleaned up.
+Whether the key, the `_source`, or both prevent collection was not checked.
 
 <figure class="article-figure">
-  <img src="/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg" alt="A solid arrow goes from PropertyDescriptor (ReportViewModel.Title) to _valueChangedHandlers. From there, a solid arrow labeled key goes to ReportViewModel (byte[] Data, 1 MB) and a solid arrow labeled value goes to ValueChangedRecord. From ValueChangedRecord, a solid arrow labeled _source goes to ReportViewModel and a dashed arrow goes to BindingExpression (TextBlock / Window)." width="760" height="270" loading="lazy">
-  <figcaption>The reference path that keeps the source alive after the window closes. Solid arrows are references that prevent collection; the dashed arrow is one that does not. The registration key, the record type, and the record's _source were confirmed in Table 2 (with TimelineViewModel, which has the same shape as ReportViewModel); the collection of the BindingExpression was confirmed in Tables 1 and 2, and that of the window in Table 1. Red marks the source that stays after the window closes, gray marks .NET and WPF internal objects (the PropertyDescriptor, its registration table, and the record), and green marks what gets collected. The shape of the reference from the record to the BindingExpression (direct or through other objects) was not checked; the dashed arrow only shows that this part does not prevent collection (.NET 10.0.13 / Windows 11).</figcaption>
+  <img src="/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg" alt="A solid arrow goes from PropertyDescriptor (ReportViewModel.Title) to _valueChangedHandlers. From there, a solid arrow labeled key goes to ReportViewModel (byte[] Data, 1 MB) and a solid arrow labeled value (Target) goes to ValueChangedRecord, the Target of the handler stored as the value. From ValueChangedRecord, a solid arrow labeled _source goes to ReportViewModel and a dashed arrow goes to BindingExpression (Window)." width="760" height="270" loading="lazy">
+  <figcaption>The reference path that keeps the source alive after the window closes. Solid arrows are the references inside the registration that kept the source from being collected until the registration was removed (whether each of the key and _source prevents collection on its own was not checked); the dashed arrow is a relationship that does not prevent collection. The registration key, the record type, and the record's _source were confirmed in Table 2 (with TimelineViewModel, which has the same shape as ReportViewModel); the collection of the BindingExpression was confirmed in Tables 1 and 2, and that of the window in Table 1. Red marks the source that stays after the window closes, gray marks .NET and WPF internal objects (the PropertyDescriptor, its registration table, and the record), and green marks what gets collected. The shape of the reference from the record to the BindingExpression (direct or through other objects) was not checked; the dashed arrow only shows that this part does not prevent collection (.NET 10.0.13 / Windows 11).</figcaption>
 </figure>
 
 ### What Removes the Registration
 
 As Table 2 shows, the registration was not removed after waiting 5 seconds with the GC run every 250 ms.
-It was removed when another window, bound to a different type without notifications, was opened and the GC was run before closing it.
-What triggered the removal was a window with a binding to a different type, whose `PropertyDescriptor` is a different instance.
-This suggests that the cleanup happens not on the per-type registration table but on a side that works across types (such as `ValueChangedEventManager`).
-That internal processing, and whether creating a binding to an INPC source or a `OneTime` binding also removes it, were not checked.
+It was gone after another window, bound to a different type without notifications, was opened and the GC was run before closing it.
+That type's `PropertyDescriptor` is a different instance, so a registration in its table did not remove this one directly.
+The cleanup may therefore happen not on the per-type registration table but on a side that works across types (such as `ValueChangedEventManager`).
+However, whether opening a window itself or adding a registration for another type made the difference, and whether the registration was removed when the window opened or when the GC ran, were not isolated.
+That internal processing, and whether a window without bindings, an INPC source, or a `OneTime` binding also removes it, were not checked either.
 
 In Table 2, the next window is opened after the first window's `BindingExpression` has been collected by the GC.
 In Table 1, the GC runs only at checkpoints, so when the next window opens, the previous window's binding might not have been collected yet.
-Assuming that such registrations stay is consistent with only part of the opened sources remaining in Table 1, but neither this hypothesis nor how the registrations change after each open/close cycle was measured.
+Assuming that such registrations stay is consistent with only part of the opened sources remaining at 100 cycles in Table 1, but neither this hypothesis nor how the registrations change after each open/close cycle was measured.
 
 ---
 
@@ -151,6 +154,7 @@ Report data, images, and lists of search results stay together with the source.
 
 The key is not necessarily the `DataContext`; it is the object that owns the bound property.
 If `Rows` in `{Binding Rows.Count}` is a `List<T>`, the `List<T>` that owns `Count` does not implement INPC, even when the view model does, so the `List<T>` becomes the key when `Count` is watched.
+The "List&lt;T&gt;.Count" row in Table 1 uses `ReadOnlyRowsViewModel`, shown later, without `RowCount` and with `{Binding Rows.Count}`.
 In Table 1, the `List<T>` was a key in the registration table while the window was open, and the `List<T>` and its contents stayed after the window closed.
 
 `ObservableCollection<T>` implements INPC, so with the same path it did not become a key and did not stay.
@@ -211,7 +215,7 @@ public sealed class ReportViewModel : ViewModelBase
 }
 ```
 
-A source that implements INPC does not become a key in the `PropertyDescriptor` registration table (Table 1).
+In Table 1, a source that implements INPC did not become a key in the `PropertyDescriptor` registration table.
 The source did not stay even when `PropertyChanged` was never raised.
 For `OneWay` and `TwoWay` bindings to detect source changes, however, the source must provide change notifications ([What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#binding-direction)).
 The setter therefore notifies through `SetProperty`.
@@ -259,7 +263,7 @@ When a value does not change while the window is open and the source class canno
 <TextBlock Text="{Binding Title, Mode=OneTime}" />
 ```
 
-A `OneTime` binding stays out of the registration table, so the source does not stay even if it does not implement INPC (Table 1).
+In Table 1, a `OneTime` binding stayed out of the registration table, and the source did not stay even though it did not implement INPC.
 In exchange, the screen is not updated if the source value changes after it is displayed.
 `TextBox.Text`, which accepts input, is `TwoWay` by default ([What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#default-behaviors); "[How User Input Silently Removes a WPF Binding Written Without Mode](/articles/wpf-binding-mode-omitted-detached/)" covers how to check a property's default direction).
 Only `TwoWay` and `OneWayToSource` bindings write back to the source ([Binding.UpdateSourceTrigger](https://learn.microsoft.com/dotnet/api/system.windows.data.binding.updatesourcetrigger)), so `OneTime` stops input from reaching the source.
@@ -271,7 +275,7 @@ This approach is limited to display-only elements.
 
 - **Use the internal type names for observation only.** `_valueChangedHandlers`, `ValueChangedRecord`, and `_source` are non-public implementation details whose names and structure may change in other versions. Do not touch them from application code.
 - **Check the retention path in a memory profiler.** When the view model of a closed window stays alive and its retention path contains a type derived from `PropertyDescriptor` or a `ValueChangedEventManager` record, it is likely the path described here. How it appears in a profiler was not checked for this article.
-- **Do not judge by the number left behind.** Even in Table 1, only part of the opened sources stayed. "Opening and closing a few times did not increase it" does not prove that this path is absent. Check the binding itself: whether the source implements INPC or the binding is `OneTime`.
+- **Do not judge by the number left behind.** Even in Table 1, only part of the opened sources stayed at 100 cycles. "Opening and closing a few times did not increase it" does not prove that this path is absent. Check the binding itself: whether the source implements INPC or the binding is `OneTime`.
 - **The object without INPC is not always the view model.** Objects in the middle of the path (`List<T>`, DTOs, settings classes, and so on) are affected as well. For a path like `{Binding A.B.C}`, check the type of the object at each step.
 - **A shared source does not need an urgent fix.** For a binding to a source that lives to the end, the windows and `BindingExpression` objects are collected (Table 1).
 
@@ -279,10 +283,10 @@ This approach is limited to display-only elements.
 
 ## Summary
 
-When a binding's source does not implement INPC, the source becomes a key in the registration table of a `PropertyDescriptor` that is reused per property of a type.
-On .NET 10, the binding and the window are collected, but the source stays referenced by the registration key and by the record's `_source`.
+When a binding other than `OneTime` has a source that does not implement INPC, the source becomes a key in the registration table of a `PropertyDescriptor` that is reused for that property.
+On .NET 10, the binding and the window are collected, but the source is not collected until the registration is removed.
 In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.
-Because the trigger was a window with a binding to a different type, the cleanup appears to happen not on the per-type registration table but on a side that works across types.
+Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-type registration table but on a side that works across types (what triggered it was not isolated).
 
 When binding to view models created per window or to objects that hold large data, implement INPC on that class.
 Show list counts through `ObservableCollection<T>` or through a count property on the view model.

@@ -24,14 +24,14 @@
 
   <rect x="530" y="170" width="210" height="64" rx="6" fill="#dcfce7" stroke="#15803d"/>
   <text x="635" y="196" text-anchor="middle" font-weight="600">BindingExpression</text>
-  <text x="635" y="216" text-anchor="middle" fill="#14532d">TextBlock / Window</text>
+  <text x="635" y="216" text-anchor="middle" fill="#14532d">Window</text>
 
   <line x1="230" y1="62" x2="278" y2="62" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
   <line x1="480" y1="62" x2="528" y2="62" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
   <text x="504" y="52" text-anchor="middle" fill="#334155">key</text>
 
   <line x1="380" y1="94" x2="380" y2="168" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="392" y="136" fill="#334155">value</text>
+  <text x="392" y="136" fill="#334155">value (Target)</text>
 
   <line x1="470" y1="170" x2="560" y2="96" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
   <text x="520" y="146" fill="#334155">_source</text>
