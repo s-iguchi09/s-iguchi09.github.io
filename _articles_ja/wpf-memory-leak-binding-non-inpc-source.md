@@ -69,14 +69,16 @@ public sealed class ReportViewModel
 表 1: ウィンドウを開いて閉じる操作を 100 回繰り返し、各時点で、ディスパッチャーを空にして 100 ms 待ってから GC を呼ぶ手順を 5 回行った後に数えた（.NET 10.0.13 / Windows 11、1 回の実行の値）。
 ソースはどれも 1 MB の配列を持つ。
 「List&lt;T&gt; を追跡」「コレクションを追跡」の行は、ビューモデルではなく `Rows` のオブジェクトが残っているかを数えている。
-「開いている間の \_valueChangedHandlers のキー」は、1 回目のウィンドウを開いている間に、バインドしたプロパティの `PropertyDescriptor` の登録表に、そのプロパティの持ち主がキーとして入っていたかを示す（非公開のフィールドをリフレクションで読んだ）。
+「開いている間に \_valueChangedHandlers のキーだった回数」は、各回のウィンドウを開いている間に、バインドしたプロパティの `PropertyDescriptor` の登録表に、そのプロパティの持ち主がキーとして入っていた回数である（非公開のフィールドをリフレクションで読んだ）。
+「前の BindingExpression が回収される前に開いた回数」は、2 回目以降の 99 回のうち、前の回の `BindingExpression` がまだ回収されていない状態で次のウィンドウを開いた回数である。
 {: .table-caption}
 
 「通知なし」の上 3 行（set のあるプロパティの TextBlock と TextBox、get だけのプロパティ）と、「List&lt;T&gt;.Count」の行では、いずれかの時点でソースが回収されずに残った。
 100 回の時点で残った数は、どの行も開いた数（100）より少ない。
 一方、どの行でも 100 回後に残った `BindingExpression` とウィンドウは 0 である。
 INPC を実装したビューモデル、`Mode=OneTime`、件数を返す `RowCount`、`ObservableCollection<T>.Count` では、どの時点でもソースは残らなかった。
-オブジェクトが残った行はどれも、1 回目のウィンドウを開いている間に、追跡したオブジェクトが登録表のキーになっていた行である（登録は 1 回目のウィンドウでだけ調べた）。
+オブジェクトが残った行はどれも、100 回すべてで登録表のキーになっていた行である。
+残ったオブジェクトは、どのチェックポイントでも、すべて登録表のキーのままだった（シーンで数えて確かめた）。
 
 ---
 
@@ -126,12 +128,13 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 登録表は `ConcurrentDictionary<object, EventHandler>` で、キーを通常の（強い）参照で持つ。
 記録の `_source` も `object` 型のフィールドで、`WeakReference` ではない。
-`PropertyDescriptor` は `TypeDescriptor` から同じインスタンスが返り続けるので、登録が残っている限り、ソースはこの 2 つの強い参照から到達でき、回収されない。
-表 2 でも、登録が残っていた測定点ではソースは残り、登録が 0 件になった測定点では回収されていた。
+表 3 のとおり、シーンが記述子を弱参照だけで持って GC を呼んだ後も、`TypeDescriptor` は同じ `PropertyDescriptor` を返した。
+`TypeDescriptor` が記述子を持ち続けているので、登録が残っている限り、ソースはこの 2 つの強い参照から到達でき、回収されない。
+表 2 と表 4 でも、登録が残っていた測定点ではソースは残り、登録が外れた後の測定点では回収されていた。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg" alt="PropertyDescriptor（ReportViewModel.Title）から _valueChangedHandlers へ実線の矢印があり、そこからキーとして ReportViewModel（byte[] Data 1 MB）へ実線、値（ハンドラー）の Target として ValueChangedRecord へ実線が伸びる。ValueChangedRecord からは _source として ReportViewModel へ実線が、BindingExpression（Window）へ破線が伸びる。" width="760" height="270" loading="lazy">
-  <figcaption>閉じた後のソースを保持している参照の経路。実線は強い参照（登録表と _source の型は表 3）、破線は回収を妨げない関係を表す。登録表のキー・記録の型・記録の _source は表 2（ReportViewModel と同じ形の TimelineViewModel）で、BindingExpression の回収は表 1 と表 2 で、ウィンドウの回収は表 1 で確かめた。赤は閉じた後も残るソース、灰色は .NET と WPF の内部のオブジェクト（PropertyDescriptor・登録表・記録）、緑は回収されるものを表す。記録から BindingExpression までの参照の形（直接か、別のオブジェクトを介すか）は確かめておらず、破線はその間が回収を妨げないことだけを表す（.NET 10.0.13 / Windows 11）。</figcaption>
+  <figcaption>閉じた後のソースを保持している参照の経路。実線は強い参照（登録表と _source の型は表 3）、破線は、記録が残っていても BindingExpression が回収されたこと（表 2）を表す。登録表のキー・記録の型・記録の _source は表 2（ReportViewModel と同じ形の TimelineViewModel）で、BindingExpression の回収は表 1 と表 2 で、ウィンドウの回収は表 1 で確かめた。赤は閉じた後も残るソース、灰色は .NET と WPF の内部のオブジェクト（PropertyDescriptor・登録表・記録）、緑は回収されるものを表す（.NET 10.0.13 / Windows 11）。</figcaption>
 </figure>
 
 ### 登録が外れるきっかけ
@@ -143,21 +146,26 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 表 4: 各行で、`TimelineViewModel` にバインドした最初のウィンドウを開いて閉じ、GC を呼んで最初の `BindingExpression` を回収してから、次のウィンドウを開いた。
 最後の行だけは、最初の `BindingExpression` を強い参照で持ったまま（回収される前に）次のウィンドウを開き、開いた直後の登録を読んでから参照を放した。
+どの行も、次のウィンドウを閉じて GC を呼んだ後に、別の型に `OneWay` でバインドしたウィンドウをもう 1 つ開き、その直後の登録を読んだ。
 「開いた直後」は、表示してディスパッチャーが空になった時点で、GC はまだ呼んでいない。
 GC は表 1 と同じ手順で、各行は表 2 とは別のウィンドウで測った（.NET 10.0.13 / Windows 11）。
 {: .table-caption}
 
 登録が外れたのは、変更を監視するバインド（`OneWay`）を持つウィンドウを開いたときで、GC を呼ぶ前の、表示した時点で外れていた。
 バインドしたソースの型には左右されず、INPC のビューモデルでも、別の型の別のプロパティでも、同じ型の別のインスタンスでも外れた。
-INPC のビューモデルは `PropertyDescriptor` の登録表に入らない（表 1）ので、外したのは型ごとの登録表への登録ではなく、型をまたいで働く WPF の内部の処理である。
+INPC のビューモデルは `PropertyDescriptor` の登録表に入らない（表 1）ので、外したのは `PropertyDescriptor` ごとの登録表への登録ではなく、型をまたいで働く WPF の内部の処理である。
 別の型の `Name` の `PropertyDescriptor` は、`Title` とは別のインスタンスだった（表 3）。
 バインドの無いウィンドウと、`OneTime` のバインドだけのウィンドウでは、開いたまま GC を呼んでも、閉じて GC を呼んでも外れなかった。
 
-外れたのは、最初のウィンドウの `BindingExpression` が回収済みのときだけである。
+表 4 では、登録が外れたのは、最初のウィンドウの `BindingExpression` が回収済みのときだけである。
 最後の行のように、最初の `BindingExpression` が回収される前に次のウィンドウを開くと、その登録は開いた時点で外れなかった。
-その後 GC を呼んで `BindingExpression` が回収されても、次のウィンドウを開かない限り外れなかった。
-表 1 では GC をチェックポイントでしか呼ばないため、多くの開閉はこの最後の行と同じ順序になる。
-表 1 で 100 回の時点に開いた数の一部だけが残ったことは、この結果と合う。
+その後 GC を呼ぶと `BindingExpression` は回収されたが、閉じて GC を呼んだ後も登録は外れなかった。
+外れたのは、その後でもう 1 つ `OneWay` のウィンドウを開いたときである。
+バインドの無いウィンドウの行と `OneTime` の行も、同じくもう 1 つ開いたときに外れた。
+表 1 のシーンは GC をチェックポイントでしか明示的に呼ばないため、前の回の `BindingExpression` が回収される前に次のウィンドウを開いた回が多い（表 1 の「前の BindingExpression が回収される前に開いた回数」）。
+そうした回では、開いた時点では登録が外れない。
+表 1 で残らなかった分は、登録が外れてから回収されたものである（登録がある間は回収されないため）。
+表 4 で確かめた外れ方は、`BindingExpression` が回収された後に `OneWay` のウィンドウを開くことだけなので、表 1 で残る数は、開閉と、実行時に自動で走る GC との前後関係で決まる。
 
 ---
 
@@ -178,7 +186,7 @@ INPC のビューモデルは `PropertyDescriptor` の登録表に入らない�
 `{Binding Rows.Count}` の `Rows` が `List<T>` であれば、ビューモデルが INPC を実装していても、`Count` を持つ `List<T>` は INPC を実装しない。
 そのため、`Count` の監視では `List<T>` が登録表のキーになる。
 表 1 の「List&lt;T&gt;.Count」の行は、INPC を実装し、1 MB の配列を 1 つ入れた `List<byte[]>` の `Rows` を持ち、`RowCount` を持たないビューモデルに、`{Binding Rows.Count}` でバインドしたものである（後で示す `ReadOnlyRowsViewModel` から `RowCount` を除いた形）。
-表 1 では、1 回目のウィンドウを開いている間に `List<T>` が登録表のキーになっており、閉じた後も `List<T>` とその中身が残った。
+表 1 では、どの回も開いている間に `List<T>` が登録表のキーになっており、閉じた後も `List<T>` とその中身が残った。
 
 `ObservableCollection<T>` は INPC を実装しており、表 1 では同じパスでもキーにならず、残らなかった。
 表 1 では、`List<T>` のままでも、件数を INPC のビューモデルの `RowCount` から読むようにすると、ビューモデルは登録表のキーにならず、`List<T>` も残らなかった。
@@ -197,7 +205,7 @@ INPC のビューモデルは `PropertyDescriptor` の登録表に入らない�
 
 表 5: INPC のビューモデル（`Title` の初期値は `Monthly report`）にバインドした要素で、操作の後の値を読んだ。
 `TextBlock` の行は表示の値で、`Title` を `Changed` に変えて `PropertyChanged` を発行し、次に `Title` が `Replaced` の別のビューモデルへ `DataContext` を差し替えた。
-`TextBox` の行はソースの `Title` の値で、`TextBox` の文字を選んで `Edited` に置き換え（キー入力と同じく、バインドは外れない）、`UpdateSource` を呼んだ（.NET 10.0.13 / Windows 11）。
+`TextBox` の行はソースの `Title` の値で、`TextBox` の文字を選んで `SelectedText` を `Edited` に書き換え（その後もバインドが外れていないことを確かめた）、`UpdateSource` を呼んだ（.NET 10.0.13 / Windows 11）。
 {: .table-caption}
 
 `OneTime` の表示は、`PropertyChanged` を発行しても変わらず、`DataContext` を差し替えると変わった。
@@ -299,7 +307,7 @@ XAML は `{Binding RowCount}` にする。
 表 1 では、`OneTime` のバインドは登録表に入らず、ソースが INPC を実装していなくても残らなかった。
 その代わり、表 5 のとおり、表示後にソースのプロパティの値が変わっても画面は更新されない（`DataContext` を差し替えたときは更新される）。
 入力を受ける `TextBox` の `Text` は既定で `TwoWay` である（表 3 の `BindsTwoWayByDefault`。既定の向きの調べ方は「[WPF で Mode を書かないバインドが、ユーザー操作で黙って外れる仕組み](/ja/articles/wpf-binding-mode-omitted-detached/)」で扱っている）。
-表 5 では、`TextBox` に入力して `UpdateSource` を呼ぶと、既定の `TwoWay` ではソースに値が入り、`OneTime` ではソースの値が変わらなかった。
+表 5 では、`TextBox` の文字を書き換えて `UpdateSource` を呼ぶと、既定の `TwoWay` ではソースに値が入り、`OneTime` ではソースの値が変わらなかった。
 この方法は表示だけの要素に限る。
 
 ---
@@ -307,7 +315,7 @@ XAML は `{Binding RowCount}` にする。
 ## 注意点
 
 - **内部の型名は観察のためだけに使う。** `_valueChangedHandlers`・`ValueChangedRecord`・`_source` は非公開の実装で、別のバージョンでは名前も構造も変わり得る。アプリのコードから触らない。
-- **メモリプロファイラーで保持元を見る。** 閉じた画面のビューモデルが残っているとき、保持元に `PropertyDescriptor` の派生型や `ValueChangedEventManager` の記録が出ていれば、本記事の経路である可能性が高い。ただし、プロファイラーでの見え方は本記事では確かめていない。
+- **メモリプロファイラーで保持元を見る。** 閉じた画面のビューモデルが残っているとき、保持元が `System.ComponentModel.ReflectPropertyDescriptor`（表 3）の `_valueChangedHandlers`（`ConcurrentDictionary`）か、`ValueChangedEventManager` の記録の `_source` であれば、本記事の経路である。
 - **残る数で判定しない。** 表 1 でも、100 回の時点で残ったのは開いた数の一部だけである。「数回開閉して増えなかった」ことは、この経路が無いことの証明にならない。バインドしたプロパティを持つオブジェクト（パスの各段）が INPC を実装しているか、`OneTime` かを書き方で確かめる。
 - **INPC を実装していないのは、ビューモデルとは限らない。** パスの途中のオブジェクト（`List<T>`、DTO、設定クラスなど）も対象になる。`{Binding A.B.C}` のようなパスでは、各段のオブジェクトの型を見る。
 - **共有のソースなら急いで直す必要はない。** 最後まで生きるソースへのバインドでは、ウィンドウと `BindingExpression` は回収される（表 1）。
@@ -316,7 +324,7 @@ XAML は `{Binding RowCount}` にする。
 
 ## まとめ
 
-計測（登録は 1 回目のウィンドウで調べた）では、`OneWay`・`TwoWay` でバインドしたプロパティを持つオブジェクトが INPC を実装していないと、そのオブジェクトは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
+計測では、`OneWay`・`TwoWay` でバインドしたプロパティを持つオブジェクトが INPC を実装していないと、そのオブジェクトは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
 このオブジェクトは `DataContext` とは限らず、`{Binding Rows.Count}` の `List<T>` のようにパスの途中のオブジェクトのこともある。
 登録表のキーと記録の `_source` はどちらも強い参照で、.NET 10 では、`BindingExpression` とウィンドウが回収されても、登録が残っている間はそのオブジェクトは回収されない。
 登録は GC と待機では外れず、閉じたウィンドウの `BindingExpression` が回収された後に、`OneWay` のバインドを持つ別のウィンドウを開いた時点で外れた。

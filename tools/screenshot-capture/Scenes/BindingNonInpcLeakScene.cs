@@ -67,17 +67,20 @@ internal sealed class BindingNonInpcLeakScene : IScene
         "INotifyPropertyChanged を実装したビューモデルに {Binding Rows.Count} で List<T> の Count にバインドすると、List<T> が同じように残ること",
         "INotifyPropertyChanged を実装したビューモデル、Mode=OneTime、ObservableCollection<T> の Count では、10・50・100 回のどの時点でも残るソースが 0 であること",
         "List<T> を持つ INotifyPropertyChanged のビューモデルに件数を返す RowCount を用意して {Binding RowCount} にすると、List<T> は 10・50・100 回のどの時点でも残らないこと",
-        "1 回目のウィンドウを開いている間に、バインドしたプロパティの PropertyDescriptor の _valueChangedHandlers にその持ち主がキーとして入っているのは、通知なしの OneWay・TwoWay・get だけ・共有のソースと List<T>.Count（キーは List<T>）であり、Mode=OneTime、INotifyPropertyChanged のビューモデル、ObservableCollection<T>.Count、RowCount では入っていないこと",
+        "各回のウィンドウを開いている間に、バインドしたプロパティの PropertyDescriptor の _valueChangedHandlers にその持ち主がキーとして入っているのは、通知なしの OneWay・TwoWay・get だけ・共有のソースと List<T>.Count（キーは List<T>）では 100 回すべて、Mode=OneTime、INotifyPropertyChanged のビューモデル、ObservableCollection<T>.Count、RowCount では 0 回であること",
+        "10・50・100 回のどの時点でも、残っているオブジェクトはすべて登録表のキーのままであること。オブジェクトが残る行では、前の回の BindingExpression が回収される前に次のウィンドウを開いた回が 1 回以上あること",
         "どの書き方でも、100 回開閉した後に残るウィンドウと BindingExpression は 0 であること。同じ 1 つの通知なしのソースを 100 個のウィンドウで共有した場合も、ウィンドウと BindingExpression は残らないこと",
         "TypeDescriptor.GetProperties を型で 2 回呼んだ結果とインスタンスで呼んだ結果から取り出した、同じプロパティの PropertyDescriptor は同一のインスタンスであること",
         "通知なしのソースにバインドしたウィンドウを開いている間、PropertyDescriptor の _valueChangedHandlers にそのソースをキーとする登録が 1 件あり、ハンドラーの Target が MS.Internal.Data.ValueChangedEventManager+ValueChangedRecord で、その記録の _source フィールドもソースそのものであること",
         "ウィンドウを閉じて GC すると、BindingExpression は回収されるが、登録（キーと記録の _source）とソースは残ること。250 ms ごとに GC を呼びながら 5 秒待っても残ること",
         "その後、別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC すると、登録が 0 件になり、ソースが回収されること",
         "PropertyDescriptor._valueChangedHandlers は宣言も実体も ConcurrentDictionary<object, EventHandler> で、ValueChangedRecord._source の宣言の型は object であること（どちらも弱い参照の型ではない）",
+        "TimelineViewModel.Title の PropertyDescriptor の具象型は System.ComponentModel.ReflectPropertyDescriptor で、シーンが弱参照だけを残して GC した後も、TypeDescriptor から同じインスタンスが返ること",
         "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor は別のインスタンスであること。TextBox.Text の BindsTwoWayByDefault は true であること",
         "閉じたウィンドウの BindingExpression が回収され登録だけが残った状態で次のウィンドウを開くと、INPC のビューモデル・別の型の通知なしのプロパティ・同じ型の別のインスタンスに OneWay でバインドしたウィンドウでは、開いて表示が落ち着いた時点（GC の前）で登録が外れ、最初のソースが回収されること",
-        "最初の BindingExpression が回収される前（強い参照で保持）に、同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
-        "同じ状態で、バインドの無いウィンドウと Mode=OneTime でバインドしたウィンドウでは、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
+        "最初の BindingExpression が回収される前（強い参照で保持）に、同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れないこと。参照を放した後の GC で BindingExpression は回収されること",
+        "同じ状態で、バインドの無いウィンドウと Mode=OneTime でバインドしたウィンドウでは、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れないこと",
+        "登録が外れなかった行も、BindingExpression が回収された後に別の型へ OneWay でバインドしたウィンドウをもう 1 つ開くと、開いた直後に登録が外れ、最初のソースが回収されること",
         "INPC のソースに OneWay でバインドした TextBlock はソースの PropertyChanged で表示が変わり、Mode=OneTime では変わらないこと。どちらも DataContext を差し替えると表示が変わること",
         "TextBox に入力して UpdateSource を呼ぶと、既定（TwoWay）のバインドではソースに値が入り、Mode=OneTime ではソースが変わらないこと（どちらもバインドは外れない）",
     ];
@@ -116,8 +119,6 @@ internal sealed class BindingNonInpcLeakScene : IScene
 
     private static async Task SaveInternalsAsync(SceneContext context)
     {
-        PropertyDescriptor title = TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
-        PropertyDescriptor name = TypeDescriptor.GetProperties(typeof(OtherViewModel))[nameof(OtherViewModel.Name)]!;
         FieldInfo handlersField = typeof(PropertyDescriptor).GetField("_valueChangedHandlers", BindingFlags.NonPublic | BindingFlags.Instance)!;
         Type recordType = typeof(FrameworkElement).Assembly.GetType("MS.Internal.Data.ValueChangedEventManager+ValueChangedRecord")
             ?? throw new InvalidOperationException("ValueChangedRecord が見つからない。");
@@ -132,10 +133,15 @@ internal sealed class BindingNonInpcLeakScene : IScene
             vm => vm,
             (_, _) =>
             {
-                handlersType = TypeName(HandlersOf(title)?.GetType());
+                handlersType = TypeName(HandlersOf(TimelineTitle())?.GetType());
                 return Task.CompletedTask;
             });
         await IdleAsync(5, 100);
+
+        // 記述子を弱参照だけで持って GC し、TypeDescriptor が記述子を持ち続けているか（シーンの参照に頼らずに到達できるか）を確かめる。
+        WeakReference weakTitle = WeakTitle();
+        await IdleAsync(5, 100);
+        bool descriptorKept = weakTitle.IsAlive && IsSameTitle(weakTitle);
 
         bool twoWayByDefault = ((FrameworkPropertyMetadata)TextBox.TextProperty.GetMetadata(typeof(TextBox))).BindsTwoWayByDefault;
 
@@ -144,13 +150,15 @@ internal sealed class BindingNonInpcLeakScene : IScene
             [T("Declared type of PropertyDescriptor._valueChangedHandlers", "PropertyDescriptor._valueChangedHandlers の宣言の型"), TypeName(handlersField.FieldType)],
             [T("Actual type of _valueChangedHandlers while registered", "登録がある間の _valueChangedHandlers の実際の型"), handlersType],
             [T("Declared type of ValueChangedRecord._source", "ValueChangedRecord._source の宣言の型"), TypeName(sourceField.FieldType)],
-            [T("OtherViewModel.Name and TimelineViewModel.Title share one PropertyDescriptor", "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor が同一"), ReferenceEquals(title, name).ToString()],
+            [T("Concrete type of the PropertyDescriptor for TimelineViewModel.Title", "TimelineViewModel.Title の PropertyDescriptor の具象型"), TypeName(TimelineTitle().GetType())],
+            [T("Same PropertyDescriptor returned after keeping only a weak reference and running the GC", "弱参照だけを残して GC した後も、同じ PropertyDescriptor が返る"), descriptorKept.ToString()],
+            [T("OtherViewModel.Name and TimelineViewModel.Title share one PropertyDescriptor", "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor が同一"), ReferenceEquals(TimelineTitle(), TypeDescriptor.GetProperties(typeof(OtherViewModel))[nameof(OtherViewModel.Name)]).ToString()],
             [T("TextBox.Text BindsTwoWayByDefault", "TextBox.Text の BindsTwoWayByDefault"), twoWayByDefault.ToString()],
         ];
 
         const string Handlers = "System.Collections.Concurrent.ConcurrentDictionary<System.Object, System.EventHandler>";
         string[] actual = rows.Select(row => row[1].En).ToArray();
-        string[] expected = [Handlers, Handlers, "System.Object", "False", "True"];
+        string[] expected = [Handlers, Handlers, "System.Object", "System.ComponentModel.ReflectPropertyDescriptor", "True", "False", "True"];
         if (!actual.SequenceEqual(expected))
         {
             throw new InvalidOperationException($"内部の型と既定値が想定と異なる: {string.Join(" | ", actual)}");
@@ -162,6 +170,12 @@ internal sealed class BindingNonInpcLeakScene : IScene
             rows,
             "binding-non-inpc-internals.svg");
     }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static WeakReference WeakTitle() => new(TimelineTitle());
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool IsSameTitle(WeakReference weakTitle) => ReferenceEquals(weakTitle.Target, TimelineTitle());
 
     private static string TypeName(Type? type)
     {
@@ -190,7 +204,6 @@ internal sealed class BindingNonInpcLeakScene : IScene
 
     private static async Task SaveCleanupTriggerAsync(SceneContext context)
     {
-        PropertyDescriptor descriptor = TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
         Trigger[] triggers =
         [
             new(T("Window without bindings", "バインドの無いウィンドウ"), NoBindingView, () => new OtherViewModel(), HasBinding: false),
@@ -212,25 +225,40 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 await IdleAsync(5, 100);
             }
 
-            bool before = IsKeyOf(descriptor, first.Source!);
+            bool before = IsKeyOf(first.Source!);
             bool beforeBinding = first.Binding.IsAlive;
 
             bool afterOpen = false;
             bool afterGc = false;
+            bool bindingAfterGc = false;
             await OpenAndCloseAsync(
                 trigger.Xaml,
                 trigger.CreateSource,
                 _ => null,
                 async (_, _) =>
                 {
-                    afterOpen = IsKeyOf(descriptor, first.Source!);
+                    afterOpen = IsKeyOf(first.Source!);
                     heldBinding = null;
                     await IdleAsync(5, 100);
-                    afterGc = IsKeyOf(descriptor, first.Source!);
+                    afterGc = IsKeyOf(first.Source!);
+                    bindingAfterGc = first.Binding.IsAlive;
                 },
                 requireBinding: trigger.HasBinding);
             await IdleAsync(5, 100);
-            bool afterClose = IsKeyOf(descriptor, first.Source!);
+            bool afterClose = IsKeyOf(first.Source!);
+
+            // 最初の BindingExpression が回収された状態で、別の型に OneWay でバインドしたウィンドウをもう 1 つ開く。
+            bool afterNext = false;
+            await OpenAndCloseAsync(
+                NameView,
+                () => new OtherViewModel(),
+                _ => null,
+                (_, _) =>
+                {
+                    afterNext = IsKeyOf(first.Source!);
+                    return Task.CompletedTask;
+                });
+            await IdleAsync(5, 100);
 
             rows.Add(
             [
@@ -239,16 +267,18 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 beforeBinding.ToString(),
                 afterOpen.ToString(),
                 afterGc.ToString(),
+                bindingAfterGc.ToString(),
                 afterClose.ToString(),
+                afterNext.ToString(),
                 first.Source!.IsAlive.ToString(),
             ]);
         }
 
         // 開く前は、GC を挟む行では「登録あり・BindingExpression は回収済み」。外れる行は、開いて表示が落ち着いた時点（GC の前）で外れている。
-        // 回収される前に開く行では、開いた時点で外れず、その後 GC で BindingExpression が回収されても、次のウィンドウが開かれないので外れない。
-        string[] kept = ["True", "False", "True", "True", "True", "True"];
-        string[] removed = ["True", "False", "False", "False", "False", "False"];
-        string[] keptWithBinding = ["True", "True", "True", "True", "True", "True"];
+        // 外れない行も、BindingExpression が回収された状態で OneWay のウィンドウをもう 1 つ開くと外れ、最初のソースが回収される。
+        string[] kept = ["True", "False", "True", "True", "False", "True", "False", "False"];
+        string[] removed = ["True", "False", "False", "False", "False", "False", "False", "False"];
+        string[] keptWithBinding = ["True", "True", "True", "True", "False", "True", "False", "False"];
         string[][] expectedTriggers = [kept, removed, kept, removed, removed, keptWithBinding];
         string[][] actualTriggers = rows.Select(row => row.Skip(1).Select(cell => cell.En).ToArray()).ToArray();
         if (!actualTriggers.Zip(expectedTriggers).All(pair => pair.First.SequenceEqual(pair.Second)))
@@ -265,20 +295,29 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 T("First BindingExpression alive before opening", "開く前に最初の BindingExpression が残っている"),
                 T("Registered right after opening (before GC)", "開いた直後（GC の前）に登録あり"),
                 T("Registered after GC while open", "開いたまま GC した後に登録あり"),
+                T("First BindingExpression alive after that GC", "その GC の後に最初の BindingExpression が残っている"),
                 T("Registered after closing and GC", "閉じて GC した後に登録あり"),
+                T("Registered right after opening one more OneWay window", "さらに OneWay のウィンドウを開いた直後に登録あり"),
                 T("First source alive at the end", "最後に最初のソースが残っている"),
             ],
             rows,
             "binding-non-inpc-cleanup-trigger.svg");
     }
 
-    /// <summary>登録表に、弱参照の先のオブジェクトがキーとして入っているか。強い参照はこのメソッドの外へ持ち出さない。</summary>
+    /// <summary>
+    /// TimelineViewModel.Title の登録表に、弱参照の先のオブジェクトがキーとして入っているか。
+    /// 記述子もソースも、このメソッドの中だけで取り出し、強い参照を外へ持ち出さない。
+    /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static bool IsKeyOf(PropertyDescriptor descriptor, WeakReference source)
+    private static bool IsKeyOf(WeakReference source)
     {
         object? target = source.Target;
-        return target is not null && HandlersOf(descriptor)?.Contains(target) == true;
+        return target is not null && HandlersOf(TimelineTitle())?.Contains(target) == true;
     }
+
+    /// <summary>TimelineViewModel.Title の PropertyDescriptor を、そのつど TypeDescriptor から取り出す（シーンが記述子を持ち続けないため）。</summary>
+    private static PropertyDescriptor TimelineTitle() =>
+        TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
 
     // ------------------------------------------------------------ 表 5: OneTime と TwoWay の更新
 
@@ -413,22 +452,31 @@ internal sealed class BindingNonInpcLeakScene : IScene
             var windows = new List<WeakReference>();
             var bindings = new List<WeakReference>();
             var counts = new List<int>();
-            bool? registered = null;
+            var unregisteredAlive = new List<int>();
+            int registeredRounds = 0;
+            string watchedProperty = c.Watched(c.CreateSource()).Property;
+            int openedWithPreviousAlive = 0;
             for (int round = 1; round <= Rounds; round++)
             {
-                bool? found = null;
+                // 前のラウンドの BindingExpression が回収される前に、このラウンドのウィンドウを開くか。
+                if (bindings.Count > 0 && bindings[^1].IsAlive)
+                {
+                    openedWithPreviousAlive++;
+                }
+
                 Opened opened = await OpenAndCloseAsync(
                     c.Xaml,
                     c.CreateSource,
                     c.Tracked,
-                    round == 1
-                        ? (_, source) =>
+                    (_, source) =>
+                    {
+                        if (IsRegistered(c.Watched(source)))
                         {
-                            found = IsRegistered(c.Watched(source));
-                            return Task.CompletedTask;
+                            registeredRounds++;
                         }
-                        : null);
-                registered ??= found;
+
+                        return Task.CompletedTask;
+                    });
                 sources.Add(opened.Source);
                 windows.Add(opened.Window);
                 bindings.Add(opened.Binding);
@@ -436,6 +484,7 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 {
                     await IdleAsync(5, 100);
                     counts.Add(sources.Count(reference => reference?.IsAlive == true));
+                    unregisteredAlive.Add(CountAliveNotRegistered(sources, watchedProperty));
                 }
             }
 
@@ -443,9 +492,19 @@ internal sealed class BindingNonInpcLeakScene : IScene
             int aliveBindings = bindings.Count(reference => reference.IsAlive);
             bool tracksSource = sources.All(reference => reference is not null);
 
-            if (registered != c.ExpectRegistered)
+            if (registeredRounds != (c.ExpectRegistered ? Rounds : 0))
             {
-                mismatches.Add($"{c.Label.Ja}: 登録表のキーにあるか {registered}（想定 {c.ExpectRegistered}）");
+                mismatches.Add($"{c.Label.Ja}: 開いている間にキーだった回数 {registeredRounds}（想定 {(c.ExpectRegistered ? Rounds : 0)}）");
+            }
+
+            if (unregisteredAlive.Any(count => count != 0))
+            {
+                mismatches.Add($"{c.Label.Ja}: 登録表のキーでないのに残ったオブジェクト {string.Join(" / ", unregisteredAlive)}");
+            }
+
+            if (c.ExpectRetained && openedWithPreviousAlive == 0)
+            {
+                mismatches.Add($"{c.Label.Ja}: 前の BindingExpression が残ったまま開いた回数が 0");
             }
 
             if (aliveWindows != 0 || aliveBindings != 0)
@@ -467,7 +526,8 @@ internal sealed class BindingNonInpcLeakScene : IScene
             [
                 c.Label,
                 c.Binding,
-                registered == true ? T("Yes", "ある") : T("No", "ない"),
+                $"{registeredRounds} / {Rounds}",
+                $"{openedWithPreviousAlive} / {Rounds - 1}",
                 .. tracksSource
                     ? counts.Select(count => (Loc)count.ToString())
                     : Checkpoints.Select(_ => Loc.Of("- (shared)", "-（共有）")),
@@ -486,7 +546,8 @@ internal sealed class BindingNonInpcLeakScene : IScene
             [
                 T("Source and target element", "ソースとバインド先の要素"),
                 T("Binding", "バインド"),
-                T("Key in _valueChangedHandlers while open", "開いている間の _valueChangedHandlers のキー"),
+                T("Rounds in which it was a key in _valueChangedHandlers while open", "開いている間に _valueChangedHandlers のキーだった回数"),
+                T("Windows opened before the previous BindingExpression was collected", "前の BindingExpression が回収される前に開いた回数"),
                 T("Sources alive after 10", "10 回後に残るソース"),
                 T("after 50", "50 回後"),
                 T("after 100", "100 回後"),
@@ -501,9 +562,7 @@ internal sealed class BindingNonInpcLeakScene : IScene
 
     private static async Task SaveCleanupTimelineAsync(SceneContext context)
     {
-        PropertyDescriptor descriptor = TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
-        if (!ReferenceEquals(descriptor, TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)])
-            || !ReferenceEquals(descriptor, TypeDescriptor.GetProperties(new TimelineViewModel())[nameof(TimelineViewModel.Title)]))
+        if (!TitleIsStable())
         {
             throw new InvalidOperationException("TypeDescriptor.GetProperties が同じプロパティに別の PropertyDescriptor を返した。");
         }
@@ -516,14 +575,14 @@ internal sealed class BindingNonInpcLeakScene : IScene
             vm => vm,
             (open, _) =>
             {
-                rows.Add(Row(T("While the window is open", "ウィンドウを開いている間"), descriptor, open.Source!, open.Binding));
+                rows.Add(Row(T("While the window is open", "ウィンドウを開いている間"), open.Source!, open.Binding));
                 return Task.CompletedTask;
             });
         await IdleAsync(5, 100);
-        rows.Add(Row(T("Closed the window, then GC", "ウィンドウを閉じて GC"), descriptor, opened.Source!, opened.Binding));
+        rows.Add(Row(T("Closed the window, then GC", "ウィンドウを閉じて GC"), opened.Source!, opened.Binding));
 
         await IdleAsync(20, 250);
-        rows.Add(Row(T("Waited 5 s, GC every 250 ms", "250 ms ごとに GC しながら 5 秒待つ"), descriptor, opened.Source!, opened.Binding));
+        rows.Add(Row(T("Waited 5 s, GC every 250 ms", "250 ms ごとに GC しながら 5 秒待つ"), opened.Source!, opened.Binding));
 
         await OpenAndCloseAsync(
             """
@@ -538,7 +597,6 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 await IdleAsync(5, 100);
                 rows.Add(Row(
                     T("Opened another window bound to a different non-INPC type, then GC before closing it", "別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC"),
-                    descriptor,
                     opened.Source!,
                     opened.Binding));
             });
@@ -578,9 +636,9 @@ internal sealed class BindingNonInpcLeakScene : IScene
     /// キーと値はこのメソッドの中だけで触り、強い参照を外へ持ち出さない。
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static IReadOnlyList<Loc> Row(Loc step, PropertyDescriptor descriptor, WeakReference source, WeakReference binding)
+    private static IReadOnlyList<Loc> Row(Loc step, WeakReference source, WeakReference binding)
     {
-        IDictionary? handlers = HandlersOf(descriptor);
+        IDictionary? handlers = HandlersOf(TimelineTitle());
         int count = handlers?.Count ?? 0;
         if (count == 0)
         {
@@ -602,6 +660,15 @@ internal sealed class BindingNonInpcLeakScene : IScene
             source.IsAlive.ToString(),
             binding.IsAlive.ToString(),
         ];
+    }
+
+    /// <summary>TypeDescriptor.GetProperties を型で 2 回呼んだ結果とインスタンスで呼んだ結果が、同じ PropertyDescriptor を返すか。</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool TitleIsStable()
+    {
+        PropertyDescriptor title = TimelineTitle();
+        return ReferenceEquals(title, TimelineTitle())
+            && ReferenceEquals(title, TypeDescriptor.GetProperties(new TimelineViewModel())[nameof(TimelineViewModel.Title)]);
     }
 
     // ------------------------------------------------------------ 共通
@@ -632,6 +699,25 @@ internal sealed class BindingNonInpcLeakScene : IScene
         window.Close();
         await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         return opened;
+    }
+
+    /// <summary>
+    /// 残っているオブジェクトのうち、登録表のキーになっていないものを数える。
+    /// 追跡するオブジェクトとバインドしたプロパティの持ち主が同じケースでは、残ったものがすべてキーなら 0 になる。
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int CountAliveNotRegistered(List<WeakReference?> sources, string property)
+    {
+        int count = 0;
+        foreach (WeakReference? reference in sources)
+        {
+            if (reference?.Target is { } target && !IsRegistered((target, property)))
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     /// <summary>バインドしたプロパティの PropertyDescriptor の登録表に、その持ち主がキーとして入っているか。</summary>

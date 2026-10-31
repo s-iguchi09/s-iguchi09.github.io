@@ -71,14 +71,16 @@ Table 1: A window was opened and closed 100 times.
 At each checkpoint, the run drained the dispatcher, waited 100 ms, and ran the GC, five times in a row, before counting (.NET 10.0.13 / Windows 11, values from one run).
 Every source holds a 1 MB array.
 The rows marked "tracking the List&lt;T&gt;" and "tracking the collection" count the `Rows` object instead of the view model.
-"Key in \_valueChangedHandlers while open" shows whether, while the first window was open, the owner of the bound property was a key in the registration table of that property's `PropertyDescriptor` (a non-public field read through reflection).
+"Rounds in which it was a key in \_valueChangedHandlers while open" counts the rounds in which, while that round's window was open, the owner of the bound property was a key in the registration table of that property's `PropertyDescriptor` (a non-public field read through reflection).
+"Windows opened before the previous BindingExpression was collected" counts, out of the 99 rounds from the second onward, the rounds in which the window was opened while the previous round's `BindingExpression` had not yet been collected.
 {: .table-caption}
 
 In the first three "No INPC" rows (the settable property with a TextBlock and with a TextBox, and the get-only property) and in the "List&lt;T&gt;.Count" row, sources were left uncollected at one or more checkpoints.
 At 100 cycles, every one of these rows left fewer than the number opened (100).
 On the other hand, no row left any `BindingExpression` or window alive after 100 cycles.
 The INPC view model, `Mode=OneTime`, the `RowCount` property, and `ObservableCollection<T>.Count` left no source at any checkpoint.
-Every row that left objects behind is a row whose tracked object was a key in the registration table while the first window was open (the registration was checked only for the first window).
+Every row that left objects behind is a row whose object was a key in the registration table in all 100 rounds.
+At every checkpoint, all of the objects left behind were still keys in the registration table (counted in the scene).
 
 ---
 
@@ -128,12 +130,13 @@ The actual type of the registration table was read while a window bound to `Time
 
 The registration table is a `ConcurrentDictionary<object, EventHandler>`, which holds its keys with ordinary (strong) references.
 The record's `_source` is also a field of type `object`, not a `WeakReference`.
-Because `TypeDescriptor` keeps returning the same `PropertyDescriptor` instance, the source stays reachable through these two strong references and is not collected as long as the registration remains.
-In Table 2 as well, the source was alive at the sampling points where the registration remained and had been collected at the point where the registration count was 0.
+As Table 3 shows, `TypeDescriptor` returned the same `PropertyDescriptor` even after the scene kept only a weak reference to it and ran the GC.
+Because `TypeDescriptor` keeps holding the descriptor, the source stays reachable through these two strong references and is not collected as long as the registration remains.
+In Tables 2 and 4 as well, the source was alive at the sampling points where the registration remained and had been collected at the points after the registration was removed.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg" alt="A solid arrow goes from PropertyDescriptor (ReportViewModel.Title) to _valueChangedHandlers. From there, a solid arrow labeled key goes to ReportViewModel (byte[] Data, 1 MB) and a solid arrow labeled value (Target) goes to ValueChangedRecord, the Target of the handler stored as the value. From ValueChangedRecord, a solid arrow labeled _source goes to ReportViewModel and a dashed arrow goes to BindingExpression (Window)." width="760" height="270" loading="lazy">
-  <figcaption>The reference path that keeps the source alive after the window closes. Solid arrows are strong references (the types of the registration table and _source are in Table 3); the dashed arrow is a relationship that does not prevent collection. The registration key, the record type, and the record's _source were confirmed in Table 2 (with TimelineViewModel, which has the same shape as ReportViewModel); the collection of the BindingExpression was confirmed in Tables 1 and 2, and that of the window in Table 1. Red marks the source that stays after the window closes, gray marks .NET and WPF internal objects (the PropertyDescriptor, its registration table, and the record), and green marks what gets collected. The shape of the reference from the record to the BindingExpression (direct or through other objects) was not checked; the dashed arrow only shows that this part does not prevent collection (.NET 10.0.13 / Windows 11).</figcaption>
+  <figcaption>The reference path that keeps the source alive after the window closes. Solid arrows are strong references (the types of the registration table and _source are in Table 3); the dashed arrow shows that the BindingExpression was collected even while the record remained (Table 2). The registration key, the record type, and the record's _source were confirmed in Table 2 (with TimelineViewModel, which has the same shape as ReportViewModel); the collection of the BindingExpression was confirmed in Tables 1 and 2, and that of the window in Table 1. Red marks the source that stays after the window closes, gray marks .NET and WPF internal objects (the PropertyDescriptor, its registration table, and the record), and green marks what gets collected (.NET 10.0.13 / Windows 11).</figcaption>
 </figure>
 
 ### What Removes the Registration
@@ -145,21 +148,26 @@ The following table compares what removes it by changing the kind of window open
 
 Table 4: In each row, a first window bound to `TimelineViewModel` was opened and closed, the GC was run to collect the first `BindingExpression`, and then the next window was opened.
 Only in the last row was the next window opened while the first `BindingExpression` was held by a strong reference (before it could be collected); the reference was released after reading the registration right after opening.
+In every row, after the next window was closed and the GC was run, one more window bound with `OneWay` to a different type was opened, and the registration was read right after it opened.
 "Right after opening" is the point at which the window was shown and the dispatcher was drained, before any GC.
 The GC uses the same procedure as Table 1, and each row was measured with windows separate from Table 2 (.NET 10.0.13 / Windows 11).
 {: .table-caption}
 
 The registration was removed when a window with a binding that watches for changes (`OneWay`) was opened, already at the point the window was shown and before any GC.
 The type of the bound source did not matter: it was removed with an INPC view model, with a different property of a different type, and with another instance of the same type.
-An INPC view model does not enter a `PropertyDescriptor` registration table (Table 1), so what removed the registration was not a registration in a per-type table but WPF internal processing that works across types.
+An INPC view model does not enter a `PropertyDescriptor` registration table (Table 1), so what removed the registration was not a registration in a per-`PropertyDescriptor` table but WPF internal processing that works across types.
 The `PropertyDescriptor` for `Name` of the other type was a different instance from the one for `Title` (Table 3).
 A window without bindings and a window with only a `OneTime` binding did not remove it, neither after running the GC while open nor after closing and running the GC.
 
-The registration was removed only when the first window's `BindingExpression` had already been collected.
+In Table 4, the registration was removed only when the first window's `BindingExpression` had already been collected.
 When the next window was opened before the first `BindingExpression` was collected, as in the last row, the registration was not removed at the point of opening.
-Even after the GC then collected the `BindingExpression`, the registration was not removed unless another window was opened.
-In Table 1, the GC runs only at checkpoints, so most open/close cycles follow the same order as this last row.
-That only part of the opened sources remained at 100 cycles in Table 1 is consistent with this result.
+The GC then collected the `BindingExpression`, but the registration was still not removed after closing the window and running the GC.
+It was removed when one more `OneWay` window was opened after that.
+The rows for the window without bindings and for `OneTime` were also removed when one more window was opened.
+Because the Table 1 scene explicitly runs the GC only at checkpoints, many rounds opened the next window before the previous round's `BindingExpression` was collected ("Windows opened before the previous BindingExpression was collected" in Table 1).
+In those rounds, the registration is not removed at the point of opening.
+The sources that did not remain in Table 1 were collected after their registrations were removed (they are not collected while registered).
+The only way of removal confirmed in Table 4 is opening a `OneWay` window after the `BindingExpression` has been collected, so the number left in Table 1 depends on the order of the open/close cycles and the GCs that run automatically at run time.
 
 ---
 
@@ -179,7 +187,7 @@ Report data, images, and lists of search results stay together with the source.
 The key is not necessarily the `DataContext`; it is the object that owns the bound property.
 If `Rows` in `{Binding Rows.Count}` is a `List<T>`, the `List<T>` that owns `Count` does not implement INPC, even when the view model does, so the `List<T>` becomes the key when `Count` is watched.
 The "List&lt;T&gt;.Count" row in Table 1 binds with `{Binding Rows.Count}` to a view model that implements INPC, has a `List<byte[]> Rows` holding one 1 MB array, and has no `RowCount` (the `ReadOnlyRowsViewModel` shown later without `RowCount`).
-In Table 1, the `List<T>` was a key in the registration table while the first window was open, and the `List<T>` and its contents stayed after the window closed.
+In Table 1, the `List<T>` was a key in the registration table while the window was open in every round, and the `List<T>` and its contents stayed after the window closed.
 
 `ObservableCollection<T>` implements INPC, and in Table 1 it did not become a key with the same path and did not stay.
 In Table 1, keeping the `List<T>` but reading the count from a `RowCount` property on the INPC view model kept the view model out of the registration table, and no `List<T>` was left behind either.
@@ -198,7 +206,7 @@ That `OneTime` does not watch the source for changes was also confirmed through 
 
 Table 5: Values read after each operation on an element bound to an INPC view model (`Title` starts as `Monthly report`).
 The `TextBlock` rows show the displayed text: `Title` was set to `Changed` with `PropertyChanged` raised, and then the `DataContext` was replaced with another view model whose `Title` is `Replaced`.
-The `TextBox` rows show the source's `Title`: the text in the `TextBox` was selected and replaced with `Edited` (like typing, this keeps the binding), and then `UpdateSource` was called (.NET 10.0.13 / Windows 11).
+The `TextBox` rows show the source's `Title`: the text in the `TextBox` was selected and `SelectedText` was set to `Edited` (the scene confirmed that the binding was still attached afterwards), and then `UpdateSource` was called (.NET 10.0.13 / Windows 11).
 {: .table-caption}
 
 The `OneTime` display did not change when `PropertyChanged` was raised, and it changed when the `DataContext` was replaced.
@@ -300,7 +308,7 @@ When a value does not change while the window is open and the source class canno
 In Table 1, a `OneTime` binding stayed out of the registration table, and the source did not stay even though it did not implement INPC.
 In exchange, as Table 5 shows, the screen is not updated when a source property changes after it is displayed (it is updated when the `DataContext` is replaced).
 `TextBox.Text`, which accepts input, is `TwoWay` by default (`BindsTwoWayByDefault` in Table 3; "[How User Input Silently Removes a WPF Binding Written Without Mode](/articles/wpf-binding-mode-omitted-detached/)" covers how to check a property's default direction).
-In Table 5, typing into a `TextBox` and calling `UpdateSource` put the value into the source with the default `TwoWay`, while the source value did not change with `OneTime`.
+In Table 5, changing the text of a `TextBox` and calling `UpdateSource` put the value into the source with the default `TwoWay`, while the source value did not change with `OneTime`.
 This approach is limited to display-only elements.
 
 ---
@@ -308,7 +316,7 @@ This approach is limited to display-only elements.
 ## Notes
 
 - **Use the internal type names for observation only.** `_valueChangedHandlers`, `ValueChangedRecord`, and `_source` are non-public implementation details whose names and structure may change in other versions. Do not touch them from application code.
-- **Check the retention path in a memory profiler.** When the view model of a closed window stays alive and its retention path contains a type derived from `PropertyDescriptor` or a `ValueChangedEventManager` record, it is likely the path described here. How it appears in a profiler was not checked for this article.
+- **Check the retention path in a memory profiler.** When the view model of a closed window stays alive and it is held by the `_valueChangedHandlers` (`ConcurrentDictionary`) of a `System.ComponentModel.ReflectPropertyDescriptor` (Table 3) or by the `_source` of a `ValueChangedEventManager` record, it is the path described here.
 - **Do not judge by the number left behind.** Even in Table 1, only part of the opened sources stayed at 100 cycles. "Opening and closing a few times did not increase it" does not prove that this path is absent. Check the binding itself: whether the object owning the bound property (at each step of the path) implements INPC, or whether the binding is `OneTime`.
 - **The object without INPC is not always the view model.** Objects in the middle of the path (`List<T>`, DTOs, settings classes, and so on) are affected as well. For a path like `{Binding A.B.C}`, check the type of the object at each step.
 - **A shared source does not need an urgent fix.** For a binding to a source that lives to the end, the windows and `BindingExpression` objects are collected (Table 1).
@@ -317,7 +325,7 @@ This approach is limited to display-only elements.
 
 ## Summary
 
-In the measurement (the registration was checked for the first window), when the object owning a property bound with `OneWay` or `TwoWay` did not implement INPC, that object became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
+In the measurement, when the object owning a property bound with `OneWay` or `TwoWay` did not implement INPC, that object became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
 That object is not necessarily the `DataContext`; it can be an object in the middle of the path, such as the `List<T>` in `{Binding Rows.Count}`.
 Both the registration key and the record's `_source` are strong references, so on .NET 10, even after the `BindingExpression` and the window are collected, that object is not collected while the registration remains.
 Waiting and running the GC did not remove the registration; it was removed when another window with a `OneWay` binding was opened after the closed window's `BindingExpression` had been collected.
