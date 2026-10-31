@@ -131,7 +131,7 @@ Whether the key, the `_source`, or both prevent collection was not checked.
 As Table 2 shows, the registration was not removed after waiting 5 seconds with the GC run every 250 ms.
 It was gone after another window, bound to a different type without notifications, was opened and the GC was run before closing it.
 That type's `PropertyDescriptor` is a different instance, so a registration in its table did not remove this one directly.
-The cleanup may therefore happen not on the per-type registration table but on a side that works across types (such as `ValueChangedEventManager`).
+The cleanup may therefore happen not on the per-`PropertyDescriptor` registration table but on a side that works across types (such as `ValueChangedEventManager`).
 However, whether opening a window itself or adding a registration for another type made the difference, and whether the registration was removed when the window opened or when the GC ran, were not isolated.
 That internal processing, and whether a window without bindings, an INPC source, or a `OneTime` binding also removes it, were not checked either.
 
@@ -169,7 +169,7 @@ In Table 1, binding to a get-only property also made the source a key in the reg
 
 ### OneTime Stays Out of the Registration Table
 
-`Mode=OneTime` updates the target only when the application starts or when the `DataContext` changes, and does not propagate changes to source properties ([BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)).
+`Mode=OneTime` updates the target only when the binding takes effect ("when the application starts" in the API reference) or when the `DataContext` changes, and does not propagate changes to source properties ([BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)).
 In Table 1, even a source without notifications did not become a key in the registration table and did not stay.
 
 ---
@@ -266,7 +266,7 @@ When a value does not change while the window is open and the source class canno
 ```
 
 In Table 1, a `OneTime` binding stayed out of the registration table, and the source did not stay even though it did not implement INPC.
-In exchange, the screen is not updated when a source property changes after it is displayed, unless the `DataContext` is replaced.
+In exchange, the screen is not updated when a source property changes after it is displayed (that it updates when the `DataContext` changes comes from the API reference and was not checked for this article).
 `TextBox.Text`, which accepts input, is `TwoWay` by default ([What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#default-behaviors); "[How User Input Silently Removes a WPF Binding Written Without Mode](/articles/wpf-binding-mode-omitted-detached/)" covers how to check a property's default direction).
 Only `TwoWay` and `OneWayToSource` bindings write back to the source ([Binding.UpdateSourceTrigger](https://learn.microsoft.com/dotnet/api/system.windows.data.binding.updatesourcetrigger)), so `OneTime` stops input from reaching the source.
 This approach is limited to display-only elements.
@@ -288,7 +288,7 @@ This approach is limited to display-only elements.
 In the measurement, when a `OneWay` or `TwoWay` binding had a source that did not implement INPC, the source became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
 On .NET 10, the binding and the window are collected, but in Table 2 the source was not collected until the registration was removed.
 In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.
-Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-type registration table but on a side that works across types (what triggered it was not isolated).
+Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-`PropertyDescriptor` registration table but on a side that works across types (what triggered it was not isolated).
 
 When binding to view models created per window or to objects that hold large data, implement INPC on that class.
 Show list counts through `ObservableCollection<T>` or through a count property on the view model.

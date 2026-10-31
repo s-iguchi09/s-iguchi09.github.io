@@ -129,7 +129,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 表 2 のとおり、登録は 250 ms ごとに GC を呼びながら 5 秒待っても外れなかった。
 外れていたのは、別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC を呼んだ後である。
 その型の `PropertyDescriptor` は別のインスタンスなので、その表への登録が直接この登録を外したわけではない。
-このため、片付けは型ごとの登録表の側ではなく、型をまたいで働く側（`ValueChangedEventManager` など）で起きている可能性がある。
+このため、片付けは`PropertyDescriptor` ごとの登録表の側ではなく、型をまたいで働く側（`ValueChangedEventManager` など）で起きている可能性がある。
 ただし、ウィンドウを開いたこと自体と別の型の登録が加わったことのどちらが効いたのか、開いた時点と GC の時点のどちらで外れたのかは切り分けていない。
 その内部の処理と、バインドの無いウィンドウや INPC のソース、`OneTime` のバインドの場合にも外れるかも確かめていない。
 
@@ -168,7 +168,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 ### OneTime は登録表に入らない
 
-`Mode=OneTime` は、ターゲットを更新するのがアプリの起動時と `DataContext` が変わったときだけで、ソースのプロパティの変更は伝えない（[BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)）。
+`Mode=OneTime` は、ターゲットを更新するのがバインドが有効になったとき（API リファレンスの表現では起動時）と `DataContext` が変わったときだけで、ソースのプロパティの変更は伝えない（[BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)）。
 表 1 では、通知の無いソースでも登録表のキーにならず、ソースは残らなかった。
 
 ---
@@ -265,7 +265,7 @@ XAML は `{Binding RowCount}` にする。
 ```
 
 表 1 では、`OneTime` のバインドは登録表に入らず、ソースが INPC を実装していなくても残らなかった。
-その代わり、表示後にソースのプロパティの値が変わっても、`DataContext` を差し替えない限り画面は更新されない。
+その代わり、表示後にソースのプロパティの値が変わっても、画面は更新されない（`DataContext` を変えたときに更新されることは API リファレンスの記述によるもので、本記事では確かめていない）。
 入力を受ける `TextBox` の `Text` は既定で `TwoWay` である（[What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#default-behaviors)。既定の向きの調べ方は「[WPF で Mode を書かないバインドが、ユーザー操作で黙って外れる仕組み](/ja/articles/wpf-binding-mode-omitted-detached/)」で扱っている）。
 ソースへ書き戻すのは `TwoWay` と `OneWayToSource` のバインドなので（[Binding.UpdateSourceTrigger](https://learn.microsoft.com/dotnet/api/system.windows.data.binding.updatesourcetrigger)）、`OneTime` にすると入力がソースに届かなくなる。
 この方法は表示だけの要素に限る。
@@ -287,7 +287,7 @@ XAML は `{Binding RowCount}` にする。
 計測では、INPC を実装していないソースに `OneWay`・`TwoWay` でバインドすると、ソースは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
 .NET 10 では、バインドとウィンドウは回収されるが、表 2 ではソースは登録が外れるまで回収されなかった。
 計測では、5 秒の待機と GC では外れず、別の型の通知なしのソースにバインドしたウィンドウを開いて GC を呼んだ後に外れた。
-外れていたのが別の型へのバインドを持つウィンドウを開いた後であることから、片付けは型ごとの登録表ではなく、型をまたいで働く側で起きている可能性がある（何がきっかけかは切り分けていない）。
+外れていたのが別の型へのバインドを持つウィンドウを開いた後であることから、片付けは`PropertyDescriptor` ごとの登録表ではなく、型をまたいで働く側で起きている可能性がある（何がきっかけかは切り分けていない）。
 
 画面ごとに作るビューモデルや、大きなデータを持つオブジェクトにバインドする場合は、そのクラスに INPC を実装する。
 一覧の件数は `ObservableCollection<T>` か、ビューモデルの件数プロパティから表示する。
