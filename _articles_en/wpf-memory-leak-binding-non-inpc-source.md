@@ -159,8 +159,8 @@ If `Rows` in `{Binding Rows.Count}` is a `List<T>`, the `List<T>` that owns `Cou
 The "List&lt;T&gt;.Count" row in Table 1 uses `ReadOnlyRowsViewModel`, shown later, with one 1 MB array in `Rows`, without `RowCount`, and with `{Binding Rows.Count}`.
 In Table 1, the `List<T>` was a key in the registration table while the first window was open, and the `List<T>` and its contents stayed after the window closed.
 
-In Table 1, `ObservableCollection<T>` implements INPC, so with the same path it did not become a key and did not stay.
-Keeping the `List<T>` but reading the count from a `RowCount` property on the INPC view model kept the view model out of the registration table, and no `List<T>` was left behind either.
+`ObservableCollection<T>` implements INPC, and in Table 1 it did not become a key with the same path and did not stay.
+In Table 1, keeping the `List<T>` but reading the count from a `RowCount` property on the INPC view model kept the view model out of the registration table, and no `List<T>` was left behind either.
 
 ### Properties Without a Setter Are Watched Too
 

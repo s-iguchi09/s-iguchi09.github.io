@@ -158,7 +158,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 表 1 の「List&lt;T&gt;.Count」の行は、後で示す `ReadOnlyRowsViewModel` の `Rows` に 1 MB の配列を 1 つ入れ、`RowCount` を除いて `{Binding Rows.Count}` にしたものである。
 表 1 では、1 回目のウィンドウを開いている間に `List<T>` が登録表のキーになっており、閉じた後も `List<T>` とその中身が残った。
 
-表 1 では、`ObservableCollection<T>` は INPC を実装しているため、同じパスでもキーにならず、残らなかった。
+`ObservableCollection<T>` は INPC を実装しており、表 1 では同じパスでもキーにならず、残らなかった。
 表 1 では、`List<T>` のままでも、件数を INPC のビューモデルの `RowCount` から読むようにすると、ビューモデルは登録表のキーにならず、`List<T>` も残らなかった。
 
 ### set の無いプロパティも監視される
