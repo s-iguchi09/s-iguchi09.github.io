@@ -79,7 +79,7 @@ In the first three "No INPC" rows (the settable property with a TextBlock and wi
 At 100 cycles, every one of these rows left fewer than the number opened (100).
 On the other hand, no row left any `BindingExpression` or window alive after 100 cycles.
 The INPC view model, `Mode=OneTime`, the `RowCount` property, and `ObservableCollection<T>.Count` left no source at any checkpoint.
-Every row that left sources behind is a row whose source was a key in the registration table while the window was open.
+Every row that left objects behind is a row whose remaining object was a key in the registration table while the window was open.
 
 ---
 
@@ -90,7 +90,7 @@ Every row that left sources behind is a row whose source was a key in the regist
 Microsoft Learn's "[Optimizing Performance: Data Binding](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-data-binding)" names two ways to provide property change notifications: INPC and the change notifications associated with `TypeDescriptor`.
 In the measurement, when the object owning the bound property did not implement INPC and the binding was not `Mode=OneTime`, that object was in the registration table of the property's `PropertyDescriptor` (objects in the middle of the path are covered later).
 That is the "Key in \_valueChangedHandlers while open" column in Table 1.
-Sources that implement INPC and bindings with `Mode=OneTime` were not in that registration table.
+When the object owning the property implemented INPC (the view model or `ObservableCollection<T>`), or when the binding was `Mode=OneTime`, nothing was in that registration table.
 
 For the measured type, a `PropertyDescriptor` was not created per object.
 Calling `TypeDescriptor.GetProperties` twice with the type, or once with an instance, returned the same instance for the same property.
@@ -277,7 +277,7 @@ This approach is limited to display-only elements.
 
 - **Use the internal type names for observation only.** `_valueChangedHandlers`, `ValueChangedRecord`, and `_source` are non-public implementation details whose names and structure may change in other versions. Do not touch them from application code.
 - **Check the retention path in a memory profiler.** When the view model of a closed window stays alive and its retention path contains a type derived from `PropertyDescriptor` or a `ValueChangedEventManager` record, it is likely the path described here. How it appears in a profiler was not checked for this article.
-- **Do not judge by the number left behind.** Even in Table 1, only part of the opened sources stayed at 100 cycles. "Opening and closing a few times did not increase it" does not prove that this path is absent. Check the binding itself: whether the source implements INPC or the binding is `OneTime`.
+- **Do not judge by the number left behind.** Even in Table 1, only part of the opened sources stayed at 100 cycles. "Opening and closing a few times did not increase it" does not prove that this path is absent. Check the binding itself: whether the object owning the bound property (at each step of the path) implements INPC, or whether the binding is `OneTime`.
 - **The object without INPC is not always the view model.** Objects in the middle of the path (`List<T>`, DTOs, settings classes, and so on) are affected as well. For a path like `{Binding A.B.C}`, check the type of the object at each step.
 - **A shared source does not need an urgent fix.** For a binding to a source that lives to the end, the windows and `BindingExpression` objects are collected (Table 1).
 
