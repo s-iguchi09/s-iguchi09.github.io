@@ -1,0 +1,27 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-memory-leak-binding-non-inpc-source
+slug: "wpf-memory-leak-binding-non-inpc-source"
+scene: "BindingNonInpcLeakScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "INotifyPropertyChanged を実装しないビューモデルの書き込み可能なプロパティに TextBlock.Text を OneWay でバインドしたウィンドウを 100 回開閉すると、10・50・100 回のいずれかの時点でビューモデルが 1 個以上回収されずに残り、100 回の時点で残る数は開いた数（100）より少ないこと"
+  - "同じビューモデルに TextBox.Text を（既定の TwoWay で）バインドした場合と、get だけのプロパティにバインドした場合も、同じく 1 個以上残り、100 回の時点では開いた数より少ないこと"
+  - "INotifyPropertyChanged を実装したビューモデルに {Binding Rows.Count} で List<T> の Count にバインドすると、List<T> が同じように残ること"
+  - "INotifyPropertyChanged を実装したビューモデル、Mode=OneTime、ObservableCollection<T> の Count では、10・50・100 回のどの時点でも残るソースが 0 であること"
+  - "List<T> を持つ INotifyPropertyChanged のビューモデルに件数を返す RowCount を用意して {Binding RowCount} にすると、List<T> は 10・50・100 回のどの時点でも残らないこと"
+  - "1 回目のウィンドウを開いている間に、バインドしたプロパティの PropertyDescriptor の _valueChangedHandlers にその持ち主がキーとして入っているのは、通知なしの OneWay・TwoWay・get だけ・共有のソースと List<T>.Count（キーは List<T>）であり、Mode=OneTime、INotifyPropertyChanged のビューモデル、ObservableCollection<T>.Count、RowCount では入っていないこと"
+  - "どの書き方でも、100 回開閉した後に残るウィンドウと BindingExpression は 0 であること。同じ 1 つの通知なしのソースを 100 個のウィンドウで共有した場合も、ウィンドウと BindingExpression は残らないこと"
+  - "TypeDescriptor.GetProperties を型で 2 回呼んだ結果とインスタンスで呼んだ結果から取り出した、同じプロパティの PropertyDescriptor は同一のインスタンスであること"
+  - "通知なしのソースにバインドしたウィンドウを開いている間、PropertyDescriptor の _valueChangedHandlers にそのソースをキーとする登録が 1 件あり、ハンドラーの Target が MS.Internal.Data.ValueChangedEventManager+ValueChangedRecord で、その記録の _source フィールドもソースそのものであること"
+  - "ウィンドウを閉じて GC すると、BindingExpression は回収されるが、登録（キーと記録の _source）とソースは残ること。250 ms ごとに GC を呼びながら 5 秒待っても残ること"
+  - "その後、別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC すると、登録が 0 件になり、ソースが回収されること"
+images:
+  - "images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-cleanup-timeline.svg"
+  - "images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-retention.svg"
+tables:
+  - "_includes/tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-cleanup-timeline.en.md"
+  - "_includes/tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-cleanup-timeline.ja.md"
+  - "_includes/tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-retention.en.md"
+  - "_includes/tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-retention.ja.md"
