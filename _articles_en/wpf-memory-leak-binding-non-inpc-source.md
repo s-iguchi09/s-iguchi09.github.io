@@ -88,7 +88,7 @@ Every row that left sources behind is a row whose source was a key in the regist
 ### How WPF Watches a Source That Does Not Notify
 
 Microsoft Learn's "[Optimizing Performance: Data Binding](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-data-binding)" names two ways to provide property change notifications: INPC and the change notifications associated with `TypeDescriptor`.
-In the measurement, when the source did not implement INPC and the binding was not `Mode=OneTime`, the source was in the registration table of the bound property's `PropertyDescriptor`.
+In the measurement, when the object owning the bound property did not implement INPC and the binding was not `Mode=OneTime`, that object was in the registration table of the property's `PropertyDescriptor` (objects in the middle of the path are covered later).
 That is the "Key in \_valueChangedHandlers while open" column in Table 1.
 Sources that implement INPC and bindings with `Mode=OneTime` were not in that registration table.
 
@@ -285,8 +285,9 @@ This approach is limited to display-only elements.
 
 ## Summary
 
-In the measurement, when a `OneWay` or `TwoWay` binding had a source that did not implement INPC, the source became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
-On .NET 10, the binding and the window are collected, but in Table 2 the source was not collected until the registration was removed.
+In the measurement, when the object owning a property bound with `OneWay` or `TwoWay` did not implement INPC, that object became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
+That object is not necessarily the `DataContext`; it can be an object in the middle of the path, such as the `List<T>` in `{Binding Rows.Count}`.
+On .NET 10, the binding and the window are collected, but in Table 2 that object was not collected until the registration was removed.
 In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.
 Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-`PropertyDescriptor` registration table but on a side that works across types (what triggered it was not isolated).
 

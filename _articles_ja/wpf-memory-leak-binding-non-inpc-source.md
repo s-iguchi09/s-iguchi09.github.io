@@ -86,7 +86,7 @@ INPC を実装したビューモデル、`Mode=OneTime`、件数を返す `RowCo
 ### ソースが変更を通知しないときの監視手段
 
 Microsoft Learn の「[Optimizing Performance: Data Binding](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/optimizing-performance-data-binding)」は、プロパティの変更通知の手段として INPC と、`TypeDescriptor` に結び付いた変更通知の 2 つを挙げている。
-計測では、ソースが INPC を実装せず、`Mode=OneTime` でもないとき、バインドしたプロパティの `PropertyDescriptor` の登録表にソースが入っていた。
+計測では、バインドしたプロパティを持つオブジェクトが INPC を実装せず、`Mode=OneTime` でもないとき、そのプロパティの `PropertyDescriptor` の登録表にそのオブジェクトが入っていた（パスの途中のオブジェクトについては後述する）。
 表 1 の「開いている間の \_valueChangedHandlers のキー」の列がそれである。
 INPC を実装したソースと `Mode=OneTime` では、この登録表に入っていなかった。
 
@@ -284,8 +284,9 @@ XAML は `{Binding RowCount}` にする。
 
 ## まとめ
 
-計測では、INPC を実装していないソースに `OneWay`・`TwoWay` でバインドすると、ソースは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
-.NET 10 では、バインドとウィンドウは回収されるが、表 2 ではソースは登録が外れるまで回収されなかった。
+計測では、`OneWay`・`TwoWay` でバインドしたプロパティを持つオブジェクトが INPC を実装していないと、そのオブジェクトは同じプロパティに対して使い回される `PropertyDescriptor` の登録表に、キーとして入っていた。
+このオブジェクトは `DataContext` とは限らず、`{Binding Rows.Count}` の `List<T>` のようにパスの途中のオブジェクトのこともある。
+.NET 10 では、バインドとウィンドウは回収されるが、表 2 ではそのオブジェクトは登録が外れるまで回収されなかった。
 計測では、5 秒の待機と GC では外れず、別の型の通知なしのソースにバインドしたウィンドウを開いて GC を呼んだ後に外れた。
 外れていたのが別の型へのバインドを持つウィンドウを開いた後であることから、片付けは`PropertyDescriptor` ごとの登録表ではなく、型をまたいで働く側で起きている可能性がある（何がきっかけかは切り分けていない）。
 
