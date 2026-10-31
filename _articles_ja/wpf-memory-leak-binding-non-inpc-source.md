@@ -90,8 +90,9 @@ Microsoft Learn の「[Optimizing Performance: Data Binding](https://learn.micro
 表 1 の「開いている間の \_valueChangedHandlers のキー」の列がそれである。
 INPC を実装したソースと `Mode=OneTime` では、この登録表に入っていなかった。
 
-`PropertyDescriptor` は、オブジェクトごとに作られるものではない。
-計測では、`TypeDescriptor.GetProperties` を型で 2 回呼んでも、インスタンスで呼んでも、同じプロパティには同じインスタンスが返った。
+計測した型では、`PropertyDescriptor` はオブジェクトごとに作られていなかった。
+`TypeDescriptor.GetProperties` を型で 2 回呼んでも、インスタンスで呼んでも、同じプロパティには同じインスタンスが返った。
+`ICustomTypeDescriptor` を実装した型など、インスタンスごとに別のプロパティ情報を返す型では、この限りではない。
 購読者は、同じプロパティに対して返るこのインスタンスの中の表に、**監視対象のオブジェクトをキーとして**登録される。
 このインスタンスの非公開フィールド `_valueChangedHandlers` を、ウィンドウを開いている間から順に読んだ結果が次の表である。
 
@@ -167,7 +168,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 ### OneTime は登録表に入らない
 
-`Mode=OneTime` は、ソースの値でターゲットを初期化するだけで、その後の変更を伝えない（[Data binding overview](https://learn.microsoft.com/dotnet/desktop/wpf/data/#direction-of-the-data-flow)）。
+`Mode=OneTime` は、ターゲットを更新するのがアプリの起動時と `DataContext` が変わったときだけで、ソースのプロパティの変更は伝えない（[BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)）。
 表 1 では、通知の無いソースでも登録表のキーにならず、ソースは残らなかった。
 
 ---
@@ -264,7 +265,7 @@ XAML は `{Binding RowCount}` にする。
 ```
 
 表 1 では、`OneTime` のバインドは登録表に入らず、ソースが INPC を実装していなくても残らなかった。
-その代わり、表示後にソースの値が変わっても画面は更新されない。
+その代わり、表示後にソースのプロパティの値が変わっても、`DataContext` を差し替えない限り画面は更新されない。
 入力を受ける `TextBox` の `Text` は既定で `TwoWay` である（[What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#default-behaviors)。既定の向きの調べ方は「[WPF で Mode を書かないバインドが、ユーザー操作で黙って外れる仕組み](/ja/articles/wpf-binding-mode-omitted-detached/)」で扱っている）。
 ソースへ書き戻すのは `TwoWay` と `OneWayToSource` のバインドなので（[Binding.UpdateSourceTrigger](https://learn.microsoft.com/dotnet/api/system.windows.data.binding.updatesourcetrigger)）、`OneTime` にすると入力がソースに届かなくなる。
 この方法は表示だけの要素に限る。

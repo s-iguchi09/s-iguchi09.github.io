@@ -92,8 +92,9 @@ In the measurement, when the source did not implement INPC and the binding was n
 That is the "Key in \_valueChangedHandlers while open" column in Table 1.
 Sources that implement INPC and bindings with `Mode=OneTime` were not in that registration table.
 
-A `PropertyDescriptor` is not created per object.
-In the measurement, calling `TypeDescriptor.GetProperties` twice with the type, or once with an instance, returned the same instance for the same property.
+For the measured type, a `PropertyDescriptor` was not created per object.
+Calling `TypeDescriptor.GetProperties` twice with the type, or once with an instance, returned the same instance for the same property.
+This does not hold for types that return different property information per instance, such as types that implement `ICustomTypeDescriptor`.
 Subscribers are registered in a table inside the instance returned for that property, **keyed by the object being watched**.
 The following table shows what the non-public field `_valueChangedHandlers` held, starting while the window was open.
 
@@ -168,7 +169,7 @@ In Table 1, binding to a get-only property also made the source a key in the reg
 
 ### OneTime Stays Out of the Registration Table
 
-`Mode=OneTime` only initializes the target from the source and does not propagate later changes ([Data binding overview](https://learn.microsoft.com/dotnet/desktop/wpf/data/#direction-of-the-data-flow)).
+`Mode=OneTime` updates the target only when the application starts or when the `DataContext` changes, and does not propagate changes to source properties ([BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)).
 In Table 1, even a source without notifications did not become a key in the registration table and did not stay.
 
 ---
@@ -265,7 +266,7 @@ When a value does not change while the window is open and the source class canno
 ```
 
 In Table 1, a `OneTime` binding stayed out of the registration table, and the source did not stay even though it did not implement INPC.
-In exchange, the screen is not updated if the source value changes after it is displayed.
+In exchange, the screen is not updated when a source property changes after it is displayed, unless the `DataContext` is replaced.
 `TextBox.Text`, which accepts input, is `TwoWay` by default ([What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#default-behaviors); "[How User Input Silently Removes a WPF Binding Written Without Mode](/articles/wpf-binding-mode-omitted-detached/)" covers how to check a property's default direction).
 Only `TwoWay` and `OneWayToSource` bindings write back to the source ([Binding.UpdateSourceTrigger](https://learn.microsoft.com/dotnet/api/system.windows.data.binding.updatesourcetrigger)), so `OneTime` stops input from reaching the source.
 This approach is limited to display-only elements.
@@ -284,7 +285,7 @@ This approach is limited to display-only elements.
 
 ## Summary
 
-In the measurement, when a `OneWay` or `TwoWay` binding had a source that did not implement INPC, the source became a key in the registration table of a `PropertyDescriptor` that is reused for that property.
+In the measurement, when a `OneWay` or `TwoWay` binding had a source that did not implement INPC, the source became a key in the registration table of a `PropertyDescriptor` that was reused for that property.
 On .NET 10, the binding and the window are collected, but in Table 2 the source was not collected until the registration was removed.
 In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.
 Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-type registration table but on a side that works across types (what triggered it was not isolated).
