@@ -4,7 +4,7 @@ title: "WPF Binding Without INotifyPropertyChanged: Why the Source Stays in Memo
 seo_title: "WPF Binding Memory Leak Without INotifyPropertyChanged"
 date: 2026-10-31
 category: WPF
-excerpt: "On .NET 10, a closed window bound to a non-INotifyPropertyChanged source is collected, but the source stays as a key in a PropertyDescriptor table."
+excerpt: "With a OneWay or TwoWay binding to a non-INotifyPropertyChanged source, .NET 10 collects the closed window but keeps the source as a PropertyDescriptor key."
 image: /images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-retention.svg
 ---
 

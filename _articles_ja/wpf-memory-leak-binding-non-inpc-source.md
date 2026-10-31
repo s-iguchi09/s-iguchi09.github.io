@@ -3,7 +3,7 @@ layout: article-ja
 title: "WPF のバインドで INotifyPropertyChanged の無いソースがメモリに残る仕組み"
 date: 2026-10-31
 category: WPF
-excerpt: "INotifyPropertyChanged の無いソースにバインドした画面を閉じると、.NET 10 ではウィンドウは回収されるが、ソースは PropertyDescriptor の登録表のキーとして残る。内部の表を読み、残る書き方と残らない書き方を 100 回の開閉で比べた。"
+excerpt: "INotifyPropertyChanged の無いソースに OneWay・TwoWay でバインドした画面を閉じると、.NET 10 ではウィンドウは回収されるが、ソースは PropertyDescriptor の登録表のキーとして残り、登録が外れるまで回収されない。"
 image: /images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-retention.svg
 ---
 

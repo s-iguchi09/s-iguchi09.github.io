@@ -478,7 +478,7 @@ internal sealed class BindingNonInpcLeakScene : IScene
             var counts = new List<int>();
             var unregisteredAlive = new List<int>();
             int registeredRounds = 0;
-            string watchedProperty = c.Watched(c.CreateSource()).Property;
+            (string watchedProperty, bool trackedIsOwner) = Probe(c);
             int openedWithPreviousAlive = 0;
             for (int round = 1; round <= Rounds; round++)
             {
@@ -508,7 +508,7 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 {
                     await IdleAsync(5, 100);
                     counts.Add(sources.Count(reference => reference?.IsAlive == true));
-                    unregisteredAlive.Add(CountAliveNotRegistered(sources, watchedProperty));
+                    unregisteredAlive.Add(trackedIsOwner ? CountAliveNotRegistered(sources, watchedProperty) : 0);
                 }
             }
 
@@ -723,6 +723,15 @@ internal sealed class BindingNonInpcLeakScene : IScene
         window.Close();
         await window.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         return opened;
+    }
+
+    /// <summary>バインドしたプロパティの名前と、追跡するオブジェクトがそのプロパティの持ち主か（RowCount のケースでは持ち主はビューモデル）。</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (string Property, bool TrackedIsOwner) Probe(Case c)
+    {
+        object probe = c.CreateSource();
+        (object owner, string property) = c.Watched(probe);
+        return (property, ReferenceEquals(c.Tracked(probe), owner));
     }
 
     /// <summary>
