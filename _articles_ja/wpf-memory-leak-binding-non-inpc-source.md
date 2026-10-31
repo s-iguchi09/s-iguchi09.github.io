@@ -142,7 +142,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 {% include tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-cleanup-trigger.ja.md %}
 
 表 4: 各行で、`TimelineViewModel` にバインドした最初のウィンドウを開いて閉じ、GC を呼んで最初の `BindingExpression` を回収してから、次のウィンドウを開いた。
-最後の行だけは、最初のウィンドウを閉じた後に GC を呼ばずに次のウィンドウを開いた。
+最後の行だけは、最初の `BindingExpression` を強い参照で持ったまま（回収される前に）次のウィンドウを開き、開いた直後の登録を読んでから参照を放した。
 「開いた直後」は、表示してディスパッチャーが空になった時点で、GC はまだ呼んでいない。
 GC は表 1 と同じ手順で、各行は表 2 とは別のウィンドウで測った（.NET 10.0.13 / Windows 11）。
 {: .table-caption}
@@ -154,7 +154,8 @@ INPC のビューモデルは `PropertyDescriptor` の登録表に入らない�
 バインドの無いウィンドウと、`OneTime` のバインドだけのウィンドウでは、開いたまま GC を呼んでも、閉じて GC を呼んでも外れなかった。
 
 外れたのは、最初のウィンドウの `BindingExpression` が回収済みのときだけである。
-最後の行のように GC を呼ばずに次のウィンドウを開くと、最初の `BindingExpression` はまだ残っており、その登録は次のウィンドウを開いても、その後 GC を呼んでも外れなかった。
+最後の行のように、最初の `BindingExpression` が回収される前に次のウィンドウを開くと、その登録は開いた時点で外れなかった。
+その後 GC を呼んで `BindingExpression` が回収されても、次のウィンドウを開かない限り外れなかった。
 表 1 では GC をチェックポイントでしか呼ばないため、多くの開閉はこの最後の行と同じ順序になる。
 表 1 で 100 回の時点に開いた数の一部だけが残ったことは、この結果と合う。
 

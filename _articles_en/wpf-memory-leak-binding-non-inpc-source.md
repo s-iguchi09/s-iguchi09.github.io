@@ -144,7 +144,7 @@ The following table compares what removes it by changing the kind of window open
 {% include tables/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-cleanup-trigger.en.md %}
 
 Table 4: In each row, a first window bound to `TimelineViewModel` was opened and closed, the GC was run to collect the first `BindingExpression`, and then the next window was opened.
-Only in the last row was the next window opened without running the GC after closing the first window.
+Only in the last row was the next window opened while the first `BindingExpression` was held by a strong reference (before it could be collected); the reference was released after reading the registration right after opening.
 "Right after opening" is the point at which the window was shown and the dispatcher was drained, before any GC.
 The GC uses the same procedure as Table 1, and each row was measured with windows separate from Table 2 (.NET 10.0.13 / Windows 11).
 {: .table-caption}
@@ -156,7 +156,8 @@ The `PropertyDescriptor` for `Name` of the other type was a different instance f
 A window without bindings and a window with only a `OneTime` binding did not remove it, neither after running the GC while open nor after closing and running the GC.
 
 The registration was removed only when the first window's `BindingExpression` had already been collected.
-When the next window was opened without running the GC, as in the last row, the first `BindingExpression` was still alive, and its registration was not removed by opening the next window or by running the GC afterwards.
+When the next window was opened before the first `BindingExpression` was collected, as in the last row, the registration was not removed at the point of opening.
+Even after the GC then collected the `BindingExpression`, the registration was not removed unless another window was opened.
 In Table 1, the GC runs only at checkpoints, so most open/close cycles follow the same order as this last row.
 That only part of the opened sources remained at 100 cycles in Table 1 is consistent with this result.
 

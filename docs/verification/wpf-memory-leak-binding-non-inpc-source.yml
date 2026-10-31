@@ -20,7 +20,7 @@ verifies:
   - "PropertyDescriptor._valueChangedHandlers は宣言も実体も ConcurrentDictionary<object, EventHandler> で、ValueChangedRecord._source の宣言の型は object であること（どちらも弱い参照の型ではない）"
   - "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor は別のインスタンスであること。TextBox.Text の BindsTwoWayByDefault は true であること"
   - "閉じたウィンドウの BindingExpression が回収され登録だけが残った状態で次のウィンドウを開くと、INPC のビューモデル・別の型の通知なしのプロパティ・同じ型の別のインスタンスに OneWay でバインドしたウィンドウでは、開いて表示が落ち着いた時点（GC の前）で登録が外れ、最初のソースが回収されること"
-  - "最初のウィンドウを閉じた後に GC を呼ばず、最初の BindingExpression が残っているうちに同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること"
+  - "最初の BindingExpression が回収される前（強い参照で保持）に、同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること"
   - "同じ状態で、バインドの無いウィンドウと Mode=OneTime でバインドしたウィンドウでは、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること"
   - "INPC のソースに OneWay でバインドした TextBlock はソースの PropertyChanged で表示が変わり、Mode=OneTime では変わらないこと。どちらも DataContext を差し替えると表示が変わること"
   - "TextBox に入力して UpdateSource を呼ぶと、既定（TwoWay）のバインドではソースに値が入り、Mode=OneTime ではソースが変わらないこと（どちらもバインドは外れない）"

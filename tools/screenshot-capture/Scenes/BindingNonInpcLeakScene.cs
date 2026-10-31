@@ -76,7 +76,7 @@ internal sealed class BindingNonInpcLeakScene : IScene
         "PropertyDescriptor._valueChangedHandlers は宣言も実体も ConcurrentDictionary<object, EventHandler> で、ValueChangedRecord._source の宣言の型は object であること（どちらも弱い参照の型ではない）",
         "OtherViewModel.Name と TimelineViewModel.Title の PropertyDescriptor は別のインスタンスであること。TextBox.Text の BindsTwoWayByDefault は true であること",
         "閉じたウィンドウの BindingExpression が回収され登録だけが残った状態で次のウィンドウを開くと、INPC のビューモデル・別の型の通知なしのプロパティ・同じ型の別のインスタンスに OneWay でバインドしたウィンドウでは、開いて表示が落ち着いた時点（GC の前）で登録が外れ、最初のソースが回収されること",
-        "最初のウィンドウを閉じた後に GC を呼ばず、最初の BindingExpression が残っているうちに同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
+        "最初の BindingExpression が回収される前（強い参照で保持）に、同じ型の別のインスタンスへ OneWay でバインドしたウィンドウを開くと、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
         "同じ状態で、バインドの無いウィンドウと Mode=OneTime でバインドしたウィンドウでは、開いた直後・開いたまま GC した後・閉じて GC した後のどれでも登録が外れず、最初のソースが残ること",
         "INPC のソースに OneWay でバインドした TextBlock はソースの PropertyChanged で表示が変わり、Mode=OneTime では変わらないこと。どちらも DataContext を差し替えると表示が変わること",
         "TextBox に入力して UpdateSource を呼ぶと、既定（TwoWay）のバインドではソースに値が入り、Mode=OneTime ではソースが変わらないこと（どちらもバインドは外れない）",
@@ -181,20 +181,24 @@ internal sealed class BindingNonInpcLeakScene : IScene
 
     // ------------------------------------------------------------ 表 4: 登録が外れるきっかけ
 
-    /// <param name="GcBeforeOpening">次のウィンドウを開く前に GC を呼んで、最初の BindingExpression を回収しておくか。</param>
-    private sealed record Trigger(Loc Label, string Xaml, Func<object> CreateSource, bool GcBeforeOpening = true);
+    /// <param name="HasBinding">次のウィンドウの Text にバインドがあるか。</param>
+    /// <param name="GcBeforeOpening">
+    /// true なら次のウィンドウを開く前に GC を呼び、最初の BindingExpression を回収しておく。
+    /// false なら最初の BindingExpression を、次のウィンドウを開いて登録を読み終えるまで強い参照で持ち、回収前の状態を確実に作る。
+    /// </param>
+    private sealed record Trigger(Loc Label, string Xaml, Func<object> CreateSource, bool HasBinding = true, bool GcBeforeOpening = true);
 
     private static async Task SaveCleanupTriggerAsync(SceneContext context)
     {
         PropertyDescriptor descriptor = TypeDescriptor.GetProperties(typeof(TimelineViewModel))[nameof(TimelineViewModel.Title)]!;
         Trigger[] triggers =
         [
-            new(T("Window without bindings", "バインドの無いウィンドウ"), NoBindingView, () => new OtherViewModel()),
+            new(T("Window without bindings", "バインドの無いウィンドウ"), NoBindingView, () => new OtherViewModel(), HasBinding: false),
             new(T("Window bound to an INPC view model", "INPC のビューモデルにバインドしたウィンドウ"), TextBlockView, () => new NotifyingReportViewModel()),
             new(T("Window bound with Mode=OneTime to a non-INPC type", "通知なしの型に Mode=OneTime でバインドしたウィンドウ"), OneTimeView, () => new ReportViewModel()),
             new(T("Window bound to a non-INPC property of another type", "別の型の通知なしのプロパティにバインドしたウィンドウ"), NameView, () => new OtherViewModel()),
             new(T("Window bound to another instance of the same non-INPC type", "同じ通知なしの型の別のインスタンスにバインドしたウィンドウ"), TextBlockView, () => new TimelineViewModel()),
-            new(T("Same as above, but opened without running the GC after closing the first window", "同上。ただし最初のウィンドウを閉じた後、GC を呼ばずに開く"), TextBlockView, () => new TimelineViewModel(), GcBeforeOpening: false),
+            new(T("Same as above, but opened before the first BindingExpression is collected", "同上。ただし最初の BindingExpression が回収される前に開く"), TextBlockView, () => new TimelineViewModel(), GcBeforeOpening: false),
         ];
 
         var rows = new List<IReadOnlyList<Loc>>();
@@ -202,10 +206,12 @@ internal sealed class BindingNonInpcLeakScene : IScene
         {
             // 最初のウィンドウを開いて閉じる。GcBeforeOpening なら GC して、BindingExpression が回収され登録だけが残る状態にする。
             Opened first = await OpenAndCloseAsync(TextBlockView, () => new TimelineViewModel(), vm => vm);
+            object? heldBinding = trigger.GcBeforeOpening ? null : first.Binding.Target;
             if (trigger.GcBeforeOpening)
             {
                 await IdleAsync(5, 100);
             }
+
             bool before = IsKeyOf(descriptor, first.Source!);
             bool beforeBinding = first.Binding.IsAlive;
 
@@ -218,10 +224,11 @@ internal sealed class BindingNonInpcLeakScene : IScene
                 async (_, _) =>
                 {
                     afterOpen = IsKeyOf(descriptor, first.Source!);
+                    heldBinding = null;
                     await IdleAsync(5, 100);
                     afterGc = IsKeyOf(descriptor, first.Source!);
                 },
-                requireBinding: trigger.Xaml != NoBindingView);
+                requireBinding: trigger.HasBinding);
             await IdleAsync(5, 100);
             bool afterClose = IsKeyOf(descriptor, first.Source!);
 
@@ -238,7 +245,7 @@ internal sealed class BindingNonInpcLeakScene : IScene
         }
 
         // 開く前は、GC を挟む行では「登録あり・BindingExpression は回収済み」。外れる行は、開いて表示が落ち着いた時点（GC の前）で外れている。
-        // GC を挟まない行では最初の BindingExpression がまだ残っており、登録は最後まで外れない。
+        // 回収される前に開く行では、開いた時点で外れず、その後 GC で BindingExpression が回収されても、次のウィンドウが開かれないので外れない。
         string[] kept = ["True", "False", "True", "True", "True", "True"];
         string[] removed = ["True", "False", "False", "False", "False", "False"];
         string[] keptWithBinding = ["True", "True", "True", "True", "True", "True"];

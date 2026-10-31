@@ -5,4 +5,4 @@
 | 通知なしの型に Mode=OneTime でバインドしたウィンドウ | True | False | True | True | True | True |
 | 別の型の通知なしのプロパティにバインドしたウィンドウ | True | False | False | False | False | False |
 | 同じ通知なしの型の別のインスタンスにバインドしたウィンドウ | True | False | False | False | False | False |
-| 同上。ただし最初のウィンドウを閉じた後、GC を呼ばずに開く | True | True | True | True | True | True |
+| 同上。ただし最初の BindingExpression が回収される前に開く | True | True | True | True | True | True |

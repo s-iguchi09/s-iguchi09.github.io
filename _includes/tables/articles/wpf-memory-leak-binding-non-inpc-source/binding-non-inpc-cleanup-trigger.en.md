@@ -5,4 +5,4 @@
 | Window bound with Mode=OneTime to a non-INPC type | True | False | True | True | True | True |
 | Window bound to a non-INPC property of another type | True | False | False | False | False | False |
 | Window bound to another instance of the same non-INPC type | True | False | False | False | False | False |
-| Same as above, but opened without running the GC after closing the first window | True | True | True | True | True | True |
+| Same as above, but opened before the first BindingExpression is collected | True | True | True | True | True | True |
