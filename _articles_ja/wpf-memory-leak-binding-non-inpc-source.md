@@ -118,7 +118,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 一方、ソースは登録表のキーとして、また記録の `_source` として登録の中から指されている。
 表 2 では、登録が残っていた測定点ではソースも残っており、登録が 0 件になった最後の測定点ではソースは回収されていた。
 測定は手順の区切りでだけ行ったため、登録が外れたこととソースが回収されたことのどちらが先に起きたかは、表からは分からない。
-キーと `_source` のどちらが（あるいは両方が）回収を妨げているかは確かめていない。
+キーや `_source` が回収を妨げているかどうかは確かめていない。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg" alt="PropertyDescriptor（ReportViewModel.Title）から _valueChangedHandlers へ実線の矢印があり、そこからキーとして ReportViewModel（byte[] Data 1 MB）へ実線、値（ハンドラー）の Target として ValueChangedRecord へ実線が伸びる。ValueChangedRecord からは _source として ReportViewModel へ実線が、BindingExpression（Window）へ破線が伸びる。" width="760" height="270" loading="lazy">
@@ -129,8 +129,8 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 表 2 のとおり、登録は 250 ms ごとに GC を呼びながら 5 秒待っても外れなかった。
 外れていたのは、別の型の通知なしのソースにバインドしたウィンドウを開き、閉じる前に GC を呼んだ後である。
-その型でバインドしたのは別のプロパティ（`Name`）だが、その `PropertyDescriptor` が別のインスタンスかどうかはシーンで確かめていない。
-このため、片付けは `PropertyDescriptor` ごとの登録表の側ではなく、型をまたいで働く側（`ValueChangedEventManager` など）で起きている可能性がある。
+その型でバインドしたのは別のプロパティ（`Name`）である。
+片付けが型をまたいで働く側（`ValueChangedEventManager` など）で起きている可能性もあるが、その `PropertyDescriptor` が別のインスタンスかどうかを含め、根拠は確かめていない。
 ただし、ウィンドウを開いたこと自体と別の型の登録が加わったことのどちらが効いたのか、開いた時点と GC の時点のどちらで外れたのかは切り分けていない。
 その内部の処理と、バインドの無いウィンドウや INPC のソース、`OneTime` のバインドの場合にも外れるかも確かめていない。
 
@@ -144,7 +144,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 ### 長寿命のソースでは実害が出にくい
 
-保持されるのはソースであり、ウィンドウではない。
+残るのはソースであり、ウィンドウではない。
 アプリ全体で 1 つの設定オブジェクトのように、もともと最後まで生きているソースであれば、登録が残ってもそのソースが余計に生き延びることはない。
 表 1 の「1 つの長寿命のソースを全ウィンドウで共有」の行では、このソースが登録表のキーになっていたが、100 個のウィンドウと `BindingExpression` はすべて回収された。
 
@@ -169,7 +169,7 @@ Microsoft Learn の「[Weak event patterns](https://learn.microsoft.com/dotnet/d
 
 ### OneTime は登録表に入らない
 
-`Mode=OneTime` は、ターゲットを更新するのがバインドが有効になったとき（API リファレンスの表現では起動時）と `DataContext` が変わったときだけで、ソースのプロパティの変更は伝えない（[BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)）。
+`Mode=OneTime` は、ターゲットを更新するのがバインドが有効になったとき（API リファレンスの表現では起動時）と `DataContext` が変わったときだけで、ソースのプロパティの変更は伝えない（[BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)。Learn の記述によるもので、本記事では測っていない）。
 表 1 では、通知の無いソースでも登録表のキーにならず、ソースは残らなかった。
 
 ---
@@ -219,7 +219,7 @@ public sealed class ReportViewModel : ViewModelBase
 
 表 1 では、INPC を実装したソースは `PropertyDescriptor` の登録表のキーにならなかった。
 `PropertyChanged` を一度も発行しない場合でも、ソースは残らなかった。
-ただし、`OneWay` や `TwoWay` のバインドがソースの変更を検出するには、変更の通知が必要である（[What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#binding-direction)）。
+ただし、`OneWay` や `TwoWay` のバインドがソースの変更を検出するには、変更の通知が必要である（[What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#binding-direction)。Learn の記述によるもので、本記事では測っていない）。
 そのため、setter は `SetProperty` を通して通知する形にしておく。
 
 ビューの XAML は変える必要がない。
@@ -289,8 +289,8 @@ XAML は `{Binding RowCount}` にする。
 このオブジェクトは `DataContext` とは限らず、`{Binding Rows.Count}` の `List<T>` のようにパスの途中のオブジェクトのこともある。
 .NET 10 では、`BindingExpression` とウィンドウは回収された。
 表 2 では、登録が残っている間はそのオブジェクトも残っており、登録が 0 件になった最後の測定点では回収されていた（どちらが先かは分からない）。
-計測では、5 秒の待機と GC では外れず、別の型の通知なしのソースにバインドしたウィンドウを開いて GC を呼んだ後に外れた。
-外れていたのが別の型へのバインドを持つウィンドウを開いた後であることから、片付けは `PropertyDescriptor` ごとの登録表ではなく、型をまたいで働く側で起きている可能性がある（何がきっかけかは切り分けていない）。
+計測では、5 秒の待機と GC では外れず、別の型の通知なしのソースにバインドしたウィンドウを開いて GC を呼んだ後には外れていた。
+片付けが型をまたいで働く側で起きている可能性もあるが、何がきっかけかは切り分けておらず、根拠も確かめていない。
 
 画面ごとに作るビューモデルや、大きなデータを持つオブジェクトにバインドする場合は、そのクラスに INPC を実装する。
 一覧の件数は `ObservableCollection<T>` か、ビューモデルの件数プロパティから表示する。

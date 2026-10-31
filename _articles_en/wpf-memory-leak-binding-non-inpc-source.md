@@ -120,7 +120,7 @@ Even while the registration and the record remained, after the window closed, th
 The source, on the other hand, is pointed to from inside the registration: as a key in the registration table and as the record's `_source`.
 In Table 2, the source was alive at the sampling points where the registration remained, and it had been collected at the last sampling point, where the registration count was 0.
 Because the samples were taken only between steps, the table does not show whether the registration was removed or the source was collected first.
-Whether the key, the `_source`, or both prevent collection was not checked.
+Whether the key or the `_source` prevents collection at all was not checked.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-memory-leak-binding-non-inpc-source/binding-non-inpc-reference-path.svg" alt="A solid arrow goes from PropertyDescriptor (ReportViewModel.Title) to _valueChangedHandlers. From there, a solid arrow labeled key goes to ReportViewModel (byte[] Data, 1 MB) and a solid arrow labeled value (Target) goes to ValueChangedRecord, the Target of the handler stored as the value. From ValueChangedRecord, a solid arrow labeled _source goes to ReportViewModel and a dashed arrow goes to BindingExpression (Window)." width="760" height="270" loading="lazy">
@@ -131,8 +131,8 @@ Whether the key, the `_source`, or both prevent collection was not checked.
 
 As Table 2 shows, the registration was not removed after waiting 5 seconds with the GC run every 250 ms.
 It was gone after another window, bound to a different type without notifications, was opened and the GC was run before closing it.
-That type's binding was to a different property (`Name`), but whether its `PropertyDescriptor` is a different instance was not checked in the scene.
-The cleanup may therefore happen not on the per-`PropertyDescriptor` registration table but on a side that works across types (such as `ValueChangedEventManager`).
+That type's binding was to a different property (`Name`).
+The cleanup may happen on a side that works across types (such as `ValueChangedEventManager`), but the grounds for this, including whether that `PropertyDescriptor` is a different instance, were not checked.
 However, whether opening a window itself or adding a registration for another type made the difference, and whether the registration was removed when the window opened or when the GC ran, were not isolated.
 That internal processing, and whether a window without bindings, an INPC source, or a `OneTime` binding also removes it, were not checked either.
 
@@ -146,7 +146,7 @@ Assuming that such registrations stay is consistent with only part of the opened
 
 ### Long-Lived Sources Rarely Cause Harm
 
-What is retained is the source, not the window.
+What stays alive is the source, not the window.
 If the source lives for the whole application anyway, such as a single settings object, a remaining registration does not make that source live any longer than it would.
 In the "one long-lived source shared by all windows" row of Table 1, that source was a key in the registration table, yet all 100 windows and `BindingExpression` objects were collected.
 
@@ -170,7 +170,7 @@ In Table 1, binding to a get-only property also made the source a key in the reg
 
 ### OneTime Stays Out of the Registration Table
 
-`Mode=OneTime` updates the target only when the binding takes effect ("when the application starts" in the API reference) or when the `DataContext` changes, and does not propagate changes to source properties ([BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime)).
+`Mode=OneTime` updates the target only when the binding takes effect ("when the application starts" in the API reference) or when the `DataContext` changes, and does not propagate changes to source properties ([BindingMode.OneTime](https://learn.microsoft.com/dotnet/api/system.windows.data.bindingmode#system-windows-data-bindingmode-onetime); this comes from Microsoft Learn and was not measured in this article).
 In Table 1, even a source without notifications did not become a key in the registration table and did not stay.
 
 ---
@@ -220,7 +220,7 @@ public sealed class ReportViewModel : ViewModelBase
 
 In Table 1, a source that implements INPC did not become a key in the `PropertyDescriptor` registration table.
 The source did not stay even when `PropertyChanged` was never raised.
-For `OneWay` and `TwoWay` bindings to detect source changes, however, the source must provide change notifications ([What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#binding-direction)).
+For `OneWay` and `TwoWay` bindings to detect source changes, however, the source must provide change notifications ([What are binding declarations?](https://learn.microsoft.com/dotnet/desktop/wpf/data/binding-declarations-overview#binding-direction); this comes from Microsoft Learn and was not measured in this article).
 The setter therefore notifies through `SetProperty`.
 
 The XAML of the view does not need to change.
@@ -290,8 +290,8 @@ In the measurement (the registration was checked for the first window), when the
 That object is not necessarily the `DataContext`; it can be an object in the middle of the path, such as the `List<T>` in `{Binding Rows.Count}`.
 On .NET 10, the `BindingExpression` and the window were collected.
 In Table 2, that object stayed alive while the registration remained, and it had been collected at the last sampling point, where the registration count was 0 (which happened first is not known).
-In the measurement, 5 seconds of waiting and GC did not remove it; it was removed after another window, bound to a different type without notifications, was opened and the GC was run.
-Because the registration was gone after a window with a binding to a different type was opened, the cleanup may happen not on the per-`PropertyDescriptor` registration table but on a side that works across types (what triggered it was not isolated).
+In the measurement, 5 seconds of waiting and GC did not remove it; it was gone after another window, bound to a different type without notifications, was opened and the GC was run.
+The cleanup may happen on a side that works across types, but what triggered it was not isolated, and the grounds for this were not checked.
 
 When binding to view models created per window or to objects that hold large data, implement INPC on that class.
 Show list counts through `ObservableCollection<T>` or through a count property on the view model.
