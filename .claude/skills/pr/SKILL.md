@@ -42,7 +42,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z | tar --force-local --null -T - -cf <外のパス>/untracked.tar`
        (GNU tar は `C:/...` のようなドライブ文字付きのパスをリモートの指定と取り違えるため、`--force-local` を付ける。
        `--force-local` は GNU tar(Git Bash の tar)だけのオプションなので、macOS や Windows の `tar.exe`(bsdtar)では付けない)
-       (無ければ省く)
+       (無ければ省く)。`--exclude-standard` は `.gitignore` などで無視されるファイル(`node_modules`・`bin`/`obj`・`.claude/settings.local.json` など)を除くため、
+       それらは写しにも一時コピーにも入らない。失いたくない無視対象のファイルがあれば、別に外へコピーしておく
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、次だけを渡す。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
        `git diff --ignore-cr-at-eol origin/main`。未コミットの変更を含める)と、
