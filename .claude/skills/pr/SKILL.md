@@ -38,11 +38,11 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      - 未 push のコミット: `git fetch origin main` のあと、`git rev-list --count origin/main..HEAD` が 1 以上なら
        `git bundle create <外のパス>/work.bundle origin/main..HEAD` で書き出し、`git bundle verify <外のパス>/work.bundle` が通ることを確かめる(0 なら省く)
      - 未コミットの変更: `git diff --binary HEAD --output=<外のパス>/work.patch`(変更が無ければ省く)
-     - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)を tar で外へまとめる。
+     - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)を tar で外へまとめる(無ければ省く)。
        例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z | tar --force-local --null -T - -cf <外のパス>/untracked.tar`
        (GNU tar は `C:/...` のようなドライブ文字付きのパスをリモートの指定と取り違えるため、`--force-local` を付ける。
        `--force-local` は GNU tar(Git Bash の tar)だけのオプションなので、macOS や Windows の `tar.exe`(bsdtar)では付けない)
-       (無ければ省く)。`--exclude-standard` は `.gitignore` などで無視されるファイル(`node_modules`・`bin`/`obj`・`.claude/settings.local.json` など)を除くため、
+       `--exclude-standard` は `.gitignore` などで無視されるファイル(`node_modules`・`bin`/`obj` など)を除くため、
        それらは写しにも一時コピーにも入らない。失いたくない無視対象のファイルがあれば、別に外へコピーしておく
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、次だけを渡す。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
