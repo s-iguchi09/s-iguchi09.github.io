@@ -30,11 +30,16 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      そのとき作業を戻せたのは外に写しがあったからである。未 push のコミットや `git stash` は `.git` の中にあるため、写しに数えない。
      `<外のパス>` は、一時コピーの置き場(下の手順の `<一時パス>`)とは別の場所に、回ごとに一意の名前で作る
      (例: `<スクラッチ>/backup-20261101-080512/`)。既にあるディレクトリを使い回さず、`mkdir`(`-p` を付けない)で新しく作り、
-     作れなかったら別の名前にする。次の手順はどれか 1 つでも失敗したら、`Agent` を起動せずに止めて、ユーザーに報告する。
+     作れなかったら別の名前にする(名前を変えても作れないときは止める)。
+     次の手順は、リポジトリのルートで、どれか 1 つでも失敗したら `Agent` を起動せずに止めて、ユーザーに報告する。
+     git の出力はシェルのリダイレクトやパイプを通さず、git や tar に直接ファイルへ書かせる
+     (Windows PowerShell 5.1 のリダイレクトとパイプは、出力を別の文字コードで書き直すため、日本語や改行、バイナリの差分が壊れる)。
      - 未 push のコミット: `git fetch origin main` のあと、`git rev-list --count origin/main..HEAD` が 1 以上なら
        `git bundle create <外のパス>/work.bundle origin/main..HEAD` で書き出し、`git bundle verify <外のパス>/work.bundle` が通ることを確かめる(0 なら省く)
-     - 未コミットの変更: `git diff --binary HEAD > <外のパス>/work.patch`(変更が無ければ省く)
-     - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)にあるものを外へコピーする
+     - 未コミットの変更: `git diff --binary HEAD --output=<外のパス>/work.patch`(変更が無ければ省く)
+     - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)を tar で外へまとめる。
+       例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z | tar --null -T - -cf <外のパス>/untracked.tar`
+       (無ければ省く)
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、次だけを渡す。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
        `git diff --ignore-cr-at-eol origin/main`。未コミットの変更を含める)と、
@@ -65,16 +70,20 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
             `add` の前にそのパスが無いことを確かめ、あれば別の名前にする。スクラッチのディレクトリのような長いパスには置かない
             (長いパスの対応が無効な Windows の環境では、パスが MAX_PATH(260 文字)を超えると、dotnet のビルドや Git の削除が失敗することがある。
             PR #170 では、ビルドが MSB3030 で、`git worktree remove --force` が `Filename too long` で失敗した)。
-            作れたら、`git worktree list --porcelain` に表示されたその一時コピーのパスを、後始末のために控えておく。
-            未コミット・未追跡の変更は一時コピーに入らないため、追跡ファイルの変更は元の作業ツリーで
-            `git diff --binary HEAD | git -C <一時パス> apply` を実行して写し、未追跡ファイルは元の作業ツリーで
-            `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)にあるものを一時コピーへコピーする。
+            作れたら、`git worktree list --porcelain` に表示されたその一時コピーのパスを(表示どおりの文字列で)、後始末のために控えておく。
+            未コミット・未追跡の変更は一時コピーに入らないため、元の作業ツリーのルートで写す。
+            追跡ファイルの変更は `git diff --binary HEAD --output=<一時の patch>` で書き出してから
+            `git -C <一時パス> apply <一時の patch>` を実行し、未追跡ファイルは上の写しと同じ方法で tar にまとめて
+            `tar -xf <その tar> -C <一時パス>` で展開する。`<一時の patch>` と tar は `<一時パス>` の外に置く。
             リポジトリの外に書き込めない(権限の確認やサンドボックスで拒否される)ときは、一時コピーを作らず、下の「未実行(推論)」として扱う
        - 一時コピーを作れた場合は、コマンドが失敗した場合や変更が残った場合も含めて、最後に必ず
          `git worktree remove --force <一時パス>` で消す(変更が残った worktree は `--force` なしでは消えない)。
          消す対象は、この回に自分で作った一時パスだけとする。消す前に `git worktree list --porcelain` を実行し、
-         作ったときに控えたパスと同じ worktree が載っていることを確かめる。載っていない、または別のパスしか無いときは消さずに報告する
-       - **`git worktree remove --force` が失敗したら(`Filename too long` など)、それ以上消そうとしない。**
+         作ったときに控えたパスと同じ worktree が載っていることを、表示どおりの文字列で確かめる
+         (Windows では区切りが `/` で表示されるため、`add` に渡した文字列ではなく、控えた文字列と比べる)。
+         `remove` には控えた文字列を渡す。載っていない、または別のパスしか無いときは消さずに報告し、
+         その後は下の「削除が失敗したとき」と同じ扱いにする
+       - **削除が失敗したとき:`git worktree remove --force` が失敗したら(`Filename too long` など)、それ以上消そうとしない。**
          削除コマンドの再試行や `rm -rf` をせず、まず元の作業ツリーが無事か(`git -C <元のパス> status` が通り、
          ファイルが揃っているか)を確かめる。そのうえで、一時パスが残っていることと合わせて依頼者に報告する。
          報告を受けた依頼者も、`git worktree remove --force` をやり直さず、一時パスを自分で消さない。
@@ -110,7 +119,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      (チェックリストのコマンドを書かれた順に打つと存在しないパスを探す)を指摘し、そのたびに 1 時間待った。
      範囲を差分全体に固定することと、コマンドを書かれた順に実行させることは、これを受けて足した。
      一時コピーの作り方・後始末・書き込みの禁止範囲は、この追加の PR(#169)への CodeRabbit の指摘を受けて足した。
-     PR #170 では、一時コピーをスクラッチの長いパスに作ったところ、ビルドが MAX_PATH を超えて失敗した。続く
+     PR #170 では、一時コピーをスクラッチの長いパスに作ったところ、ビルドが MSB3030 で失敗した(パスが MAX_PATH を超えたためとみている)。続く
      `git worktree remove --force` も `Filename too long` で失敗し、その直後に元のリポジトリが `.git` ごと空になった
      (リポジトリの外に写してあった作業を、clone し直したリポジトリへ戻して復旧した)。書き換えずに確かめる方法を先に選ぶこと、
      一時コピーを短いパスに一意の名前で置くこと、起動前に作業の写しをリポジトリの外に置くこと、削除に失敗したら元の作業ツリーを先に確かめることは、これを受けて足した。
