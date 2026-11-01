@@ -29,7 +29,11 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      `isolation: "worktree"` は指定しない(一時コピーが作られ、消される。下の経緯を参照)。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
        `git diff --ignore-cr-at-eol origin/main`。未コミットの変更を含める)と、
-       未追跡の新規ファイルの一覧(`git status --short --untracked-files=all`)。新規ファイルは `git diff` に出ないため、一覧を渡して読ませる
+       未追跡の新規ファイルの一覧(`git status --short --untracked-files=all`)。新規ファイルは `git diff` に出ないため、一覧を渡して読ませる。
+       これらの差分と一覧を取るコマンドが 1 つでも失敗したら、レビューをせずにその旨を報告すること
+       (依頼者が一覧を取れなかったときは、レビュアーを起動しない)
+       (`git fetch` に失敗すると、最新の `origin/main` を取れたと確かめられず、比べる相手の新しさと正しさを保証できないため。
+       下の「未実行(推論)」の扱いは使わない)
      - **レビュー範囲は PR の差分全体とすること。** 指摘への修正を push する前でも、直した箇所だけに絞らない。
        直した箇所を重点的に見てほしいときは、範囲を狭めずに「特に見てほしい箇所」として添える
      - `.coderabbit.yaml` の `path_instructions` を読み、同じ基準で見ること
