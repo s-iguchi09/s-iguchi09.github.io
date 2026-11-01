@@ -40,7 +40,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      - 未コミットの変更: `git diff --binary HEAD --output=<外のパス>/work.patch`(変更が無ければ省く)
      - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)を tar で外へまとめる。
        例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z | tar --force-local --null -T - -cf <外のパス>/untracked.tar`
-       (GNU tar は `C:/...` のようなドライブ文字付きのパスをリモートの指定と取り違えるため、`--force-local` を付ける)
+       (GNU tar は `C:/...` のようなドライブ文字付きのパスをリモートの指定と取り違えるため、`--force-local` を付ける。
+       `--force-local` は GNU tar(Git Bash の tar)だけのオプションなので、macOS や Windows の `tar.exe`(bsdtar)では付けない)
        (無ければ省く)
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、次だけを渡す。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
