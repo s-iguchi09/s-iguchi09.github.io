@@ -28,20 +28,25 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - **起動する前に、作業の写しをリポジトリの外に置く。** 作業ツリーはそのまま残し、写しだけを外に作る。
      原因は特定できていないが、一時コピーの削除が失敗した直後に元のリポジトリが `.git` ごと空になった例があり(経緯を参照)、
      そのとき作業を戻せたのは外に写しがあったからである。未 push のコミットや `git stash` は `.git` の中にあるため、写しに数えない。
-     `<外のパス>` は、一時コピーの置き場(下の手順の `<一時パス>`)とは別の場所に、回ごとに一意の名前で作る
+     `<外のパス>` は、元のリポジトリと一時コピーの置き場(下の手順の `<一時パス>`)のどちらとも別の、
+     ほかのユーザーから読めない自分専用の場所(ユーザーのホームやスクラッチの下)に、回ごとに一意の名前で作る
      (例: `<スクラッチ>/backup-20261101-080512/`)。既にあるディレクトリを使い回さず、`mkdir`(`-p` を付けない)で新しく作り、
      作れなかったら別の名前にする(名前を変えても作れないときは止める)。
      次の手順は、リポジトリのルートで、どれか 1 つでも失敗したら `Agent` を起動せずに止めて、ユーザーに報告する。
      Windows PowerShell 5.1 では、git の出力をリダイレクトやパイプに通さない
      (出力を別の文字コードで書き直すため、日本語や改行、バイナリの差分が壊れる)。git や tar に直接ファイルへ書かせるか、
-     Git Bash などの POSIX シェル(パイプがバイト列をそのまま渡す)で実行する。
+     Git Bash などの POSIX シェル(パイプとリダイレクトがバイト列をそのまま渡す)で実行する。
+     コマンド中のパスはすべて引用符で囲み、`git -C` に渡すパスは絶対パスにする。
      - 未 push のコミット: `git fetch origin main` のあと、`git rev-list --count origin/main..HEAD` が 1 以上なら
        `git bundle create <外のパス>/work.bundle origin/main..HEAD` で書き出し、`git bundle verify <外のパス>/work.bundle` が通ることを確かめる(0 なら省く)
      - 未コミットの変更: `git diff --binary HEAD --output=<外のパス>/work.patch`(変更が無ければ省く)
      - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)を tar で外へまとめる(無ければ省く)。
-       例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z | tar --force-local --null -T - -cf <外のパス>/untracked.tar`
+       一覧はいったんファイルに書き、その終了コードが 0 のときだけ tar を実行する(パイプでつなぐと、一覧の取得の失敗が tar の終了コードに隠れる)。
+       例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z > "<外のパス>/untracked.list"` を実行し、
+       成功したら `tar --force-local --null -T "<外のパス>/untracked.list" -cf "<外のパス>/untracked.tar"` を実行する
        (GNU tar は `C:/...` のようなドライブ文字付きのパスをリモートの指定と取り違えるため、`--force-local` を付ける。
-       `--force-local` は GNU tar(Git Bash の tar)だけのオプションなので、macOS や Windows の `tar.exe`(bsdtar)では付けない)
+       `--force-local` は GNU tar(Git Bash の tar)だけのオプションなので、macOS や Windows の `tar.exe`(bsdtar)では付けない。
+       この扱いは、下の一時コピーへの展開でも同じ)
        `--exclude-standard` は `.gitignore` などで無視されるファイル(`node_modules`・`bin`/`obj` など)を除くため、
        それらは写しにも一時コピーにも入らない。失いたくない無視対象のファイルがあれば、別に外へコピーしておく
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、次だけを渡す。
@@ -76,10 +81,13 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
             PR #170 では、ビルドが MSB3030 で、`git worktree remove --force` が `Filename too long` で失敗した)。
             作れたら、`git worktree list --porcelain` に表示されたその一時コピーのパスを(表示どおりの文字列で)、後始末のために控えておく。
             未コミット・未追跡の変更は一時コピーに入らないため、元の作業ツリーのルートで写す。
-            追跡ファイルの変更は `git diff --binary HEAD --output=<一時の patch>` で書き出してから
-            `git -C <一時パス> apply <一時の patch>` を実行する。未追跡ファイルは、POSIX シェルで
-            `git ls-files --others --exclude-standard -z | tar --force-local --null -T - -cf <一時の tar>` でまとめ、
-            `tar --force-local -xf <一時の tar> -C <一時パス>` で展開する。`<一時の patch>` と tar は `<一時パス>` の外に置く。
+            `<一時の patch>`・`<一時の一覧>`・`<一時の tar>` は、元のリポジトリと `<一時パス>` のどちらの外にも置く
+            (元のリポジトリの中に置くと、元の作業ツリーを書き換え、未追跡の一覧にも入ってしまう)。
+            追跡ファイルの変更は `git diff --binary HEAD --output="<一時の patch>"` で書き出してから
+            `git -C "<一時パス>" apply "<一時の patch>"` を実行する。未追跡ファイルは、上の写しと同じく POSIX シェルで
+            `git ls-files --others --exclude-standard -z > "<一時の一覧>"` を実行し、成功したら
+            `tar --force-local --null -T "<一時の一覧>" -cf "<一時の tar>"` でまとめて、
+            `tar --force-local -xf "<一時の tar>" -C "<一時パス>"` で展開する(bsdtar では `--force-local` を付けない)。
             リポジトリの外に書き込めない(権限の確認やサンドボックスで拒否される)ときは、一時コピーを作らず、下の「未実行(推論)」として扱う
        - 一時コピーを作れた場合は、コマンドが失敗した場合や変更が残った場合も含めて、最後に必ず
          `git worktree remove --force <一時パス>` で消す(変更が残った worktree は `--force` なしでは消えない)。
