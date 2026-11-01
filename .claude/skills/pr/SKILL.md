@@ -36,10 +36,11 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      Windows PowerShell 5.1 では、git の出力をリダイレクトやパイプに通さない
      (出力を別の文字コードで書き直すため、日本語や改行、バイナリの差分が壊れる)。git や tar に直接ファイルへ書かせるか、
      Git Bash などの POSIX シェル(パイプとリダイレクトがバイト列をそのまま渡す)で実行する。
-     コマンド中のパスはすべて引用符で囲み、`git -C` に渡すパスは絶対パスにする。
+     この節と下の手順(サブエージェントへ渡す指示を含む)のコマンドでは、パスをすべて引用符で囲み、
+     `git -C` に渡すパスは絶対パスにする(空白を含むパスでも分割されず、作業ディレクトリが移っても同じ場所を指すように)。
      - 未 push のコミット: `git fetch origin main` のあと、`git rev-list --count origin/main..HEAD` が 1 以上なら
-       `git bundle create <外のパス>/work.bundle origin/main..HEAD` で書き出し、`git bundle verify <外のパス>/work.bundle` が通ることを確かめる(0 なら省く)
-     - 未コミットの変更: `git diff --binary HEAD --output=<外のパス>/work.patch`(変更が無ければ省く)
+       `git bundle create "<外のパス>/work.bundle" origin/main..HEAD` で書き出し、`git bundle verify "<外のパス>/work.bundle"` が通ることを確かめる(0 なら省く)
+     - 未コミットの変更: `git diff --binary HEAD --output="<外のパス>/work.patch"`(変更が無ければ省く)
      - 未追跡ファイル: `git ls-files --others --exclude-standard -z` の一覧(NUL 区切り)を tar で外へまとめる(無ければ省く)。
        一覧はいったんファイルに書き、その終了コードが 0 のときだけ tar を実行する(パイプでつなぐと、一覧の取得の失敗が tar の終了コードに隠れる)。
        例: Git Bash などの POSIX シェルで `git ls-files --others --exclude-standard -z > "<外のパス>/untracked.list"` を実行し、
@@ -73,9 +74,10 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
             実行した環境(OS・SDK・ツールのバージョン)が、確かめる対象の手順が前提とする環境と同じなら、実行し直さずにそれを使う。
             環境が分からないときは使わず、2 に進むか「未実行(推論)」として扱う。
             書き換えずには確かめられない部分(たとえば `npm ci && node generate.mjs --check` の `npm ci`)は、2 に進む
-         2. それでも実行が要るときだけ、`git worktree add --detach <一時パス> HEAD` で一時コピーを作って実行する。
-            `<一時パス>` は、リポジトリの外の、ドライブやルートの直下から 2 階層以内の短いパスに置き、名前は毎回一意にする
-            (例: Windows では `D:\wt\r-20261101-080512`、それ以外では `/tmp/wt-r-20261101-080512`)。
+         2. それでも実行が要るときだけ、`git worktree add --detach "<一時パス>" HEAD` で一時コピーを作って実行する。
+            `<一時パス>` は、リポジトリの外の、ドライブやホームの直下から 2 階層以内の短いパスに置き、名前は毎回一意にする。
+            共有の機械では、写しと同じく、ほかのユーザーから読めない場所を選ぶ
+            (例: Windows では `D:\wt\r-20261101-080512`、それ以外では `$HOME/wt/r-20261101-080512`)。
             `add` の前にそのパスが無いことを確かめ、あれば別の名前にする。スクラッチのディレクトリのような長いパスには置かない
             (長いパスの対応が無効な Windows の環境では、パスが MAX_PATH(260 文字)を超えると、dotnet のビルドや Git の削除が失敗することがある。
             PR #170 では、ビルドが MSB3030 で、`git worktree remove --force` が `Filename too long` で失敗した)。
@@ -90,14 +92,14 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
             `tar --force-local -xf "<一時の tar>" -C "<一時パス>"` で展開する(bsdtar では `--force-local` を付けない)。
             リポジトリの外に書き込めない(権限の確認やサンドボックスで拒否される)ときは、一時コピーを作らず、下の「未実行(推論)」として扱う
        - 一時コピーを作れた場合は、コマンドが失敗した場合や変更が残った場合も含めて、最後に必ず
-         `git worktree remove --force <一時パス>` で消す(変更が残った worktree は `--force` なしでは消えない)。
+         `git worktree remove --force "<一時パス>"` で消す(変更が残った worktree は `--force` なしでは消えない)。
          消す対象は、この回に自分で作った一時パスだけとする。消す前に `git worktree list --porcelain` を実行し、
          作ったときに控えたパスと同じ worktree が載っていることを、表示どおりの文字列で確かめる
          (Windows では区切りが `/` で表示されるため、`add` に渡した文字列ではなく、控えた文字列と比べる)。
-         `remove` には控えた文字列を渡す。載っていない、または別のパスしか無いときは消さずに報告し、
+         `remove` には控えた文字列を、引用符で囲んで渡す。載っていない、または別のパスしか無いときは消さずに報告し、
          その後は下の「削除が失敗したとき」と同じ扱いにする
        - **削除が失敗したとき:`git worktree remove --force` が失敗したら(`Filename too long` など)、それ以上消そうとしない。**
-         削除コマンドの再試行や `rm -rf` をせず、まず元の作業ツリーが無事か(`git -C <元のパス> status` が通り、
+         削除コマンドの再試行や `rm -rf` をせず、まず元の作業ツリーが無事か(`git -C "<元のパス>" status` が通り、
          ファイルが揃っているか)を確かめる。そのうえで、一時パスが残っていることと合わせて依頼者に報告する。
          報告を受けた依頼者も、`git worktree remove --force` をやり直さず、一時パスを自分で消さない。
          残った一時パスはユーザーに伝えて手で消してもらい、消し終えたと返事を受けてから、依頼者が元のリポジトリで
