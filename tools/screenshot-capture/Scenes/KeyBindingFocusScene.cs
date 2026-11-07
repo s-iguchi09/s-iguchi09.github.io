@@ -23,7 +23,7 @@ internal sealed class KeyBindingFocusScene : IScene
         "Window の KeyBinding（Ctrl+S）は、キーボードフォーカスが Window の TextBox・Button・Window 自体にあるときに実行され、Keyboard.ClearFocus() の後（Keyboard.FocusedElement が null）と、Owner 付きの別ウィンドウの TextBox にフォーカスがあるときは実行されず、そのどちらでも Window の PreviewKeyDown は呼ばれないこと",
         "Owner 付きの別ウィンドウに同じ Ctrl+S の KeyBinding を置き、そのウィンドウの DataContext に同じビューモデルを設定すると、そのウィンドウの TextBox にフォーカスがあるときに実行され、DataContext を設定しなければ、その KeyBinding の Command が null のままで、判定が 4（経路の上）でも実行されないこと",
         "表示して Activate しただけのとき、フォーカスのある Button の IsEnabled を False にした後、フォーカスのある TextBox の Visibility を Collapsed にした後、Keyboard.ClearFocus() の後に Keyboard.Focus(window) を呼んだ後は、いずれもキーボードフォーカスが Window にあり、Window の KeyBinding が実行されること",
-        "UserControl の KeyBinding（Ctrl+D）は、UserControl の中の TextBox にフォーカスがあるときは実行され、UserControl の外の TextBox にフォーカスがあるときは実行されないこと",
+        "UserControl の KeyBinding（Ctrl+D）は、UserControl の中の TextBox にフォーカスがあるときは実行され、UserControl の外の TextBox にフォーカスがあるときは実行されないこと。どちらの場合も Window の PreviewKeyDown は呼ばれること",
         "外の TextBox にフォーカスを置いたまま UserControl の中の TextBlock を実際のマウスでクリックしても、UserControl の Focusable が False でも True でもフォーカスは外の TextBox に残り、UserControl の KeyBinding は実行されないこと",
         "Keyboard.Focus(panel) は、Focusable が False の UserControl にはフォーカスを移さず（フォーカスは Window のまま）KeyBinding も実行されず、Focusable が True なら UserControl にフォーカスが移って KeyBinding が実行されること",
         "UserControl の KeyBinding を外して同じ KeyBinding を Window に置くと、UserControl の外の TextBox にフォーカスがあっても実行されること",
@@ -678,9 +678,18 @@ internal sealed class KeyBindingFocusScene : IScene
             await Capture.SettleAsync(target, 100);
 
             CheckJudgement(c, step, vm.Executed);
-            if (c.ShowText && titleBox.Text != c.ExpectText)
+
+            // Window の PreviewKeyDown は、フォーカスが Window の中にあるときだけ呼ばれるはずである（フォーカスが無いときと別ウィンドウのときは呼ばれない）。
+            bool expectReached = c.Focus is not (Focus.Cleared or Focus.ToolWindow);
+            if (windowReached != expectReached)
             {
-                throw new InvalidOperationException($"キーの後の titleBox の文字列が想定と異なる（想定: {Quote(c.ExpectText ?? "")}、実際: {Quote(titleBox.Text)}）: {c.KeyLabel.Ja} / {c.Condition.Ja}");
+                throw new InvalidOperationException($"Window の PreviewKeyDown が想定と異なる（想定: {expectReached}、実際: {windowReached}）: {c.KeyLabel.Ja} / {c.Condition.Ja} / {c.Focus}");
+            }
+
+            // 期待する文字列を指定したケースだけ照合する（指定しないケースは、表に出すだけの従来の扱いのまま）。
+            if (c.ExpectText is not null && titleBox.Text != c.ExpectText)
+            {
+                throw new InvalidOperationException($"キーの後の titleBox の文字列が想定と異なる（想定: {Quote(c.ExpectText)}、実際: {Quote(titleBox.Text)}）: {c.KeyLabel.Ja} / {c.Condition.Ja}");
             }
 
             Loc executed = vm.Executed.Count == 0 ? T("none", "なし") : string.Join(", ", vm.Executed);

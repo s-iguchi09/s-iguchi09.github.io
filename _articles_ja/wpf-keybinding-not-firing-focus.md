@@ -157,9 +157,10 @@ Owner を指定した別ウィンドウの `TextBox` に入力している間も
 表 1: キーボードフォーカスの位置と、実行されたビューモデルのコマンド。「KeyBinding の置き場所」に差分を書いた行のほかは、問題の節の XAML である。切り分けの手順の判定は、Ctrl+S・Ctrl+Shift+S の行は `Window` の Ctrl+S（別ウィンドウにも置いた行は別ウィンドウ）、Ctrl+D の行は `UserControl`（`Window` に置いた行は `Window`）の `KeyBinding` を基準に求めた。キーを押す前の操作の後に、OS のキー入力で 1 回押した。クリックも OS のマウス入力で行った。.NET 10.0.13 / Windows 11。
 {: .table-caption}
 
-WPF のコードが `Keyboard.ClearFocus()` を呼んでフォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移す。
-`Keyboard.Focus` は、フォーカスを得た要素を戻り値として返すので、戻り値が `window` であることで移ったことを確かめられる。
-表 1 では、`Keyboard.ClearFocus()` の後に `Keyboard.Focus(window)` を呼ぶと、戻り値は `Window` で、フォーカスが `Window` に戻り、`Ctrl+S` が実行された。
+WPF のコードが `Keyboard.ClearFocus()` を呼んでフォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移すことを試みる。
+元の要素か移す先の要素が拒むと、`Keyboard.Focus` を呼んでもフォーカスは要求どおりに移らず、`Keyboard.Focus` はその時点でフォーカスを持つ要素を返す（Microsoft Learn の [Focus Overview](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/focus-overview)）。
+このため、戻り値が `window` であることで移ったことを確かめる。
+表 1 の計測では、`Keyboard.ClearFocus()` の後に `Keyboard.Focus(window)` を呼ぶと、戻り値は `Window` で、フォーカスが `Window` に戻り、`Ctrl+S` が実行された。
 後で述べる、ホストした Win32 のウィンドウにフォーカスがあって `null` になっている場合は、その状態が意図したものなので、同じように `Window` へ移してよいとは限らない。
 この場合は本記事では測っていない。
 表示して `Activate` しただけでどこにもフォーカスを移していない場合も、フォーカスは `Window` 自体にあり、`Ctrl+S` は実行された。
@@ -287,7 +288,7 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 効かないときは、まず `Keyboard.FocusedElement` を確かめて、フォーカスが無いのか、別ウィンドウなのか、`KeyBinding` を置いた要素の外なのかを切り分ける。
 フォーカスが経路の上にあるなら、押したキーが `Key`・`Modifiers` と一致しているか、`KeyBinding` の `Command` が `null` でないか（バインドが解決されているか）、経路の上のほかの要素がキーを先に処理していないかを確かめる。
 
-- WPF のコードが `Keyboard.ClearFocus()` を呼んでフォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移し、戻り値で移ったことを確かめる。ホストした Win32 のウィンドウに入力中のときは、この方法の対象外である。別ウィンドウでも効かせたいショートカットは、そのウィンドウにも置き、`DataContext` も設定する。
+- WPF のコードが `Keyboard.ClearFocus()` を呼んでフォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移すことを試み、戻り値が `window` であることで移ったことを確かめる。ホストした Win32 のウィンドウに入力中のときは、この方法の対象外である。別ウィンドウでも効かせたいショートカットは、そのウィンドウにも置き、`DataContext` も設定する。
 - 画面全体で効かせたいショートカットは `Window` の `InputBindings` に置く。`UserControl` に `Focusable="True"` を付けても、中の `TextBlock` をクリックしただけではフォーカスは移らなかった。
 - `TextBox` が使うキーをアプリの操作で置き換えるときは、その `TextBox` の `InputBindings` に置く。置き換える理由が無ければ、`TextBox` と重ならないキーに割り当てる。
 

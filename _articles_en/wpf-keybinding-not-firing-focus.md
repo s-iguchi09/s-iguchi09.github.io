@@ -158,9 +158,10 @@ While typing in a `TextBox` in another window whose Owner is the main window, th
 Table 1: Where keyboard focus is and which view-model command ran. Apart from the differences written in "where the KeyBinding is", the XAML is the one in the Problem section. The isolation step was judged against the Ctrl+S `KeyBinding` on the `Window` for the Ctrl+S and Ctrl+Shift+S rows (on the owned window for the rows that also place it there), and on the `UserControl` for the Ctrl+D rows (on the `Window` for the row that places it there). The key was pressed once through OS input after the listed preparation. Clicks also went through OS mouse input. .NET 10.0.13 / Windows 11.
 {: .table-caption}
 
-When WPF code has called `Keyboard.ClearFocus()` and focus is `null`, `Keyboard.Focus(window)` moves it to the `Window`.
-`Keyboard.Focus` returns the element that received focus, so a return value of `window` confirms the move.
-In Table 1, calling `Keyboard.Focus(window)` after `Keyboard.ClearFocus()` returned the `Window`, put focus back on it, and `Ctrl+S` ran.
+When WPF code has called `Keyboard.ClearFocus()` and focus is `null`, `Keyboard.Focus(window)` attempts to move it to the `Window`.
+If the old or the new focus element blocks the request, focus does not move as requested, and `Keyboard.Focus` returns the element that has focus at that point (Microsoft Learn, [Focus Overview](https://learn.microsoft.com/dotnet/desktop/wpf/advanced/focus-overview)).
+A return value of `window` therefore confirms the move.
+In the Table 1 measurement, calling `Keyboard.Focus(window)` after `Keyboard.ClearFocus()` returned the `Window`, put focus back on it, and `Ctrl+S` ran.
 When focus is `null` because a hosted Win32 window, described below, has it, that state is intended, so moving focus to the `Window` in the same way is not necessarily appropriate.
 That case was not measured in this article.
 When the window was only shown and activated, with no focus set anywhere, focus was on the `Window` itself and `Ctrl+S` ran.
@@ -288,7 +289,7 @@ A `KeyBinding` runs only when it sits on the path from the element with keyboard
 When one does not run, checking `Keyboard.FocusedElement` first tells whether focus is nowhere, in another window, or outside the element that holds the `KeyBinding`.
 If focus is on the path, the next checks are whether the pressed key matches `Key` and `Modifiers`, whether the `KeyBinding`'s `Command` is `null` (an unresolved binding), and whether another element on the path handles the key first.
 
-- When WPF code has called `Keyboard.ClearFocus()` and focus is `null`, `Keyboard.Focus(window)` moves it to the `Window`, and its return value confirms the move. This does not cover the case where input is in a hosted Win32 window. A shortcut that must also work in another window has to be placed on that window too, with its `DataContext` set.
+- When WPF code has called `Keyboard.ClearFocus()` and focus is `null`, `Keyboard.Focus(window)` attempts to move it to the `Window`, and a return value of `window` confirms the move. This does not cover the case where input is in a hosted Win32 window. A shortcut that must also work in another window has to be placed on that window too, with its `DataContext` set.
 - Window-wide shortcuts belong in the `Window`'s `InputBindings`. Adding `Focusable="True"` to a `UserControl` did not make a click on a `TextBlock` inside it move focus to it.
 - When the application replaces a `TextBox` operation with its own, the `KeyBinding` goes in that `TextBox`'s `InputBindings`. Without such a reason, the command is better assigned to a key the `TextBox` does not use.
 
