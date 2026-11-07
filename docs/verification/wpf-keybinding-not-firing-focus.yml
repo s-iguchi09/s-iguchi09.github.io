@@ -1,0 +1,37 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-keybinding-not-firing-focus
+slug: "wpf-keybinding-not-firing-focus"
+scene: "KeyBindingFocusScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Window の KeyBinding（Ctrl+S）は、キーボードフォーカスが Window の TextBox・Button・Window 自体にあるときに実行され、Keyboard.ClearFocus() の後（Keyboard.FocusedElement が null）と、Owner 付きの別ウィンドウの TextBox にフォーカスがあるときは実行されず、そのどちらでも Window の PreviewKeyDown は呼ばれないこと"
+  - "Owner 付きの別ウィンドウに同じ Ctrl+S の KeyBinding を置き、そのウィンドウの DataContext に同じビューモデルを設定すると、そのウィンドウの TextBox にフォーカスがあるときに実行され、DataContext を設定しなければ、その KeyBinding の Command が null のままで、判定が 4（経路の上）でも実行されないこと"
+  - "表示して Activate しただけのとき、フォーカスのある Button の IsEnabled を False にした後、フォーカスのある TextBox の Visibility を Collapsed にした後、Keyboard.ClearFocus() の後に Keyboard.Focus(window) を呼んだ後は、いずれもキーボードフォーカスが Window にあり、Window の KeyBinding が実行されること"
+  - "UserControl の KeyBinding（Ctrl+D）は、UserControl の中の TextBox にフォーカスがあるときは実行され、UserControl の外の TextBox にフォーカスがあるときは実行されないこと"
+  - "外の TextBox にフォーカスを置いたまま UserControl の中の TextBlock を実際のマウスでクリックしても、UserControl の Focusable が False でも True でもフォーカスは外の TextBox に残り、UserControl の KeyBinding は実行されないこと"
+  - "Keyboard.Focus(panel) は、Focusable が False の UserControl にはフォーカスを移さず（フォーカスは Window のまま）KeyBinding も実行されず、Focusable が True なら UserControl にフォーカスが移って KeyBinding が実行されること"
+  - "UserControl の KeyBinding を外して同じ KeyBinding を Window に置くと、UserControl の外の TextBox にフォーカスがあっても実行されること"
+  - "記事の切り分けの手順（Keyboard.FocusedElement が null か、Window.GetWindow が KeyBinding を置いたウィンドウか、KeyBinding を置いた要素の IsKeyboardFocusWithin）で判定すると、表 1・2 の各行で、判定が 1〜3 の行ではコマンドが実行されず、判定が 4 で何も実行されなかった行は、DataContext を設定しない別ウィンドウの行を除き、フォーカスが TextBox にあること。各行で実行されたコマンドが、行ごとに想定したコマンドと一致すること"
+  - "TextBox にフォーカスがあるとき、Window の Ctrl+Z の KeyBinding は、何も入力していなくても \"abc\" を入力した後でも実行されず、入力した後は TextBox の元に戻す操作で文字列が \"\" に戻ること。Button にフォーカスがあるときは実行されること"
+  - "Window に Ctrl+Z の KeyBinding を残したまま TextBox の InputBindings に Ctrl+Z の KeyBinding（TextUndoCommand）を置くと、TextBox 側のコマンドだけが実行されて Window の UndoCommand は実行されず、TextBox の文字列は \"abc\" のまま残ること。Window.PreviewKeyDown で TextUndoCommand を実行して Handled にした場合も同じ結果になること"
+  - "Window の Enter の KeyBinding は、AcceptsReturn が False の TextBox にフォーカスがあるときは実行され、AcceptsReturn が True の TextBox では実行されずに改行が入り、Button では実行されずに Button のコマンドが実行されること"
+  - "XAML の Key 属性だけで書いた KeyBinding（Key=\"A\"・Key=\"F2\"・Key=\"Enter\"、Modifiers なし）は、Window 自体にフォーカスがある（Keyboard.FocusedElement が Window であることを確かめた）とき、いずれも実行されること"
+  - "XAML の Gesture=\"A\" は読み込み時に例外になり、Gesture=\"F2\" は実行されること。コードの new KeyGesture(Key.A) と new KeyBinding(command, Key.A, ModifierKeys.None) は NotSupportedException になること"
+  - "記事の実装例の XAML では、Ctrl+S が UserControl の中と外の TextBox で、Ctrl+D が中と外の TextBox で実行され、Ctrl+Z は TextBox の InputBindings のコマンドが実行されて文字列が \"abc\" のまま残り、Enter は AcceptsReturn が False の TextBox では SubmitCommand が、Button では Button のコマンドが実行されること"
+  - "記事の切り分け用のデバッグコード（UIElement の GotKeyboardFocus と LostKeyboardFocus のクラスハンドラー）の最後の行が、Keyboard.ClearFocus() の後は null、その後 Keyboard.Focus(window) を呼ぶと Window、TextBox へ移した後は TextBox になること"
+images:
+  - "images/articles/wpf-keybinding-not-firing-focus/keybinding-focus-position.svg"
+  - "images/articles/wpf-keybinding-not-firing-focus/keybinding-key-consumed.svg"
+  - "images/articles/wpf-keybinding-not-firing-focus/keybinding-implementation.svg"
+  - "images/articles/wpf-keybinding-not-firing-focus/keybinding-no-modifier.svg"
+tables:
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-focus-position.en.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-focus-position.ja.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-key-consumed.en.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-key-consumed.ja.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-implementation.en.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-implementation.ja.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-no-modifier.en.md"
+  - "_includes/tables/articles/wpf-keybinding-not-firing-focus/keybinding-no-modifier.ja.md"

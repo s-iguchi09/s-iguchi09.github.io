@@ -53,6 +53,7 @@ internal static class Program
         new VirtualizationLostConditionsScene(),
         new BindingModeOmittedScene(),
         new DataGridEditNotCommittedScene(),
+        new KeyBindingFocusScene(),
         new CollectionViewFilterRefreshScene(),
         new LinqBackportNet5Scene(),
         new LinqBackportNet6Scene(),
