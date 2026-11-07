@@ -1439,7 +1439,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-datagrid-edit-not-committed-on-save/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datagrid-edit-not-committed-on-save/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar-save-while-editing.png</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-11-07T16:57:26Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1450,7 +1450,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-datagrid-edit-not-committed-on-save/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-datagrid-edit-not-committed-on-save/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-datagrid-edit-not-committed-on-save/datagrid-toolbar-save-while-editing.png</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-11-07T16:57:26Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1663,6 +1663,26 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-input-limits-not-applied-to-code/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-input-limits-not-applied-to-code/" />
     <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-keybinding-not-firing-focus/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-keybinding-not-firing-focus/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-keybinding-not-firing-focus/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-keybinding-not-firing-focus/" />
+    <lastmod>2026-11-07T17:28:00Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-keybinding-not-firing-focus/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-keybinding-not-firing-focus/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-keybinding-not-firing-focus/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-keybinding-not-firing-focus/" />
+    <lastmod>2026-11-07T17:28:00Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
