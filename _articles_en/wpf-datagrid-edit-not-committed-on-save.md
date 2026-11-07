@@ -271,6 +271,7 @@ A single call to the parameterless `CommitEdit()` during a cell edit does not co
 
 - [Calling TextBox UpdateSource from the View in WPF: Implementation and Pitfalls](/articles/wpf-textbox-updatesource-from-view-pitfalls/)
 - [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/)
+- [WPF KeyBinding Not Firing: Find Where Keyboard Focus Is](/articles/wpf-keybinding-not-firing-focus/): covers cases where a `Ctrl+S` `KeyBinding` does not run because of where focus is
 - [Causes of a Stale ICollectionView Filter in WPF and Choosing Between Refresh and Live Filtering](/articles/wpf-collectionviewsource-filter-not-refreshing/)
 - [Switching Controls Between Display and Edit Modes in WPF DataGrid Cells](/articles/wpf-datagrid-cell-editing-template/)
 - [Why WPF Validation Errors Are Not Displayed, and Choosing Between IDataErrorInfo and INotifyDataErrorInfo](/articles/wpf-validation-error-not-displayed/)

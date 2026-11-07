@@ -270,6 +270,7 @@ null 許容参照型を有効にしたプロジェクトでは、`CommitPendingE
 
 - [WPF で TextBox の UpdateSource を View から呼び出すときの落とし穴と実装](/ja/articles/wpf-textbox-updatesource-from-view-pitfalls/)
 - [WPF TextBox の UpdateSourceTrigger で入力がソースへ反映されるタイミングを制御する](/ja/articles/wpf-textbox-updatesourcetrigger-binding-timing/)
+- [WPF の KeyBinding が反応しない原因をキーボードフォーカスの位置から切り分ける](/ja/articles/wpf-keybinding-not-firing-focus/)：`Ctrl+S` の `KeyBinding` がフォーカスの位置によって実行されない場合を扱う
 - [WPF で ICollectionView のフィルタが再評価されない原因と Refresh・ライブフィルタの使い分け](/ja/articles/wpf-collectionviewsource-filter-not-refreshing/)
 - [WPF DataGrid でセル編集中と表示時でコントロールを切り替える方法](/ja/articles/wpf-datagrid-cell-editing-template/)
 - [WPF で入力検証のエラーが表示されない原因と IDataErrorInfo / INotifyDataErrorInfo の使い分け](/ja/articles/wpf-validation-error-not-displayed/)
