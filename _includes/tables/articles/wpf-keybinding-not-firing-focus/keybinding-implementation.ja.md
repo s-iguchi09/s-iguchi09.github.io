@@ -1,4 +1,4 @@
-| キー | KeyBinding の置き場所 | キーを押す前の操作 | キーを押したときのキーボードフォーカス | 実行されたコマンド | キーの後の titleBox の文字列 |
+| キー | KeyBinding の置き場所 | キーを押す前の操作 | キーを押したときのキーボードフォーカス | 実行されたビューモデルのコマンド | キーの後の titleBox の文字列 |
 |---|---|---|---|---|---|
 | Ctrl+S | Window | Keyboard.Focus(titleBox) | Window の TextBox | SaveCommand | - |
 | Ctrl+S | Window | Keyboard.Focus(panelBox) | UserControl の TextBox | SaveCommand | - |

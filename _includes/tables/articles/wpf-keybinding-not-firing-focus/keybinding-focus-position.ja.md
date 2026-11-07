@@ -1,4 +1,4 @@
-| キー | KeyBinding の置き場所 | キーを押す前の操作 | キーを押したときのキーボードフォーカス | 切り分けの手順の判定 | Window の PreviewKeyDown | 実行されたコマンド |
+| キー | KeyBinding の置き場所 | キーを押す前の操作 | キーを押したときのキーボードフォーカス | 切り分けの手順の判定 | Window の PreviewKeyDown | 実行されたビューモデルのコマンド |
 |---|---|---|---|---|---|---|
 | Ctrl+S | Window | Keyboard.Focus(titleBox) | Window の TextBox | 4: 経路の上 | 呼ばれた | SaveCommand |
 | Ctrl+S | Window | Keyboard.Focus(okButton) | Button | 4: 経路の上 | 呼ばれた | SaveCommand |
@@ -7,6 +7,7 @@
 | Ctrl+S | Window | Keyboard.ClearFocus() の後、Keyboard.Focus(window) | Window | 4: 経路の上 | 呼ばれた | SaveCommand |
 | Ctrl+S | Window | Keyboard.Focus(okButton) の後、okButton.IsEnabled = false | Window | 4: 経路の上 | 呼ばれた | SaveCommand |
 | Ctrl+S | Window | Keyboard.Focus(titleBox) の後、titleBox.Visibility = Collapsed | Window | 4: 経路の上 | 呼ばれた | SaveCommand |
+| Ctrl+Shift+S | Window（Ctrl+S。押したのは Ctrl+Shift+S） | Keyboard.Focus(okButton) | Button | 4: 経路の上 | 呼ばれた | なし |
 | Ctrl+S | Window | Owner 付きの別ウィンドウの TextBox にフォーカス | Owner 付きの別ウィンドウの TextBox | 2: 別のウィンドウ | 呼ばれない | なし |
 | Ctrl+S | Window と Owner 付きの別ウィンドウ | Owner 付きの別ウィンドウの TextBox にフォーカス | Owner 付きの別ウィンドウの TextBox | 4: 経路の上 | 呼ばれない | SaveCommand |
 | Ctrl+S | Window と Owner 付きの別ウィンドウ（別ウィンドウに DataContext を設定しない） | Owner 付きの別ウィンドウの TextBox にフォーカス | Owner 付きの別ウィンドウの TextBox | 4: 経路の上 | 呼ばれない | なし |

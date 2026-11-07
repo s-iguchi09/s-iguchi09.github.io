@@ -1,4 +1,4 @@
-| key | where the KeyBinding is | before pressing the key | keyboard focus when the key is pressed | isolation step that applies | command that ran | titleBox text after the key |
+| key | where the KeyBinding is | before pressing the key | keyboard focus when the key is pressed | isolation step that applies | view-model command that ran | titleBox text after the key |
 |---|---|---|---|---|---|---|
 | Ctrl+Z | Window | Keyboard.Focus(titleBox) | TextBox in the Window | 4: on the path | none | \"\" |
 | Ctrl+Z | Window | Keyboard.Focus(titleBox), then type \"abc\" | TextBox in the Window | 4: on the path | none | \"\" |

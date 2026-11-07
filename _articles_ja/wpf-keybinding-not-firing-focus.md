@@ -32,7 +32,9 @@ image: /images/articles/wpf-keybinding-not-firing-focus/keybinding-focus-positio
 次の画面で、`Window` には `Ctrl+S`・`Ctrl+Z`・`Enter` を、編集パネルの `UserControl` には `Ctrl+D` を割り当てた。
 
 ```xml
-<Window ...>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Editor" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
   <Window.InputBindings>
     <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
     <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}" />
@@ -90,11 +92,11 @@ image: /images/articles/wpf-keybinding-not-firing-focus/keybinding-focus-positio
 1. `Keyboard.FocusedElement` が `null` なら、フォーカスがどこにも無い。
 2. `null` ではないが、それを `DependencyObject` として `Window.GetWindow` に渡した結果が、`KeyBinding` を置いたウィンドウではないなら、フォーカスは別のウィンドウにある。
 3. 同じウィンドウの中なら、`KeyBinding` を置いた要素の `IsKeyboardFocusWithin` を見る。`false` なら、フォーカスがその要素の外にある。
-4. `true` なら、`KeyBinding` は経路の上にある。それでも実行されないときは、`Command` のバインドが解決されていないか、経路の上のほかの要素がキーを先に処理している。前者は、その `KeyBinding` の `Command`（`InputBindings` の要素の `Command`）が `null` かどうかで見分けられる（表 1 の、別ウィンドウに `DataContext` を設定しない行）。後者には、フォーカスのあるコントロール自身、より内側の要素に置いた同じキーの `KeyBinding`、経路の上のいずれかの要素（外側の `Window` を含む）で `PreviewKeyDown` を `Handled` にするハンドラーが当たる（表 2）。`CanExecute` が `false` の場合は本記事では測っていない。
+4. `true` なら、`KeyBinding` は経路の上にある。それでも実行されないときは、押したキーと修飾キーが `KeyBinding` の `Key`・`Modifiers` と一致していないか、`Command` のバインドが解決されていないか、経路の上のほかの要素がキーを先に処理している。1 つ目は、`Command` が解決されていても実行されない（表 1 の、`Ctrl+S` の `KeyBinding` に `Ctrl+Shift+S` を押した行）。2 つ目は、その `KeyBinding` の `Command`（`InputBindings` の要素の `Command`）が `null` かどうかで見分けられる（表 1 の、別ウィンドウに `DataContext` を設定しない行）。3 つ目には、フォーカスのあるコントロール自身、より内側の要素に置いた同じキーの `KeyBinding`、`Window` の `PreviewKeyDown` で `Handled` にするハンドラーが当たる（表 2）。経路の途中の要素で `Handled` にする場合は測っていない。`CanExecute` が `false` の場合は本記事では測っていない。
 
 表 1・表 2 の「切り分けの手順の判定」の列は、この 1〜4 をそのままコードにして、キーを押す直前に求めたものである。
 判定が 1〜3 の行ではどれもコマンドが実行されなかった。
-判定が 4 で何も実行されなかった行は、`DataContext` を設定しなかった別ウィンドウの行を除き、どれもフォーカスが `TextBox` にあった。
+判定が 4 で何も実行されなかった行は、手順 4 の 1 つ目・2 つ目に当たる行（`Ctrl+Shift+S` を押した行と、`DataContext` を設定しなかった別ウィンドウの行）を除き、どれもフォーカスが `TextBox` にあった。
 
 フォーカスはキーを押すまでの操作で移っていくので、移るたびに記録しておくと、キーを押したときの位置を後から読める。
 確かめる間だけ、次のデバッグ用のコードを `App` の静的コンストラクター（`static App()`）に一時的に入れる。
@@ -152,11 +154,14 @@ Owner を指定した別ウィンドウの `TextBox` に入力している間も
 
 {% include tables/articles/wpf-keybinding-not-firing-focus/keybinding-focus-position.ja.md %}
 
-表 1: キーボードフォーカスの位置と、実行されたコマンド。「KeyBinding の置き場所」に差分を書いた行のほかは、問題の節の XAML である。切り分けの手順の判定は、Ctrl+S の行は `Window`（別ウィンドウにも置いた行は別ウィンドウ）、Ctrl+D の行は `UserControl`（`Window` に置いた行は `Window`）の `KeyBinding` を基準に求めた。キーを押す前の操作の後に、OS のキー入力で 1 回押した。クリックも OS のマウス入力で行った。.NET 10.0.13 / Windows 11。
+表 1: キーボードフォーカスの位置と、実行されたビューモデルのコマンド。「KeyBinding の置き場所」に差分を書いた行のほかは、問題の節の XAML である。切り分けの手順の判定は、Ctrl+S・Ctrl+Shift+S の行は `Window` の Ctrl+S（別ウィンドウにも置いた行は別ウィンドウ）、Ctrl+D の行は `UserControl`（`Window` に置いた行は `Window`）の `KeyBinding` を基準に求めた。キーを押す前の操作の後に、OS のキー入力で 1 回押した。クリックも OS のマウス入力で行った。.NET 10.0.13 / Windows 11。
 {: .table-caption}
 
-フォーカスが `null` のときは、`Keyboard.Focus(window)` で `Window` へ移す。
-表 1 では、`Keyboard.ClearFocus()` の後に `Keyboard.Focus(window)` を呼ぶと、フォーカスが `Window` に戻り、`Ctrl+S` が実行された。
+WPF のコードが `Keyboard.ClearFocus()` を呼んでフォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移す。
+`Keyboard.Focus` は、フォーカスを得た要素を戻り値として返すので、戻り値が `window` であることで移ったことを確かめられる。
+表 1 では、`Keyboard.ClearFocus()` の後に `Keyboard.Focus(window)` を呼ぶと、戻り値は `Window` で、フォーカスが `Window` に戻り、`Ctrl+S` が実行された。
+後で述べる、ホストした Win32 のウィンドウにフォーカスがあって `null` になっている場合は、その状態が意図したものなので、同じように `Window` へ移してよいとは限らない。
+この場合は本記事では測っていない。
 表示して `Activate` しただけでどこにもフォーカスを移していない場合も、フォーカスは `Window` 自体にあり、`Ctrl+S` は実行された。
 フォーカスのある `Button` を `IsEnabled = false` にした場合と、フォーカスのある `TextBox` を `Collapsed` にした場合も、フォーカスは `Window` に移り、`Ctrl+S` は実行された。
 表 1 で試した操作の中で、フォーカスが `null` になったのは `Keyboard.ClearFocus()` を呼んだときだけである。
@@ -172,7 +177,7 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 ### フォーカスが KeyBinding を置いた要素の外にある
 
 `UserControl` に置いた `Ctrl+D` は、`UserControl` の中の `panelBox` に入力している間は実行され、外の `titleBox` に入力している間は実行されなかった。
-表 1 の「Keyboard.Focus(panelBox)」と「Keyboard.Focus(titleBox)」の Ctrl+D の行がその結果である。
+表 1 の、置き場所が「UserControl」で、操作が「Keyboard.Focus(panelBox)」と「Keyboard.Focus(titleBox)」の Ctrl+D の行がその結果である。
 外の `titleBox` に入力している間も `Window` の `PreviewKeyDown` は呼ばれており、キーは `Window` まで届いている。
 届いていても、経路から外れた `UserControl` の `KeyBinding` は実行されない。
 
@@ -181,7 +186,7 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 
 `UserControl` に `Focusable="True"` を付けても、この症状は直らなかった。
 `titleBox` にフォーカスを置いたまま `UserControl` の中の `TextBlock` をクリックすると、`Focusable` が `False` でも `True` でも、フォーカスは `titleBox` に残った。
-フォーカスが `UserControl` に移ったのは、`Focusable="True"` を付けたうえでコードから `Keyboard.Focus(panel)` を呼んだときだけである。
+表 1 で試した操作の中では、フォーカスが `UserControl` に移ったのは、`Focusable="True"` を付けたうえでコードから `Keyboard.Focus(panel)` を呼んだときだけである。
 `Focusable` は、要素がフォーカスを受け取れるかを決めるプロパティである（Microsoft Learn の [UIElement.Focusable](https://learn.microsoft.com/dotnet/api/system.windows.uielement.focusable)）。
 
 ### フォーカスのあるコントロールがキーを使う
@@ -194,7 +199,7 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 
 {% include tables/articles/wpf-keybinding-not-firing-focus/keybinding-key-consumed.ja.md %}
 
-表 2: フォーカスのあるコントロールが自分で使うキー。どの行も `Window` の `Ctrl+Z`（`UndoCommand`）と `Enter` は残したままで、置き場所の列には、足した `KeyBinding`・ハンドラーと、変えた属性を書いた。切り分けの手順の判定は `Window` の `KeyBinding` を基準に求めた（titleBox.InputBindings の行は `TextBox` の `KeyBinding`）。`"abc"` の入力は InputManager を通して送り、キーは OS のキー入力で 1 回押した。.NET 10.0.13 / Windows 11。
+表 2: フォーカスのあるコントロールが自分で使うキー。「実行されたビューモデルのコマンド」の列は、ビューモデルが記録したコマンドだけを示し、`TextBox` 自身の元に戻す操作は含まない。どの行も `Window` の `Ctrl+Z`（`UndoCommand`）と `Enter` は残したままで、置き場所の列には、足した `KeyBinding`・ハンドラーと、変えた属性を書いた。切り分けの手順の判定は `Window` の `KeyBinding` を基準に求めた（titleBox.InputBindings の行は `TextBox` の `KeyBinding`）。`"abc"` の入力は InputManager を通して送り、キーは OS のキー入力で 1 回押した。.NET 10.0.13 / Windows 11。
 {: .table-caption}
 
 コントロールが使うキーを横取りするには、そのコントロールの `InputBindings` に同じキーの `KeyBinding` を置く。
@@ -211,10 +216,13 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 
 次の例は、画面全体のショートカットを `Window` にまとめ、`Ctrl+Z` をビューモデルの編集履歴で置き換える画面である。
 `Ctrl+Z` は `TextBox` の操作と重なるので、`TextBox` に置く。
-ビュー（XAML）はバインドだけで、コードビハインドには `InitializeComponent` 以外を書かない。
+ビュー（XAML）はバインドだけで動き、コードビハインドには `InitializeComponent` 以外を書かない。
+コードビハインドと結び付ける `x:Class` と、`DataContext` にビューモデルを設定する箇所は省略した（計測では XAML を読み込んだ後に `DataContext` を設定した）。
 
 ```xml
-<Window ...>
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Editor" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
   <Window.InputBindings>
     <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}" />
     <!-- UserControl に置くと、UserControl の外に入力している間は効かない -->
@@ -243,7 +251,7 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 
 {% include tables/articles/wpf-keybinding-not-firing-focus/keybinding-implementation.ja.md %}
 
-表 3: 実装例の XAML で押したキーと、実行されたコマンド。`"abc"` の入力は InputManager を通して送り、キーは OS のキー入力で 1 回押した。.NET 10.0.13 / Windows 11。
+表 3: 実装例の XAML で押したキーと、実行されたビューモデルのコマンド。`"abc"` の入力は InputManager を通して送り、キーは OS のキー入力で 1 回押した。.NET 10.0.13 / Windows 11。
 {: .table-caption}
 
 `Ctrl+S` と `Ctrl+D` は `Window` に置いたので、`UserControl` の中の `panelBox` に入力しているときも外の `titleBox` に入力しているときも実行された。
@@ -277,9 +285,9 @@ Owner を指定しても、元の `Window` の `DataContext` は別ウィンド�
 
 `KeyBinding` は、キーボードフォーカスのある要素から `Window` へ向かう経路に置いたものだけが実行される。
 効かないときは、まず `Keyboard.FocusedElement` を確かめて、フォーカスが無いのか、別ウィンドウなのか、`KeyBinding` を置いた要素の外なのかを切り分ける。
-フォーカスが経路の上にあるなら、`KeyBinding` の `Command` が `null` でないか（バインドが解決されているか）と、経路の上のほかの要素がキーを先に処理していないかを確かめる。
+フォーカスが経路の上にあるなら、押したキーが `Key`・`Modifiers` と一致しているか、`KeyBinding` の `Command` が `null` でないか（バインドが解決されているか）、経路の上のほかの要素がキーを先に処理していないかを確かめる。
 
-- フォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移す。別ウィンドウでも効かせたいショートカットは、そのウィンドウにも置き、`DataContext` も設定する。
+- WPF のコードが `Keyboard.ClearFocus()` を呼んでフォーカスが `null` になったときは、`Keyboard.Focus(window)` で `Window` へ移し、戻り値で移ったことを確かめる。ホストした Win32 のウィンドウに入力中のときは、この方法の対象外である。別ウィンドウでも効かせたいショートカットは、そのウィンドウにも置き、`DataContext` も設定する。
 - 画面全体で効かせたいショートカットは `Window` の `InputBindings` に置く。`UserControl` に `Focusable="True"` を付けても、中の `TextBlock` をクリックしただけではフォーカスは移らなかった。
 - `TextBox` が使うキーをアプリの操作で置き換えるときは、その `TextBox` の `InputBindings` に置く。置き換える理由が無ければ、`TextBox` と重ならないキーに割り当てる。
 

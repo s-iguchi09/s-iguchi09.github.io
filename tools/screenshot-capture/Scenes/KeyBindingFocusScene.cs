@@ -27,7 +27,8 @@ internal sealed class KeyBindingFocusScene : IScene
         "外の TextBox にフォーカスを置いたまま UserControl の中の TextBlock を実際のマウスでクリックしても、UserControl の Focusable が False でも True でもフォーカスは外の TextBox に残り、UserControl の KeyBinding は実行されないこと",
         "Keyboard.Focus(panel) は、Focusable が False の UserControl にはフォーカスを移さず（フォーカスは Window のまま）KeyBinding も実行されず、Focusable が True なら UserControl にフォーカスが移って KeyBinding が実行されること",
         "UserControl の KeyBinding を外して同じ KeyBinding を Window に置くと、UserControl の外の TextBox にフォーカスがあっても実行されること",
-        "記事の切り分けの手順（Keyboard.FocusedElement が null か、Window.GetWindow が KeyBinding を置いたウィンドウか、KeyBinding を置いた要素の IsKeyboardFocusWithin）で判定すると、表 1・2 の各行で、判定が 1〜3 の行ではコマンドが実行されず、判定が 4 で何も実行されなかった行は、DataContext を設定しない別ウィンドウの行を除き、フォーカスが TextBox にあること。各行で実行されたコマンドが、行ごとに想定したコマンドと一致すること",
+        "押したキーと修飾キーが KeyBinding の Key・Modifiers と一致しない（Ctrl+S の KeyBinding に Ctrl+Shift+S を押す）と、判定が 4（経路の上）で、キーを押す直前に Command が null でないことを確かめていても実行されないこと",
+        "記事の切り分けの手順（Keyboard.FocusedElement が null か、Window.GetWindow が KeyBinding を置いたウィンドウか、KeyBinding を置いた要素の IsKeyboardFocusWithin）で判定すると、表 1・2 の各行で、判定が 1〜3 の行ではコマンドが実行されず、判定が 4 で何も実行されなかった行は、ジェスチャーが一致しない行と DataContext を設定しない別ウィンドウの行を除き、フォーカスが TextBox にあること。各行で実行されたビューモデルのコマンド、キーを押す前のフォーカス、キーの後の titleBox の文字列が、行ごとに想定した値と一致すること。Keyboard.Focus(window) は戻り値が Window であること",
         "TextBox にフォーカスがあるとき、Window の Ctrl+Z の KeyBinding は、何も入力していなくても \"abc\" を入力した後でも実行されず、入力した後は TextBox の元に戻す操作で文字列が \"\" に戻ること。Button にフォーカスがあるときは実行されること",
         "Window に Ctrl+Z の KeyBinding を残したまま TextBox の InputBindings に Ctrl+Z の KeyBinding（TextUndoCommand）を置くと、TextBox 側のコマンドだけが実行されて Window の UndoCommand は実行されず、TextBox の文字列は \"abc\" のまま残ること。Window.PreviewKeyDown で TextUndoCommand を実行して Handled にした場合も同じ結果になること",
         "Window の Enter の KeyBinding は、AcceptsReturn が False の TextBox にフォーカスがあるときは実行され、AcceptsReturn が True の TextBox では実行されずに改行が入り、Button では実行されずに Button のコマンドが実行されること",
@@ -47,7 +48,7 @@ internal sealed class KeyBindingFocusScene : IScene
         Loc focus = T("keyboard focus when the key is pressed", "キーを押したときのキーボードフォーカス");
         Loc judged = T("isolation step that applies", "切り分けの手順の判定");
         Loc reached = T("Window's PreviewKeyDown raised", "Window の PreviewKeyDown");
-        Loc command = T("command that ran", "実行されたコマンド");
+        Loc command = T("view-model command that ran", "実行されたビューモデルのコマンド");
         Loc text = T("titleBox text after the key", "キーの後の titleBox の文字列");
 
         await context.SaveTableAsync(
@@ -270,7 +271,9 @@ internal sealed class KeyBindingFocusScene : IScene
         bool ShowText = false,
         string? Xaml = null,
         string Expect = "",
-        bool ExpectLoadFailure = false);
+        bool ExpectLoadFailure = false,
+        string? ExpectText = null,
+        bool GestureMismatch = false);
 
     private sealed record Result(Loc Key, Loc Place, Loc Before, Loc Focus, Loc Judged, Loc Reached, Loc Command, Loc Text);
 
@@ -281,6 +284,7 @@ internal sealed class KeyBindingFocusScene : IScene
     private const ushort VkZ = 0x5A;
     private const ushort VkA = 0x41;
     private const ushort VkF2 = 0x71;
+    private const ushort VkShift = 0x10;
 
     private const string WindowCtrlD = "\n    <KeyBinding Key=\"D\" Modifiers=\"Control\" Command=\"{Binding DeleteCommand}\" />";
 
@@ -318,6 +322,7 @@ internal sealed class KeyBindingFocusScene : IScene
         yield return new(ctrlS, VkS, [VkControl], onWindow, Focus.ClearedThenWindow, Expect: save);
         yield return new(ctrlS, VkS, [VkControl], onWindow, Focus.OkButtonThenDisabled, Expect: save);
         yield return new(ctrlS, VkS, [VkControl], onWindow, Focus.TitleBoxThenCollapsed, Expect: save);
+        yield return new("Ctrl+Shift+S", VkS, [VkControl, VkShift], T("Window (Ctrl+S; Ctrl+Shift+S pressed)", "Window（Ctrl+S。押したのは Ctrl+Shift+S）"), Focus.OkButton, GestureMismatch: true);
         yield return new(ctrlS, VkS, [VkControl], onWindow, Focus.ToolWindow);
         yield return new(ctrlS, VkS, [VkControl], T("Window and the owned window", "Window と Owner 付きの別ウィンドウ"), Focus.ToolWindow, Host.Tool,
             ToolBindings: "\n    <KeyBinding Key=\"S\" Modifiers=\"Control\" Command=\"{Binding SaveCommand}\" />", Expect: save);
@@ -340,15 +345,15 @@ internal sealed class KeyBindingFocusScene : IScene
         Loc enter = "Enter";
         Loc onWindow = "Window";
 
-        yield return new(ctrlZ, VkZ, [VkControl], onWindow, Focus.TitleBox, ShowText: true);
-        yield return new(ctrlZ, VkZ, [VkControl], onWindow, Focus.TitleBox, TypeFirst: "abc", ShowText: true);
+        yield return new(ctrlZ, VkZ, [VkControl], onWindow, Focus.TitleBox, ShowText: true, ExpectText: "");
+        yield return new(ctrlZ, VkZ, [VkControl], onWindow, Focus.TitleBox, TypeFirst: "abc", ShowText: true, ExpectText: "");
         yield return new(ctrlZ, VkZ, [VkControl], onWindow, Focus.OkButton, Expect: "UndoCommand");
-        yield return new(ctrlZ, VkZ, [VkControl], T("Window and titleBox.InputBindings (TextUndoCommand)", "Window と titleBox.InputBindings（TextUndoCommand）"), Focus.TitleBox, Host.TitleBox, TypeFirst: "abc", ShowText: true,
+        yield return new(ctrlZ, VkZ, [VkControl], T("Window and titleBox.InputBindings (TextUndoCommand)", "Window と titleBox.InputBindings（TextUndoCommand）"), Focus.TitleBox, Host.TitleBox, TypeFirst: "abc", ShowText: true, ExpectText: "abc",
             TitleBoxChildren: "\n      <TextBox.InputBindings>\n        <KeyBinding Key=\"Z\" Modifiers=\"Control\" Command=\"{Binding TextUndoCommand}\" />\n      </TextBox.InputBindings>\n    ", Expect: "TextUndoCommand");
-        yield return new(ctrlZ, VkZ, [VkControl], T("Window and Window.PreviewKeyDown (TextUndoCommand)", "Window と Window.PreviewKeyDown（TextUndoCommand）"), Focus.TitleBox, TypeFirst: "abc", PreviewKeyDownUndo: true, ShowText: true, Expect: "TextUndoCommand");
+        yield return new(ctrlZ, VkZ, [VkControl], T("Window and Window.PreviewKeyDown (TextUndoCommand)", "Window と Window.PreviewKeyDown（TextUndoCommand）"), Focus.TitleBox, TypeFirst: "abc", PreviewKeyDownUndo: true, ShowText: true, ExpectText: "abc", Expect: "TextUndoCommand");
 
-        yield return new(enter, VkReturn, [], onWindow, Focus.TitleBox, ShowText: true, Expect: "SubmitCommand");
-        yield return new(enter, VkReturn, [], T("Window (titleBox with AcceptsReturn=\"True\")", "Window（titleBox は AcceptsReturn=\"True\"）"), Focus.TitleBox, TitleBoxAttributes: " AcceptsReturn=\"True\"", ShowText: true);
+        yield return new(enter, VkReturn, [], onWindow, Focus.TitleBox, ShowText: true, ExpectText: "", Expect: "SubmitCommand");
+        yield return new(enter, VkReturn, [], T("Window (titleBox with AcceptsReturn=\"True\")", "Window（titleBox は AcceptsReturn=\"True\"）"), Focus.TitleBox, TitleBoxAttributes: " AcceptsReturn=\"True\"", ShowText: true, ExpectText: "\r\n");
         yield return new(enter, VkReturn, [], onWindow, Focus.OkButton, Expect: "OkCommand");
     }
 
@@ -360,8 +365,8 @@ internal sealed class KeyBindingFocusScene : IScene
         yield return new("Ctrl+S", VkS, [VkControl], onWindow, Focus.PanelBox, Xaml: ImplementationXaml, Expect: "SaveCommand");
         yield return new("Ctrl+D", VkD, [VkControl], onWindow, Focus.TitleBox, Xaml: ImplementationXaml, Expect: "DeleteCommand");
         yield return new("Ctrl+D", VkD, [VkControl], onWindow, Focus.PanelBox, Xaml: ImplementationXaml, Expect: "DeleteCommand");
-        yield return new("Ctrl+Z", VkZ, [VkControl], "titleBox.InputBindings", Focus.TitleBox, Host.TitleBox, TypeFirst: "abc", ShowText: true, Xaml: ImplementationXaml, Expect: "UndoCommand");
-        yield return new("Enter", VkReturn, [], onWindow, Focus.TitleBox, ShowText: true, Xaml: ImplementationXaml, Expect: "SubmitCommand");
+        yield return new("Ctrl+Z", VkZ, [VkControl], "titleBox.InputBindings", Focus.TitleBox, Host.TitleBox, TypeFirst: "abc", ShowText: true, ExpectText: "abc", Xaml: ImplementationXaml, Expect: "UndoCommand");
+        yield return new("Enter", VkReturn, [], onWindow, Focus.TitleBox, ShowText: true, ExpectText: "", Xaml: ImplementationXaml, Expect: "SubmitCommand");
         yield return new("Enter", VkReturn, [], onWindow, Focus.OkButton, Xaml: ImplementationXaml, Expect: "OkCommand");
     }
 
@@ -464,6 +469,19 @@ internal sealed class KeyBindingFocusScene : IScene
             throw new InvalidOperationException($"デバッグ用コードの最後の行がフォーカスと一致しない（{focus}）: {last} / 実際: {expected}");
         }
 
+        // 記事に書いた出力の文字列そのものも確かめる。
+        bool textOk = focus switch
+        {
+            Focus.Cleared => last == "focus: null",
+            Focus.ClearedThenWindow => last == "focus: System.Windows.Window",
+            Focus.TitleBox => last?.StartsWith("focus: System.Windows.Controls.TextBox", StringComparison.Ordinal) == true,
+            _ => true,
+        };
+        if (!textOk)
+        {
+            throw new InvalidOperationException($"デバッグ用コードの出力が記事に書いた文字列と異なる（{focus}）: {last}");
+        }
+
         if (focus is Focus.Cleared or Focus.ClearedThenWindow or Focus.TitleBox && last is null)
         {
             throw new InvalidOperationException($"デバッグ用コードが行を書き出していない（{focus}）。");
@@ -550,7 +568,11 @@ internal sealed class KeyBindingFocusScene : IScene
                 case Focus.ClearedThenWindow:
                     Keyboard.ClearFocus();
                     await Capture.SettleAsync(window, 100);
-                    Keyboard.Focus(window);
+                    if (Keyboard.Focus(window) != window)
+                    {
+                        throw new InvalidOperationException("Keyboard.Focus(window) の戻り値が Window ではない。");
+                    }
+
                     await Capture.SettleAsync(window, 100);
                     break;
                 case Focus.TitleBox:
@@ -630,9 +652,10 @@ internal sealed class KeyBindingFocusScene : IScene
             };
             int step = Judge(judgeWindow, host);
             Loc judged = DescribeStep(step);
-            if (c.Focus == Focus.AsShown && Keyboard.FocusedElement != window)
+            IInputElement? expectedFocus = ExpectedFocus(c, window, tool, titleBox);
+            if (Keyboard.FocusedElement != expectedFocus)
             {
-                throw new InvalidOperationException($"表示しただけのウィンドウで、フォーカスが Window に無い（{Keyboard.FocusedElement}）。");
+                throw new InvalidOperationException($"キーを押す前のフォーカスが想定と異なる（想定: {expectedFocus?.GetType().Name ?? "null"}、実際: {Keyboard.FocusedElement?.GetType().Name ?? "null"}）: {c.KeyLabel.Ja} / {c.Condition.Ja} / {c.Focus}");
             }
             // 別ウィンドウの KeyBinding の Command が、DataContext を設定したときだけ解決されていることを、キーを押す直前に確かめる。
             if (tool is not null && tool.InputBindings.Count > 0)
@@ -644,11 +667,22 @@ internal sealed class KeyBindingFocusScene : IScene
                 }
             }
 
+            // ジェスチャーが一致しない行は、Command が解決されていることをキーを押す直前に確かめる（実行されない原因がバインドではないことを示すため）。
+            if (c.GestureMismatch && window.InputBindings[0] is not KeyBinding { Key: Key.S, Modifiers: ModifierKeys.Control, Command: not null })
+            {
+                throw new InvalidOperationException("ジェスチャーが一致しない行で、Window の Ctrl+S の KeyBinding の Command が解決されていない。");
+            }
+
             windowReached = false;
             await RealKeyboard.PressAsync(target, c.VirtualKey, c.Modifiers);
             await Capture.SettleAsync(target, 100);
 
             CheckJudgement(c, step, vm.Executed);
+            if (c.ShowText && titleBox.Text != c.ExpectText)
+            {
+                throw new InvalidOperationException($"キーの後の titleBox の文字列が想定と異なる（想定: {Quote(c.ExpectText ?? "")}、実際: {Quote(titleBox.Text)}）: {c.KeyLabel.Ja} / {c.Condition.Ja}");
+            }
+
             Loc executed = vm.Executed.Count == 0 ? T("none", "なし") : string.Join(", ", vm.Executed);
             Loc text = c.ShowText ? Quote(titleBox.Text) : "-";
             return new(c.KeyLabel, c.Condition, before, focus, judged, windowReached ? T("raised", "呼ばれた") : T("not raised", "呼ばれない"), executed, text);
@@ -661,6 +695,22 @@ internal sealed class KeyBindingFocusScene : IScene
             window.Close();
         }
     }
+
+    /// <summary>
+    /// キーを押す前の操作から、フォーカスがあるはずの要素を決める。
+    /// 操作が想定どおりにフォーカスを動かしたかを、表の値とは別に確かめるために使う。
+    /// </summary>
+    private static IInputElement? ExpectedFocus(Case c, Window window, Window? tool, TextBox titleBox) => c.Focus switch
+    {
+        Focus.Cleared => null,
+        Focus.AsShown or Focus.ClearedThenWindow or Focus.OkButtonThenDisabled or Focus.TitleBoxThenCollapsed => window,
+        Focus.TitleBox or Focus.ClickPanelLabel => titleBox,
+        Focus.OkButton => (IInputElement)window.FindName("okButton"),
+        Focus.PanelBox => (IInputElement)window.FindName("panelBox"),
+        Focus.PanelItself => c.PanelAttributes.Contains("Focusable=\"True\"", StringComparison.Ordinal) ? (IInputElement)window.FindName("panel") : window,
+        Focus.ToolWindow => (IInputElement)(tool ?? throw new InvalidOperationException("別ウィンドウを表示していない。")).FindName("toolBox"),
+        _ => throw new ArgumentOutOfRangeException(nameof(c)),
+    };
 
     /// <summary>
     /// 記事の「切り分けの手順」の 1〜4 を、そのままコードにしたもの。
@@ -703,6 +753,17 @@ internal sealed class KeyBindingFocusScene : IScene
         if (actual != c.Expect)
         {
             throw new InvalidOperationException($"実行されたコマンド（{actual}）が想定（{c.Expect}）と異なる: {c.KeyLabel.Ja} / {c.Condition.Ja} / {c.Focus}");
+        }
+
+        if (c.GestureMismatch)
+        {
+            // 押したキーと修飾キーが KeyBinding の Key・Modifiers と一致しないので、経路の上（判定 4）にあっても実行されないはずである。
+            if (step != 4 || executed.Count != 0)
+            {
+                throw new InvalidOperationException($"ジェスチャーが一致しない行で、判定が 4 ではないか、コマンドが実行された（判定 {step}、{string.Join(", ", executed)}）。");
+            }
+
+            return;
         }
 
         if (!c.ToolDataContext)

@@ -1,4 +1,4 @@
-| キー | KeyBinding の置き場所 | キーを押す前の操作 | キーを押したときのキーボードフォーカス | 切り分けの手順の判定 | 実行されたコマンド | キーの後の titleBox の文字列 |
+| キー | KeyBinding の置き場所 | キーを押す前の操作 | キーを押したときのキーボードフォーカス | 切り分けの手順の判定 | 実行されたビューモデルのコマンド | キーの後の titleBox の文字列 |
 |---|---|---|---|---|---|---|
 | Ctrl+Z | Window | Keyboard.Focus(titleBox) | Window の TextBox | 4: 経路の上 | なし | \"\" |
 | Ctrl+Z | Window | Keyboard.Focus(titleBox) の後、\"abc\" を入力 | Window の TextBox | 4: 経路の上 | なし | \"\" |

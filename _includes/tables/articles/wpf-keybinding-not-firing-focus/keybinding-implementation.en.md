@@ -1,4 +1,4 @@
-| key | where the KeyBinding is | before pressing the key | keyboard focus when the key is pressed | command that ran | titleBox text after the key |
+| key | where the KeyBinding is | before pressing the key | keyboard focus when the key is pressed | view-model command that ran | titleBox text after the key |
 |---|---|---|---|---|---|
 | Ctrl+S | Window | Keyboard.Focus(titleBox) | TextBox in the Window | SaveCommand | - |
 | Ctrl+S | Window | Keyboard.Focus(panelBox) | TextBox in the UserControl | SaveCommand | - |
