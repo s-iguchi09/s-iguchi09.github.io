@@ -18,5 +18,20 @@
       "mcp__Claude_Code_Remote__list_triggers",
       "mcp__Claude_Code_Remote__fire_trigger"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/review-gate/check-push.mjs\"",
+            "timeout": 30,
+            "statusMessage": "独立レビュー済みの内容かを確かめています"
+          }
+        ]
+      }
+    ]
   }
 }
