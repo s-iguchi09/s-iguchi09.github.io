@@ -199,8 +199,10 @@ internal sealed class CollectionCrossThreadScene : IScene
     /// <summary>生成したコンテナをすべて記録する ListBox。使い回しと新規の生成を見分けるために使う。</summary>
     private sealed class TrackingListBox : ListBox
     {
+        /// <summary>生成した順のコンテナ。使い回し用に取っておかれたものも含む。</summary>
         public List<DependencyObject> Created { get; } = [];
 
+        /// <summary>既定のコンテナを生成し、<see cref="Created"/> に記録してから返す。</summary>
         protected override DependencyObject GetContainerForItemOverride()
         {
             DependencyObject container = base.GetContainerForItemOverride();
@@ -209,6 +211,7 @@ internal sealed class CollectionCrossThreadScene : IScene
         }
     }
 
+    /// <summary>ビジュアルツリーを深さ優先でたどり、最初に見つかった <typeparamref name="TChild"/> を返す。見つからなければ null。</summary>
     private static TChild? FindDescendant<TChild>(DependencyObject root)
         where TChild : DependencyObject
     {
@@ -243,6 +246,7 @@ internal sealed class CollectionCrossThreadScene : IScene
     /// <summary>AddRange で要素をまとめて足し、通知を Reset 1 回にするコレクション。</summary>
     private sealed class RangeObservableCollection<TItem> : ObservableCollection<TItem>
     {
+        /// <summary>要素を通知なしで末尾に足し、Count・インデクサー・コレクションの変更を 1 回ずつ（コレクションは Reset で）通知する。</summary>
         public void AddRange(IEnumerable<TItem> source)
         {
             CheckReentrancy();
@@ -294,10 +298,12 @@ internal sealed class CollectionCrossThreadScene : IScene
         // 計測区間は、発生の開始から、全件の反映の 100 ms 後と開始の 1,000 ms 後の遅いほうまで（基準は開始から 1,000 ms ちょうど）。区間の外の値は捨てる。
         double windowStart = double.MaxValue;
         double windowEnd = double.MaxValue;
+        // 時刻 t が計測区間に入っているか。
         bool InWindow(double t) => t >= windowStart && t <= windowEnd;
 
         double lastFrame = -1;
         double maxFrameGap = 0;
+        // 描画フレームごとに呼ばれ、区間内に呼ばれたフレームについて、直前のフレームからの間隔の最大を更新する。
         void OnRendering(object? sender, EventArgs e)
         {
             double now = clock.Elapsed.TotalMilliseconds;
@@ -378,6 +384,7 @@ internal sealed class CollectionCrossThreadScene : IScene
             }
         });
 
+        // 計測を終えてよいか。基準は 1,000 ms 経過、ほかはビューに全件が反映されたとき。
         bool Done() => burst == Burst.None
             ? clock.Elapsed.TotalMilliseconds - windowStart >= 1_000
             : list.Items.Count == count && (burst == Burst.QueueDrainReset || viewEvents == count);
@@ -441,6 +448,7 @@ internal sealed class CollectionCrossThreadScene : IScene
             }
         }
 
+        // 値の中央値（件数が奇数の前提。偶数なら上側の値を返す）。
         static double Median(IEnumerable<double> values)
         {
             double[] sorted = values.Order().ToArray();
@@ -471,15 +479,15 @@ internal sealed class CollectionCrossThreadScene : IScene
         return rows;
     }
 
+    /// <summary>表のセルの英語と日本語を組にする。識別子や数値のように両方で同じセルは、T を使わず文字列で渡す。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
+
     /// <summary>
     /// バックグラウンドスレッドから <see cref="BulkCount"/> 件を 1 件ずつ Add し、
     /// ループにかかった時間、await のあと UI スレッドへ戻った時点でビューが受け取っていた通知の数、
     /// ビューが全件分の通知を受け取るまでの時間を返す。
     /// Dispatcher.Invoke は 1 件ごとに UI スレッドでの実行を待つ。
     /// </summary>
-    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
-    private static Loc T(string en, string ja) => Loc.Of(en, ja);
-
     private static async Task<IReadOnlyList<Loc>> MeasureBulkAsync(Fix fix)
     {
         var items = new ObservableCollection<string>();
