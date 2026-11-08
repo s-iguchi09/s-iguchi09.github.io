@@ -24,6 +24,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      収束したあと、1 行も変更していない差分を push する場合だけとする(`article-workflow` の Phase 3 の「修正あり」で Phase 2 に戻り、収束し直した場合も含む)。
      `article-workflow` の Phase 2 のあとに CI の修正・PR 上のレビュー指摘への対応などで直した場合は、記事だけの変更でも、
      直した後の差分に行う。`/code-review high` の再実行はこの独立レビューの代わりにしない。
+     main の取り込み(rebase・merge)は、競合を解消しなかったなら、このブランチの差分は変わらないので例外と同じ扱いにする
+     (`article-check.mjs` を通してから `approve.mjs direct "main の取り込み(競合なし)"`)。競合を解消したなら独立レビューを通す。
      この条件は `article-workflow` からも参照する。
    - **レビュアーを起動する前に、依頼者がリポジトリのルートで次を順に実行する。** 出力の置き場は、各スクリプトが標準出力に表示するパス
      (`git rev-parse --git-path review-gate` の場所。通常は `.git/review-gate/`、worktree ではその worktree 用の場所。コミットされない)。
@@ -38,6 +40,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
         変更した C# のメソッドと JavaScript の関数の説明コメントの割合(CodeRabbit の Docstring Coverage とは数え方が違う参考値)。
         コード片に「構文・型の誤りの可能性」「存在しないメンバーを呼んでいる」「XML として読めない」が出たら、
         レビュアーを起動する前に直して実行し直す(抜粋として正しいのに出た場合は、理由をレビュアーに伝えて進めてよい)。
+        「確かめていない」が出た場合(.NET SDK が無い・ビルドできない・Windows 以外で WPF を扱えないなど)は、その範囲をレビュアーに伝える。
      2. `node tools/review-gate/coderabbit-findings.mjs` … 作成が新しい 45 件のうちマージした日時が新しい 15 件の PR で CodeRabbit が付けた指摘
         (インラインの指摘と、レビュー本文の差分の外・Nitpick の項目、失敗・警告になった pre-merge check)を
         `coderabbit-findings.md` にまとめる。このリポジトリでは CodeRabbit が同じ型の指摘を繰り返しているため。
@@ -88,6 +91,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        - 外部への書き込みは実行しない。push・PR やコメントの投稿・マージ・外部サービスへの送信が該当する。
          パッケージの取得など読み取りだけの通信は、確かめる対象の手順に書かれている場合に限り実行してよい
        - 実行できなかったコマンドは、手順を読んで推論でたどり、指摘に「未実行(推論)」と書き添える
+     - 承認の記録・生成物の置き場(`git rev-parse --git-path review-gate`)と git の設定を書き換えるコマンド
+       (`setup.mjs`・`approve.mjs`・`article-check.mjs`・`coderabbit-findings.mjs` の実行を含む)は実行せず、「未実行(推論)」とすること
+       (3 人が同時に動くので、依頼者の記録やほかのレビュアーの材料を上書きしないため)
      - 上の実行を除き、読むだけでファイルを変更しないこと
      - 指摘は件数を絞らず、各指摘に「ファイル:行」「何が問題か」「直し方」「重要度(要修正 / 軽微 / 見送り可)」を付けること
    - 少なくとも次の観点を確認させる。
@@ -127,14 +133,17 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      照合が保証するのは「承認した内容と push する内容が同じこと」で、レビューが行われたことまでは確かめない。
      - フックが動けば、照合する ref は git が渡すので、コマンドのつなぎ方やブランチの指定には左右されない。削除とタグの push は照合しない。
      - 照合するのは環境変数 `CLAUDECODE=1` の環境(Claude Code の Bash・PowerShell ツール、hook の子プロセス、Claude Code の IDE 拡張の
-       統合ターミナルなど)からの push だけ。それ以外の端末から人が push するときは照合しない。
+       統合ターミナルなど。<https://code.claude.com/docs/en/env-vars> の `CLAUDECODE` の行による)からの push だけ。
+       それ以外の端末から人が push するときは照合しない。
      - フックは `node tools/review-gate/setup.mjs` で有効にする(`core.hooksPath` を `.githooks` にする。クローンごとに 1 回)。
-     - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、`git` と `push` を含むコマンドの前に、
-       フックが有効か(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)と、照合を外す書き方
-       (`--no-verify`、`core.hooksPath` の上書き、`CLAUDECODE` の上書き)が無いかを確かめ、あれば止める。
-       コマンドの文字列だけを見るので、スクリプトの中から実行する push や、Bash・PowerShell 以外の経路は確かめられない。
-     - **仕組みで防げないもの:** `--no-verify`・`core.hooksPath` の上書き・`CLAUDECODE` を外した実行・`.githooks` の無いブランチでは、
-       フックが動かず照合されない。上の hook で止められない書き方もあるので、手順として使わない。
+     - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドのうち、
+       引用符とヒアドキュメントの中身を除いて `git` の次のサブコマンドが `push` のものだけを対象に、次を確かめて止める。
+       対象は `$CLAUDE_PROJECT_DIR` の作業ツリーでの push(作業ディレクトリがそこか、コマンドにそのパスを含む場合。同じリポジトリの別の worktree は対象外)。
+       - フックが有効か(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)
+       - 引用符の外に、照合を外すよく知られた書き方(`--no-veri` で始まるオプション、`core.hooksPath`、`CLAUDECODE` の上書き・削除)が無いか
+     - **仕組みで防げないもの:** `--no-verify`・`core.hooksPath` の変更・`CLAUDECODE` を外した実行・`.githooks` の無いブランチでは、
+       フックが動かず照合されない。上の hook はコマンドの文字列だけを見るので、スクリプトや別名の中での実行、上に無い書き方、
+       Bash・PowerShell 以外の経路は止められない。どれも手順として使わない。
      - 仕組みを変えたら `node tools/review-gate/test-gate.mjs` を実行し、すべて OK になることを確かめる。
      - 経緯:PR #174 では、最初の push の前に測り直して本文の倍率を書き換え、その後に独立レビューを通さずに push して、
        その倍率を CodeRabbit に指摘された。手順に書いてあっても守れなかったので、仕組みで止めるようにした。
@@ -156,6 +165,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      一時コピーの置き場や後始末を細かく定める案は、PR #171 で試したが、手順が膨らみ、CodeRabbit の指摘が回ごとに続いたため、ユーザーの判断でやめた。
 
 2. **変更をコミットする。** 手順 1 で直した分を含め、未コミットの変更があればコミットする。
+   承認した内容は作業ツリー全体(未追跡のファイルを含む)なので、一部だけをステージせず `git add -A` でそのまま全部コミットする
+   (一部だけだと、push の照合で一致しない)。
    追加の変更が無い場合はコミットを省略する(`nothing to commit` で止めない)。
 
 3. **プッシュする。** `git push -u origin "<branch>"` で作業ブランチへ push する。
@@ -238,7 +249,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      1 時間に 1 回しか回せないため、**指摘 1 件の後出しがそのまま 60 分の待機になる**。
      PR #103 では同一系統の指摘が 4 回に分かれ、3 サイクル約 3 時間を無駄にした。
    - **push 前に、Phase 1 手順 1 の独立レビューを、同じ対象・同じ止める条件で、修正後の PR の差分全体に通し、承認を記録する**
-     (`approve.mjs start` → レビュー → `approve.mjs done`)。修正で新たに生じた食い違いを、次の再レビュー待ちの前に潰すため。
+     (`article-check.mjs` → `approve.mjs start` → レビュー → `approve.mjs done`)。修正で新たに生じた食い違いを、次の再レビュー待ちの前に潰すため。
      承認が無いと pre-push フックが push を止める。
    - **「主張が計測・確認の範囲を超えている」という指摘は、主張を弱めて済ませず、まず計測して確かめられないかを考える。**
      Phase 1 手順 1 の独立レビューの指摘にも同じように当てはめる。
@@ -284,8 +295,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    マージ不可のブロッカーとして扱い、解消するまで Phase 4 へ進まない。
    - `git fetch origin main` で最新の `main` を取得し、作業ブランチへ取り込む(`git merge origin/main`
      または `git rebase origin/main`)。
-   - 競合を解消してコミットする。取り込みでブランチの内容が変わるので、push の前に Phase 1 手順 1 の独立レビューを
-     差分全体に通して承認を記録する(承認が無いと pre-push フックが止める)。そのうえで `git push`(rebase した場合は `--force-with-lease`)する。
+   - 競合を解消してコミットする。取り込みでブランチの内容が変わるので、push の前に Phase 1 手順 1 の「対象」の取り込みの扱い
+     (競合を解消したなら独立レビュー、しなかったなら direct)のとおりに承認を記録する(承認が無いと pre-push フックが止める)。
+     そのうえで `git push`(rebase した場合は `--force-with-lease`)する。
    - push により CI は自動再実行される。必要なら CodeRabbit へ `@coderabbitai review` で再レビューを要求する。
    - 解消後は手順 1〜5 のレビュー・CI ループへ戻り、再び指摘ゼロ・グリーンを確認する。
 
@@ -299,7 +311,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
       ただし `Lint Markdown`(`.github/workflows/lint-markdown.yml`)は `**/*.md` / `.markdownlint.json` /
       当該ワークフローの変更時のみ起動する。**これらを変更しない PR ではチェックが起動しない**ため、
       その場合は check run 不在(未実行)を許容し、この項目は満たされたものとして扱う。
-- [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし)し、actionable な未解決指摘がゼロ。
+- [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし。CodeRabbit の完了の判定は Phase 3 手順 2 による)し、
+      actionable な未解決指摘がゼロ。
 - [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
       作成者(CodeRabbit・人間レビュアー・その他の自動ボットを問わず)に関係なく `is_resolved == true` を要求する。
       未解決スレッドが 1 件でもあればマージしない。
@@ -349,7 +362,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
 ## 全体フロー要約
 
 ```text
-Phase 1  機械チェック・過去指摘の集計・approve start → 3 観点の独立レビュー(要修正ゼロまで)→ approve done
+Phase 1  setup・機械チェック・過去指摘の集計・approve start → 3 観点の独立レビュー(要修正ゼロまで)→ approve done
          → コミット → プッシュ(pre-push フックが承認と照合)
 Phase 2  PR 作成 → subscribe_pr_activity で購読
 Phase 3  レビュー待ち(Webhook)→ 指摘修正 → 独立レビュー・approve done → push(pre-push フックが照合)→ 再レビュー依頼

@@ -10,8 +10,9 @@
 //
 // 使い方（リポジトリのルートで実行する）:
 //   node tools/review-gate/article-check.mjs [比べる相手（既定 origin/main）]
-// 出力: .git/review-gate/article-check.md（コミットされない）。パスと要約を標準出力に書く。
+// 出力: `git rev-parse --git-path review-gate` の場所（通常は .git/review-gate/）の article-check.md（コミットされない）。パスと要約を標準出力に書く。
 // 前提: 比べる相手が <remote>/<branch> の形なら、それを fetch できること。(c) には .NET 10 SDK が要る（無い・ビルドできないときは「確かめていない」と書く）。
+//       Windows 以外でも WPF を参照してコンパイルできるよう EnableWindowsTargeting を付けているが、動作を確かめたのは Windows だけ。
 // 終了コード: 報告を作れたら 0（見つかった問題の有無にかかわらない）。差分を取れなければ 1。
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -53,7 +54,8 @@ for (const line of diff.split("\n")) {
     continue;
   }
   if (inHeader) {
-    const file = line.match(/^\+\+\+ b\/(.+)$/);
+    // 名前に空白を含むファイルは、git が末尾に TAB を付けるので取り除く。
+    const file = line.match(/^\+\+\+ b\/(.+?)\t?$/);
     if (file) {
       current = file[1];
       changed.set(current, changed.get(current) ?? new Set());
@@ -152,15 +154,16 @@ const snippets = [];
 for (const [file, lines] of changed) {
   if (!isArticle(file)) continue;
   const text = readLines(file);
+  // すべてのフェンス（言語名を問わない）の開閉を追い、C#・XAML のものだけを取り出す。ほかのフェンスの中身は読み飛ばす。
   for (let i = 0; i < text.length; i++) {
-    const open = text[i].match(/^\s*(`{3,}|~{3,})\s*(csharp|cs|c#|xml|xaml)(?![\w#]).*$/i);
+    const open = text[i].match(/^\s*(`{3,}|~{3,})\s*([^\s`]*).*$/);
     if (!open) continue;
     const fence = open[1];
     let j = i + 1;
     while (j < text.length && !new RegExp(`^\\s*${fence[0] === "`" ? "`" : "~"}{${fence.length},}\\s*$`).test(text[j])) j++;
+    const lang = /^(?:csharp|cs|c#)$/i.test(open[2]) ? "csharp" : /^(?:xml|xaml)$/i.test(open[2]) ? "xaml" : null;
     const touched = [...Array(j - i + 1).keys()].some((k) => lines.has(i + 1 + k));
-    if (touched) {
-      const lang = /xml|xaml/i.test(open[2]) ? "xaml" : "csharp";
+    if (lang && touched) {
       snippets.push({ file, line: i + 2, lang, code: text.slice(i + 1, j).join("\n") });
     }
     i = j;
@@ -217,8 +220,9 @@ function xamlChecker() {
     }
   }
   const dir = path.join(gateDir(), name);
-  const exe = path.join(dir, "bin", "Release", "net10.0", "XamlChecker.exe");
-  if (fs.existsSync(exe)) return exe;
+  // OS によって実行ファイルの名前が違うので、`dotnet <dll>` で起動する。
+  const dll = path.join(dir, "bin", "Release", "net10.0", "XamlChecker.dll");
+  if (fs.existsSync(dll)) return dll;
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(
     path.join(dir, "XamlChecker.csproj"),
@@ -233,7 +237,7 @@ function xamlChecker() {
   );
   fs.writeFileSync(path.join(dir, "Program.cs"), xamlCheckerSource);
   const build = spawnSync("dotnet", ["build", "-nologo", "-v", "q", "-c", "Release", "-nodeReuse:false"], { cwd: dir, encoding: "utf8", timeout: 300000 });
-  return !build.error && fs.existsSync(exe) ? exe : null;
+  return !build.error && fs.existsSync(dll) ? dll : null;
 }
 
 const usingRe = /^\s*(?:global\s+)?using\s+(?:static\s+)?[\w.]+(?:\s*=\s*[\w.<>, ]+)?\s*;\s*(?:\/\/.*)?$/;
@@ -275,6 +279,8 @@ function compileSnippet(baseDir, idx, code, kind) {
     <OutputType>${kind === "toplevel" ? "Exe" : "Library"}</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Windows 以外（Web 実行環境の Linux など）でも、WPF を参照してコンパイルだけはできるようにする -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);CS8618;CS0169;CS0414;CS1998;CS8602;CS8604;CS0168;CS0219;CS0162;CS8321</NoWarn>
@@ -320,7 +326,7 @@ function wrapXaml(code) {
     return { xml: code, lineOffset: 0 };
   }
   const declared = new Set([...code.matchAll(/xmlns:(\w+)=/g)].map((m) => m[1]));
-  const used = new Set([...code.matchAll(/<\/?(\w+):[\w.]+|\s(\w+):[\w.]+\s*=/g)].map((m) => m[1] ?? m[2]).filter((p) => p && p !== "xmlns"));
+  const used = new Set([...code.matchAll(/<\/?(\w+):[\w.]+|\s(\w+):[\w.]+\s*=/g)].map((m) => m[1] ?? m[2]).filter((p) => p && p !== "xmlns" && p !== "xml"));
   const attrs = [`xmlns="${xamlNamespaces[""]}"`];
   for (const p of new Set([...Object.keys(xamlNamespaces).filter(Boolean), ...used])) {
     if (declared.has(p)) continue;
@@ -353,11 +359,11 @@ if (snippets.length === 0) {
     });
     const xamlResults = new Map();
     if (xamlFiles.length) {
-      const exe = xamlChecker();
-      if (!exe) {
+      const dll = xamlChecker();
+      if (!dll) {
         out.push("XAML のチェック用プログラムをビルドできなかったので、XAML は確かめていない。", "");
       } else {
-        const run = spawnSync(exe, xamlFiles.map(([f]) => f), { encoding: "utf8", timeout: 60000 });
+        const run = spawnSync("dotnet", [dll, ...xamlFiles.map(([f]) => f)], { encoding: "utf8", timeout: 60000 });
         for (const l of (run.stdout ?? "").split(/\r?\n/)) {
           const [st, f, pos, msg] = l.split("\t");
           const hit = xamlFiles.find(([x]) => x === f);
@@ -379,7 +385,8 @@ if (snippets.length === 0) {
         } else {
           cResults.push("NG");
           const [ln, col] = r.pos.split(":").map(Number);
-          out.push(`- ${where}: **XML として読めない**（コード片の ${ln - s.lineOffset} 行目 ${col} 文字目）: ${r.msg}`);
+          const at = ln - s.lineOffset >= 1 ? `コード片の ${ln - s.lineOffset} 行目 ${col} 文字目` : "包むために足した部分";
+          out.push(`- ${where}: **XML として読めない**（${at}。メッセージ中の行番号は包んだ後の行番号）: ${r.msg}`);
         }
         return;
       }

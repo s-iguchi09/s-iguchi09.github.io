@@ -15,7 +15,11 @@ const before = (() => {
     return "";
   }
 })();
-if (before && before !== ".githooks") {
+if (before === ".githooks") {
+  console.log("core.hooksPath は既に .githooks になっている（変更しない）。");
+  process.exit(0);
+}
+if (before) {
   console.error(`core.hooksPath は既に ${before} に設定されている。上書きせずに止める。`);
   process.exit(1);
 }

@@ -26,7 +26,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tools/review-gate/check-setup.mjs\"",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/tools/review-gate/check-setup.mjs"],
             "timeout": 30,
             "statusMessage": "push の前のフックの確認"
           }

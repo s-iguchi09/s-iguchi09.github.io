@@ -6,7 +6,8 @@
 //   フックそのものが動かず照合されない（check-setup.mjs と手順書で止めるが、仕組みでは防げない）。
 // - 照合するのは環境変数 CLAUDECODE=1 の環境（Claude Code のツール・hook の子プロセスや、Claude Code の IDE 拡張の
 //   統合ターミナルなど）からの push だけ。それ以外の端末から人が push するときは照合しない（判定は .githooks/pre-push の sh 側）。
-// - 削除の push とタグの push は照合しない（ブランチの内容を変えないため）。
+// - 照合するのは送り先がブランチ（refs/heads/）の push だけ。削除と、送り先がタグなどブランチ以外の push は照合しない
+//   （送り元がタグでも、送り先がブランチなら照合する）。
 // - 照合の途中でエラーが起きたら、止める側に倒す（終了コード 1）。
 //
 // 手で試す（push される ref を標準入力で渡す。最後の 2 つは使わない）:
@@ -35,7 +36,9 @@ try {
   const updates = input
     .split(/\r?\n/)
     .map((l) => l.trim().split(/\s+/))
-    .filter((p) => p.length >= 4 && !ZERO.test(p[1]) && !p[0].startsWith("refs/tags/"));
+    // 照合するのは送り先がブランチ（refs/heads/）のものだけ。削除と、タグなどブランチ以外への push は照合しない。
+    // 送り元がタグでも、送り先がブランチなら照合する。
+    .filter((p) => p.length >= 4 && !ZERO.test(p[1]) && p[2].startsWith("refs/heads/"));
   if (updates.length === 0) {
     process.exit(0);
   }
@@ -44,18 +47,25 @@ try {
   if (!fs.existsSync(file)) {
     block(
       "承認の記録が無い。.claude/skills/pr/SKILL.md の Phase 1 手順 1 のとおり、" +
-        "`node tools/review-gate/article-check.mjs` と `approve.mjs start` → 独立レビュー → 要修正 0 件で `approve.mjs done \"<結果>\"` を実行してから push する。" +
-        "手順書の「対象」の例外に当たるときは `approve.mjs direct \"<理由>\"` で記録する。",
+        "`node tools/review-gate/article-check.mjs` と `node tools/review-gate/approve.mjs start` → 独立レビュー → " +
+        "要修正 0 件で `node tools/review-gate/approve.mjs done \"<結果>\"` を実行してから push する。" +
+        "手順書の「対象」の例外に当たるときは `node tools/review-gate/approve.mjs direct \"<理由>\"` で記録する。",
     );
   }
-  const record = JSON.parse(fs.readFileSync(file, "utf8"));
-  for (const [localRef, localSha] of updates) {
+  let record;
+  try {
+    record = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    block(`承認の記録（${file}）を読めない。承認をやり直す（Phase 1 手順 1）。`);
+  }
+  for (const [localRef, localSha, remoteRef] of updates) {
     const tree = git(["rev-parse", `${localSha}^{tree}`]);
     if (tree !== record.tree) {
       block(
-        `${localRef} の内容（tree ${tree.slice(0, 12)}）が、承認した内容（tree ${String(record.tree).slice(0, 12)}、` +
+        `${localRef} → ${remoteRef} の内容（tree ${tree.slice(0, 12)}）が、承認した内容（tree ${String(record.tree).slice(0, 12)}、` +
           `${record.approvedAt}）と違う。承認の後に変更した、承認した変更（承認のときにあった未追跡のファイルを含む）をまだコミットしていない、` +
-          "または内容の違う別のブランチを push しようとしている。変更したなら、`article-check.mjs` と `approve.mjs start` から独立レビューをやり直して承認し直す。",
+          "または内容の違う別のブランチを push しようとしている。変更したなら、`node tools/review-gate/article-check.mjs` と " +
+          "`node tools/review-gate/approve.mjs start` から独立レビューをやり直して承認し直す。",
       );
     }
   }

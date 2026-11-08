@@ -9,7 +9,8 @@
 //
 // 使い方（リポジトリのルートで実行する）:
 //   node tools/review-gate/coderabbit-findings.mjs [PR の件数（既定 15）]
-// 出力: .git/review-gate/coderabbit-findings.md（コミットされない）。パスと件数を標準出力に書く。
+// 出力: `git rev-parse --git-path review-gate` の場所（通常は .git/review-gate/）の coderabbit-findings.md（コミットされない）。
+//       パスと件数を標準出力に書く。
 // 前提: gh が使え、リポジトリを読めること。
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -76,7 +77,7 @@ function reviewBodyItems(body) {
     const parts = s.split(" · ").map((x) => x.trim());
     const sev = (parts[0].match(severityWords) || [])[1];
     // 「パス:行番号」の形の部分（拡張子の無い .githooks/pre-push:3 なども含む）。
-    const where = parts.find((p) => /^[\w./-]+:\d+(?:-\d+)?$/.test(p));
+    const where = parts.find((p) => /^[^\s:][^:]*:\d+(?:-\d+)?$/.test(p));
     if (sev && parts.length >= 3 && where) {
       items.push({ label: sev, title: parts[1], where, kind: "差分の外・Nitpick" });
     }
@@ -90,7 +91,8 @@ function reviewBodyItems(body) {
 const lines = [
   "# 過去の PR で CodeRabbit が付けた指摘",
   "",
-  `${repo} の、マージした日時が新しい ${prs.length} 件の PR から集めた。インラインの指摘（返信を除く）と、`,
+  `${repo} の、作成が新しい ${limit * 3} 件の PR のうち、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
+  "インラインの指摘（返信を除く）と、",
   "レビュー本文の「Outside diff range」「Nitpick」の項目、失敗・警告になった pre-merge check を含む。",
   "同じ型の問題が今回の差分に無いかを確かめる。日英で同じ指摘が 2 件ずつ付いていることがある。",
   "",

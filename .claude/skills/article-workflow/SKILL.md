@@ -68,7 +68,8 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    - **既に存在する場合**: `git switch <branch>` で切り替えてから、**ブランチを他者と共有しているかで更新方法を選ぶ**(判断基準は push 済みか否かではなく、共有の有無):
      - **自分専用のブランチ(他者と共有していない。push 済みでも可)**: `git rebase origin/main` で最新 `main` に追随する。
        rebase 後、既に push 済みの内容を更新するには `git push --force-with-lease` を用いる(通常の push は拒否される)。
-       この push も、Phase 3・4 の push と同じく、`pr` スキル Phase 1 手順 1 の承認を記録してから行う(承認が無いと pre-push フックが止める)。
+       この push も、`pr` スキル Phase 1 手順 1 の「対象」の取り込みの扱い(競合を解消したなら独立レビュー、しなかったなら direct)のとおりに
+       承認を記録してから行う(承認が無いと pre-push フックが止める)。
      - **他者と共有中のブランチ**: 履歴を書き換えない `git merge origin/main` を用いる(rebase および force push は行わない)。
 
      いずれの場合も `git checkout -B <branch> origin/main` は使わない(既存ブランチの未 push コミットが参照から外れるため)。
@@ -265,7 +266,7 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
          **これらを変更しない PR ではチェックが起動しない**ため、その場合は check run 不在(未実行)を
          許容し、この項目は満たされたものとして扱う(記事 PR では必ず `.md` を変更するため通常は起動する)。
    - [ ] `cd tools/og-image && npm ci && node generate.mjs --check` が終了コード 0(OGP 画像の生成・削除・コミットの漏れが無い。Phase 1 手順 5)。
-   - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
+   - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし。CodeRabbit の完了の判定は `pr` スキル Phase 3 手順 2 による)し、
          actionable な未解決指摘がゼロ。
    - [ ] **全レビュースレッドが解決済みである**(作成者に関係なく `is_resolved == true`)。
    - [ ] **`CHANGES_REQUESTED` のレビューが残っていない。** `get_reviews` で、dismiss されていない

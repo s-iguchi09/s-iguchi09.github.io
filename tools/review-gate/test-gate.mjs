@@ -86,9 +86,15 @@ try {
   g(["config", "core.hooksPath", ".githooks"]);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
+  expect("check-setup: メッセージの中の git push --no-verify", check('git commit -m "git push で --no-verify を使わない"'), 0);
+  expect("check-setup: ヒアドキュメントの中の git push --no-verify", check("git commit -F - <<'EOF'\ngit push --no-verify\nEOF"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);
+  expect("check-setup: --no-verify の省略形", check("git push origin work --no-veri"), 2);
   expect("check-setup: core.hooksPath の上書き", check("git -c core.hooksPath=/x push"), 2);
+  expect("check-setup: 別の区切りで core.hooksPath を変える", check("git config core.hooksPath /dev/null; git push"), 2);
   expect("check-setup: CLAUDECODE の上書き", check("CLAUDECODE= git push"), 2);
+  expect("check-setup: 別の区切りで CLAUDECODE を消す", check("unset CLAUDECODE; git push"), 2);
+  expect("check-setup: 別のディレクトリから -C で push", check(`git -C "${repo}" push --no-verify`, other), 2);
   fs.renameSync(path.join(repo, ".githooks"), path.join(repo, ".githooks-off"));
   expect("check-setup: .githooks が無いチェックアウト", check("git push"), 2);
   fs.renameSync(path.join(repo, ".githooks-off"), path.join(repo, ".githooks"));
@@ -114,6 +120,8 @@ try {
   expect("push: 削除", push(["origin", "--delete", "other"]), 0);
   g(["tag", "v1"]);
   expect("push: タグ（承認していない内容を指す）", push(["origin", "v1"]), 0);
+  expect("push: タグからブランチへ（承認していない内容）", push(["origin", "refs/tags/v1:refs/heads/fromtag"]), 1);
+  expect("push: HEAD をタグへ（承認していない内容）", push(["origin", "HEAD:refs/tags/v2"]), 0);
   fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{ broken");
   expect("push: 記録が壊れている", push(["origin", "HEAD:work2"]), 1);
   fs.rmSync(path.join(repo, ".git", "review-gate", "approved.json"));
