@@ -36,7 +36,8 @@ function ghList(endpoint) {
 }
 
 const repo = gh(["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]).trim();
-// gh pr list は作成日時の順なので、多めに取ってマージした日時で並べ直す。
+// gh pr list は作成日時の順なので、作成が新しい limit*3 件を取り、マージした日時で並べ直して limit 件にする
+// （作成がそれより古く、最近マージされた PR は入らないことがある）。
 const prs = JSON.parse(gh(["pr", "list", "--state", "merged", "--limit", String(limit * 3), "--json", "number,title,mergedAt"]))
   .sort((a, b) => String(b.mergedAt).localeCompare(String(a.mergedAt)))
   .slice(0, limit);
@@ -74,7 +75,8 @@ function reviewBodyItems(body) {
     const s = m[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
     const parts = s.split(" · ").map((x) => x.trim());
     const sev = (parts[0].match(severityWords) || [])[1];
-    const where = parts.find((p) => /:\d/.test(p) && /\.\w+:/.test(p));
+    // 「パス:行番号」の形の部分（拡張子の無い .githooks/pre-push:3 なども含む）。
+    const where = parts.find((p) => /^[\w./-]+:\d+(?:-\d+)?$/.test(p));
     if (sev && parts.length >= 3 && where) {
       items.push({ label: sev, title: parts[1], where, kind: "差分の外・Nitpick" });
     }

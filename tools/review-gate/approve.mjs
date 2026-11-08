@@ -1,5 +1,7 @@
 // 独立レビューで確かめた内容を、push してよい内容として記録する。
-// 記録は .git/review-gate/ に置く（コミットされない）。照合は pre-push.mjs（git の pre-push フック）が行う。
+// 記録は `git rev-parse --git-path review-gate` の場所（通常は .git/review-gate/、worktree ではその worktree 用の場所）に置く
+// （コミットされない）。照合は pre-push.mjs（git の pre-push フック）が行う。
+// 記録する内容には未追跡のファイル（.gitignore の対象を除く）も含む。コミットしないファイルは start の前に片付ける。
 //
 // 使い方（リポジトリのルートで実行する）:
 //   node tools/review-gate/approve.mjs start
@@ -21,7 +23,14 @@ const note = rest.join(" ").trim();
 function writeApproval(tree, kind) {
   const record = {
     tree,
-    branch: git(["rev-parse", "--abbrev-ref", "HEAD"]),
+    // 記録するだけで、照合には使わない（照合は内容で行う）。コミットの無いリポジトリでも名前を取れるよう symbolic-ref を使う。
+    branch: (() => {
+      try {
+        return git(["symbolic-ref", "--short", "HEAD"]);
+      } catch {
+        return "(detached)";
+      }
+    })(),
     approvedAt: new Date().toISOString(),
     kind,
     note,

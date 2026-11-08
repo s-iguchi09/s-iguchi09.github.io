@@ -1,3 +1,5 @@
 #!/bin/sh
 # 承認した内容と、push される内容を照合する（tools/review-gate/pre-push.mjs）。
+# Claude Code の環境（CLAUDECODE=1）からの push だけを照合する。それ以外は node を起動せずに通す。
+[ "$CLAUDECODE" = "1" ] || exit 0
 exec node "$(git rev-parse --show-toplevel)/tools/review-gate/pre-push.mjs" "$@"

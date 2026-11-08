@@ -1,7 +1,8 @@
-// review-gate の照合（pre-push.mjs）・承認（approve.mjs）・有効化の確認（check-setup.mjs）を、
-// 一時ディレクトリに作ったリポジトリで試す。このリポジトリの記録や設定には触らない。
+// review-gate の照合（.githooks/pre-push と pre-push.mjs）・承認（approve.mjs）・hook の確認（check-setup.mjs）を、
+// 一時ディレクトリに作ったリポジトリで試す。このリポジトリの本物の .githooks/pre-push と tools/review-gate を
+// 一時リポジトリにコピーして使う。このリポジトリの記録や設定には触らない。
 //
-// 使い方:
+// 使い方（リポジトリのルートで実行する）:
 //   node tools/review-gate/test-gate.mjs
 // 終了コード: すべて期待どおりなら 0、1 つでも違えば 1。
 import { execFileSync, spawnSync } from "node:child_process";
@@ -11,19 +12,20 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const prePush = path.join(here, "pre-push.mjs");
-const approve = path.join(here, "approve.mjs");
-const checkSetup = path.join(here, "check-setup.mjs");
+const source = path.resolve(here, "..", "..");
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "review-gate-test-"));
 const repo = path.join(root, "repo");
+const other = path.join(root, "other");
 const remote = path.join(root, "remote.git");
-const outside = path.join(root, "outside");
 let failed = 0;
 
-/** git を実行する（試験用のリポジトリで）。 */
+// 呼び出し元の GIT_DIR などを引き継ぐと、別のリポジトリに書き込むおそれがあるので外す。
+const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
+
+/** git を実行する（既定は試験用のリポジトリで）。 */
 function g(args, cwd = repo) {
-  return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+  return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: baseEnv }).trim();
 }
 
 /** 結果を期待と比べて表示する。 */
@@ -35,43 +37,61 @@ function expect(name, actual, expected) {
 
 /** コマンドを実行して終了コードを返す。 */
 function run(cmd, args, { input = "", env = {}, cwd = repo } = {}) {
-  const r = spawnSync(cmd, args, { cwd, input, encoding: "utf8", env: { ...process.env, ...env } });
-  return r.status;
+  return spawnSync(cmd, args, { cwd, input, encoding: "utf8", env: { ...baseEnv, ...env } }).status;
 }
 
-/** 本物の git push を実行し、終了コードを返す。 */
+/** 本物の git push を実行し、終了コードを返す。claude が false なら CLAUDECODE を外す。 */
 function push(args, claude = true) {
-  const env = { ...process.env };
+  const env = { ...baseEnv };
   if (claude) env.CLAUDECODE = "1";
   else delete env.CLAUDECODE;
-  return spawnSync("git", ["push", ...args], { cwd: repo, encoding: "utf8", env }).status;
+  return spawnSync("git", args[0] === "-c" ? args : ["push", ...args], { cwd: repo, encoding: "utf8", env }).status;
 }
 
 try {
+  // ---- 試験用のリポジトリ（本物のフックとスクリプトをコピー）と、裸のリモート、別のリポジトリ ----
   fs.mkdirSync(repo);
-  fs.mkdirSync(outside);
+  fs.mkdirSync(other);
   g(["init", "-q", "--bare", remote], root);
   g(["init", "-q", "-b", "work"]);
   g(["config", "user.email", "test@example.com"]);
   g(["config", "user.name", "test"]);
   g(["remote", "add", "origin", remote]);
-  fs.mkdirSync(path.join(repo, ".githooks"));
-  fs.writeFileSync(path.join(repo, ".githooks", "pre-push"), `#!/bin/sh\nexec node "${prePush.replace(/\\/g, "/")}" "$@"\n`);
+  fs.cpSync(path.join(source, ".githooks"), path.join(repo, ".githooks"), { recursive: true });
   fs.chmodSync(path.join(repo, ".githooks", "pre-push"), 0o755);
+  fs.mkdirSync(path.join(repo, "tools"), { recursive: true });
+  fs.cpSync(here, path.join(repo, "tools", "review-gate"), { recursive: true });
   fs.writeFileSync(path.join(repo, "a.txt"), "1\n");
   g(["add", "-A"]);
   g(["commit", "-q", "-m", "first"]);
+  g(["init", "-q"], other);
+
+  const checkSetup = path.join(repo, "tools", "review-gate", "check-setup.mjs");
+  const approve = path.join(repo, "tools", "review-gate", "approve.mjs");
+  const prePush = path.join(repo, "tools", "review-gate", "pre-push.mjs");
+  /** Claude Code の PreToolUse hook に渡る入力の JSON を作る。 */
+  const hookInput = (command, cwd = repo) => JSON.stringify({ tool_input: { command }, cwd });
+  const projectEnv = { CLAUDE_PROJECT_DIR: repo };
+  /** check-setup.mjs を、このリポジトリを $CLAUDE_PROJECT_DIR として実行する。 */
+  const check = (command, cwd = repo) => run("node", [checkSetup], { input: hookInput(command, cwd), env: projectEnv });
 
   // ---- check-setup.mjs ----
-  const hookInput = (command, cwd = repo) => JSON.stringify({ tool_input: { command }, cwd });
-  expect("check-setup: push を含まない", run("node", [checkSetup], { input: hookInput("ls -la") }), 0);
-  expect("check-setup: フックが無効で push", run("node", [checkSetup], { input: hookInput("git log -n 1 && git push 2>&1 | tail -n 5") }), 2);
-  // ホームディレクトリなど上位がリポジトリになっている環境でも「外」になるよう、git が上を探さないようにする。
-  expect("check-setup: リポジトリの外", run("node", [checkSetup], { input: hookInput("git push", outside), env: { GIT_CEILING_DIRECTORIES: root } }), 0);
-  expect("check-setup: command が文字列でない", run("node", [checkSetup], { input: JSON.stringify({ tool_input: { command: 1 } }) }), 0);
-  expect("check-setup: 壊れた入力", run("node", [checkSetup], { input: "{" }), 0);
+  expect("check-setup: git も push も含まない", check("ls -la"), 0);
+  expect("check-setup: git を含まない push（Push-Location）", check("Push-Location C:/x; Pop-Location"), 0);
+  expect("check-setup: 別の区切りに git と push がある", check("echo push && git status"), 0);
+  expect("check-setup: フックが無効で push（後ろにパイプ）", check("git push 2>&1 | tail -n 5"), 2);
+  expect("check-setup: 別のリポジトリでの push", check("git push", other), 0);
+  expect("check-setup: command が文字列でない", run("node", [checkSetup], { input: JSON.stringify({ tool_input: { command: 1 } }), env: projectEnv }), 0);
+  expect("check-setup: 壊れた入力", run("node", [checkSetup], { input: "{", env: projectEnv }), 0);
   g(["config", "core.hooksPath", ".githooks"]);
-  expect("check-setup: フックが有効で push", run("node", [checkSetup], { input: hookInput("git push") }), 0);
+  expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
+  expect("check-setup: git stash push", check("git stash push -m x"), 0);
+  expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);
+  expect("check-setup: core.hooksPath の上書き", check("git -c core.hooksPath=/x push"), 2);
+  expect("check-setup: CLAUDECODE の上書き", check("CLAUDECODE= git push"), 2);
+  fs.renameSync(path.join(repo, ".githooks"), path.join(repo, ".githooks-off"));
+  expect("check-setup: .githooks が無いチェックアウト", check("git push"), 2);
+  fs.renameSync(path.join(repo, ".githooks-off"), path.join(repo, ".githooks"));
 
   // ---- approve.mjs ----
   expect("approve: start より前の done", run("node", [approve, "done", "x"]), 1);
@@ -82,16 +102,18 @@ try {
   expect("approve: 変えずに done", run("node", [approve, "done", "要修正 0 件"]), 0);
   g(["commit", "-qam", "second"]);
 
-  // ---- 本物の git push と pre-push.mjs ----
-  expect("push: 承認と同じ内容（Claude Code から）", push(["-u", "origin", "work"]), 0);
+  // ---- 本物の git push（.githooks/pre-push → pre-push.mjs） ----
+  expect("push: 承認と同じ内容", push(["-u", "origin", "work"]), 0);
   fs.writeFileSync(path.join(repo, "a.txt"), "3\n");
   g(["commit", "-qam", "third"]);
-  expect("push: 承認の後に変えた（Claude Code から）", push(["origin", "work"]), 1);
-  expect("push: 承認の後に変えた（-c と後ろのパイプ相当の書き方）", spawnSync("git", ["-c", "core.x=y", "push", "origin", "HEAD:work"], { cwd: repo, encoding: "utf8", env: { ...process.env, CLAUDECODE: "1" } }).status, 1);
-  expect("push: 承認の後に変えた（人が手で push）", push(["origin", "work"], false), 0);
+  expect("push: 承認の後に変えた", push(["origin", "work"]), 1);
+  expect("push: 承認の後に変えた（-c 付き・ブランチの指定を変えた書き方）", push(["-c", "core.x=y", "push", "origin", "HEAD:work"]), 1);
+  expect("push: 承認の後に変えた（CLAUDECODE の無い環境）", push(["origin", "work"], false), 0);
   g(["branch", "other", "HEAD~1"]);
-  expect("push: 承認した内容の別のブランチ", push(["origin", "other"]), 0);
+  expect("push: 承認した内容と同じ別のブランチ", push(["origin", "other"]), 0);
   expect("push: 削除", push(["origin", "--delete", "other"]), 0);
+  g(["tag", "v1"]);
+  expect("push: タグ（承認していない内容を指す）", push(["origin", "v1"]), 0);
   fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{ broken");
   expect("push: 記録が壊れている", push(["origin", "HEAD:work2"]), 1);
   fs.rmSync(path.join(repo, ".git", "review-gate", "approved.json"));

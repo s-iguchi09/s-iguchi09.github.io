@@ -1,8 +1,8 @@
-// このリポジトリの git の設定（.git/config）で、フックの置き場所を .githooks にする。
-// これで .githooks/pre-push（承認した内容との照合）が push のたびに動く。
-// 照合するのは Claude Code から実行した push だけ（pre-push.mjs を参照）。
+// このクローンの git の設定（.git/config）で、フックの置き場所を .githooks にする。
+// これで、通常の push では .githooks/pre-push（承認した内容との照合）が動く。--no-verify などで外した場合と、
+// .githooks の無いブランチでは動かない。照合するのは CLAUDECODE=1 の環境からの push だけ（pre-push.mjs を参照）。
 //
-// 使い方（リポジトリのルートで、1 回だけ実行する）:
+// 使い方（リポジトリのルートで、クローンごとに 1 回実行する。Web 実行環境ではセッションの初めに実行する）:
 //   node tools/review-gate/setup.mjs
 // 元に戻す:
 //   git config --unset core.hooksPath
