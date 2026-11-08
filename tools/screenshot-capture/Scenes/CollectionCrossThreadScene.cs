@@ -28,6 +28,9 @@ internal sealed class CollectionCrossThreadScene : IScene
         "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている",
         "Add のあと、コレクションの Count、ItemsControl の Items.Count、ビューが受け取った CollectionChanged の数（件数だけではビューへの反映を確かめられないため）",
         "バックグラウンドスレッドから 5,000 件を Add したときの所要時間を、Dispatcher.Invoke と EnableCollectionSynchronization で比べる",
+        "バックグラウンドで 50,000 件が一気に発生したときの描画フレームの最長間隔と、すべて反映されるまでの時間を、更新方法ごとに 5 回ずつ測って比べる（中央値と最小〜最大。暖機の 1 巡のあとに 5 巡、巡ごとに順番をずらし、各回の前に GC。計測区間は基準が 1,000 ms、ほかは発生から 1,000 ms 以上）",
+        "要素が 1,000 件入った ListBox でインデックス 500 の項目を選択してスクロールしたあと、末尾に 1,000 件を足し、1 件ずつ Add と Reset 通知 1 回とで、SelectedIndex・SelectedItem・縦のスクロール位置（項目単位）・足す前に実体化していたインデックスのコンテナが同じインスタンスか、足した後に実体化しているコンテナ全部が足す前に生成済みか足した後に生成したものか（GetContainerForItemOverride で生成を記録）・選択した項目のコンテナに直接入れた Tag が保たれるかを、VirtualizationMode の Standard と Recycling で比べる",
+        "キューにためて UI スレッドで反映するとき、1 件ずつ Add と Reset 通知 1 回とで描画フレームの最長間隔を比べる。タイマー 1 回で反映した最大件数も記録する",
     ];
 
     public string Slug => "wpf-observablecollection-cross-thread-update";
@@ -61,9 +64,423 @@ internal sealed class CollectionCrossThreadScene : IScene
                 await MeasureBulkAsync(Fix.Synchronization),
             ],
             "collection-cross-thread-bulk.svg");
+
+        await context.SaveTableAsync(
+            $"Longest frame interval while {StallCount:N0} items arrive at once (median of {StallRuns}, interleaved, after one warm-up round)",
+            [T("how the items are applied", "反映の仕方"), T("longest frame interval ms (median)", "描画フレームの最長間隔（ms、中央値）"), T("longest frame interval min–max of runs ms", "最長間隔の各回の最小〜最大（ms）"), T("until all applied ms (median)", "すべて反映されるまで（ms、中央値）"), T("most items applied in one timer tick", "タイマー 1 回で反映した最大件数")],
+            await MeasureStallRowsAsync(),
+            "collection-cross-thread-stall.svg");
+
+        await context.SaveTableAsync(
+            $"Adding {ResetAddCount:N0} items to a ListBox that already holds {ResetInitialCount:N0}, with a selection and a scroll position",
+            [T("how the items are added", "足し方"), "VirtualizationMode", "SelectedIndex", "SelectedItem", T("vertical offset (items)", "縦のスクロール位置（項目単位）"), T("indices realized before: same instance / other instance / unrealized", "足す前に実体化していたインデックス（同じインスタンス / 別のインスタンス / 未実体化）"), T("containers realized after: created before / created after the add", "足した後に実体化していたコンテナ（足す前に生成済み / 足した後に生成）"), T("Tag set on the selected container", "選択した項目のコンテナに入れた Tag"), T("view notifications", "ビューへの通知の数")],
+            [
+                MeasureResetSideEffects(reset: false, VirtualizationMode.Standard),
+                MeasureResetSideEffects(reset: true, VirtualizationMode.Standard),
+                MeasureResetSideEffects(reset: false, VirtualizationMode.Recycling),
+                MeasureResetSideEffects(reset: true, VirtualizationMode.Recycling),
+            ],
+            "collection-cross-thread-reset-effects.svg");
+    }
+
+    private const int ResetInitialCount = 1_000;
+    private const int ResetAddCount = 1_000;
+    private const int ResetSelectedIndex = 500;
+
+    /// <summary>
+    /// 要素が入っている ListBox で項目を選択してスクロールしたあと、末尾に要素を足し、
+    /// 選択、スクロール位置、実体化済みのコンテナ、コンテナに直接入れた値（Tag）が保たれるかを、
+    /// 1 件ずつ Add と Reset 通知 1 回とで、仮想化モードごとに比べる。
+    /// 末尾に足すので、Add 通知なら選択位置もスクロール位置も変わる理由が無い。
+    /// スクロール位置は既定の ScrollUnit（Item）なので項目単位である。
+    /// </summary>
+    private static IReadOnlyList<Loc> MeasureResetSideEffects(bool reset, VirtualizationMode mode)
+    {
+        var items = new RangeObservableCollection<string>();
+        items.AddRange(Enumerable.Range(0, ResetInitialCount).Select(i => $"item {i}"));
+        var list = new TrackingListBox { ItemsSource = items };
+        VirtualizingPanel.SetVirtualizationMode(list, mode);
+        var host = new Window
+        {
+            Content = list,
+            Width = 240,
+            Height = 240,
+            ShowInTaskbar = false,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = Brushes.White,
+        };
+        host.Show();
+        Settle(host);
+
+        list.SelectedIndex = ResetSelectedIndex;
+        list.ScrollIntoView(list.SelectedItem);
+        Settle(host);
+
+        ScrollViewer viewer = FindDescendant<ScrollViewer>(list)!;
+        object? selectedBefore = list.SelectedItem;
+        int indexBefore = list.SelectedIndex;
+        double offsetBefore = viewer.VerticalOffset;
+        // 足す前に実体化しているコンテナを、インデックスごとに記録する。
+        var realizedBefore = new Dictionary<int, DependencyObject>();
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (list.ItemContainerGenerator.ContainerFromIndex(i) is DependencyObject c)
+            {
+                realizedBefore[i] = c;
+            }
+        }
+
+        // データにバインドしていない値をコンテナに直接入れ、足した後のコンテナに残るかを見る。
+        const string marker = "marker";
+        ((ListBoxItem)list.ItemContainerGenerator.ContainerFromIndex(ResetSelectedIndex)).Tag = marker;
+
+        // ここまでに生成したコンテナ（使い回し用に取っておかれたものを含む）を覚えておく。
+        var createdBefore = new HashSet<DependencyObject>(list.Created);
+
+        int viewEvents = 0;
+        ((INotifyCollectionChanged)list.Items).CollectionChanged += (_, _) => viewEvents++;
+
+        string[] added = Enumerable.Range(ResetInitialCount, ResetAddCount).Select(i => $"item {i}").ToArray();
+        if (reset)
+        {
+            items.AddRange(added);
+        }
+        else
+        {
+            foreach (string item in added)
+            {
+                items.Add(item);
+            }
+        }
+
+        Settle(host);
+
+        // 足す前に実体化していた各インデックスについて、足した後も同じインスタンスかを分類する。
+        int kept = 0, other = 0, unrealized = 0;
+        foreach (var (index, before) in realizedBefore)
+        {
+            DependencyObject? after = list.ItemContainerGenerator.ContainerFromIndex(index);
+            if (after is null) unrealized++;
+            else if (ReferenceEquals(after, before)) kept++;
+            else other++;
+        }
+
+        // 足した後に実体化しているコンテナ全部を、足す前に生成済みのインスタンスか、足した後に生成したものかで分ける。
+        // 使い回し用に取っておかれたコンテナも「足す前に生成済み」に入るので、使い回しと新規の生成を区別できる。
+        int oldInstances = 0, newInstances = 0;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (list.ItemContainerGenerator.ContainerFromIndex(i) is DependencyObject c)
+            {
+                if (createdBefore.Contains(c)) oldInstances++;
+                else newInstances++;
+            }
+        }
+        var selectedAfter = list.ItemContainerGenerator.ContainerFromIndex(ResetSelectedIndex) as ListBoxItem;
+        Loc tagCell = selectedAfter is null ? T("not realized", "生成されていない") : selectedAfter.Tag is string tag && tag == marker ? T("kept", "残った") : T("lost", "残らなかった");
+        var row = new List<Loc>
+        {
+            reset ? T("AddRange (one Reset)", "AddRange（Reset 通知 1 回）") : T("Add per item", "1 件ずつ Add"),
+            mode.ToString(),
+            $"{indexBefore} → {list.SelectedIndex}",
+            $"{selectedBefore ?? "null"} → {list.SelectedItem ?? "null"}",
+            $"{offsetBefore:N0} → {viewer.VerticalOffset:N0}",
+            $"{kept} / {other} / {unrealized}",
+            $"{oldInstances} / {newInstances}",
+            tagCell,
+            viewEvents.ToString("N0"),
+        };
+
+        host.Content = null;
+        host.Close();
+        return row;
+    }
+
+    /// <summary>生成したコンテナをすべて記録する ListBox。使い回しと新規の生成を見分けるために使う。</summary>
+    private sealed class TrackingListBox : ListBox
+    {
+        /// <summary>生成した順のコンテナ。使い回し用に取っておかれたものも含む。</summary>
+        public List<DependencyObject> Created { get; } = [];
+
+        /// <summary>既定のコンテナを生成し、<see cref="Created"/> に記録してから返す。</summary>
+        protected override DependencyObject GetContainerForItemOverride()
+        {
+            DependencyObject container = base.GetContainerForItemOverride();
+            Created.Add(container);
+            return container;
+        }
+    }
+
+    /// <summary>ビジュアルツリーを深さ優先でたどり、最初に見つかった <typeparamref name="TChild"/> を返す。見つからなければ null。</summary>
+    private static TChild? FindDescendant<TChild>(DependencyObject root)
+        where TChild : DependencyObject
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            DependencyObject child = VisualTreeHelper.GetChild(root, i);
+            if (child is TChild match)
+            {
+                return match;
+            }
+
+            if (FindDescendant<TChild>(child) is TChild nested)
+            {
+                return nested;
+            }
+        }
+
+        return null;
     }
 
     private const int BulkCount = 5_000;
+
+    private enum Burst
+    {
+        None,
+        DispatcherPerItem,
+        SynchronizationPerItem,
+        QueueDrainPerItem,
+        QueueDrainReset,
+    }
+
+    /// <summary>AddRange で要素をまとめて足し、通知を Reset 1 回にするコレクション。</summary>
+    private sealed class RangeObservableCollection<TItem> : ObservableCollection<TItem>
+    {
+        /// <summary>要素を通知なしで末尾に足し、Count・インデクサー・コレクションの変更を 1 回ずつ（コレクションは Reset で）通知する。</summary>
+        public void AddRange(IEnumerable<TItem> source)
+        {
+            CheckReentrancy();
+            foreach (TItem item in source)
+            {
+                Items.Add(item);
+            }
+
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+    }
+
+    /// <summary>
+    /// <paramref name="count"/> 件がバックグラウンドで一気に発生したとき、描画がどれだけ止まるかを測る。
+    /// 描画フレームの間隔は <see cref="CompositionTarget.Rendering"/> の呼ばれた時刻の差で測る。
+    /// Input 優先度の処理の待ち時間も試したが、更新しない基準でもマウス操作などで 24〜164 ms とぶれ、
+    /// 更新方法の差と区別できなかったので測らない。
+    /// </summary>
+    private static async Task<(double FrameGap, double Applied, bool Reached, int MaxDrained, int DrainTicks)> MeasureStallOnceAsync(Burst burst, int count)
+    {
+        var items = new RangeObservableCollection<string>();
+        var gate = new object();
+        if (burst == Burst.SynchronizationPerItem)
+        {
+            BindingOperations.EnableCollectionSynchronization(items, gate);
+        }
+
+        var list = new ListBox { ItemsSource = items };
+        var host = new Window
+        {
+            Content = list,
+            Width = 240,
+            Height = 160,
+            ShowInTaskbar = false,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = Brushes.White,
+        };
+        host.Show();
+        Settle(host);
+
+        int viewEvents = 0;
+        ((INotifyCollectionChanged)list.Items).CollectionChanged += (_, _) => viewEvents++;
+
+        Dispatcher ui = Dispatcher.CurrentDispatcher;
+        var clock = Stopwatch.StartNew();
+
+        // 計測区間は、発生の開始から、全件の反映の 100 ms 後と開始の 1,000 ms 後の遅いほうまで（基準は開始から 1,000 ms ちょうど）。区間の外の値は捨てる。
+        double windowStart = double.MaxValue;
+        double windowEnd = double.MaxValue;
+        // 時刻 t が計測区間に入っているか。
+        bool InWindow(double t) => t >= windowStart && t <= windowEnd;
+
+        double lastFrame = -1;
+        double maxFrameGap = 0;
+        // 描画フレームごとに呼ばれ、区間内に呼ばれたフレームについて、直前のフレームからの間隔の最大を更新する。
+        void OnRendering(object? sender, EventArgs e)
+        {
+            double now = clock.Elapsed.TotalMilliseconds;
+            if (lastFrame >= 0 && InWindow(now) && now - lastFrame > maxFrameGap)
+            {
+                maxFrameGap = now - lastFrame;
+            }
+
+            lastFrame = now;
+        }
+
+        CompositionTarget.Rendering += OnRendering;
+
+        // 計測の仕組みが落ち着くまで待ってから発生させる。
+        await Task.Delay(300);
+
+        var queue = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        DispatcherTimer? timer = null;
+        int maxDrained = 0;
+        int drainTicks = 0;
+        if (burst is Burst.QueueDrainPerItem or Burst.QueueDrainReset)
+        {
+            // 既定の DispatcherTimer（Background 優先度）で 100 ms ごとにキューを空にする。
+            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+            timer.Tick += (_, _) =>
+            {
+                var drained = new List<string>();
+                while (queue.TryDequeue(out string? row))
+                {
+                    drained.Add(row);
+                }
+
+                if (drained.Count == 0)
+                {
+                    return;
+                }
+
+                drainTicks++;
+                maxDrained = Math.Max(maxDrained, drained.Count);
+
+                if (burst == Burst.QueueDrainReset)
+                {
+                    items.AddRange(drained);
+                }
+                else
+                {
+                    foreach (string row in drained)
+                    {
+                        items.Add(row);
+                    }
+                }
+            };
+            timer.Start();
+        }
+
+        windowStart = clock.Elapsed.TotalMilliseconds;
+        Task producer = Task.Run(() =>
+        {
+            for (int i = 0; i < count; i++)
+            {
+                switch (burst)
+                {
+                    case Burst.DispatcherPerItem:
+                        ui.Invoke(() => items.Add("row"));
+                        break;
+                    case Burst.SynchronizationPerItem:
+                        lock (gate)
+                        {
+                            items.Add("row");
+                        }
+
+                        break;
+                    case Burst.QueueDrainPerItem:
+                    case Burst.QueueDrainReset:
+                        queue.Enqueue("row");
+                        break;
+                }
+            }
+        });
+
+        // 計測を終えてよいか。基準は 1,000 ms 経過、ほかはビューに全件が反映されたとき。
+        bool Done() => burst == Burst.None
+            ? clock.Elapsed.TotalMilliseconds - windowStart >= 1_000
+            : list.Items.Count == count && (burst == Burst.QueueDrainReset || viewEvents == count);
+
+        while (!Done() && clock.Elapsed.TotalMilliseconds - windowStart < 60_000)
+        {
+            await Task.Delay(1);
+        }
+
+        double applied = clock.Elapsed.TotalMilliseconds - windowStart;
+        bool reached = Done();
+        // 区間が短いほど最大値は小さく出やすいので、どの方法も発生の開始から 1,000 ms 以上は測る。
+        windowEnd = burst == Burst.None ? windowStart + 1_000 : Math.Max(clock.Elapsed.TotalMilliseconds + 100, windowStart + 1_000);
+        while (clock.Elapsed.TotalMilliseconds < windowEnd + 100)
+        {
+            await Task.Delay(5);
+        }
+
+        await producer;
+
+        timer?.Stop();
+        CompositionTarget.Rendering -= OnRendering;
+        host.Content = null;
+        host.Close();
+        if (burst == Burst.SynchronizationPerItem)
+        {
+            BindingOperations.DisableCollectionSynchronization(items);
+        }
+
+        return (maxFrameGap, applied, reached, maxDrained, drainTicks);
+    }
+
+    private const int StallRuns = 5;
+
+    /// <summary>予備の計測では、5,000 件だとどの方法でも描画フレームの最長間隔の差が小さかったので、10 倍にしている。</summary>
+    private const int StallCount = 50_000;
+
+    /// <summary>
+    /// 各方法を <see cref="StallRuns"/> 回測り、列ごとの中央値を返す。1 回だけではほかのプロセスの影響で値がぶれる。
+    /// 時間による環境の変化が特定の方法に偏らないよう、1 回ごとに全方法を巡回し、巡ごとに開始位置をずらし、各回の前に GC を済ませる。暖機の 1 巡のあとに測る。
+    /// </summary>
+    private static async Task<IReadOnlyList<IReadOnlyList<Loc>>> MeasureStallRowsAsync()
+    {
+        Burst[] bursts = [Burst.None, Burst.DispatcherPerItem, Burst.SynchronizationPerItem, Burst.QueueDrainPerItem, Burst.QueueDrainReset];
+        var runs = bursts.ToDictionary(b => b, _ => new List<(double FrameGap, double Applied, bool Reached, int MaxDrained, int DrainTicks)>());
+        for (int round = -1; round < StallRuns; round++)
+        {
+            // 実行順の影響が特定の方法に偏らないよう、巡ごとに開始位置をずらす。
+            int offset = Math.Max(round, 0) % bursts.Length;
+            foreach (Burst burst in bursts.Skip(offset).Concat(bursts.Take(offset)))
+            {
+                // 前の回のウィンドウや通知の後始末が次の回の区間に入らないよう、回の前に回収しておく。
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                var result = await MeasureStallOnceAsync(burst, StallCount);
+                if (round >= 0)
+                {
+                    runs[burst].Add(result);
+                }
+            }
+        }
+
+        // 値の中央値（件数が奇数の前提。偶数なら上側の値を返す）。
+        static double Median(IEnumerable<double> values)
+        {
+            double[] sorted = values.Order().ToArray();
+            return sorted[sorted.Length / 2];
+        }
+
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach (Burst burst in bursts)
+        {
+            var r = runs[burst];
+            Console.WriteLine($"stall {burst} n={StallCount}: " + string.Join(" | ", r.Select(x => $"{x.FrameGap:F0}/{x.Applied:F0}/{x.MaxDrained}x{x.DrainTicks}{(x.Reached ? "" : "!")}")));
+            Loc label = burst switch
+            {
+                Burst.None => T("no updates (baseline)", "更新しない（基準）"),
+                Burst.DispatcherPerItem => T("Dispatcher.Invoke per item", "1 件ごとに Dispatcher.Invoke"),
+                Burst.SynchronizationPerItem => "EnableCollectionSynchronization + lock",
+                Burst.QueueDrainPerItem => T("queue, drain every 100 ms, Add per item", "キューにためて 100 ms ごとに 1 件ずつ Add"),
+                _ => T("queue, drain every 100 ms, one Reset", "キューにためて 100 ms ごとに Reset 通知 1 回"),
+            };
+            Loc until = burst == Burst.None ? "-" : r.All(x => x.Reached) ? Median(r.Select(x => x.Applied)).ToString("N0") : T("not reached", "届かない");
+            string range = $"{r.Min(x => x.FrameGap):N0}–{r.Max(x => x.FrameGap):N0}";
+            string drained = burst is Burst.QueueDrainPerItem or Burst.QueueDrainReset
+                ? (r.Min(x => x.MaxDrained) == r.Max(x => x.MaxDrained) ? r[0].MaxDrained.ToString("N0") : $"{r.Min(x => x.MaxDrained):N0}–{r.Max(x => x.MaxDrained):N0}")
+                : "-";
+            rows.Add([label, Median(r.Select(x => x.FrameGap)).ToString("N0"), range, until, drained]);
+        }
+
+        return rows;
+    }
+
+    /// <summary>表のセルの英語と日本語を組にする。識別子や数値のように両方で同じセルは、T を使わず文字列で渡す。</summary>
+    private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     /// <summary>
     /// バックグラウンドスレッドから <see cref="BulkCount"/> 件を 1 件ずつ Add し、
@@ -71,9 +488,6 @@ internal sealed class CollectionCrossThreadScene : IScene
     /// ビューが全件分の通知を受け取るまでの時間を返す。
     /// Dispatcher.Invoke は 1 件ごとに UI スレッドでの実行を待つ。
     /// </summary>
-    /// <summary>表のセルの英語と日本語。識別子と値は両方に同じものを書く。</summary>
-    private static Loc T(string en, string ja) => Loc.Of(en, ja);
-
     private static async Task<IReadOnlyList<Loc>> MeasureBulkAsync(Fix fix)
     {
         var items = new ObservableCollection<string>();

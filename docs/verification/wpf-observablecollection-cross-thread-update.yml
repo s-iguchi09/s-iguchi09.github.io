@@ -3,7 +3,7 @@
 slug: "wpf-observablecollection-cross-thread-update"
 scene: "CollectionCrossThreadScene"
 environment:
-  runtime: ".NET 10.0.10"
+  runtime: ".NET 10.0.13"
   os: "Microsoft Windows 10.0.26200"
 verifies:
   - "バックグラウンドスレッドからの Add で送出される例外を確かめる"
@@ -12,11 +12,20 @@ verifies:
   - "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている"
   - "Add のあと、コレクションの Count、ItemsControl の Items.Count、ビューが受け取った CollectionChanged の数（件数だけではビューへの反映を確かめられないため）"
   - "バックグラウンドスレッドから 5,000 件を Add したときの所要時間を、Dispatcher.Invoke と EnableCollectionSynchronization で比べる"
+  - "バックグラウンドで 50,000 件が一気に発生したときの描画フレームの最長間隔と、すべて反映されるまでの時間を、更新方法ごとに 5 回ずつ測って比べる（中央値と最小〜最大。暖機の 1 巡のあとに 5 巡、巡ごとに順番をずらし、各回の前に GC。計測区間は基準が 1,000 ms、ほかは発生から 1,000 ms 以上）"
+  - "要素が 1,000 件入った ListBox でインデックス 500 の項目を選択してスクロールしたあと、末尾に 1,000 件を足し、1 件ずつ Add と Reset 通知 1 回とで、SelectedIndex・SelectedItem・縦のスクロール位置（項目単位）・足す前に実体化していたインデックスのコンテナが同じインスタンスか、足した後に実体化しているコンテナ全部が足す前に生成済みか足した後に生成したものか（GetContainerForItemOverride で生成を記録）・選択した項目のコンテナに直接入れた Tag が保たれるかを、VirtualizationMode の Standard と Recycling で比べる"
+  - "キューにためて UI スレッドで反映するとき、1 件ずつ Add と Reset 通知 1 回とで描画フレームの最長間隔を比べる。タイマー 1 回で反映した最大件数も記録する"
 images:
   - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.svg"
   - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.svg"
+  - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-stall.svg"
+  - "images/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-reset-effects.svg"
 tables:
   - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.en.md"
   - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-matrix.ja.md"
   - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.en.md"
   - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-bulk.ja.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-stall.en.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-stall.ja.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-reset-effects.en.md"
+  - "_includes/tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-reset-effects.ja.md"

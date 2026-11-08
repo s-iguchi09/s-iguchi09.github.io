@@ -31,7 +31,7 @@ This article explains that the exception comes from the thread affinity of the `
 Modifying a bound collection directly from a background thread raises an exception.
 The following example adds items to an `ObservableCollection<T>` from work started with `Task.Run`.
 `File.ReadLines` (from `System.IO`) is used as a stand-in data source; it enumerates a file's lines lazily.
-The snippets in this article are members of a `ViewModel` class and assume the namespaces `System.Collections.ObjectModel`, `System.IO`, `System.Threading.Tasks`, `System.Windows`, and `System.Windows.Data`.
+The snippets in this article, except `RangeObservableCollection<T>` shown later, are members of a `ViewModel` class and assume the namespaces `System.Collections.ObjectModel`, `System.IO`, `System.Threading.Tasks`, `System.Windows`, and `System.Windows.Data`.
 
 ```csharp
 public ObservableCollection<string> Items { get; } = new();
@@ -126,6 +126,8 @@ private async Task LoadAsync(string path)
 
 Because the mutation runs on the UI thread, no affinity violation occurs in the `CollectionView`.
 Invoking per item causes many round-trips to the UI thread, however, so processing several items within a single `Invoke` is preferable when items can be added in batches.
+Even so, within a single operation on the UI thread (measured in a `DispatcherTimer` `Tick`, not in an `Invoke`), adding 50,000 items one at a time pushed the median longest frame interval past five times that with no updates.
+Collapsing them into one `Reset` notification kept the median under a third of the per-item value (see "Measured: How Rendering Stalls Under a Burst of Updates" below).
 
 ### Share a lock with EnableCollectionSynchronization
 
@@ -187,6 +189,74 @@ It lets WPF wait on something other than a lock. This is the most complex to imp
 
 **Work that can apply all its changes at once calls for batching on the UI thread.**
 This avoids producing a cross-thread modification in the first place. The benefit of doing the work in the background shrinks, but no synchronization design is needed.
+Even when 50,000 items were applied in one batch, adding them one at a time stalled rendering, as measured in the next section.
+
+### Measured: How Rendering Stalls Under a Burst of Updates
+
+To check whether rendering stalls when many updates arrive at once, 50,000 items were produced at once in the background, and the longest interval between rendered frames was measured for each way of applying them.
+
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-stall.en.md %}
+
+Measured on .NET 10 / Windows 11 by producing 50,000 items at once inside <code>Task.Run</code> for a collection bound to a virtualized <code>ListBox</code>. The approaches were run in turn, one run each per round; after one warm-up round, five rounds were measured (the starting approach was rotated each round, and a GC was completed before each run). The table shows the median and the min–max across runs. The frame interval is the time between <code>CompositionTarget.Rendering</code> callbacks, measured from the start of the burst until the later of 100 ms after all items were applied and 1,000 ms after the start (the baseline measured the same 1,000 ms without a burst). The length of the measured span differs by approach, since it depends on how long the items take to apply. In the "Dispatcher.Invoke per item" and "EnableCollectionSynchronization + lock" rows, the producer waits for the UI thread or the lock, so producing the items also takes time. The two queue rows drain the queue every 100 ms with a default <code>DispatcherTimer</code> and apply the items on the UI thread. Every item is the same short string, and the window is 240×160. "Until all applied" is the time from the start of the burst until the view reflected all 50,000 items; for the two queue rows it includes a wait of up to 100 ms for the first timer tick. Completion was checked on the UI thread after each <code>Task.Delay(1)</code>. "Most items applied in one timer tick" is, for each run, the largest number of items applied in a single tick; it is shown as one value when all five rounds agree and as a range otherwise.
+{: .table-caption}
+
+Rendering stalled longest when the items were queued and then added one at a time on the UI thread.
+Its median longest interval was more than five times the no-update baseline.
+It was longer than every other approach in all five rounds.
+In every round, the longest interval of each of the other three approaches was under half of even the shortest run with one `Add` per item.
+
+- **Queuing stalled the longest with one `Add` per item, and came in line with the other approaches only once collapsed into one `Reset` notification.** In all five rounds, the timer applied all 50,000 items in a single tick. With one `Add` per item, the UI thread processes 50,000 notifications back to back inside that tick and cannot render in the meantime. Collapsing them into one `Reset` notification cut the median longest interval to under a third of that, and applied everything in the shortest time.
+- **With `EnableCollectionSynchronization`, the median longest interval was under a third of that with one `Add` per item.** WPF first records cross-thread changes in a change log, then applies them on the UI thread in work items at `ContextIdle` priority. Each pass stops after a fixed time slice, and the rest is posted again at `ContextIdle` (see [`ProcessChangeLog` in `CollectionView`](https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Data/CollectionView.cs) and [`Marshal` in `DataBindEngine`](https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/MS/Internal/Data/DataBindEngine.cs)). Rendering, which has a higher priority, runs in the gaps between passes.
+- **`Dispatcher.Invoke` did not stall rendering for long, but applying the items took more than 10 times as long as with `EnableCollectionSynchronization` at the median.** Each item waits for its own run on the UI thread, so the background side cannot move ahead.
+
+To collapse the changes into one `Reset` notification, derive from `ObservableCollection<T>` and add a method that adds items without raising notifications.
+The measurement used the same class without the line that copies the source into an array (every measurement passed a sequence separate from the target that no other thread modified, so it could not change while it was enumerated).
+
+```csharp
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Linq;
+
+public sealed class RangeObservableCollection<T> : ObservableCollection<T>
+{
+    public void AddRange(IEnumerable<T> source)
+    {
+        CheckReentrancy();
+        // Copy first in case the target collection itself is passed in.
+        // If other threads modify source, guard this copy with the lock those threads use.
+        T[] snapshot = source.ToArray();
+        foreach (T item in snapshot)
+        {
+            Items.Add(item); // adding to Items raises no notification
+        }
+
+        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+}
+```
+
+Call `AddRange` on the UI thread; the measurement called it from the `DispatcherTimer` `Tick` handler.
+It raises `Reset` even when there is nothing to add, so do not call it with an empty source (the measurement skipped the call when the queue was empty).
+The measurement added 50,000 items to an empty collection in one call.
+
+The effect of a `Reset` notification on a non-empty collection was measured as well.
+In a `ListBox` holding 1,000 items, the item at index 500 (item 500) was selected and scrolled into view, and then 1,000 items were appended.
+
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-reset-effects.en.md %}
+
+Measured on .NET 10 / Windows 11 with a virtualized <code>ListBox</code> holding 1,000 items: after selecting the item at index 500 and calling <code>ScrollIntoView</code>, 1,000 items were appended on the UI thread. <code>VirtualizationMode</code> was measured with the default <code>Standard</code> and with <code>Recycling</code>. The window is 240×240. The arrow columns show the value before and after the items were added; the vertical offset is in items because <code>ScrollUnit</code> is the default <code>Item</code>. "Indices realized before" counts, for each index realized before the items were added, whether its container afterwards was the same instance, another instance, or not realized. "Containers realized after" splits every container realized after the items were added into those created before the add (including any kept for reuse) and those created after it; creation was recorded by overriding <code>GetContainerForItemOverride</code>. "Tag set on the selected container" tells whether a value set directly on the <code>ListBoxItem</code> at index 500 before the items were added was still on the container at index 500 afterwards. "View notifications" is the number of <code>CollectionChanged</code> events received by <code>ListBox.Items</code>. Each condition was measured once.
+{: .table-caption}
+
+`SelectedIndex`, `SelectedItem`, and the vertical scroll position were kept with both ways of adding and in both virtualization modes.
+With the `Reset` notification, however, no index realized before the items were added kept the same container instance, in either virtualization mode.
+Every container realized afterwards was created after the add in both modes, with no reuse.
+The `Tag` set directly on the selected item's container was not on the container afterwards.
+Before collapsing updates into one `Reset` notification, keep the state of visible items in the data (the ViewModel) and bind it back.
+These results are for a virtualized `ListBox` showing strings.
 
 ---
 
@@ -194,10 +264,10 @@ This avoids producing a cross-thread modification in the first place. The benefi
 
 | Approach | Pros | Cons | Best suited for |
 | --- | --- | --- | --- |
-| `Dispatcher.Invoke` / `InvokeAsync` | No extra setup; simple and easy to retrofit | Per-item round-trips can strain the UI thread | Low update frequency and volume; occasional add or remove |
+| `Dispatcher.Invoke` / `InvokeAsync` | No extra setup; simple and easy to retrofit | With the synchronous `Invoke`, each item waits for its own run on the UI thread, so large volumes apply slowly (measured with `Invoke` for 50,000 items, more than 10 times slower than `EnableCollectionSynchronization` at the median) | Low update frequency and volume; occasional add or remove |
 | `EnableCollectionSynchronization` (simple lock) | Direct modification from the background; notifications are applied on the UI thread asynchronously (access still waits for the shared lock) | Requires consistent locking; slightly more design effort | High-volume, high-frequency updates on another thread |
 | `EnableCollectionSynchronization` (callback) | Allows non-lock mechanisms such as semaphores | Most complex to implement | A design that already has a custom synchronization mechanism |
-| Batch on the UI thread | Avoids the threading issue entirely | Loses the benefit of background work | Work that can apply all changes at once after gathering |
+| Batch on the UI thread | Avoids the threading issue entirely; with one `Reset` notification, the median longest frame interval for 50,000 items was under a third of that with one `Add` per item | Loses the benefit of background work; adding 50,000 items one at a time stalled rendering while they were applied; with a `Reset` notification on a non-empty collection, every container realized afterwards was newly created and no earlier instance was used (as measured with a virtualized `ListBox`) | Work that can apply all changes at once after gathering |
 
 ---
 
@@ -216,6 +286,8 @@ This avoids producing a cross-thread modification in the first place. The benefi
 The exception raised when a bound `ObservableCollection<T>` is modified from another thread comes from the thread affinity of the `CollectionView`, not the collection.
 
 The deciding factor is the volume and frequency of the updates. Marshal to the UI thread with `Dispatcher` for occasional ones; share a lock with `EnableCollectionSynchronization` for heavy, frequent ones.
+When a burst is applied in one batch on the UI thread, collapse it into one `Reset` notification instead of adding the items one at a time (when 50,000 items were added to an empty collection at once, this cut the median longest frame interval to under a third of that with one `Add` per item).
+When items were added to a non-empty collection with a `Reset` notification, every container realized afterwards was newly created and no earlier instance was used (measured with a virtualized `ListBox`), so keep item state in the data and bind it back.
 In every case, design with the understanding that UI elements themselves remain UI-thread-only, and that only collection access is relaxed.
 
 ---
