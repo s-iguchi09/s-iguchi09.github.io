@@ -210,20 +210,22 @@ In every round, the longest interval of each of the other three approaches was u
 - **`Dispatcher.Invoke` did not stall rendering for long, but applying the items took more than 10 times as long as with `EnableCollectionSynchronization` at the median.** Each item waits for its own run on the UI thread, so the background side cannot move ahead.
 
 To collapse the changes into one `Reset` notification, derive from `ObservableCollection<T>` and add a method that adds items without raising notifications.
-The measurement used this class.
+The measurement used the same class without the line that copies the source into an array (every measurement passed a separate list or array, which could not change while it was enumerated).
 
 ```csharp
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 
 public sealed class RangeObservableCollection<T> : ObservableCollection<T>
 {
     public void AddRange(IEnumerable<T> source)
     {
         CheckReentrancy();
-        foreach (T item in source)
+        T[] snapshot = source.ToArray(); // copy first so that source cannot change while it is enumerated
+        foreach (T item in snapshot)
         {
             Items.Add(item); // adding to Items raises no notification
         }
