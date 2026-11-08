@@ -28,6 +28,8 @@ internal sealed class CollectionCrossThreadScene : IScene
         "EnableCollectionSynchronization は、UI スレッドでバインド前に登録し、登録したのと同じロックで Add を包んだ構成で測っている",
         "Add のあと、コレクションの Count、ItemsControl の Items.Count、ビューが受け取った CollectionChanged の数（件数だけではビューへの反映を確かめられないため）",
         "バックグラウンドスレッドから 5,000 件を Add したときの所要時間を、Dispatcher.Invoke と EnableCollectionSynchronization で比べる",
+        "バックグラウンドで 50,000 件が一気に発生したときの描画フレームの最長間隔と、すべて反映されるまでの時間を、更新方法ごとに 5 回ずつ測って比べる（中央値と最小〜最大。暖機の 1 巡のあとに 5 巡、巡ごとに順番をずらし、各回の前に GC。計測区間は基準が 1,000 ms、ほかは発生から 1,000 ms 以上）",
+        "キューにためて UI スレッドで反映するとき、1 件ずつ Add と Reset 通知 1 回とで描画フレームの最長間隔を比べる。タイマー 1 回で反映した最大件数も記録する",
     ];
 
     public string Slug => "wpf-observablecollection-cross-thread-update";
@@ -61,9 +63,255 @@ internal sealed class CollectionCrossThreadScene : IScene
                 await MeasureBulkAsync(Fix.Synchronization),
             ],
             "collection-cross-thread-bulk.svg");
+
+        await context.SaveTableAsync(
+            $"UI thread stalls while {StallCount:N0} items arrive at once (median of {StallRuns}, interleaved, after one warm-up round)",
+            [T("how the items are applied", "反映の仕方"), T("longest frame interval ms (median)", "描画フレームの最長間隔（ms、中央値）"), T("longest frame interval min–max of runs ms", "最長間隔の各回の最小〜最大（ms）"), T("until all applied ms (median)", "すべて反映されるまで（ms、中央値）"), T("most items applied in one timer tick", "タイマー 1 回で反映した最大件数")],
+            await MeasureStallRowsAsync(),
+            "collection-cross-thread-stall.svg");
     }
 
     private const int BulkCount = 5_000;
+
+    private enum Burst
+    {
+        None,
+        DispatcherPerItem,
+        SynchronizationPerItem,
+        QueueDrainPerItem,
+        QueueDrainReset,
+    }
+
+    /// <summary>AddRange で要素をまとめて足し、通知を Reset 1 回にするコレクション。</summary>
+    private sealed class RangeObservableCollection<TItem> : ObservableCollection<TItem>
+    {
+        public void AddRange(IEnumerable<TItem> source)
+        {
+            CheckReentrancy();
+            foreach (TItem item in source)
+            {
+                Items.Add(item);
+            }
+
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+    }
+
+    /// <summary>
+    /// <paramref name="count"/> 件がバックグラウンドで一気に発生したとき、描画がどれだけ止まるかを測る。
+    /// 描画フレームの間隔は <see cref="CompositionTarget.Rendering"/> の呼ばれた時刻の差で測る。
+    /// Input 優先度の処理の待ち時間も試したが、更新しない基準でもマウス操作などで 24〜164 ms とぶれ、
+    /// 更新方法の差と区別できなかったので測らない。
+    /// </summary>
+    private static async Task<(double FrameGap, double Applied, bool Reached, int MaxDrained, int DrainTicks)> MeasureStallOnceAsync(Burst burst, int count)
+    {
+        var items = new RangeObservableCollection<string>();
+        var gate = new object();
+        if (burst == Burst.SynchronizationPerItem)
+        {
+            BindingOperations.EnableCollectionSynchronization(items, gate);
+        }
+
+        var list = new ListBox { ItemsSource = items };
+        var host = new Window
+        {
+            Content = list,
+            Width = 240,
+            Height = 160,
+            ShowInTaskbar = false,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Background = Brushes.White,
+        };
+        host.Show();
+        Settle(host);
+
+        int viewEvents = 0;
+        ((INotifyCollectionChanged)list.Items).CollectionChanged += (_, _) => viewEvents++;
+
+        Dispatcher ui = Dispatcher.CurrentDispatcher;
+        var clock = Stopwatch.StartNew();
+
+        // 計測区間は、発生の開始から、全件の反映の 100 ms 後と開始の 1,000 ms 後の遅いほうまで（基準は開始から 1,000 ms ちょうど）。区間の外の値は捨てる。
+        double windowStart = double.MaxValue;
+        double windowEnd = double.MaxValue;
+        bool InWindow(double t) => t >= windowStart && t <= windowEnd;
+
+        double lastFrame = -1;
+        double maxFrameGap = 0;
+        void OnRendering(object? sender, EventArgs e)
+        {
+            double now = clock.Elapsed.TotalMilliseconds;
+            if (lastFrame >= 0 && InWindow(now) && now - lastFrame > maxFrameGap)
+            {
+                maxFrameGap = now - lastFrame;
+            }
+
+            lastFrame = now;
+        }
+
+        CompositionTarget.Rendering += OnRendering;
+
+        // 計測の仕組みが落ち着くまで待ってから発生させる。
+        await Task.Delay(300);
+
+        var queue = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        DispatcherTimer? timer = null;
+        int maxDrained = 0;
+        int drainTicks = 0;
+        if (burst is Burst.QueueDrainPerItem or Burst.QueueDrainReset)
+        {
+            // 既定の DispatcherTimer（Background 優先度）で 100 ms ごとにキューを空にする。
+            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+            timer.Tick += (_, _) =>
+            {
+                var drained = new List<string>();
+                while (queue.TryDequeue(out string? row))
+                {
+                    drained.Add(row);
+                }
+
+                if (drained.Count == 0)
+                {
+                    return;
+                }
+
+                drainTicks++;
+                maxDrained = Math.Max(maxDrained, drained.Count);
+
+                if (burst == Burst.QueueDrainReset)
+                {
+                    items.AddRange(drained);
+                }
+                else
+                {
+                    foreach (string row in drained)
+                    {
+                        items.Add(row);
+                    }
+                }
+            };
+            timer.Start();
+        }
+
+        windowStart = clock.Elapsed.TotalMilliseconds;
+        Task producer = Task.Run(() =>
+        {
+            for (int i = 0; i < count; i++)
+            {
+                switch (burst)
+                {
+                    case Burst.DispatcherPerItem:
+                        ui.Invoke(() => items.Add("row"));
+                        break;
+                    case Burst.SynchronizationPerItem:
+                        lock (gate)
+                        {
+                            items.Add("row");
+                        }
+
+                        break;
+                    case Burst.QueueDrainPerItem:
+                    case Burst.QueueDrainReset:
+                        queue.Enqueue("row");
+                        break;
+                }
+            }
+        });
+
+        bool Done() => burst == Burst.None
+            ? clock.Elapsed.TotalMilliseconds - windowStart >= 1_000
+            : list.Items.Count == count && (burst == Burst.QueueDrainReset || viewEvents == count);
+
+        while (!Done() && clock.Elapsed.TotalMilliseconds - windowStart < 60_000)
+        {
+            await Task.Delay(1);
+        }
+
+        double applied = clock.Elapsed.TotalMilliseconds - windowStart;
+        bool reached = Done();
+        // 区間が短いほど最大値は小さく出やすいので、どの方法も発生の開始から 1,000 ms 以上は測る。
+        windowEnd = burst == Burst.None ? windowStart + 1_000 : Math.Max(clock.Elapsed.TotalMilliseconds + 100, windowStart + 1_000);
+        while (clock.Elapsed.TotalMilliseconds < windowEnd + 100)
+        {
+            await Task.Delay(5);
+        }
+
+        await producer;
+
+        timer?.Stop();
+        CompositionTarget.Rendering -= OnRendering;
+        host.Content = null;
+        host.Close();
+        if (burst == Burst.SynchronizationPerItem)
+        {
+            BindingOperations.DisableCollectionSynchronization(items);
+        }
+
+        return (maxFrameGap, applied, reached, maxDrained, drainTicks);
+    }
+
+    private const int StallRuns = 5;
+
+    /// <summary>予備の計測では、5,000 件だとどの方法でも描画フレームの最長間隔の差が小さかったので、10 倍にしている。</summary>
+    private const int StallCount = 50_000;
+
+    /// <summary>
+    /// 各方法を <see cref="StallRuns"/> 回測り、列ごとの中央値を返す。1 回だけではほかのプロセスの影響で値がぶれる。
+    /// 時間による環境の変化が特定の方法に偏らないよう、1 回ごとに全方法を巡回し、巡ごとに開始位置をずらし、各回の前に GC を済ませる。暖機の 1 巡のあとに測る。
+    /// </summary>
+    private static async Task<IReadOnlyList<IReadOnlyList<Loc>>> MeasureStallRowsAsync()
+    {
+        Burst[] bursts = [Burst.None, Burst.DispatcherPerItem, Burst.SynchronizationPerItem, Burst.QueueDrainPerItem, Burst.QueueDrainReset];
+        var runs = bursts.ToDictionary(b => b, _ => new List<(double FrameGap, double Applied, bool Reached, int MaxDrained, int DrainTicks)>());
+        for (int round = -1; round < StallRuns; round++)
+        {
+            // 実行順の影響が特定の方法に偏らないよう、巡ごとに開始位置をずらす。
+            int offset = Math.Max(round, 0) % bursts.Length;
+            foreach (Burst burst in bursts.Skip(offset).Concat(bursts.Take(offset)))
+            {
+                // 前の回のウィンドウや通知の後始末が次の回の区間に入らないよう、回の前に回収しておく。
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                var result = await MeasureStallOnceAsync(burst, StallCount);
+                if (round >= 0)
+                {
+                    runs[burst].Add(result);
+                }
+            }
+        }
+
+        static double Median(IEnumerable<double> values)
+        {
+            double[] sorted = values.Order().ToArray();
+            return sorted[sorted.Length / 2];
+        }
+
+        var rows = new List<IReadOnlyList<Loc>>();
+        foreach (Burst burst in bursts)
+        {
+            var r = runs[burst];
+            Console.WriteLine($"stall {burst} n={StallCount}: " + string.Join(" | ", r.Select(x => $"{x.FrameGap:F0}/{x.Applied:F0}/{x.MaxDrained}x{x.DrainTicks}{(x.Reached ? "" : "!")}")));
+            Loc label = burst switch
+            {
+                Burst.None => T("no updates (baseline)", "更新しない（基準）"),
+                Burst.DispatcherPerItem => T("Dispatcher.Invoke per item", "1 件ごとに Dispatcher.Invoke"),
+                Burst.SynchronizationPerItem => "EnableCollectionSynchronization + lock",
+                Burst.QueueDrainPerItem => T("queue, drain every 100 ms, Add per item", "キューにためて 100 ms ごとに 1 件ずつ Add"),
+                _ => T("queue, drain every 100 ms, one Reset", "キューにためて 100 ms ごとに Reset 通知 1 回"),
+            };
+            Loc until = burst == Burst.None ? "-" : r.All(x => x.Reached) ? Median(r.Select(x => x.Applied)).ToString("N0") : T("not reached", "届かない");
+            string range = $"{r.Min(x => x.FrameGap):N0}–{r.Max(x => x.FrameGap):N0}";
+            string drained = burst is Burst.QueueDrainPerItem or Burst.QueueDrainReset
+                ? (r.Min(x => x.MaxDrained) == r.Max(x => x.MaxDrained) ? r[0].MaxDrained.ToString("N0") : $"{r.Min(x => x.MaxDrained):N0}–{r.Max(x => x.MaxDrained):N0}")
+                : "-";
+            rows.Add([label, Median(r.Select(x => x.FrameGap)).ToString("N0"), range, until, drained]);
+        }
+
+        return rows;
+    }
 
     /// <summary>
     /// バックグラウンドスレッドから <see cref="BulkCount"/> 件を 1 件ずつ Add し、

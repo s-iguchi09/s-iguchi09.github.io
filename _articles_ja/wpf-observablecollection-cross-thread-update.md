@@ -31,7 +31,7 @@ WPF で `ItemsControl` にバインドした `ObservableCollection<T>` を、UI 
 バインド済みのコレクションを、バックグラウンドスレッドから直接変更すると例外が送出される。
 以下は、`Task.Run` で開始した処理の中から `ObservableCollection<T>` に要素を追加する例である。
 データ供給元には `System.IO` の `File.ReadLines` を用いており、ファイルの各行を遅延列挙する。
-本記事のスニペットは `ViewModel` クラスのメンバーであり、名前空間 `System.Collections.ObjectModel` / `System.IO` / `System.Threading.Tasks` / `System.Windows` / `System.Windows.Data` を前提とする。
+本記事のスニペットは、後述の `RangeObservableCollection<T>` を除き `ViewModel` クラスのメンバーであり、名前空間 `System.Collections.ObjectModel` / `System.IO` / `System.Threading.Tasks` / `System.Windows` / `System.Windows.Data` を前提とする。
 
 ```csharp
 public ObservableCollection<string> Items { get; } = new();
@@ -126,6 +126,8 @@ private async Task LoadAsync(string path)
 
 変更操作が UI スレッドで実行されるため、`CollectionView` のアフィニティ違反は発生しない。
 ただし要素ごとに `Invoke` すると UI スレッドへの往復が多発するため、まとめて追加できる場合は 1 回の `Invoke` 内で複数要素を処理するのが適切である。
+なお、1 回の処理の中でも、50,000 件を 1 件ずつ `Add` すると、描画フレームの最長間隔は更新しないときの 5 倍を超えた。
+`Reset` 通知 1 回にまとめると、その 3 分の 1 以下に抑えられた（`DispatcherTimer` の `Tick` の中で `Add` した計測で、後述の「実測: 一度に大量に届いたときの描画の止まり方」で扱う）。
 
 ### EnableCollectionSynchronization でロックを共有する
 
@@ -187,6 +189,56 @@ private async Task LoadAsync(string path)
 
 **収集後に一括で反映できる処理なら、UI スレッドでまとめて反映する。**
 そもそもスレッドをまたいだ変更を発生させない選択である。バックグラウンドで処理を進める利点は薄れるが、同期の設計を持ち込まずに済む。
+ただし、50,000 件をまとめて反映しても、1 件ずつ `Add` すると描画が止まった。次の節で測っている。
+
+### 実測: 一度に大量に届いたときの描画の止まり方
+
+一度に大量に届いたときに描画が止まるかを確かめるため、バックグラウンドで 50,000 件を一気に発生させ、反映の仕方ごとに描画フレームの最長間隔を測った。
+
+{% include tables/articles/wpf-observablecollection-cross-thread-update/collection-cross-thread-stall.ja.md %}
+
+.NET 10 / Windows 11 で、仮想化した <code>ListBox</code> にバインドしたコレクションへ、<code>Task.Run</code> の中から 50,000 件を一気に発生させた結果。方法を 1 回ずつ巡回し、暖機の 1 巡のあとに 5 巡測った（巡ごとに順番をずらし、各回の前に GC を済ませた）。中央値と各回の最小〜最大を示す。フレームの間隔は <code>CompositionTarget.Rendering</code> が呼ばれた時刻の差で、計測区間は発生の開始から、全件の反映の 100 ms 後と開始の 1,000 ms 後の遅いほうまで（基準は発生させずに同じ 1,000 ms を測った）。計測区間の長さは、反映にかかる時間に応じて方法ごとに異なる。<code>Dispatcher.Invoke</code> と lock の行では、生産側が UI スレッドでの実行やロックを待つので、発生そのものにも時間がかかる。キューの 2 行は、既定の <code>DispatcherTimer</code> で 100 ms ごとにキューを空にし、UI スレッドで反映した。「すべて反映されるまで」は、発生の開始からビューに 50,000 件が反映されるまでの時間である。
+{: .table-caption}
+
+最も長く描画が止まったのは、キューにためて UI スレッドで 1 件ずつ `Add` した場合だった。
+最長間隔の中央値は、更新しない基準の 5 倍を超えた。
+5 巡のどの回でも、ほかの方法より長かった。
+ほかの 3 方法の最長間隔の中央値は、基準の 1.3〜1.8 倍だった。
+
+- **キューにためる方法は、通知の数を減らして初めて効いた。** タイマーは 5 巡とも 1 回の処理で 50,000 件すべてを反映した。1 件ずつ `Add` すると、その 1 回の処理の中で 50,000 件分の通知を UI スレッドが続けて処理し、その間は描画できない。`Reset` 通知 1 回にまとめると、最長間隔は中央値で 1 件ずつ `Add` の 3 分の 1 以下になり、反映までの時間も最も短かった。ただし、最長間隔は `Dispatcher.Invoke` や `EnableCollectionSynchronization` より短くはならなかった。
+- **`EnableCollectionSynchronization` の最長間隔は、中央値で 1 件ずつ `Add` の 3 分の 1 以下だった。** WPF は別スレッドからの変更をいったん変更ログにため、UI スレッドで `ContextIdle` 優先度の処理として反映する。1 回の処理は一定の時間で打ち切られ、残りは `ContextIdle` の処理として出し直される（[`CollectionView` の `ProcessChangeLog`](https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Data/CollectionView.cs)、[`DataBindEngine` の `Marshal`](https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/MS/Internal/Data/DataBindEngine.cs)）。そのすき間に、優先度の高い描画が先に実行される。
+- **`Dispatcher.Invoke` も最長間隔は伸びにくかったが、反映には `EnableCollectionSynchronization` の約 20 倍の時間がかかった。** 1 件ごとに UI スレッドでの実行を待つため、バックグラウンド側が先へ進めない。
+
+`Reset` 通知 1 回にまとめるには、`ObservableCollection<T>` を継承して、通知を出さずに要素を足すメソッドを用意する。
+計測ではこのクラスを使った。
+
+```csharp
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+
+public sealed class RangeObservableCollection<T> : ObservableCollection<T>
+{
+    public void AddRange(IEnumerable<T> source)
+    {
+        CheckReentrancy();
+        foreach (T item in source)
+        {
+            Items.Add(item); // Items への追加は通知を出さない
+        }
+
+        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
+}
+```
+
+`AddRange` は UI スレッドで呼ぶ。計測でも `DispatcherTimer` の `Tick` から呼んだ。
+足す要素が無くても `Reset` を出すので、空のときは呼ばない（計測でも、キューが空なら呼んでいない）。
+計測は、空のコレクションへ 50,000 件を 1 回で足した場合である。
+この結果は、仮想化した `ListBox` に文字列を並べた場合のものである。
 
 ---
 
@@ -194,10 +246,10 @@ private async Task LoadAsync(string path)
 
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
-| `Dispatcher.Invoke` / `InvokeAsync` | 追加設定が不要で単純。既存コードに適用しやすい | 要素ごとの往復で UI スレッドを圧迫しやすい | 更新頻度・件数が少ない。散発的な追加・削除 |
+| `Dispatcher.Invoke` / `InvokeAsync` | 追加設定が不要で単純。既存コードに適用しやすい | 要素ごとに UI スレッドでの実行を待つため、大量だと反映が遅い（50,000 件で `EnableCollectionSynchronization` の約 20 倍） | 更新頻度・件数が少ない。散発的な追加・削除 |
 | `EnableCollectionSynchronization`（単純ロック） | バックグラウンドから直接変更でき、変更通知は UI スレッドで非同期に反映される（アクセスは共有したロックを待つ） | ロックの一貫運用が必要。設計がやや複雑 | 大量・高頻度の更新を別スレッドで行う |
 | `EnableCollectionSynchronization`（コールバック版） | セマフォ等、ロック以外の同期機構を使える | 実装が最も複雑 | 独自の同期機構が既にある構成 |
-| UI スレッドでまとめて反映 | スレッド問題を回避できる | バックグラウンドの利点が薄れる | 収集後に一括反映できる処理 |
+| UI スレッドでまとめて反映 | スレッド問題を回避できる。`Reset` 通知 1 回にまとめると、50,000 件でも描画の最長間隔は中央値で 1 件ずつ `Add` の 3 分の 1 以下だった | バックグラウンドの利点が薄れる。50,000 件を 1 件ずつ `Add` すると、反映の間は描画が止まった | 収集後に一括反映できる処理 |
 
 ---
 
@@ -216,6 +268,7 @@ private async Task LoadAsync(string path)
 バインド中の `ObservableCollection<T>` を別スレッドから変更したときの例外は、コレクションではなく `CollectionView` のスレッドアフィニティに起因する。
 
 分岐点は更新の量と頻度にある。散発的なら `Dispatcher` で UI スレッドへ寄せ、大量・高頻度なら `EnableCollectionSynchronization` でロックを共有する。
+一度に大量に届いた分を UI スレッドでまとめて反映するなら、1 件ずつ `Add` せず `Reset` 通知 1 回にまとめる（空のコレクションへ 50,000 件を一度に足した計測では、描画の最長間隔が中央値で 3 分の 1 以下になった）。
 いずれの場合も、UI 要素そのものは UI スレッド専有のままである。緩めるのはコレクションアクセスに限る、という前提で設計する。
 
 ---
