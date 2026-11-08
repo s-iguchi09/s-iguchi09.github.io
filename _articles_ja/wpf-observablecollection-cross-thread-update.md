@@ -210,7 +210,7 @@ private async Task LoadAsync(string path)
 - **`Dispatcher.Invoke` は描画を長くは止めなかったが、反映には中央値で `EnableCollectionSynchronization` の 10 倍以上の時間がかかった。** 1 件ごとに UI スレッドでの実行を待つため、バックグラウンド側が先へ進めない。
 
 `Reset` 通知 1 回にまとめるには、`ObservableCollection<T>` を継承して、通知を出さずに要素を足すメソッドを用意する。
-計測では、配列へ写す行を除いて同じクラスを使った（計測で渡したのはいずれも対象とは別のリストや配列なので、列挙の途中で変わることはない）。
+計測では、配列へ写す行を除いて同じクラスを使った（計測で渡したのはいずれも、対象とは別で、ほかのスレッドからも変更されないシーケンスなので、列挙の途中で変わることはない）。
 
 ```csharp
 using System.Collections.Generic;
@@ -224,7 +224,9 @@ public sealed class RangeObservableCollection<T> : ObservableCollection<T>
     public void AddRange(IEnumerable<T> source)
     {
         CheckReentrancy();
-        T[] snapshot = source.ToArray(); // 列挙の途中で source が変わらないよう、先に配列へ写す
+        // 追加先と同じコレクションを渡された場合に備えて、先に配列へ写す。
+        // ほかのスレッドが source を変える場合は、写す処理も source を変えるスレッドと同じロックで守る。
+        T[] snapshot = source.ToArray();
         foreach (T item in snapshot)
         {
             Items.Add(item); // Items への追加は通知を出さない
