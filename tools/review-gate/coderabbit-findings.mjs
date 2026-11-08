@@ -69,7 +69,7 @@ function summarize(body) {
   return { label, title, paragraph: paragraph.slice(0, 400) };
 }
 
-/** レビュー本文から、差分の外・Nitpick の項目と、失敗・警告の pre-merge check を取り出す。 */
+/** レビュー本文から、差分の外・Nitpick などの項目（区分は見分けない）と、失敗・警告の pre-merge check を取り出す。 */
 function reviewBodyItems(body) {
   const items = [];
   for (const m of body.matchAll(/<summary>([\s\S]*?)<\/summary>/g)) {
@@ -79,7 +79,8 @@ function reviewBodyItems(body) {
     // 「パス:行番号」の形の部分（拡張子の無い .githooks/pre-push:3 なども含む）。
     const where = parts.find((p) => /^[^\s:][^:]*:\d+(?:-\d+)?$/.test(p));
     if (sev && parts.length >= 3 && where) {
-      items.push({ label: sev, title: parts[1], where, kind: "差分の外・Nitpick" });
+      // どの区分（差分の外・Nitpick など）の項目かは見分けていない。
+      items.push({ label: sev, title: parts[1], where, kind: "レビュー本文の項目" });
     }
   }
   for (const m of body.matchAll(/^\|\s*([^|]+?)\s*\|\s*!\[(Warning|Failed|Error)\][^|]*\|\s*([^|]+?)\s*\|/gm)) {

@@ -1,23 +1,24 @@
-// Claude Code の PreToolUse hook（Bash / PowerShell）から呼ばれ、git push のコマンドの前に次を確かめる。
+// Claude Code の PreToolUse hook（Bash / PowerShell）から呼ばれ、push しそうなコマンドの前に次を確かめる。
 // 照合そのものは pre-push.mjs（git の pre-push フック）が行う。ここは、照合が動く状態かと、
-// 照合を外すよく知られた書き方をしていないかだけを、コマンドの文字列から見る。
+// 照合を外す語を含んでいないかだけを、コマンドの文字列から単純に見る。
 //
-// 対象: 引用符の中身とヒアドキュメントの中身を除いたうえで、`git` の次のサブコマンドが `push` のもの
-//       （git の前置きのオプション `-C <dir>`・`-c <k=v>` などは読み飛ばす）。`git stash push` やメッセージの中の文字は対象外。
-//       対象のリポジトリは $CLAUDE_PROJECT_DIR のリポジトリ（作業ディレクトリがその作業ツリーか、コマンドにそのパスを含む場合）。
-//       同じリポジトリの別の worktree からの push は対象外。
-// 確かめること:
-//   - core.hooksPath が .githooks か、今のチェックアウトに .githooks/pre-push があるか
-//   - コマンド全体（引用符の外）に、次の書き方が無いか: `--no-veri` で始まるオプション（--no-verify とその省略形）、
-//     `core.hooksPath`、CLAUDECODE の上書き・削除（`CLAUDECODE=`、`unset CLAUDECODE`、`env -u CLAUDECODE`、`env -i`、
-//     PowerShell の `$env:CLAUDECODE`・`Env:CLAUDECODE`）
-// 確かめられないもの: スクリプトや別名の中で実行する push、上に無い書き方、Bash・PowerShell 以外の経路。
+// シェルの構文（引用符・ヒアドキュメント・エスケープ・区切り）は解析しない。解析すると書き方の穴が尽きないため、
+// 元のコマンドの文字列に語が含まれるかだけで判定し、迷う場合は止める側に倒す。
 //
-// 止めるときは終了コード 2（Claude Code は終了コードでは 2 のときだけツールの実行を止め、標準エラーを Claude に返す）。
-// 判定の途中のエラーでは止めない（この hook が壊れて、関係の無いコマンドまで止めないため）。
+//   1. コマンドに「push」を含めば（大文字小文字を問わず、部分一致）、$CLAUDE_PROJECT_DIR のリポジトリで
+//      core.hooksPath が .githooks か、今のチェックアウトに .githooks/pre-push があるかを確かめ、無ければ止める。
+//      作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
+//   2. コマンドに「push」を含み、さらに照合を外す語（`--no-veri`、`hookspath`、`CLAUDECODE`、`--ignore-environment`、
+//      環境を空にする `env -i`・`env -`）のどれかを含めば止める。メッセージや引用符の中に書いた語でも止まる
+//      （止める側の誤り。そうした語を含むコミットメッセージは `git commit -F <ファイル>` で渡す）。
+//
+// 確かめられないもの: 変数・別名・スクリプトの中で組み立てる push と照合を外す操作、Bash・PowerShell 以外の経路。
+//
+// 止めるときは終了コード 2（Claude Code の hook は、既定（onFailure 未指定）では終了コード 2 のときだけツールの実行を止め、
+// 標準エラーを Claude に返す）。判定の途中のエラーでは止めない（この hook が壊れて、関係の無いコマンドまで止めないため）。
 //
 // 手で試す:
-//   echo '{"tool_input":{"command":"git push"},"cwd":"."}' | CLAUDE_PROJECT_DIR="$PWD" node tools/review-gate/check-setup.mjs; echo $?
+//   echo '{"tool_input":{"command":"git push"}}' | CLAUDE_PROJECT_DIR="$PWD" node tools/review-gate/check-setup.mjs; echo $?
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -37,73 +38,25 @@ function block(message) {
   process.exit(2);
 }
 
-/** ヒアドキュメント・ヒア文字列・引用符の中身を除いた文字列を返す（左から 1 文字ずつ読む）。 */
-function stripQuoted(command, powershell) {
-  const noHeredoc = command
-    .replace(/<<-?\s*(['"]?)(\w+)\1[^\n]*\n[\s\S]*?\n\s*\2\s*(?=\n|$)/g, " ")
-    .replace(/@'[\s\S]*?'@|@"[\s\S]*?"@/g, " ");
-  let out = "";
-  let quote = null;
-  for (let i = 0; i < noHeredoc.length; i++) {
-    const ch = noHeredoc[i];
-    if (quote) {
-      if (!powershell && quote === '"' && ch === "\\") {
-        i++;
-      } else if (ch === quote) {
-        quote = null;
-        out += " ";
-      }
-      continue;
-    }
-    if (ch === "'" || ch === '"') {
-      quote = ch;
-      continue;
-    }
-    out += ch;
-  }
-  return out;
-}
-
 try {
   let input = "";
   for await (const chunk of process.stdin) {
     input += chunk;
   }
-  const data = JSON.parse(input);
-  const command = data?.tool_input?.command;
-  if (typeof command !== "string") {
+  const command = JSON.parse(input)?.tool_input?.command;
+  if (typeof command !== "string" || !/push/i.test(command)) {
     process.exit(0);
   }
-  const plain = stripQuoted(command, data?.tool_name === "PowerShell");
-  // git（git.exe を含む）の後に、前置きのオプションを飛ばして push が来るか。
-  const pushRe = /(?:^|[\s;&|(])git(?:\.exe)?(?:\s+(?:-[Cc]\s+\S+|--?[\w-]+(?:=\S+)?))*\s+push\b/i;
-  if (!pushRe.test(plain)) {
-    process.exit(0);
+  if (/--no-veri|hookspath|CLAUDECODE|--ignore-environment|\benv\s+(?:-[a-z]*i\b|-(?=\s))/i.test(command)) {
+    block(
+      "push を含むコマンドに、照合を外す語（--no-verify とその省略形、hooksPath、CLAUDECODE、環境を空にする env）が含まれている。" +
+        "照合を外さずに push する。メッセージに書いただけなら、メッセージをファイルにして `git commit -F <ファイル>` などで渡す。",
+    );
   }
   const project = process.env.CLAUDE_PROJECT_DIR;
-  if (!project) {
-    process.exit(0);
-  }
-  const projectTop = gitOut(["rev-parse", "--show-toplevel"], project);
+  const projectTop = project ? gitOut(["rev-parse", "--show-toplevel"], project) : null;
   if (!projectTop) {
     process.exit(0);
-  }
-  const cwd = typeof data.cwd === "string" && data.cwd ? data.cwd : process.cwd();
-  const cwdTop = gitOut(["rev-parse", "--show-toplevel"], cwd);
-  /** パスを比べられる形（絶対パス・スラッシュ・小文字）にする。 */
-  const norm = (p) => path.resolve(p).replace(/\\/g, "/").toLowerCase();
-  // パスは引用符で囲んで書くことが多いので、リポジトリのパスは元のコマンドから探す。
-  const raw = command.replace(/\\/g, "/").toLowerCase();
-  const inProject =
-    (cwdTop && norm(cwdTop) === norm(projectTop)) ||
-    raw.includes(norm(projectTop)) ||
-    raw.includes(projectTop.replace(/\\/g, "/").toLowerCase());
-  if (!inProject) {
-    process.exit(0);
-  }
-
-  if (/--no-veri\w*|core\.hooksPath|CLAUDECODE\s*=|unset\s+CLAUDECODE|env\s+-u\s*CLAUDECODE|\benv\s+-i\b|\$env:CLAUDECODE|Env:\\?CLAUDECODE/i.test(plain)) {
-    block("push の照合を外す書き方（--no-verify とその省略形、core.hooksPath の変更、CLAUDECODE の上書き・削除）を含むコマンドは実行しない。照合を通して push する。");
   }
   if (gitOut(["config", "--get", "core.hooksPath"], projectTop) !== ".githooks") {
     block("git の pre-push フックが有効になっていない（core.hooksPath が .githooks でない）。`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する。");

@@ -101,7 +101,7 @@ const out = [];
 const summary = [];
 
 // ---- (a) 断定語 ----
-const absolute = /必ず|すべて|全て|常に|たびに|絶対|一切|決して|どんな場合も|例外なく|以降は|\balways\b|\bnever\b|\bevery\b|\ball of\b|\bguarantee/i;
+const absolute = /必ず|すべて|全て|常に|たびに|絶対(?!パス|値|参照|座標)|一切|決して|どんな場合も|例外なく|以降は|\balways\b|\bnever\b|\bevery\b|\ball of\b|\bguarantee/i;
 const aHits = [];
 for (const [file, lines] of changed) {
   const prose = file.endsWith(".md");
@@ -191,6 +191,8 @@ const xamlNamespaces = {
 
 const xamlCheckerSource = `using System.Xml;
 
+// 一時ディレクトリのパスに ASCII 以外の文字があっても、node 側で utf8 として読めるようにする。
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 foreach (string file in args)
 {
     try
@@ -264,6 +266,9 @@ function csharpSource(code, kind) {
   }
   if (kind === "members") {
     return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n#line 1 "snippet"\n${b}\n#line default\n}\n`;
+  }
+  if (kind === "iterator") {
+    return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n    public System.Collections.IEnumerable SnippetBody()\n    {\n#line 1 "snippet"\n${b}\n#line default\n    }\n}\n`;
   }
   return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n    public async System.Threading.Tasks.Task<object?> SnippetBody()\n    {\n#line 1 "snippet"\n${b}\n#line default\n        await System.Threading.Tasks.Task.CompletedTask;\n        return null;\n    }\n}\n`;
 }
@@ -340,6 +345,7 @@ const kindLabel = {
   toplevel: "トップレベルの文として",
   members: "クラスのメンバーとして包んで",
   statements: "メソッドの本体として包んで",
+  iterator: "反復子のメソッドの本体として包んで",
 };
 
 if (snippets.length === 0) {
@@ -393,7 +399,11 @@ if (snippets.length === 0) {
 
       // 包み方を順に試し、エラーの無いもの（無ければ最も少ないもの）を採る。
       const body = s.code.split("\n").filter((l) => !usingRe.test(l)).join("\n");
-      const kinds = typeDeclRe.test(body) ? ["type", "toplevel", "members"] : ["statements", "members", "toplevel"];
+      const kinds = typeDeclRe.test(body)
+        ? ["type", "toplevel", "members"]
+        : /\byield\s+(?:return|break)\b/.test(body)
+          ? ["iterator", "members", "toplevel"]
+          : ["statements", "members", "toplevel"];
       let best = null;
       let failed = null;
       for (const kind of kinds) {

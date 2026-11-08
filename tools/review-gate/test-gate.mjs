@@ -16,7 +16,6 @@ const source = path.resolve(here, "..", "..");
 
 const root = fs.mkdtempSync(path.join(os.tmpdir(), "review-gate-test-"));
 const repo = path.join(root, "repo");
-const other = path.join(root, "other");
 const remote = path.join(root, "remote.git");
 let failed = 0;
 
@@ -51,7 +50,6 @@ function push(args, claude = true) {
 try {
   // ---- 試験用のリポジトリ（本物のフックとスクリプトをコピー）と、裸のリモート、別のリポジトリ ----
   fs.mkdirSync(repo);
-  fs.mkdirSync(other);
   g(["init", "-q", "--bare", remote], root);
   g(["init", "-q", "-b", "work"]);
   g(["config", "user.email", "test@example.com"]);
@@ -64,37 +62,36 @@ try {
   fs.writeFileSync(path.join(repo, "a.txt"), "1\n");
   g(["add", "-A"]);
   g(["commit", "-q", "-m", "first"]);
-  g(["init", "-q"], other);
 
   const checkSetup = path.join(repo, "tools", "review-gate", "check-setup.mjs");
   const approve = path.join(repo, "tools", "review-gate", "approve.mjs");
   const prePush = path.join(repo, "tools", "review-gate", "pre-push.mjs");
-  /** Claude Code の PreToolUse hook に渡る入力の JSON を作る。 */
-  const hookInput = (command, cwd = repo) => JSON.stringify({ tool_input: { command }, cwd });
   const projectEnv = { CLAUDE_PROJECT_DIR: repo };
-  /** check-setup.mjs を、このリポジトリを $CLAUDE_PROJECT_DIR として実行する。 */
-  const check = (command, cwd = repo) => run("node", [checkSetup], { input: hookInput(command, cwd), env: projectEnv });
+  /** check-setup.mjs に、Claude Code の PreToolUse hook と同じ形の入力を渡して実行する。 */
+  const check = (command) => run("node", [checkSetup], { input: JSON.stringify({ tool_input: { command }, cwd: repo }), env: projectEnv });
 
-  // ---- check-setup.mjs ----
-  expect("check-setup: git も push も含まない", check("ls -la"), 0);
-  expect("check-setup: git を含まない push（Push-Location）", check("Push-Location C:/x; Pop-Location"), 0);
-  expect("check-setup: 別の区切りに git と push がある", check("echo push && git status"), 0);
-  expect("check-setup: フックが無効で push（後ろにパイプ）", check("git push 2>&1 | tail -n 5"), 2);
-  expect("check-setup: 別のリポジトリでの push", check("git push", other), 0);
+  // ---- check-setup.mjs（フックが無効な状態） ----
+  expect("check-setup: push を含まない", check("ls -la"), 0);
+  expect("check-setup: フックが無効で push", check("git push 2>&1 | tail -n 5"), 2);
+  expect("check-setup: フックが無効で push を含む別のコマンド（止める側に倒す）", check("Push-Location C:/x"), 2);
   expect("check-setup: command が文字列でない", run("node", [checkSetup], { input: JSON.stringify({ tool_input: { command: 1 } }), env: projectEnv }), 0);
   expect("check-setup: 壊れた入力", run("node", [checkSetup], { input: "{", env: projectEnv }), 0);
+  // ---- check-setup.mjs（フックが有効な状態） ----
   g(["config", "core.hooksPath", ".githooks"]);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
-  expect("check-setup: メッセージの中の git push --no-verify", check('git commit -m "git push で --no-verify を使わない"'), 0);
-  expect("check-setup: ヒアドキュメントの中の git push --no-verify", check("git commit -F - <<'EOF'\ngit push --no-verify\nEOF"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);
+  expect("check-setup: 引用符で囲んだ --no-verify", check('git push "--no-verify"'), 2);
   expect("check-setup: --no-verify の省略形", check("git push origin work --no-veri"), 2);
   expect("check-setup: core.hooksPath の上書き", check("git -c core.hooksPath=/x push"), 2);
   expect("check-setup: 別の区切りで core.hooksPath を変える", check("git config core.hooksPath /dev/null; git push"), 2);
-  expect("check-setup: CLAUDECODE の上書き", check("CLAUDECODE= git push"), 2);
+  expect("check-setup: CLAUDECODE の上書き", check("CLAUDECODE+=x git push"), 2);
   expect("check-setup: 別の区切りで CLAUDECODE を消す", check("unset CLAUDECODE; git push"), 2);
-  expect("check-setup: 別のディレクトリから -C で push", check(`git -C "${repo}" push --no-verify`, other), 2);
+  expect("check-setup: env -i", check("env -i PATH=/usr/bin git push"), 2);
+  expect("check-setup: env --ignore-environment", check("env --ignore-environment git push"), 2);
+  expect("check-setup: ヒアドキュメントの後ろの --no-verify", check("git commit -F - <<'EOF' && git push --no-verify\nmsg\nEOF"), 2);
+  expect("check-setup: メッセージの中の語（止める側に倒す）", check('git commit -m "git push で --no-verify を使わない"'), 2);
+  expect("check-setup: メッセージはファイルで渡す", check("git commit -F msg.txt"), 0);
   fs.renameSync(path.join(repo, ".githooks"), path.join(repo, ".githooks-off"));
   expect("check-setup: .githooks が無いチェックアウト", check("git push"), 2);
   fs.renameSync(path.join(repo, ".githooks-off"), path.join(repo, ".githooks"));

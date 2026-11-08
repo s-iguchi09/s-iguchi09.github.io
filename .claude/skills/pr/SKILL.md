@@ -24,12 +24,13 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      収束したあと、1 行も変更していない差分を push する場合だけとする(`article-workflow` の Phase 3 の「修正あり」で Phase 2 に戻り、収束し直した場合も含む)。
      `article-workflow` の Phase 2 のあとに CI の修正・PR 上のレビュー指摘への対応などで直した場合は、記事だけの変更でも、
      直した後の差分に行う。`/code-review high` の再実行はこの独立レビューの代わりにしない。
-     main の取り込み(rebase・merge)は、競合を解消しなかったなら、このブランチの差分は変わらないので例外と同じ扱いにする
-     (`article-check.mjs` を通してから `approve.mjs direct "main の取り込み(競合なし)"`)。競合を解消したなら独立レビューを通す。
+     main の取り込み(rebase・merge)の後の push は、競合の有無にかかわらず独立レビューを通す
+     (競合が無くても、main 側の変更でこのブランチの記述の前提が変わることがあるため)。上の例外より優先する。
+     ただし `article-workflow` の Phase 1(記事を書く前)の取り込みは、その後の Phase 2 のレビューに含まれるので、この規則には当たらない。
      この条件は `article-workflow` からも参照する。
    - **レビュアーを起動する前に、依頼者がリポジトリのルートで次を順に実行する。** 出力の置き場は、各スクリプトが標準出力に表示するパス
      (`git rev-parse --git-path review-gate` の場所。通常は `.git/review-gate/`、worktree ではその worktree 用の場所。コミットされない)。
-     作業ツリーを書き換えうるコマンド(生成・整形など。下の共通の指示の「依頼者が実行して結果を渡す」もの)は、
+     作業ツリーを書き換えうるコマンド(生成・整形など。下の共通の指示で「作業ツリーを書き換えるコマンド」として依頼者が実行するもの)は、
      この前に実行して `git status` で確かめておく(`approve.mjs start` の後に作業ツリーが変わると、承認できない)。
      コミットしない未追跡のファイル(作業メモなど)も、この前に片付ける(承認する内容に含まれ、push の照合で一致しなくなる)。
      0. `node tools/review-gate/setup.mjs` … pre-push フックを有効にする。クローンごとに 1 回でよい(既に有効なら何もしない。
@@ -42,9 +43,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
         レビュアーを起動する前に直して実行し直す(抜粋として正しいのに出た場合は、理由をレビュアーに伝えて進めてよい)。
         「確かめていない」が出た場合(.NET SDK が無い・ビルドできない・Windows 以外で WPF を扱えないなど)は、その範囲をレビュアーに伝える。
      2. `node tools/review-gate/coderabbit-findings.mjs` … 作成が新しい 45 件のうちマージした日時が新しい 15 件の PR で CodeRabbit が付けた指摘
-        (インラインの指摘と、レビュー本文の差分の外・Nitpick の項目、失敗・警告になった pre-merge check)を
+        (インラインの指摘と、レビュー本文の項目(差分の外・Nitpick など。区分は見分けない)、失敗・警告になった pre-merge check)を
         `coderabbit-findings.md` にまとめる。このリポジトリでは CodeRabbit が同じ型の指摘を繰り返しているため。
-        同じ PR の中で 2 回目以降のレビューをするときは、実行し直さなくてよい。
+        同じ PR の中で 2 回目以降のレビューをするときは、`coderabbit-findings.mjs` 自体を変えていなければ実行し直さなくてよい。
      3. `node tools/review-gate/approve.mjs start` … レビューしてもらう内容(作業ツリー)を記録する。最後の承認で、承認する内容が
         レビューした内容と同じことを確かめるのに使う。
      - setup.mjs・article-check.mjs・approve.mjs start のどれかが失敗したら、レビュアーを起動せずに原因を直す(下の差分の取得の失敗と同じ扱い)。
@@ -64,8 +65,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、共通の指示として次を渡す。
      `isolation: "worktree"` は指定しない(一時コピーが作られ、消される。下の経緯を参照)。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
-       `git diff --ignore-cr-at-eol $(git merge-base origin/main HEAD)`。未コミットの変更を含める。
-       分岐点と比べるのは、ブランチを切った後に main へ入った変更を、このブランチの変更として読まないため)と、
+       `mb=$(git merge-base origin/main HEAD) && git diff --ignore-cr-at-eol "$mb"`。未コミットの変更を含める。
+       分岐点と比べるのは、ブランチを切った後に main へ入った変更を、このブランチの変更として読まないため。
+       `git diff ... $(git merge-base ...)` と 1 つに書くと、merge-base が失敗しても空のまま `git diff` が動いて失敗に気づけないので、分けて書く)と、
        未追跡の新規ファイルの一覧(`git status --short --untracked-files=all`)。新規ファイルは `git diff` に出ないため、一覧を渡して読ませる。
        これらの差分と一覧を取るコマンドが 1 つでも失敗したら、レビューをせずにその旨を報告すること
        (依頼者が一覧を取れなかったときは、レビュアーを起動しない)
@@ -126,24 +128,28 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - **要修正が 0 件になったら、依頼者が `node tools/review-gate/approve.mjs done "<結果の要約>"` で承認を記録する。**
      作業ツリーが `approve.mjs start` の時点と違えば(レビューの後に変えていれば)記録されないので、`start` からレビューをやり直す。
      上の「対象」の例外(`article-workflow` の Phase 2 の収束後に 1 行も変えずに push する場合)は、
-     `node tools/review-gate/article-check.mjs` で機械チェックだけは通し(問題を直したら例外ではなくなる)、
+     `node tools/review-gate/article-check.mjs` を実行し、報告の (c) に上の 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
+     XML として読めない)が出ていないことを確かめてから(出たら直す。直したら例外ではなくなる)、
      `node tools/review-gate/approve.mjs direct "article-workflow の Phase 2 で収束"` で記録する。
    - **承認と push の照合(仕組み):** git の pre-push フック(`.githooks/pre-push` → `tools/review-gate/pre-push.mjs`)が、
      push される各ブランチの先頭のコミットの内容(ツリー)を承認の記録と照合し、違えば push を止める。
-     照合が保証するのは「承認した内容と push する内容が同じこと」で、レビューが行われたことまでは確かめない。
-     - フックが動けば、照合する ref は git が渡すので、コマンドのつなぎ方やブランチの指定には左右されない。削除とタグの push は照合しない。
+     照合が保証するのは「push する各ブランチの先頭のコミットの内容が、承認した内容と同じこと」だけで、
+     間のコミットの内容や、レビューが行われたことまでは確かめない。
+     - フックが動けば、照合する ref は git が渡すので、コマンドのつなぎ方やブランチの指定には左右されない。
+       削除と、送り先がブランチ(refs/heads/)以外の push(タグなど)は照合しない。送り元がタグでも、送り先がブランチなら照合する。
      - 照合するのは環境変数 `CLAUDECODE=1` の環境(Claude Code の Bash・PowerShell ツール、hook の子プロセス、Claude Code の IDE 拡張の
        統合ターミナルなど。<https://code.claude.com/docs/en/env-vars> の `CLAUDECODE` の行による)からの push だけ。
-       それ以外の端末から人が push するときは照合しない。
+       IDE 拡張の統合ターミナルから人が push した場合も照合する。それ以外の端末から人が push するときは照合しない。
      - フックは `node tools/review-gate/setup.mjs` で有効にする(`core.hooksPath` を `.githooks` にする。クローンごとに 1 回)。
-     - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドのうち、
-       引用符とヒアドキュメントの中身を除いて `git` の次のサブコマンドが `push` のものだけを対象に、次を確かめて止める。
-       対象は `$CLAUDE_PROJECT_DIR` の作業ツリーでの push(作業ディレクトリがそこか、コマンドにそのパスを含む場合。同じリポジトリの別の worktree は対象外)。
-       - フックが有効か(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)
-       - 引用符の外に、照合を外すよく知られた書き方(`--no-veri` で始まるオプション、`core.hooksPath`、`CLAUDECODE` の上書き・削除)が無いか
-     - **仕組みで防げないもの:** `--no-verify`・`core.hooksPath` の変更・`CLAUDECODE` を外した実行・`.githooks` の無いブランチでは、
-       フックが動かず照合されない。上の hook はコマンドの文字列だけを見るので、スクリプトや別名の中での実行、上に無い書き方、
-       Bash・PowerShell 以外の経路は止められない。どれも手順として使わない。
+     - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
+       シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
+       - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)
+       - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、環境を空にする `env -i` など)も含む。
+         メッセージや引用符の中に書いた語でも止まるので、そうした語を含むコミットメッセージや PR の本文は、
+         `git commit -F <ファイル>` や `gh pr create --body-file <ファイル>` でファイルから渡す
+     - **仕組みで防げないもの:** `--no-verify`・`core.hooksPath` の変更・`.githooks` の無いブランチではフックが動かず、
+       `CLAUDECODE` を外した実行ではフックは動くが照合しない。上の hook はコマンドの文字列だけを見るので、
+       変数・別名・スクリプトの中で組み立てる操作や、Bash・PowerShell 以外の経路は止められない。どれも手順として使わない。
      - 仕組みを変えたら `node tools/review-gate/test-gate.mjs` を実行し、すべて OK になることを確かめる。
      - 経緯:PR #174 では、最初の push の前に測り直して本文の倍率を書き換え、その後に独立レビューを通さずに push して、
        その倍率を CodeRabbit に指摘された。手順に書いてあっても守れなかったので、仕組みで止めるようにした。
@@ -173,7 +179,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - ブランチ名は必ずクォートして渡す(シェルのメタ文字によるコマンドインジェクションを防ぐ)。
    - push を止められたら、表示された理由に従う。主な理由は次のとおり。フックを外したり `--no-verify` を付けたりして push しない。
      - フックが有効になっていない、または今のチェックアウトに `.githooks/pre-push` が無い(check-setup.mjs)
-     - 照合を外す書き方をしている(check-setup.mjs)
+     - 「push」を含むコマンドに、照合を外す語を含んでいる(メッセージの中の語でも止まる。メッセージはファイルから渡す)(check-setup.mjs)
      - 承認の記録が無い、または読めない(pre-push.mjs)
      - push するコミットの内容が承認と違う(承認の後の変更、承認のときにあった未追跡のファイルのコミット忘れ、内容の違う別のブランチ)(pre-push.mjs)
      - 照合の途中でエラーが起きた(pre-push.mjs)
@@ -295,8 +301,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    マージ不可のブロッカーとして扱い、解消するまで Phase 4 へ進まない。
    - `git fetch origin main` で最新の `main` を取得し、作業ブランチへ取り込む(`git merge origin/main`
      または `git rebase origin/main`)。
-   - 競合を解消してコミットする。取り込みでブランチの内容が変わるので、push の前に Phase 1 手順 1 の「対象」の取り込みの扱い
-     (競合を解消したなら独立レビュー、しなかったなら direct)のとおりに承認を記録する(承認が無いと pre-push フックが止める)。
+   - 競合を解消して取り込みを完了する(merge はコミット、rebase は `git rebase --continue`)。
+     push の前に、Phase 1 手順 1 の「対象」の取り込みの扱いのとおりに独立レビューを通して承認を記録する(承認が無いと pre-push フックが止める)。
      そのうえで `git push`(rebase した場合は `--force-with-lease`)する。
    - push により CI は自動再実行される。必要なら CodeRabbit へ `@coderabbitai review` で再レビューを要求する。
    - 解消後は手順 1〜5 のレビュー・CI ループへ戻り、再び指摘ゼロ・グリーンを確認する。
@@ -364,6 +370,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
 ```text
 Phase 1  setup・機械チェック・過去指摘の集計・approve start → 3 観点の独立レビュー(要修正ゼロまで)→ approve done
          → コミット → プッシュ(pre-push フックが承認と照合)
+         (「対象」の例外: article-check → approve direct → コミット → プッシュ)
 Phase 2  PR 作成 → subscribe_pr_activity で購読
 Phase 3  レビュー待ち(Webhook)→ 指摘修正 → 独立レビュー・approve done → push(pre-push フックが照合)→ 再レビュー依頼
            ── 指摘ゼロまでループ
