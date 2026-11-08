@@ -243,11 +243,17 @@ function xamlChecker() {
 }
 
 const usingRe = /^\s*(?:global\s+)?using\s+(?:static\s+)?[\w.]+(?:\s*=\s*[\w.<>, ]+)?\s*;\s*(?:\/\/.*)?$/;
+// 戻り値の型の無い `修飾子 名前(` の宣言（コンストラクター）。名前を取り出す。
+const ctorDeclRe = /^\s*(?:public|private|protected|internal|static)\s+(?:(?:public|private|protected|internal|static)\s+)*([A-Z]\w*)\s*\(/m;
+// 拡張メソッド（最初の引数に this が付いた静的メソッド）。
+const extensionRe = /\bstatic\b[^\n(]*\(\s*this\s/;
 const typeDeclRe = /^\s*(?:\[[^\]]*\]\s*)*(?:(?:public|internal|private|protected|sealed|static|partial|abstract|readonly|file)\s+)*(?:class|record|struct|interface|enum|namespace)\s+\w/m;
 
 /**
  * C# のコード片を、指定した包み方で 1 つのソースにする。using の行は、元の行番号を付けて先頭に移す。
- * kind: type（そのまま）/ toplevel（実行形式のトップレベル）/ members（クラスで包む）/ statements（メソッドの本体で包む）
+ * kind: type（そのまま）/ toplevel（実行形式のトップレベル）/ members（クラスで包む）/ ctor（コンストラクターの名前のクラスで包む）/
+ *       extensions（静的クラスで包む）/ statements（メソッドの本体で包む）/ iterator（反復子の本体で包む）/
+ *       asyncIterator（非同期の反復子の本体で包む）
  */
 function csharpSource(code, kind) {
   const lines = code.split("\n");
@@ -267,8 +273,19 @@ function csharpSource(code, kind) {
   if (kind === "members") {
     return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n#line 1 "snippet"\n${b}\n#line default\n}\n`;
   }
+  if (kind === "ctor") {
+    // 戻り値の型の無い `修飾子 名前(` の宣言（コンストラクター）の名前で、クラスを包む。
+    const name = (b.match(ctorDeclRe) || [])[1] ?? "SnippetHolder";
+    return `${head.join("\n")}\npublic partial class ${name}\n{\n#line 1 "snippet"\n${b}\n#line default\n}\n`;
+  }
+  if (kind === "extensions") {
+    return `${head.join("\n")}\npublic static partial class SnippetExtensions\n{\n#line 1 "snippet"\n${b}\n#line default\n}\n`;
+  }
   if (kind === "iterator") {
     return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n    public System.Collections.IEnumerable SnippetBody()\n    {\n#line 1 "snippet"\n${b}\n#line default\n    }\n}\n`;
+  }
+  if (kind === "asyncIterator") {
+    return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n    public async System.Collections.Generic.IAsyncEnumerable<object?> SnippetBody()\n    {\n#line 1 "snippet"\n${b}\n#line default\n        await System.Threading.Tasks.Task.CompletedTask;\n    }\n}\n`;
   }
   return `${head.join("\n")}\npublic partial class SnippetHolder\n{\n    public async System.Threading.Tasks.Task<object?> SnippetBody()\n    {\n#line 1 "snippet"\n${b}\n#line default\n        await System.Threading.Tasks.Task.CompletedTask;\n        return null;\n    }\n}\n`;
 }
@@ -346,6 +363,9 @@ const kindLabel = {
   members: "クラスのメンバーとして包んで",
   statements: "メソッドの本体として包んで",
   iterator: "反復子のメソッドの本体として包んで",
+  asyncIterator: "非同期の反復子のメソッドの本体として包んで",
+  ctor: "コンストラクターの名前のクラスで包んで",
+  extensions: "静的クラスで包んで",
 };
 
 if (snippets.length === 0) {
@@ -397,13 +417,27 @@ if (snippets.length === 0) {
         return;
       }
 
-      // 包み方を順に試し、エラーの無いもの（無ければ最も少ないもの）を採る。
+      // 包み方を順に試し、エラーの無いものを採る。無ければ、(構文・型の誤りの件数, 存在しないメンバーの件数,
+      // 抜粋の外の参照の件数) の順に少ないものを採る（件数の合計だけで選ぶと、外の参照だけのものより誤りのあるものを選んでしまう）。
       const body = s.code.split("\n").filter((l) => !usingRe.test(l)).join("\n");
-      const kinds = typeDeclRe.test(body)
-        ? ["type", "toplevel", "members"]
-        : /\byield\s+(?:return|break)\b/.test(body)
-          ? ["iterator", "members", "toplevel"]
-          : ["statements", "members", "toplevel"];
+      const hasYield = /\byield\s+(?:return|break)\b/.test(body);
+      const hasAwait = /\bawait\b/.test(body);
+      let kinds;
+      if (typeDeclRe.test(body)) kinds = ["type", "toplevel", "members"];
+      else if (extensionRe.test(body)) kinds = ["extensions", "members"];
+      else if (hasYield) kinds = [hasAwait ? "asyncIterator" : "iterator", "members", "toplevel"];
+      else kinds = ["statements", "members", "ctor", "toplevel"];
+      /** エラーの重さを、比べられる数の組にする。 */
+      const weight = (errors) => [
+        errors.filter((e) => !outsideRef.has(e.code) && !missingMember.has(e.code)).length,
+        errors.filter((e) => missingMember.has(e.code)).length,
+        errors.filter((e) => outsideRef.has(e.code)).length,
+      ];
+      /** 重さの組を辞書順に比べ、a のほうが軽ければ true。 */
+      const lighter = (a, b) => {
+        for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k];
+        return false;
+      };
       let best = null;
       let failed = null;
       for (const kind of kinds) {
@@ -412,7 +446,7 @@ if (snippets.length === 0) {
           failed = r.failed;
           break;
         }
-        if (!best || r.errors.length < best.errors.length) best = { kind, errors: r.errors };
+        if (!best || lighter(weight(r.errors), weight(best.errors))) best = { kind, errors: r.errors };
         if (r.errors.length === 0) break;
       }
       if (failed && !best) {
@@ -428,7 +462,10 @@ if (snippets.length === 0) {
       }
       const hard = errs.filter((e) => !outsideRef.has(e.code) && !missingMember.has(e.code));
       const api = errs.filter((e) => missingMember.has(e.code));
-      if (hard.length) {
+      if (hard.length && hard.every((e) => !e.inSnippet)) {
+        cResults.push("SKIP");
+        out.push(`- ${where}: 包み方で確かめられない（誤りが、包むために足した部分にだけ出た。抜粋の形をレビュアーが確かめる）`);
+      } else if (hard.length) {
         cResults.push("NG");
         out.push(`- ${where}: **構文・型の誤りの可能性**（どの包み方でもエラーが残った。最も少なかったのは${kindLabel[best.kind]}コンパイルしたとき）`);
       } else if (api.length) {

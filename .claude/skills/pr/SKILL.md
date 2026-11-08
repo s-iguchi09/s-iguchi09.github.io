@@ -65,7 +65,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - `Agent` ツールで、文脈を引き継がない種別(`general-purpose` など。fork は使わない)を起動し、共通の指示として次を渡す。
      `isolation: "worktree"` は指定しない(一時コピーが作られ、消される。下の経緯を参照)。
      - 対象リポジトリのパス・ブランチと、差分の取り方(`git fetch origin main` のあと
-       `mb=$(git merge-base origin/main HEAD) && git diff --ignore-cr-at-eol "$mb"`。未コミットの変更を含める。
+       Bash(Git Bash)で `mb=$(git merge-base origin/main HEAD) && git diff --ignore-cr-at-eol "$mb"`。未コミットの変更を含める。
        分岐点と比べるのは、ブランチを切った後に main へ入った変更を、このブランチの変更として読まないため。
        `git diff ... $(git merge-base ...)` と 1 つに書くと、merge-base が失敗しても空のまま `git diff` が動いて失敗に気づけないので、分けて書く)と、
        未追跡の新規ファイルの一覧(`git status --short --untracked-files=all`)。新規ファイルは `git diff` に出ないため、一覧を渡して読ませる。
@@ -96,6 +96,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      - 承認の記録・生成物の置き場(`git rev-parse --git-path review-gate`)と git の設定を書き換えるコマンド
        (`setup.mjs`・`approve.mjs`・`article-check.mjs`・`coderabbit-findings.mjs` の実行を含む)は実行せず、「未実行(推論)」とすること
        (3 人が同時に動くので、依頼者の記録やほかのレビュアーの材料を上書きしないため)
+     - レビュアーの Bash・PowerShell のコマンドも `check-setup.mjs` の hook を通るので、「push」と照合を外す語の両方を含むコマンド
+       (例: その 2 語で探す grep)は止まる。文字列の検索は Grep ツールを使うこと
      - 上の実行を除き、読むだけでファイルを変更しないこと
      - 指摘は件数を絞らず、各指摘に「ファイル:行」「何が問題か」「直し方」「重要度(要修正 / 軽微 / 見送り可)」を付けること
    - 少なくとも次の観点を確認させる。
@@ -129,7 +131,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      作業ツリーが `approve.mjs start` の時点と違えば(レビューの後に変えていれば)記録されないので、`start` からレビューをやり直す。
      上の「対象」の例外(`article-workflow` の Phase 2 の収束後に 1 行も変えずに push する場合)は、
      `node tools/review-gate/article-check.mjs` を実行し、報告の (c) に上の 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
-     XML として読めない)が出ていないことを確かめてから(出たら直す。直したら例外ではなくなる)、
+     XML として読めない)が出ていないことを確かめてから(出たら直す。直したら例外ではなくなる。
+     抜粋として正しいのに出た場合は、例外をやめて独立レビュー(start〜done)に切り替える)、
      `node tools/review-gate/approve.mjs direct "article-workflow の Phase 2 で収束"` で記録する。
    - **承認と push の照合(仕組み):** git の pre-push フック(`.githooks/pre-push` → `tools/review-gate/pre-push.mjs`)が、
      push される各ブランチの先頭のコミットの内容(ツリー)を承認の記録と照合し、違えば push を止める。
@@ -145,11 +148,18 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
        - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)
        - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、環境を空にする `env -i` など)も含む。
-         メッセージや引用符の中に書いた語でも止まるので、そうした語を含むコミットメッセージや PR の本文は、
-         `git commit -F <ファイル>` や `gh pr create --body-file <ファイル>` でファイルから渡す
-     - **仕組みで防げないもの:** `--no-verify`・`core.hooksPath` の変更・`.githooks` の無いブランチではフックが動かず、
-       `CLAUDECODE` を外した実行ではフックは動くが照合しない。上の hook はコマンドの文字列だけを見るので、
-       変数・別名・スクリプトの中で組み立てる操作や、Bash・PowerShell 以外の経路は止められない。どれも手順として使わない。
+         語の一覧は網羅ではない。メッセージや引用符・ヒアドキュメントの中に書いた語でも止まるので、そうした語を含むコミットメッセージは、
+         作業ツリーの外(一時ディレクトリなど)に置いたファイルから `git commit -F <ファイル>` で渡す
+         (作業ツリーの中に置くと、手順 2 の `git add -A` でコミットに入り、承認した内容と一致しなくなる)。
+         `gh` で PR を作る場合の本文も同じく `--body-file` で渡す(MCP のツールで作る場合は、この hook の対象外)
+     - **仕組みで防げないもの:**
+       - `--no-verify`・`core.hooksPath` の変更・`.githooks` の無いブランチではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
+       - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
+         変数・別名・スクリプトの中で組み立てる操作は止められない
+       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、hook も照合も通らない
+       - git を通さずにリモートのブランチを書き換える操作(GitHub の API・MCP のツール・`git send-pack` など)と、
+         Bash・PowerShell 以外の経路は照合されない
+       - どれも手順として使わない
      - 仕組みを変えたら `node tools/review-gate/test-gate.mjs` を実行し、すべて OK になることを確かめる。
      - 経緯:PR #174 では、最初の push の前に測り直して本文の倍率を書き換え、その後に独立レビューを通さずに push して、
        その倍率を CodeRabbit に指摘された。手順に書いてあっても守れなかったので、仕組みで止めるようにした。
@@ -370,7 +380,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
 ```text
 Phase 1  setup・機械チェック・過去指摘の集計・approve start → 3 観点の独立レビュー(要修正ゼロまで)→ approve done
          → コミット → プッシュ(pre-push フックが承認と照合)
-         (「対象」の例外: article-check → approve direct → コミット → プッシュ)
+         (「対象」の例外: setup → article-check → approve direct → コミット → プッシュ)
 Phase 2  PR 作成 → subscribe_pr_activity で購読
 Phase 3  レビュー待ち(Webhook)→ 指摘修正 → 独立レビュー・approve done → push(pre-push フックが照合)→ 再レビュー依頼
            ── 指摘ゼロまでループ

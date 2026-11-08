@@ -39,12 +39,16 @@ function run(cmd, args, { input = "", env = {}, cwd = repo } = {}) {
   return spawnSync(cmd, args, { cwd, input, encoding: "utf8", env: { ...baseEnv, ...env } }).status;
 }
 
-/** 本物の git push を実行し、終了コードを返す。claude が false なら CLAUDECODE を外す。 */
+/**
+ * 本物の git push を実行し、終了コードを返す。claude が false なら環境変数を外す。
+ * 終了コード 1 でも、照合の文言（[review-gate]）が無ければ別の理由の失敗なので -1 を返す。
+ */
 function push(args, claude = true) {
   const env = { ...baseEnv };
   if (claude) env.CLAUDECODE = "1";
   else delete env.CLAUDECODE;
-  return spawnSync("git", args[0] === "-c" ? args : ["push", ...args], { cwd: repo, encoding: "utf8", env }).status;
+  const r = spawnSync("git", args[0] === "-c" ? args : ["push", ...args], { cwd: repo, encoding: "utf8", env });
+  return r.status === 1 && !`${r.stderr}`.includes("[review-gate]") ? -1 : r.status;
 }
 
 try {
@@ -89,6 +93,8 @@ try {
   expect("check-setup: 別の区切りで CLAUDECODE を消す", check("unset CLAUDECODE; git push"), 2);
   expect("check-setup: env -i", check("env -i PATH=/usr/bin git push"), 2);
   expect("check-setup: env --ignore-environment", check("env --ignore-environment git push"), 2);
+  expect("check-setup: env の省略形・まとめ書き", check("env -iu FOO git push"), 2);
+  expect("check-setup: include.path", check("git -c include.path=/x push"), 2);
   expect("check-setup: ヒアドキュメントの後ろの --no-verify", check("git commit -F - <<'EOF' && git push --no-verify\nmsg\nEOF"), 2);
   expect("check-setup: メッセージの中の語（止める側に倒す）", check('git commit -m "git push で --no-verify を使わない"'), 2);
   expect("check-setup: メッセージはファイルで渡す", check("git commit -F msg.txt"), 0);

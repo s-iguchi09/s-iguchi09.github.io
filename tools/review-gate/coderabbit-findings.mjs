@@ -4,7 +4,7 @@
 //
 // 集めるもの:
 //   - インラインの指摘（返信は除く）
-//   - レビュー本文の「Outside diff range」と「Nitpick」の各項目
+//   - レビュー本文の項目（「Outside diff range」「Nitpick」など。区分は見分けない）
 //   - 失敗・警告になった pre-merge check（Docstring Coverage など）
 //
 // 使い方（リポジトリのルートで実行する）:
@@ -40,7 +40,7 @@ const repo = gh(["repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOw
 // gh pr list は作成日時の順なので、作成が新しい limit*3 件を取り、マージした日時で並べ直して limit 件にする
 // （作成がそれより古く、最近マージされた PR は入らないことがある）。
 const prs = JSON.parse(gh(["pr", "list", "--state", "merged", "--limit", String(limit * 3), "--json", "number,title,mergedAt"]))
-  .sort((a, b) => String(b.mergedAt).localeCompare(String(a.mergedAt)))
+  .sort((a, b) => Date.parse(b.mergedAt) - Date.parse(a.mergedAt))
   .slice(0, limit);
 
 const severityWords = /(?:🔴|🟠|🟡|🔵|⚪)?\s*\b(Critical|Major|Minor|Trivial|Nitpick)\b/;
@@ -94,7 +94,7 @@ const lines = [
   "",
   `${repo} の、作成が新しい ${limit * 3} 件の PR のうち、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
   "インラインの指摘（返信を除く）と、",
-  "レビュー本文の「Outside diff range」「Nitpick」の項目、失敗・警告になった pre-merge check を含む。",
+  "レビュー本文の項目（「Outside diff range」「Nitpick」など。区分は見分けない）、失敗・警告になった pre-merge check を含む。",
   "同じ型の問題が今回の差分に無いかを確かめる。日英で同じ指摘が 2 件ずつ付いていることがある。",
   "",
 ];

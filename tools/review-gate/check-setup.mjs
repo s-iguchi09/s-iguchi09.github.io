@@ -6,13 +6,17 @@
 // 元のコマンドの文字列に語が含まれるかだけで判定し、迷う場合は止める側に倒す。
 //
 //   1. コマンドに「push」を含めば（大文字小文字を問わず、部分一致）、$CLAUDE_PROJECT_DIR のリポジトリで
-//      core.hooksPath が .githooks か、今のチェックアウトに .githooks/pre-push があるかを確かめ、無ければ止める。
-//      作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
-//   2. コマンドに「push」を含み、さらに照合を外す語（`--no-veri`、`hookspath`、`CLAUDECODE`、`--ignore-environment`、
-//      環境を空にする `env -i`・`env -`）のどれかを含めば止める。メッセージや引用符の中に書いた語でも止まる
-//      （止める側の誤り。そうした語を含むコミットメッセージは `git commit -F <ファイル>` で渡す）。
+//      core.hooksPath が .githooks であることと、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
+//      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
+//   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
+//      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`）のどれかを含めば止める。網羅ではない。
+//      メッセージや引用符・ヒアドキュメントの中に書いた語でも止まる（止める側の誤り。そうした語を含むコミットメッセージは、
+//      作業ツリーの外に置いたファイルから `git commit -F <ファイル>` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
+//      承認した内容と一致しなくなる）。
 //
-// 確かめられないもの: 変数・別名・スクリプトの中で組み立てる push と照合を外す操作、Bash・PowerShell 以外の経路。
+// 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
+// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、git を通さずにリモートのブランチを書き換える操作
+// （GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
 //
 // 止めるときは終了コード 2（Claude Code の hook は、既定（onFailure 未指定）では終了コード 2 のときだけツールの実行を止め、
 // 標準エラーを Claude に返す）。判定の途中のエラーでは止めない（この hook が壊れて、関係の無いコマンドまで止めないため）。
@@ -47,10 +51,11 @@ try {
   if (typeof command !== "string" || !/push/i.test(command)) {
     process.exit(0);
   }
-  if (/--no-veri|hookspath|CLAUDECODE|--ignore-environment|\benv\s+(?:-[a-z]*i\b|-(?=\s))/i.test(command)) {
+  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|UseNewEnvironment|\bwsl\b/i.test(command)) {
     block(
-      "push を含むコマンドに、照合を外す語（--no-verify とその省略形、hooksPath、CLAUDECODE、環境を空にする env）が含まれている。" +
-        "照合を外さずに push する。メッセージに書いただけなら、メッセージをファイルにして `git commit -F <ファイル>` などで渡す。",
+      "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path、CLAUDECODE、" +
+        "オプションを付けた env、UseNewEnvironment、wsl）が含まれている。照合を外さずに push する。" +
+        "メッセージに書いただけなら、作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。",
     );
   }
   const project = process.env.CLAUDE_PROJECT_DIR;

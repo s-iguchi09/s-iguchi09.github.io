@@ -67,11 +67,12 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
    - **存在しない場合(新規作成)**: `git switch -c <branch> origin/main` で最新 `main` から作成する。
    - **既に存在する場合**: `git switch <branch>` で切り替えてから、**ブランチを他者と共有しているかで更新方法を選ぶ**(判断基準は push 済みか否かではなく、共有の有無):
      - **自分専用のブランチ(他者と共有していない。push 済みでも可)**: `git rebase origin/main` で最新 `main` に追随する。
-       rebase 後、既に push 済みの内容を更新するには `git push --force-with-lease` を用いる(通常の push は拒否される)。
      - **他者と共有中のブランチ**: 履歴を書き換えない `git merge origin/main` を用いる(rebase および force push は行わない)。
 
-     どちらの取り込みの後も、この時点では push しない。push は Phase 3・4 の push でまとめて行い、承認の記録は `pr` スキル
-     Phase 1 手順 1 の「対象」に従う(承認が無いと pre-push フックが止める)。
+     どちらの取り込みの後も、この時点では push しない。push は Phase 3・4 の push でまとめて行い、その前に `pr` スキル
+     Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による。承認が無いと pre-push フックが止める)。
+     既に push 済みのブランチを rebase した場合は、Phase 3・4 の push を `git push --force-with-lease -u origin <branch>` にする
+     (通常の push は拒否される)。
 
      いずれの場合も `git checkout -B <branch> origin/main` は使わない(既存ブランチの未 push コミットが参照から外れるため)。
    これにより直近でマージされた記事・設定・スキルを取り込んだ状態から作業でき、重複提案や古い前提での作業を避けられる。

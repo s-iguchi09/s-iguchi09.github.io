@@ -12,9 +12,11 @@
 //   （送り元がタグでも、送り先がブランチなら照合する）。
 // - 照合の途中でエラーが起きたら、止める側に倒す（終了コード 1）。
 //
-// 手で試す（push される ref を標準入力で渡す。最後の 2 つは使わない）:
+// 手で試す（push される ref を標準入力で渡す。最後の 2 つの引数は使わない）。Claude Code の Bash では
+// 環境変数 CLAUDECODE が既に 1 なので、そのまま実行する（コマンドに書き足すと check-setup.mjs に止められる）。
+// それ以外の端末では、環境変数 CLAUDECODE を 1 にしてから実行する。
 //   echo "refs/heads/x $(git rev-parse HEAD) refs/heads/x 0000000000000000000000000000000000000000" \
-//     | CLAUDECODE=1 node tools/review-gate/pre-push.mjs origin url; echo $?
+//     | node tools/review-gate/pre-push.mjs origin url; echo $?
 import fs from "node:fs";
 import { approvalFile, git } from "./lib.mjs";
 
