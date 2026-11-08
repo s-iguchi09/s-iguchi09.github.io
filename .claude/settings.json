@@ -26,9 +26,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/tools/review-gate/check-push.mjs\"",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/review-gate/check-setup.mjs\"",
             "timeout": 30,
-            "statusMessage": "独立レビュー済みの内容かを確かめています"
+            "statusMessage": "push の照合のフックが有効かを確かめています"
           }
         ]
       }

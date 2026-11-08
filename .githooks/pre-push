@@ -1,0 +1,3 @@
+#!/bin/sh
+# 承認した内容と、push される内容を照合する（tools/review-gate/pre-push.mjs）。
+exec node "$(git rev-parse --show-toplevel)/tools/review-gate/pre-push.mjs" "$@"

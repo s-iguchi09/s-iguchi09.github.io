@@ -1,47 +1,65 @@
 // 独立レビューの前に、機械で確かめられることを確かめて報告にまとめる。
-// 対象は origin/main からの差分（未コミット・未追跡を含む）で追加・変更した行だけ。
+// 対象は、比べる相手（既定 origin/main）とこのブランチの分岐点から、今の作業ツリーまでの差分
+// （未コミット・未追跡を含む）で、追加・変更した行だけ。main 側で後から入った変更は含めない。
 //
-//   (a) 断定語（必ず・すべて・常に など）を含む行
-//   (b) 比率・比較の文と、その記事が読み込む表（数値の照合はレビュアーが行う。材料をそろえるまで）
-//   (c) 記事のコード片: C# はコンパイル、XAML は XML として読めるか
-//   (d) 変更した C# のメソッドのうち、説明コメント（///）があるものの割合（CodeRabbit の基準は 80%）
+//   (a) 断定語（必ず・すべて・常に など）を含む行。Markdown の行と、C#・JavaScript のコメント行が対象
+//   (b) 記事の、比率・比較を含む行と、その記事が読み込む表（数値の照合はレビュアーが行う。ここは材料をそろえるまで）
+//   (c) 記事のコード片: C# はコンパイルできるか（抜粋は型・メンバー・文に応じて包む）、XAML は XML として読めるか
+//   (d) 変更した C# のメソッドと JavaScript の関数のうち、説明コメントがあるものの割合。
+//       CodeRabbit の Docstring Coverage は、変更した関数のうち循環的複雑度 2 以上だけを数え、80% を基準にする。
+//       ここでは複雑度で絞らずに数えるので、近い値の目安にとどまる
 //
-// 使い方:
+// 使い方（リポジトリのルートで実行する）:
 //   node tools/review-gate/article-check.mjs [比べる相手（既定 origin/main）]
 // 出力: .git/review-gate/article-check.md（コミットされない）。パスと要約を標準出力に書く。
-// 前提: git fetch origin main ができること。(c) には .NET 10 SDK が要る（無ければ (c) を飛ばしてそう書く）。
+// 前提: git fetch origin main ができること。(c) には .NET 10 SDK が要る（無い・ビルドできないときは「確かめていない」と書く）。
 // 終了コード: 報告を作れたら 0（見つかった問題の有無にかかわらない）。差分を取れなければ 1。
-import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { gateDir, git, repoRoot } from "./lib.mjs";
+import { gateDir, git, repoRoot, untrackedFiles } from "./lib.mjs";
 
 const base = process.argv[2] ?? "origin/main";
 const root = repoRoot();
 process.chdir(root);
 
+let mergeBase;
 try {
   git(["fetch", "origin", "main"]);
+  mergeBase = git(["merge-base", base, "HEAD"]);
 } catch (e) {
-  console.error(`git fetch origin main に失敗した。比べる相手の新しさを保証できないので止める。\n${e.message}`);
+  console.error(`比べる相手（${base}）との分岐点を取れなかった（git fetch origin main の失敗を含む）。止める。\n${e.message}`);
   process.exit(1);
 }
 
-// ---- 差分の取得（ファイルごとの追加行） ----
+// ---- 差分の取得（ファイルごとの追加・変更行） ----
+// ユーザーの git の設定（接頭辞・パスの引用・外部 diff）に左右されないよう、明示して取る。
 const changed = new Map(); // path -> Set(行番号, 1 始まり)
-const diff = git(["diff", "--ignore-cr-at-eol", "-U0", "--no-color", base, "--", "."]);
+const diff = git([
+  "-c", "core.quotePath=false", "diff", "--ignore-cr-at-eol", "-U0", "--no-color", "--no-ext-diff", "--no-textconv",
+  "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", mergeBase, "--", ".",
+]);
 let current = null;
+let inHeader = false;
 for (const line of diff.split("\n")) {
-  const file = line.match(/^\+\+\+ b\/(.+)$/);
-  if (file) {
-    current = file[1];
-    changed.set(current, changed.get(current) ?? new Set());
-    continue;
-  }
-  if (line.startsWith("+++ /dev/null")) {
+  if (line.startsWith("diff --git ")) {
+    inHeader = true;
     current = null;
     continue;
+  }
+  if (inHeader) {
+    const file = line.match(/^\+\+\+ b\/(.+)$/);
+    if (file) {
+      current = file[1];
+      changed.set(current, changed.get(current) ?? new Set());
+    }
+    if (line.startsWith("@@")) {
+      inHeader = false;
+    } else {
+      continue;
+    }
   }
   const hunk = line.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/);
   if (hunk && current) {
@@ -52,9 +70,13 @@ for (const line of diff.split("\n")) {
     }
   }
 }
-for (const file of git(["ls-files", "--others", "--exclude-standard"]).split("\n").filter(Boolean)) {
-  const n = fs.readFileSync(file, "utf8").split(/\r?\n/).length;
-  changed.set(file, new Set(Array.from({ length: n }, (_, i) => i + 1)));
+for (const file of untrackedFiles()) {
+  try {
+    const n = fs.readFileSync(file, "utf8").split(/\r?\n/).length;
+    changed.set(file, new Set(Array.from({ length: n }, (_, i) => i + 1)));
+  } catch {
+    // 読めないファイル（バイナリの大きなファイルなど）は対象外。
+  }
 }
 for (const [file] of changed) {
   if (!fs.existsSync(file)) {
@@ -64,7 +86,9 @@ for (const [file] of changed) {
 
 const readLines = (file) => fs.readFileSync(file, "utf8").split(/\r?\n/);
 const isArticle = (file) => /^_articles_(ja|en)\/.+\.md$/.test(file);
-const isProse = (file) => file.endsWith(".md");
+const isCommentLine = (file, t) =>
+  (/\.(?:cs)$/.test(file) && /^\s*\/\//.test(t)) ||
+  (/\.(?:mjs|cjs|js|ts)$/.test(file) && /^\s*(?:\/\/|\/\*|\*)/.test(t));
 const out = [];
 const summary = [];
 
@@ -72,16 +96,17 @@ const summary = [];
 const absolute = /必ず|すべて|全て|常に|たびに|絶対|一切|決して|どんな場合も|例外なく|以降は|\balways\b|\bnever\b|\bevery\b|\ball of\b|\bguarantee/i;
 const aHits = [];
 for (const [file, lines] of changed) {
-  if (!isProse(file)) continue;
+  const prose = file.endsWith(".md");
+  if (!prose && !/\.(?:cs|mjs|cjs|js|ts)$/.test(file)) continue;
   const text = readLines(file);
   for (const n of [...lines].sort((x, y) => x - y)) {
     const t = text[n - 1] ?? "";
-    if (absolute.test(t) && !t.trim().startsWith("|---")) {
+    if ((prose || isCommentLine(file, t)) && absolute.test(t) && !t.trim().startsWith("|---")) {
       aHits.push(`- \`${file}:${n}\` ${t.trim().slice(0, 200)}`);
     }
   }
 }
-out.push("## (a) 断定語を含む追加行", "", "測った条件・件数・環境の範囲に収まる言い方かを確かめる。", "");
+out.push("## (a) 断定語を含む追加行（Markdown と、C#・JavaScript のコメント）", "", "測った条件・件数・環境の範囲に収まる言い方かを確かめる。", "");
 out.push(...(aHits.length ? aHits : ["（なし）"]), "");
 summary.push(`(a) 断定語 ${aHits.length} 行`);
 
@@ -107,7 +132,7 @@ for (const [file, lines] of changed) {
     }
   }
 }
-out.push("## (b) 比率・比較を含む追加行と、その記事が読み込む表", "");
+out.push("## (b) 記事の、比率・比較を含む追加行と、その記事が読み込む表", "");
 out.push("各文の比率・大小・「どの回でも」などが、表の値（中央値と各回の範囲）で成り立つかを計算して確かめる。中央値だけで成り立つ比較には「中央値で」と書いてあるかも見る。", "");
 out.push(...(bHits.length ? bHits : ["（なし）"]), "");
 for (const t of [...tablesToShow].sort()) {
@@ -122,13 +147,14 @@ for (const [file, lines] of changed) {
   if (!isArticle(file)) continue;
   const text = readLines(file);
   for (let i = 0; i < text.length; i++) {
-    const open = text[i].match(/^\s*```\s*(csharp|cs|c#|xml|xaml)\s*$/i);
+    const open = text[i].match(/^\s*(`{3,}|~{3,})\s*(csharp|cs|c#|xml|xaml)\b.*$/i);
     if (!open) continue;
+    const fence = open[1];
     let j = i + 1;
-    while (j < text.length && !/^\s*```\s*$/.test(text[j])) j++;
+    while (j < text.length && !new RegExp(`^\\s*${fence[0] === "`" ? "`" : "~"}{${fence.length},}\\s*$`).test(text[j])) j++;
     const touched = [...Array(j - i + 1).keys()].some((k) => lines.has(i + 1 + k));
     if (touched) {
-      const lang = /xml|xaml/i.test(open[1]) ? "xaml" : "csharp";
+      const lang = /xml|xaml/i.test(open[2]) ? "xaml" : "csharp";
       snippets.push({ file, line: i + 2, lang, code: text.slice(i + 1, j).join("\n") });
     }
     i = j;
@@ -137,26 +163,30 @@ for (const [file, lines] of changed) {
 out.push("## (c) 記事のコード片（追加・変更した行を含むもの）", "");
 const cResults = [];
 
-/** XAML を XML として読めるか確かめるプログラム。一度ビルドしたら .git/review-gate に置いて使い回す。 */
-function xamlChecker() {
-  const dir = path.join(gateDir(), "xaml-checker");
-  const exe = path.join(dir, "bin", "Release", "net10.0", "XamlChecker.exe");
-  if (fs.existsSync(exe)) return exe;
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(
-    path.join(dir, "XamlChecker.csproj"),
-    `<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-</Project>
-`,
-  );
-  fs.writeFileSync(
-    path.join(dir, "Program.cs"),
-    `using System.Xml;
+// パーサーが出す構文エラーの番号（これがあると、コンパイラは名前と型を確かめる段階に進まないことがある）。
+const syntaxCodes = new Set([
+  "CS1001", "CS1002", "CS1003", "CS1009", "CS1010", "CS1012", "CS1013", "CS1022", "CS1026", "CS1031", "CS1032",
+  "CS1035", "CS1039", "CS1040", "CS1041", "CS1056", "CS1513", "CS1514", "CS1519", "CS1520", "CS1525", "CS1733",
+  "CS8124", "CS8641",
+]);
+// 抜粋の外で宣言された名前や型を参照しているだけのことが多い番号。
+const outsideRef = new Set(["CS0103", "CS0246", "CS0234"]);
+// 存在しないメンバーを呼んでいる（実在しない API の可能性が高い）番号。
+const missingMember = new Set(["CS1061", "CS0117"]);
+
+const xamlNamespaces = {
+  "": "http://schemas.microsoft.com/winfx/2006/xaml/presentation",
+  x: "http://schemas.microsoft.com/winfx/2006/xaml",
+  d: "http://schemas.microsoft.com/expression/blend/2008",
+  mc: "http://schemas.openxmlformats.org/markup-compatibility/2006",
+  i: "http://schemas.microsoft.com/xaml/behaviors",
+  b: "http://schemas.microsoft.com/xaml/behaviors",
+  prism: "http://prismlibrary.com/",
+  sys: "clr-namespace:System;assembly=System.Runtime",
+  local: "clr-namespace:App",
+};
+
+const xamlCheckerSource = `using System.Xml;
 
 foreach (string file in args)
 {
@@ -171,10 +201,77 @@ foreach (string file in args)
         Console.WriteLine($"NG\\t{file}\\t{ex.LineNumber}:{ex.LinePosition}\\t{ex.Message}");
     }
 }
+`;
+
+/** XAML を XML として読めるか確かめるプログラム。生成内容のハッシュごとに .git/review-gate に置いて使い回す。 */
+function xamlChecker() {
+  const hash = createHash("sha256").update(xamlCheckerSource).digest("hex").slice(0, 12);
+  const dir = path.join(gateDir(), `xaml-checker-${hash}`);
+  const exe = path.join(dir, "bin", "Release", "net10.0", "XamlChecker.exe");
+  if (fs.existsSync(exe)) return exe;
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "XamlChecker.csproj"),
+    `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>
 `,
   );
-  const build = spawnSync("dotnet", ["build", "-nologo", "-v", "q", "-c", "Release"], { cwd: dir, encoding: "utf8" });
+  fs.writeFileSync(path.join(dir, "Program.cs"), xamlCheckerSource);
+  const build = spawnSync("dotnet", ["build", "-nologo", "-v", "q", "-c", "Release", "-nodeReuse:false"], { cwd: dir, encoding: "utf8", timeout: 300000 });
   return !build.error && fs.existsSync(exe) ? exe : null;
+}
+
+/** C# のコード片を、型・メンバー・文のどれを含むかに応じて包む。using の行は空行にして行番号を保つ。 */
+function wrapCsharp(code, idx) {
+  const usingRe = /^\s*(?:global\s+)?using\s+(?:static\s+)?[\w.]+(?:\s*=\s*[\w.<>, ]+)?\s*;\s*$/;
+  const usings = [];
+  const body = code.split("\n").map((l) => {
+    if (usingRe.test(l)) {
+      usings.push(l.trim());
+      return "";
+    }
+    return l;
+  });
+  const joined = body.join("\n");
+  const typeDecl = /^\s*(?:\[[^\]]*\]\s*)*(?:(?:public|internal|private|protected|sealed|static|partial|abstract|readonly|file)\s+)*(?:class|record|struct|interface|enum)\s+\w/m;
+  const memberDecl = /^\s*(?:\[[^\]]*\]\s*)*(?:public|private|protected|internal|static|async|override|virtual|abstract|readonly|const|event|partial)\s/m;
+  const hasNamespace = /^\s*namespace\s/m.test(joined);
+  let kind;
+  let content;
+  if (typeDecl.test(joined) || hasNamespace) {
+    kind = "type";
+    content = `#line 1 "snippet${idx}"\n${joined}`;
+  } else if (memberDecl.test(joined)) {
+    kind = "members";
+    content = `public partial class Snippet${idx}\n{\n#line 1 "snippet${idx}"\n${joined}\n}`;
+  } else {
+    kind = "statements";
+    content = `public partial class Snippet${idx}\n{\n    public async System.Threading.Tasks.Task SnippetBody()\n    {\n#line 1 "snippet${idx}"\n${joined}\n    await System.Threading.Tasks.Task.CompletedTask;\n    }\n}`;
+  }
+  // 日英の記事に同じ名前の型があってもぶつからないよう、コード片ごとに名前空間を分ける。
+  const ns = hasNamespace ? "" : `namespace SnippetNs${idx};\n`;
+  return { source: `${usings.join("\n")}\n${ns}${content}\n`, kind };
+}
+
+/** XAML のコード片を、宣言の無い接頭辞を補ったうえで、読める形の XML にする。 */
+function wrapXaml(code) {
+  const trimmed = code.trim();
+  if (/^<\?xml|^<[\w:.]+[^>]*\sxmlns=/.test(trimmed)) {
+    return { xml: code, lineOffset: 0 };
+  }
+  const declared = new Set([...code.matchAll(/xmlns:(\w+)=/g)].map((m) => m[1]));
+  const used = new Set([...code.matchAll(/<\/?(\w+):[\w.]+|\s(\w+):[\w.]+\s*=/g)].map((m) => m[1] ?? m[2]).filter((p) => p && p !== "xmlns"));
+  const attrs = [`xmlns="${xamlNamespaces[""]}"`];
+  for (const p of new Set([...Object.keys(xamlNamespaces).filter(Boolean), ...used])) {
+    if (declared.has(p)) continue;
+    attrs.push(`xmlns:${p}="${xamlNamespaces[p] ?? `urn:snippet:${p}`}"`);
+  }
+  return { xml: `<SnippetRoot ${attrs.join(" ")}>\n${code}\n</SnippetRoot>`, lineOffset: 1 };
 }
 
 if (snippets.length === 0) {
@@ -194,7 +291,7 @@ if (snippets.length === 0) {
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);CS8618;CS0169;CS0414;CS1998;CS8602;CS8604</NoWarn>
+    <NoWarn>$(NoWarn);CS8618;CS0169;CS0414;CS1998;CS8602;CS8604;CS0168;CS0219</NoWarn>
   </PropertyGroup>
 </Project>
 `,
@@ -211,29 +308,14 @@ if (snippets.length === 0) {
     snippets.forEach((s, idx) => {
       if (s.lang === "csharp") {
         csharpCount++;
-        const usings = [];
-        const body = [];
-        for (const l of s.code.split("\n")) {
-          if (/^\s*using\s+[\w.]+\s*;\s*$/.test(l)) usings.push(l.trim());
-          else body.push(l);
-        }
-        const hasType = /^\s*(?:\[[^\]]*\]\s*)*(?:(?:public|internal|private|sealed|static|partial|abstract|file)\s+)*(?:class|record|struct|interface|enum|namespace)\s/m.test(body.join("\n"));
-        // 日英の記事に同じ名前の型があってもぶつからないよう、コード片ごとに名前空間を分ける。
-        const ns = /^\s*namespace\s/m.test(body.join("\n")) ? "" : `namespace SnippetNs${idx};\n`;
-        const content = hasType
-          ? `#line 1 "snippet${idx}"\n${body.join("\n")}`
-          : `public partial class Snippet${idx}\n{\n#line 1 "snippet${idx}"\n${body.join("\n")}\n}`;
-        fs.writeFileSync(path.join(dir, `Snippet${idx}.cs`), `${usings.join("\n")}\n${ns}${content}\n`);
-        s.wrapped = !hasType;
+        const w = wrapCsharp(s.code, idx);
+        s.kind = w.kind;
+        fs.writeFileSync(path.join(dir, `Snippet${idx}.cs`), w.source);
       } else {
-        const trimmed = s.code.trim();
-        const hasRootNs = /^<\?xml|^<[\w:.]+[^>]*\sxmlns=/.test(trimmed);
-        const xml = hasRootNs
-          ? s.code
-          : `<SnippetRoot xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:App" xmlns:sys="clr-namespace:System;assembly=System.Runtime">\n${s.code}\n</SnippetRoot>`;
-        s.lineOffset = hasRootNs ? 0 : 1;
+        const w = wrapXaml(s.code);
+        s.lineOffset = w.lineOffset;
         const f = path.join(xamlDir, `snippet${idx}.xml`);
-        fs.writeFileSync(f, xml);
+        fs.writeFileSync(f, w.xml);
         xamlFiles.push([f, idx]);
       }
     });
@@ -241,11 +323,12 @@ if (snippets.length === 0) {
     const errors = new Map(); // idx -> [{ line, code, msg }]
     let csharpChecked = false;
     if (csharpCount > 0) {
-      const build = spawnSync("dotnet", ["build", "-nologo", "-v", "q", "-clp:NoSummary"], { cwd: dir, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+      const build = spawnSync("dotnet", ["build", "-nologo", "-v", "q", "-clp:NoSummary", "-nodeReuse:false"], {
+        cwd: dir, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 300000,
+      });
       if (build.error) {
-        out.push(`.NET SDK を起動できなかったので C# のコード片を確かめていない: ${build.error.message}`, "");
+        out.push(`.NET SDK を起動できなかったか時間切れになったので、C# のコード片を確かめていない: ${build.error.message}`, "");
       } else {
-        csharpChecked = true;
         for (const l of `${build.stdout}\n${build.stderr}`.split(/\r?\n/)) {
           const m = l.match(/[Ss]nippet(\d+)(?:\.cs)?\((\d+),(\d+)\): error (CS\d+): (.+?)(?: \[.*\])?$/);
           if (m) {
@@ -256,7 +339,9 @@ if (snippets.length === 0) {
           }
         }
         if (build.status !== 0 && errors.size === 0) {
-          out.push("C# のコード片のビルドが失敗したが、コード片のエラーとして読み取れなかった。出力の先頭:", "", "```text", ...`${build.stdout}`.split(/\r?\n/).slice(0, 10), "```", "");
+          out.push("C# のコード片のビルドが失敗したが、コード片のエラーとして読み取れなかったので、C# のコード片は確かめていない。出力の先頭:", "", "```text", ...`${build.stdout}`.split(/\r?\n/).slice(0, 10), "```", "");
+        } else {
+          csharpChecked = true;
         }
       }
     }
@@ -267,7 +352,7 @@ if (snippets.length === 0) {
       if (!exe) {
         out.push("XAML のチェック用プログラムをビルドできなかったので、XAML は確かめていない。", "");
       } else {
-        const run = spawnSync(exe, xamlFiles.map(([f]) => f), { encoding: "utf8" });
+        const run = spawnSync(exe, xamlFiles.map(([f]) => f), { encoding: "utf8", timeout: 60000 });
         for (const l of (run.stdout ?? "").split(/\r?\n/)) {
           const [st, f, pos, msg] = l.split("\t");
           const hit = xamlFiles.find(([x]) => x === f);
@@ -276,9 +361,8 @@ if (snippets.length === 0) {
       }
     }
 
-    const outsideRef = new Set(["CS0103", "CS0246", "CS0117", "CS1061", "CS0120", "CS0234", "CS0236", "CS0201"]);
-    // 構文の誤り（CS1xxx）がどこかにあると、コンパイラは名前と型を確かめる段階に進まない。
-    const syntaxStop = [...errors.values()].flat().some((e) => /^CS1\d{3}$/.test(e.code) && e.code !== "CS1061");
+    const syntaxStop = [...errors.values()].flat().some((e) => syntaxCodes.has(e.code));
+    const kindLabel = { type: "型として", members: "クラスのメンバーとして包んで", statements: "メソッドの本体として包んで" };
     snippets.forEach((s, idx) => {
       const where = `\`${s.file}:${s.line}\`（${s.lang}）`;
       if (s.lang === "csharp") {
@@ -291,11 +375,20 @@ if (snippets.length === 0) {
           out.push(`- ${where}: 構文は読めたが、ほかのコード片の構文の誤りでコンパイラが止まったので、名前と型は確かめていない（誤りを直して実行し直す）`);
         } else if (list.length === 0) {
           cResults.push("OK");
-          out.push(`- ${where}: コンパイルできた${s.wrapped ? "（クラスで包んだ）" : ""}`);
+          out.push(`- ${where}: ${kindLabel[s.kind]}コンパイルできた`);
         } else {
-          const hard = list.filter((e) => !outsideRef.has(e.code));
-          cResults.push(hard.length ? "NG" : "REF");
-          out.push(`- ${where}: ${hard.length ? "**構文・型の誤りの可能性**" : "抜粋の外を参照しているだけの可能性（要確認）"}`);
+          const hard = list.filter((e) => !outsideRef.has(e.code) && !missingMember.has(e.code));
+          const api = list.filter((e) => missingMember.has(e.code));
+          if (hard.length) {
+            cResults.push("NG");
+            out.push(`- ${where}: **構文・型の誤りの可能性**（${kindLabel[s.kind]}コンパイルした）`);
+          } else if (api.length) {
+            cResults.push("NG");
+            out.push(`- ${where}: **存在しないメンバーを呼んでいる（実在しない API の可能性）**`);
+          } else {
+            cResults.push("REF");
+            out.push(`- ${where}: 抜粋の外で宣言された名前を参照しているだけの可能性（要確認）`);
+          }
           for (const e of list.slice(0, 8)) {
             out.push(`  - コード片の ${e.line} 行目 ${e.code}: ${e.msg}`);
           }
@@ -316,13 +409,23 @@ if (snippets.length === 0) {
       }
     });
     out.push("");
-    out.push("抜粋は、宣言の無い名前を参照していることがある（CS0103 などは「抜粋の外を参照しているだけ」に分けた）。分けた結果が正しいかはレビュアーが確かめる。構文の誤りがあると、名前の誤りは報告されないことがある。XAML は、名前空間の宣言が無いものを WPF の既定の名前空間で包んで読んだ。", "");
+    out.push(
+      "C# の抜粋は、型の宣言を含むものはそのまま、メンバーだけのものはクラスで、文だけのものはメソッドの本体で包んでコンパイルした。" +
+        "宣言の無い名前の参照（CS0103・CS0246・CS0234）は「抜粋の外を参照しているだけの可能性」に分けた。存在しないメンバーの呼び出し（CS1061・CS0117）は誤りとして扱う。" +
+        "構文の誤りがあると、名前の誤りは報告されないことがある。XAML は、名前空間の宣言が無いものを WPF の既定の名前空間で包み、宣言の無い接頭辞は仮の名前空間で補って読んだ。",
+      "",
+    );
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
-    fs.rmSync(xamlDir, { recursive: true, force: true });
+    for (const d of [dir, xamlDir]) {
+      try {
+        fs.rmSync(d, { recursive: true, force: true });
+      } catch {
+        // ビルドのプロセスがファイルを掴んでいて消せないことがある。一時ディレクトリなので残しても害は無い。
+      }
+    }
   }
 }
-summary.push(`(c) コード片 ${snippets.length} 個（誤りの可能性 ${cResults.filter((r) => r === "NG").length}、要確認 ${cResults.filter((r) => r === "REF").length}）`);
+summary.push(`(c) コード片 ${snippets.length} 個（誤りの可能性 ${cResults.filter((r) => r === "NG").length}、要確認 ${cResults.filter((r) => r === "REF").length}、確かめていない ${cResults.filter((r) => r === "SKIP").length}）`);
 
 // ---- (d) 説明コメントの割合 ----
 const methodDecl = /^\s*(?:\[[^\]]*\]\s*)*(?:(?:public|private|protected|internal|static|async|override|virtual|sealed|abstract|new|partial|unsafe|extern|readonly)\s+)+(?:[\w<>[\],.?()]+\s+)?(\w+)\s*(?:<[^>()]*>)?\s*\(/;
@@ -330,6 +433,19 @@ const notMethod = /^\s*(?:return|new|if|while|for|foreach|switch|catch|using|loc
 let total = 0;
 let documented = 0;
 const missing = [];
+
+/** 宣言の直前にある説明コメントの開始行（無ければ宣言の行）を返す。属性の行は読み飛ばす。 */
+function docStart(text, d, isDocLine) {
+  let p = d - 1;
+  while (p >= 0 && /^\s*\[/.test(text[p])) p--;
+  let start = d;
+  while (p >= 0 && isDocLine(text[p], p)) {
+    start = p;
+    p--;
+  }
+  return start;
+}
+
 for (const [file, lines] of changed) {
   if (!file.endsWith(".cs")) continue;
   const text = readLines(file);
@@ -339,7 +455,7 @@ for (const [file, lines] of changed) {
   let depth = 0;
   let pendingType = false;
   text.forEach((t, i) => {
-    const code = t.replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/\/\/.*$/, "");
+    const code = t.replace(/'(?:[^'\\]|\\.)'/g, "' '").replace(/"(?:[^"\\]|\\.)*"/g, '""').replace(/\/\/.*$/, "");
     while (typeDepths.length && depth < typeDepths[typeDepths.length - 1]) typeDepths.pop();
     const isMember = typeDepths.length > 0 && depth === typeDepths[typeDepths.length - 1];
     if (isMember && methodDecl.test(t) && !notMethod.test(t) && !/=\s*>?\s*$/.test(t.split("(")[0])) decls.push(i);
@@ -358,21 +474,18 @@ for (const [file, lines] of changed) {
     if (pendingType && /;\s*$/.test(code)) pendingType = false;
   });
   decls.forEach((d, k) => {
-    const end = k + 1 < decls.length ? decls[k + 1] : text.length;
+    const start = docStart(text, d, (l) => /^\s*\/\/\//.test(l));
+    const nextStart = k + 1 < decls.length ? docStart(text, decls[k + 1], (l) => /^\s*\/\/\//.test(l)) : text.length;
     let touched = false;
-    for (let n = d + 1; n <= end; n++) if (lines.has(n)) touched = true;
+    for (let n = start + 1; n <= nextStart; n++) if (lines.has(n)) touched = true;
     if (!touched) return;
     total++;
-    let p = d - 1;
-    while (p >= 0 && (/^\s*\[/.test(text[p]) || text[p].trim() === "")) {
-      if (text[p].trim() === "") break;
-      p--;
-    }
-    if (p >= 0 && /^\s*\/\/\//.test(text[p])) documented++;
+    if (start < d) documented++;
     else missing.push(`- \`${file}:${d + 1}\` ${text[d].trim().slice(0, 150)}`);
   });
 }
-// JavaScript の関数宣言は、直前の行が JSDoc（/** ... */）の終わりかで数える。
+
+// JavaScript の関数宣言は、直前に JSDoc（/** で始まるコメント）があるかで数える。入れ子の関数も数える。
 for (const [file, lines] of changed) {
   if (!/\.(?:mjs|cjs|js|ts)$/.test(file)) continue;
   const text = readLines(file);
@@ -380,23 +493,38 @@ for (const [file, lines] of changed) {
   text.forEach((t, i) => {
     if (/^\s*(?:export\s+)?(?:async\s+)?function\s*\*?\s*\w+\s*\(/.test(t)) decls.push(i);
   });
+  const jsdocStart = (d) => {
+    if (d === 0 || !/\*\/\s*$/.test(text[d - 1])) return d;
+    let p = d - 1;
+    while (p >= 0 && !/\/\*/.test(text[p])) p--;
+    return p >= 0 && /\/\*\*/.test(text[p]) ? p : d;
+  };
   decls.forEach((d, k) => {
-    const end = k + 1 < decls.length ? decls[k + 1] : text.length;
+    const start = jsdocStart(d);
+    const nextStart = k + 1 < decls.length ? jsdocStart(decls[k + 1]) : text.length;
     let touched = false;
-    for (let n = d + 1; n <= end; n++) if (lines.has(n)) touched = true;
+    for (let n = start + 1; n <= nextStart; n++) if (lines.has(n)) touched = true;
     if (!touched) return;
     total++;
-    if (d > 0 && /\*\/\s*$/.test(text[d - 1])) documented++;
+    if (start < d) documented++;
     else missing.push(`- \`${file}:${d + 1}\` ${text[d].trim().slice(0, 150)}`);
   });
 }
 const pct = total ? Math.round((documented / total) * 1000) / 10 : 100;
 out.push("## (d) 変更した C# のメソッドと JavaScript の関数の説明コメント", "");
-out.push(`変更を含むメソッド・関数 ${total} 個のうち、説明コメント（C# は ///、JavaScript は /** */）があるもの ${documented} 個（${pct}%）。CodeRabbit の基準は 80%（ローカル関数は数えていない）。`, "");
+out.push(
+  `変更を含むメソッド・関数 ${total} 個のうち、説明コメント（C# は ///、JavaScript は /** */）があるもの ${documented} 個（${pct}%）。` +
+    "CodeRabbit の Docstring Coverage は、変更した関数のうち循環的複雑度 2 以上だけを数えて 80% を基準にする。ここでは複雑度で絞らないので、近い値の目安にとどまる。" +
+    "C# は型の直下の、修飾子の付いたメソッドだけを数える（ローカル関数は数えない）。JavaScript は function 宣言を入れ子も含めて数える。",
+  "",
+);
 out.push(...(missing.length ? ["説明コメントが無いもの:", ...missing] : ["（すべてにある）"]), "");
 summary.push(`(d) 説明コメント ${pct}%（${documented}/${total}）`);
 
 const report = path.join(gateDir(), "article-check.md");
-fs.writeFileSync(report, ["# 機械で確かめた結果", "", `比べる相手: ${base}（${git(["rev-parse", "--short", base])}）`, "", ...out].join("\n"));
+fs.writeFileSync(
+  report,
+  ["# 機械で確かめた結果", "", `比べる相手: ${base} とこのブランチの分岐点（${mergeBase.slice(0, 7)}）から、今の作業ツリーまで`, "", ...out].join("\n"),
+);
 console.log(report);
 console.log(summary.join(" / "));
