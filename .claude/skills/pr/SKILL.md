@@ -240,16 +240,21 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
      状況を確認して進める(ユーザーへ指示を仰がない)。
    - **新しい指摘が無い差分レビューは、本文付きのレビューも通知も出さずに終わることがある。** 完了は返事の文言ではなく、
-     head コミットの CodeRabbit の check run(commit status ではない)で判断する。取り方は `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`、
-     `gh` が使えない環境では `mcp__github__pull_request_read` の `get_check_runs`(要約は返さないが、conclusion と完了時刻は返す)。
-     - head コミットに conclusion が `success` の CodeRabbit の check run があれば(名前は「CodeRabbit」)、そのコミットのレビューは終わっている
-       (gh で取れる要約は「Review completed」を含む)。同じコミットに依頼を重ねても新しい check run は作られない
+     head コミットの CodeRabbit の check run(commit status ではない。名前は「CodeRabbit」)で判断する。
+     取り方は `gh api repos/<owner>/<repo>/commits/<sha>/check-runs`、`gh` が使えない環境では `mcp__github__pull_request_read` の `get_check_runs`
+     (要約は返さないが、status と conclusion は返す)。返事の文言(「Review finished」「Already reviewed the last commit」)は、
+     それだけでは指摘の有無を示さないので、この check run で確かめる。
+     - **終わっている:** head コミットに conclusion が `success` の run がある(gh で取れる要約は「Review completed」を含む)。
+       同じコミットに `skipped` の run も並ぶことがあるが、`success` があればそちらを採る。同じコミットに依頼を重ねても新しい run は作られない
        (返事は「Already reviewed the last commit」。#174 で実測)ので、依頼の時刻とは比べない。
-     - `skipped`(push や PR の作成の直後に作られる。要約は「Review skipped」)と `neutral`(要約は「Review rate limited」)は、
-       そのコミットがまだレビューされていないことを示す。`@coderabbitai review` を依頼する(`neutral` なら 1 時間空ける)。
-     - 実測の範囲: CodeRabbit の check run があるのは #164 から。#164〜#175 の `success` 41 件は、要約がすべて「Review completed」だった。
-     終わっていて、最新のコミットに本文付きの CodeRabbit のレビューも未解決のスレッドも無ければ、「指摘無しでレビュー済み」とみなして Phase 4 へ進む。
-     返事の文言(「Review finished」「Already reviewed the last commit」)は、それだけでは指摘の有無を示さないので、この check run で確かめる。
+       終わっていて、最新のコミットに本文付きの CodeRabbit のレビューも未解決のスレッドも無ければ、「指摘無しでレビュー済み」とみなし、
+       マージ直前チェックリスト(このスキルの Phase 4。`article-workflow` から使う場合はその Phase 4 手順 8)へ進む。
+     - **処理中:** status が completed でない(queued・in_progress)間は待つ。依頼が受理された(Action performed)後は、重ねて依頼しない。
+     - **まだレビューされていない:** `success` が無く、conclusion が `skipped`(要約は「Review skipped: incremental reviews are disabled」など。
+       PR を作った後の push の直後に作られる。#166・#173 で実測)か `neutral`(要約は「Review rate limited」)。
+       `@coderabbitai review` を依頼する(`neutral` なら 1 時間空ける)。それ以外の conclusion は、上の「判断が付かない場合」として扱う。
+     - 実測の範囲: CodeRabbit の check run があるのは #164 から。#164〜#175 の `success` 41 件は、要約がすべて「Review completed」で、
+       本文付きのレビューは、どれも `success` の完了の数秒前に投稿されていた。
      - 経緯:PR #174 では、指摘無しで終わった差分レビューの結果を 9 時間待ち続けた
        (head コミットの check run は、依頼の 7 分後に「Review completed」になっていた)。
        このとき最新のコミットに付いていた本文が空の CodeRabbit のレビューは、スレッドへの返信への返事で付いたもので、レビューではなかった。
