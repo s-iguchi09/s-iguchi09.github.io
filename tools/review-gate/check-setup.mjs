@@ -20,7 +20,7 @@
 //      承認した内容と一致しなくなる。ファイルは Write ツールで作る。ヒアドキュメントや echo で書くと、そのコマンドが止まる）。
 //
 // 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
-// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、core.hooksPath の指すチェックアウトを
+// フックを有効にしていない別のクローン（cd・git -C で移った先）や、core.hooksPath を worktree 単位の設定で上書きした別の worktree からの push、core.hooksPath の指すチェックアウトを
 // .githooks の無い（照合の仕組みが入る前の）ブランチやコミットに切り替えた後の push（同じコマンドの中でも、別のコマンドでも。
 // 切り替えるとこのスクリプトも無くなるので、hook の設定が残っていても実行できない）、照合のフック・スクリプト・承認の記録の書き換え、
 // git を通さずにリモートのブランチを書き換える操作（GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
@@ -59,7 +59,7 @@ try {
   if (typeof command !== "string" || !/push/i.test(command)) {
     process.exit(0);
   }
-  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|\bexec\s+-\w*c|UseNewEnvironment|\bwsl\b|git[-_]dir|work[-_]tree/i.test(command)) {
+  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|\bexec(?:\s+-a\s+\S+|\s+-[a-z]+)*\s+-[a-z]*c|UseNewEnvironment|\bwsl\b|git[-_]dir|work[-_]tree/i.test(command)) {
     block(
       "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path・includeIf、CLAUDECODE、" +
         "--ignore-environment とその省略形、オプションを付けた env、exec -c、UseNewEnvironment、wsl、git-dir・GIT_DIR、work-tree・GIT_WORK_TREE）が含まれている。照合を外さずに push する。" +
@@ -79,7 +79,7 @@ try {
     block(
       `git の pre-push フックが有効になっていない（${problem}）。` +
         "`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する（setup が上書きを拒んだら、" +
-        "`git config --unset-all core.hooksPath` のあとで setup を実行し直す。setup が値の出どころを表示したら、そのファイルの値を消す）。",
+        "`git config --unset-all core.hooksPath` のあとで setup を実行し直す。setup が値の出どころを表示したら、その表示に従う）。",
     );
   }
   if (!fs.existsSync(path.join(projectTop, ".githooks", "pre-push"))) {

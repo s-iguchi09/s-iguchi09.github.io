@@ -15,7 +15,15 @@
 // 承認と照合が保証するのは「push する各ブランチの先頭のコミットの内容が、記録した内容と同じこと」だけで、
 // 間のコミットの内容や、レビューが行われたことまでは確かめない。
 import fs from "node:fs";
-import { approvalFile, git, pendingFile, untrackedFiles, workingTreeHash } from "./lib.mjs";
+import { approvalFile, git, pendingFile, repoRoot, untrackedFiles, workingTreeHash } from "./lib.mjs";
+
+// 作業ツリーのルートを特定できない場所（.git の中など）では、内容を求められないので止める。
+try {
+  repoRoot();
+} catch {
+  console.error("作業ツリーのルートを特定できない（.git の中や bare リポジトリなど）。リポジトリの作業ツリーの中で実行する。");
+  process.exit(1);
+}
 
 const [mode, ...rest] = process.argv.slice(2);
 const note = rest.join(" ").trim();

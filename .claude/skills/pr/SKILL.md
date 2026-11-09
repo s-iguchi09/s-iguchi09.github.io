@@ -139,7 +139,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      `node tools/review-gate/approve.mjs direct "article-workflow の Phase 2 で収束"` で記録する。
    - **承認と push の照合(仕組み):** git の pre-push フック(`.githooks/pre-push` → `tools/review-gate/pre-push.mjs`)が、
      push される各ブランチの先頭のコミットの内容(ツリー)を承認の記録と照合し、違えば push を止める。
-     照合が保証するのは「push する各ブランチの先頭のコミットの内容が、承認した内容と同じこと」だけで、
+     照合が保証するのは「push する各ブランチの先頭のコミットの内容が、承認した内容と同じこと」だけで(置き換えの ref(`git replace`)は無視して比べる)、
      間のコミットの内容や、レビューが行われたことまでは確かめない。
      - フックが動けば、照合する ref は git が渡すので、コマンドのつなぎ方やブランチの指定には左右されない。
        削除と、送り先がブランチ(refs/heads/)以外の push(タグなど)は照合しない。送り元がタグでも、送り先がブランチなら照合する。
@@ -150,13 +150,13 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        絶対パスにするのは、`.git` の中や `--git-dir`・`GIT_DIR` で作業ツリーのルートが別の場所になった push でもフックを動かすため。
        そうした push は、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ、フックの sh 側が止める(あれば照合する)。
        `core.hooksPath` は(worktree 単位の設定で上書きしていなければ)同じリポジトリの worktree の間で共有される。
-       setup の動きは次のとおり(判定に使うのはこのクローンの設定(`--local`)だけで、グローバルやシステムの値はローカルの設定で上書きする)。
+       setup の動きは次のとおり(上書きしてよいかの判定に使うのはこのクローンの設定(`--local`)だけで、グローバルやシステムの値はローカルの設定で上書きする)。
        - 既にこのリポジトリのチェックアウトのルート直下の、pre-push のある `.githooks` を指していれば、変更せずに終わる(別の worktree で実行した場合を含む)。
-       - 未設定、相対パス、または pre-push の無い `.githooks` を指していれば、このチェックアウトの `.githooks` に置き換える。
-       - それ以外(`.githooks` 以外の置き場所、pre-push のある別のリポジトリの `.githooks`、値が複数ある)は、上書きせずに止め、
+       - 未設定、相対パスの `.githooks`(以前の版の設定)、または pre-push の無い `.githooks` の絶対パスを指していれば、このチェックアウトの `.githooks` に置き換える。
+       - それ以外(ほかの相対パス、`.githooks` 以外の置き場所、pre-push のある別のリポジトリの `.githooks`、値が複数ある)は、上書きせずに止め、
          `git config --unset-all core.hooksPath` を案内する。
-       - 最後に実際に効いている値を確かめ、worktree 単位の設定や include で読み込んだ値が効いていて、それが有効なフックの置き場所でなければ、
-         その出どころを表示して止める。
+       - 最後に実際に効いている値を確かめ、有効なフックの置き場所でなければ、その出どころ(worktree 単位の設定・include・command line など)を
+         表示して止める。
        同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、フックは動き、照合のスクリプトが無いので sh 側が止める。
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
@@ -179,6 +179,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
          (照合を外す語の確認は効く)
        - 照合のフック・スクリプト(`.githooks/pre-push`・`tools/review-gate/*.mjs`)や承認の記録を書き換えてから push すると照合が外れる
          (フックは作業ツリーのスクリプトを実行するので、コミットしていない書き換えでも外れる)
+       - 上の hook が起動できない・時間切れになった・判定の途中でエラーになったときは、止めずに通す
+         (hook が壊れて関係の無いコマンドまで止めないため。その場合も、フックが有効なら pre-push の照合は効く)
        - git を通さずにリモートのブランチを書き換える操作(GitHub の API・MCP のツール・`git send-pack` など)と、
          Bash・PowerShell 以外の経路は照合されない
        - どれも手順として使わない

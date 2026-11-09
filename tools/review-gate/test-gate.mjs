@@ -138,6 +138,7 @@ try {
   expect("check-setup: env --ignore-environment", check("env --ignore-environment git push"), 2);
   expect("check-setup: env の省略形・まとめ書き", check("env -iu FOO git push"), 2);
   expect("check-setup: exec -c", check("bash -c 'exec -c git push'"), 2);
+  expect("check-setup: exec のオプションを分けた -c", check("bash -c 'exec -l -c git push'"), 2);
   expect("check-setup: include.path", check("git -c include.path=/x push"), 2);
   expect("check-setup: 作業ツリーのルートを変える --git-dir", check("cd sub && git --git-dir=../.git push origin work"), 2);
   expect("check-setup: 作業ツリーのルートを変える GIT_DIR", check("GIT_DIR=../.git git push origin work"), 2);
@@ -165,6 +166,11 @@ try {
   fs.writeFileSync(path.join(repo, "a.txt"), "3\n");
   g(["commit", "-qam", "third"]);
   expect("push: 承認の後に変えた", push(["origin", "work"]), 1);
+  // 承認していないコミットを、承認した内容のコミットで置き換えても（git replace）、実際に送る内容で照合して止める。
+  const third = g(["rev-parse", "HEAD"]);
+  g(["replace", third, g(["rev-parse", "HEAD~1"])]);
+  expect("push: git replace で承認した内容に見せかけた", push(["origin", "HEAD:refs/heads/replaced"]), 1);
+  g(["replace", "-d", third]);
   expect("push: 承認の後に変えた（-c 付き・ブランチの指定を変えた書き方）", push(["-c", "core.x=y", "push", "origin", "HEAD:work"]), 1);
   expect("push: 承認の後に変えた（CLAUDECODE の無い環境）", push(["origin", "work"], false), 0);
   g(["branch", "other", "HEAD~1"]);

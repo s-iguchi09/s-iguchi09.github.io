@@ -16,6 +16,7 @@
 // - 照合するのは送り先がブランチ（refs/heads/）の push だけ。削除と、送り先がタグなどブランチ以外の push は照合しない
 //   （送り元がタグでも、送り先がブランチなら照合する。refs/Heads/ のように大文字小文字を変えた書き方も、
 //   大文字小文字を区別しないファイルシステムではブランチになりうるので、止める側に倒して照合する）。
+// - 置き換えの ref（git replace）は無視し、実際に送られるコミットの内容で照合する。
 // - 照合の途中でエラーが起きたら、止める側に倒す（終了コード 1）。
 //
 // 手で試す（push される ref を標準入力で渡す。最後の 2 つの引数は使わない）。Claude Code の Bash では
@@ -37,6 +38,10 @@ function block(message) {
 if (process.env.CLAUDECODE !== "1") {
   process.exit(0);
 }
+
+// 置き換えの ref（git replace）に従うと、rev-parse は置き換え先の内容を返すが、push は元のオブジェクトを送る。
+// 実際に送られる内容で照合するため、この照合の git では置き換えを無効にする（子プロセスの git にも引き継がれる）。
+process.env.GIT_NO_REPLACE_OBJECTS = "1";
 
 try {
   let input = "";
