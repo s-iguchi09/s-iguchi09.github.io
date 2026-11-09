@@ -4,7 +4,8 @@
 //
 // 集めるもの:
 //   - インラインの指摘（返信は除く）
-//   - レビュー本文の項目（「Outside diff range」「Nitpick」など。区分は見分けない）
+//   - レビュー本文の項目（「Outside diff range」「Nitpick」「Additional comments」など。区分は見分けない。
+//     CodeRabbit が検証できなかった指摘（Unverified finding）は、重要度に「未検証」と付けて残す）
 //   - 失敗・警告になった pre-merge check（Docstring Coverage など）
 //
 // 使い方（リポジトリのルートで実行する）:
@@ -69,6 +70,40 @@ function summarize(body) {
   return { label, title, paragraph: paragraph.slice(0, 400) };
 }
 
+/**
+ * レビュー本文の「Additional comments」の項目を取り出す。この形式は、重要度と題が summary の外にある:
+ *   <summary>パス-開始行-終了行: 件数</summary> … `開始行-終了行`: **重要度** · … （**Unverified finding**） **題**
+ * 「Unverified finding」が付いた項目は、未検証として一覧に残す。
+ */
+function additionalComments(body) {
+  const items = [];
+  let file = "";
+  let current = null;
+  for (const raw of body.split(/\r?\n/)) {
+    const line = raw.replace(/<[^>]+>/g, "").trim();
+    const fileHead = raw.match(/<summary>([^<]+?)-\d+(?:-\d+)?: \d+<\/summary>/);
+    if (fileHead) {
+      file = fileHead[1].trim();
+      continue;
+    }
+    const entry = line.match(/^`(\d+(?:-\d+)?)`: (.*)$/);
+    if (entry) {
+      const sev = (entry[2].match(severityWords) || [])[1] ?? "?";
+      current = { label: sev, title: "", where: `${file}:${entry[1]}`, kind: "レビュー本文の項目（Additional comments）", unverified: false };
+      items.push(current);
+      continue;
+    }
+    if (!current || current.title) continue;
+    if (/Unverified finding/.test(line)) {
+      current.unverified = true;
+      continue;
+    }
+    const bold = line.match(/^\*\*(.+)\*\*$/);
+    if (bold && !/^Unverified finding$/.test(bold[1])) current.title = bold[1].trim();
+  }
+  return items.map((i) => (i.unverified ? { ...i, label: `${i.label}・未検証` } : i));
+}
+
 /** レビュー本文から、差分の外・Nitpick などの項目（区分は見分けない）と、失敗・警告の pre-merge check を取り出す。 */
 function reviewBodyItems(body) {
   const items = [];
@@ -83,6 +118,7 @@ function reviewBodyItems(body) {
       items.push({ label: sev, title: parts[1], where, kind: "レビュー本文の項目" });
     }
   }
+  items.push(...additionalComments(body));
   for (const m of body.matchAll(/^\|\s*([^|]+?)\s*\|\s*!\[(Warning|Failed|Error)\][^|]*\|\s*([^|]+?)\s*\|/gm)) {
     items.push({ label: m[2], title: `pre-merge check: ${m[1]}`, where: "", kind: "pre-merge check", paragraph: m[3].slice(0, 300) });
   }
@@ -94,7 +130,8 @@ const lines = [
   "",
   `${repo} の、マージ済みの PR のうち作成が新しい ${limit * 3} 件から、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
   "インラインの指摘（返信を除く）と、",
-  "レビュー本文の項目（「Outside diff range」「Nitpick」など。区分は見分けない）、失敗・警告になった pre-merge check を含む。",
+  "レビュー本文の項目（「Outside diff range」「Nitpick」「Additional comments」など。区分は見分けない。検証できなかった指摘は「未検証」）、" +
+    "失敗・警告になった pre-merge check を含む。",
   "同じ型の問題が今回の差分に無いかを確かめる。日英で同じ指摘が 2 件ずつ付いていることがある。",
   "",
 ];

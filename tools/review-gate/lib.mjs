@@ -47,18 +47,21 @@ export function pendingFile(cwd = process.cwd(), create = true) {
  * 本物のインデックスは変えないよう、コピーした一時のインデックスを使う。
  */
 export function workingTreeHash(cwd = process.cwd()) {
-  const tmp = path.join(os.tmpdir(), `review-gate-index-${process.pid}-${Date.now()}`);
-  const real = path.resolve(cwd, git(["rev-parse", "--git-path", "index"], { cwd }));
+  // 呼び出し元の GIT_INDEX_FILE を引き継ぐと、本物のインデックスとは別のファイルを読むので外す。
+  const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) => k !== "GIT_INDEX_FILE"));
+  const real = path.resolve(cwd, git(["rev-parse", "--git-path", "index"], { cwd, env: baseEnv }));
+  // 一時のインデックスは、この呼び出しだけの専用ディレクトリに置く（名前の衝突を避ける）。
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "review-gate-index-"));
+  const tmp = path.join(dir, "index");
   try {
     if (fs.existsSync(real)) {
       fs.copyFileSync(real, tmp);
     }
-    const env = { ...process.env, GIT_INDEX_FILE: tmp };
+    const env = { ...baseEnv, GIT_INDEX_FILE: tmp };
     git(["add", "-A"], { cwd, env });
     return git(["write-tree"], { cwd, env });
   } finally {
-    fs.rmSync(tmp, { force: true });
-    fs.rmSync(`${tmp}.lock`, { force: true });
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 }
 

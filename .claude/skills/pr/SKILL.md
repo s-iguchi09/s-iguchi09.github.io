@@ -46,7 +46,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
         コード片 1 つにつき最大 4 回ビルドするので、コード片の多い記事では数分かかる。
         「確かめていない」が出た場合(.NET SDK が無い・ビルドできない・Windows 以外で WPF を扱えないなど)は、その範囲をレビュアーに伝える。
      2. `node tools/review-gate/coderabbit-findings.mjs` … マージ済みの PR のうち作成が新しい 45 件から、マージした日時が新しい 15 件の PR で CodeRabbit が付けた指摘
-        (インラインの指摘と、レビュー本文の項目(差分の外・Nitpick など。区分は見分けない)、失敗・警告になった pre-merge check)を
+        (インラインの指摘と、レビュー本文の項目(差分の外・Nitpick・Additional comments など。区分は見分けない。検証できなかった指摘は「未検証」と付けて残す)、失敗・警告になった pre-merge check)を
         `coderabbit-findings.md` にまとめる。このリポジトリでは CodeRabbit が同じ型の指摘を繰り返しているため。
         同じ PR の中で 2 回目以降のレビューをするときは、`coderabbit-findings.mjs` 自体を変えていなければ実行し直さなくてよい。
      3. `node tools/review-gate/approve.mjs start` … レビューしてもらう内容(作業ツリー)を記録する。最後の承認で、承認する内容が
@@ -240,7 +240,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
      状況を確認して進める(ユーザーへ指示を仰がない)。
    - **新しい指摘が無い差分レビューは、本文付きのレビューも通知も出さずに終わることがある。** 完了は返事の文言ではなく、
-     head コミットの CodeRabbit の check run(`gh api repos/<owner>/<repo>/commits/<sha>/check-runs`)で判断する。
+     head コミットの CodeRabbit の check run(`gh api repos/<owner>/<repo>/commits/<sha>/check-runs`、`gh` が使えない環境では `mcp__github__pull_request_read` の `get_check_runs`)で判断する。
      要約(`output.summary`)が「Review completed」(「Review skipped」ではない)で、完了時刻(`completed_at`)が依頼より後なら、
      そのレビューは終わっている。終わっていて、最新のコミットに本文付きの CodeRabbit のレビューも未解決のスレッドも無ければ、
      「指摘無しでレビュー済み」とみなして Phase 4 へ進む。
