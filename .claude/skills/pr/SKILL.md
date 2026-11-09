@@ -244,15 +244,19 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      取り方は `gh api "repos/<owner>/<repo>/commits/<sha>/check-runs?filter=all"`、`gh` が使えない環境では `mcp__github__pull_request_read` の
      `get_check_runs`(要約は返さないが、status と conclusion は返す)。返事の文言(「Review finished」「Already reviewed the last commit」)は、
      それだけでは指摘の有無を示さないので、この check run で確かめる。次の順に当てはめる。
-     1. **処理中:** status が completed でない run がある。終わるまで待つ。
-     2. **終わっている:** conclusion が `success` の run がある(gh で取れる要約は「Review completed」を含む)。
+     1. **処理中:** status が completed でない CodeRabbit の run がある。終わるまで待つ。
+     2. **終わっている:** conclusion が `success` の CodeRabbit の run がある(gh で取れる要約は「Review completed」を含む)。
         同じコミットに依頼を重ねても新しい run は作られない(返事は「Already reviewed the last commit」。#174 で実測)ので、依頼の時刻とは比べない。
-        head コミットに本文付きの CodeRabbit のレビューも未解決のスレッドも無ければ、「指摘無しでレビュー済み」とみなし、
-        マージ直前チェックリスト(このスキルの Phase 4。`article-workflow` から使う場合はその Phase 4 手順 8)へ進む。
-        どちらかがあれば、このフェーズの手順 3(指摘・CI 失敗を修正する)へ進む。
-     3. **まだレビューされていない:** 上のどちらでもない(run が無い、または `skipped`・`neutral` だけ)。
-        依頼がまだ受理されていなければ `@coderabbitai review` を依頼する(要約が「Review rate limited」なら 1 時間空ける)。
-        受理された(Action performed)後は重ねて依頼せず、run が現れるのを待つ。
+        head コミットの本文付きのレビューの項目(インラインの指摘、差分の外・Nitpick・Additional comments を含む)がすべて対応済み
+        (直したか、見送りの理由を返信か PR に残した)で、PR 全体に未解決のスレッドが無ければ、マージ直前チェックリスト
+        (このスキルの Phase 4。`article-workflow` から使う場合はその Phase 4 手順 8)へ進む。
+        対応していない項目か未解決のスレッドがあれば、このフェーズの手順 3(`article-workflow` から使う場合はその Phase 4 手順 4)へ進む。
+     3. **まだレビューされていない:** 上のどちらでもない(CodeRabbit の run が無い、または `skipped`・`neutral` などで終わっている)。
+        依頼がまだ受理されていなければ `@coderabbitai review` を依頼する(要約や返事が「Review rate limited」なら 1 時間空ける)。
+        受理されたかは、返事が数秒後に書き換わることがある(「Action performed」から「Action not completed / Review rate limited」へ)ので、
+        依頼から 30 秒ほど置いて読む。受理された後は重ねて依頼せず、run が現れるのを待つ。
+        受理の後に付いた run が `success` 以外で終わったときは受理されなかったものとして扱い、上の条件で依頼し直す。
+        20〜30 分たっても run が無ければもう一度だけ依頼し、それでも無ければ上の「判断が付かない場合」として扱う。
 
      実測の範囲:CodeRabbit の check run があるのは #164 から。#164〜#175 の `success` 41 件は、要約がすべて「Review completed」で、
      本文付きのレビューは、どれも `success` の完了の数秒前に投稿されていた。CodeRabbit の run が 1 件も無いコミットも多い(#164〜#175 の 91 コミットのうち 46)。
