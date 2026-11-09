@@ -41,6 +41,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
         変更した C# のメソッドと JavaScript の関数の説明コメントの割合(CodeRabbit の Docstring Coverage とは数え方が違う参考値)。
         コード片に「構文・型の誤りの可能性」「存在しないメンバーを呼んでいる」「XML として読めない」が出たら、
         レビュアーを起動する前に直して実行し直す(抜粋として正しいのに出た場合は、理由をレビュアーに伝えて進めてよい)。
+        「包み方で確かめられない」「抜粋の外で宣言された名前を参照しているだけの可能性(要確認)」が出たら、そのコード片をレビュアーに伝えて確かめさせる。
+        コード片 1 つにつき最大 4 回ビルドするので、コード片の多い記事では数分かかる。
         「確かめていない」が出た場合(.NET SDK が無い・ビルドできない・Windows 以外で WPF を扱えないなど)は、その範囲をレビュアーに伝える。
      2. `node tools/review-gate/coderabbit-findings.mjs` … 作成が新しい 45 件のうちマージした日時が新しい 15 件の PR で CodeRabbit が付けた指摘
         (インラインの指摘と、レビュー本文の項目(差分の外・Nitpick など。区分は見分けない)、失敗・警告になった pre-merge check)を
@@ -132,7 +134,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      上の「対象」の例外(`article-workflow` の Phase 2 の収束後に 1 行も変えずに push する場合)は、
      `node tools/review-gate/article-check.mjs` を実行し、報告の (c) に上の 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
      XML として読めない)が出ていないことを確かめてから(出たら直す。直したら例外ではなくなる。
-     抜粋として正しいのに出た場合は、例外をやめて独立レビュー(start〜done)に切り替える)、
+     抜粋として正しいのに出た場合と、確かめる人のいない「包み方で確かめられない」「要確認」が出た場合は、
+     例外をやめて独立レビュー(start〜done)に切り替える)、手順 0 の `setup.mjs` を済ませたうえで
      `node tools/review-gate/approve.mjs direct "article-workflow の Phase 2 で収束"` で記録する。
    - **承認と push の照合(仕組み):** git の pre-push フック(`.githooks/pre-push` → `tools/review-gate/pre-push.mjs`)が、
      push される各ブランチの先頭のコミットの内容(ツリー)を承認の記録と照合し、違えば push を止める。
@@ -147,16 +150,20 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
        - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)
-       - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、環境を空にする `env -i` など)も含む。
+       - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、オプションを付けた `env` など。全体は `check-setup.mjs` の冒頭)も含む。
          語の一覧は網羅ではない。メッセージや引用符・ヒアドキュメントの中に書いた語でも止まるので、そうした語を含むコミットメッセージは、
          作業ツリーの外(一時ディレクトリなど)に置いたファイルから `git commit -F <ファイル>` で渡す
          (作業ツリーの中に置くと、手順 2 の `git add -A` でコミットに入り、承認した内容と一致しなくなる)。
+         そのファイルは Write ツールで作る(Bash・PowerShell のヒアドキュメントや echo で書くと、そのコマンドが同じ理由で止まる)。
          `gh` で PR を作る場合の本文も同じく `--body-file` で渡す(MCP のツールで作る場合は、この hook の対象外)
      - **仕組みで防げないもの:**
-       - `--no-verify`・`core.hooksPath` の変更・`.githooks` の無いブランチではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
+       - `--no-verify`・`core.hooksPath` の変更、`$CLAUDE_PROJECT_DIR` 以外のチェックアウトの `.githooks` の無いブランチではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
        - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
          変数・別名・スクリプトの中で組み立てる操作は止められない
-       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、hook も照合も通らない
+       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、上の hook のフックの確認も照合も効かない
+         (照合を外す語の確認は効く)
+       - 照合のフック・スクリプト(`.githooks/pre-push`・`tools/review-gate/*.mjs`)や承認の記録を書き換えてから push すると照合が外れる
+         (フックは作業ツリーのスクリプトを実行するので、コミットしていない書き換えでも外れる)
        - git を通さずにリモートのブランチを書き換える操作(GitHub の API・MCP のツール・`git send-pack` など)と、
          Bash・PowerShell 以外の経路は照合されない
        - どれも手順として使わない

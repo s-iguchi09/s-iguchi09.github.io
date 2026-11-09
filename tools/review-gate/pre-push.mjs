@@ -62,6 +62,9 @@ try {
   } catch {
     block(`承認の記録（${file}）を読めない。承認をやり直す（Phase 1 手順 1）。`);
   }
+  if (typeof record?.tree !== "string") {
+    block(`承認の記録（${file}）に tree が無い。承認をやり直す（Phase 1 手順 1）。`);
+  }
   for (const [localRef, localSha, remoteRef] of updates) {
     const tree = git(["rev-parse", `${localSha}^{tree}`]);
     if (tree !== record.tree) {

@@ -438,7 +438,11 @@ if (snippets.length === 0) {
         for (let k = 0; k < a.length; k++) if (a[k] !== b[k]) return a[k] < b[k];
         return false;
       };
+      /** 構文・型の誤り（外の参照と存在しないメンバーを除くエラー）なら true。 */
+      const isHard = (e) => !outsideRef.has(e.code) && !missingMember.has(e.code);
       let best = null;
+      // 構文・型の誤りがコード片の中に出た包み方のうち、最も軽いもの（包み方によっては、同じ誤りが包むために足した部分に出るため）。
+      let inSnippetHard = null;
       let failed = null;
       for (const kind of kinds) {
         const r = compileSnippet(baseDir, idx, s.code, kind);
@@ -447,27 +451,38 @@ if (snippets.length === 0) {
           break;
         }
         if (!best || lighter(weight(r.errors), weight(best.errors))) best = { kind, errors: r.errors };
+        if (r.errors.some((e) => isHard(e) && e.inSnippet) && (!inSnippetHard || lighter(weight(r.errors), weight(inSnippetHard.errors)))) {
+          inSnippetHard = { kind, errors: r.errors };
+        }
         if (r.errors.length === 0) break;
       }
+      // 途中で SDK の起動や時間切れで止まった場合は、すべての包み方を試していない。
+      const tried = failed ? "試した包み方では" : "どの包み方でも";
       if (failed && !best) {
         cResults.push("SKIP");
         out.push(`- ${where}: 確かめていない（${failed}）`);
         return;
       }
-      const errs = best.errors;
+      let errs = best.errors;
       if (errs.length === 0) {
         cResults.push("OK");
         out.push(`- ${where}: ${kindLabel[best.kind]}コンパイルできた`);
         return;
       }
-      const hard = errs.filter((e) => !outsideRef.has(e.code) && !missingMember.has(e.code));
+      let hard = errs.filter(isHard);
+      if (hard.length && hard.every((e) => !e.inSnippet) && inSnippetHard) {
+        // 最も軽い包み方では誤りが包むために足した部分にだけ出たが、ほかの包み方ではコード片の中に出た。後者を報告する。
+        best = inSnippetHard;
+        errs = best.errors;
+        hard = errs.filter(isHard);
+      }
       const api = errs.filter((e) => missingMember.has(e.code));
-      if (hard.length && hard.every((e) => !e.inSnippet)) {
+      if (hard.length && hard.every((e) => !e.inSnippet) && !api.length) {
         cResults.push("SKIP");
-        out.push(`- ${where}: 包み方で確かめられない（誤りが、包むために足した部分にだけ出た。抜粋の形をレビュアーが確かめる）`);
-      } else if (hard.length) {
+        out.push(`- ${where}: 包み方で確かめられない（${tried}、誤りが包むために足した部分にだけ出た。抜粋の形をレビュアーが確かめる）`);
+      } else if (hard.length && hard.some((e) => e.inSnippet)) {
         cResults.push("NG");
-        out.push(`- ${where}: **構文・型の誤りの可能性**（どの包み方でもエラーが残った。最も少なかったのは${kindLabel[best.kind]}コンパイルしたとき）`);
+        out.push(`- ${where}: **構文・型の誤りの可能性**（${tried}エラーが残った。報告するのは${kindLabel[best.kind]}コンパイルしたとき）`);
       } else if (api.length) {
         cResults.push("NG");
         out.push(`- ${where}: **存在しないメンバーを呼んでいる（実在しない API の可能性。同じ記事のほかのコード片で宣言した拡張メソッドなら要確認）**`);
@@ -482,8 +497,12 @@ if (snippets.length === 0) {
     out.push("");
     out.push(
       "C# のコード片は 1 つずつ別のプロジェクトでコンパイルした（.NET 10・WPF、Toolkit や Prism などのパッケージは参照しない）。" +
-        "包み方は、型の宣言を含むものは「そのまま → トップレベルの文 → クラスのメンバー」、含まないものは「メソッドの本体 → クラスのメンバー → トップレベルの文」の順に試し、" +
-        "エラーの無いもの（無ければ最も少ないもの）を採った。宣言の無い名前の参照（CS0103・CS0246・CS0234）は「抜粋の外を参照しているだけの可能性」に分けた。" +
+        "包み方は、型の宣言を含むものは「そのまま → トップレベルの文 → クラスのメンバー」、拡張メソッドは「静的クラス → クラスのメンバー」、" +
+        "yield を含むものは「反復子（await も含めば非同期の反復子）のメソッド → クラスのメンバー → トップレベルの文」、" +
+        "それ以外は「メソッドの本体 → クラスのメンバー → コンストラクター → トップレベルの文」の順に試し、" +
+        "エラーの無いものを採った。無ければ、構文・型の誤り → 存在しないメンバー → 抜粋の外の参照の順に件数を比べて、最も軽いものを採った" +
+        "（ただし、構文・型の誤りがコード片の中に出た包み方があれば、そちらを報告する）。" +
+        "宣言の無い名前の参照（CS0103・CS0246・CS0234）は「抜粋の外を参照しているだけの可能性」に分けた。" +
         "宣言や構文の誤りがあると、コンパイラがメソッドの本体の検査まで進まず、ほかの誤りが報告されないことがある。" +
         "XAML は、名前空間の宣言が無いものを WPF の既定の名前空間で包み、宣言の無い接頭辞は仮の名前空間で補って読んだ。",
       "",

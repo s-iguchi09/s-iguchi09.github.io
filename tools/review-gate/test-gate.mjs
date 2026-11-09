@@ -127,6 +127,8 @@ try {
   expect("push: HEAD をタグへ（承認していない内容）", push(["origin", "HEAD:refs/tags/v2"]), 0);
   fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{ broken");
   expect("push: 記録が壊れている", push(["origin", "HEAD:work2"]), 1);
+  fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{}");
+  expect("push: 記録に tree が無い", push(["origin", "HEAD:work2"]), 1);
   fs.rmSync(path.join(repo, ".git", "review-gate", "approved.json"));
   expect("push: 記録が無い", push(["origin", "HEAD:work3"]), 1);
   expect("approve: direct", run("node", [approve, "direct", "例外の試験"]), 0);

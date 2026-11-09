@@ -12,11 +12,11 @@
 //      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`）のどれかを含めば止める。網羅ではない。
 //      メッセージや引用符・ヒアドキュメントの中に書いた語でも止まる（止める側の誤り。そうした語を含むコミットメッセージは、
 //      作業ツリーの外に置いたファイルから `git commit -F <ファイル>` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
-//      承認した内容と一致しなくなる）。
+//      承認した内容と一致しなくなる。ファイルは Write ツールで作る。ヒアドキュメントや echo で書くと、そのコマンドが止まる）。
 //
 // 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
-// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、git を通さずにリモートのブランチを書き換える操作
-// （GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
+// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、照合のフック・スクリプト・承認の記録の書き換え、
+// git を通さずにリモートのブランチを書き換える操作（GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
 //
 // 止めるときは終了コード 2（Claude Code の hook は、既定（onFailure 未指定）では終了コード 2 のときだけツールの実行を止め、
 // 標準エラーを Claude に返す）。判定の途中のエラーでは止めない（この hook が壊れて、関係の無いコマンドまで止めないため）。
@@ -53,9 +53,9 @@ try {
   }
   if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|UseNewEnvironment|\bwsl\b/i.test(command)) {
     block(
-      "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path、CLAUDECODE、" +
-        "オプションを付けた env、UseNewEnvironment、wsl）が含まれている。照合を外さずに push する。" +
-        "メッセージに書いただけなら、作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。",
+      "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path・includeIf、CLAUDECODE、" +
+        "--ignore-environment とその省略形、オプションを付けた env、UseNewEnvironment、wsl）が含まれている。照合を外さずに push する。" +
+        "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。",
     );
   }
   const project = process.env.CLAUDE_PROJECT_DIR;
