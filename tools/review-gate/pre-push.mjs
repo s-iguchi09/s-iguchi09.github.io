@@ -52,7 +52,7 @@ try {
   if (!fs.existsSync(file)) {
     block(
       "承認の記録が無い。.claude/skills/pr/SKILL.md の Phase 1 手順 1 のとおり独立レビューを通し、" +
-        "`node tools/review-gate/approve.mjs start` → レビュー → `node tools/review-gate/approve.mjs done \"<結果>\"` で承認を記録してから push する（例外の場合は同じ手順の direct）。",
+        "`node tools/review-gate/article-check.mjs` → `node tools/review-gate/approve.mjs start` → レビュー → `node tools/review-gate/approve.mjs done \"<結果>\"` で承認を記録してから push する（例外の場合は同じ手順の direct）。",
     );
   }
   let record;
