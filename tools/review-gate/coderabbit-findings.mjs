@@ -73,7 +73,8 @@ function summarize(body) {
 /**
  * レビュー本文の「Additional comments」の項目を取り出す。この形式は、重要度と題が summary の外にある:
  *   <summary>パス-開始行-終了行: 件数</summary> … `開始行-終了行`: **重要度** · … （**Unverified finding**） **題**
- * 「Unverified finding」が付いた項目は、未検証として一覧に残す。
+ * 見出しは「Additional comments: N」と「Additional comments (N)」、ファイルの見出しは「パス-行: N」と「パス (N)」の両方の書き方を読む。
+ * 「Unverified finding」が付いた項目は、未検証として一覧に残す。重要度の無い項目（LGTM! など）は指摘ではないので数えない。
  */
 function additionalComments(body) {
   const items = [];
@@ -83,8 +84,8 @@ function additionalComments(body) {
   let inFence = false;
   for (const raw of body.split(/\r?\n/)) {
     const line = raw.replace(/<[^>]+>/g, "").trim();
-    // 解析するのは「Additional comments: N」の節の中だけ（節の後ろの区切り線や次の節で終える）。
-    if (/Additional comments: \d+/.test(line)) {
+    // 解析するのは「Additional comments: N」（または「(N)」）の節の中だけ（節の後ろの区切り線や次の節で終える）。
+    if (/Additional comments(?::\s*\d+|\s*\(\d+\))/.test(line)) {
       inBlock = true;
       continue;
     }
@@ -100,7 +101,10 @@ function additionalComments(body) {
       current = null;
       continue;
     }
-    const fileHead = raw.match(/<summary>(.+?)-\d+-\d+: \d+<\/summary>/) || raw.match(/<summary>(.+?)-\d+: \d+<\/summary>/);
+    const fileHead =
+      raw.match(/<summary>(.+?)-\d+-\d+: \d+<\/summary>/) ||
+      raw.match(/<summary>(.+?)-\d+: \d+<\/summary>/) ||
+      raw.match(/<summary>([^<]+?) \(\d+\)<\/summary>/);
     if (fileHead) {
       file = fileHead[1].trim();
       current = null;
@@ -108,7 +112,12 @@ function additionalComments(body) {
     }
     const entry = line.match(/^`(\d+(?:-\d+)?)`: (.*)$/);
     if (entry) {
-      const sev = (entry[2].match(severityWords) || [])[1] ?? "?";
+      const sev = (entry[2].match(severityWords) || [])[1];
+      if (!sev) {
+        // 重要度の無い項目（LGTM! など）は指摘ではない。
+        current = null;
+        continue;
+      }
       current = { label: sev, title: "", where: `${file}:${entry[1]}`, kind: "レビュー本文の項目（Additional comments）", unverified: false };
       items.push(current);
       continue;
