@@ -90,6 +90,16 @@ try {
   g(["config", "core.hooksPath", ".githooks"]);
   expect("check-setup: core.hooksPath が相対パス", check("git push -u origin work"), 2);
   expect("setup: 相対パスを絶対パスに置き換える", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 0);
+  // 別の worktree（core.hooksPath は共有される）で setup を実行しても、変更せずに終わる。
+  const wt = path.join(root, "wt");
+  g(["worktree", "add", "-q", "-b", "wt", wt]);
+  const hooksBefore = g(["config", "--get", "core.hooksPath"]);
+  expect("setup: 別の worktree で実行（変更しない）", run("node", [path.join(wt, "tools", "review-gate", "setup.mjs")], { cwd: wt }), 0);
+  expect("setup: 別の worktree で実行しても設定は同じ", g(["config", "--get", "core.hooksPath"]) === hooksBefore, true);
+  // 指す先に pre-push が無ければ置き換える。
+  g(["config", "core.hooksPath", path.join(root, "gone", ".githooks").replace(/\\/g, "/")]);
+  expect("setup: 指す先が無い絶対パスを置き換える", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 0);
+  expect("setup: 置き換えた後の設定", g(["config", "--get", "core.hooksPath"]) === hooksBefore, true);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);

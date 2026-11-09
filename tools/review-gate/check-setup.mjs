@@ -17,9 +17,8 @@
 //      承認した内容と一致しなくなる。ファイルは Write ツールで作る。ヒアドキュメントや echo で書くと、そのコマンドが止まる）。
 //
 // 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
-// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、$CLAUDE_PROJECT_DIR 以外のチェックアウト（別の worktree など）の
-// .githooks の無いブランチからの push、同じコマンドの中で .githooks の無いブランチに切り替えてからの push
-// （今のチェックアウトの確認は、コマンドの実行前の 1 回だけ）、照合のフック・スクリプト・承認の記録の書き換え、
+// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、core.hooksPath の指すチェックアウトを
+// 同じコマンドの中で .githooks の無いブランチに切り替えてからの push（その場所の確認は、コマンドの実行前の 1 回だけ）、照合のフック・スクリプト・承認の記録の書き換え、
 // git を通さずにリモートのブランチを書き換える操作（GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
 //
 // 止めるときは終了コード 2（Claude Code の hook は、既定（onFailure 未指定）では終了コード 2 のときだけツールの実行を止め、
@@ -73,11 +72,12 @@ try {
   if (!hooksPath || !path.isAbsolute(hooksPath) || !fs.existsSync(path.join(hooksPath, "pre-push"))) {
     block(
       "git の pre-push フックが有効になっていない（core.hooksPath が、pre-push のある .githooks の絶対パスでない）。" +
-        "`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する。",
+        "`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する（setup が上書きを拒んだら、" +
+        "`git config --unset core.hooksPath` のあとで setup を実行し直す）。",
     );
   }
   if (!fs.existsSync(path.join(projectTop, ".githooks", "pre-push"))) {
-    block("今のチェックアウトに .githooks/pre-push が無いので、push の照合が動かない。照合の仕組みが入った main を取り込んでから push する。");
+    block("今のチェックアウトに照合の仕組み（.githooks/pre-push）が入っていない。照合の仕組みが入った main を取り込んでから push する。");
   }
   process.exit(0);
 } catch {

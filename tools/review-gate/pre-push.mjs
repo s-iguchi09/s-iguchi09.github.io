@@ -4,10 +4,11 @@
 // - フックが動けば、照合する ref は git が標準入力で渡すので、コマンドのつなぎ方やブランチの指定には左右されない。
 //   標準入力の各行は「送り元の式 送り元の sha 送り先の ref 送り先の sha」で、送り元の式は空白を含むことがある
 //   （HEAD@{0 seconds ago} など）ので、右の 3 列から読む。形の合わない行があれば止める。
-//   ただし、--no-verify・core.hooksPath の変更・.githooks の無いブランチ（同じコマンドの中で切り替えた先を含む）ではフックが動かず、
+//   ただし、--no-verify・core.hooksPath の変更・core.hooksPath の指すチェックアウトが .githooks の無いブランチにある場合
+//   （同じコマンドの中で切り替えた場合を含む）ではフックが動かず、
 //   CLAUDECODE を外した実行ではフックは動くが照合しない（check-setup.mjs は一部の語や設定を含む場合だけを止め、ほかは手順書で禁じている。
 //   仕組みでは防げない）。.git の中や --git-dir・GIT_DIR で作業ツリーのルートが変わった push は、core.hooksPath が絶対パスなので
-//   フックが動き、.githooks/pre-push の sh 側が止める。
+//   フックが動き、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ .githooks/pre-push の sh 側が止める（あれば照合する）。
 // - 照合するのは環境変数 CLAUDECODE=1 の環境（Claude Code のツール・hook の子プロセスや、Claude Code の IDE 拡張の
 //   統合ターミナルなど）からの push だけ。IDE 拡張の統合ターミナルから人が push した場合も照合する。
 //   それ以外の端末から人が push するときは照合しない（判定は .githooks/pre-push の sh 側）。
