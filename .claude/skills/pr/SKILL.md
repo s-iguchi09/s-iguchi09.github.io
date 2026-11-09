@@ -152,7 +152,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        `core.hooksPath` は同じリポジトリの worktree の間で共有されるので、別の worktree で setup を実行しても、
        既にこのリポジトリのチェックアウトのルート直下の `.githooks`(pre-push のあるもの)を指していれば変更せずに終わる。
        指す先が pre-push の無い `.githooks` なら置き換える(判定に使うのはこのクローンの設定(`--local`)だけで、
-       グローバルの `core.hooksPath` はローカルの設定で上書きする)。同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、
+       グローバルやシステムの `core.hooksPath` はローカルの設定で上書きする。最後に実際に効いている値を確かめ、
+       worktree 単位の設定や include で読み込んだ値が効いていれば、その出どころを表示して止める)。同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、
        フックは動き、照合のスクリプトが無いので sh 側が止める。
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。

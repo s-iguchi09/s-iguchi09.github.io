@@ -2,12 +2,13 @@
 # 承認した内容と、push される内容を照合する（tools/review-gate/pre-push.mjs）。
 # Claude Code の環境（CLAUDECODE=1）からの push だけを照合する。それ以外は node を起動せずに通す。
 [ "$CLAUDECODE" = "1" ] || exit 0
-# 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無いとき（.git の中や --git-dir・GIT_DIR での push、
+# 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無いとき（.git の中で実行した push や、--git-dir・GIT_DIR で
+# 作業ツリーのルートが別の場所になった push、
 # 照合の仕組みが入っていないブランチなど）は、照合できないので止める。
 top=$(git rev-parse --show-toplevel 2>/dev/null)
 script="$top/tools/review-gate/pre-push.mjs"
 if [ -z "$top" ] || [ ! -f "$script" ]; then
-  echo "[review-gate] 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無いので止めた。.git の中や --git-dir・GIT_DIR での push ならリポジトリのルートから push し、照合の仕組みが入っていないブランチなら main を取り込む。" >&2
+  echo "[review-gate] 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無いので止めた。.git の中で実行したり --git-dir・GIT_DIR で作業ツリーのルートが別の場所になったりした push ならリポジトリのルートから push し、照合の仕組みが入っていないブランチなら main を取り込む。" >&2
   exit 1
 fi
 exec node "$script" "$@"

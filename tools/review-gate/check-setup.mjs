@@ -11,7 +11,8 @@
 //      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
 //   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
 //      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、`work-tree`・`GIT_WORK_TREE`）の
-//      どれかを含めば止める。網羅ではない。`git-dir` などで作業ツリーのルートを変えた push はフックの sh 側でも止まるが、
+//      どれかを含めば止める。網羅ではない。`git-dir` などで作業ツリーのルートが別の場所になった push は、フックの sh 側でも
+//      止まるか（ルートを特定できない・そこに照合のスクリプトが無い）照合されるが、
 //      理由が分かりやすいようにここでも止める。ブランチ名にこれらの語を含んでも止まるので、ブランチ名には使わない。
 //      メッセージや引用符・ヒアドキュメントの中に書いた語でも止まる（止める側の誤り。そうした語を含むコミットメッセージは、
 //      作業ツリーの外に置いたファイルから `git commit -F "<ファイル>"` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
@@ -77,7 +78,7 @@ try {
     block(
       `git の pre-push フックが有効になっていない（${problem}）。` +
         "`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する（setup が上書きを拒んだら、" +
-        "`git config --unset core.hooksPath` のあとで setup を実行し直す）。",
+        "`git config --unset-all core.hooksPath` のあとで setup を実行し直す。setup が値の出どころを表示したら、そのファイルの値を消す）。",
     );
   }
   if (!fs.existsSync(path.join(projectTop, ".githooks", "pre-push"))) {

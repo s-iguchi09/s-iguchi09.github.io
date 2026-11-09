@@ -114,6 +114,17 @@ try {
   g(["config", "--local", "--unset", "core.hooksPath"]);
   expect("setup: グローバルに別の core.hooksPath がある", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")], { env: { GIT_CONFIG_GLOBAL: globalCfg } }), 0);
   expect("setup: グローバルがあってもローカルに設定した", g(["config", "--local", "--get", "core.hooksPath"]) === hooksBefore, true);
+  // include で読み込んだ別の値が効いていれば、setup は「設定した」で終わらずに止める。
+  const incCfg = path.join(root, "inc.gitconfig");
+  fs.writeFileSync(incCfg, "[core]\n\thooksPath = C:/elsewhere/hooks\n");
+  g(["config", "--local", "include.path", incCfg.replace(/\\/g, "/")]);
+  expect("setup: include で別の値が効いている", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 1);
+  g(["config", "--local", "--unset", "include.path"]);
+  // ローカルに値が複数あれば、スタックトレースを出さずに止める。
+  g(["config", "--local", "--add", "core.hooksPath", hooksBefore]);
+  expect("setup: ローカルに値が複数ある", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 1);
+  g(["config", "--local", "--unset-all", "core.hooksPath"]);
+  g(["config", "--local", "core.hooksPath", hooksBefore]);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);
