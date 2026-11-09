@@ -61,6 +61,7 @@ if (mode === "start") {
   let started;
   try {
     started = JSON.parse(fs.readFileSync(pendingFile(), "utf8"));
+    if (typeof started?.tree !== "string") throw new Error("tree が無い");
   } catch {
     console.error("レビューを始めた記録を読めない。`approve.mjs start` からレビューをやり直す。");
     process.exit(1);

@@ -71,7 +71,7 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
 
      どちらの取り込みの後も、この時点では push しない。push は Phase 3・4 の push でまとめて行い、その前に `pr` スキル
      Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による。承認が無いと pre-push フックが止める)。
-     既に push 済みのブランチを rebase した場合は、Phase 3・4 の push を `git push --force-with-lease -u origin <branch>` にする
+     既に push 済みのブランチを rebase した場合は、Phase 3・4 の push を `git push --force-with-lease -u origin "<branch>"` にする
      (通常の push は拒否される)。
 
      いずれの場合も `git checkout -B <branch> origin/main` は使わない(既存ブランチの未 push コミットが参照から外れるため)。
@@ -173,7 +173,7 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
   - この確認は **スキップ** し、そのまま Phase 4 へ進む。
 
 - `RUN_MODE == pre_pr` の場合:
-  - **PR は作成しない。** 記事の変更をコミットし(`pr` スキル Phase 1 手順 2 のとおり `git add -A` で全部)、`git push -u origin <branch>` で作業ブランチへ push して停止する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin <branch>`)。
+  - **PR は作成しない。** 記事の変更をコミットし(`pr` スキル Phase 1 手順 2 のとおり `git add -A` で全部)、`git push -u origin <branch>` で作業ブランチへ push して停止する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin "<branch>"`)。
     push は Web 実行環境で作業を失わないための保全であり、PR ではない。
     push 前に、`pr` スキル Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による)。
     レビュー対応で直した分があれば、それもコミットしてから push する。
@@ -187,11 +187,11 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
 
 ## Phase 4. PR 作成と CI 監視(指摘ゼロまで)
 
-1. **コミット & プッシュ。** 変更をコミットし(`pr` スキル Phase 1 手順 2 のとおり `git add -A` で全部)、`git push -u origin <branch>` する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin <branch>`)
+1. **コミット & プッシュ。** 変更をコミットし(`pr` スキル Phase 1 手順 2 のとおり `git add -A` で全部)、`git push -u origin <branch>` する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin "<branch>"`)
    (ネットワークエラー時は 2s/4s/8s/16s の指数バックオフで最大 4 回リトライ)。
    - push 前に、`pr` スキル Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による)。
    - `pre_pr` からの再開などで **追加の変更が無い場合はコミットを省略する**(`nothing to commit` で止めない)。
-     ただし未 push のコミットが残っていれば `git push -u origin <branch>` を実行してから手順 2(PR 作成)へ進む。
+     ただし未 push のコミットが残っていれば、上と同じしかたで push してから手順 2(PR 作成)へ進む。
      追加修正やレビュー対応で直した分があれば、コミットしてから push する。
 
 2. **PR を作成する。** GitHub MCP(`mcp__github__create_pull_request`)で `main` 宛の PR を作成する。

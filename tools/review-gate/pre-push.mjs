@@ -4,14 +4,16 @@
 // - フックが動けば、照合する ref は git が標準入力で渡すので、コマンドのつなぎ方やブランチの指定には左右されない。
 //   標準入力の各行は「送り元の式 送り元の sha 送り先の ref 送り先の sha」で、送り元の式は空白を含むことがある
 //   （HEAD@{0 seconds ago} など）ので、右の 3 列から読む。形の合わない行があれば止める。
-//   ただし、--no-verify・core.hooksPath の変更・.githooks の無いブランチ（同じコマンドの中で切り替えた先を含む）ではフックが動かず、
+//   ただし、--no-verify・core.hooksPath の変更・.githooks の無いブランチ（同じコマンドの中で切り替えた先を含む）、
+//   --git-dir や GIT_DIR で作業ツリーのルートを変えた push（相対パスの core.hooksPath が別の場所を指す）ではフックが動かず、
 //   CLAUDECODE を外した実行ではフックは動くが照合しない（check-setup.mjs と手順書で止めるが、仕組みでは防げない）。
 // - 照合するのは環境変数 CLAUDECODE=1 の環境（Claude Code のツール・hook の子プロセスや、Claude Code の IDE 拡張の
 //   統合ターミナルなど）からの push だけ。IDE 拡張の統合ターミナルから人が push した場合も照合する。
 //   それ以外の端末から人が push するときは照合しない（判定は .githooks/pre-push の sh 側）。
 // - 照合するのは各ブランチの先頭のコミットの内容だけで、間のコミットの内容は確かめない。
 // - 照合するのは送り先がブランチ（refs/heads/）の push だけ。削除と、送り先がタグなどブランチ以外の push は照合しない
-//   （送り元がタグでも、送り先がブランチなら照合する）。
+//   （送り元がタグでも、送り先がブランチなら照合する。refs/Heads/ のように大文字小文字を変えた書き方も、
+//   大文字小文字を区別しないファイルシステムではブランチになりうるので、止める側に倒して照合する）。
 // - 照合の途中でエラーが起きたら、止める側に倒す（終了コード 1）。
 //
 // 手で試す（push される ref を標準入力で渡す。最後の 2 つの引数は使わない）。Claude Code の Bash では
@@ -51,7 +53,7 @@ try {
   });
   // 照合するのは送り先がブランチ（refs/heads/）のものだけ。削除と、タグなどブランチ以外への push は照合しない。
   // 送り元がタグでも、送り先がブランチなら照合する。
-  const updates = parsed.filter((p) => !ZERO.test(p[1]) && p[2].startsWith("refs/heads/"));
+  const updates = parsed.filter((p) => !ZERO.test(p[1]) && p[2].toLowerCase().startsWith("refs/heads/"));
   if (updates.length === 0) {
     process.exit(0);
   }

@@ -414,13 +414,15 @@ if (snippets.length === 0) {
           cResults.push("NG");
           const [ln, col] = r.pos.split(":").map(Number);
           const inLine = ln - s.lineOffset;
-          const at =
-            inLine >= 1 && inLine <= s.code.split("\n").length
-              ? `コード片の ${inLine} 行目 ${col} 文字目`
-              : s.lineOffset > 0
-                ? "包むために足した終わりのタグで見つかった。コード片の閉じていないタグが原因のことが多い"
-                : "コード片の末尾（位置不明）";
-          out.push(`- ${where}: **XML として読めない**（${at}。メッセージ中の行番号は包んだ後の行番号）: ${r.msg}`);
+          const lines = s.code.split("\n").length;
+          let at;
+          if (inLine >= 1 && inLine <= lines) at = `コード片の ${inLine} 行目 ${col} 文字目`;
+          else if (s.lineOffset > 0 && inLine < 1) at = "包むために足した開始タグ（補った名前空間の宣言）で見つかった";
+          else if (s.lineOffset > 0) at = "包むために足した終わりのタグで見つかった。コード片の閉じていないタグが原因のことが多い";
+          else at = "コード片の末尾（位置不明）";
+          const note =
+            s.lineOffset > 0 ? "。メッセージ中の行番号は包んだ後の行番号" : s.lineOffset < 0 ? "。メッセージ中の行番号は先頭の空行を除いた後の行番号" : "";
+          out.push(`- ${where}: **XML として読めない**（${at}${note}）: ${r.msg}`);
         }
         return;
       }

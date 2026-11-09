@@ -95,6 +95,8 @@ try {
   expect("check-setup: env --ignore-environment", check("env --ignore-environment git push"), 2);
   expect("check-setup: env の省略形・まとめ書き", check("env -iu FOO git push"), 2);
   expect("check-setup: include.path", check("git -c include.path=/x push"), 2);
+  expect("check-setup: 作業ツリーのルートを変える --git-dir", check("cd sub && git --git-dir=../.git push origin work"), 2);
+  expect("check-setup: 作業ツリーのルートを変える GIT_DIR", check("GIT_DIR=../.git git push origin work"), 2);
   expect("check-setup: ヒアドキュメントの後ろの --no-verify", check("git commit -F - <<'EOF' && git push --no-verify\nmsg\nEOF"), 2);
   expect("check-setup: メッセージの中の語（止める側に倒す）", check('git commit -m "git push で --no-verify を使わない"'), 2);
   expect("check-setup: メッセージはファイルで渡す", check("git commit -F msg.txt"), 0);
@@ -104,6 +106,9 @@ try {
 
   // ---- approve.mjs ----
   expect("approve: start より前の done", run("node", [approve, "done", "x"]), 1);
+  fs.mkdirSync(path.join(repo, ".git", "review-gate"), { recursive: true });
+  fs.writeFileSync(path.join(repo, ".git", "review-gate", "review-started.json"), "null");
+  expect("approve: 開始の記録が null", run("node", [approve, "done", "x"]), 1);
   expect("approve: start", run("node", [approve, "start"]), 0);
   fs.writeFileSync(path.join(repo, "a.txt"), "2\n");
   expect("approve: start の後に変えて done", run("node", [approve, "done", "x"]), 1);
@@ -126,6 +131,7 @@ try {
   expect("push: タグからブランチへ（承認していない内容）", push(["origin", "refs/tags/v1:refs/heads/fromtag"]), 1);
   expect("push: HEAD をタグへ（承認していない内容）", push(["origin", "HEAD:refs/tags/v2"]), 0);
   expect("push: 送り元の式に空白を含む（承認していない内容）", push(["origin", "HEAD@{0 seconds ago}:refs/heads/spaced"]), 1);
+  expect("push: 大文字小文字を変えたブランチの書き方（承認していない内容）", push(["origin", "HEAD:refs/Heads/upper"]), 1);
   expect("pre-push: 形の合わない入力", run("node", [prePush, "origin", "x"], { input: "garbage\n", env: { CLAUDECODE: "1" } }), 1);
   fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{ broken");
   expect("push: 記録が壊れている", push(["origin", "HEAD:work2"]), 1);

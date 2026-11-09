@@ -9,13 +9,16 @@
 //      core.hooksPath が .githooks であることと、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
 //      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
 //   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
-//      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`）のどれかを含めば止める。網羅ではない。
+//      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、`work-tree`・`GIT_WORK_TREE`）の
+//      どれかを含めば止める。網羅ではない。`git-dir` などを含めるのは、作業ツリーのルートが変わると、相対パスの core.hooksPath
+//      （.githooks）が別の場所を指し、フックが黙って動かなくなるため。
 //      メッセージや引用符・ヒアドキュメントの中に書いた語でも止まる（止める側の誤り。そうした語を含むコミットメッセージは、
 //      作業ツリーの外に置いたファイルから `git commit -F <ファイル>` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
 //      承認した内容と一致しなくなる。ファイルは Write ツールで作る。ヒアドキュメントや echo で書くと、そのコマンドが止まる）。
 //
 // 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
-// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、同じコマンドの中で .githooks の無いブランチに切り替えてからの push
+// フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、$CLAUDE_PROJECT_DIR 以外のチェックアウト（別の worktree など）の
+// .githooks の無いブランチからの push、同じコマンドの中で .githooks の無いブランチに切り替えてからの push
 // （今のチェックアウトの確認は、コマンドの実行前の 1 回だけ）、照合のフック・スクリプト・承認の記録の書き換え、
 // git を通さずにリモートのブランチを書き換える操作（GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
 //
@@ -52,10 +55,10 @@ try {
   if (typeof command !== "string" || !/push/i.test(command)) {
     process.exit(0);
   }
-  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|UseNewEnvironment|\bwsl\b/i.test(command)) {
+  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|UseNewEnvironment|\bwsl\b|git[-_]dir|work[-_]tree/i.test(command)) {
     block(
       "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path・includeIf、CLAUDECODE、" +
-        "--ignore-environment とその省略形、オプションを付けた env、UseNewEnvironment、wsl）が含まれている。照合を外さずに push する。" +
+        "--ignore-environment とその省略形、オプションを付けた env、UseNewEnvironment、wsl、git-dir・GIT_DIR、work-tree・GIT_WORK_TREE）が含まれている。照合を外さずに push する。" +
         "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。",
     );
   }
