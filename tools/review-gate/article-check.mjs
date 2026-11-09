@@ -345,7 +345,9 @@ function compileSnippet(baseDir, idx, code, kind) {
 function wrapXaml(code) {
   const trimmed = code.trim();
   if (/^<\?xml|^<[\w:.]+[^>]*\sxmlns=/.test(trimmed)) {
-    return { xml: code, lineOffset: 0 };
+    // 包まずに読む。XML 宣言の前に空白があると読めないので、先頭の空白を除き、除いた行数だけ行番号をずらす。
+    const lead = code.match(/^\s*/)[0];
+    return { xml: code.slice(lead.length), lineOffset: -(lead.split("\n").length - 1) };
   }
   const declared = new Set([...code.matchAll(/xmlns:(\w+)=/g)].map((m) => m[1]));
   const used = new Set([...code.matchAll(/<\/?(\w+):[\w.]+|\s(\w+):[\w.]+\s*=/g)].map((m) => m[1] ?? m[2]).filter((p) => p && p !== "xmlns" && p !== "xml"));
@@ -412,7 +414,12 @@ if (snippets.length === 0) {
           cResults.push("NG");
           const [ln, col] = r.pos.split(":").map(Number);
           const inLine = ln - s.lineOffset;
-          const at = inLine >= 1 && inLine <= s.code.split("\n").length ? `コード片の ${inLine} 行目 ${col} 文字目` : "包むために足した部分";
+          const at =
+            inLine >= 1 && inLine <= s.code.split("\n").length
+              ? `コード片の ${inLine} 行目 ${col} 文字目`
+              : s.lineOffset > 0
+                ? "包むために足した終わりのタグで見つかった。コード片の閉じていないタグが原因のことが多い"
+                : "コード片の末尾（位置不明）";
           out.push(`- ${where}: **XML として読めない**（${at}。メッセージ中の行番号は包んだ後の行番号）: ${r.msg}`);
         }
         return;
@@ -425,7 +432,7 @@ if (snippets.length === 0) {
       const hasAwait = /\bawait\b/.test(body);
       let kinds;
       if (typeDeclRe.test(body)) kinds = ["type", "toplevel", "members"];
-      else if (extensionRe.test(body)) kinds = ["extensions", "members"];
+      else if (extensionRe.test(body)) kinds = ["extensions", "members", "toplevel"];
       else if (hasYield) kinds = [hasAwait ? "asyncIterator" : "iterator", "members", "toplevel"];
       else kinds = ["statements", "members", "ctor", "toplevel"];
       /** エラーの重さを、比べられる数の組にする。 */
@@ -498,7 +505,7 @@ if (snippets.length === 0) {
     out.push("");
     out.push(
       "C# のコード片は 1 つずつ別のプロジェクトでコンパイルした（.NET 10・WPF、Toolkit や Prism などのパッケージは参照しない）。" +
-        "包み方は、型の宣言を含むものは「そのまま → トップレベルの文 → クラスのメンバー」、拡張メソッドは「静的クラス → クラスのメンバー」、" +
+        "包み方は、型の宣言を含むものは「そのまま → トップレベルの文 → クラスのメンバー」、拡張メソッドは「静的クラス → クラスのメンバー → トップレベルの文」、" +
         "yield を含むものは「反復子（await も含めば非同期の反復子）のメソッド → クラスのメンバー → トップレベルの文」、" +
         "それ以外は「メソッドの本体 → クラスのメンバー → コンストラクター → トップレベルの文」の順に試し、" +
         "エラーの無いものを採った。無ければ、構文・型の誤り → 存在しないメンバー → 抜粋の外の参照の順に件数を比べて、最も軽いものを採った" +

@@ -132,7 +132,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - **要修正が 0 件になったら、依頼者が `node tools/review-gate/approve.mjs done "<結果の要約>"` で承認を記録する。**
      作業ツリーが `approve.mjs start` の時点と違えば(レビューの後に変えていれば)記録されないので、`start` からレビューをやり直す。
      上の「対象」の例外(`article-workflow` の Phase 2 の収束後に 1 行も変えずに push する場合)は、
-     手順 0 の `setup.mjs` を済ませ、`node tools/review-gate/article-check.mjs` を実行し、報告の (c) に手順 1 の 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
+     手順 0 の `setup.mjs` を済ませ、`node tools/review-gate/article-check.mjs` を実行し、報告の (c) に上の 1.(`article-check.mjs`)で挙げた 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
      XML として読めない)が出ていないことを確かめてから(出たら直す。直したら例外ではなくなる。
      抜粋として正しいのに出た場合と、確かめる人のいない「包み方で確かめられない」「要確認」「確かめていない」が出た場合は、
      例外をやめて独立レビュー(start〜done)に切り替える)、
@@ -157,7 +157,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
          そのファイルは Write ツールで作る(Bash・PowerShell のヒアドキュメントや echo で書くと、そのコマンドが同じ理由で止まる)。
          `gh` で PR を作る場合の本文も同じく `--body-file` で渡す(MCP のツールで作る場合は、この hook の対象外)
      - **仕組みで防げないもの:**
-       - `--no-verify`・`core.hooksPath` の変更、`$CLAUDE_PROJECT_DIR` 以外のチェックアウトの `.githooks` の無いブランチではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
+       - `--no-verify`・`core.hooksPath` の変更、`.githooks` の無いブランチ(`$CLAUDE_PROJECT_DIR` 以外のチェックアウト、または同じコマンドの中で切り替えた先。
+         上の hook が今のチェックアウトを確かめるのはコマンドの実行前の 1 回だけ)ではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
        - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
          変数・別名・スクリプトの中で組み立てる操作は止められない
        - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、`check-setup.mjs` によるフックが有効かの確認も、pre-push の照合も効かない

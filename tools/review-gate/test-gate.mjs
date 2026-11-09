@@ -125,6 +125,8 @@ try {
   expect("push: タグ（承認していない内容を指す）", push(["origin", "v1"]), 0);
   expect("push: タグからブランチへ（承認していない内容）", push(["origin", "refs/tags/v1:refs/heads/fromtag"]), 1);
   expect("push: HEAD をタグへ（承認していない内容）", push(["origin", "HEAD:refs/tags/v2"]), 0);
+  expect("push: 送り元の式に空白を含む（承認していない内容）", push(["origin", "HEAD@{0 seconds ago}:refs/heads/spaced"]), 1);
+  expect("pre-push: 形の合わない入力", run("node", [prePush, "origin", "x"], { input: "garbage\n", env: { CLAUDECODE: "1" } }), 1);
   fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{ broken");
   expect("push: 記録が壊れている", push(["origin", "HEAD:work2"]), 1);
   fs.writeFileSync(path.join(repo, ".git", "review-gate", "approved.json"), "{}");

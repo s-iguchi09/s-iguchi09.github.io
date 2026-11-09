@@ -2,7 +2,9 @@
 // approve.mjs で承認した内容と同じかを確かめる。違えば終了コード 1 で push を止める。
 //
 // - フックが動けば、照合する ref は git が標準入力で渡すので、コマンドのつなぎ方やブランチの指定には左右されない。
-//   ただし、--no-verify・core.hooksPath の変更・.githooks の無いブランチではフックが動かず、
+//   標準入力の各行は「送り元の式 送り元の sha 送り先の ref 送り先の sha」で、送り元の式は空白を含むことがある
+//   （HEAD@{0 seconds ago} など）ので、右の 3 列から読む。形の合わない行があれば止める。
+//   ただし、--no-verify・core.hooksPath の変更・.githooks の無いブランチ（同じコマンドの中で切り替えた先を含む）ではフックが動かず、
 //   CLAUDECODE を外した実行ではフックは動くが照合しない（check-setup.mjs と手順書で止めるが、仕組みでは防げない）。
 // - 照合するのは環境変数 CLAUDECODE=1 の環境（Claude Code のツール・hook の子プロセスや、Claude Code の IDE 拡張の
 //   統合ターミナルなど）からの push だけ。IDE 拡張の統合ターミナルから人が push した場合も照合する。
@@ -37,12 +39,19 @@ try {
   for await (const chunk of process.stdin) {
     input += chunk;
   }
-  const updates = input
-    .split(/\r?\n/)
-    .map((l) => l.trim().split(/\s+/))
-    // 照合するのは送り先がブランチ（refs/heads/）のものだけ。削除と、タグなどブランチ以外への push は照合しない。
-    // 送り元がタグでも、送り先がブランチなら照合する。
-    .filter((p) => p.length >= 4 && !ZERO.test(p[1]) && p[2].startsWith("refs/heads/"));
+  const lines = input.split(/\r?\n/).filter((l) => l.trim() !== "");
+  const sha = /^[0-9a-f]{40,64}$/;
+  const parsed = lines.map((l) => {
+    // 送り元の式は空白を含むことがあるので、空白を含まない右の 3 列（送り元の sha、送り先の ref、送り先の sha）から読む。
+    const p = l.trim().split(" ");
+    if (p.length < 4 || !sha.test(p.at(-3)) || !sha.test(p.at(-1))) {
+      block(`git から渡された push の内容を読めない（${l}）。照合できないので止めた。`);
+    }
+    return [p.slice(0, -3).join(" "), p.at(-3), p.at(-2), p.at(-1)];
+  });
+  // 照合するのは送り先がブランチ（refs/heads/）のものだけ。削除と、タグなどブランチ以外への push は照合しない。
+  // 送り元がタグでも、送り先がブランチなら照合する。
+  const updates = parsed.filter((p) => !ZERO.test(p[1]) && p[2].startsWith("refs/heads/"));
   if (updates.length === 0) {
     process.exit(0);
   }

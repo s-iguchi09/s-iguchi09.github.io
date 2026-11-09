@@ -58,7 +58,13 @@ if (mode === "start") {
     console.error("レビューを始めた記録が無い。レビュアーを起動する前に `approve.mjs start` を実行する。");
     process.exit(1);
   }
-  const started = JSON.parse(fs.readFileSync(pendingFile(), "utf8"));
+  let started;
+  try {
+    started = JSON.parse(fs.readFileSync(pendingFile(), "utf8"));
+  } catch {
+    console.error("レビューを始めた記録を読めない。`approve.mjs start` からレビューをやり直す。");
+    process.exit(1);
+  }
   const tree = workingTreeHash();
   if (started.tree !== tree) {
     console.error(
