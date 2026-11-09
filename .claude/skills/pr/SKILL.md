@@ -240,10 +240,12 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
      状況を確認して進める(ユーザーへ指示を仰がない)。
    - **新しい指摘が無い差分レビューは、本文付きのレビューも通知も出さずに終わることがある。** 完了は返事の文言ではなく、
-     head コミットの CodeRabbit の check run(`gh api repos/<owner>/<repo>/commits/<sha>/check-runs`、`gh` が使えない環境では `mcp__github__pull_request_read` の `get_check_runs`)で判断する。
-     要約(`output.summary`)が「Review completed」(「Review skipped」ではない)で、完了時刻(`completed_at`)が依頼より後なら、
+     head コミットの CodeRabbit の check run(`gh api repos/<owner>/<repo>/commits/<sha>/check-runs`)で判断する。
+     要約(`output.summary`)が「Review completed」を含み(「Review skipped」ではない)、完了時刻(`completed_at`)が依頼より後なら、
      そのレビューは終わっている。終わっていて、最新のコミットに本文付きの CodeRabbit のレビューも未解決のスレッドも無ければ、
      「指摘無しでレビュー済み」とみなして Phase 4 へ進む。
+     `mcp__github__pull_request_read` の `get_check_runs` は要約を返さず、Review skipped も conclusion は success になるので、この判定には使わない。
+     `gh` が使えない環境では、本文付きのレビューの到着を待つか、`@coderabbitai review` を送って返事で確かめる。
      返事が「Review finished」に書き換わっても、指摘付きのレビューが後から付くことがあるので、それだけでは判断しない。
      もう一度 `@coderabbitai review` を送ったときの「Already reviewed the last commit」も、レビュー済みという意味で、指摘の有無は示さない。
      - 経緯:PR #174 では、指摘無しで終わった差分レビューの結果を 9 時間待ち続けた

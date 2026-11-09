@@ -79,11 +79,24 @@ function additionalComments(body) {
   const items = [];
   let file = "";
   let current = null;
+  let inBlock = false;
   for (const raw of body.split(/\r?\n/)) {
     const line = raw.replace(/<[^>]+>/g, "").trim();
-    const fileHead = raw.match(/<summary>([^<]+?)-\d+(?:-\d+)?: \d+<\/summary>/);
+    // 解析するのは「Additional comments: N」の節の中だけ（節の後ろの区切り線や次の節で終える）。
+    if (/Additional comments: \d+/.test(line)) {
+      inBlock = true;
+      continue;
+    }
+    if (!inBlock) continue;
+    if (line === "---" || /Prompt to fix all issues|Review info/.test(line)) {
+      inBlock = false;
+      current = null;
+      continue;
+    }
+    const fileHead = raw.match(/<summary>(.+?)-\d+-\d+: \d+<\/summary>/) || raw.match(/<summary>(.+?)-\d+: \d+<\/summary>/);
     if (fileHead) {
       file = fileHead[1].trim();
+      current = null;
       continue;
     }
     const entry = line.match(/^`(\d+(?:-\d+)?)`: (.*)$/);
@@ -98,7 +111,7 @@ function additionalComments(body) {
       current.unverified = true;
       continue;
     }
-    const bold = line.match(/^\*\*(.+)\*\*$/);
+    const bold = line.match(/^\*\*(.+?)\*\*/);
     if (bold && !/^Unverified finding$/.test(bold[1])) current.title = bold[1].trim();
   }
   return items.map((i) => (i.unverified ? { ...i, label: `${i.label}・未検証` } : i));
@@ -128,7 +141,7 @@ function reviewBodyItems(body) {
 const lines = [
   "# 過去の PR で CodeRabbit が付けた指摘",
   "",
-  `${repo} の、マージ済みの PR のうち作成が新しい ${limit * 3} 件から、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
+  `${repo} の、マージ済みの PR のうち作成が新しい ${limit * 3} 件の中で、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
   "インラインの指摘（返信を除く）と、",
   "レビュー本文の項目（「Outside diff range」「Nitpick」「Additional comments」など。区分は見分けない。検証できなかった指摘は「未検証」）、" +
     "失敗・警告になった pre-merge check を含む。",
