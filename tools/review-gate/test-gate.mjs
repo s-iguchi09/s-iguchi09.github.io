@@ -39,6 +39,12 @@ function run(cmd, args, { input = "", env = {}, cwd = repo } = {}) {
   return spawnSync(cmd, args, { cwd, input, encoding: "utf8", env: { ...baseEnv, ...env } }).status;
 }
 
+/** 作業ディレクトリを指定して git（push を含む引数）を CLAUDECODE=1 で実行する。返す値は push() と同じ。 */
+function spawnPush(cwd, args) {
+  const r = spawnSync("git", args, { cwd, encoding: "utf8", env: { ...baseEnv, CLAUDECODE: "1" } });
+  return r.status === 1 && !`${r.stderr}`.includes("[review-gate]") ? -1 : r.status;
+}
+
 /**
  * 本物の git push を実行し、終了コードを返す。claude が false なら環境変数を外す。
  * 終了コード 1 でも、照合の文言（[review-gate]）が無ければ別の理由の失敗なので -1 を返す。
@@ -82,6 +88,8 @@ try {
   expect("check-setup: 壊れた入力", run("node", [checkSetup], { input: "{", env: projectEnv }), 0);
   // ---- check-setup.mjs（フックが有効な状態） ----
   g(["config", "core.hooksPath", ".githooks"]);
+  expect("check-setup: core.hooksPath が相対パス", check("git push -u origin work"), 2);
+  expect("setup: 相対パスを絶対パスに置き換える", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 0);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);
@@ -130,6 +138,9 @@ try {
   expect("push: タグ（承認していない内容を指す）", push(["origin", "v1"]), 0);
   expect("push: タグからブランチへ（承認していない内容）", push(["origin", "refs/tags/v1:refs/heads/fromtag"]), 1);
   expect("push: HEAD をタグへ（承認していない内容）", push(["origin", "HEAD:refs/tags/v2"]), 0);
+  expect("push: .git の中から（承認していない内容）", spawnPush(path.join(repo, ".git"), ["push", "origin", "HEAD:refs/heads/ingit"]), 1);
+  fs.mkdirSync(path.join(repo, "sub"), { recursive: true });
+  expect("push: --git-dir で作業ツリーのルートを変える（承認していない内容）", spawnPush(path.join(repo, "sub"), ["--git-dir=../.git", "push", "origin", "HEAD:refs/heads/gitdir"]), 1);
   expect("push: 送り元の式に空白を含む（承認していない内容）", push(["origin", "HEAD@{0 seconds ago}:refs/heads/spaced"]), 1);
   expect("push: 大文字小文字を変えたブランチの書き方（承認していない内容）", push(["origin", "HEAD:refs/Heads/upper"]), 1);
   expect("pre-push: 形の合わない入力", run("node", [prePush, "origin", "x"], { input: "garbage\n", env: { CLAUDECODE: "1" } }), 1);

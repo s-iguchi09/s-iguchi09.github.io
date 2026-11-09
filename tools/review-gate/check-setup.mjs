@@ -6,12 +6,12 @@
 // 元のコマンドの文字列に語が含まれるかだけで判定し、迷う場合は止める側に倒す。
 //
 //   1. コマンドに「push」を含めば（大文字小文字を問わず、部分一致）、$CLAUDE_PROJECT_DIR のリポジトリで
-//      core.hooksPath が .githooks であることと、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
+//      core.hooksPath が絶対パスでその場所に pre-push があることと、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
 //      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
 //   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
 //      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、`work-tree`・`GIT_WORK_TREE`）の
-//      どれかを含めば止める。網羅ではない。`git-dir` などを含めるのは、作業ツリーのルートが変わると、相対パスの core.hooksPath
-//      （.githooks）が別の場所を指し、フックが黙って動かなくなるため。
+//      どれかを含めば止める。網羅ではない。`git-dir` などで作業ツリーのルートを変えた push はフックの sh 側でも止まるが、
+//      理由が分かりやすいようにここでも止める。ブランチ名にこれらの語を含んでも止まるので、ブランチ名には使わない。
 //      メッセージや引用符・ヒアドキュメントの中に書いた語でも止まる（止める側の誤り。そうした語を含むコミットメッセージは、
 //      作業ツリーの外に置いたファイルから `git commit -F <ファイル>` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
 //      承認した内容と一致しなくなる。ファイルは Write ツールで作る。ヒアドキュメントや echo で書くと、そのコマンドが止まる）。
@@ -59,7 +59,8 @@ try {
     block(
       "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path・includeIf、CLAUDECODE、" +
         "--ignore-environment とその省略形、オプションを付けた env、UseNewEnvironment、wsl、git-dir・GIT_DIR、work-tree・GIT_WORK_TREE）が含まれている。照合を外さずに push する。" +
-        "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。",
+        "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。" +
+        "ブランチ名に含むなら、ブランチ名を変える。",
     );
   }
   const project = process.env.CLAUDE_PROJECT_DIR;
@@ -67,8 +68,13 @@ try {
   if (!projectTop) {
     process.exit(0);
   }
-  if (gitOut(["config", "--get", "core.hooksPath"], projectTop) !== ".githooks") {
-    block("git の pre-push フックが有効になっていない（core.hooksPath が .githooks でない）。`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する。");
+  // 相対パスは、.git の中や --git-dir での push で別の場所を指し、フックが黙って動かなくなるので受け付けない。
+  const hooksPath = gitOut(["config", "--get", "core.hooksPath"], projectTop);
+  if (!hooksPath || !path.isAbsolute(hooksPath) || !fs.existsSync(path.join(hooksPath, "pre-push"))) {
+    block(
+      "git の pre-push フックが有効になっていない（core.hooksPath が、pre-push のある .githooks の絶対パスでない）。" +
+        "`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する。",
+    );
   }
   if (!fs.existsSync(path.join(projectTop, ".githooks", "pre-push"))) {
     block("今のチェックアウトに .githooks/pre-push が無いので、push の照合が動かない。照合の仕組みが入った main を取り込んでから push する。");

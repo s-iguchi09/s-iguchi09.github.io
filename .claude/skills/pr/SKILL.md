@@ -146,10 +146,12 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      - 照合するのは環境変数 `CLAUDECODE=1` の環境(Claude Code の Bash・PowerShell ツール、hook の子プロセス、Claude Code の IDE 拡張の
        統合ターミナルなど。<https://code.claude.com/docs/en/env-vars> の `CLAUDECODE` の行による)からの push だけ。
        IDE 拡張の統合ターミナルから人が push した場合も照合する。それ以外の端末から人が push するときは照合しない。
-     - フックは `node tools/review-gate/setup.mjs` で有効にする(`core.hooksPath` を `.githooks` にする。クローンごとに 1 回)。
+     - フックは `node tools/review-gate/setup.mjs` で有効にする(`core.hooksPath` をこのチェックアウトの `.githooks` の絶対パスにする。クローンごとに 1 回)。
+       絶対パスにするのは、`.git` の中や `--git-dir`・`GIT_DIR` で作業ツリーのルートが変わった push でもフックを動かすため。
+       そうした push は、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無いので、フックの sh 側が止める。
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
-       - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath と、今のチェックアウトの `.githooks/pre-push`)
+       - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath が pre-push のある絶対パスであることと、今のチェックアウトの `.githooks/pre-push`)
        - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、オプションを付けた `env` など。全体は `check-setup.mjs` の冒頭)も含む。
          語の一覧は網羅ではない。メッセージや引用符・ヒアドキュメントの中に書いた語でも止まるので、そうした語を含むコミットメッセージは、
          作業ツリーの外(一時ディレクトリなど)に置いたファイルから `git commit -F <ファイル>` で渡す
@@ -158,8 +160,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
          `gh` で PR を作る場合の本文も同じく `--body-file` で渡す(MCP のツールで作る場合は、この hook の対象外)
      - **仕組みで防げないもの:**
        - `--no-verify`・`core.hooksPath` の変更、`.githooks` の無いブランチ(`$CLAUDE_PROJECT_DIR` 以外のチェックアウト、または同じコマンドの中で切り替えた先。
-         上の hook が今のチェックアウトを確かめるのはコマンドの実行前の 1 回だけ)と、`--git-dir`・`GIT_DIR` などで作業ツリーのルートを変えた push
-         (相対パスの `core.hooksPath` が別の場所を指す。上の hook はこれらの語を含むコマンドを止めるが、一覧に無い書き方は止められない)ではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
+         上の hook が今のチェックアウトを確かめるのはコマンドの実行前の 1 回だけ)ではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
        - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
          変数・別名・スクリプトの中で組み立てる操作は止められない
        - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、`check-setup.mjs` によるフックが有効かの確認も、pre-push の照合も効かない
@@ -198,7 +199,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - ブランチ名は必ずクォートして渡す(シェルのメタ文字によるコマンドインジェクションを防ぐ)。
    - push を止められたら、表示された理由に従う。主な理由は次のとおり。フックを外したり `--no-verify` を付けたりして push しない。
      - フックが有効になっていない、または今のチェックアウトに `.githooks/pre-push` が無い(check-setup.mjs)
-     - 「push」を含むコマンドに、照合を外す語を含んでいる(メッセージの中の語でも止まる。メッセージはファイルから渡す)(check-setup.mjs)
+     - 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無い(`.git` の中や `--git-dir` での push。フックの sh 側)。リポジトリのルートから push する
+     - 「push」を含むコマンドに、照合を外す語を含んでいる(メッセージやブランチ名の中の語でも止まる。メッセージはファイルから渡し、
+       ブランチ名に含むならブランチ名を変える)(check-setup.mjs)
      - 承認の記録が無い、または読めない(pre-push.mjs)
      - push するコミットの内容が承認と違う(承認の後の変更、承認のときにあった未追跡のファイルのコミット忘れ、内容の違う別のブランチ)(pre-push.mjs)
      - 照合の途中でエラーが起きた(pre-push.mjs)
