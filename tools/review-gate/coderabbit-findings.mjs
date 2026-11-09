@@ -92,7 +92,7 @@ function reviewBodyItems(body) {
 const lines = [
   "# 過去の PR で CodeRabbit が付けた指摘",
   "",
-  `${repo} の、作成が新しい ${limit * 3} 件の PR のうち、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
+  `${repo} の、マージ済みの PR のうち作成が新しい ${limit * 3} 件から、マージした日時が新しい ${prs.length} 件から集めた（指摘の無い PR は載せない）。`,
   "インラインの指摘（返信を除く）と、",
   "レビュー本文の項目（「Outside diff range」「Nitpick」など。区分は見分けない）、失敗・警告になった pre-merge check を含む。",
   "同じ型の問題が今回の差分に無いかを確かめる。日英で同じ指摘が 2 件ずつ付いていることがある。",

@@ -32,7 +32,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      (`git rev-parse --git-path review-gate` の場所。通常は `.git/review-gate/`、worktree ではその worktree 用の場所。コミットされない)。
      作業ツリーを書き換えうるコマンド(生成・整形など。下の共通の指示で「作業ツリーを書き換えるコマンド」として依頼者が実行するもの)は、
      この前に実行して `git status` で確かめておく(`approve.mjs start` の後に作業ツリーが変わると、承認できない)。
-     コミットしない未追跡のファイル(作業メモなど)も、この前に片付ける(承認する内容に含まれ、push の照合で一致しなくなる)。
+     コミットしない未追跡のファイル(作業メモなど)も、この前に片付ける(承認する内容に含まれ、手順 2 の `git add -A` でコミットに入る。
+     コミットから外すと push の照合で一致しない)。入れ子の worktree(`.claude/worktrees/`)は `.gitignore` で外してある。
      0. `node tools/review-gate/setup.mjs` … pre-push フックを有効にする。クローンごとに 1 回でよい(既に有効なら何もしない。
         Web 実行環境ではセッションの初めに実行する)。
      1. `node tools/review-gate/article-check.mjs` … 機械で確かめられることを `article-check.md` にまとめる。
@@ -44,14 +45,14 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
         「包み方で確かめられない」「抜粋の外で宣言された名前を参照しているだけの可能性(要確認)」が出たら、そのコード片をレビュアーに伝えて確かめさせる。
         コード片 1 つにつき最大 4 回ビルドするので、コード片の多い記事では数分かかる。
         「確かめていない」が出た場合(.NET SDK が無い・ビルドできない・Windows 以外で WPF を扱えないなど)は、その範囲をレビュアーに伝える。
-     2. `node tools/review-gate/coderabbit-findings.mjs` … 作成が新しい 45 件のうちマージした日時が新しい 15 件の PR で CodeRabbit が付けた指摘
+     2. `node tools/review-gate/coderabbit-findings.mjs` … マージ済みの PR のうち作成が新しい 45 件から、マージした日時が新しい 15 件の PR で CodeRabbit が付けた指摘
         (インラインの指摘と、レビュー本文の項目(差分の外・Nitpick など。区分は見分けない)、失敗・警告になった pre-merge check)を
         `coderabbit-findings.md` にまとめる。このリポジトリでは CodeRabbit が同じ型の指摘を繰り返しているため。
         同じ PR の中で 2 回目以降のレビューをするときは、`coderabbit-findings.mjs` 自体を変えていなければ実行し直さなくてよい。
      3. `node tools/review-gate/approve.mjs start` … レビューしてもらう内容(作業ツリー)を記録する。最後の承認で、承認する内容が
         レビューした内容と同じことを確かめるのに使う。
      - setup.mjs・article-check.mjs・approve.mjs start のどれかが失敗したら、レビュアーを起動せずに原因を直す(下の差分の取得の失敗と同じ扱い)。
-       coderabbit-findings.mjs が `gh` を使えずに失敗したら、その旨をレビュアーに伝えて進めてよい。
+       coderabbit-findings.mjs が失敗したら(`gh` を使えないなど、理由を問わず)、その旨をレビュアーに伝えて進めてよい。
    - **観点ごとに 3 人のレビュアーを同時に起動する。** 3 人それぞれに、下の共通の指示(差分の取り方から指摘の形式まで)と、
      article-check.md・coderabbit-findings.md のパス(スクリプトが表示したもの)と、担当の観点を 1 つ渡す。
      3 人とも coderabbit-findings.md を読み、同じ型の問題が差分に無いかを確かめる。
@@ -161,15 +162,17 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
        - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath がこのリポジトリのチェックアウトのルート直下の、pre-push のある `.githooks` の絶対パスであることと、
-         今のチェックアウトに `.githooks/pre-push` があることの、どちらかが欠けている)
+         `$CLAUDE_PROJECT_DIR` のチェックアウトに `.githooks/pre-push` があることの、どちらかが欠けている)
        - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、オプションを付けた `env` など。全体は `check-setup.mjs` の冒頭)も含む。
          語の一覧は網羅ではない。メッセージや引用符・ヒアドキュメントの中に書いた語でも止まるので、そうした語を含むコミットメッセージは、
          作業ツリーの外(一時ディレクトリなど)に置いたファイルから `git commit -F "<ファイル>"` で渡す
          (作業ツリーの中に置くと、手順 2 の `git add -A` でコミットに入り、承認した内容と一致しなくなる)。
          そのファイルは Write ツールで作る(Bash・PowerShell のヒアドキュメントや echo で書くと、そのコマンドが同じ理由で止まる)。
          `gh` で PR を作る場合の本文も同じく `--body-file "<ファイル>"` で渡す(MCP のツールで作る場合は、この hook の対象外)
-     - **この仕組みが防ぐのは、独立レビューと承認をうっかり飛ばして push すること。** 意図して照合を外す操作(下の一覧や、それに類する書き方)は
-       対象外で、塞ぎきれない。どれも手順として使わない。
+     - **この仕組みが防ぐのは、setup 済みのクローンで、照合の仕組みが入ったブランチから Bash・PowerShell で git push するときに、
+       独立レビューと承認をうっかり飛ばすこと。** 意図して照合を外す操作(`--no-verify`・照合を外す語の別の書き方など)は対象外で、塞ぎきれない。
+       下の一覧には、意図した回避のほか、うっかりでも起きるもの(照合の仕組みが入る前のブランチへの切り替え、別のクローン、hook の失敗、
+       MCP など git を通さない経路)も含む。後者は手順で避ける。
      - **仕組みで防げないもの:**
        - `--no-verify`・`core.hooksPath` の変更、`core.hooksPath` の指すチェックアウト(通常は `$CLAUDE_PROJECT_DIR`)を
          `.githooks` の無い(照合の仕組みが入る前の)ブランチやコミットに切り替えた後(同じコマンドの中でも、別のコマンドでも。
@@ -213,8 +216,9 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
 
 3. **プッシュする。** `git push -u origin "<branch>"` で作業ブランチへ push する。
    - ブランチ名は必ずクォートして渡す(シェルのメタ文字によるコマンドインジェクションを防ぐ)。
+   - push 済みのブランチを rebase した場合は `git push --force-with-lease -u origin "<branch>"` にする。
    - push を止められたら、表示された理由に従う。主な理由は次のとおり。フックを外したり `--no-verify` を付けたりして push しない。
-     - フックが有効になっていない、または今のチェックアウトに `.githooks/pre-push` が無い(check-setup.mjs)
+     - フックが有効になっていない、または `$CLAUDE_PROJECT_DIR` のチェックアウトに `.githooks/pre-push` が無い(check-setup.mjs)
      - 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無い(フックの sh 側)。
        `.git` の中で実行したり `--git-dir`・`GIT_DIR` で作業ツリーのルートが別の場所になったりした push ならリポジトリのルートから push し、照合の仕組みが入っていないブランチなら main を取り込む
      - 「push」を含むコマンドに、照合を外す語を含んでいる(メッセージやブランチ名の中の語でも止まる。メッセージはファイルから渡し、
@@ -341,7 +345,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - `git fetch origin main` で最新の `main` を取得し、作業ブランチへ取り込む(`git merge origin/main`
      または `git rebase origin/main`)。
    - 競合を解消して取り込みを完了する(merge はコミット、rebase は `git rebase --continue`)。
-     push の前に、Phase 1 手順 1 の「対象」の取り込みの扱いのとおりに独立レビューを通して承認を記録する(承認が無いと pre-push フックが止める)。
+     push の前に、Phase 1 手順 1 の「対象」の取り込みの扱いのとおりに独立レビューを通して承認を記録する(承認が無いと pre-push フックが止める。条件は Phase 1 手順 1 の「承認と push の照合」による)。
      そのうえで `git push`(rebase した場合は `--force-with-lease`)する。
    - push により CI は自動再実行される。必要なら CodeRabbit へ `@coderabbitai review` で再レビューを要求する。
    - 解消後は手順 1〜5 のレビュー・CI ループへ戻り、再び指摘ゼロ・グリーンを確認する。

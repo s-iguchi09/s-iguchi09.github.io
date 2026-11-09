@@ -7,7 +7,7 @@
 //
 //   1. コマンドに「push」を含めば（大文字小文字を問わず、部分一致）、$CLAUDE_PROJECT_DIR のリポジトリで
 //      core.hooksPath が、同じリポジトリのチェックアウトのルート直下の、pre-push のある .githooks の絶対パスであること
-//      （lib.mjs の hooksPathProblem）と、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
+//      （lib.mjs の hooksPathProblem）と、$CLAUDE_PROJECT_DIR のチェックアウトに .githooks/pre-push があることの両方を確かめ、
 //      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
 //   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
 //      `--ignore-e`、オプションを付けた `env`、環境を空にする `exec -c`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、

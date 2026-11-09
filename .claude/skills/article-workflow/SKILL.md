@@ -70,14 +70,15 @@ description: 技術記事の作成からレビュー・PR作成・CI監視・マ
      - **他者と共有中のブランチ**: 履歴を書き換えない `git merge origin/main` を用いる(rebase および force push は行わない)。
 
      どちらの取り込みの後も、この時点では push しない。push は Phase 3・4 の push でまとめて行い、その前に `pr` スキル
-     Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による。承認が無いと pre-push フックが止める)。
+     Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による。承認が無いと pre-push フックが止める。条件は `pr` スキル Phase 1 手順 1 の「承認と push の照合」による)。
      既に push 済みのブランチを rebase した場合は、Phase 3・4 の push を `git push --force-with-lease -u origin "<branch>"` にする
      (通常の push は拒否される)。
 
      いずれの場合も `git checkout -B <branch> origin/main` は使わない(既存ブランチの未 push コミットが参照から外れるため)。
    これにより直近でマージされた記事・設定・スキルを取り込んだ状態から作業でき、重複提案や古い前提での作業を避けられる。
    ブランチ名はテーマが分かる `slug` を用いる(例: `claude/article-<slug>`)。
-   `slug` には `tools/review-gate/check-setup.mjs` の冒頭に挙げた語(`wsl` など)を含めない(含むと push が止まる)。
+   ブランチ名には `tools/review-gate/check-setup.mjs` の冒頭に挙げた語(`wsl` など)を含めない(含むと push が止まる。
+   `slug` に含む場合は、ブランチ名だけ別の語にする)。
    > いずれの場合も、取得せず古い状態のまま進めない。競合が発生した場合は解消してから進める。
 
 2. **記事タイプを選ぶ。**「問題解決型(§2.1)」か「手順・解説型(§2.2)」かを決める。
