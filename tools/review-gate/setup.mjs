@@ -8,9 +8,10 @@
 //
 // 動き:
 //   - 既に、このリポジトリのチェックアウト（別の worktree を含む）のルート直下の、pre-push のある .githooks の絶対パスなら、変更しない。
-//   - 未設定、以前の版が設定した相対パス（.githooks）、または指す先に pre-push が無い絶対パス（指していた worktree を消した・
+//   - 未設定、以前の版が設定した相対パス（.githooks）、または pre-push の無い .githooks の絶対パス（指していた worktree を消した・
 //     移したなど）なら、このチェックアウトの .githooks の絶対パスにする（このチェックアウトに .githooks/pre-push が無ければ止める）。
 //   - それ以外（別のリポジトリ、.githooks 以外の置き場所）は、上書きせずに止める。
+//   判定に使うのはこのクローンの設定（--local）だけ。グローバルやシステムの core.hooksPath は、ローカルの設定で上書きされる。
 //
 // 使い方（リポジトリのルートで、クローンごとに 1 回実行する。Web 実行環境ではセッションの初めに実行する）:
 //   node tools/review-gate/setup.mjs
@@ -30,9 +31,11 @@ try {
   process.exit(1);
 }
 const desired = `${root}/.githooks`;
+// 上書きしてよいかは、このクローンの設定（--local）だけで決める。グローバルやシステムの設定は、
+// ローカルに設定すれば上書きされるので、触らない（git config --unset で消せるのもローカルだけ）。
 const before = (() => {
   try {
-    return git(["config", "--get", "core.hooksPath"]);
+    return git(["config", "--local", "--get", "core.hooksPath"]);
   } catch {
     return "";
   }
@@ -43,7 +46,8 @@ if (before && path.isAbsolute(before)) {
     console.log(`core.hooksPath は既にこのリポジトリの ${before} になっている（変更しない）。`);
     process.exit(0);
   }
-  if (fs.existsSync(path.join(before, "pre-push"))) {
+  // 置き換えるのは、名前が .githooks で pre-push が無いもの（指していた worktree を消した・移したなど）だけ。
+  if (path.basename(before) !== ".githooks" || fs.existsSync(path.join(before, "pre-push"))) {
     console.error(`${hooksPathProblem(before)}。上書きせずに止める。${unsetHint}`);
     process.exit(1);
   }

@@ -6,20 +6,21 @@
 // 元のコマンドの文字列に語が含まれるかだけで判定し、迷う場合は止める側に倒す。
 //
 //   1. コマンドに「push」を含めば（大文字小文字を問わず、部分一致）、$CLAUDE_PROJECT_DIR のリポジトリで
-//      core.hooksPath が絶対パスでその場所に pre-push があることと、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
+//      core.hooksPath が、同じリポジトリのチェックアウトのルート直下の、pre-push のある .githooks の絶対パスであること
+//      （lib.mjs の hooksPathProblem）と、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
 //      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
 //   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
 //      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、`work-tree`・`GIT_WORK_TREE`）の
 //      どれかを含めば止める。網羅ではない。`git-dir` などで作業ツリーのルートを変えた push はフックの sh 側でも止まるが、
 //      理由が分かりやすいようにここでも止める。ブランチ名にこれらの語を含んでも止まるので、ブランチ名には使わない。
 //      メッセージや引用符・ヒアドキュメントの中に書いた語でも止まる（止める側の誤り。そうした語を含むコミットメッセージは、
-//      作業ツリーの外に置いたファイルから `git commit -F <ファイル>` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
+//      作業ツリーの外に置いたファイルから `git commit -F "<ファイル>"` で渡す。作業ツリーの中に置くと、git add -A でコミットに入り、
 //      承認した内容と一致しなくなる。ファイルは Write ツールで作る。ヒアドキュメントや echo で書くと、そのコマンドが止まる）。
 //
 // 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
 // フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、core.hooksPath の指すチェックアウトを
-// .githooks・tools/review-gate の無いブランチやコミットに切り替えた後の push（同じコマンドの中でも、別のコマンドでも。
-// 切り替えるとこのスクリプトと .claude/settings.json の hook の設定も無くなる）、照合のフック・スクリプト・承認の記録の書き換え、
+// .githooks の無い（照合の仕組みが入る前の）ブランチやコミットに切り替えた後の push（同じコマンドの中でも、別のコマンドでも。
+// 切り替えるとこのスクリプトも無くなるので、hook の設定が残っていても実行できない）、照合のフック・スクリプト・承認の記録の書き換え、
 // git を通さずにリモートのブランチを書き換える操作（GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
 //
 // 止めるときは終了コード 2（Claude Code の hook は、既定（onFailure 未指定）では終了コード 2 のときだけツールの実行を止め、
@@ -60,7 +61,7 @@ try {
     block(
       "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path・includeIf、CLAUDECODE、" +
         "--ignore-environment とその省略形、オプションを付けた env、UseNewEnvironment、wsl、git-dir・GIT_DIR、work-tree・GIT_WORK_TREE）が含まれている。照合を外さずに push する。" +
-        "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F <ファイル>` などで渡す。" +
+        "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F \"<ファイル>\"` などで渡す。" +
         "ブランチ名に含むなら、ブランチ名を変える。",
     );
   }

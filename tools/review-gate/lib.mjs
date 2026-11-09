@@ -64,7 +64,14 @@ export function workingTreeHash(cwd = process.cwd()) {
 
 /** パスを比べられる形にする（Windows では大文字小文字と区切りの違いを無視する）。 */
 export function normPath(p) {
-  const r = path.resolve(p).replace(/\\/g, "/");
+  let r = path.resolve(p);
+  try {
+    // ジャンクションやシンボリックリンクを経由したパスも、実体のパスで比べる。
+    r = fs.realpathSync.native(r);
+  } catch {
+    // 無いパスはそのまま比べる。
+  }
+  r = r.replace(/\\/g, "/");
   return process.platform === "win32" ? r.toLowerCase() : r;
 }
 

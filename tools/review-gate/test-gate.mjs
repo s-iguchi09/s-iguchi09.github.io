@@ -108,6 +108,12 @@ try {
   expect("check-setup: .githooks 以外の置き場所", check("git push -u origin work"), 2);
   expect("setup: .githooks 以外の置き場所は上書きせずに止める", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 1);
   g(["config", "core.hooksPath", hooksBefore]);
+  // グローバルの core.hooksPath は、setup がローカルに設定して上書きする（止まらない）。
+  const globalCfg = path.join(root, "global.gitconfig");
+  fs.writeFileSync(globalCfg, "[core]\n\thooksPath = ~/.git-hooks\n");
+  g(["config", "--local", "--unset", "core.hooksPath"]);
+  expect("setup: グローバルに別の core.hooksPath がある", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")], { env: { GIT_CONFIG_GLOBAL: globalCfg } }), 0);
+  expect("setup: グローバルがあってもローカルに設定した", g(["config", "--local", "--get", "core.hooksPath"]) === hooksBefore, true);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);

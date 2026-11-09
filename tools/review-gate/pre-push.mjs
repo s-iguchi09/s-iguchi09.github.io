@@ -5,7 +5,7 @@
 //   標準入力の各行は「送り元の式 送り元の sha 送り先の ref 送り先の sha」で、送り元の式は空白を含むことがある
 //   （HEAD@{0 seconds ago} など）ので、右の 3 列から読む。形の合わない行があれば止める。
 //   ただし、--no-verify・core.hooksPath の変更・core.hooksPath の指すチェックアウトが .githooks の無いブランチやコミットにある場合
-//   （切り替えると check-setup.mjs と hook の設定も無くなる）ではフックが動かず、
+//   （切り替えると check-setup.mjs も無くなるので、hook では止められない）ではフックが動かず、
 //   CLAUDECODE を外した実行ではフックは動くが照合しない（check-setup.mjs は一部の語や設定を含む場合だけを止め、ほかは手順書で禁じている。
 //   仕組みでは防げない）。.git の中や --git-dir・GIT_DIR で作業ツリーのルートが変わった push は、core.hooksPath が絶対パスなので
 //   フックが動き、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ .githooks/pre-push の sh 側が止める（あれば照合する）。

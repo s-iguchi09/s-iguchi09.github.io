@@ -151,7 +151,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        そうした push は、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ、フックの sh 側が止める(あれば照合する)。
        `core.hooksPath` は同じリポジトリの worktree の間で共有されるので、別の worktree で setup を実行しても、
        既にこのリポジトリのチェックアウトのルート直下の `.githooks`(pre-push のあるもの)を指していれば変更せずに終わる。
-       指す先に pre-push が無ければ置き換える。同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、
+       指す先が pre-push の無い `.githooks` なら置き換える(判定に使うのはこのクローンの設定(`--local`)だけで、
+       グローバルの `core.hooksPath` はローカルの設定で上書きする)。同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、
        フックは動き、照合のスクリプトが無いので sh 側が止める。
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
@@ -159,14 +160,14 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
          今のチェックアウトに `.githooks/pre-push` があることの、どちらかが欠けている)
        - コマンドに「push」を含み、照合を外す語(`--no-veri`、`hookspath`、`CLAUDECODE`、オプションを付けた `env` など。全体は `check-setup.mjs` の冒頭)も含む。
          語の一覧は網羅ではない。メッセージや引用符・ヒアドキュメントの中に書いた語でも止まるので、そうした語を含むコミットメッセージは、
-         作業ツリーの外(一時ディレクトリなど)に置いたファイルから `git commit -F <ファイル>` で渡す
+         作業ツリーの外(一時ディレクトリなど)に置いたファイルから `git commit -F "<ファイル>"` で渡す
          (作業ツリーの中に置くと、手順 2 の `git add -A` でコミットに入り、承認した内容と一致しなくなる)。
          そのファイルは Write ツールで作る(Bash・PowerShell のヒアドキュメントや echo で書くと、そのコマンドが同じ理由で止まる)。
-         `gh` で PR を作る場合の本文も同じく `--body-file` で渡す(MCP のツールで作る場合は、この hook の対象外)
+         `gh` で PR を作る場合の本文も同じく `--body-file "<ファイル>"` で渡す(MCP のツールで作る場合は、この hook の対象外)
      - **仕組みで防げないもの:**
        - `--no-verify`・`core.hooksPath` の変更、`core.hooksPath` の指すチェックアウト(通常は `$CLAUDE_PROJECT_DIR`)を
-         `.githooks`・`tools/review-gate` の無いブランチやコミットに切り替えた後(同じコマンドの中でも、別のコマンドでも。
-         切り替えると `check-setup.mjs` と `.claude/settings.json` の hook の設定も無くなるので、上の hook では止められない)ではフックが動かず、
+         `.githooks` の無い(照合の仕組みが入る前の)ブランチやコミットに切り替えた後(同じコマンドの中でも、別のコマンドでも。
+         切り替えると `check-setup.mjs` も無くなるので、hook の設定が残っていても実行できず、上の hook では止められない)ではフックが動かず、
          `CLAUDECODE` を外した実行ではフックは動くが照合しない
        - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
          変数・別名・スクリプトの中で組み立てる操作は止められない
