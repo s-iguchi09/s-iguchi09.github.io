@@ -10,7 +10,8 @@
 //      （lib.mjs の hooksPathProblem）と、今のチェックアウトに .githooks/pre-push があることの両方を確かめ、
 //      どちらかが欠けていれば止める。作業ディレクトリや push の対象のリポジトリは見ない（フックが有効なら、関係の無いコマンドは止まらない）。
 //   2. コマンドに「push」を含み、さらに照合を外すときに使う語（`--no-veri`、`hookspath`、`include.path`・`includeIf`、`CLAUDECODE`、
-//      `--ignore-e`、オプションを付けた `env`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、`work-tree`・`GIT_WORK_TREE`）の
+//      `--ignore-e`、オプションを付けた `env`、環境を空にする `exec -c`、`UseNewEnvironment`、`wsl`、`git-dir`・`GIT_DIR`、
+//      `work-tree`・`GIT_WORK_TREE`）の
 //      どれかを含めば止める。網羅ではない。`git-dir` などで作業ツリーのルートが別の場所になった push は、フックの sh 側でも
 //      止まるか（ルートを特定できない・そこに照合のスクリプトが無い）照合されるが、
 //      理由が分かりやすいようにここでも止める。ブランチ名にこれらの語を含んでも止まるので、ブランチ名には使わない。
@@ -58,10 +59,10 @@ try {
   if (typeof command !== "string" || !/push/i.test(command)) {
     process.exit(0);
   }
-  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|UseNewEnvironment|\bwsl\b|git[-_]dir|work[-_]tree/i.test(command)) {
+  if (/--no-veri|hookspath|include\.?path|includeif|CLAUDECODE|--ignore-e|\benv\s+-|\bexec\s+-\w*c|UseNewEnvironment|\bwsl\b|git[-_]dir|work[-_]tree/i.test(command)) {
     block(
       "push を含むコマンドに、照合を外すときに使う語（--no-verify とその省略形、hooksPath、include.path・includeIf、CLAUDECODE、" +
-        "--ignore-environment とその省略形、オプションを付けた env、UseNewEnvironment、wsl、git-dir・GIT_DIR、work-tree・GIT_WORK_TREE）が含まれている。照合を外さずに push する。" +
+        "--ignore-environment とその省略形、オプションを付けた env、exec -c、UseNewEnvironment、wsl、git-dir・GIT_DIR、work-tree・GIT_WORK_TREE）が含まれている。照合を外さずに push する。" +
         "メッセージに書いただけなら、Write ツールで作業ツリーの外に置いたファイルから `git commit -F \"<ファイル>\"` などで渡す。" +
         "ブランチ名に含むなら、ブランチ名を変える。",
     );

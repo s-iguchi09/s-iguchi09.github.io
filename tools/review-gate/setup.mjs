@@ -1,6 +1,6 @@
 // このクローンの git の設定（.git/config）で、フックの置き場所を .githooks の絶対パスにする。
 // これで、通常の push では .githooks/pre-push（承認した内容との照合）が動く。相対パス（.githooks）にしないのは、
-// .git の中や --git-dir・GIT_DIR で作業ツリーのルートが変わると、相対パスが別の場所を指し、フックが黙って動かなくなるため。
+// .git の中や --git-dir・GIT_DIR で作業ツリーのルートが別の場所になると、相対パスが別の場所を指し、フックが黙って動かなくなるため。
 // core.hooksPath は同じリポジトリの worktree の間で共有されるので、どれか 1 つのチェックアウトの .githooks を指せば、
 // 指す先に pre-push がある間は、すべての worktree の push でフックが動く（各 worktree の照合のスクリプトは、その worktree のものを使う。
 // worktree 単位の設定（extensions.worktreeConfig）や include で別の値を読み込んでいれば、そちらが効く。下の「確かめる」を参照）。
@@ -59,7 +59,8 @@ function verifyEffective(done) {
     }
     console.error(
       `${done}が、実際に効いている core.hooksPath に問題がある（${problem}）。値の出どころ:\n${origin}\n` +
-        "worktree 単位の設定（config.worktree）や include で読み込んだ設定の値なら、そのファイルの core.hooksPath を消してから、もう一度実行する。",
+        "worktree 単位の設定（config.worktree）や include で読み込んだ設定の値なら、そのファイルの core.hooksPath を消してから、もう一度実行する。" +
+        "出どころが command line なら、その git -c や環境変数（GIT_CONFIG_PARAMETERS・GIT_CONFIG_COUNT など）を外して実行し直す。",
     );
     process.exit(1);
   }

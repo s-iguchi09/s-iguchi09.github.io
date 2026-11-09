@@ -137,6 +137,7 @@ try {
   expect("check-setup: env -i", check("env -i PATH=/usr/bin git push"), 2);
   expect("check-setup: env --ignore-environment", check("env --ignore-environment git push"), 2);
   expect("check-setup: env の省略形・まとめ書き", check("env -iu FOO git push"), 2);
+  expect("check-setup: exec -c", check("bash -c 'exec -c git push'"), 2);
   expect("check-setup: include.path", check("git -c include.path=/x push"), 2);
   expect("check-setup: 作業ツリーのルートを変える --git-dir", check("cd sub && git --git-dir=../.git push origin work"), 2);
   expect("check-setup: 作業ツリーのルートを変える GIT_DIR", check("GIT_DIR=../.git git push origin work"), 2);

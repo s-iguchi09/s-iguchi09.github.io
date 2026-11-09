@@ -7,7 +7,7 @@
 //   ただし、--no-verify・core.hooksPath の変更・core.hooksPath の指すチェックアウトが .githooks の無いブランチやコミットにある場合
 //   （切り替えると check-setup.mjs も無くなるので、hook では止められない）ではフックが動かず、
 //   CLAUDECODE を外した実行ではフックは動くが照合しない（check-setup.mjs は一部の語や設定を含む場合だけを止め、ほかは手順書で禁じている。
-//   仕組みでは防げない）。.git の中や --git-dir・GIT_DIR で作業ツリーのルートが変わった push は、core.hooksPath が絶対パスなので
+//   仕組みでは防げない）。.git の中や --git-dir・GIT_DIR で作業ツリーのルートが別の場所になった push は、core.hooksPath が絶対パスなので
 //   フックが動き、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ .githooks/pre-push の sh 側が止める（あれば照合する）。
 // - 照合するのは環境変数 CLAUDECODE=1 の環境（Claude Code のツール・hook の子プロセスや、Claude Code の IDE 拡張の
 //   統合ターミナルなど）からの push だけ。IDE 拡張の統合ターミナルから人が push した場合も照合する。

@@ -147,14 +147,17 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        統合ターミナルなど。<https://code.claude.com/docs/en/env-vars> の `CLAUDECODE` の行による)からの push だけ。
        IDE 拡張の統合ターミナルから人が push した場合も照合する。それ以外の端末から人が push するときは照合しない。
      - フックは `node tools/review-gate/setup.mjs` で有効にする(`core.hooksPath` を `.githooks` の絶対パスにする。クローンごとに 1 回)。
-       絶対パスにするのは、`.git` の中や `--git-dir`・`GIT_DIR` で作業ツリーのルートが変わった push でもフックを動かすため。
+       絶対パスにするのは、`.git` の中や `--git-dir`・`GIT_DIR` で作業ツリーのルートが別の場所になった push でもフックを動かすため。
        そうした push は、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ、フックの sh 側が止める(あれば照合する)。
-       `core.hooksPath` は同じリポジトリの worktree の間で共有されるので、別の worktree で setup を実行しても、
-       既にこのリポジトリのチェックアウトのルート直下の `.githooks`(pre-push のあるもの)を指していれば変更せずに終わる。
-       指す先が pre-push の無い `.githooks` なら置き換える(判定に使うのはこのクローンの設定(`--local`)だけで、
-       グローバルやシステムの `core.hooksPath` はローカルの設定で上書きする。最後に実際に効いている値を確かめ、
-       worktree 単位の設定や include で読み込んだ値が効いていれば、その出どころを表示して止める)。同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、
-       フックは動き、照合のスクリプトが無いので sh 側が止める。
+       `core.hooksPath` は(worktree 単位の設定で上書きしていなければ)同じリポジトリの worktree の間で共有される。
+       setup の動きは次のとおり(判定に使うのはこのクローンの設定(`--local`)だけで、グローバルやシステムの値はローカルの設定で上書きする)。
+       - 既にこのリポジトリのチェックアウトのルート直下の、pre-push のある `.githooks` を指していれば、変更せずに終わる(別の worktree で実行した場合を含む)。
+       - 未設定、相対パス、または pre-push の無い `.githooks` を指していれば、このチェックアウトの `.githooks` に置き換える。
+       - それ以外(`.githooks` 以外の置き場所、pre-push のある別のリポジトリの `.githooks`、値が複数ある)は、上書きせずに止め、
+         `git config --unset-all core.hooksPath` を案内する。
+       - 最後に実際に効いている値を確かめ、worktree 単位の設定や include で読み込んだ値が効いていて、それが有効なフックの置き場所でなければ、
+         その出どころを表示して止める。
+       同じリポジトリの別の worktree が `.githooks` の無いブランチにあり、そこから push した場合は、フックは動き、照合のスクリプトが無いので sh 側が止める。
      - `.claude/settings.json` の hook(`tools/review-gate/check-setup.mjs`)は、Bash・PowerShell のコマンドの文字列を、
        シェルの構文を解析せずにそのまま見て、次のときに止める(解析すると書き方の穴が尽きないので、迷う場合は止める側に倒す)。
        - コマンドに「push」を含み、`$CLAUDE_PROJECT_DIR` のリポジトリでフックが有効でない(core.hooksPath がこのリポジトリのチェックアウトのルート直下の、pre-push のある `.githooks` の絶対パスであることと、
@@ -172,7 +175,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
          `CLAUDECODE` を外した実行ではフックは動くが照合しない
        - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
          変数・別名・スクリプトの中で組み立てる操作は止められない
-       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、`check-setup.mjs` によるフックが有効かの確認も、pre-push の照合も効かない
+       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)や、`core.hooksPath` を worktree 単位の設定で上書きした別の worktree からの push は、`check-setup.mjs` によるフックが有効かの確認も、pre-push の照合も効かない
          (照合を外す語の確認は効く)
        - 照合のフック・スクリプト(`.githooks/pre-push`・`tools/review-gate/*.mjs`)や承認の記録を書き換えてから push すると照合が外れる
          (フックは作業ツリーのスクリプトを実行するので、コミットしていない書き換えでも外れる)
@@ -209,7 +212,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - push を止められたら、表示された理由に従う。主な理由は次のとおり。フックを外したり `--no-verify` を付けたりして push しない。
      - フックが有効になっていない、または今のチェックアウトに `.githooks/pre-push` が無い(check-setup.mjs)
      - 作業ツリーのルートを特定できない、またはそこに照合のスクリプトが無い(フックの sh 側)。
-       `.git` の中や `--git-dir` での push ならリポジトリのルートから push し、照合の仕組みが入っていないブランチなら main を取り込む
+       `.git` の中で実行したり `--git-dir`・`GIT_DIR` で作業ツリーのルートが別の場所になったりした push ならリポジトリのルートから push し、照合の仕組みが入っていないブランチなら main を取り込む
      - 「push」を含むコマンドに、照合を外す語を含んでいる(メッセージやブランチ名の中の語でも止まる。メッセージはファイルから渡し、
        ブランチ名に含むならブランチ名を変える)(check-setup.mjs)
      - 承認の記録が無い・読めない・tree が無い(pre-push.mjs)
