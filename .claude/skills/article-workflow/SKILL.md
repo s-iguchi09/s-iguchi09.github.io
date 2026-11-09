@@ -173,7 +173,7 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
   - この確認は **スキップ** し、そのまま Phase 4 へ進む。
 
 - `RUN_MODE == pre_pr` の場合:
-  - **PR は作成しない。** 記事の変更をコミットし、`git push -u origin <branch>` で作業ブランチへ push して停止する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin <branch>`)。
+  - **PR は作成しない。** 記事の変更をコミットし(`pr` スキル Phase 1 手順 2 のとおり `git add -A` で全部)、`git push -u origin <branch>` で作業ブランチへ push して停止する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin <branch>`)。
     push は Web 実行環境で作業を失わないための保全であり、PR ではない。
     push 前に、`pr` スキル Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による)。
     レビュー対応で直した分があれば、それもコミットしてから push する。
@@ -187,7 +187,7 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
 
 ## Phase 4. PR 作成と CI 監視(指摘ゼロまで)
 
-1. **コミット & プッシュ。** 変更をコミットし、`git push -u origin <branch>` する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin <branch>`)
+1. **コミット & プッシュ。** 変更をコミットし(`pr` スキル Phase 1 手順 2 のとおり `git add -A` で全部)、`git push -u origin <branch>` する(Phase 1 で push 済みのブランチを rebase した場合は、Phase 1 のとおり `--force-with-lease -u origin <branch>`)
    (ネットワークエラー時は 2s/4s/8s/16s の指数バックオフで最大 4 回リトライ)。
    - push 前に、`pr` スキル Phase 1 手順 1 の独立レビューと承認の記録を行う(「対象」の例外に当たる場合の扱いも同じ手順による)。
    - `pre_pr` からの再開などで **追加の変更が無い場合はコミットを省略する**(`nothing to commit` で止めない)。

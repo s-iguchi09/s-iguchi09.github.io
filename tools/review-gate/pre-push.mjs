@@ -53,7 +53,8 @@ try {
       "承認の記録が無い。.claude/skills/pr/SKILL.md の Phase 1 手順 1 のとおり、" +
         "`node tools/review-gate/article-check.mjs` と `node tools/review-gate/approve.mjs start` → 独立レビュー → " +
         "要修正 0 件で `node tools/review-gate/approve.mjs done \"<結果>\"` を実行してから push する。" +
-        "手順書の「対象」の例外に当たるときは `node tools/review-gate/approve.mjs direct \"<理由>\"` で記録する。",
+        "手順書の「対象」の例外に当たるときは、同じ手順の条件（article-check.mjs の (c) の確認など）を満たしたうえで " +
+        "`node tools/review-gate/approve.mjs direct \"<理由>\"` で記録する。",
     );
   }
   let record;
@@ -70,7 +71,7 @@ try {
     if (tree !== record.tree) {
       block(
         `${localRef} → ${remoteRef} の内容（tree ${tree.slice(0, 12)}）が、承認した内容（tree ${String(record.tree).slice(0, 12)}、` +
-          `${record.approvedAt}）と違う。承認の後に変更した、承認した変更（承認のときにあった未追跡のファイルを含む）をまだコミットしていない、` +
+          `${record.approvedAt ?? "日時不明"}）と違う。承認の後に変更した、承認した変更（承認のときにあった未追跡のファイルを含む）をまだコミットしていない、` +
           "または内容の違う別のブランチを push しようとしている。変更したなら、`node tools/review-gate/article-check.mjs` と " +
           "`node tools/review-gate/approve.mjs start` から独立レビューをやり直して承認し直す。",
       );

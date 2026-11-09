@@ -132,10 +132,10 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - **要修正が 0 件になったら、依頼者が `node tools/review-gate/approve.mjs done "<結果の要約>"` で承認を記録する。**
      作業ツリーが `approve.mjs start` の時点と違えば(レビューの後に変えていれば)記録されないので、`start` からレビューをやり直す。
      上の「対象」の例外(`article-workflow` の Phase 2 の収束後に 1 行も変えずに push する場合)は、
-     `node tools/review-gate/article-check.mjs` を実行し、報告の (c) に上の 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
+     手順 0 の `setup.mjs` を済ませ、`node tools/review-gate/article-check.mjs` を実行し、報告の (c) に手順 1 の 3 種の誤り(構文・型の誤りの可能性、存在しないメンバー、
      XML として読めない)が出ていないことを確かめてから(出たら直す。直したら例外ではなくなる。
-     抜粋として正しいのに出た場合と、確かめる人のいない「包み方で確かめられない」「要確認」が出た場合は、
-     例外をやめて独立レビュー(start〜done)に切り替える)、手順 0 の `setup.mjs` を済ませたうえで
+     抜粋として正しいのに出た場合と、確かめる人のいない「包み方で確かめられない」「要確認」「確かめていない」が出た場合は、
+     例外をやめて独立レビュー(start〜done)に切り替える)、
      `node tools/review-gate/approve.mjs direct "article-workflow の Phase 2 で収束"` で記録する。
    - **承認と push の照合(仕組み):** git の pre-push フック(`.githooks/pre-push` → `tools/review-gate/pre-push.mjs`)が、
      push される各ブランチの先頭のコミットの内容(ツリー)を承認の記録と照合し、違えば push を止める。
@@ -160,7 +160,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        - `--no-verify`・`core.hooksPath` の変更、`$CLAUDE_PROJECT_DIR` 以外のチェックアウトの `.githooks` の無いブランチではフックが動かず、`CLAUDECODE` を外した実行ではフックは動くが照合しない
        - 上の hook はコマンドの文字列だけを見るので、一覧に無い語や書き方(オプションの別の綴りなど)、
          変数・別名・スクリプトの中で組み立てる操作は止められない
-       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、上の hook のフックの確認も照合も効かない
+       - フックを有効にしていない別のクローン(`cd`・`git -C` で移った先)からの push は、`check-setup.mjs` によるフックが有効かの確認も、pre-push の照合も効かない
          (照合を外す語の確認は効く)
        - 照合のフック・スクリプト(`.githooks/pre-push`・`tools/review-gate/*.mjs`)や承認の記録を書き換えてから push すると照合が外れる
          (フックは作業ツリーのスクリプトを実行するので、コミットしていない書き換えでも外れる)
@@ -287,7 +287,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        登録が外れるきっかけ、参照の型、`OneTime` の更新条件などをシーンで測り直した。
    - **見送ると決めたものは、その場で理由とともにユーザーへ書く。** 黙って抱えたまま
      後から「予想していた」と言わない。指摘されたときに反論できる形で残す。
-   - コミット & プッシュし、必要なら CI を再実行(`mcp__github__actions_run_trigger` や再 push)する。
+   - コミット(Phase 1 手順 2 のとおり `git add -A`)& プッシュし、必要なら CI を再実行(`mcp__github__actions_run_trigger` や再 push)する。
    - 修正の解釈に曖昧さがある場合や大規模改修が必要な場合は、`AskUserQuestion` で確認する
      (破壊的・不可逆な判断はユーザー確認を優先する)。
    - 指摘は件数を絞らない。見つけたものはすべて解消する。
