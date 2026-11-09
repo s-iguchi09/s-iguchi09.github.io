@@ -18,7 +18,8 @@
 //
 // 確かめられないもの: 上に無い語や書き方、変数・別名・スクリプトの中で組み立てる push と照合を外す操作、
 // フックを有効にしていない別のクローン（cd・git -C で移った先）からの push、core.hooksPath の指すチェックアウトを
-// 同じコマンドの中で .githooks の無いブランチに切り替えてからの push（その場所の確認は、コマンドの実行前の 1 回だけ）、照合のフック・スクリプト・承認の記録の書き換え、
+// .githooks・tools/review-gate の無いブランチやコミットに切り替えた後の push（同じコマンドの中でも、別のコマンドでも。
+// 切り替えるとこのスクリプトと .claude/settings.json の hook の設定も無くなる）、照合のフック・スクリプト・承認の記録の書き換え、
 // git を通さずにリモートのブランチを書き換える操作（GitHub の API・MCP・git send-pack など）、Bash・PowerShell 以外の経路。
 //
 // 止めるときは終了コード 2（Claude Code の hook は、既定（onFailure 未指定）では終了コード 2 のときだけツールの実行を止め、
@@ -29,6 +30,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { hooksPathProblem } from "./lib.mjs";
 
 /** git を実行して標準出力を返す。失敗したら null。 */
 function gitOut(args, cwd) {
@@ -68,10 +70,11 @@ try {
     process.exit(0);
   }
   // 相対パスは、.git の中や --git-dir での push で別の場所を指し、フックが黙って動かなくなるので受け付けない。
-  const hooksPath = gitOut(["config", "--get", "core.hooksPath"], projectTop);
-  if (!hooksPath || !path.isAbsolute(hooksPath) || !fs.existsSync(path.join(hooksPath, "pre-push"))) {
+  // 同じリポジトリのチェックアウトのルート直下の、pre-push のある .githooks の絶対パスだけを有効とみなす。
+  const problem = hooksPathProblem(gitOut(["config", "--get", "core.hooksPath"], projectTop), projectTop);
+  if (problem) {
     block(
-      "git の pre-push フックが有効になっていない（core.hooksPath が、pre-push のある .githooks の絶対パスでない）。" +
+      `git の pre-push フックが有効になっていない（${problem}）。` +
         "`node tools/review-gate/setup.mjs` を実行してから、もう一度実行する（setup が上書きを拒んだら、" +
         "`git config --unset core.hooksPath` のあとで setup を実行し直す）。",
     );

@@ -100,6 +100,14 @@ try {
   g(["config", "core.hooksPath", path.join(root, "gone", ".githooks").replace(/\\/g, "/")]);
   expect("setup: 指す先が無い絶対パスを置き換える", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 0);
   expect("setup: 置き換えた後の設定", g(["config", "--get", "core.hooksPath"]) === hooksBefore, true);
+  // 同じリポジトリでも、.githooks 以外（.git/hooks など）に pre-push があるだけなら有効とみなさない。
+  const otherHooks = path.join(repo, ".git", "hooks");
+  fs.mkdirSync(otherHooks, { recursive: true });
+  fs.writeFileSync(path.join(otherHooks, "pre-push"), "#!/bin/sh\nexit 0\n");
+  g(["config", "core.hooksPath", otherHooks.replace(/\\/g, "/")]);
+  expect("check-setup: .githooks 以外の置き場所", check("git push -u origin work"), 2);
+  expect("setup: .githooks 以外の置き場所は上書きせずに止める", run("node", [path.join(repo, "tools", "review-gate", "setup.mjs")]), 1);
+  g(["config", "core.hooksPath", hooksBefore]);
   expect("check-setup: フックが有効で push", check("git push -u origin work"), 0);
   expect("check-setup: git stash push", check("git stash push -m x"), 0);
   expect("check-setup: --no-verify", check("git push --no-verify origin work"), 2);

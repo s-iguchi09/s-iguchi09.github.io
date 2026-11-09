@@ -62,6 +62,42 @@ export function workingTreeHash(cwd = process.cwd()) {
   }
 }
 
+/** パスを比べられる形にする（Windows では大文字小文字と区切りの違いを無視する）。 */
+export function normPath(p) {
+  const r = path.resolve(p).replace(/\\/g, "/");
+  return process.platform === "win32" ? r.toLowerCase() : r;
+}
+
+/** dir が属するリポジトリの共通の .git の絶対パス（normPath 済み）。取れなければ null。 */
+export function commonDir(dir) {
+  try {
+    return normPath(git(["rev-parse", "--path-format=absolute", "--git-common-dir"], { cwd: dir }));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * hooksPath が、cwd と同じリポジトリのチェックアウト（別の worktree を含む）のルート直下の .githooks で、
+ * pre-push がある絶対パスなら null、そうでなければ理由を返す。
+ */
+export function hooksPathProblem(hooksPath, cwd = process.cwd()) {
+  if (!hooksPath) return "core.hooksPath が設定されていない";
+  if (!path.isAbsolute(hooksPath)) return `core.hooksPath（${hooksPath}）が絶対パスでない`;
+  if (path.basename(hooksPath) !== ".githooks") return `core.hooksPath（${hooksPath}）が .githooks を指していない`;
+  if (!fs.existsSync(path.join(hooksPath, "pre-push"))) return `core.hooksPath（${hooksPath}）に pre-push が無い`;
+  const parent = path.dirname(hooksPath);
+  let top = null;
+  try {
+    top = repoRoot(parent);
+  } catch {
+    // チェックアウトの中でなければ、下で理由を返す。
+  }
+  if (!top || normPath(top) !== normPath(parent)) return `core.hooksPath（${hooksPath}）がチェックアウトのルート直下の .githooks でない`;
+  if (commonDir(parent) !== commonDir(cwd)) return `core.hooksPath（${hooksPath}）が別のリポジトリを指している`;
+  return null;
+}
+
 /** 追跡されていない（.gitignore の対象でもない）ファイルの一覧。 */
 export function untrackedFiles(cwd = process.cwd()) {
   return git(["-c", "core.quotePath=false", "ls-files", "--others", "--exclude-standard", "-z"], { cwd })
