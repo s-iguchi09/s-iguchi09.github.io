@@ -80,6 +80,7 @@ function additionalComments(body) {
   let file = "";
   let current = null;
   let inBlock = false;
+  let inFence = false;
   for (const raw of body.split(/\r?\n/)) {
     const line = raw.replace(/<[^>]+>/g, "").trim();
     // 解析するのは「Additional comments: N」の節の中だけ（節の後ろの区切り線や次の節で終える）。
@@ -88,6 +89,12 @@ function additionalComments(body) {
       continue;
     }
     if (!inBlock) continue;
+    // コードフェンスの中（修正案の diff や YAML の --- など）は、区切りや項目として読まない。
+    if (/^(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
     if (line === "---" || /Prompt to fix all issues|Review info/.test(line)) {
       inBlock = false;
       current = null;
