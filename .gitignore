@@ -16,3 +16,6 @@ node_modules/
 
 # Claude Code が作る入れ子の worktree（git add -A でコミットに入らないようにする）
 .claude/worktrees/
+
+# Claude Code の個人用の設定（コミットしない。承認する内容にも入らないようにする）
+.claude/settings.local.json

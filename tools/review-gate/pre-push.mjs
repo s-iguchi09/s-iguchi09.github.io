@@ -1,27 +1,10 @@
-// git の pre-push フック（.githooks/pre-push）から呼ばれ、push される各ブランチの先頭のコミットの内容（ツリー）が、
-// approve.mjs で承認した内容と同じかを確かめる。違えば終了コード 1 で push を止める。
-//
-// - フックが動けば、照合する ref は git が標準入力で渡すので、コマンドのつなぎ方やブランチの指定には左右されない。
-//   標準入力の各行は「送り元の式 送り元の sha 送り先の ref 送り先の sha」で、送り元の式は空白を含むことがある
-//   （HEAD@{0 seconds ago} など）ので、右の 3 列から読む。形の合わない行があれば止める。
-//   ただし、--no-verify・core.hooksPath の変更・core.hooksPath の指すチェックアウトが .githooks の無いブランチやコミットにある場合
-//   （切り替えると check-setup.mjs も無くなるので、hook では止められない）ではフックが動かず、
-//   CLAUDECODE を外した実行ではフックは動くが照合しない（check-setup.mjs は一部の語や設定を含む場合だけを止め、ほかは手順書で禁じている。
-//   仕組みでは防げない）。.git の中や --git-dir・GIT_DIR で作業ツリーのルートが別の場所になった push は、core.hooksPath が絶対パスなので
-//   フックが動き、作業ツリーのルートを特定できないか、そこに照合のスクリプトが無ければ .githooks/pre-push の sh 側が止める（あれば照合する）。
-// - 照合するのは環境変数 CLAUDECODE=1 の環境（Claude Code のツール・hook の子プロセスや、Claude Code の IDE 拡張の
-//   統合ターミナルなど）からの push だけ。IDE 拡張の統合ターミナルから人が push した場合も照合する。
-//   それ以外の端末から人が push するときは照合しない（判定は .githooks/pre-push の sh 側）。
-// - 照合するのは各ブランチの先頭のコミットの内容だけで、間のコミットの内容は確かめない。
-// - 照合するのは送り先がブランチ（refs/heads/）の push だけ。削除と、送り先がタグなどブランチ以外の push は照合しない
-//   （送り元がタグでも、送り先がブランチなら照合する。refs/Heads/ のように大文字小文字を変えた書き方も、
-//   大文字小文字を区別しないファイルシステムではブランチになりうるので、止める側に倒して照合する）。
-// - 置き換えの ref（git replace）は無視し、実際に送られるコミットの内容で照合する。
-// - 照合の途中でエラーが起きたら、止める側に倒す（終了コード 1）。
+// git の pre-push フック（.githooks/pre-push）から呼ばれ、送り先がブランチ（refs/heads/。大文字小文字は区別しない）の各 ref について、
+// 先頭のコミットの内容（ツリー）が approve.mjs で承認した内容と同じかを確かめる。違えば終了コード 1 で push を止める。
+// 削除と、送り先がブランチ以外の push は照合しない。照合の途中でエラーが起きたら止める。
+// 仕組みの全体・防ぐ範囲・防げないものは .claude/skills/pr/SKILL.md の Phase 1 手順 1「承認と push の照合」に書く。
 //
 // 手で試す（push される ref を標準入力で渡す。最後の 2 つの引数は使わない）。Claude Code の Bash では
-// 環境変数 CLAUDECODE が既に 1 なので、そのまま実行する（コマンドに書き足すと check-setup.mjs に止められる）。
-// それ以外の端末では、環境変数 CLAUDECODE を 1 にしてから実行する。
+// 環境変数 CLAUDECODE が既に 1 なので、そのまま実行する。それ以外の端末では、CLAUDECODE を 1 にしてから実行する。
 //   echo "refs/heads/x $(git rev-parse HEAD) refs/heads/x 0000000000000000000000000000000000000000" \
 //     | node tools/review-gate/pre-push.mjs origin url; echo $?
 import fs from "node:fs";
@@ -68,11 +51,8 @@ try {
   const file = approvalFile(process.cwd(), false);
   if (!fs.existsSync(file)) {
     block(
-      "承認の記録が無い。.claude/skills/pr/SKILL.md の Phase 1 手順 1 のとおり、" +
-        "`node tools/review-gate/article-check.mjs` と `node tools/review-gate/approve.mjs start` → 独立レビュー → " +
-        "要修正 0 件で `node tools/review-gate/approve.mjs done \"<結果>\"` を実行してから push する。" +
-        "手順書の「対象」の例外に当たるときは、同じ手順の条件（article-check.mjs の (c) の確認など）を満たしたうえで " +
-        "`node tools/review-gate/approve.mjs direct \"<理由>\"` で記録する。",
+      "承認の記録が無い。.claude/skills/pr/SKILL.md の Phase 1 手順 1 のとおり独立レビューを通し、" +
+        "`node tools/review-gate/approve.mjs done` で承認を記録してから push する（例外の場合は同じ手順の direct）。",
     );
   }
   let record;
@@ -90,8 +70,7 @@ try {
       block(
         `${localRef} → ${remoteRef} の内容（tree ${tree.slice(0, 12)}）が、承認した内容（tree ${String(record.tree).slice(0, 12)}、` +
           `${record.approvedAt ?? "日時不明"}）と違う。承認の後に変更した、承認した変更（承認のときにあった未追跡のファイルを含む）をまだコミットしていない、` +
-          "または内容の違う別のブランチを push しようとしている。変更したなら、`node tools/review-gate/article-check.mjs` と " +
-          "`node tools/review-gate/approve.mjs start` から独立レビューをやり直して承認し直す。",
+          "または内容の違う別のブランチを push しようとしている。変更したなら、pr スキル Phase 1 手順 1 の独立レビューからやり直す。",
       );
     }
   }

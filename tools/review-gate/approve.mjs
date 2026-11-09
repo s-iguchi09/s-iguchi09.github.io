@@ -12,8 +12,7 @@
 //   node tools/review-gate/approve.mjs direct "<理由>"
 //       独立レビューを省いてよいと手順書が定める場合（pr スキル Phase 1 手順 1 の「対象」の例外）だけに使う。
 //
-// 承認と照合が保証するのは「push する各ブランチの先頭のコミットの内容が、記録した内容と同じこと」だけで、
-// 間のコミットの内容や、レビューが行われたことまでは確かめない。
+// 仕組みの全体と、照合が保証する範囲は .claude/skills/pr/SKILL.md の Phase 1 手順 1「承認と push の照合」に書く。
 import fs from "node:fs";
 import { approvalFile, git, pendingFile, repoRoot, untrackedFiles, workingTreeHash } from "./lib.mjs";
 
