@@ -7,3 +7,4 @@
 | × twice, no in-progress check | 3 | 2 / 2 | after check 1 completes, before check 2 completes | none | closed |
 | × twice, ClosingGuard | 3 | 1 / 1 | after the check completes | none | closed |
 | ClosingGuard: check throws, × again | 3 | 2 / 2 | after the check completes | IOException | closed, process ended |
+| ClosingGuard: DataContext replaced during the check (true) | 1 | 1 / 1 | not raised | none | open |

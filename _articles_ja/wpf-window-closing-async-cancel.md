@@ -110,11 +110,11 @@ XAML では、この添付プロパティにコマンドをバインドする。
 ```
 
 判定が `false`（閉じない）を返すようにして × を押した結果が、次の表の 1・2 行目である。
-3・4 行目は、後述の実装（`ClosingGuard`）に置き換えた結果である。
+3〜5 行目は、後述の実装（`ClosingGuard`）に置き換えた結果である（5 行目は 3 行目と同じ条件で、`DataContext` を設定しない）。
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-cancel-after-await.ja.md %}
 
-.NET 10.0.13 / Windows 11 で、表示から 200 ms 後に `WM_CLOSE` を送り、表示から 1.5 秒後のウィンドウの状態を読んだ。判定は保存や確認ダイアログの代わりに、`Task.Delay(300)` を待ってから結果を返すか、待たずに返す（同期で完了する）。3・4 行目（ClosingGuard）の判定は 300 ms かかる。「判定の開始 / 完了」は判定のメソッドの先頭と、結果を返すか例外を投げる直前に書いたログの回数である。各条件 1 回の記録。
+.NET 10.0.13 / Windows 11 で、表示から 200 ms 後に `WM_CLOSE` を送り、表示から 1.5 秒後のウィンドウの状態を読んだ。判定は保存や確認ダイアログの代わりに、`Task.Delay(300)` を待ってから結果を返すか、待たずに返す（同期で完了する）。3・4 行目（ClosingGuard）の判定は 300 ms かかる。5 行目は `DataContext` を設定しないので、判定が呼ばれない。「判定の開始 / 完了」は判定のメソッドの先頭と、結果を返すか例外を投げる直前に書いたログの回数である。各条件 1 回の記録。
 {: .table-caption}
 
 **判定に 300 ms かかる 1 行目では、判定が完了する前に `Closed` が発生し、ウィンドウは閉じた。**
@@ -198,7 +198,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md %}
 
-測り方は前の表と同じである。最後の行を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。最後の行は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。各条件 1 回の記録。
+測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。各条件 1 回の記録。
 {: .table-caption}
 
 **1 行目: 閉じ直した `Close` でも `Closing` が発生する。**
@@ -220,6 +220,10 @@ private bool ShouldCloseWindow(bool cancelled)
 7 行目は、後述の `ClosingGuard` で判定が例外を投げた場合である。
 例外は `DispatcherUnhandledException` に届き（計測では `Handled` にしている）、ウィンドウは開いたまま残った。
 もう一度 × を押すと判定をやり直し、2 回目の判定が `true` を返した後に閉じた（`Closed` は 2 回目の判定の完了後にだけ発生した）。
+
+8 行目は、判定の途中で `DataContext` を別の編集対象のビューモデルに替えた場合である。
+古い判定の結果で閉じると、新しい編集対象は判定を通らずに閉じてしまう。
+`ClosingGuard` は判定の後で `DataContext` が判定したビューモデルのままかを確かめるので、古い判定が `true` を返してもウィンドウは開いたまま残った。
 
 ### ShowDialog では DialogResult が失われる
 
@@ -339,31 +343,42 @@ public static class ClosingGuard
         // Cancel すると WPF が DialogResult を null に戻すので、閉じ直すときのために控えておく。
         bool? dialogResult = window.DialogResult;
         window.SetValue(StateProperty, State.Checking);
-        bool canClose = false;
+        bool canClose;
         try
         {
             canClose = await guard.CanCloseAsync();
         }
         finally
         {
-            window.SetValue(StateProperty, canClose ? State.Approved : State.Idle);
+            window.SetValue(StateProperty, State.Idle);
         }
 
-        if (canClose)
+        // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
+        if (!canClose || !ReferenceEquals(window.DataContext, guard))
         {
-            // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
-            _ = window.Dispatcher.InvokeAsync(() =>
-            {
-                if (dialogResult is bool result)
-                {
-                    window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
-                }
-                else
-                {
-                    window.Close();
-                }
-            });
+            return;
         }
+
+        window.SetValue(StateProperty, State.Approved);
+
+        // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
+        _ = window.Dispatcher.InvokeAsync(() =>
+        {
+            if (!ReferenceEquals(window.DataContext, guard))
+            {
+                window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も同じ
+                return;
+            }
+
+            if (dialogResult is bool result)
+            {
+                window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
+            }
+            else
+            {
+                window.Close();
+            }
+        });
     }
 }
 ```
@@ -371,6 +386,8 @@ public static class ClosingGuard
 `State.Approved` は「先に Cancel を立て、判定の後で閉じ直す」の表の 1 行目の繰り返しを、`Dispatcher.InvokeAsync` は 3 行目の例外を、`State.Checking` は 5 行目の二重の判定を防ぐ。
 `dialogResult` を控えて設定し直すのは、「ShowDialog では DialogResult が失われる」の表の 2 行目を防ぐためである。
 非モーダルのウィンドウでは `DialogResult` は `null` のままなので、`Close` で閉じ直す。
+判定の後と閉じ直す直前に `DataContext` が判定したビューモデルのままかを確かめるのは、同じ表の 8 行目のためである。
+`DataContext` が `IClosingGuard` でなければ、判定せずにそのまま閉じる（最初の表の 5 行目）。
 
 判定が例外を投げた場合は、`finally` で `Idle` に戻してから例外が `async void` の外へ漏れる。
 `DispatcherUnhandledException` で `Handled` にしていれば、閉じるのは止めたままなので、「先に Cancel を立て、判定の後で閉じ直す」の表の 7 行目のとおり、もう一度 × を押せば判定をやり直せる。
@@ -395,6 +412,22 @@ public static class ClosingGuard
 ```
 
 コードビハインドは `InitializeComponent` だけでよい。
+ビューモデルは、ウィンドウを開く側で `DataContext` に設定する。
+設定し忘れると、`ClosingGuard` は判定せずに閉じる（最初の表の 5 行目）。
+
+```csharp
+public partial class App : Application
+{
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        // App.xaml の StartupUri は使わず、ビューモデルを渡して開く。
+        new EditorWindow { DataContext = new EditorViewModel() }.Show();
+    }
+}
+```
+
+検証用アプリでも、XAML から作ったウィンドウの `DataContext` にビューモデルを設定してから `Show` している。
 ビューモデルは `IClosingGuard` を実装し、`CanCloseAsync` で保存や確認を行う。
 
 ```csharp
@@ -439,7 +472,7 @@ WPF は `Closing` のハンドラーが戻った直後に `Cancel` を 1 回だ�
 
 1. 最初の `await` より前に `Cancel = true` で止める。
 2. 判定の後、閉じてよければ `Dispatcher.InvokeAsync` で `Close` を呼び直す（`Closing` の中での例外を避ける）。
-3. 判定済みと判定中をウィンドウごとに覚え、閉じ直しの `Closing` は通し、判定中の × は無視する。
+3. 判定済みと判定中をウィンドウごとに覚え、閉じ直しの `Closing` は通し、判定中の × は無視する。判定の間に `DataContext` が替わったら、古い結果では閉じない。
 4. `ShowDialog` で開いたウィンドウでは、止める前の `DialogResult` を控え、閉じ直すときに設定し直す。
 
 この手順は添付プロパティにまとめておけば、ビューモデルは `CanCloseAsync` を実装するだけで済む。

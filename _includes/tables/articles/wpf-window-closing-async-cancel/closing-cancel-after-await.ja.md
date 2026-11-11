@@ -4,3 +4,4 @@
 | await の後で Cancel（判定が同期で完了） | 1 | 1 / 1 | 発生しない | なし | 開いたまま |
 | ClosingGuard・判定が false | 1 | 1 / 1 | 発生しない | なし | 開いたまま |
 | ClosingGuard・判定が true | 2 | 1 / 1 | 判定の完了後 | なし | 閉じてプロセスも終了 |
+| ClosingGuard・DataContext を設定しない | 1 | 0 / 0 | 発生する（判定は始まらない） | なし | 閉じてプロセスも終了 |

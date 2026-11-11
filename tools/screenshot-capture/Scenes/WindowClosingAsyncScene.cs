@@ -25,6 +25,9 @@ internal sealed class WindowClosingAsyncScene : IScene
         "先に e.Cancel = true にして判定の後で Close() を呼ぶだけの実装は、判定が true でも閉じず、Closing と判定を繰り返すこと",
         "判定済みのフラグを持たせて Close() を直接呼ぶ実装は、判定に 300 ms かかる場合は閉じ、判定が同期で完了する場合は InvalidOperationException になってウィンドウが開いたまま残ること",
         "判定中に WM_CLOSE をもう一度送ると、判定中かを見ない実装では判定が 2 回始まり、記事の ClosingGuard では 1 回だけであること",
+        "記事の ClosingGuard を付けても DataContext に IClosingGuard を設定しなければ、Closing は 1 回発生するが判定は始まらず、ウィンドウが閉じること",
+        "記事の ClosingGuard で判定の途中に DataContext を別のビューモデルに替えると、古い判定が true を返してもウィンドウは閉じず、新しいビューモデルの判定も始まらないこと",
+        "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ表を作らない）",
         "記事の ClosingGuard で 1 回目の判定が例外を投げると、DispatcherUnhandledException に届いてウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目は true）閉じること",
         "記事の ClosingGuard を付けたウィンドウでも、Application.Shutdown を呼ぶと e.Cancel = true が無視されてウィンドウが閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ShowDialog で開いたウィンドウに DialogResult = true を設定して閉じると、閉じ直さなければ ShowDialog が True を返し、Cancel してから Close() で閉じ直すと False を返し、記事の ClosingGuard（判定が true）では DialogResult を設定し直して True を返すこと",
@@ -40,42 +43,69 @@ internal sealed class WindowClosingAsyncScene : IScene
     /// <summary>
     /// 条件。<c>Handler</c> は Closing を処理する書き方、<c>Result</c> は判定の結果（allow・deny・throw-once）、
     /// <c>DelayMs</c> は判定にかかる時間（0 は同期で完了する）、<c>Action</c> は閉じ方。
+    /// <c>Expected</c> は、表の行（条件の列を除く日本語のセル）を「|」でつないだ期待値。
+    /// 「*」で始まるセルは、その後ろの文字列で終わればよい（回数が実行環境で変わるセル）。
+    /// 記事の本文と Verifies はこの期待値を前提に書いているので、食い違えば表を作らずに止める。
     /// </summary>
-    private sealed record Condition(string Handler, string Result, int DelayMs, string Action, Loc Label);
+    private sealed record Condition(string Handler, string Result, int DelayMs, string Action, Loc Label, string Expected);
 
     private static readonly Condition[] Naive =
     [
-        new("naive", "deny", 300, "close", T("Cancel after await (check takes 300 ms)", "await の後で Cancel（判定に 300 ms）")),
-        new("naive", "deny", 0, "close", T("Cancel after await (check completes synchronously)", "await の後で Cancel（判定が同期で完了）")),
-        new("guard", "deny", 300, "close", T("ClosingGuard, check returns false", "ClosingGuard・判定が false")),
-        new("guard", "allow", 300, "close", T("ClosingGuard, check returns true", "ClosingGuard・判定が true")),
+        new("naive", "deny", 300, "close", T("Cancel after await (check takes 300 ms)", "await の後で Cancel（判定に 300 ms）"),
+            "1|1 / 0|判定の完了より前|なし|閉じてプロセスも終了"),
+        new("naive", "deny", 0, "close", T("Cancel after await (check completes synchronously)", "await の後で Cancel（判定が同期で完了）"),
+            "1|1 / 1|発生しない|なし|開いたまま"),
+        new("guard", "deny", 300, "close", T("ClosingGuard, check returns false", "ClosingGuard・判定が false"),
+            "1|1 / 1|発生しない|なし|開いたまま"),
+        new("guard", "allow", 300, "close", T("ClosingGuard, check returns true", "ClosingGuard・判定が true"),
+            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
+        new("guard-no-datacontext", "deny", 300, "close", T("ClosingGuard, DataContext not set", "ClosingGuard・DataContext を設定しない"),
+            "1|0 / 0|発生する（判定は始まらない）|なし|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Pitfalls =
     [
-        new("cancel-first", "allow", 300, "close", T("Cancel first, then Close() (no flag)", "先に Cancel、判定後に Close()（フラグなし）")),
-        new("direct-close", "allow", 300, "close", T("+ approved flag, Close() directly (300 ms)", "+ 判定済みフラグ、Close() を直接（300 ms）")),
-        new("direct-close", "allow", 0, "close", T("+ approved flag, Close() directly (synchronous)", "+ 判定済みフラグ、Close() を直接（同期で完了）")),
-        new("guard", "allow", 0, "close", T("ClosingGuard: InvokeAsync(Close) (synchronous)", "ClosingGuard: InvokeAsync(Close)（同期で完了）")),
-        new("no-checking", "allow", 300, "close-twice", T("× twice, no in-progress check", "× を 2 回、判定中かを見ない")),
-        new("guard", "allow", 300, "close-twice", T("× twice, ClosingGuard", "× を 2 回、ClosingGuard")),
-        new("guard", "throw-once", 300, "close-retry", T("ClosingGuard: check throws, × again", "ClosingGuard: 判定が例外、もう一度 ×")),
+        new("cancel-first", "allow", 300, "close", T("Cancel first, then Close() (no flag)", "先に Cancel、判定後に Close()（フラグなし）"),
+            "*（繰り返す）|*|発生しない|なし|開いたまま"),
+        new("direct-close", "allow", 300, "close", T("+ approved flag, Close() directly (300 ms)", "+ 判定済みフラグ、Close() を直接（300 ms）"),
+            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
+        new("direct-close", "allow", 0, "close", T("+ approved flag, Close() directly (synchronous)", "+ 判定済みフラグ、Close() を直接（同期で完了）"),
+            "1|1 / 1|発生しない|InvalidOperationException|開いたまま"),
+        new("guard", "allow", 0, "close", T("ClosingGuard: InvokeAsync(Close) (synchronous)", "ClosingGuard: InvokeAsync(Close)（同期で完了）"),
+            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
+        new("no-checking", "allow", 300, "close-twice", T("× twice, no in-progress check", "× を 2 回、判定中かを見ない"),
+            "3|2 / 2|1 回目の判定の完了後・2 回目の完了より前|なし|閉じた"),
+        new("guard", "allow", 300, "close-twice", T("× twice, ClosingGuard", "× を 2 回、ClosingGuard"),
+            "3|1 / 1|判定の完了後|なし|閉じた"),
+        new("guard", "throw-once", 300, "close-retry", T("ClosingGuard: check throws, × again", "ClosingGuard: 判定が例外、もう一度 ×"),
+            "3|2 / 2|判定の完了後|IOException|閉じてプロセスも終了"),
+        new("guard", "allow", 300, "datacontext-change", T("ClosingGuard: DataContext replaced during the check (true)", "ClosingGuard: 判定中に DataContext を替える（判定が true）"),
+            "1|1 / 1|発生しない|なし|開いたまま"),
     ];
 
     private static readonly Condition[] Shutdown =
     [
-        new("guard", "deny", 300, "shutdown", T("Application.Shutdown(), check returns false", "Application.Shutdown()・判定が false")),
-        new("guard", "deny", 300, "main-close", T("OnMainWindowClose, another main window closed, false", "OnMainWindowClose で別のメインウィンドウを閉じる・false")),
-        new("guard", "deny", 300, "owner-close", T("Owner window closed, false", "Owner のウィンドウを閉じる・false")),
-        new("guard", "deny", 300, "exit-button", T("exit button (ApplicationCommands.Close), false", "終了ボタン（ApplicationCommands.Close）・false")),
-        new("guard", "allow", 300, "exit-button", T("exit button (ApplicationCommands.Close), true", "終了ボタン（ApplicationCommands.Close）・true")),
+        new("guard", "deny", 300, "shutdown", T("Application.Shutdown(), check returns false", "Application.Shutdown()・判定が false"),
+            "1|1 / 0|判定の完了より前|なし|閉じてプロセスも終了"),
+        new("guard", "deny", 300, "main-close", T("OnMainWindowClose, another main window closed, false", "OnMainWindowClose で別のメインウィンドウを閉じる・false"),
+            "1|1 / 0|判定の完了より前|なし|閉じてプロセスも終了"),
+        new("guard", "deny", 300, "owner-close", T("Owner window closed, false", "Owner のウィンドウを閉じる・false"),
+            "0|0 / 0|発生する（判定は始まらない）|なし|閉じてプロセスも終了"),
+        new("guard", "deny", 300, "exit-button", T("exit button (ApplicationCommands.Close), false", "終了ボタン（ApplicationCommands.Close）・false"),
+            "1|1 / 1|発生しない|なし|開いたまま"),
+        new("guard", "allow", 300, "exit-button", T("exit button (ApplicationCommands.Close), true", "終了ボタン（ApplicationCommands.Close）・true"),
+            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
     ];
 
+    /// <summary>ダイアログの条件。<c>Expected</c> は、表の行（条件の列を除く）を「|」でつないだ期待値。</summary>
     private static readonly Condition[] Dialog =
     [
-        new("plain", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true (no ClosingGuard)", "ShowDialog・DialogResult = true（ClosingGuard なし）")),
-        new("direct-close", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true, Cancel then Close() again", "ShowDialog・DialogResult = true・Cancel して Close() で閉じ直す")),
-        new("guard", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true, ClosingGuard (true)", "ShowDialog・DialogResult = true・ClosingGuard（判定が true）")),
+        new("plain", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true (no ClosingGuard)", "ShowDialog・DialogResult = true（ClosingGuard なし）"),
+            "1|0 / 0|True"),
+        new("direct-close", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true, Cancel then Close() again", "ShowDialog・DialogResult = true・Cancel して Close() で閉じ直す"),
+            "2|1 / 1|False"),
+        new("guard", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true, ClosingGuard (true)", "ShowDialog・DialogResult = true・ClosingGuard（判定が true）"),
+            "2|1 / 1|True"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -109,7 +139,9 @@ internal sealed class WindowClosingAsyncScene : IScene
 
             string result = log.FirstOrDefault(l => l.StartsWith("dialog-result:", StringComparison.Ordinal))?["dialog-result:".Length..]
                 ?? throw new InvalidOperationException($"{Dialog[i]}: ShowDialog が戻っていない: {string.Join(", ", log)}");
-            dialogRows.Add([Dialog[i].Label, log.Count(l => l == "closing").ToString(), $"{log.Count(l => l == "guard-start")} / {log.Count(IsCheckEnd)}", result]);
+            IReadOnlyList<Loc> row = [Dialog[i].Label, log.Count(l => l == "closing").ToString(), $"{log.Count(l => l == "guard-start")} / {log.Count(IsCheckEnd)}", result];
+            VerifyExpected(Dialog[i], row, log);
+            dialogRows.Add(row);
         }
 
         await context.SaveTableAsync(
@@ -127,10 +159,26 @@ internal sealed class WindowClosingAsyncScene : IScene
         {
             Condition condition = conditions[i];
             string[] log = await RunAsync(executable, workspace, condition, $"{Path.GetFileNameWithoutExtension(fileName)}-{i}");
-            rows.Add(Describe(condition, log));
+            IReadOnlyList<Loc> row = Describe(condition, log);
+            VerifyExpected(condition, row, log);
+            rows.Add(row);
         }
 
         await context.SaveTableAsync(title, headers, rows, fileName);
+    }
+
+    /// <summary>表の行が、条件に書いた期待値と一致するかを確かめる。一致しなければ例外にして、表を作らない。</summary>
+    private static void VerifyExpected(Condition condition, IReadOnlyList<Loc> row, string[] log)
+    {
+        string[] expected = condition.Expected.Split('|');
+        string[] actual = row.Skip(1).Select(cell => cell.Ja).ToArray();
+        bool matches = expected.Length == actual.Length
+            && expected.Zip(actual).All(pair => pair.First.StartsWith('*') ? pair.Second.EndsWith(pair.First[1..], StringComparison.Ordinal) : pair.First == pair.Second);
+        if (!matches)
+        {
+            throw new InvalidOperationException(
+                $"{condition.Label.Ja}: 期待値と違う。期待: {condition.Expected} / 実際: {string.Join("|", actual)} / ログ: {string.Join(", ", log)}");
+        }
     }
 
     /// <summary>判定が終わったことを示すログか。結果を返した場合と、例外を投げた場合の両方を数える。</summary>
@@ -374,31 +422,42 @@ internal sealed class WindowClosingAsyncScene : IScene
                 // Cancel すると WPF が DialogResult を null に戻すので、閉じ直すときのために控えておく。
                 bool? dialogResult = window.DialogResult;
                 window.SetValue(StateProperty, State.Checking);
-                bool canClose = false;
+                bool canClose;
                 try
                 {
                     canClose = await guard.CanCloseAsync();
                 }
                 finally
                 {
-                    window.SetValue(StateProperty, canClose ? State.Approved : State.Idle);
+                    window.SetValue(StateProperty, State.Idle);
                 }
 
-                if (canClose)
+                // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
+                if (!canClose || !ReferenceEquals(window.DataContext, guard))
                 {
-                    // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
-                    _ = window.Dispatcher.InvokeAsync(() =>
-                    {
-                        if (dialogResult is bool result)
-                        {
-                            window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
-                        }
-                        else
-                        {
-                            window.Close();
-                        }
-                    });
+                    return;
                 }
+
+                window.SetValue(StateProperty, State.Approved);
+
+                // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
+                _ = window.Dispatcher.InvokeAsync(() =>
+                {
+                    if (!ReferenceEquals(window.DataContext, guard))
+                    {
+                        window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も同じ
+                        return;
+                    }
+
+                    if (dialogResult is bool result)
+                    {
+                        window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
+                    }
+                    else
+                    {
+                        window.Close();
+                    }
+                });
             }
         }
 
@@ -594,7 +653,7 @@ internal sealed class WindowClosingAsyncScene : IScene
 
                 var window = (Window)XamlReader.Parse(handler switch
                 {
-                    "guard" => GuardXaml,
+                    "guard" or "guard-no-datacontext" => GuardXaml,
                     "naive" => NaiveXaml,
                     _ => PlainXaml,
                 });
@@ -609,7 +668,10 @@ internal sealed class WindowClosingAsyncScene : IScene
                 bool closed = false;
                 window.Closing += (_, _) => Log.Write("closing");
                 window.Closed += (_, _) => { closed = true; Log.Write("closed"); };
-                window.DataContext = new EditorViewModel { Allow = allow, DelayMs = delay, ThrowOnce = throwOnce };
+                if (handler != "guard-no-datacontext")
+                {
+                    window.DataContext = new EditorViewModel { Allow = allow, DelayMs = delay, ThrowOnce = throwOnce };
+                }
                 // メインウィンドウ・Owner の条件では、ClosingGuard の無い別のウィンドウを先に開き、それを閉じる。
                 Window other = null;
                 if (action is "main-close" or "owner-close")
@@ -667,6 +729,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                         case "close-twice":
                             PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             After(100, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
+                            break;
+                        case "datacontext-change":
+                            // 判定（300 ms）の途中で、別の編集対象のビューモデルに替える。
+                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                            After(100, () => window.DataContext = new EditorViewModel { Allow = allow, DelayMs = delay });
                             break;
                         case "close-retry":
                             // 1 回目の判定（300 ms で例外）が終わった後に、もう一度 × を押す。
