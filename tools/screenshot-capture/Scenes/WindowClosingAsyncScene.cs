@@ -153,23 +153,7 @@ internal sealed class WindowClosingAsyncScene : IScene
             throw new InvalidOperationException($"{condition}: ログが想定と合わない: {string.Join(", ", log)}");
         }
 
-        Loc closed;
-        if (closedIndex < 0)
-        {
-            closed = T("not raised", "発生しない");
-        }
-        else
-        {
-            // 判定がいくつ完了した後に Closed が発生したか。判定より前なら Cancel を読み終えた後に判定が終わっている。
-            int completedBefore = log.Take(closedIndex).Count(IsCheckEnd);
-            closed = started == 0
-                ? T("raised (no check started)", "発生する（判定は始まらない）")
-                : completedBefore == completed && completed == started
-                ? T("after the check completes", "判定の完了後")
-                : completedBefore == 0
-                    ? T("before the check completes", "判定の完了より前")
-                    : T($"after check {completedBefore} completes, before check {completedBefore + 1} completes", $"{completedBefore} 回目の判定の完了後・{completedBefore + 1} 回目の完了より前");
-        }
+        Loc closed = DescribeClosed(log, closedIndex, started, completed);
 
         Loc window = finalOpen
             ? T("open", "開いたまま")
@@ -178,7 +162,8 @@ internal sealed class WindowClosingAsyncScene : IScene
         return
         [
             condition.Label,
-            closing >= 5 ? T($"{closing} (keeps repeating)", $"{closing}（繰り返す）") : closing.ToString(),
+            // 閉じないまま Closing が 3 回以上続いたら、閉じ直しが繰り返されている。回数自体は判定の時間とタイマーの精度で変わる。
+            closedIndex < 0 && closing >= 3 ? T($"{closing} (keeps repeating)", $"{closing}（繰り返す）") : closing.ToString(),
             $"{started} / {completed}",
             closed,
             exceptions.Length == 0 ? T("none", "なし") : string.Join(", ", exceptions),
@@ -186,10 +171,37 @@ internal sealed class WindowClosingAsyncScene : IScene
         ];
     }
 
+    /// <summary>Closed が、判定の完了に対していつ発生したか。</summary>
+    private static Loc DescribeClosed(string[] log, int closedIndex, int started, int completed)
+    {
+        if (closedIndex < 0)
+        {
+            return T("not raised", "発生しない");
+        }
+
+        if (started == 0)
+        {
+            return T("raised (no check started)", "発生する（判定は始まらない）");
+        }
+
+        // 判定がいくつ完了した後に Closed が発生したか。
+        int completedBefore = log.Take(closedIndex).Count(IsCheckEnd);
+        if (completedBefore == completed && completed == started)
+        {
+            return T("after the check completes", "判定の完了後");
+        }
+
+        return completedBefore == 0
+            ? T("before the check completes", "判定の完了より前")
+            : T($"after check {completedBefore} completes, before check {completedBefore + 1} completes", $"{completedBefore} 回目の判定の完了後・{completedBefore + 1} 回目の完了より前");
+    }
+
     /// <summary>検証用アプリを 1 条件ぶん実行し、ログの行（時刻を除いた見出し）を返す。</summary>
     private static async Task<string[]> RunAsync(string executable, string workspace, Condition condition, string name)
     {
         string log = Path.Combine(workspace, $"log-{name}.txt");
+        // 前回の実行のログを読まないよう、起動前に消す。
+        File.Delete(log);
         string arguments = $"{condition.Handler} {condition.Result} {condition.DelayMs} {condition.Action} \"{log}\"";
 
         using var process = Process.Start(new ProcessStartInfo(executable, arguments)
@@ -211,6 +223,13 @@ internal sealed class WindowClosingAsyncScene : IScene
 
         string content = File.Exists(log) ? await File.ReadAllTextAsync(log) : string.Empty;
         Console.WriteLine($"{arguments}:\n{content}");
+
+        // 検証用アプリは、Run() が戻るか Environment.Exit(0) で終わる。途中で落ちた場合のログは表に載せない。
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"{arguments}: 検証用アプリが終了コード {process.ExitCode} で終わった:\n{content}");
+        }
+
         return content.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.Split('\t')[0]).ToArray();
     }
 

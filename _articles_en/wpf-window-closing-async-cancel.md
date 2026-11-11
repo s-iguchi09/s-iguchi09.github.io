@@ -203,7 +203,7 @@ Measured as in the previous table. Every check returns `true` (may close). In th
 {: .table-caption}
 
 **Row 1: the `Close` called again also raises `Closing`.**
-The same handler sets `Cancel` again and starts a new check, so the window does not close even though the check returns `true`; `Closing` and the check repeated 5 times by 1.5 s after the window was shown.
+The same handler sets `Cancel` again and starts a new check, so the window does not close even though the check returns `true`; `Closing` and the check kept repeating until 1.5 s after the window was shown (the count depends on how long the check takes).
 The handler has to remember that the check finished with "may close" and do nothing on the second `Closing`.
 
 **Rows 2 and 3: when the check completes synchronously, `Close` is called inside `Closing`.**
