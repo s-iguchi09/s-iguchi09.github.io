@@ -114,7 +114,7 @@ XAML では、この添付プロパティにコマンドをバインドする。
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-cancel-after-await.ja.md %}
 
-.NET 10.0.13 / Windows 11 で、表示から 200 ms 後に `WM_CLOSE` を送り、表示から 1.5 秒後のウィンドウの状態を読んだ。判定は保存や確認ダイアログの代わりに、`Task.Delay(300)` を待ってから結果を返すか、待たずに返す（同期で完了する）。「判定の開始 / 完了」は判定のメソッドの先頭と、結果を返すか例外を投げる直前に書いたログの回数である。各条件 1 回の記録。
+.NET 10.0.13 / Windows 11 で、表示から 200 ms 後に `WM_CLOSE` を送り、表示から 1.5 秒後のウィンドウの状態を読んだ。判定は保存や確認ダイアログの代わりに、`Task.Delay(300)` を待ってから結果を返すか、待たずに返す（同期で完了する）。3・4 行目（ClosingGuard）の判定は 300 ms かかる。「判定の開始 / 完了」は判定のメソッドの先頭と、結果を返すか例外を投げる直前に書いたログの回数である。各条件 1 回の記録。
 {: .table-caption}
 
 **判定に 300 ms かかる 1 行目では、判定が完了する前に `Closed` が発生し、ウィンドウは閉じた。**
@@ -198,14 +198,14 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md %}
 
-測り方は前の表と同じである。判定はいずれも `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。最後の行は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。各条件 1 回の記録。
+測り方は前の表と同じである。最後の行を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。最後の行は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。各条件 1 回の記録。
 {: .table-caption}
 
 **1 行目: 閉じ直した `Close` でも `Closing` が発生する。**
 同じハンドラーがもう一度 `Cancel` を立てて判定を始めるので、判定が `true` でもウィンドウは閉じず、表示から 1.5 秒までの間、`Closing` と判定が繰り返された（回数は判定にかかる時間やタイマーの精度で変わる）。
 判定を終えて閉じてよいと決まったことを覚えておき、2 回目の `Closing` では何もしないようにする必要がある。
 
-**2・3 行目: 判定が同期で完了すると、`Close` が `Closing` の中で呼ばれる。**
+**2・3 行目: `Close` を直接呼ぶと、判定が同期で完了したときだけ `Closing` の中で呼ばれる。**
 判定に 300 ms かかる 2 行目では、`Close` は `Closing` が終わった後に呼ばれるので閉じる。
 判定がすぐに完了する 3 行目では、`await` の続きが `OnClosing` の中で実行され、`_isClosing` が `true` のまま `Close` が呼ばれて `InvalidOperationException` になった。
 `async void` のハンドラーから漏れた例外は `Dispatcher` に投げ直されるため、`DispatcherUnhandledException` に届き（計測では `Handled` にしている）、ウィンドウは開いたまま残った。
@@ -229,7 +229,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-dialog-result.ja.md %}
 
-.NET 10.0.13 / Windows 11 で、`ShowDialog` で開いたウィンドウに、表示から 200 ms 後に `DialogResult = true` を設定した（`WM_CLOSE` は送らない）。判定は 300 ms 後に `true` を返す。`ShowDialog` の戻り値をログに書くため、アプリの `ShutdownMode` を `OnExplicitShutdown` にした。2 行目は「先に Cancel を立て、判定の後で閉じ直す」の表の 2 行目と同じ、`Close()` で閉じ直す実装である。各条件 1 回の記録。
+.NET 10.0.13 / Windows 11 で、`ShowDialog` を呼んでから 200 ms 後に、そのウィンドウの `DialogResult` を `true` に設定した（`WM_CLOSE` は送らない）。判定は 300 ms 後に `true` を返す。`ShowDialog` の戻り値をログに書くため、アプリの `ShutdownMode` を `OnExplicitShutdown` にした。2 行目は「先に Cancel を立て、判定の後で閉じ直す」の表の 2 行目と同じ、`Close()` で閉じ直す実装である。各条件 1 回の記録。
 {: .table-caption}
 
 閉じ直すときに、止める前の `DialogResult` を設定し直せば、3 行目のように `true` が返る。
@@ -243,14 +243,14 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-shutdown.ja.md %}
 
-測り方は最初の表と同じで、`WM_CLOSE` は送らない。1 行目は `Application.Current.Shutdown()` を呼んだ。2 行目はアプリの `ShutdownMode` を `OnMainWindowClose` にし、`ClosingGuard` の無い別のウィンドウを `MainWindow` にして閉じた。3 行目は `ClosingGuard` の無い別のウィンドウを `Owner` にして閉じた。4・5 行目は `Command="Close"`（`ApplicationCommands.Close`）を割り当てた終了ボタンを UI オートメーションの `Invoke` で押した。2 行目以外の `ShutdownMode` は既定の `OnLastWindowClose` である。各条件 1 回の記録。
+測り方は最初の表と同じで、`WM_CLOSE` は送らない。判定はいずれも 300 ms かかる。1 行目は `Application.Current.Shutdown()` を呼んだ。2 行目はアプリの `ShutdownMode` を `OnMainWindowClose` にし、`ClosingGuard` の無い別のウィンドウを `MainWindow` にして閉じた。3 行目は `ClosingGuard` の無い別のウィンドウを `Owner` にして閉じた。4・5 行目は `Command="Close"`（`ApplicationCommands.Close`）を割り当てた終了ボタンを UI オートメーションの `Invoke` で押した。2 行目以外の `ShutdownMode` は既定の `OnLastWindowClose` である。各条件 1 回の記録。
 {: .table-caption}
 
 **`Shutdown` の 1 行目では、`ClosingGuard` が `Cancel` を立てても、ウィンドウは閉じてプロセスが終わり、判定は完了しなかった。**
 `OnMainWindowClose` でメインウィンドウを閉じた 2 行目も同じ結果だった。
 **`Owner` を閉じた 3 行目では、`Closing` 自体が発生せず、判定は始まらないまま閉じた。**
 [Closing のリファレンス](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.window.closing)にも、`Owner` が閉じると所有されたウィンドウの `Closing` は発生しないと書かれている。
-Win32 の [DestroyWindow](https://learn.microsoft.com/ja-jp/windows/win32/api/winuser/nf-winuser-destroywindow) は、所有ウィンドウを `WM_CLOSE` ではなく `WM_DESTROY` を送って、オーナーより先に破棄する。
+Win32 の [DestroyWindow](https://learn.microsoft.com/ja-jp/windows/win32/api/winuser/nf-winuser-destroywindow) は、所有されたウィンドウに `WM_DESTROY` を送って、オーナーより先に破棄する（`WM_CLOSE` を送らないことは、次の計測で確かめた）。
 計測でも、所有されたウィンドウのウィンドウプロシージャに `WM_CLOSE` は届かなかった（`HwndSource.AddHook` で記録した）。
 このため `WmClose` を通らず、`Closing` が発生しない。
 終了ボタンから `ApplicationCommands.Close` を経てウィンドウの `Close` を呼ぶ 4・5 行目では、× と同じ判定を通り、`false` なら開いたまま残った。
@@ -275,7 +275,7 @@ public interface IClosingGuard
 ```
 
 添付プロパティ `ClosingGuard.IsEnabled` を `True` にしたウィンドウは、`Closing` のたびに `DataContext` の `IClosingGuard` に判定を求める。
-ウィンドウごとの状態（判定中・判定済み）を非公開の添付プロパティに持たせ、前節の 4 つの落とし穴をそれぞれ避ける。
+ウィンドウごとの状態（判定中・判定済み）を非公開の添付プロパティに持たせ、閉じ直しの手順と合わせて、前節の 4 つの落とし穴をそれぞれ避ける。
 
 ```csharp
 using System.ComponentModel;

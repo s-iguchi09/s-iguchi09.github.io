@@ -115,7 +115,7 @@ Rows 3 and 4 use the implementation described later (`ClosingGuard`).
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-cancel-after-await.en.md %}
 
-.NET 10.0.13 / Windows 11. `WM_CLOSE` was sent 200 ms after the window was shown, and the window state was read 1.5 s after the window was shown. Instead of saving or showing a dialog, the check either awaits `Task.Delay(300)` before returning its result or returns without waiting (completes synchronously). "checks started / completed" counts the log lines written at the start of the check method and just before it returns or throws. One run per condition.
+.NET 10.0.13 / Windows 11. `WM_CLOSE` was sent 200 ms after the window was shown, and the window state was read 1.5 s after the window was shown. Instead of saving or showing a dialog, the check either awaits `Task.Delay(300)` before returning its result or returns without waiting (completes synchronously). The checks in rows 3 and 4 (ClosingGuard) take 300 ms. "checks started / completed" counts the log lines written at the start of the check method and just before it returns or throws. One run per condition.
 {: .table-caption}
 
 **In row 1, where the check takes 300 ms, `Closed` was raised before the check completed, and the window closed.**
@@ -199,14 +199,14 @@ Closing again has the three pitfalls shown in the next table (the fourth is cove
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.en.md %}
 
-Measured as in the previous table. Every check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In the last row, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. One run per condition.
+Measured as in the previous table. Except in the last row, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In the last row, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. One run per condition.
 {: .table-caption}
 
 **Row 1: the `Close` called again also raises `Closing`.**
 The same handler sets `Cancel` again and starts a new check, so the window does not close even though the check returns `true`; `Closing` and the check kept repeating until 1.5 s after the window was shown (the count depends on how long the check takes and on timer precision).
 The handler has to remember that the check finished with "may close" and do nothing on the second `Closing`.
 
-**Rows 2 and 3: when the check completes synchronously, `Close` is called inside `Closing`.**
+**Rows 2 and 3: calling `Close` directly runs it inside `Closing` only when the check completes synchronously.**
 In row 2, where the check takes 300 ms, `Close` is called after `Closing` has finished, and the window closes.
 In row 3, where the check completes immediately, the continuation of the `await` runs inside `OnClosing`, `Close` is called while `_isClosing` is `true`, and `InvalidOperationException` is thrown.
 An exception that escapes an `async void` handler is rethrown on the `Dispatcher`, so it reached `DispatcherUnhandledException` (marked `Handled` in the measurement), and the window stayed open.
@@ -230,7 +230,7 @@ A dialog that closes while the value is `null` returns `false` (`DoDialogHide` i
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-dialog-result.en.md %}
 
-.NET 10.0.13 / Windows 11. `DialogResult = true` was set 200 ms after a window opened with `ShowDialog` was shown (no `WM_CLOSE` was sent). The check returns `true` after 300 ms. To log the return value of `ShowDialog`, the app's `ShutdownMode` was set to `OnExplicitShutdown`. Row 2 is the implementation that closes again with `Close()`, the same as row 2 of the table in "Set Cancel first, then close again after the check". One run per condition.
+.NET 10.0.13 / Windows 11. `DialogResult` was set to `true` 200 ms after `ShowDialog` was called (no `WM_CLOSE` was sent). The check returns `true` after 300 ms. To log the return value of `ShowDialog`, the app's `ShutdownMode` was set to `OnExplicitShutdown`. Row 2 is the implementation that closes again with `Close()`, the same as row 2 of the table in "Set Cancel first, then close again after the check". One run per condition.
 {: .table-caption}
 
 Setting the `DialogResult` from before the cancel back when closing again returns `true`, as in row 3.
@@ -244,14 +244,14 @@ An exit button should therefore use the same `Close` path as ×, not `Shutdown`.
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-shutdown.en.md %}
 
-Measured as in the first table, without sending `WM_CLOSE`. Row 1 calls `Application.Current.Shutdown()`. Row 2 sets the app's `ShutdownMode` to `OnMainWindowClose`, makes a separate window without `ClosingGuard` the `MainWindow`, and closes it. Row 3 makes a separate window without `ClosingGuard` the `Owner` and closes it. Rows 4 and 5 press an exit button bound to `Command="Close"` (`ApplicationCommands.Close`) through UI Automation's `Invoke`. Except in row 2, `ShutdownMode` is the default, `OnLastWindowClose`. One run per condition.
+Measured as in the first table, without sending `WM_CLOSE`. Every check takes 300 ms. Row 1 calls `Application.Current.Shutdown()`. Row 2 sets the app's `ShutdownMode` to `OnMainWindowClose`, makes a separate window without `ClosingGuard` the `MainWindow`, and closes it. Row 3 makes a separate window without `ClosingGuard` the `Owner` and closes it. Rows 4 and 5 press an exit button bound to `Command="Close"` (`ApplicationCommands.Close`) through UI Automation's `Invoke`. Except in row 2, `ShutdownMode` is the default, `OnLastWindowClose`. One run per condition.
 {: .table-caption}
 
 **In row 1, with `Shutdown`, the window closed and the process exited even though `ClosingGuard` set `Cancel`, and the check never completed.**
 Row 2, closing the main window under `OnMainWindowClose`, gave the same result.
 **In row 3, closing the `Owner`, `Closing` was not raised at all, and the window closed without a check.**
 The [Closing reference](https://learn.microsoft.com/en-us/dotnet/api/system.windows.window.closing) also states that `Closing` is not raised on an owned window when its owner is closed.
-Win32's [DestroyWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow) destroys owned windows before the owner by sending them `WM_DESTROY`, not `WM_CLOSE`.
+Win32's [DestroyWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-destroywindow) destroys owned windows before the owner by sending them `WM_DESTROY` (that it does not send `WM_CLOSE` was confirmed by the next measurement).
 The measurement also showed that `WM_CLOSE` never reached the owned window's window procedure (recorded with `HwndSource.AddHook`).
 So the window does not go through `WmClose`, and `Closing` is not raised.
 In rows 4 and 5, the exit button reaches the window's `Close` through `ApplicationCommands.Close`, goes through the same check as ×, and the window stays open when the check returns `false`.
@@ -276,7 +276,7 @@ public interface IClosingGuard
 ```
 
 A window with the attached property `ClosingGuard.IsEnabled` set to `True` asks the `IClosingGuard` in its `DataContext` on every `Closing`.
-The per-window state (checking, approved) is kept in a private attached property, which avoids each of the four pitfalls from the previous section.
+The per-window state (checking, approved) is kept in a private attached property, which, together with the close-again procedure, avoids each of the four pitfalls from the previous section.
 
 ```csharp
 using System.ComponentModel;

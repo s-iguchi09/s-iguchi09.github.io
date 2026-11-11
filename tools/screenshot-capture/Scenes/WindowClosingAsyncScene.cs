@@ -8,7 +8,8 @@ namespace ScreenshotCapture.Scenes;
 /// 先に止めて閉じ直す実装」の計測。
 ///
 /// 条件だけを変えた検証用アプリを別プロセスで起動し、× ボタンと同じ WM_CLOSE を送る
-/// （条件によっては Application.Shutdown を呼ぶ、または終了ボタンを押す）。
+/// （条件によっては、代わりに Application.Shutdown を呼ぶ、別のメインウィンドウや Owner を閉じる、
+/// 終了ボタンを押す、ShowDialog で開いて DialogResult を設定する）。
 /// Closing・Closed・判定（CanCloseAsync）の開始と完了・未処理の例外を、起きた順にログへ書かせて読む。
 /// Application.Shutdown を呼ぶとプロセスが終わるため、撮影ツールとは別のプロセスで測る。
 /// </summary>
