@@ -1,0 +1,33 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-window-closing-async-cancel
+slug: "wpf-window-closing-async-cancel"
+scene: "WindowClosingAsyncScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "Closing を AsyncRelayCommand<CancelEventArgs>（CommunityToolkit.Mvvm 8.4.0）に渡し、await した判定の後で e.Cancel = true にすると、判定が 300 ms かかる場合は判定の完了より前に Closed が発生してウィンドウが閉じ、判定がすぐに完了する（同期で完了する）場合は閉じないこと"
+  - "記事の ClosingGuard は、判定が false なら Closing 1 回でウィンドウを開いたまま残し、true なら判定の完了後に 2 回目の Closing を経て閉じること。判定が同期で完了しても例外にならず閉じること"
+  - "先に e.Cancel = true にして判定の後で Close() を呼ぶだけの実装は、判定が true でも閉じず、Closing と判定を繰り返すこと"
+  - "判定済みのフラグを持たせて Close() を直接呼ぶ実装は、判定に 300 ms かかる場合は閉じ、判定が同期で完了する場合は InvalidOperationException になってウィンドウが開いたまま残ること"
+  - "判定中に WM_CLOSE をもう一度送ると、判定中かを見ない実装では判定が 2 回始まり、記事の ClosingGuard では 1 回だけであること"
+  - "記事の ClosingGuard で 1 回目の判定が例外を投げると、DispatcherUnhandledException に届いてウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目は true）閉じること"
+  - "記事の ClosingGuard を付けたウィンドウでも、Application.Shutdown を呼ぶと e.Cancel = true が無視されてウィンドウが閉じ、判定は始まるが完了しないままプロセスが終わること"
+  - "ShowDialog で開いたウィンドウに DialogResult = true を設定して閉じると、閉じ直さなければ ShowDialog が True を返し、Cancel してから Close() で閉じ直すと False を返し、記事の ClosingGuard（判定が true）では DialogResult を設定し直して True を返すこと"
+  - "ShutdownMode が OnMainWindowClose のときに ClosingGuard の無い別のメインウィンドウを閉じると、ClosingGuard のウィンドウ（判定が false）も閉じ、判定は始まるが完了しないままプロセスが終わること"
+  - "ClosingGuard のウィンドウ（判定が false）の Owner を閉じると、そのウィンドウのウィンドウプロシージャに WM_CLOSE が届かず、Closing も発生せず、判定も始まらないまま閉じること。ほかの非モーダルの条件では WM_CLOSE が届くこと"
+  - "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること"
+images:
+  - "images/articles/wpf-window-closing-async-cancel/closing-cancel-after-await.svg"
+  - "images/articles/wpf-window-closing-async-cancel/closing-close-again.svg"
+  - "images/articles/wpf-window-closing-async-cancel/closing-shutdown.svg"
+  - "images/articles/wpf-window-closing-async-cancel/closing-dialog-result.svg"
+tables:
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-cancel-after-await.en.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-cancel-after-await.ja.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-close-again.en.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-shutdown.en.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-shutdown.ja.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-dialog-result.en.md"
+  - "_includes/tables/articles/wpf-window-closing-async-cancel/closing-dialog-result.ja.md"

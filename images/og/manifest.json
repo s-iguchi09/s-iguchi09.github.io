@@ -87,6 +87,7 @@
   "/articles/wpf-unhandled-exception-dispatcher-task-thread/": "7111441bebc0267a",
   "/articles/wpf-usercontrol-dependencyproperty-binding-not-working/": "b239083f69b4f64b",
   "/articles/wpf-validation-error-not-displayed/": "8d0b700ae05dde8f",
+  "/articles/wpf-window-closing-async-cancel/": "9ba83d86e83bb0c1",
   "/ja/": "31ac45cc10045666",
   "/ja/apps/wpf-standard-control-demo/button.html": "a9f12beeed7b87dc",
   "/ja/apps/wpf-standard-control-demo/canvas.html": "b7f10f1a0d24dfc4",
@@ -174,5 +175,6 @@
   "/ja/articles/wpf-ui-virtualization-lost-conditions/": "f6fea7ac5c08f427",
   "/ja/articles/wpf-unhandled-exception-dispatcher-task-thread/": "71566579831e2ca3",
   "/ja/articles/wpf-usercontrol-dependencyproperty-binding-not-working/": "08584d985d5b9ffb",
-  "/ja/articles/wpf-validation-error-not-displayed/": "9e242d51d275f3e8"
+  "/ja/articles/wpf-validation-error-not-displayed/": "9e242d51d275f3e8",
+  "/ja/articles/wpf-window-closing-async-cancel/": "488f5d7a853e48a4"
 }
