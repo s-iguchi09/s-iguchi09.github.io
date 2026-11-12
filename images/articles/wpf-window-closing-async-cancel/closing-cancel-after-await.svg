@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1417 230" width="1417" height="230" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1417" height="230" />
+  <text class="title" x="12" y="24">Cancel set after await vs. ClosingGuard</text>
+  <rect class="head" x="12" y="38" width="1393" height="30" />
+  <text class="cell" x="26" y="57.5">condition</text>
+  <text class="cell" x="556" y="57.5" text-anchor="end">Closing raised</text>
+  <text class="cell" x="788" y="57.5" text-anchor="end">checks started / completed</text>
+  <text class="cell" x="1021" y="57.5" text-anchor="end">Closed raised</text>
+  <text class="cell" x="1198" y="57.5" text-anchor="end">unhandled exception</text>
+  <text class="cell" x="1391" y="57.5" text-anchor="end">window after 1.5 s</text>
+  <text class="cell" x="26" y="87.5">Cancel after await (check takes 300 ms)</text>
+  <text class="cell" x="556" y="87.5" text-anchor="end">1</text>
+  <text class="cell" x="788" y="87.5" text-anchor="end">1 / 0</text>
+  <text class="cell" x="1021" y="87.5" text-anchor="end">before the check completes</text>
+  <text class="cell" x="1198" y="87.5" text-anchor="end">none</text>
+  <text class="cell" x="1391" y="87.5" text-anchor="end">closed, process ended</text>
+  <text class="cell" x="26" y="117.5">Cancel after await (check completes synchronously)</text>
+  <text class="cell" x="556" y="117.5" text-anchor="end">1</text>
+  <text class="cell" x="788" y="117.5" text-anchor="end">1 / 1</text>
+  <text class="cell" x="1021" y="117.5" text-anchor="end">not raised</text>
+  <text class="cell" x="1198" y="117.5" text-anchor="end">none</text>
+  <text class="cell" x="1391" y="117.5" text-anchor="end">open</text>
+  <text class="cell" x="26" y="147.5">ClosingGuard, check returns false</text>
+  <text class="cell" x="556" y="147.5" text-anchor="end">1</text>
+  <text class="cell" x="788" y="147.5" text-anchor="end">1 / 1</text>
+  <text class="cell" x="1021" y="147.5" text-anchor="end">not raised</text>
+  <text class="cell" x="1198" y="147.5" text-anchor="end">none</text>
+  <text class="cell" x="1391" y="147.5" text-anchor="end">open</text>
+  <text class="cell" x="26" y="177.5">ClosingGuard, check returns true</text>
+  <text class="cell" x="556" y="177.5" text-anchor="end">2</text>
+  <text class="cell" x="788" y="177.5" text-anchor="end">1 / 1</text>
+  <text class="cell" x="1021" y="177.5" text-anchor="end">after the check completes</text>
+  <text class="cell" x="1198" y="177.5" text-anchor="end">none</text>
+  <text class="cell" x="1391" y="177.5" text-anchor="end">closed, process ended</text>
+  <text class="cell" x="26" y="207.5">ClosingGuard, DataContext not set</text>
+  <text class="cell" x="556" y="207.5" text-anchor="end">1</text>
+  <text class="cell" x="788" y="207.5" text-anchor="end">0 / 0</text>
+  <text class="cell" x="1021" y="207.5" text-anchor="end">raised (no check started)</text>
+  <text class="cell" x="1198" y="207.5" text-anchor="end">none</text>
+  <text class="cell" x="1391" y="207.5" text-anchor="end">closed, process ended</text>
+  <line class="line" x1="12" y1="38" x2="1405" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1405" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1405" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1405" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1405" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1405" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1405" y2="218" />
+  <line class="line" x1="12" y1="38" x2="12" y2="218" />
+  <line class="line" x1="432" y1="38" x2="432" y2="218" />
+  <line class="line" x1="570" y1="38" x2="570" y2="218" />
+  <line class="line" x1="802" y1="38" x2="802" y2="218" />
+  <line class="line" x1="1035" y1="38" x2="1035" y2="218" />
+  <line class="line" x1="1212" y1="38" x2="1212" y2="218" />
+  <line class="line" x1="1405" y1="38" x2="1405" y2="218" />
+</svg>

@@ -71,6 +71,7 @@ internal static class Program
         new FluentThemeModeSwitchScene(),
         new UnhandledExceptionRoutesScene(),
         new TaskResultDeadlockScene(),
+        new WindowClosingAsyncScene(),
 
         // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
         new GridDemoScene(),
