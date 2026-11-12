@@ -26,13 +26,13 @@ internal sealed class WindowClosingAsyncScene : IScene
         "判定済みのフラグを持たせて Close() を直接呼ぶ実装は、判定に 300 ms かかる場合は閉じ、判定が同期で完了する場合は InvalidOperationException になってウィンドウが開いたまま残ること",
         "判定中に WM_CLOSE をもう一度送ると、判定中かを見ない実装では判定が 2 回始まり、記事の ClosingGuard では 1 回だけであること",
         "記事の ClosingGuard を付けても DataContext に IClosingGuard を設定しなければ、Closing は 1 回発生するが判定は始まらず、ウィンドウが閉じること",
-        "記事の ClosingGuard で判定の途中に DataContext を別のビューモデルに替えると、古い判定が true を返してもウィンドウは閉じず、新しいビューモデルの判定も始まらないこと",
-        "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ表を作らない）",
+        "記事の ClosingGuard で判定の途中に DataContext を別のビューモデルに替えると、古い判定が true を返してもウィンドウは閉じず、新しいビューモデルの判定も始まらないこと。替わったかを確かめない実装では、古い判定の後に閉じること",
         "記事の ClosingGuard で 1 回目の判定が例外を投げると、DispatcherUnhandledException に届いてウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目は true）閉じること",
         "記事の ClosingGuard を付けたウィンドウでも、Application.Shutdown を呼ぶと e.Cancel = true が無視されてウィンドウが閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ShowDialog で開いたウィンドウに DialogResult = true を設定して閉じると、閉じ直さなければ ShowDialog が True を返し、Cancel してから Close() で閉じ直すと False を返し、記事の ClosingGuard（判定が true）では DialogResult を設定し直して True を返すこと",
         "ShutdownMode が OnMainWindowClose のときに ClosingGuard の無い別のメインウィンドウを閉じると、ClosingGuard のウィンドウ（判定が false）も閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ClosingGuard のウィンドウ（判定が false）の Owner を閉じると、そのウィンドウのウィンドウプロシージャに WM_CLOSE が届かず、Closing も発生せず、判定も始まらないまま閉じること。ほかの非モーダルの条件では WM_CLOSE が届くこと",
+        "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
 
@@ -44,7 +44,8 @@ internal sealed class WindowClosingAsyncScene : IScene
     /// 条件。<c>Handler</c> は Closing を処理する書き方、<c>Result</c> は判定の結果（allow・deny・throw-once）、
     /// <c>DelayMs</c> は判定にかかる時間（0 は同期で完了する）、<c>Action</c> は閉じ方。
     /// <c>Expected</c> は、表の行（条件の列を除く日本語のセル）を「|」でつないだ期待値。
-    /// 「*」で始まるセルは、その後ろの文字列で終わればよい（回数が実行環境で変わるセル）。
+    /// 「*」で始まるセルは、その後ろの文字列（空にしない）で終わればよい（回数が実行環境で変わるセル）。
+    /// 「~repeat」は「判定の開始 / 完了」の列で、開始が 3 回以上、完了が開始と同じか 1 少ないことを表す。
     /// 記事の本文と Verifies はこの期待値を前提に書いているので、食い違えば表を作らずに止める。
     /// </summary>
     private sealed record Condition(string Handler, string Result, int DelayMs, string Action, Loc Label, string Expected);
@@ -66,7 +67,7 @@ internal sealed class WindowClosingAsyncScene : IScene
     private static readonly Condition[] Pitfalls =
     [
         new("cancel-first", "allow", 300, "close", T("Cancel first, then Close() (no flag)", "先に Cancel、判定後に Close()（フラグなし）"),
-            "*（繰り返す）|*|発生しない|なし|開いたまま"),
+            "*（繰り返す）|~repeat|発生しない|なし|開いたまま"),
         new("direct-close", "allow", 300, "close", T("+ approved flag, Close() directly (300 ms)", "+ 判定済みフラグ、Close() を直接（300 ms）"),
             "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
         new("direct-close", "allow", 0, "close", T("+ approved flag, Close() directly (synchronous)", "+ 判定済みフラグ、Close() を直接（同期で完了）"),
@@ -81,6 +82,8 @@ internal sealed class WindowClosingAsyncScene : IScene
             "3|2 / 2|判定の完了後|IOException|閉じてプロセスも終了"),
         new("guard", "allow", 300, "datacontext-change", T("ClosingGuard: DataContext replaced during the check (true)", "ClosingGuard: 判定中に DataContext を替える（判定が true）"),
             "1|1 / 1|発生しない|なし|開いたまま"),
+        new("no-identity-check", "allow", 300, "datacontext-change", T("DataContext replaced during the check, no identity check (true)", "判定中に DataContext を替える・替わったかを確かめない（判定が true）"),
+            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -124,9 +127,10 @@ internal sealed class WindowClosingAsyncScene : IScene
             T("window after 1.5 s", "1.5 秒後のウィンドウ"),
         ];
 
-        await SaveAsync(context, executable, workspace, Naive, headers, "Cancel set after await vs. ClosingGuard", "closing-cancel-after-await.svg");
-        await SaveAsync(context, executable, workspace, Pitfalls, headers, "Closing again after the check", "closing-close-again.svg");
-        await SaveAsync(context, executable, workspace, Shutdown, headers, "Application.Shutdown ignores Cancel", "closing-shutdown.svg");
+        // すべての条件を測って期待値と照合してから、まとめて保存する（途中で食い違えば、どの表も書き換えない）。
+        var naiveRows = await MeasureAsync(executable, workspace, Naive, "closing-cancel-after-await");
+        var pitfallRows = await MeasureAsync(executable, workspace, Pitfalls, "closing-close-again");
+        var shutdownRows = await MeasureAsync(executable, workspace, Shutdown, "closing-shutdown");
 
         var dialogRows = new List<IReadOnlyList<Loc>>();
         for (int i = 0; i < Dialog.Length; i++)
@@ -144,6 +148,9 @@ internal sealed class WindowClosingAsyncScene : IScene
             dialogRows.Add(row);
         }
 
+        await context.SaveTableAsync("Cancel set after await vs. ClosingGuard", headers, naiveRows, "closing-cancel-after-await.svg");
+        await context.SaveTableAsync("Closing again after the check", headers, pitfallRows, "closing-close-again.svg");
+        await context.SaveTableAsync("Application.Shutdown ignores Cancel", headers, shutdownRows, "closing-shutdown.svg");
         await context.SaveTableAsync(
             "DialogResult after ClosingGuard cancels once",
             [T("condition", "条件"), T("Closing raised", "Closing の回数"), T("checks started / completed", "判定の開始 / 完了"), T("ShowDialog() returned", "ShowDialog() の戻り値")],
@@ -151,20 +158,20 @@ internal sealed class WindowClosingAsyncScene : IScene
             "closing-dialog-result.svg");
     }
 
-    private static async Task SaveAsync(
-        SceneContext context, string executable, string workspace, Condition[] conditions, Loc[] headers, string title, string fileName)
+    /// <summary>条件を順に測り、期待値と照合した表の行を返す。</summary>
+    private static async Task<List<IReadOnlyList<Loc>>> MeasureAsync(string executable, string workspace, Condition[] conditions, string name)
     {
         var rows = new List<IReadOnlyList<Loc>>();
         for (int i = 0; i < conditions.Length; i++)
         {
             Condition condition = conditions[i];
-            string[] log = await RunAsync(executable, workspace, condition, $"{Path.GetFileNameWithoutExtension(fileName)}-{i}");
+            string[] log = await RunAsync(executable, workspace, condition, $"{name}-{i}");
             IReadOnlyList<Loc> row = Describe(condition, log);
             VerifyExpected(condition, row, log);
             rows.Add(row);
         }
 
-        await context.SaveTableAsync(title, headers, rows, fileName);
+        return rows;
     }
 
     /// <summary>表の行が、条件に書いた期待値と一致するかを確かめる。一致しなければ例外にして、表を作らない。</summary>
@@ -172,13 +179,35 @@ internal sealed class WindowClosingAsyncScene : IScene
     {
         string[] expected = condition.Expected.Split('|');
         string[] actual = row.Skip(1).Select(cell => cell.Ja).ToArray();
-        bool matches = expected.Length == actual.Length
-            && expected.Zip(actual).All(pair => pair.First.StartsWith('*') ? pair.Second.EndsWith(pair.First[1..], StringComparison.Ordinal) : pair.First == pair.Second);
+        bool matches = expected.Length == actual.Length && expected.Zip(actual).All(pair => CellMatches(pair.First, pair.Second));
         if (!matches)
         {
             throw new InvalidOperationException(
                 $"{condition.Label.Ja}: 期待値と違う。期待: {condition.Expected} / 実際: {string.Join("|", actual)} / ログ: {string.Join(", ", log)}");
         }
+    }
+
+    /// <summary>期待値の 1 セルと、表の 1 セルを照合する。</summary>
+    private static bool CellMatches(string expected, string actual)
+    {
+        if (expected == "~repeat")
+        {
+            string[] counts = actual.Split(" / ");
+            return counts.Length == 2 && int.TryParse(counts[0], out int started) && int.TryParse(counts[1], out int completed)
+                && started >= 3 && (completed == started || completed == started - 1);
+        }
+
+        if (expected.StartsWith('*'))
+        {
+            if (expected.Length == 1)
+            {
+                throw new InvalidOperationException("期待値の「*」には、後ろに照合する文字列を書く。");
+            }
+
+            return actual.EndsWith(expected[1..], StringComparison.Ordinal);
+        }
+
+        return expected == actual;
     }
 
     /// <summary>判定が終わったことを示すログか。結果を返した場合と、例外を投げた場合の両方を数える。</summary>
@@ -408,16 +437,23 @@ internal sealed class WindowClosingAsyncScene : IScene
                 var window = (Window)sender!;
                 var state = (State)window.GetValue(StateProperty);
 
-                if (state == State.Approved || window.DataContext is not IClosingGuard guard)
+                if (state == State.Approved)
                 {
                     return; // 判定を終えた 2 回目の Close は、そのまま閉じる
                 }
 
-                e.Cancel = true; // 最初の await より前に止める
                 if (state == State.Checking)
                 {
-                    return; // 判定中にもう一度押された × は無視する
+                    e.Cancel = true; // 判定中にもう一度押された × は、DataContext によらず止める
+                    return;
                 }
+
+                if (window.DataContext is not IClosingGuard guard)
+                {
+                    return; // 判定する相手がいなければ、そのまま閉じる
+                }
+
+                e.Cancel = true; // 最初の await より前に止める
 
                 // Cancel すると WPF が DialogResult を null に戻すので、閉じ直すときのために控えておく。
                 bool? dialogResult = window.DialogResult;
@@ -541,6 +577,46 @@ internal sealed class WindowClosingAsyncScene : IScene
         internal static class Variants
         {
             private static bool _approved;
+            private static bool _checking;
+
+            // ClosingGuard から、判定の後に DataContext が替わっていないかの確認だけを除いたもの。
+            public static async void NoIdentityCheck(object sender, CancelEventArgs e)
+            {
+                var window = (Window)sender;
+                if (_approved)
+                {
+                    return;
+                }
+
+                if (_checking)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                if (window.DataContext is not IClosingGuard guard)
+                {
+                    return;
+                }
+
+                e.Cancel = true;
+                _checking = true;
+                bool canClose;
+                try
+                {
+                    canClose = await guard.CanCloseAsync();
+                }
+                finally
+                {
+                    _checking = false;
+                }
+
+                if (canClose)
+                {
+                    _approved = true;
+                    window.Dispatcher.InvokeAsync(window.Close);
+                }
+            }
 
             // 先に Cancel して、判定の後で Close を呼ぶだけ。2 回目の Closing を区別しない。
             public static async void CancelFirst(object sender, CancelEventArgs e)
@@ -663,6 +739,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                     case "cancel-first": window.Closing += Variants.CancelFirst; break;
                     case "direct-close": window.Closing += Variants.DirectClose; break;
                     case "no-checking": window.Closing += Variants.NoCheckingGuard; break;
+                    case "no-identity-check": window.Closing += Variants.NoIdentityCheck; break;
                 }
 
                 bool closed = false;
