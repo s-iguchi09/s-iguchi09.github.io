@@ -9,3 +9,4 @@
 | ClosingGuard: check throws, × again | 3 | 2 / 2 | after the check completes | IOException | closed, process ended |
 | ClosingGuard: DataContext replaced during the check (true) | 1 | 1 / 1 | not raised | none | open |
 | DataContext replaced during the check, no identity check (true) | 2 | 1 / 1 | after the check completes | none | closed, process ended |
+| ClosingGuard: DataContext set to null during the check, × again (true) | 2 | 1 / 1 | not raised | none | open |

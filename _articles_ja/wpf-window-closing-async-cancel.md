@@ -198,7 +198,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md %}
 
-測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認だけを除いた実装である。各条件 1 回の記録。
+測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。各条件 1 回の記録。
 {: .table-caption}
 
 **1 行目: 閉じ直した `Close` でも `Closing` が発生する。**
@@ -225,6 +225,7 @@ private bool ShouldCloseWindow(bool cancelled)
 替わったかを確かめない 9 行目では、古い判定が `true` を返した後に閉じ、新しい編集対象の判定は始まらなかった。
 `ClosingGuard` は判定の後で `DataContext` が判定したビューモデルのままかを確かめるので、8 行目では古い判定が `true` を返してもウィンドウは開いたまま残った。
 このとき利用者が押した × は捨てられ、新しいビューモデルの判定は、もう一度 × を押したときに始まる。
+10 行目のように判定中に `DataContext` を `null` にしてから × を押しても、2 回目の `Closing` も止まり、ウィンドウは開いたまま残った。
 
 ### ShowDialog では DialogResult が失われる
 
@@ -396,7 +397,8 @@ public static class ClosingGuard
 非モーダルのウィンドウでは `DialogResult` は `null` のままなので、`Close` で閉じ直す。
 判定の後で `DataContext` が判定したビューモデルのままかを確かめるのは、「先に Cancel を立て、判定の後で閉じ直す」の表の 8・9 行目のためである。
 閉じ直す直前（`InvokeAsync` の中）にも同じことを確かめるのは、判定の後から閉じ直すまでの間に替わった場合に備えるためで、この間に替える条件は測っていない。
-判定中にもう一度押された × は、`DataContext` を確かめる前に止める。判定中に `DataContext` が `IClosingGuard` でない値に替わっても、保存の途中で閉じないためである。
+判定中にもう一度押された × は、`DataContext` を確かめる前に止める。
+判定中に `DataContext` が `IClosingGuard` でない値に替わっても、保存の途中で閉じないためである（同じ表の 10 行目）。
 `DataContext` が `IClosingGuard` でなければ、判定せずにそのまま閉じる（最初の表の 5 行目）。
 
 判定が例外を投げた場合は、`finally` で `Idle` に戻してから例外が `async void` の外へ漏れる。

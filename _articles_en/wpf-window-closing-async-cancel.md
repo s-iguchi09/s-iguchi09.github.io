@@ -199,7 +199,7 @@ Closing again has the three pitfalls shown in the next table (the fourth is cove
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.en.md %}
 
-Measured as in the previous table. Except in row 7, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is `ClosingGuard` with only the check for a replaced `DataContext` removed. One run per condition.
+Measured as in the previous table. Except in row 7, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. One run per condition.
 {: .table-caption}
 
 **Row 1: the `Close` called again also raises `Closing`.**
@@ -226,6 +226,7 @@ Row 8 replaces `DataContext` with the view model of another document during the 
 In row 9, which does not check whether it was replaced, the window closed after the old check returned `true`, and the check of the new document never started.
 `ClosingGuard` confirms after the check that `DataContext` is still the view model it asked, so in row 8 the window stayed open even though the old check returned `true`.
 The × the user clicked is dropped in that case; the new view model's check starts when × is clicked again.
+In row 10, setting `DataContext` to `null` during the check and then clicking × again also stopped the second `Closing`, and the window stayed open.
 
 ### ShowDialog loses DialogResult
 
@@ -397,7 +398,7 @@ Keeping `dialogResult` and setting it back prevents row 2 of the table in "ShowD
 On a modeless window, `DialogResult` stays `null`, so the window is closed again with `Close`.
 The check after the check, that `DataContext` is still the view model that was asked, handles rows 8 and 9 of the table in "Set Cancel first, then close again after the check".
 The same check right before closing again (inside `InvokeAsync`) guards against a replacement between the check and closing again; a replacement in that interval was not measured.
-A × clicked again during the check is stopped before `DataContext` is examined, so that the window does not close in the middle of a save even if `DataContext` has been replaced with something that is not an `IClosingGuard`.
+A × clicked again during the check is stopped before `DataContext` is examined, so that the window does not close in the middle of a save even if `DataContext` has been replaced with something that is not an `IClosingGuard` (row 10 of the same table).
 When `DataContext` is not an `IClosingGuard`, the window closes without a check (row 5 of the first table).
 
 When the check throws, `finally` resets the state to `Idle`, and the exception then escapes the `async void` method.
