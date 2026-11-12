@@ -198,7 +198,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md %}
 
-測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。11 行目は判定が同期で完了する条件で、閉じ直しが予約された後、それより先に（`DispatcherPriority.Send` で）`DataContext` を替えて `Close()` を呼んだ。12 行目は、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）だけを止め、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。13 行目は判定が同期で完了する条件で、`ClosingGuard` の後に登録したハンドラーが 1 回目の `Closing` の中で `Dispatcher.PushFrame` による入れ子のメッセージループを 100 ms 回し（`MessageBox.Show` を開いている間に相当すると考えられるが、`MessageBox` 自体では測っていない）、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。14 行目は、判定に 300 ms かかり、入れ子のループを判定より長い 500 ms 回した。13・14 行目では、閉じ直しの `Close` が `InvalidOperationException` を投げたことを、`AppDomain.FirstChanceException` で記録し、1 回目の判定の完了から 2 回目の `WM_CLOSE` までの間にちょうど 1 回起きたことを確かめた。15 行目は、`ClosingGuard` より先に登録したハンドラーが、閉じ直しの `Closing` で `DataContext` を、判定が `false` を返す別の `EditorViewModel` に替えた。16 行目は、同じことを `ClosingGuard` より後に登録したハンドラーで行った（どちらも 1 回目の判定は `true`）。17 行目は 16 行目と同じ条件で、`ClosingGuard` から閉じ直しの前に付け直す部分だけを除いたもの（検証用アプリのソースから機械的に作った）である。 18 行目は、表示する前に `Close()` を呼び、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）を止め、500 ms 後に表示して `WM_CLOSE` を送った。各条件 1 回の記録。
+測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。11 行目は判定が同期で完了する条件で、閉じ直しが予約された後、それより先に（`DispatcherPriority.Send` で）`DataContext` を替えて `Close()` を呼んだ。12 行目は、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）だけを止め、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。13 行目は判定が同期で完了する条件で、`ClosingGuard` の後に登録したハンドラーが 1 回目の `Closing` の中で `Dispatcher.PushFrame` による入れ子のメッセージループを 100 ms 回し（`MessageBox.Show` を開いている間に相当すると考えられるが、`MessageBox` 自体では測っていない）、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。14 行目は、判定に 300 ms かかり、入れ子のループを判定より長い 500 ms 回した。13・14 行目では、閉じ直しの `Close` が `InvalidOperationException` を投げたことを、`AppDomain.FirstChanceException` で記録し、1 回目の判定の完了から 2 回目の `WM_CLOSE` までの間にちょうど 1 回起きたことを確かめた。15 行目は、`ClosingGuard` より先に登録したハンドラーが、閉じ直しの `Closing` で `DataContext` を、判定が `false` を返す別の `EditorViewModel` に替えた。16 行目は、同じことを `ClosingGuard` より後に登録したハンドラーで行った（どちらも 1 回目の判定は `true`）。17 行目は 16 行目と同じ条件で、`ClosingGuard` から閉じ直しの前に付け直す部分だけを除いたもの（検証用アプリのソースから機械的に作った）である。18 行目は、表示する前に `Close()` を呼び、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）を止め、500 ms 後に表示して `WM_CLOSE` を送った。各条件 1 回の記録。
 {: .table-caption}
 
 **1 行目: 閉じ直した `Close` でも `Closing` が発生する。**
@@ -263,12 +263,14 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-dialog-result.ja.md %}
 
-.NET 10.0.13 / Windows 11 で、`ShowDialog` を呼んでから 200 ms 後に、そのウィンドウの `DialogResult` を `true` に設定した（`WM_CLOSE` は送らない）。判定は 300 ms 後に `true` を返す。`ShowDialog` の戻り値をログに書くため、アプリの `ShutdownMode` を `OnExplicitShutdown` にした。2 行目は「先に Cancel を立て、判定の後で閉じ直す」の表の 2 行目と同じ、`Close()` で閉じ直す実装である。4 行目は、ダイアログの `Owner` に別のウィンドウを設定し、判定の途中（`DialogResult` を設定した 150 ms 後）でその `Owner` を閉じた。各条件 1 回の記録。
+.NET 10.0.13 / Windows 11 で、`ShowDialog` を呼んでから 200 ms 後に、そのウィンドウの `DialogResult` を `true` に設定した（`WM_CLOSE` は送らない）。判定は 300 ms 後に `true` を返す。`ShowDialog` の戻り値をログに書くため、アプリの `ShutdownMode` を `OnExplicitShutdown` にした。2 行目は「先に Cancel を立て、判定の後で閉じ直す」の表の 2 行目と同じ、`Close()` で閉じ直す実装である。4 行目は、ダイアログの `Owner` に別のウィンドウを設定し、判定の途中（`DialogResult` を設定した 150 ms 後）でその `Owner` を閉じた。5 行目は、`ClosingGuard` の無いダイアログで、`DialogResult` を設定せずに同じ時刻に `Owner` を閉じた。各条件 1 回の記録。
 {: .table-caption}
 
 閉じ直すときに、止める前の `DialogResult` を設定し直せば、3 行目のように `true` が返る。
 4 行目は、判定の途中で `Owner` を閉じた場合で、ダイアログには `Closed` が発生し、`ClosingGuard` は閉じ直しで何もせず、未処理の例外は起きなかった。
-このとき `ShowDialog` は 1.5 秒以内に戻らなかった（`Owner` を閉じたときの `ShowDialog` の戻り方は本記事の範囲外として、追っていない）。
+このとき `ShowDialog` は 1.5 秒以内に戻らなかった。
+`ClosingGuard` の無いダイアログ（5 行目）で `Owner` を閉じても同じく戻らなかったので、`ClosingGuard` によるものではない。
+`Owner` を閉じたときの `ShowDialog` の戻り方は本記事の範囲外として、それ以上は追っていない。
 モーダルのウィンドウでは、`DialogResult` を設定するとウィンドウが閉じる。
 
 ### Shutdown や Owner の終了で閉じるウィンドウは止められない
@@ -359,13 +361,15 @@ public static class ClosingGuard
     {
         var window = (Window)d;
         window.Closing -= OnClosing;
-        window.Closed -= OnClosed;
         window.CommandBindings.Remove(CloseBinding);
+
+        // Closed は一度しか起きないので、無効にした後も購読したままにして、閉じたかを覚え続ける。
+        window.Closed -= OnClosed;
+        window.Closed += OnClosed;
 
         if ((bool)e.NewValue)
         {
             window.Closing += OnClosing;
-            window.Closed += OnClosed;
             // 終了ボタンなどの Command="Close" も、× と同じ Close の経路に通す。
             window.CommandBindings.Add(CloseBinding);
         }
@@ -486,7 +490,7 @@ public static class ClosingGuard
 こうすると、判定の後から閉じ直すまでの間に届いたほかの `Close` も止まる（同じ表の 11 行目）。
 閉じ直しの後もウィンドウが残っていれば（ほかのハンドラーが閉じるのを止めた場合など）、`State.Idle` に戻すので、次の × でまた判定する（同じ表の 12 行目）。
 残ったかどうかは、`Closed` が発生したかを `IsClosed` に覚えて判定する。
-表示する前に `Close` を呼んだウィンドウには、閉じていなくてもウィンドウ ハンドル（HWND）が無いので、ハンドルの有無では判定できない（同じ表の 18 行目）。
+表示する前に `Close` を呼んだウィンドウは、閉じていなくてもウィンドウ ハンドル（HWND）が無いまま残るので、ハンドルの有無では残ったことを判定できない。同じ表の 18 行目は、`IsClosed` で判定したこの実装の結果である。
 判定の間にほかの経路（`Owner` の終了など）でウィンドウが閉じていれば、閉じ直しでは何もしない（「ShowDialog では DialogResult が失われる」の表の 4 行目）。
 判定中にもう一度押された × は、`DataContext` を確かめる前に止める。
 判定中に `DataContext` が `IClosingGuard` でない値に替わっても、保存の途中で閉じないためである（同じ表の 10 行目）。

@@ -41,7 +41,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         "ClosingGuard より後に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えても、記事の ClosingGuard は閉じ直しの前に付け直して最後に呼ばれるので、その Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
         "閉じ直しの前に付け直す部分だけを除いた ClosingGuard（記事のコードから機械的に作る）では、後から登録したハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること",
         "表示する前に Close() を呼び、閉じ直しをほかのハンドラーが止めると、記事の ClosingGuard は判定の前の状態に戻り、その後に表示して WM_CLOSE を送ると判定をやり直して閉じること",
-        "ShowDialog で開いたウィンドウの判定の途中で Owner を閉じると、ウィンドウの Closed が発生し、記事の ClosingGuard は閉じ直しで何もせず、未処理の例外は起きないこと（このとき ShowDialog は 1.5 秒以内に戻らなかった）",
+        "ShowDialog で開いたウィンドウの判定の途中で Owner を閉じると、ウィンドウの Closed が発生し、記事の ClosingGuard は閉じ直しで何もせず、未処理の例外は起きないこと（このとき ShowDialog は 1.5 秒以内に戻らなかった）。ClosingGuard の無いダイアログで Owner を閉じても、ShowDialog は 1.5 秒以内に戻らないこと",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -139,6 +139,8 @@ internal sealed class WindowClosingAsyncScene : IScene
             "2|1 / 1|True"),
         new("guard", "allow", 300, "dialog-owner-close", T("ShowDialog, DialogResult = true, ClosingGuard, Owner closed during the check", "ShowDialog・DialogResult = true・ClosingGuard・判定中に Owner を閉じる"),
             "1|1 / 1|1.5 秒以内に戻らない"),
+        new("plain", "allow", 300, "dialog-owner-close", T("ShowDialog, no ClosingGuard, Owner closed (DialogResult not set)", "ShowDialog・ClosingGuard なし・Owner を閉じる（DialogResult は設定しない）"),
+            "0|0 / 0|1.5 秒以内に戻らない"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -184,7 +186,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         await context.SaveTableAsync("Application.Shutdown ignores Cancel", headers, shutdownRows, "closing-shutdown.svg");
         await context.SaveTableAsync(
             "DialogResult after ClosingGuard cancels once",
-            [T("condition", "条件"), T("Closing raised", "Closing の回数"), T("checks started / completed", "判定の開始 / 完了"), T("ShowDialog() returned", "ShowDialog() の戻り値")],
+            [T("condition", "条件"), T("Closing raised", "Closing の回数"), T("checks started / completed", "判定の開始 / 完了"), T("ShowDialog() result", "ShowDialog() の結果")],
             dialogRows,
             "closing-dialog-result.svg");
     }
@@ -517,13 +519,15 @@ internal sealed class WindowClosingAsyncScene : IScene
             {
                 var window = (Window)d;
                 window.Closing -= OnClosing;
-                window.Closed -= OnClosed;
                 window.CommandBindings.Remove(CloseBinding);
+
+                // Closed は一度しか起きないので、無効にした後も購読したままにして、閉じたかを覚え続ける。
+                window.Closed -= OnClosed;
+                window.Closed += OnClosed;
 
                 if ((bool)e.NewValue)
                 {
                     window.Closing += OnClosing;
-                    window.Closed += OnClosed;
                     // 終了ボタンなどの Command="Close" も、× と同じ Close の経路に通す。
                     window.CommandBindings.Add(CloseBinding);
                 }
@@ -926,7 +930,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                     // ShowDialog で開き、OK ボタンの処理と同じく DialogResult = true にして閉じる。
                     app.Dispatcher.BeginInvoke(() =>
                     {
-                        After(200, () => window.DialogResult = true);
+                        if (!(action == "dialog-owner-close" && handler == "plain"))
+                        {
+                            After(200, () => window.DialogResult = true);
+                        }
+
                         if (action == "dialog-owner-close")
                         {
                             After(350, () => other.Close()); // 判定（300 ms）の途中で Owner を閉じる
