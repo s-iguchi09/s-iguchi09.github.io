@@ -241,6 +241,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 15 行目は、`ClosingGuard` より先に登録したハンドラーが、閉じ直しの `Closing` の中で `DataContext` を替えた場合である。
 `ClosingGuard` は、閉じてよいと判定したビューモデルを覚えておき、`State.Approved` でも `DataContext` がそれと違えば、その `Closing` を止めて新しいビューモデルの判定を始める。
+閉じ直しの `Closing` の中では、すでに閉じる操作の途中なので、新しいビューモデルの判定に進む（判定の後から閉じ直すまでに替わった 8・11 行目では、× は捨てられる）。
 新しい判定が `false` を返したので、ウィンドウは開いたまま残った。
 
 ### ShowDialog では DialogResult が失われる
@@ -397,7 +398,7 @@ public static class ClosingGuard
         // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
         // 閉じ直すまでは Checking のままにして、その間に届いたほかの Close も止める。
         // BeginInvoke にするのは、ここで捕まえない例外を DispatcherUnhandledException に届けるためである。
-        window.Dispatcher.BeginInvoke(() =>
+        _ = window.Dispatcher.BeginInvoke(() =>
         {
             if (!ReferenceEquals(window.DataContext, guard))
             {
@@ -422,7 +423,7 @@ public static class ClosingGuard
             {
                 // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
                 // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
-                // ウィンドウが閉じた後の例外（Closed のハンドラーなど）は捕まえない。
+                // ウィンドウが閉じた後の例外は捕まえない。
             }
             finally
             {
@@ -441,6 +442,8 @@ public static class ClosingGuard
 `State.Approved` は「先に Cancel を立て、判定の後で閉じ直す」の表の 1 行目の繰り返しを、`Dispatcher.BeginInvoke` は 3 行目の例外を、`State.Checking` は 5 行目の二重の判定を防ぐ。
 `dialogResult` を控えて設定し直すのは、「ShowDialog では DialogResult が失われる」の表の 2 行目を防ぐためである。
 非モーダルのウィンドウでは `DialogResult` は `null` のままなので、`Close` で閉じ直す。
+閉じてよいと判定したビューモデルを `ApprovedGuard` に覚えるのは、閉じ直しの `Closing` で `DataContext` が替わった場合のためである（「先に Cancel を立て、判定の後で閉じ直す」の表の 15 行目）。
+`InvalidOperationException` を捕まえるのは、同じ表の 13・14 行目のためである。
 判定の後で `DataContext` が判定したビューモデルのままかを確かめるのは、「先に Cancel を立て、判定の後で閉じ直す」の表の 8・9 行目のためである。
 判定の後も、閉じ直すまでは `State.Checking` のままにしておき、`State.Approved` にするのは `BeginInvoke` の中で `DataContext` をもう一度確かめた直後にする。
 こうすると、判定の後から閉じ直すまでの間に届いたほかの `Close` も止まる（同じ表の 11 行目）。

@@ -242,6 +242,7 @@ A reliable way to wait for `Closing` to finish before closing again was not esta
 
 Row 15 is the case where a handler registered before `ClosingGuard` replaces `DataContext` inside the close-again `Closing`.
 `ClosingGuard` remembers the view model that approved closing; even in `State.Approved`, if `DataContext` differs from it, `ClosingGuard` stops that `Closing` and starts a check of the new view model.
+Inside the close-again `Closing`, a close is already in progress, so `ClosingGuard` proceeds to check the new view model (in rows 8 and 11, where it was replaced between the check and closing again, the × is dropped).
 The new check returned `false`, so the window stayed open.
 
 ### ShowDialog loses DialogResult
@@ -398,7 +399,7 @@ public static class ClosingGuard
         // Calling Close while Closing is running throws, so close again after Closing has finished.
         // Stay in Checking until closing again, so other Close calls in between are also stopped.
         // BeginInvoke is used so that exceptions not caught here reach DispatcherUnhandledException.
-        window.Dispatcher.BeginInvoke(() =>
+        _ = window.Dispatcher.BeginInvoke(() =>
         {
             if (!ReferenceEquals(window.DataContext, guard))
             {
@@ -423,7 +424,7 @@ public static class ClosingGuard
             {
                 // If another Closing handler runs a nested message loop (MessageBox, for example),
                 // this runs while Closing is still in progress and Close throws. Do not close; check again on the next ×.
-                // Exceptions after the window has closed (from Closed handlers, for example) are not caught.
+                // Exceptions after the window has closed are not caught.
             }
             finally
             {
@@ -442,6 +443,8 @@ public static class ClosingGuard
 `State.Approved` prevents the repetition in row 1 of the table in "Set Cancel first, then close again after the check", `Dispatcher.BeginInvoke` prevents the exception in row 3, and `State.Checking` prevents the double check in row 5.
 Keeping `dialogResult` and setting it back prevents row 2 of the table in "ShowDialog loses DialogResult".
 On a modeless window, `DialogResult` stays `null`, so the window is closed again with `Close`.
+Remembering the view model that approved closing in `ApprovedGuard` handles a `DataContext` replaced during the close-again `Closing` (row 15 of the table in "Set Cancel first, then close again after the check").
+Catching `InvalidOperationException` handles rows 13 and 14 of the same table.
 The check after the check, that `DataContext` is still the view model that was asked, handles rows 8 and 9 of the table in "Set Cancel first, then close again after the check".
 After the check, the state stays `State.Checking` until closing again, and becomes `State.Approved` only inside `BeginInvoke`, right after `DataContext` is checked once more.
 This also stops any other `Close` that arrives between the check and closing again (row 11 of the same table).

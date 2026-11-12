@@ -524,7 +524,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                 // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
                 // 閉じ直すまでは Checking のままにして、その間に届いたほかの Close も止める。
                 // BeginInvoke にするのは、ここで捕まえない例外を DispatcherUnhandledException に届けるためである。
-                window.Dispatcher.BeginInvoke(() =>
+                _ = window.Dispatcher.BeginInvoke(() =>
                 {
                     if (!ReferenceEquals(window.DataContext, guard))
                     {
@@ -549,7 +549,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                     {
                         // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
                         // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
-                        // ウィンドウが閉じた後の例外（Closed のハンドラーなど）は捕まえない。
+                        // ウィンドウが閉じた後の例外は捕まえない。
                     }
                     finally
                     {
@@ -681,7 +681,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                 if (canClose)
                 {
                     _approved = true;
-                    window.Dispatcher.InvokeAsync(window.Close);
+                    _ = window.Dispatcher.BeginInvoke(window.Close);
                 }
             }
 
@@ -713,7 +713,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                 }
             }
 
-            // 判定済みのフラグと InvokeAsync はあるが、判定中かを見ない。
+            // 判定済みのフラグと BeginInvoke はあるが、判定中かを見ない。
             public static async void NoCheckingGuard(object sender, CancelEventArgs e)
             {
                 if (_approved)
@@ -727,7 +727,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                 if (canClose)
                 {
                     _approved = true;
-                    window.Dispatcher.InvokeAsync(window.Close);
+                    _ = window.Dispatcher.BeginInvoke(window.Close);
                 }
             }
         }
