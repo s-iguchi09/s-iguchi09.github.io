@@ -19,3 +19,4 @@
 | same as above, without re-subscribing before closing again | 2 | 1 / 1 | after the check completes | none | closed, process ended |
 | ClosingGuard: Close() before Show, closing again cancelled, then shown and × (true) | 4 | 2 / 2 | after the check completes | none | closed, process ended |
 | ClosingGuard: a Closed handler registered before it throws when closing again | 2 | 1 / 1 | after the check completes | InvalidOperationException | closed, process ended |
+| ClosingGuard: another Closing handler throws when closing again | 2 | 1 / 1 | after the check completes | InvalidOperationException | closed, process ended |

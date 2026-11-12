@@ -19,3 +19,4 @@
 | 同上・閉じ直しの前に付け直さない | 2 | 1 / 1 | 判定の完了後 | なし | 閉じてプロセスも終了 |
 | ClosingGuard: 表示前に Close()、閉じ直しが止められ、表示して ×（判定が true） | 4 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
 | ClosingGuard: 先に登録した Closed のハンドラーが閉じ直しで例外を投げる | 2 | 1 / 1 | 判定の完了後 | InvalidOperationException | 閉じてプロセスも終了 |
+| ClosingGuard: ほかの Closing のハンドラーが閉じ直しで例外を投げる | 2 | 1 / 1 | 判定の完了後 | InvalidOperationException | 閉じてプロセスも終了 |

@@ -42,7 +42,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         "閉じ直しの前に付け直す部分だけを除いた ClosingGuard（記事のコードから機械的に作る）では、後から登録したハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること",
         "表示する前に Close() を呼び、閉じ直しをほかのハンドラーが止めると、記事の ClosingGuard は判定の前の状態に戻り、その後に表示して WM_CLOSE を送ると判定をやり直して閉じること",
         "ShowDialog で開いたウィンドウの判定の途中で Owner を閉じると、ウィンドウの Closed が発生し、記事の ClosingGuard は閉じ直しで何もせず、未処理の例外は起きないこと（このとき ShowDialog は 1.5 秒以内に戻らなかった）。ClosingGuard の無いダイアログで Owner を閉じても、ShowDialog は 1.5 秒以内に戻らないこと",
-        "ClosingGuard より先に登録した Closed のハンドラーが閉じ直しで InvalidOperationException を投げると、ClosingGuard はそれを捕まえず、DispatcherUnhandledException に届くこと",
+        "ClosingGuard より先に登録した Closed のハンドラー、または Closing のハンドラーが、閉じ直しで InvalidOperationException を投げると、その例外は ClosingGuard の catch には来ず、DispatcherUnhandledException に届くこと（Closing のハンドラーが投げた場合も、ウィンドウは閉じる）",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -114,6 +114,8 @@ internal sealed class WindowClosingAsyncScene : IScene
         new("guard", "allow", 300, "close-before-show", T("ClosingGuard: Close() before Show, closing again cancelled, then shown and × (true)", "ClosingGuard: 表示前に Close()、閉じ直しが止められ、表示して ×（判定が true）"),
             "4|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
         new("plain", "allow", 300, "closed-handler-throws", T("ClosingGuard: a Closed handler registered before it throws when closing again", "ClosingGuard: 先に登録した Closed のハンドラーが閉じ直しで例外を投げる"),
+            "2|1 / 1|判定の完了後|InvalidOperationException|閉じてプロセスも終了"),
+        new("plain", "allow", 300, "closing-handler-throws", T("ClosingGuard: another Closing handler throws when closing again", "ClosingGuard: ほかの Closing のハンドラーが閉じ直しで例外を投げる"),
             "2|1 / 1|判定の完了後|InvalidOperationException|閉じてプロセスも終了"),
     ];
 
@@ -368,10 +370,10 @@ internal sealed class WindowClosingAsyncScene : IScene
     }
 
     /// <summary>
-    /// 記事の ClosingGuard から、閉じ直しの前にハンドラーを付け直す部分だけを除いた変種（ClosingGuardNoResubscribe）を作る。
-    /// 手で写すと記事のコードとずれるので、検証用アプリのソースから機械的に作る。
+    /// 記事の ClosingGuard の一部だけを書き換えた変種を作る。手で写すと記事のコードとずれるので、
+    /// 検証用アプリのソースから機械的に作り、書き換える箇所が見つからなければ止める。
     /// </summary>
-    private static string WithoutResubscribe(string source)
+    private static string Variant(string source, string name, string from, string to)
     {
         // 検証用アプリのソースは行頭の字下げが外れた形で、ファイル スコープの名前空間（ClosingProbe）にある。
         string text = source.Replace("\r\n", "\n");
@@ -383,20 +385,25 @@ internal sealed class WindowClosingAsyncScene : IScene
         }
 
         string guard = text[a..b];
-        const string resubscribe =
-            "            if (GetIsEnabled(window))\n" +
-            "            {\n" +
-            "                window.Closing -= OnClosing;\n" +
-            "                window.Closing += OnClosing;\n" +
-            "            }\n";
-        if (!guard.Contains(resubscribe, StringComparison.Ordinal))
+        if (!guard.Contains(from, StringComparison.Ordinal))
         {
-            throw new InvalidOperationException("記事の ClosingGuard に、付け直しの部分が見つからない。");
+            throw new InvalidOperationException($"記事の ClosingGuard に、{name} で書き換える部分が見つからない。");
         }
 
-        guard = guard.Replace(resubscribe, "").Replace("class ClosingGuard", "class ClosingGuardNoResubscribe").Replace("typeof(ClosingGuard)", "typeof(ClosingGuardNoResubscribe)");
+        guard = guard.Replace(from, to).Replace("class ClosingGuard", $"class {name}").Replace("typeof(ClosingGuard)", $"typeof({name})");
         return "\n#nullable enable\n" + guard + "\n#nullable restore\n";
     }
+
+    /// <summary>付け直しを除いた変種（ClosingGuardNoResubscribe）。</summary>
+    private static string WithoutResubscribe(string source) => Variant(
+        source,
+        "ClosingGuardNoResubscribe",
+        "            if (GetIsEnabled(window))\n" +
+        "            {\n" +
+        "                window.Closing -= OnClosing;\n" +
+        "                window.Closing += OnClosing;\n" +
+        "            }\n",
+        "");
 
     private static async Task<string> BuildProbeAsync(string workspace)
     {
@@ -515,12 +522,6 @@ internal sealed class WindowClosingAsyncScene : IScene
                     "IsClosed", typeof(bool), typeof(ClosingGuard),
                     new PropertyMetadata(false));
 
-            // 閉じ直しの Close が Closing まで届いたか。届く前の例外（Closing の処理中に Close を呼んだもの）だけを捕まえるために使う。
-            private static readonly DependencyProperty ReachedClosingProperty =
-                DependencyProperty.RegisterAttached(
-                    "ReachedClosing", typeof(bool), typeof(ClosingGuard),
-                    new PropertyMetadata(false));
-
             private static readonly CommandBinding CloseBinding =
                 new(ApplicationCommands.Close, (sender, _) => ((Window)sender).Close());
 
@@ -548,10 +549,6 @@ internal sealed class WindowClosingAsyncScene : IScene
             {
                 var window = (Window)sender!;
                 var state = (State)window.GetValue(StateProperty);
-                if (state == State.Approved)
-                {
-                    window.SetValue(ReachedClosingProperty, true); // 閉じ直しの Close が Closing まで届いた
-                }
 
                 if (state == State.Approved && ReferenceEquals(window.DataContext, window.GetValue(ApprovedGuardProperty)))
                 {
@@ -619,7 +616,6 @@ internal sealed class WindowClosingAsyncScene : IScene
                         window.Closing -= OnClosing;
                         window.Closing += OnClosing;
                     }
-                    window.SetValue(ReachedClosingProperty, false);
                     try
                     {
                         if (dialogResult is bool result)
@@ -631,11 +627,12 @@ internal sealed class WindowClosingAsyncScene : IScene
                             window.Close();
                         }
                     }
-                    catch (InvalidOperationException) when (!(bool)window.GetValue(ReachedClosingProperty))
+                    catch (InvalidOperationException) when (!(bool)window.GetValue(IsClosedProperty))
                     {
                         // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
-                        // Closing の処理中にここが実行され、Close が Closing を起こす前に例外になる。閉じずに、次の × で判定し直す。
-                        // Closing まで届いた後の例外（ほかの Closing・Closed のハンドラーが投げたもの）は捕まえない。
+                        // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
+                        // 閉じ直しの中でほかの Closing・Closed のハンドラーが投げた例外は、ここには来ない
+                        // （ウィンドウ プロシージャの中で Dispatcher に渡され、DispatcherUnhandledException に届く）。
                     }
                     finally
                     {
@@ -1091,10 +1088,25 @@ internal sealed class WindowClosingAsyncScene : IScene
                                 PostMessage(Hook(), WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             });
                             break;
+                        case "closing-handler-throws":
+                            // ClosingGuard より先に登録した Closing のハンドラーが、2 回目の Closing（閉じ直し）で例外を投げる。
+                            // ClosingGuard は閉じ直しの前に付け直すので、そのとき最後に呼ばれる。
+                            int throwingClosings = 0;
+                            window.Closing += (_, _) =>
+                            {
+                                if (++throwingClosings == 2)
+                                {
+                                    throw new InvalidOperationException("closing handler failed");
+                                }
+                            };
+                            ClosingGuard.SetIsEnabled(window, true);
+                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                            break;
                         case "closed-handler-throws":
                             // ClosingGuard より先に Closed のハンドラーを登録し、閉じ直しで閉じたときに例外を投げさせる。
                             window.Closed += (_, _) => throw new InvalidOperationException("closed handler failed");
                             ClosingGuard.SetIsEnabled(window, true);
+
                             PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             break;
                         case "close-retry":

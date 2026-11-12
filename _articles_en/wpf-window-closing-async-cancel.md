@@ -199,7 +199,7 @@ Closing again has the three pitfalls shown in the next table (the fourth is cove
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.en.md %}
 
-Measured as in the previous table. The first check returns `true` (may close), except in row 7 (where it throws `IOException`). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. Row 11 uses a check that completes synchronously; after closing again was scheduled, `DataContext` was replaced and `Close()` was called ahead of it (with `DispatcherPriority.Send`). In row 12, a handler registered after `ClosingGuard` cancels only the second `Closing` (closing again), and a second `WM_CLOSE` was sent 700 ms after the first. Row 13 uses a check that completes synchronously; a handler registered after `ClosingGuard` runs a nested message loop with `Dispatcher.PushFrame` for 100 ms inside the first `Closing` (presumably equivalent to `MessageBox.Show` being open, though `MessageBox` itself was not measured), and a second `WM_CLOSE` was sent 700 ms after the first. In row 14, the check takes 300 ms and the nested loop runs for 500 ms, longer than the check. In rows 13 and 14, that the close-again `Close` threw `InvalidOperationException` was recorded with `AppDomain.FirstChanceException`, and confirmed to occur exactly once between the completion of the first check and the second `WM_CLOSE`. In row 15, a handler registered before `ClosingGuard` replaces `DataContext`, during the close-again `Closing`, with another `EditorViewModel` whose check returns `false`. Row 16 does the same with a handler registered after `ClosingGuard` (in both, the first check returns `true`). Row 17 uses the same conditions as row 16 with a `ClosingGuard` that only lacks the re-subscription before closing again (generated mechanically from the test app's source). Row 18 calls `Close()` before the window is shown; a handler registered after `ClosingGuard` cancels the second `Closing` (closing again), and the window is shown 500 ms later and sent `WM_CLOSE`. Row 19 registers, before `ClosingGuard`, a `Closed` handler that throws `InvalidOperationException` when the window closes. One run per condition.
+Measured as in the previous table. The first check returns `true` (may close), except in row 7 (where it throws `IOException`). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. Row 11 uses a check that completes synchronously; after closing again was scheduled, `DataContext` was replaced and `Close()` was called ahead of it (with `DispatcherPriority.Send`). In row 12, a handler registered after `ClosingGuard` cancels only the second `Closing` (closing again), and a second `WM_CLOSE` was sent 700 ms after the first. Row 13 uses a check that completes synchronously; a handler registered after `ClosingGuard` runs a nested message loop with `Dispatcher.PushFrame` for 100 ms inside the first `Closing` (presumably equivalent to `MessageBox.Show` being open, though `MessageBox` itself was not measured), and a second `WM_CLOSE` was sent 700 ms after the first. In row 14, the check takes 300 ms and the nested loop runs for 500 ms, longer than the check. In rows 13 and 14, that the close-again `Close` threw `InvalidOperationException` was recorded with `AppDomain.FirstChanceException`, and confirmed to occur exactly once between the completion of the first check and the second `WM_CLOSE`. In row 15, a handler registered before `ClosingGuard` replaces `DataContext`, during the close-again `Closing`, with another `EditorViewModel` whose check returns `false`. Row 16 does the same with a handler registered after `ClosingGuard` (in both, the first check returns `true`). Row 17 uses the same conditions as row 16 with a `ClosingGuard` that only lacks the re-subscription before closing again (generated mechanically from the test app's source). Row 18 calls `Close()` before the window is shown; a handler registered after `ClosingGuard` cancels the second `Closing` (closing again), and the window is shown 500 ms later and sent `WM_CLOSE`. Row 19 registers, before `ClosingGuard`, a `Closed` handler that throws `InvalidOperationException` when the window closes. Row 20 registers, before `ClosingGuard`, a `Closing` handler that throws `InvalidOperationException` on the second `Closing` (closing again). One run per condition.
 {: .table-caption}
 
 **Row 1: the `Close` called again also raises `Closing`.**
@@ -355,12 +355,6 @@ public static class ClosingGuard
             "IsClosed", typeof(bool), typeof(ClosingGuard),
             new PropertyMetadata(false));
 
-    // Whether the close-again Close reached Closing. Used to catch only exceptions thrown before that (Close called while Closing is running).
-    private static readonly DependencyProperty ReachedClosingProperty =
-        DependencyProperty.RegisterAttached(
-            "ReachedClosing", typeof(bool), typeof(ClosingGuard),
-            new PropertyMetadata(false));
-
     private static readonly CommandBinding CloseBinding =
         new(ApplicationCommands.Close, (sender, _) => ((Window)sender).Close());
 
@@ -388,10 +382,6 @@ public static class ClosingGuard
     {
         var window = (Window)sender!;
         var state = (State)window.GetValue(StateProperty);
-        if (state == State.Approved)
-        {
-            window.SetValue(ReachedClosingProperty, true); // the close-again Close reached Closing
-        }
 
         if (state == State.Approved && ReferenceEquals(window.DataContext, window.GetValue(ApprovedGuardProperty)))
         {
@@ -459,7 +449,6 @@ public static class ClosingGuard
                 window.Closing -= OnClosing;
                 window.Closing += OnClosing;
             }
-            window.SetValue(ReachedClosingProperty, false);
             try
             {
                 if (dialogResult is bool result)
@@ -471,11 +460,12 @@ public static class ClosingGuard
                     window.Close();
                 }
             }
-            catch (InvalidOperationException) when (!(bool)window.GetValue(ReachedClosingProperty))
+            catch (InvalidOperationException) when (!(bool)window.GetValue(IsClosedProperty))
             {
                 // If another Closing handler runs a nested message loop (MessageBox, for example),
-                // this runs while Closing is still in progress and Close throws before raising Closing. Do not close; check again on the next ×.
-                // Exceptions after Closing was reached (thrown by other Closing or Closed handlers) are not caught.
+                // this runs while Closing is still in progress and Close throws. Do not close; check again on the next ×.
+                // Exceptions thrown by other Closing or Closed handlers during closing again do not come here
+                // (they are handed to the Dispatcher inside the window procedure and reach DispatcherUnhandledException).
             }
             finally
             {
@@ -496,8 +486,9 @@ Keeping `dialogResult` and setting it back prevents row 2 of the table in "ShowD
 On a modeless window, `DialogResult` stays `null`, so the window is closed again with `Close`.
 Remembering the view model that approved closing in `ApprovedGuard` handles a `DataContext` replaced during the close-again `Closing` (row 15 of the table in "Set Cancel first, then close again after the check").
 Catching `InvalidOperationException` handles rows 13 and 14 of the same table.
-Only an exception thrown before the close-again `Close` raises `Closing` is caught; `ReachedClosing` tells them apart.
-An exception thrown by other `Closing` or `Closed` handlers after `Closing` has been reached propagates to `DispatcherUnhandledException` (row 19 of the same table).
+Exceptions thrown by other `Closing` or `Closed` handlers during closing again do not reach this catch.
+They were handed to the `Dispatcher` inside the window procedure and reached `DispatcherUnhandledException` without returning to the caller of `Close` (rows 19 and 20 of the same table).
+In row 20, where a `Closing` handler threw, the window closed (`WmClose` closes the window and then rethrows when an exception escapes a `Closing` handler).
 Re-subscribing the `Closing` handler right before closing again handles row 16.
 The check after the check, that `DataContext` is still the view model that was asked, handles rows 8 and 9 of the table in "Set Cancel first, then close again after the check".
 After the check, the state stays `State.Checking` until closing again, and becomes `State.Approved` only inside `BeginInvoke`, right after `DataContext` is checked once more.
