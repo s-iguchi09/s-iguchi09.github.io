@@ -244,6 +244,10 @@ private bool ShouldCloseWindow(bool cancelled)
 閉じ直しの `Closing` の中では、すでに閉じる操作の途中なので、新しいビューモデルの判定に進む（判定の後から閉じ直すまでに替わった 8・11 行目では、× は捨てられる）。
 新しい判定が `false` を返したので、ウィンドウは開いたまま残った。
 
+16 行目は逆に、`ClosingGuard` より後に登録したハンドラーが閉じ直しの `Closing` で `DataContext` を替えた場合である。
+`ClosingGuard` の判定はその前に終わっているので、新しいビューモデルの判定は始まらず、ウィンドウは閉じた。
+`Closing` のハンドラーが戻った後で `Cancel` を立てる方法は無い（「内部で何が起きているか」の経路）ため、`ClosingGuard` の側では防げない。
+
 ### ShowDialog では DialogResult が失われる
 
 `WmClose` は、閉じるのを止めたときに `DialogResult` を `null` に戻す（「内部で何が起きているか」の抜粋）。
@@ -395,7 +399,8 @@ public static class ClosingGuard
             return;
         }
 
-        // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
+        // Closing の処理中に Close を呼ぶと例外になるため、閉じ直しを後回しにする
+        // （入れ子のメッセージループがあると Closing の途中で実行されることがある。下の catch）。
         // 閉じ直すまでは Checking のままにして、その間に届いたほかの Close も止める。
         // BeginInvoke にするのは、ここで捕まえない例外を DispatcherUnhandledException に届けるためである。
         _ = window.Dispatcher.BeginInvoke(() =>
@@ -524,6 +529,7 @@ public sealed class EditorViewModel : IClosingGuard
 ## 注意点
 
 - **`Closing` の中で `MessageBox.Show` などを呼ぶハンドラーと併用しない。** 判定がそのループの終わる前に完了すると、1 回目の × では閉じない（「先に Cancel を立て、判定の後で閉じ直す」の表の 13・14 行目）。確認ダイアログは `CanCloseAsync` の中で出す。
+- **`ClosingGuard` より後に登録した `Closing` のハンドラーでは、`DataContext` を替えない。** 閉じ直しの `Closing` で替えると、新しいビューモデルを判定せずに閉じる（「先に Cancel を立て、判定の後で閉じ直す」の表の 16 行目）。
 - **保存や確認は `CanCloseAsync` にまとめる。** `ClosingGuard` より後に登録したハンドラーが閉じ直しを止めた場合は、`ClosingGuard` は判定の前の状態に戻る（「先に Cancel を立て、判定の後で閉じ直す」の表の 12 行目）。ほかのハンドラーの側で保存などを始める構成は測っていない。
 - **アプリのコードから `Shutdown` を呼ぶと、判定の結果は効かない。** `ClosingGuard` は `Shutdown` による `Closing` でも判定を始めるが、`Shutdown` の表の 1 行目のとおり、判定は完了しないまま打ち切られる。終了の操作は `Shutdown` ではなくウィンドウの `Close` に通し、`ShutdownMode` を `OnLastWindowClose` にしてアプリを終わらせる。`OnMainWindowClose` では、メインウィンドウが閉じた時点で、残ったウィンドウの判定は効かない（同じ表の 2 行目）。
 - **`Owner` を閉じると、所有されたウィンドウは判定を通らずに閉じる。** `Closing` が発生しないためである（`Shutdown` の表の 3 行目）。所有されたウィンドウに未保存の変更を持たせる場合は、`Owner` 側の判定でまとめて確かめる必要がある（この構成は測っていない）。
@@ -539,7 +545,7 @@ WPF は `Closing` のハンドラーが戻った直後に `Cancel` を 1 回だ�
 非同期の判定で閉じるのを止めたい場合は、次の順にする。
 
 1. 最初の `await` より前に `Cancel = true` で止める。
-2. 判定の後、閉じてよければ `Dispatcher.BeginInvoke` で `Close` を呼び直す（`Closing` の中での例外を避ける）。
+2. 判定の後、閉じてよければ `Dispatcher.BeginInvoke` で閉じ直しを後回しにする（`Closing` の中で `Close` を呼ばないため。入れ子のメッセージループで `Closing` の途中に走って例外になった場合は、捕まえて判定の前の状態に戻す）。
 3. 判定済みと判定中をウィンドウごとに覚え、閉じ直しの `Closing` は通し、判定中と閉じ直すまでの間の × は止める。閉じ直しが止められたら、判定の前の状態に戻す。判定の間に `DataContext` が替わったら、古い結果では閉じない。
 4. `ShowDialog` で開いたウィンドウでは、止める前の `DialogResult` を控え、閉じ直すときに設定し直す。
 
