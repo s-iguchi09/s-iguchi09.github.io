@@ -275,7 +275,7 @@ public interface IClosingGuard
 ```
 
 A window with the attached property `ClosingGuard.IsEnabled` set to `True` asks the `IClosingGuard` in its `DataContext` on every `Closing`.
-The per-window state (checking, approved) is kept in a private attached property, which, together with the close-again procedure, avoids each of the four pitfalls from the previous section.
+The per-window state (checking, closing again) is kept in a private attached property, which, together with the close-again procedure, avoids each of the four pitfalls from the previous section.
 
 ```csharp
 using System.ComponentModel;
@@ -461,6 +461,7 @@ The "ClosingGuard" rows of each table and all rows of the `Shutdown` table are t
   - Replacing `DataContext` during the check or while closing again.
   - Cancelling the close, running a nested message loop (`MessageBox.Show` and so on), or throwing in other `Closing` handlers. Show confirmation dialogs inside `CanCloseAsync`.
   - Calling `Close` on a window before it is shown.
+  - The window closing through another path, such as its `Owner` closing or `Shutdown`, during the check or while closing again (the next two items measured that the check has no effect on such paths).
 - **When application code calls `Shutdown`, the result of the check has no effect.** `ClosingGuard` still starts a check on the `Closing` raised by `Shutdown`, but, as row 1 of the `Shutdown` table shows, the check is cut off before it completes. Route exit operations through the window's `Close` instead of `Shutdown`, and let `ShutdownMode` set to `OnLastWindowClose` end the application. Under `OnMainWindowClose`, the checks of the remaining windows have no effect once the main window has closed (row 2 of the same table).
 - **Closing the `Owner` closes owned windows without a check.** This is because `Closing` is not raised (row 3 of the `Shutdown` table). When an owned window can hold unsaved changes, they need to be checked together in the owner's check (this setup was not measured).
 - **OS sign-out and shutdown were not measured.** The [reference](https://learn.microsoft.com/en-us/dotnet/api/system.windows.window.closing) states that `Closing` is not raised in that case and recommends handling `Application.SessionEnding`.

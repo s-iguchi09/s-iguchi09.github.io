@@ -274,7 +274,7 @@ public interface IClosingGuard
 ```
 
 添付プロパティ `ClosingGuard.IsEnabled` を `True` にしたウィンドウは、`Closing` のたびに `DataContext` の `IClosingGuard` に判定を求める。
-ウィンドウごとの状態（判定中・判定済み）を非公開の添付プロパティに持たせ、閉じ直しの手順と合わせて、前節の 4 つの落とし穴をそれぞれ避ける。
+ウィンドウごとの状態（判定中・閉じ直しの途中）を非公開の添付プロパティに持たせ、閉じ直しの手順と合わせて、前節の 4 つの落とし穴をそれぞれ避ける。
 
 ```csharp
 using System.ComponentModel;
@@ -460,6 +460,7 @@ public sealed class EditorViewModel : IClosingGuard
   - 判定の途中や閉じ直しの途中で `DataContext` を替える。
   - ほかの `Closing` のハンドラーで閉じるのを止める、`MessageBox.Show` などで入れ子のメッセージループを回す、例外を投げる。確認ダイアログは `CanCloseAsync` の中で出す。
   - 表示する前のウィンドウに `Close` を呼ぶ。
+  - 判定の途中や閉じ直しの途中で、`Owner` の終了や `Shutdown` など、ほかの経路でウィンドウが閉じる（下の 2 項目は、そうした経路で判定が効かないことを測ったものである）。
 - **アプリのコードから `Shutdown` を呼ぶと、判定の結果は効かない。** `ClosingGuard` は `Shutdown` による `Closing` でも判定を始めるが、`Shutdown` の表の 1 行目のとおり、判定は完了しないまま打ち切られる。終了の操作は `Shutdown` ではなくウィンドウの `Close` に通し、`ShutdownMode` を `OnLastWindowClose` にしてアプリを終わらせる。`OnMainWindowClose` では、メインウィンドウが閉じた時点で、残ったウィンドウの判定は効かない（同じ表の 2 行目）。
 - **`Owner` を閉じると、所有されたウィンドウは判定を通らずに閉じる。** `Closing` が発生しないためである（`Shutdown` の表の 3 行目）。所有されたウィンドウに未保存の変更を持たせる場合は、`Owner` 側の判定でまとめて確かめる必要がある（この構成は測っていない）。
 - **OS のサインアウトやシャットダウンは、本記事では測っていない。** [リファレンス](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.window.closing)は、この場合は `Closing` が発生しないとし、`Application.SessionEnding` を処理するよう案内している。
