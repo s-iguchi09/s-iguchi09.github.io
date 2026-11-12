@@ -199,7 +199,7 @@ Closing again has the three pitfalls shown in the next table (the fourth is cove
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.en.md %}
 
-Measured as in the previous table. Except in row 7, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. One run per condition.
+Measured as in the previous table. Except in row 7, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. Row 11 uses a check that completes synchronously; after closing again was scheduled, `DataContext` was replaced and `Close()` was called ahead of it (with `DispatcherPriority.Send`). In row 12, a handler registered after `ClosingGuard` cancels only the second `Closing` (closing again), and a second `WM_CLOSE` was sent 700 ms after the first. One run per condition.
 {: .table-caption}
 
 **Row 1: the `Close` called again also raises `Closing`.**
@@ -227,6 +227,11 @@ In row 9, which does not check whether it was replaced, the window closed after 
 `ClosingGuard` confirms after the check that `DataContext` is still the view model it asked, so in row 8 the window stayed open even though the old check returned `true`.
 The × the user clicked is dropped in that case; the new view model's check starts when × is clicked again.
 In row 10, setting `DataContext` to `null` during the check and then clicking × again also stopped the second `Closing`, and the window stayed open.
+
+Another `Close` can also arrive between the end of the check and closing again.
+Row 11 replaces `DataContext` and calls `Close()` after closing again was scheduled but before it ran; that `Close` was stopped, and the scheduled close-again did not close the window either.
+Row 12 is the case where another handler cancels closing again.
+The window stayed open, and clicking × again re-ran the check and closed it.
 
 ### ShowDialog loses DialogResult
 
@@ -288,6 +293,7 @@ The per-window state (checking, approved) is kept in a private attached property
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace Sample;
 
@@ -353,40 +359,54 @@ public static class ClosingGuard
         // Cancelling makes WPF reset DialogResult to null, so keep it for closing again.
         bool? dialogResult = window.DialogResult;
         window.SetValue(StateProperty, State.Checking);
-        bool canClose;
+        bool canClose = false;
         try
         {
-            canClose = await guard.CanCloseAsync();
+            // If DataContext was replaced by another view model during the check, do not close on the old result.
+            canClose = await guard.CanCloseAsync() && ReferenceEquals(window.DataContext, guard);
         }
         finally
         {
-            window.SetValue(StateProperty, State.Idle);
+            if (!canClose)
+            {
+                window.SetValue(StateProperty, State.Idle);
+            }
         }
 
-        // If DataContext was replaced by another view model during the check, do not close on the old result.
-        if (!canClose || !ReferenceEquals(window.DataContext, guard))
+        if (!canClose)
         {
             return;
         }
 
-        window.SetValue(StateProperty, State.Approved);
-
         // Calling Close while Closing is running throws, so close again after Closing has finished.
+        // Stay in Checking until closing again, so other Close calls in between are also stopped.
         _ = window.Dispatcher.InvokeAsync(() =>
         {
             if (!ReferenceEquals(window.DataContext, guard))
             {
-                window.SetValue(StateProperty, State.Idle); // same if it was replaced before closing again
+                window.SetValue(StateProperty, State.Idle); // do not close if it was replaced before closing again either
                 return;
             }
 
-            if (dialogResult is bool result)
+            window.SetValue(StateProperty, State.Approved);
+            try
             {
-                window.DialogResult = result; // restore the ShowDialog result (setting it closes the window)
+                if (dialogResult is bool result)
+                {
+                    window.DialogResult = result; // restore the ShowDialog result (setting it closes the window)
+                }
+                else
+                {
+                    window.Close();
+                }
             }
-            else
+            finally
             {
-                window.Close();
+                // If the window remains (another handler cancelled the close, for example), go back to the state before the check.
+                if (new WindowInteropHelper(window).Handle != IntPtr.Zero)
+                {
+                    window.SetValue(StateProperty, State.Idle);
+                }
             }
         });
     }
@@ -397,7 +417,9 @@ public static class ClosingGuard
 Keeping `dialogResult` and setting it back prevents row 2 of the table in "ShowDialog loses DialogResult".
 On a modeless window, `DialogResult` stays `null`, so the window is closed again with `Close`.
 The check after the check, that `DataContext` is still the view model that was asked, handles rows 8 and 9 of the table in "Set Cancel first, then close again after the check".
-The same check right before closing again (inside `InvokeAsync`) guards against a replacement between the check and closing again; a replacement in that interval was not measured.
+After the check, the state stays `State.Checking` until closing again, and becomes `State.Approved` only inside `InvokeAsync`, right after `DataContext` is checked once more.
+This also stops any other `Close` that arrives between the check and closing again (row 11 of the same table).
+If the window is still there after closing again (another handler cancelled the close, for example), the state goes back to `State.Idle`, so the next × runs the check again (row 12 of the same table).
 A × clicked again during the check is stopped before `DataContext` is examined, so that the window does not close in the middle of a save even if `DataContext` has been replaced with something that is not an `IClosingGuard` (row 10 of the same table).
 When `DataContext` is not an `IClosingGuard`, the window closes without a check (row 5 of the first table).
 
@@ -472,7 +494,7 @@ The "ClosingGuard" rows of each table and all rows of the `Shutdown` table are t
 
 ## Notes
 
-- **This assumes no other handler cancels `Closing` besides `ClosingGuard`.** If another handler cancels the close-again `Close`, the state stays `Approved`, and later × clicks close the window without a check (derived from the code; not measured).
+- **Keep saving and confirmation inside `CanCloseAsync`.** If a handler registered after `ClosingGuard` cancels closing again, `ClosingGuard` goes back to the state before the check (row 12 of the table in "Set Cancel first, then close again after the check"). Setups where another handler starts a save of its own were not measured.
 - **When application code calls `Shutdown`, the result of the check has no effect.** `ClosingGuard` still starts a check on the `Closing` raised by `Shutdown`, but, as row 1 of the `Shutdown` table shows, the check is cut off before it completes. Route exit operations through the window's `Close` instead of `Shutdown`, and let `ShutdownMode` set to `OnLastWindowClose` end the application. Under `OnMainWindowClose`, the checks of the remaining windows have no effect once the main window has closed (row 2 of the same table).
 - **Closing the `Owner` closes owned windows without a check.** This is because `Closing` is not raised (row 3 of the `Shutdown` table). When an owned window can hold unsaved changes, they need to be checked together in the owner's check (this setup was not measured).
 - **OS sign-out and shutdown were not measured.** The [reference](https://learn.microsoft.com/en-us/dotnet/api/system.windows.window.closing) states that `Closing` is not raised in that case and recommends handling `Application.SessionEnding`.

@@ -33,6 +33,8 @@ internal sealed class WindowClosingAsyncScene : IScene
         "ShutdownMode が OnMainWindowClose のときに ClosingGuard の無い別のメインウィンドウを閉じると、ClosingGuard のウィンドウ（判定が false）も閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ClosingGuard のウィンドウ（判定が false）の Owner を閉じると、そのウィンドウのウィンドウプロシージャに WM_CLOSE が届かず、Closing も発生せず、判定も始まらないまま閉じること。ほかの非モーダルの条件では WM_CLOSE が届くこと",
         "記事の ClosingGuard で判定の途中に DataContext を null にしてからもう一度 WM_CLOSE を送っても、2 回目の Closing も止まり、古い判定が true を返してもウィンドウは開いたまま残ること",
+        "記事の ClosingGuard で判定が同期で完了し、閉じ直しを予約した後、それより先に DataContext を替えて Close() を呼ぶと、その Close は止まり、予約した閉じ直しも閉じず、新しいビューモデルの判定も始まらないこと",
+        "記事の ClosingGuard の閉じ直しを、後から登録したほかの Closing ハンドラーが止めると、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目も true）閉じること",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -87,6 +89,10 @@ internal sealed class WindowClosingAsyncScene : IScene
             "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
         new("guard", "allow", 300, "datacontext-null", T("ClosingGuard: DataContext set to null during the check, × again (true)", "ClosingGuard: 判定中に DataContext を null にして、もう一度 ×（判定が true）"),
             "2|1 / 1|発生しない|なし|開いたまま"),
+        new("guard", "allow", 0, "close-before-reclose", T("ClosingGuard: DataContext replaced and Close() called before closing again (synchronous)", "ClosingGuard: 閉じ直す前に DataContext を替えて Close()（判定が同期で完了）"),
+            "2|1 / 1|発生しない|なし|開いたまま"),
+        new("guard", "allow", 300, "other-cancel", T("ClosingGuard: another handler cancels closing again, × again", "ClosingGuard: 閉じ直しをほかのハンドラーが止め、もう一度 ×"),
+            "4|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -461,40 +467,54 @@ internal sealed class WindowClosingAsyncScene : IScene
                 // Cancel すると WPF が DialogResult を null に戻すので、閉じ直すときのために控えておく。
                 bool? dialogResult = window.DialogResult;
                 window.SetValue(StateProperty, State.Checking);
-                bool canClose;
+                bool canClose = false;
                 try
                 {
-                    canClose = await guard.CanCloseAsync();
+                    // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
+                    canClose = await guard.CanCloseAsync() && ReferenceEquals(window.DataContext, guard);
                 }
                 finally
                 {
-                    window.SetValue(StateProperty, State.Idle);
+                    if (!canClose)
+                    {
+                        window.SetValue(StateProperty, State.Idle);
+                    }
                 }
 
-                // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
-                if (!canClose || !ReferenceEquals(window.DataContext, guard))
+                if (!canClose)
                 {
                     return;
                 }
 
-                window.SetValue(StateProperty, State.Approved);
-
                 // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
+                // 閉じ直すまでは Checking のままにして、その間に届いたほかの Close も止める。
                 _ = window.Dispatcher.InvokeAsync(() =>
                 {
                     if (!ReferenceEquals(window.DataContext, guard))
                     {
-                        window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も同じ
+                        window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も閉じない
                         return;
                     }
 
-                    if (dialogResult is bool result)
+                    window.SetValue(StateProperty, State.Approved);
+                    try
                     {
-                        window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
+                        if (dialogResult is bool result)
+                        {
+                            window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
+                        }
+                        else
+                        {
+                            window.Close();
+                        }
                     }
-                    else
+                    finally
                     {
-                        window.Close();
+                        // ほかのハンドラーが閉じるのを止めた場合など、ウィンドウが残ったら判定の前の状態に戻す。
+                        if (new WindowInteropHelper(window).Handle != IntPtr.Zero)
+                        {
+                            window.SetValue(StateProperty, State.Idle);
+                        }
                     }
                 });
             }
@@ -820,6 +840,39 @@ internal sealed class WindowClosingAsyncScene : IScene
                             PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             After(100, () => window.DataContext = null);
                             After(150, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
+                            break;
+                        case "close-before-reclose":
+                            // 判定は同期で完了し、閉じ直しは InvokeAsync（Normal）で予約される。
+                            // それより先に（Send で）DataContext を替えて Close を呼ぶ。
+                            bool armed = true;
+                            window.Closing += (_, _) =>
+                            {
+                                if (!armed)
+                                {
+                                    return;
+                                }
+
+                                armed = false;
+                                window.Dispatcher.InvokeAsync(() =>
+                                {
+                                    window.DataContext = new EditorViewModel { Allow = allow, DelayMs = delay };
+                                    window.Close();
+                                }, DispatcherPriority.Send);
+                            };
+                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                            break;
+                        case "other-cancel":
+                            // ClosingGuard の後に登録したハンドラーが、2 回目の Closing（閉じ直し）だけを止める。
+                            int closings = 0;
+                            window.Closing += (_, e) =>
+                            {
+                                if (++closings == 2)
+                                {
+                                    e.Cancel = true;
+                                }
+                            };
+                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                            After(700, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
                             break;
                         case "close-retry":
                             // 1 回目の判定（300 ms で例外）が終わった後に、もう一度 × を押す。

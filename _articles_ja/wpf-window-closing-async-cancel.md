@@ -198,7 +198,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md %}
 
-測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。各条件 1 回の記録。
+測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。11 行目は判定が同期で完了する条件で、閉じ直しが予約された後、それより先に（`DispatcherPriority.Send` で）`DataContext` を替えて `Close()` を呼んだ。12 行目は、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）だけを止め、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。各条件 1 回の記録。
 {: .table-caption}
 
 **1 行目: 閉じ直した `Close` でも `Closing` が発生する。**
@@ -226,6 +226,11 @@ private bool ShouldCloseWindow(bool cancelled)
 `ClosingGuard` は判定の後で `DataContext` が判定したビューモデルのままかを確かめるので、8 行目では古い判定が `true` を返してもウィンドウは開いたまま残った。
 このとき利用者が押した × は捨てられ、新しいビューモデルの判定は、もう一度 × を押したときに始まる。
 10 行目のように判定中に `DataContext` を `null` にしてから × を押しても、2 回目の `Closing` も止まり、ウィンドウは開いたまま残った。
+
+判定が終わってから閉じ直すまでの間も、ほかの `Close` が届きうる。
+11 行目は、閉じ直しが予約された後、それより先に `DataContext` を替えて `Close()` を呼んだ場合で、その `Close` は止まり、予約した閉じ直しも閉じなかった。
+12 行目は、閉じ直しをほかのハンドラーが止めた場合である。
+ウィンドウは開いたまま残り、もう一度 × を押すと判定をやり直して閉じた。
 
 ### ShowDialog では DialogResult が失われる
 
@@ -287,6 +292,7 @@ public interface IClosingGuard
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace Sample;
 
@@ -352,40 +358,54 @@ public static class ClosingGuard
         // Cancel すると WPF が DialogResult を null に戻すので、閉じ直すときのために控えておく。
         bool? dialogResult = window.DialogResult;
         window.SetValue(StateProperty, State.Checking);
-        bool canClose;
+        bool canClose = false;
         try
         {
-            canClose = await guard.CanCloseAsync();
+            // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
+            canClose = await guard.CanCloseAsync() && ReferenceEquals(window.DataContext, guard);
         }
         finally
         {
-            window.SetValue(StateProperty, State.Idle);
+            if (!canClose)
+            {
+                window.SetValue(StateProperty, State.Idle);
+            }
         }
 
-        // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
-        if (!canClose || !ReferenceEquals(window.DataContext, guard))
+        if (!canClose)
         {
             return;
         }
 
-        window.SetValue(StateProperty, State.Approved);
-
         // Closing の処理中に Close を呼ぶと例外になるため、Closing が終わってから閉じ直す。
+        // 閉じ直すまでは Checking のままにして、その間に届いたほかの Close も止める。
         _ = window.Dispatcher.InvokeAsync(() =>
         {
             if (!ReferenceEquals(window.DataContext, guard))
             {
-                window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も同じ
+                window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も閉じない
                 return;
             }
 
-            if (dialogResult is bool result)
+            window.SetValue(StateProperty, State.Approved);
+            try
             {
-                window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
+                if (dialogResult is bool result)
+                {
+                    window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
+                }
+                else
+                {
+                    window.Close();
+                }
             }
-            else
+            finally
             {
-                window.Close();
+                // ほかのハンドラーが閉じるのを止めた場合など、ウィンドウが残ったら判定の前の状態に戻す。
+                if (new WindowInteropHelper(window).Handle != IntPtr.Zero)
+                {
+                    window.SetValue(StateProperty, State.Idle);
+                }
             }
         });
     }
@@ -396,7 +416,9 @@ public static class ClosingGuard
 `dialogResult` を控えて設定し直すのは、「ShowDialog では DialogResult が失われる」の表の 2 行目を防ぐためである。
 非モーダルのウィンドウでは `DialogResult` は `null` のままなので、`Close` で閉じ直す。
 判定の後で `DataContext` が判定したビューモデルのままかを確かめるのは、「先に Cancel を立て、判定の後で閉じ直す」の表の 8・9 行目のためである。
-閉じ直す直前（`InvokeAsync` の中）にも同じことを確かめるのは、判定の後から閉じ直すまでの間に替わった場合に備えるためで、この間に替える条件は測っていない。
+判定の後も、閉じ直すまでは `State.Checking` のままにしておき、`State.Approved` にするのは `InvokeAsync` の中で `DataContext` をもう一度確かめた直後にする。
+こうすると、判定の後から閉じ直すまでの間に届いたほかの `Close` も止まる（同じ表の 11 行目）。
+閉じ直しの後もウィンドウが残っていれば（ほかのハンドラーが閉じるのを止めた場合など）、`State.Idle` に戻すので、次の × でまた判定する（同じ表の 12 行目）。
 判定中にもう一度押された × は、`DataContext` を確かめる前に止める。
 判定中に `DataContext` が `IClosingGuard` でない値に替わっても、保存の途中で閉じないためである（同じ表の 10 行目）。
 `DataContext` が `IClosingGuard` でなければ、判定せずにそのまま閉じる（最初の表の 5 行目）。
@@ -472,7 +494,7 @@ public sealed class EditorViewModel : IClosingGuard
 
 ## 注意点
 
-- **`ClosingGuard` のほかに `Closing` を止める処理を置かない前提である。** 閉じ直しの `Close` をほかのハンドラーが止めると、状態は `Approved` のまま残り、以後の × は判定を通らずに閉じる（コードからの帰結で、測っていない）。
+- **保存や確認は `CanCloseAsync` にまとめる。** `ClosingGuard` より後に登録したハンドラーが閉じ直しを止めた場合は、`ClosingGuard` は判定の前の状態に戻る（「先に Cancel を立て、判定の後で閉じ直す」の表の 12 行目）。ほかのハンドラーの側で保存などを始める構成は測っていない。
 - **アプリのコードから `Shutdown` を呼ぶと、判定の結果は効かない。** `ClosingGuard` は `Shutdown` による `Closing` でも判定を始めるが、`Shutdown` の表の 1 行目のとおり、判定は完了しないまま打ち切られる。終了の操作は `Shutdown` ではなくウィンドウの `Close` に通し、`ShutdownMode` を `OnLastWindowClose` にしてアプリを終わらせる。`OnMainWindowClose` では、メインウィンドウが閉じた時点で、残ったウィンドウの判定は効かない（同じ表の 2 行目）。
 - **`Owner` を閉じると、所有されたウィンドウは判定を通らずに閉じる。** `Closing` が発生しないためである（`Shutdown` の表の 3 行目）。所有されたウィンドウに未保存の変更を持たせる場合は、`Owner` 側の判定でまとめて確かめる必要がある（この構成は測っていない）。
 - **OS のサインアウトやシャットダウンは、本記事では測っていない。** [リファレンス](https://learn.microsoft.com/ja-jp/dotnet/api/system.windows.window.closing)は、この場合は `Closing` が発生しないとし、`Application.SessionEnding` を処理するよう案内している。

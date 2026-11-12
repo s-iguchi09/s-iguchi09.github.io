@@ -19,6 +19,8 @@ verifies:
   - "ShutdownMode が OnMainWindowClose のときに ClosingGuard の無い別のメインウィンドウを閉じると、ClosingGuard のウィンドウ（判定が false）も閉じ、判定は始まるが完了しないままプロセスが終わること"
   - "ClosingGuard のウィンドウ（判定が false）の Owner を閉じると、そのウィンドウのウィンドウプロシージャに WM_CLOSE が届かず、Closing も発生せず、判定も始まらないまま閉じること。ほかの非モーダルの条件では WM_CLOSE が届くこと"
   - "記事の ClosingGuard で判定の途中に DataContext を null にしてからもう一度 WM_CLOSE を送っても、2 回目の Closing も止まり、古い判定が true を返してもウィンドウは開いたまま残ること"
+  - "記事の ClosingGuard で判定が同期で完了し、閉じ直しを予約した後、それより先に DataContext を替えて Close() を呼ぶと、その Close は止まり、予約した閉じ直しも閉じず、新しいビューモデルの判定も始まらないこと"
+  - "記事の ClosingGuard の閉じ直しを、後から登録したほかの Closing ハンドラーが止めると、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目も true）閉じること"
   - "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）"
   - "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること"
 images:

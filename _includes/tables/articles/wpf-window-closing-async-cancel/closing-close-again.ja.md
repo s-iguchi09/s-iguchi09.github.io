@@ -10,3 +10,5 @@
 | ClosingGuard: 判定中に DataContext を替える（判定が true） | 1 | 1 / 1 | 発生しない | なし | 開いたまま |
 | 判定中に DataContext を替える・替わったかを確かめない（判定が true） | 2 | 1 / 1 | 判定の完了後 | なし | 閉じてプロセスも終了 |
 | ClosingGuard: 判定中に DataContext を null にして、もう一度 ×（判定が true） | 2 | 1 / 1 | 発生しない | なし | 開いたまま |
+| ClosingGuard: 閉じ直す前に DataContext を替えて Close()（判定が同期で完了） | 2 | 1 / 1 | 発生しない | なし | 開いたまま |
+| ClosingGuard: 閉じ直しをほかのハンドラーが止め、もう一度 × | 4 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |

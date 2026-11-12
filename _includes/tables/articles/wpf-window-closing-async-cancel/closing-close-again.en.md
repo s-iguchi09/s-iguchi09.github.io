@@ -10,3 +10,5 @@
 | ClosingGuard: DataContext replaced during the check (true) | 1 | 1 / 1 | not raised | none | open |
 | DataContext replaced during the check, no identity check (true) | 2 | 1 / 1 | after the check completes | none | closed, process ended |
 | ClosingGuard: DataContext set to null during the check, × again (true) | 2 | 1 / 1 | not raised | none | open |
+| ClosingGuard: DataContext replaced and Close() called before closing again (synchronous) | 2 | 1 / 1 | not raised | none | open |
+| ClosingGuard: another handler cancels closing again, × again | 4 | 2 / 2 | after the check completes | none | closed, process ended |
