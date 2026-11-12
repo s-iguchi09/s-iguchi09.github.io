@@ -21,30 +21,17 @@ internal sealed class WindowClosingAsyncScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "Closing を AsyncRelayCommand<CancelEventArgs>（CommunityToolkit.Mvvm 8.4.0）に渡し、await した判定の後で e.Cancel = true にすると、判定が 300 ms かかる場合は判定の完了より前に Closed が発生してウィンドウが閉じ、判定がすぐに完了する（同期で完了する）場合は閉じないこと",
-        "記事の ClosingGuard は、判定が false なら Closing 1 回でウィンドウを開いたまま残し、true なら判定の完了後に 2 回目の Closing を経て閉じること。判定が同期で完了しても例外にならず閉じること",
+        "記事の ClosingGuard は、判定が false なら Closing 1 回でウィンドウを開いたまま残し、true なら判定の完了後に 2 回目の Closing を経て閉じること。判定が同期で完了しても例外にならず閉じること。DataContext に IClosingGuard を設定しなければ、判定せずに閉じること",
         "先に e.Cancel = true にして判定の後で Close() を呼ぶだけの実装は、判定が true でも閉じず、Closing と判定を繰り返すこと",
         "判定済みのフラグを持たせて Close() を直接呼ぶ実装は、判定に 300 ms かかる場合は閉じ、判定が同期で完了する場合は InvalidOperationException になってウィンドウが開いたまま残ること",
         "判定中に WM_CLOSE をもう一度送ると、判定中かを見ない実装では判定が 2 回始まり、記事の ClosingGuard では 1 回だけであること",
-        "記事の ClosingGuard を付けても DataContext に IClosingGuard を設定しなければ、Closing は 1 回発生するが判定は始まらず、ウィンドウが閉じること",
-        "記事の ClosingGuard で判定の途中に DataContext を別のビューモデルに替えると、古い判定が true を返してもウィンドウは閉じず、新しいビューモデルの判定も始まらないこと。替わったかを確かめない実装では、古い判定の後に閉じること",
         "記事の ClosingGuard で 1 回目の判定が例外を投げると、DispatcherUnhandledException に届いてウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目は true）閉じること",
-        "記事の ClosingGuard を付けたウィンドウでも、Application.Shutdown を呼ぶと e.Cancel = true が無視されてウィンドウが閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ShowDialog で開いたウィンドウに DialogResult = true を設定して閉じると、閉じ直さなければ ShowDialog が True を返し、Cancel してから Close() で閉じ直すと False を返し、記事の ClosingGuard（判定が true）では DialogResult を設定し直して True を返すこと",
+        "記事の ClosingGuard を付けたウィンドウでも、Application.Shutdown を呼ぶと e.Cancel = true が無視されてウィンドウが閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ShutdownMode が OnMainWindowClose のときに ClosingGuard の無い別のメインウィンドウを閉じると、ClosingGuard のウィンドウ（判定が false）も閉じ、判定は始まるが完了しないままプロセスが終わること",
         "ClosingGuard のウィンドウ（判定が false）の Owner を閉じると、そのウィンドウのウィンドウプロシージャに WM_CLOSE が届かず、Closing も発生せず、判定も始まらないまま閉じること。ほかの非モーダルの条件では WM_CLOSE が届くこと",
-        "記事の ClosingGuard で判定の途中に DataContext を null にしてからもう一度 WM_CLOSE を送っても、2 回目の Closing も止まり、古い判定が true を返してもウィンドウは開いたまま残ること",
-        "記事の ClosingGuard で判定が同期で完了し、閉じ直しを予約した後、それより先に DataContext を替えて Close() を呼ぶと、その Close は止まり、予約した閉じ直しも閉じず、新しいビューモデルの判定も始まらないこと",
-        "記事の ClosingGuard の閉じ直しを、後から登録したほかの Closing ハンドラーが止めると、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目も true）閉じること",
-        "記事の ClosingGuard で判定が同期で完了し、後から登録した Closing ハンドラーが入れ子のメッセージループを回すと、予約した閉じ直しの Close が Closing の処理中に実行されて InvalidOperationException になり（ClosingGuard が捕まえ、未処理の例外にはならない）、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること",
-        "判定が 300 ms かかり、後から登録した Closing ハンドラーが 500 ms の入れ子のメッセージループを回す場合も、閉じ直しの Close がそのループの中で InvalidOperationException になり、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること",
-        "ClosingGuard より先に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えると、記事の ClosingGuard はその Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
-        "ClosingGuard より後に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えても、記事の ClosingGuard は閉じ直しの前に付け直して最後に呼ばれるので、その Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
-        "閉じ直しの前に付け直す部分だけを除いた ClosingGuard（記事のコードから機械的に作る）では、後から登録したハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること",
-        "表示する前に Close() を呼び、閉じ直しをほかのハンドラーが止めると、記事の ClosingGuard は判定の前の状態に戻り、その後に表示して WM_CLOSE を送ると判定をやり直して閉じること",
-        "ShowDialog で開いたウィンドウの判定の途中で Owner を閉じると、ウィンドウの Closed が発生し、記事の ClosingGuard は閉じ直しで何もせず、未処理の例外は起きないこと（このとき ShowDialog は 1.5 秒以内に戻らなかった）。ClosingGuard の無いダイアログで Owner を閉じても、ShowDialog は 1.5 秒以内に戻らないこと",
-        "ClosingGuard より先に登録した Closed のハンドラー、または Closing のハンドラーが、閉じ直しで InvalidOperationException を投げると、その例外は ClosingGuard の catch には来ず、DispatcherUnhandledException に届くこと（Closing のハンドラーが投げた場合も、ウィンドウは閉じる）",
-        "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
+        "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
     ];
 
     public string Slug => "wpf-window-closing-async-cancel";
@@ -91,32 +78,6 @@ internal sealed class WindowClosingAsyncScene : IScene
             "3|1 / 1|判定の完了後|なし|閉じた"),
         new("guard", "throw-once", 300, "close-retry", T("ClosingGuard: check throws, × again", "ClosingGuard: 判定が例外、もう一度 ×"),
             "3|2 / 2|判定の完了後|IOException|閉じてプロセスも終了"),
-        new("guard", "allow", 300, "datacontext-change", T("ClosingGuard: DataContext replaced during the check (true)", "ClosingGuard: 判定中に DataContext を替える（判定が true）"),
-            "1|1 / 1|発生しない|なし|開いたまま"),
-        new("no-identity-check", "allow", 300, "datacontext-change", T("DataContext replaced during the check, no identity check (true)", "判定中に DataContext を替える・替わったかを確かめない（判定が true）"),
-            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
-        new("guard", "allow", 300, "datacontext-null", T("ClosingGuard: DataContext set to null during the check, × again (true)", "ClosingGuard: 判定中に DataContext を null にして、もう一度 ×（判定が true）"),
-            "2|1 / 1|発生しない|なし|開いたまま"),
-        new("guard", "allow", 0, "close-before-reclose", T("ClosingGuard: DataContext replaced and Close() called before closing again (synchronous)", "ClosingGuard: 閉じ直す前に DataContext を替えて Close()（判定が同期で完了）"),
-            "2|1 / 1|発生しない|なし|開いたまま"),
-        new("guard", "allow", 300, "other-cancel", T("ClosingGuard: another handler cancels closing again, × again", "ClosingGuard: 閉じ直しをほかのハンドラーが止め、もう一度 ×"),
-            "4|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
-        new("guard", "allow", 0, "nested-loop", T("ClosingGuard: a later Closing handler runs a nested message loop, × again (synchronous)", "ClosingGuard: 後のハンドラーが Closing 中に入れ子のメッセージループを回し、もう一度 ×（同期で完了）"),
-            "3|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
-        new("guard", "allow", 300, "nested-loop-long", T("ClosingGuard: nested loop (500 ms) longer than the check (300 ms), × again", "ClosingGuard: 入れ子のループ（500 ms）が判定（300 ms）より長い、もう一度 ×"),
-            "3|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
-        new("guard-late", "allow", 300, "close", T("ClosingGuard: an earlier Closing handler replaces DataContext while closing again (new check false)", "ClosingGuard: 先に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false）"),
-            "2|2 / 2|発生しない|なし|開いたまま"),
-        new("guard", "allow", 300, "datacontext-change-later", T("ClosingGuard: a later Closing handler replaces DataContext while closing again (new check false)", "ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false）"),
-            "2|2 / 2|発生しない|なし|開いたまま"),
-        new("guard-no-resubscribe", "allow", 300, "datacontext-change-later", T("same as above, without re-subscribing before closing again", "同上・閉じ直しの前に付け直さない"),
-            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
-        new("guard", "allow", 300, "close-before-show", T("ClosingGuard: Close() before Show, closing again cancelled, then shown and × (true)", "ClosingGuard: 表示前に Close()、閉じ直しが止められ、表示して ×（判定が true）"),
-            "4|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
-        new("plain", "allow", 300, "closed-handler-throws", T("ClosingGuard: a Closed handler registered before it throws when closing again", "ClosingGuard: 先に登録した Closed のハンドラーが閉じ直しで例外を投げる"),
-            "2|1 / 1|判定の完了後|InvalidOperationException|閉じてプロセスも終了"),
-        new("plain", "allow", 300, "closing-handler-throws", T("ClosingGuard: another Closing handler throws when closing again", "ClosingGuard: ほかの Closing のハンドラーが閉じ直しで例外を投げる"),
-            "2|1 / 1|判定の完了後|InvalidOperationException|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -142,10 +103,6 @@ internal sealed class WindowClosingAsyncScene : IScene
             "2|1 / 1|False"),
         new("guard", "allow", 300, "dialog-ok", T("ShowDialog, DialogResult = true, ClosingGuard (true)", "ShowDialog・DialogResult = true・ClosingGuard（判定が true）"),
             "2|1 / 1|True"),
-        new("guard", "allow", 300, "dialog-owner-close", T("ShowDialog, DialogResult = true, ClosingGuard, Owner closed during the check", "ShowDialog・DialogResult = true・ClosingGuard・判定中に Owner を閉じる"),
-            "1|1 / 1|1.5 秒以内に戻らない"),
-        new("plain", "allow", 300, "dialog-owner-close", T("ShowDialog, no ClosingGuard, Owner closed (DialogResult not set)", "ShowDialog・ClosingGuard なし・Owner を閉じる（DialogResult は設定しない）"),
-            "0|0 / 0|1.5 秒以内に戻らない"),
     ];
 
     public async Task CaptureAsync(SceneContext context)
@@ -206,11 +163,6 @@ internal sealed class WindowClosingAsyncScene : IScene
             string[] log = await RunAsync(executable, workspace, condition, $"{name}-{i}");
             IReadOnlyList<Loc> row = Describe(condition, log);
 
-            // 入れ子のメッセージループの条件では、閉じ直しの Close が例外になったこと（ClosingGuard が捕まえた）を確かめる。
-            if (condition.Action is "nested-loop" or "nested-loop-long" && !ThrewOnceBeforeRetry(log))
-            {
-                throw new InvalidOperationException($"{condition.Label.Ja}: 閉じ直しの Close が例外になっていない: {string.Join(", ", log)}");
-            }
 
             VerifyExpected(condition, row, log);
             rows.Add(row);
@@ -230,19 +182,6 @@ internal sealed class WindowClosingAsyncScene : IScene
             throw new InvalidOperationException(
                 $"{condition.Label.Ja}: 期待値と違う。期待: {condition.Expected} / 実際: {string.Join("|", actual)} / ログ: {string.Join(", ", log)}");
         }
-    }
-
-    /// <summary>
-    /// 入れ子のメッセージループの条件で、閉じ直しの Close の例外が、1 回目の判定の完了から 2 回目の WM_CLOSE までの間に
-    /// ちょうど 1 回だけ起きたか。プロセスのほかの場所の例外を、閉じ直しの例外と取り違えないために位置で絞る。
-    /// </summary>
-    private static bool ThrewOnceBeforeRetry(string[] log)
-    {
-        int firstEnd = Array.FindIndex(log, IsCheckEnd);
-        int secondClose = Array.FindIndex(log, firstEnd + 1, l => l == "wm-close");
-        return firstEnd >= 0 && secondClose > firstEnd
-            && log[firstEnd..secondClose].Count(l => l == "first-chance:InvalidOperationException") == 1
-            && log.Count(l => l == "first-chance:InvalidOperationException") == 1;
     }
 
     /// <summary>期待値の 1 セルと、表の 1 セルを照合する。</summary>
@@ -369,46 +308,10 @@ internal sealed class WindowClosingAsyncScene : IScene
         return content.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.Split('\t')[0]).ToArray();
     }
 
-    /// <summary>
-    /// 記事の ClosingGuard の一部だけを書き換えた変種を作る。手で写すと記事のコードとずれるので、
-    /// 検証用アプリのソースから機械的に作り、書き換える箇所が見つからなければ止める。
-    /// </summary>
-    private static string Variant(string source, string name, string from, string to)
-    {
-        // 検証用アプリのソースは行頭の字下げが外れた形で、ファイル スコープの名前空間（ClosingProbe）にある。
-        string text = source.Replace("\r\n", "\n");
-        int a = text.IndexOf("\npublic static class ClosingGuard\n", StringComparison.Ordinal);
-        int b = a < 0 ? -1 : text.IndexOf("\n#nullable restore", a, StringComparison.Ordinal);
-        if (a < 0 || b < 0)
-        {
-            throw new InvalidOperationException("検証用アプリのソースに、記事の ClosingGuard が見つからない。");
-        }
-
-        string guard = text[a..b];
-        if (!guard.Contains(from, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException($"記事の ClosingGuard に、{name} で書き換える部分が見つからない。");
-        }
-
-        guard = guard.Replace(from, to).Replace("class ClosingGuard", $"class {name}").Replace("typeof(ClosingGuard)", $"typeof({name})");
-        return "\n#nullable enable\n" + guard + "\n#nullable restore\n";
-    }
-
-    /// <summary>付け直しを除いた変種（ClosingGuardNoResubscribe）。</summary>
-    private static string WithoutResubscribe(string source) => Variant(
-        source,
-        "ClosingGuardNoResubscribe",
-        "            if (GetIsEnabled(window))\n" +
-        "            {\n" +
-        "                window.Closing -= OnClosing;\n" +
-        "                window.Closing += OnClosing;\n" +
-        "            }\n",
-        "");
-
     private static async Task<string> BuildProbeAsync(string workspace)
     {
         await File.WriteAllTextAsync(Path.Combine(workspace, "probe.csproj"), ProjectFile, new UTF8Encoding(false));
-        await File.WriteAllTextAsync(Path.Combine(workspace, "Program.cs"), ProbeSource + WithoutResubscribe(ProbeSource), new UTF8Encoding(false));
+        await File.WriteAllTextAsync(Path.Combine(workspace, "Program.cs"), ProbeSource, new UTF8Encoding(false));
 
         using var build = Process.Start(new ProcessStartInfo("dotnet", "build -c Release -v q --nologo")
         {
@@ -501,26 +404,13 @@ internal sealed class WindowClosingAsyncScene : IScene
 
             public static void SetIsEnabled(Window window, bool value) => window.SetValue(IsEnabledProperty, value);
 
-            // ウィンドウごとの状態。判定中か、判定を終えて閉じてよいと決まったか。
+            // ウィンドウごとの状態。判定中（閉じ直すまでを含む）か、閉じ直しの途中か。
             private enum State { Idle, Checking, Approved }
 
             private static readonly DependencyProperty StateProperty =
                 DependencyProperty.RegisterAttached(
                     "State", typeof(State), typeof(ClosingGuard),
                     new PropertyMetadata(State.Idle));
-
-            // 閉じてよいと判定したビューモデル。Approved のときに、DataContext がまだこれかを確かめる。
-            private static readonly DependencyProperty ApprovedGuardProperty =
-                DependencyProperty.RegisterAttached(
-                    "ApprovedGuard", typeof(IClosingGuard), typeof(ClosingGuard),
-                    new PropertyMetadata(null));
-
-            // Closed が発生したか。ウィンドウが本当に閉じたかは、HWND の有無ではなくこれで判定する
-            // （表示する前に Close を呼んだウィンドウには、閉じていなくても HWND が無い）。
-            private static readonly DependencyProperty IsClosedProperty =
-                DependencyProperty.RegisterAttached(
-                    "IsClosed", typeof(bool), typeof(ClosingGuard),
-                    new PropertyMetadata(false));
 
             private static readonly CommandBinding CloseBinding =
                 new(ApplicationCommands.Close, (sender, _) => ((Window)sender).Close());
@@ -531,10 +421,6 @@ internal sealed class WindowClosingAsyncScene : IScene
                 window.Closing -= OnClosing;
                 window.CommandBindings.Remove(CloseBinding);
 
-                // Closed は一度しか起きないので、無効にした後も購読したままにして、閉じたかを覚え続ける。
-                window.Closed -= OnClosed;
-                window.Closed += OnClosed;
-
                 if ((bool)e.NewValue)
                 {
                     window.Closing += OnClosing;
@@ -543,21 +429,19 @@ internal sealed class WindowClosingAsyncScene : IScene
                 }
             }
 
-            private static void OnClosed(object? sender, EventArgs e) => ((Window)sender!).SetValue(IsClosedProperty, true);
-
             private static async void OnClosing(object? sender, CancelEventArgs e)
             {
                 var window = (Window)sender!;
                 var state = (State)window.GetValue(StateProperty);
 
-                if (state == State.Approved && ReferenceEquals(window.DataContext, window.GetValue(ApprovedGuardProperty)))
+                if (state == State.Approved)
                 {
-                    return; // 判定を終えた 2 回目の Close は、そのまま閉じる（その間に DataContext が替わったら判定し直す）
+                    return; // 判定を終えた閉じ直しの Close は、そのまま閉じる
                 }
 
                 if (state == State.Checking)
                 {
-                    e.Cancel = true; // 判定中にもう一度押された × は、DataContext によらず止める
+                    e.Cancel = true; // 判定中（閉じ直すまでを含む）にもう一度押された × は止める
                     return;
                 }
 
@@ -574,8 +458,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                 bool canClose = false;
                 try
                 {
-                    // 判定の間に DataContext が別のビューモデルに替わったら、古い判定の結果では閉じない。
-                    canClose = await guard.CanCloseAsync() && ReferenceEquals(window.DataContext, guard);
+                    canClose = await guard.CanCloseAsync();
                 }
                 finally
                 {
@@ -590,58 +473,17 @@ internal sealed class WindowClosingAsyncScene : IScene
                     return;
                 }
 
-                // Closing の処理中に Close を呼ぶと例外になるため、閉じ直しを後回しにする
-                // （入れ子のメッセージループがあると Closing の途中で実行されることがある。下の catch）。
-                // 閉じ直すまでは Checking のままにして、その間に届いたほかの Close も止める。
-                // BeginInvoke にするのは、ここで捕まえない例外を DispatcherUnhandledException に届けるためである。
+                // Closing の処理中に Close を呼ぶと例外になるため、閉じ直しを後回しにする。
                 _ = window.Dispatcher.BeginInvoke(() =>
                 {
-                    if ((bool)window.GetValue(IsClosedProperty))
-                    {
-                        return; // 判定の間にほかの経路（Owner の終了など）で閉じていれば、何もしない
-                    }
-
-                    if (!ReferenceEquals(window.DataContext, guard))
-                    {
-                        window.SetValue(StateProperty, State.Idle); // 閉じ直す前に替わった場合も閉じない
-                        return;
-                    }
-
-                    window.SetValue(ApprovedGuardProperty, guard);
                     window.SetValue(StateProperty, State.Approved);
-
-                    // 付け直して最後に呼ばれるようにし、ほかのハンドラーが閉じ直しの Closing で DataContext を替えても確かめられるようにする。
-                    if (GetIsEnabled(window))
+                    if (dialogResult is bool result)
                     {
-                        window.Closing -= OnClosing;
-                        window.Closing += OnClosing;
+                        window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
                     }
-                    try
+                    else
                     {
-                        if (dialogResult is bool result)
-                        {
-                            window.DialogResult = result; // ShowDialog の戻り値を戻す（設定すると閉じる）
-                        }
-                        else
-                        {
-                            window.Close();
-                        }
-                    }
-                    catch (InvalidOperationException) when (!(bool)window.GetValue(IsClosedProperty))
-                    {
-                        // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
-                        // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
-                        // 閉じ直しの中でほかの Closing・Closed のハンドラーが投げた例外は、ここには来ない
-                        // （ウィンドウ プロシージャの中で Dispatcher に渡され、DispatcherUnhandledException に届く）。
-                    }
-                    finally
-                    {
-                        // ほかのハンドラーが閉じるのを止めた場合など、ウィンドウが残ったら判定の前の状態に戻す。
-                        // 閉じ直しの Closing で新しい判定が始まっていれば（State が Checking なら）、そのままにする。
-                        if (!(bool)window.GetValue(IsClosedProperty) && (State)window.GetValue(StateProperty) == State.Approved)
-                        {
-                            window.SetValue(StateProperty, State.Idle);
-                        }
+                        window.Close();
                     }
                 });
             }
@@ -727,46 +569,6 @@ internal sealed class WindowClosingAsyncScene : IScene
         internal static class Variants
         {
             private static bool _approved;
-            private static bool _checking;
-
-            // ClosingGuard から、判定の後に DataContext が替わっていないかの確認だけを除いたもの。
-            public static async void NoIdentityCheck(object sender, CancelEventArgs e)
-            {
-                var window = (Window)sender;
-                if (_approved)
-                {
-                    return;
-                }
-
-                if (_checking)
-                {
-                    e.Cancel = true;
-                    return;
-                }
-
-                if (window.DataContext is not IClosingGuard guard)
-                {
-                    return;
-                }
-
-                e.Cancel = true;
-                _checking = true;
-                bool canClose;
-                try
-                {
-                    canClose = await guard.CanCloseAsync();
-                }
-                finally
-                {
-                    _checking = false;
-                }
-
-                if (canClose)
-                {
-                    _approved = true;
-                    _ = window.Dispatcher.BeginInvoke(window.Close);
-                }
-            }
 
             // 先に Cancel して、判定の後で Close を呼ぶだけ。2 回目の Closing を区別しない。
             public static async void CancelFirst(object sender, CancelEventArgs e)
@@ -866,12 +668,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                 {
                     ShutdownMode = action switch
                     {
-                        "close-twice" or "dialog-ok" or "dialog-owner-close" => ShutdownMode.OnExplicitShutdown,
+                        "close-twice" or "dialog-ok" => ShutdownMode.OnExplicitShutdown,
                         "main-close" => ShutdownMode.OnMainWindowClose,
                         _ => ShutdownMode.OnLastWindowClose,
                     },
                 };
-                AppDomain.CurrentDomain.FirstChanceException += (_, e) => Log.Write("first-chance:" + e.Exception.GetType().Name);
                 app.DispatcherUnhandledException += (_, e) =>
                 {
                     Log.Write("exception:" + e.Exception.GetType().Name);
@@ -885,32 +686,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                     _ => PlainXaml,
                 });
 
-                if (handler == "guard-no-resubscribe")
-                {
-                    ClosingGuardNoResubscribe.SetIsEnabled(window, true);
-                }
-
-                if (handler == "guard-late")
-                {
-                    // ClosingGuard より先に登録したハンドラーが、2 回目の Closing（閉じ直し）で DataContext を替える。
-                    // 新しいビューモデルの判定は false を返す。
-                    int seen = 0;
-                    window.Closing += (_, _) =>
-                    {
-                        if (++seen == 2)
-                        {
-                            window.DataContext = new EditorViewModel { Allow = false, DelayMs = delay };
-                        }
-                    };
-                    ClosingGuard.SetIsEnabled(window, true);
-                }
-
                 switch (handler)
                 {
                     case "cancel-first": window.Closing += Variants.CancelFirst; break;
                     case "direct-close": window.Closing += Variants.DirectClose; break;
                     case "no-checking": window.Closing += Variants.NoCheckingGuard; break;
-                    case "no-identity-check": window.Closing += Variants.NoIdentityCheck; break;
                 }
 
                 bool closed = false;
@@ -922,7 +702,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                 }
                 // メインウィンドウ・Owner の条件では、ClosingGuard の無い別のウィンドウを先に開き、それを閉じる。
                 Window other = null;
-                if (action is "main-close" or "owner-close" or "dialog-owner-close")
+                if (action is "main-close" or "owner-close")
                 {
                     other = new Window { Title = "other", Width = 200, Height = 150, Left = 40, Top = 40 };
                     other.Show();
@@ -936,26 +716,17 @@ internal sealed class WindowClosingAsyncScene : IScene
                     }
                 }
 
-                if (action is "dialog-ok" or "dialog-owner-close")
+                if (action == "dialog-ok")
                 {
                     // ShowDialog で開き、OK ボタンの処理と同じく DialogResult = true にして閉じる。
                     app.Dispatcher.BeginInvoke(() =>
                     {
-                        if (!(action == "dialog-owner-close" && handler == "plain"))
-                        {
-                            After(200, () => window.DialogResult = true);
-                        }
-
-                        if (action == "dialog-owner-close")
-                        {
-                            After(350, () => other.Close()); // 判定（300 ms）の途中で Owner を閉じる
-                        }
-
+                        After(200, () => window.DialogResult = true);
                         bool? result = window.ShowDialog();
                         Log.Write("dialog-result:" + (result?.ToString() ?? "null"));
                     });
                 }
-                else if (action != "close-before-show")
+                else
                 {
                     window.Show();
                 }
@@ -976,8 +747,8 @@ internal sealed class WindowClosingAsyncScene : IScene
                     return handle;
                 }
 
-                // ダイアログの条件と表示前に閉じる条件では、まだハンドルが無い（WM_CLOSE もこの時点では送らない）。
-                IntPtr hwnd = action is "dialog-ok" or "dialog-owner-close" or "close-before-show" ? IntPtr.Zero : Hook();
+                // ダイアログの条件では ShowDialog を後で呼ぶため、ここではまだハンドルが無い（WM_CLOSE も送らない）。
+                IntPtr hwnd = action == "dialog-ok" ? IntPtr.Zero : Hook();
 
                 After(200, () =>
                 {
@@ -989,124 +760,6 @@ internal sealed class WindowClosingAsyncScene : IScene
                         case "close-twice":
                             PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             After(100, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
-                            break;
-                        case "datacontext-change":
-                            // 判定（300 ms）の途中で、別の編集対象のビューモデルに替える。
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            After(100, () => window.DataContext = new EditorViewModel { Allow = allow, DelayMs = delay });
-                            break;
-                        case "datacontext-null":
-                            // 判定（300 ms）の途中で DataContext を null にし、その後にもう一度 × を押す。
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            After(100, () => window.DataContext = null);
-                            After(150, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
-                            break;
-                        case "close-before-reclose":
-                            // 判定は同期で完了し、閉じ直しは BeginInvoke（Normal）で予約される。
-                            // それより先に（Send で）DataContext を替えて Close を呼ぶ。
-                            bool armed = true;
-                            window.Closing += (_, _) =>
-                            {
-                                if (!armed)
-                                {
-                                    return;
-                                }
-
-                                armed = false;
-                                window.Dispatcher.InvokeAsync(() =>
-                                {
-                                    window.DataContext = new EditorViewModel { Allow = allow, DelayMs = delay };
-                                    window.Close();
-                                }, DispatcherPriority.Send);
-                            };
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            break;
-                        case "other-cancel":
-                            // ClosingGuard の後に登録したハンドラーが、2 回目の Closing（閉じ直し）だけを止める。
-                            int closings = 0;
-                            window.Closing += (_, e) =>
-                            {
-                                if (++closings == 2)
-                                {
-                                    e.Cancel = true;
-                                }
-                            };
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            After(700, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
-                            break;
-                        case "nested-loop":
-                        case "nested-loop-long":
-                            // ClosingGuard の後に登録したハンドラーが、1 回目の Closing の中で入れ子のメッセージループを
-                            // 100 ms 回す（MessageBox.Show を開いている間と同じく、予約済みの処理が実行される）。
-                            bool pushed = false;
-                            window.Closing += (_, _) =>
-                            {
-                                if (pushed)
-                                {
-                                    return;
-                                }
-
-                                pushed = true;
-                                var frame = new DispatcherFrame();
-                                // nested-loop-long は、判定（300 ms）より長く回す。
-                                var stop = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(action == "nested-loop" ? 100 : 500) };
-                                stop.Tick += (_, _) => { stop.Stop(); frame.Continue = false; };
-                                stop.Start();
-                                Dispatcher.PushFrame(frame);
-                            };
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            After(700, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
-                            break;
-                        case "datacontext-change-later":
-                            // ClosingGuard より後に登録したハンドラーが、2 回目の Closing（閉じ直し）で DataContext を替える。
-                            // 1 回目の判定は true、新しいビューモデルの判定は false を返す。
-                            int later = 0;
-                            window.Closing += (_, _) =>
-                            {
-                                if (++later == 2)
-                                {
-                                    window.DataContext = new EditorViewModel { Allow = false, DelayMs = delay };
-                                }
-                            };
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            break;
-                        case "close-before-show":
-                            // 表示する前に Close を呼ぶ。閉じ直し（2 回目の Closing）はほかのハンドラーが止める。
-                            // その後に表示して、もう一度 × を押す。
-                            int beforeShow = 0;
-                            window.Closing += (_, e) =>
-                            {
-                                if (++beforeShow == 2)
-                                {
-                                    e.Cancel = true;
-                                }
-                            };
-                            window.Close();
-                            After(500, () =>
-                            {
-                                window.Show();
-                                PostMessage(Hook(), WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            });
-                            break;
-                        case "closing-handler-throws":
-                            // ClosingGuard より先に登録した Closing のハンドラーが、2 回目の Closing（閉じ直し）で例外を投げる。
-                            // ClosingGuard は閉じ直しの前に付け直すので、そのとき最後に呼ばれる。
-                            int throwingClosings = 0;
-                            window.Closing += (_, _) =>
-                            {
-                                if (++throwingClosings == 2)
-                                {
-                                    throw new InvalidOperationException("closing handler failed");
-                                }
-                            };
-                            ClosingGuard.SetIsEnabled(window, true);
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
-                            break;
-                        case "closed-handler-throws":
-                            // ClosingGuard より先に Closed のハンドラーを登録し、閉じ直しで閉じたときに例外を投げさせる。
-                            window.Closed += (_, _) => throw new InvalidOperationException("closed handler failed");
-                            ClosingGuard.SetIsEnabled(window, true);
-                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             break;
                         case "close-retry":
                             // 1 回目の判定（300 ms で例外）が終わった後に、もう一度 × を押す。

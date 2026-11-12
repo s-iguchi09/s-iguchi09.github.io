@@ -7,16 +7,3 @@
 | × を 2 回、判定中かを見ない | 3 | 2 / 2 | 1 回目の判定の完了後・2 回目の完了より前 | なし | 閉じた |
 | × を 2 回、ClosingGuard | 3 | 1 / 1 | 判定の完了後 | なし | 閉じた |
 | ClosingGuard: 判定が例外、もう一度 × | 3 | 2 / 2 | 判定の完了後 | IOException | 閉じてプロセスも終了 |
-| ClosingGuard: 判定中に DataContext を替える（判定が true） | 1 | 1 / 1 | 発生しない | なし | 開いたまま |
-| 判定中に DataContext を替える・替わったかを確かめない（判定が true） | 2 | 1 / 1 | 判定の完了後 | なし | 閉じてプロセスも終了 |
-| ClosingGuard: 判定中に DataContext を null にして、もう一度 ×（判定が true） | 2 | 1 / 1 | 発生しない | なし | 開いたまま |
-| ClosingGuard: 閉じ直す前に DataContext を替えて Close()（判定が同期で完了） | 2 | 1 / 1 | 発生しない | なし | 開いたまま |
-| ClosingGuard: 閉じ直しをほかのハンドラーが止め、もう一度 × | 4 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
-| ClosingGuard: 後のハンドラーが Closing 中に入れ子のメッセージループを回し、もう一度 ×（同期で完了） | 3 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
-| ClosingGuard: 入れ子のループ（500 ms）が判定（300 ms）より長い、もう一度 × | 3 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
-| ClosingGuard: 先に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false） | 2 | 2 / 2 | 発生しない | なし | 開いたまま |
-| ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false） | 2 | 2 / 2 | 発生しない | なし | 開いたまま |
-| 同上・閉じ直しの前に付け直さない | 2 | 1 / 1 | 判定の完了後 | なし | 閉じてプロセスも終了 |
-| ClosingGuard: 表示前に Close()、閉じ直しが止められ、表示して ×（判定が true） | 4 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
-| ClosingGuard: 先に登録した Closed のハンドラーが閉じ直しで例外を投げる | 2 | 1 / 1 | 判定の完了後 | InvalidOperationException | 閉じてプロセスも終了 |
-| ClosingGuard: ほかの Closing のハンドラーが閉じ直しで例外を投げる | 2 | 1 / 1 | 判定の完了後 | InvalidOperationException | 閉じてプロセスも終了 |
