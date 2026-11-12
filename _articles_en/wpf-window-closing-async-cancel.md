@@ -510,7 +510,7 @@ To stop a window with an asynchronous check, follow this order.
 
 1. Set `Cancel = true` before the first `await`.
 2. After the check, if the window may close, call `Close` again through `Dispatcher.InvokeAsync` (to avoid the exception inside `Closing`).
-3. Remember "approved" and "checking" per window: let the second `Closing` through, and ignore × during a check. If `DataContext` was replaced during the check, do not close on the old result.
+3. Remember "approved" and "checking" per window: let the second `Closing` through, and stop × during a check and until closing again. If closing again is cancelled, go back to the state before the check. If `DataContext` was replaced during the check, do not close on the old result.
 4. For a window opened with `ShowDialog`, keep `DialogResult` before cancelling and set it back when closing again.
 
 Packaged as an attached property, this leaves the view model with nothing but `CanCloseAsync` to implement.
