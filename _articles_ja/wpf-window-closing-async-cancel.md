@@ -198,7 +198,7 @@ private bool ShouldCloseWindow(bool cancelled)
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.ja.md %}
 
-測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。11 行目は判定が同期で完了する条件で、閉じ直しが予約された後、それより先に（`DispatcherPriority.Send` で）`DataContext` を替えて `Close()` を呼んだ。12 行目は、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）だけを止め、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。各条件 1 回の記録。
+測り方は前の表と同じである。7 行目を除き、判定は `true`（閉じてよい）を返す。「× を 2 回」の行は、1 回目の 100 ms 後（判定の途中）に 2 回目の `WM_CLOSE` を送り、2 回目の判定が完了するかを読むため、アプリの `ShutdownMode` を `OnExplicitShutdown` にして閉じた後もプロセスを残した。7 行目は、1 回目の判定が 300 ms 後に `IOException` を投げ、2 回目の判定は `true` を返す。1 回目の `WM_CLOSE` の 600 ms 後に 2 回目を送った。8・9 行目は、`WM_CLOSE` の 100 ms 後（判定の途中）に、`DataContext` を別の `EditorViewModel` に替えた。9 行目は、`ClosingGuard` から `DataContext` が替わったかの確認を除いた簡略版である（状態を static のフィールドに持ち、`DialogResult` の扱いも無いが、この非モーダルの経路では同じ動作になる）。10 行目は、`WM_CLOSE` の 100 ms 後に `DataContext` を `null` にし、その 50 ms 後にもう一度 `WM_CLOSE` を送った。11 行目は判定が同期で完了する条件で、閉じ直しが予約された後、それより先に（`DispatcherPriority.Send` で）`DataContext` を替えて `Close()` を呼んだ。12 行目は、`ClosingGuard` の後に登録したハンドラーが 2 回目の `Closing`（閉じ直し）だけを止め、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。13 行目は判定が同期で完了する条件で、`ClosingGuard` の後に登録したハンドラーが 1 回目の `Closing` の中で `Dispatcher.PushFrame` による入れ子のメッセージループを 100 ms 回し（`MessageBox.Show` を開いている間に相当する）、1 回目の `WM_CLOSE` の 700 ms 後にもう一度 `WM_CLOSE` を送った。13 行目では、閉じ直しの `Close` が `InvalidOperationException` を投げたことを、`AppDomain.FirstChanceException` で記録して確かめた。各条件 1 回の記録。
 {: .table-caption}
 
 **1 行目: 閉じ直した `Close` でも `Closing` が発生する。**
@@ -211,6 +211,7 @@ private bool ShouldCloseWindow(bool cancelled)
 `async void` のハンドラーから漏れた例外は `Dispatcher` に投げ直されるため、`DispatcherUnhandledException` に届き（計測では `Handled` にしている）、ウィンドウは開いたまま残った。
 保存するものが無いときだけ例外になるので、これも手元の確認では見落としやすい。
 4 行目のように `Dispatcher.InvokeAsync` で `Close` を後回しにすると、`Closing` が終わってから呼ばれるので、同期で完了しても閉じる。
+ただし、後から登録したほかの `Closing` ハンドラーが入れ子のメッセージループ（`MessageBox.Show` など）を回すと、後回しにした `Close` も `Closing` の処理中に実行される（同じ表の 13 行目）。
 
 **5 行目: 判定の途中で × がもう一度押されると、判定が 2 回始まる。**
 2 回目の `Closing` でも `Cancel` は立てる必要がある（立てなければ、`OnClosing` が戻った時点で `Cancel` が `false` のままなので、「内部で何が起きているか」の経路のとおり閉じる）。
@@ -231,6 +232,12 @@ private bool ShouldCloseWindow(bool cancelled)
 11 行目は、閉じ直しが予約された後、それより先に `DataContext` を替えて `Close()` を呼んだ場合で、その `Close` は止まり、予約した閉じ直しも閉じなかった。
 12 行目は、閉じ直しをほかのハンドラーが止めた場合である。
 ウィンドウは開いたまま残り、もう一度 × を押すと判定をやり直して閉じた。
+13 行目は、後から登録したハンドラーが `Closing` の中で入れ子のメッセージループを回した場合である。
+判定が同期で完了していると、予約した閉じ直しがそのループの中で、`Closing` の処理中に実行され、`Close` が `InvalidOperationException` を投げた。
+`ClosingGuard` はこの例外を捕まえて判定の前の状態に戻すので、未処理の例外にはならず、ウィンドウは開いたまま残った。
+もう一度 × を押すと判定をやり直して閉じた。
+1 回目の × では閉じない点は残る。
+`Closing` の完了を確実に待ってから閉じ直す方法は、本記事では確かめていない。
 
 ### ShowDialog では DialogResult が失われる
 
@@ -399,6 +406,11 @@ public static class ClosingGuard
                     window.Close();
                 }
             }
+            catch (InvalidOperationException)
+            {
+                // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
+                // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
+            }
             finally
             {
                 // ほかのハンドラーが閉じるのを止めた場合など、ウィンドウが残ったら判定の前の状態に戻す。
@@ -494,6 +506,7 @@ public sealed class EditorViewModel : IClosingGuard
 
 ## 注意点
 
+- **`Closing` の中で `MessageBox.Show` などを呼ぶハンドラーと併用しない。** 判定が同期で完了すると、1 回目の × では閉じない（「先に Cancel を立て、判定の後で閉じ直す」の表の 13 行目）。確認ダイアログは `CanCloseAsync` の中で出す。
 - **保存や確認は `CanCloseAsync` にまとめる。** `ClosingGuard` より後に登録したハンドラーが閉じ直しを止めた場合は、`ClosingGuard` は判定の前の状態に戻る（「先に Cancel を立て、判定の後で閉じ直す」の表の 12 行目）。ほかのハンドラーの側で保存などを始める構成は測っていない。
 - **アプリのコードから `Shutdown` を呼ぶと、判定の結果は効かない。** `ClosingGuard` は `Shutdown` による `Closing` でも判定を始めるが、`Shutdown` の表の 1 行目のとおり、判定は完了しないまま打ち切られる。終了の操作は `Shutdown` ではなくウィンドウの `Close` に通し、`ShutdownMode` を `OnLastWindowClose` にしてアプリを終わらせる。`OnMainWindowClose` では、メインウィンドウが閉じた時点で、残ったウィンドウの判定は効かない（同じ表の 2 行目）。
 - **`Owner` を閉じると、所有されたウィンドウは判定を通らずに閉じる。** `Closing` が発生しないためである（`Shutdown` の表の 3 行目）。所有されたウィンドウに未保存の変更を持たせる場合は、`Owner` 側の判定でまとめて確かめる必要がある（この構成は測っていない）。

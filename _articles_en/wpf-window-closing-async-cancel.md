@@ -199,7 +199,7 @@ Closing again has the three pitfalls shown in the next table (the fourth is cove
 
 {% include tables/articles/wpf-window-closing-async-cancel/closing-close-again.en.md %}
 
-Measured as in the previous table. Except in row 7, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. Row 11 uses a check that completes synchronously; after closing again was scheduled, `DataContext` was replaced and `Close()` was called ahead of it (with `DispatcherPriority.Send`). In row 12, a handler registered after `ClosingGuard` cancels only the second `Closing` (closing again), and a second `WM_CLOSE` was sent 700 ms after the first. One run per condition.
+Measured as in the previous table. Except in row 7, the check returns `true` (may close). In the "× twice" rows, a second `WM_CLOSE` was sent 100 ms after the first (during the check), and the app's `ShutdownMode` was set to `OnExplicitShutdown` so that the process stayed alive after the window closed and the completion of the second check could be read. In row 7, the first check throws `IOException` after 300 ms and the second check returns `true`; the second `WM_CLOSE` was sent 600 ms after the first. In rows 8 and 9, `DataContext` was replaced with another `EditorViewModel` 100 ms after `WM_CLOSE` (during the check). Row 9 is a simplified `ClosingGuard` without the check for a replaced `DataContext` (it keeps its state in static fields and does not handle `DialogResult`, but behaves the same on this modeless path). In row 10, `DataContext` was set to `null` 100 ms after `WM_CLOSE`, and a second `WM_CLOSE` was sent 50 ms after that. Row 11 uses a check that completes synchronously; after closing again was scheduled, `DataContext` was replaced and `Close()` was called ahead of it (with `DispatcherPriority.Send`). In row 12, a handler registered after `ClosingGuard` cancels only the second `Closing` (closing again), and a second `WM_CLOSE` was sent 700 ms after the first. Row 13 uses a check that completes synchronously; a handler registered after `ClosingGuard` runs a nested message loop with `Dispatcher.PushFrame` for 100 ms inside the first `Closing` (equivalent to `MessageBox.Show` being open), and a second `WM_CLOSE` was sent 700 ms after the first. In row 13, that the close-again `Close` threw `InvalidOperationException` was confirmed by recording it with `AppDomain.FirstChanceException`. One run per condition.
 {: .table-caption}
 
 **Row 1: the `Close` called again also raises `Closing`.**
@@ -212,6 +212,7 @@ In row 3, where the check completes immediately, the continuation of the `await`
 An exception that escapes an `async void` handler is rethrown on the `Dispatcher`, so it reached `DispatcherUnhandledException` (marked `Handled` in the measurement), and the window stayed open.
 Because the exception occurs only when there is nothing to save, this one is also easy to miss in manual testing.
 Deferring `Close` with `Dispatcher.InvokeAsync`, as in row 4, makes it run after `Closing` has finished, and the window closes even when the check completes synchronously.
+However, if a `Closing` handler registered later runs a nested message loop (`MessageBox.Show`, for example), the deferred `Close` also runs while `Closing` is still in progress (row 13 of the same table).
 
 **Row 5: a second × click during the check starts the check twice.**
 The second `Closing` must still set `Cancel` (otherwise `Cancel` is still `false` when `OnClosing` returns, and the window closes along the path described in "What Happens Internally").
@@ -232,6 +233,12 @@ Another `Close` can also arrive between the end of the check and closing again.
 Row 11 replaces `DataContext` and calls `Close()` after closing again was scheduled but before it ran; that `Close` was stopped, and the scheduled close-again did not close the window either.
 Row 12 is the case where another handler cancels closing again.
 The window stayed open, and clicking × again re-ran the check and closed it.
+Row 13 is the case where a handler registered later runs a nested message loop inside `Closing`.
+When the check completes synchronously, the scheduled close-again runs inside that loop while `Closing` is still in progress, and `Close` threw `InvalidOperationException`.
+`ClosingGuard` catches this exception and goes back to the state before the check, so it did not become an unhandled exception, and the window stayed open.
+Clicking × again re-ran the check and closed it.
+The first × still does not close the window.
+A reliable way to wait for `Closing` to finish before closing again was not established in this article.
 
 ### ShowDialog loses DialogResult
 
@@ -400,6 +407,11 @@ public static class ClosingGuard
                     window.Close();
                 }
             }
+            catch (InvalidOperationException)
+            {
+                // If another Closing handler runs a nested message loop (MessageBox, for example),
+                // this runs while Closing is still in progress and Close throws. Do not close; check again on the next ×.
+            }
             finally
             {
                 // If the window remains (another handler cancelled the close, for example), go back to the state before the check.
@@ -494,6 +506,7 @@ The "ClosingGuard" rows of each table and all rows of the `Shutdown` table are t
 
 ## Notes
 
+- **Do not combine with handlers that call `MessageBox.Show` or similar inside `Closing`.** When the check completes synchronously, the first × does not close the window (row 13 of the table in "Set Cancel first, then close again after the check"). Show confirmation dialogs inside `CanCloseAsync`.
 - **Keep saving and confirmation inside `CanCloseAsync`.** If a handler registered after `ClosingGuard` cancels closing again, `ClosingGuard` goes back to the state before the check (row 12 of the table in "Set Cancel first, then close again after the check"). Setups where another handler starts a save of its own were not measured.
 - **When application code calls `Shutdown`, the result of the check has no effect.** `ClosingGuard` still starts a check on the `Closing` raised by `Shutdown`, but, as row 1 of the `Shutdown` table shows, the check is cut off before it completes. Route exit operations through the window's `Close` instead of `Shutdown`, and let `ShutdownMode` set to `OnLastWindowClose` end the application. Under `OnMainWindowClose`, the checks of the remaining windows have no effect once the main window has closed (row 2 of the same table).
 - **Closing the `Owner` closes owned windows without a check.** This is because `Closing` is not raised (row 3 of the `Shutdown` table). When an owned window can hold unsaved changes, they need to be checked together in the owner's check (this setup was not measured).

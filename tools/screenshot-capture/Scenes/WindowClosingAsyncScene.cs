@@ -35,6 +35,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         "記事の ClosingGuard で判定の途中に DataContext を null にしてからもう一度 WM_CLOSE を送っても、2 回目の Closing も止まり、古い判定が true を返してもウィンドウは開いたまま残ること",
         "記事の ClosingGuard で判定が同期で完了し、閉じ直しを予約した後、それより先に DataContext を替えて Close() を呼ぶと、その Close は止まり、予約した閉じ直しも閉じず、新しいビューモデルの判定も始まらないこと",
         "記事の ClosingGuard の閉じ直しを、後から登録したほかの Closing ハンドラーが止めると、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して（2 回目も true）閉じること",
+        "記事の ClosingGuard で判定が同期で完了し、後から登録した Closing ハンドラーが入れ子のメッセージループを回すと、予約した閉じ直しの Close が Closing の処理中に実行されて InvalidOperationException になり（ClosingGuard が捕まえ、未処理の例外にはならない）、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -93,6 +94,8 @@ internal sealed class WindowClosingAsyncScene : IScene
             "2|1 / 1|発生しない|なし|開いたまま"),
         new("guard", "allow", 300, "other-cancel", T("ClosingGuard: another handler cancels closing again, × again", "ClosingGuard: 閉じ直しをほかのハンドラーが止め、もう一度 ×"),
             "4|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
+        new("guard", "allow", 0, "nested-loop", T("ClosingGuard: a later Closing handler runs a nested message loop, × again (synchronous)", "ClosingGuard: 後のハンドラーが Closing 中に入れ子のメッセージループを回し、もう一度 ×（同期で完了）"),
+            "3|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -176,6 +179,13 @@ internal sealed class WindowClosingAsyncScene : IScene
             Condition condition = conditions[i];
             string[] log = await RunAsync(executable, workspace, condition, $"{name}-{i}");
             IReadOnlyList<Loc> row = Describe(condition, log);
+
+            // 入れ子のメッセージループの条件では、閉じ直しの Close が例外になったこと（ClosingGuard が捕まえた）を確かめる。
+            if (condition.Action == "nested-loop" && !log.Contains("first-chance:InvalidOperationException"))
+            {
+                throw new InvalidOperationException($"{condition.Label.Ja}: 閉じ直しの Close が例外になっていない: {string.Join(", ", log)}");
+            }
+
             VerifyExpected(condition, row, log);
             rows.Add(row);
         }
@@ -508,6 +518,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                             window.Close();
                         }
                     }
+                    catch (InvalidOperationException)
+                    {
+                        // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
+                        // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
+                    }
                     finally
                     {
                         // ほかのハンドラーが閉じるのを止めた場合など、ウィンドウが残ったら判定の前の状態に戻す。
@@ -744,6 +759,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                         _ => ShutdownMode.OnLastWindowClose,
                     },
                 };
+                AppDomain.CurrentDomain.FirstChanceException += (_, e) => Log.Write("first-chance:" + e.Exception.GetType().Name);
                 app.DispatcherUnhandledException += (_, e) =>
                 {
                     Log.Write("exception:" + e.Exception.GetType().Name);
@@ -870,6 +886,27 @@ internal sealed class WindowClosingAsyncScene : IScene
                                 {
                                     e.Cancel = true;
                                 }
+                            };
+                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                            After(700, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
+                            break;
+                        case "nested-loop":
+                            // ClosingGuard の後に登録したハンドラーが、1 回目の Closing の中で入れ子のメッセージループを
+                            // 100 ms 回す（MessageBox.Show を開いている間と同じく、予約済みの処理が実行される）。
+                            bool pushed = false;
+                            window.Closing += (_, _) =>
+                            {
+                                if (pushed)
+                                {
+                                    return;
+                                }
+
+                                pushed = true;
+                                var frame = new DispatcherFrame();
+                                var stop = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+                                stop.Tick += (_, _) => { stop.Stop(); frame.Continue = false; };
+                                stop.Start();
+                                Dispatcher.PushFrame(frame);
                             };
                             PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             After(700, () => PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
