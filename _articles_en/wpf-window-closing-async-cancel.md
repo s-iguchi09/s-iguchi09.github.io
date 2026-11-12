@@ -270,7 +270,7 @@ A dialog that closes while the value is `null` returns `false` (`DoDialogHide` i
 Setting the `DialogResult` from before the cancel back when closing again returns `true`, as in row 3.
 Row 4 closes the `Owner` during the check: `Closed` was raised on the dialog, `ClosingGuard` did nothing when closing again, and no unhandled exception occurred.
 `ShowDialog` did not return within 1.5 s in this case.
-Closing the `Owner` of a dialog without `ClosingGuard` (row 5) did not return either, so this is not caused by `ClosingGuard`.
+Closing the `Owner` of a dialog without `ClosingGuard` (row 5;  is not set there, because without  setting it closes the dialog at once) did not return either, so this is not caused by `ClosingGuard`.
 How `ShowDialog` returns when the `Owner` closes is outside the scope of this article and was not investigated further.
 On a modal window, setting `DialogResult` closes the window.
 
@@ -491,7 +491,8 @@ After the check, the state stays `State.Checking` until closing again, and becom
 This also stops any other `Close` that arrives between the check and closing again (row 11 of the same table).
 If the window is still there after closing again (another handler cancelled the close, for example), the state goes back to `State.Idle`, so the next × runs the check again (row 12 of the same table).
 Whether it is still there is judged by recording in `IsClosed` whether `Closed` was raised.
-A window on which `Close` was called before it was shown remains without a window handle (HWND) even if it did not close, so the handle cannot tell whether it remained. Row 18 of the same table is the result of this implementation, which uses `IsClosed`.
+A window on which `Close` was called before it was shown remains without a window handle (HWND) even if it did not close, so the handle cannot tell whether it remained.
+Row 18 of the same table is the result of this implementation, which uses `IsClosed`.
 If the window closed through another path (its `Owner` closing, for example) during the check, closing again does nothing (row 4 of the table in "ShowDialog loses DialogResult").
 A × clicked again during the check is stopped before `DataContext` is examined, so that the window does not close in the middle of a save even if `DataContext` has been replaced with something that is not an `IClosingGuard` (row 10 of the same table).
 When `DataContext` is not an `IClosingGuard`, the window closes without a check (row 5 of the first table).
