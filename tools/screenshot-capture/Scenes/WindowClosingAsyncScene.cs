@@ -42,6 +42,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         "閉じ直しの前に付け直す部分だけを除いた ClosingGuard（記事のコードから機械的に作る）では、後から登録したハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること",
         "表示する前に Close() を呼び、閉じ直しをほかのハンドラーが止めると、記事の ClosingGuard は判定の前の状態に戻り、その後に表示して WM_CLOSE を送ると判定をやり直して閉じること",
         "ShowDialog で開いたウィンドウの判定の途中で Owner を閉じると、ウィンドウの Closed が発生し、記事の ClosingGuard は閉じ直しで何もせず、未処理の例外は起きないこと（このとき ShowDialog は 1.5 秒以内に戻らなかった）。ClosingGuard の無いダイアログで Owner を閉じても、ShowDialog は 1.5 秒以内に戻らないこと",
+        "ClosingGuard より先に登録した Closed のハンドラーが閉じ直しで InvalidOperationException を投げると、ClosingGuard はそれを捕まえず、DispatcherUnhandledException に届くこと",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -112,6 +113,8 @@ internal sealed class WindowClosingAsyncScene : IScene
             "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
         new("guard", "allow", 300, "close-before-show", T("ClosingGuard: Close() before Show, closing again cancelled, then shown and × (true)", "ClosingGuard: 表示前に Close()、閉じ直しが止められ、表示して ×（判定が true）"),
             "4|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
+        new("plain", "allow", 300, "closed-handler-throws", T("ClosingGuard: a Closed handler registered before it throws when closing again", "ClosingGuard: 先に登録した Closed のハンドラーが閉じ直しで例外を投げる"),
+            "2|1 / 1|判定の完了後|InvalidOperationException|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -512,6 +515,12 @@ internal sealed class WindowClosingAsyncScene : IScene
                     "IsClosed", typeof(bool), typeof(ClosingGuard),
                     new PropertyMetadata(false));
 
+            // 閉じ直しの Close が Closing まで届いたか。届く前の例外（Closing の処理中に Close を呼んだもの）だけを捕まえるために使う。
+            private static readonly DependencyProperty ReachedClosingProperty =
+                DependencyProperty.RegisterAttached(
+                    "ReachedClosing", typeof(bool), typeof(ClosingGuard),
+                    new PropertyMetadata(false));
+
             private static readonly CommandBinding CloseBinding =
                 new(ApplicationCommands.Close, (sender, _) => ((Window)sender).Close());
 
@@ -539,6 +548,10 @@ internal sealed class WindowClosingAsyncScene : IScene
             {
                 var window = (Window)sender!;
                 var state = (State)window.GetValue(StateProperty);
+                if (state == State.Approved)
+                {
+                    window.SetValue(ReachedClosingProperty, true); // 閉じ直しの Close が Closing まで届いた
+                }
 
                 if (state == State.Approved && ReferenceEquals(window.DataContext, window.GetValue(ApprovedGuardProperty)))
                 {
@@ -606,6 +619,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                         window.Closing -= OnClosing;
                         window.Closing += OnClosing;
                     }
+                    window.SetValue(ReachedClosingProperty, false);
                     try
                     {
                         if (dialogResult is bool result)
@@ -617,11 +631,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                             window.Close();
                         }
                     }
-                    catch (InvalidOperationException) when (!(bool)window.GetValue(IsClosedProperty))
+                    catch (InvalidOperationException) when (!(bool)window.GetValue(ReachedClosingProperty))
                     {
                         // ほかの Closing ハンドラーが入れ子のメッセージループ（MessageBox など）を回すと、
-                        // Closing の処理中にここが実行され、Close が例外になる。閉じずに、次の × で判定し直す。
-                        // ウィンドウが閉じた後の例外は捕まえない。
+                        // Closing の処理中にここが実行され、Close が Closing を起こす前に例外になる。閉じずに、次の × で判定し直す。
+                        // Closing まで届いた後の例外（ほかの Closing・Closed のハンドラーが投げたもの）は捕まえない。
                     }
                     finally
                     {
@@ -1076,6 +1090,12 @@ internal sealed class WindowClosingAsyncScene : IScene
                                 window.Show();
                                 PostMessage(Hook(), WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             });
+                            break;
+                        case "closed-handler-throws":
+                            // ClosingGuard より先に Closed のハンドラーを登録し、閉じ直しで閉じたときに例外を投げさせる。
+                            window.Closed += (_, _) => throw new InvalidOperationException("closed handler failed");
+                            ClosingGuard.SetIsEnabled(window, true);
+                            PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             break;
                         case "close-retry":
                             // 1 回目の判定（300 ms で例外）が終わった後に、もう一度 × を押す。
