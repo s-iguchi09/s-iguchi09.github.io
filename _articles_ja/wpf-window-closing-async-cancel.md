@@ -486,7 +486,8 @@ public static class ClosingGuard
 閉じてよいと判定したビューモデルを `ApprovedGuard` に覚えるのは、閉じ直しの `Closing` で `DataContext` が替わった場合のためである（「先に Cancel を立て、判定の後で閉じ直す」の表の 15 行目）。
 `InvalidOperationException` を捕まえるのは、同じ表の 13・14 行目のためである。
 閉じ直しの中で、ほかの `Closing` や `Closed` のハンドラーが投げた例外は、この catch には来ない。
-それらはウィンドウ プロシージャの中で `Dispatcher` に渡され、`Close` の呼び出し元には戻らずに `DispatcherUnhandledException` に届いた（同じ表の 19・20 行目）。
+それらはウィンドウ プロシージャの中で `Dispatcher` に渡され、`Close` の呼び出し元には戻らずに `DispatcherUnhandledException` に届いた（同じ表の 19 行目。`IsClosed` が `false` のままなので、呼び出し元に戻っていれば catch が捕まえたはずである）。
+20 行目もその例外は `DispatcherUnhandledException` に届いたが、ウィンドウが閉じて `IsClosed` が `true` になるので、どちらの経路でも catch は素通りする。
 `Closing` のハンドラーが投げた 20 行目では、ウィンドウは閉じた（`WmClose` は、`Closing` のハンドラーから例外が漏れると閉じてから投げ直す）。
 閉じ直す直前に `Closing` のハンドラーを付け直すのは、16 行目のためである。
 判定の後で `DataContext` が判定したビューモデルのままかを確かめるのは、「先に Cancel を立て、判定の後で閉じ直す」の表の 8・9 行目のためである。

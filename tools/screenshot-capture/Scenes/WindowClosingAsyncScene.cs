@@ -1106,7 +1106,6 @@ internal sealed class WindowClosingAsyncScene : IScene
                             // ClosingGuard より先に Closed のハンドラーを登録し、閉じ直しで閉じたときに例外を投げさせる。
                             window.Closed += (_, _) => throw new InvalidOperationException("closed handler failed");
                             ClosingGuard.SetIsEnabled(window, true);
-
                             PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                             break;
                         case "close-retry":

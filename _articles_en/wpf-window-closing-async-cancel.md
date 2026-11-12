@@ -487,7 +487,8 @@ On a modeless window, `DialogResult` stays `null`, so the window is closed again
 Remembering the view model that approved closing in `ApprovedGuard` handles a `DataContext` replaced during the close-again `Closing` (row 15 of the table in "Set Cancel first, then close again after the check").
 Catching `InvalidOperationException` handles rows 13 and 14 of the same table.
 Exceptions thrown by other `Closing` or `Closed` handlers during closing again do not reach this catch.
-They were handed to the `Dispatcher` inside the window procedure and reached `DispatcherUnhandledException` without returning to the caller of `Close` (rows 19 and 20 of the same table).
+They were handed to the `Dispatcher` inside the window procedure and reached `DispatcherUnhandledException` without returning to the caller of `Close` (row 19 of the same table; `IsClosed` stays `false` there, so the catch would have caught the exception had it returned to the caller).
+In row 20 the exception also reached `DispatcherUnhandledException`, but the window closed and `IsClosed` became `true`, so the catch lets it through on either path.
 In row 20, where a `Closing` handler threw, the window closed (`WmClose` closes the window and then rethrows when an exception escapes a `Closing` handler).
 Re-subscribing the `Closing` handler right before closing again handles row 16.
 The check after the check, that `DataContext` is still the view model that was asked, handles rows 8 and 9 of the table in "Set Cancel first, then close again after the check".
