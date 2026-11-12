@@ -25,6 +25,7 @@ verifies:
   - "判定が 300 ms かかり、後から登録した Closing ハンドラーが 500 ms の入れ子のメッセージループを回す場合も、閉じ直しの Close がそのループの中で InvalidOperationException になり、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること"
   - "ClosingGuard より先に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えると、記事の ClosingGuard はその Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること"
   - "ClosingGuard より後に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えても、記事の ClosingGuard は閉じ直しの前に付け直して最後に呼ばれるので、その Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること"
+  - "閉じ直しの前に付け直す部分だけを除いた ClosingGuard（記事のコードから機械的に作る）では、後から登録したハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること"
   - "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）"
   - "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること"
 images:

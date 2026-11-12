@@ -16,3 +16,4 @@
 | ClosingGuard: nested loop (500 ms) longer than the check (300 ms), × again | 3 | 2 / 2 | after the check completes | none | closed, process ended |
 | ClosingGuard: an earlier Closing handler replaces DataContext while closing again (new check false) | 2 | 2 / 2 | not raised | none | open |
 | ClosingGuard: a later Closing handler replaces DataContext while closing again (new check false) | 2 | 2 / 2 | not raised | none | open |
+| same as above, without re-subscribing before closing again | 2 | 1 / 1 | after the check completes | none | closed, process ended |

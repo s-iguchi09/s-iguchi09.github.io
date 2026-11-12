@@ -39,6 +39,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         "判定が 300 ms かかり、後から登録した Closing ハンドラーが 500 ms の入れ子のメッセージループを回す場合も、閉じ直しの Close がそのループの中で InvalidOperationException になり、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること",
         "ClosingGuard より先に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えると、記事の ClosingGuard はその Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
         "ClosingGuard より後に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えても、記事の ClosingGuard は閉じ直しの前に付け直して最後に呼ばれるので、その Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
+        "閉じ直しの前に付け直す部分だけを除いた ClosingGuard（記事のコードから機械的に作る）では、後から登録したハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -105,6 +106,8 @@ internal sealed class WindowClosingAsyncScene : IScene
             "2|2 / 2|発生しない|なし|開いたまま"),
         new("guard", "allow", 300, "datacontext-change-later", T("ClosingGuard: a later Closing handler replaces DataContext while closing again (new check false)", "ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false）"),
             "2|2 / 2|発生しない|なし|開いたまま"),
+        new("guard-no-resubscribe", "allow", 300, "datacontext-change-later", T("same as above, without re-subscribing before closing again", "同上・閉じ直しの前に付け直さない"),
+            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -352,10 +355,41 @@ internal sealed class WindowClosingAsyncScene : IScene
         return content.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(l => l.Split('\t')[0]).ToArray();
     }
 
+    /// <summary>
+    /// 記事の ClosingGuard から、閉じ直しの前にハンドラーを付け直す部分だけを除いた変種（ClosingGuardNoResubscribe）を作る。
+    /// 手で写すと記事のコードとずれるので、検証用アプリのソースから機械的に作る。
+    /// </summary>
+    private static string WithoutResubscribe(string source)
+    {
+        // 検証用アプリのソースは行頭の字下げが外れた形で、ファイル スコープの名前空間（ClosingProbe）にある。
+        string text = source.Replace("\r\n", "\n");
+        int a = text.IndexOf("\npublic static class ClosingGuard\n", StringComparison.Ordinal);
+        int b = a < 0 ? -1 : text.IndexOf("\n#nullable restore", a, StringComparison.Ordinal);
+        if (a < 0 || b < 0)
+        {
+            throw new InvalidOperationException("検証用アプリのソースに、記事の ClosingGuard が見つからない。");
+        }
+
+        string guard = text[a..b];
+        const string resubscribe =
+            "            if (GetIsEnabled(window))\n" +
+            "            {\n" +
+            "                window.Closing -= OnClosing;\n" +
+            "                window.Closing += OnClosing;\n" +
+            "            }\n";
+        if (!guard.Contains(resubscribe, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("記事の ClosingGuard に、付け直しの部分が見つからない。");
+        }
+
+        guard = guard.Replace(resubscribe, "").Replace("class ClosingGuard", "class ClosingGuardNoResubscribe").Replace("typeof(ClosingGuard)", "typeof(ClosingGuardNoResubscribe)");
+        return "\n#nullable enable\n" + guard + "\n#nullable restore\n";
+    }
+
     private static async Task<string> BuildProbeAsync(string workspace)
     {
         await File.WriteAllTextAsync(Path.Combine(workspace, "probe.csproj"), ProjectFile, new UTF8Encoding(false));
-        await File.WriteAllTextAsync(Path.Combine(workspace, "Program.cs"), ProbeSource, new UTF8Encoding(false));
+        await File.WriteAllTextAsync(Path.Combine(workspace, "Program.cs"), ProbeSource + WithoutResubscribe(ProbeSource), new UTF8Encoding(false));
 
         using var build = Process.Start(new ProcessStartInfo("dotnet", "build -c Release -v q --nologo")
         {
@@ -540,8 +574,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                     window.SetValue(StateProperty, State.Approved);
 
                     // 付け直して最後に呼ばれるようにし、ほかのハンドラーが閉じ直しの Closing で DataContext を替えても確かめられるようにする。
-                    window.Closing -= OnClosing;
-                    window.Closing += OnClosing;
+                    if (GetIsEnabled(window))
+                    {
+                        window.Closing -= OnClosing;
+                        window.Closing += OnClosing;
+                    }
                     try
                     {
                         if (dialogResult is bool result)
@@ -809,6 +846,11 @@ internal sealed class WindowClosingAsyncScene : IScene
                     "naive" => NaiveXaml,
                     _ => PlainXaml,
                 });
+
+                if (handler == "guard-no-resubscribe")
+                {
+                    ClosingGuardNoResubscribe.SetIsEnabled(window, true);
+                }
 
                 if (handler == "guard-late")
                 {
