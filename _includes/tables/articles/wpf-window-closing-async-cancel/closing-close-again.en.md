@@ -17,3 +17,4 @@
 | ClosingGuard: an earlier Closing handler replaces DataContext while closing again (new check false) | 2 | 2 / 2 | not raised | none | open |
 | ClosingGuard: a later Closing handler replaces DataContext while closing again (new check false) | 2 | 2 / 2 | not raised | none | open |
 | same as above, without re-subscribing before closing again | 2 | 1 / 1 | after the check completes | none | closed, process ended |
+| ClosingGuard: Close() before Show, closing again cancelled, then shown and × (true) | 4 | 2 / 2 | after the check completes | none | closed, process ended |
