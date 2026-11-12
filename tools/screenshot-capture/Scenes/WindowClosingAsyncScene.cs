@@ -38,7 +38,7 @@ internal sealed class WindowClosingAsyncScene : IScene
         "記事の ClosingGuard で判定が同期で完了し、後から登録した Closing ハンドラーが入れ子のメッセージループを回すと、予約した閉じ直しの Close が Closing の処理中に実行されて InvalidOperationException になり（ClosingGuard が捕まえ、未処理の例外にはならない）、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること",
         "判定が 300 ms かかり、後から登録した Closing ハンドラーが 500 ms の入れ子のメッセージループを回す場合も、閉じ直しの Close がそのループの中で InvalidOperationException になり、ウィンドウは開いたまま残り、もう一度 WM_CLOSE を送ると判定をやり直して閉じること",
         "ClosingGuard より先に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えると、記事の ClosingGuard はその Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
-        "ClosingGuard より後に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えると、新しいビューモデルの判定は始まらず、ウィンドウが閉じること（記事に制約として書いている）",
+        "ClosingGuard より後に登録した Closing ハンドラーが閉じ直しの Closing で DataContext を替えても、記事の ClosingGuard は閉じ直しの前に付け直して最後に呼ばれるので、その Closing を止めて新しいビューモデルの判定を始め、新しい判定が false ならウィンドウは開いたまま残ること",
         "表の各行の値が、条件ごとに書いた期待値と一致すること（一致しなければ、どの表も書き換えない）",
         "終了ボタンに ApplicationCommands.Close を割り当てると、ClosingGuard の判定を通り、判定が false なら閉じず、true なら閉じてプロセスが終わること",
     ];
@@ -103,8 +103,8 @@ internal sealed class WindowClosingAsyncScene : IScene
             "3|2 / 2|判定の完了後|なし|閉じてプロセスも終了"),
         new("guard-late", "allow", 300, "close", T("ClosingGuard: an earlier Closing handler replaces DataContext while closing again (new check false)", "ClosingGuard: 先に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false）"),
             "2|2 / 2|発生しない|なし|開いたまま"),
-        new("guard", "deny", 300, "datacontext-change-later", T("ClosingGuard: a later Closing handler replaces DataContext while closing again (constraint)", "ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（制約）"),
-            "2|1 / 1|判定の完了後|なし|閉じてプロセスも終了"),
+        new("guard", "allow", 300, "datacontext-change-later", T("ClosingGuard: a later Closing handler replaces DataContext while closing again (new check false)", "ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false）"),
+            "2|2 / 2|発生しない|なし|開いたまま"),
     ];
 
     private static readonly Condition[] Shutdown =
@@ -538,6 +538,10 @@ internal sealed class WindowClosingAsyncScene : IScene
 
                     window.SetValue(ApprovedGuardProperty, guard);
                     window.SetValue(StateProperty, State.Approved);
+
+                    // 付け直して最後に呼ばれるようにし、ほかのハンドラーが閉じ直しの Closing で DataContext を替えても確かめられるようにする。
+                    window.Closing -= OnClosing;
+                    window.Closing += OnClosing;
                     try
                     {
                         if (dialogResult is bool result)
@@ -600,7 +604,7 @@ internal sealed class WindowClosingAsyncScene : IScene
 
         public sealed class EditorViewModel : IClosingGuard
         {
-            public bool Allow { get; set; }
+            public bool Allow { get; init; }
 
             public int DelayMs { get; init; }
 
@@ -963,8 +967,7 @@ internal sealed class WindowClosingAsyncScene : IScene
                             break;
                         case "datacontext-change-later":
                             // ClosingGuard より後に登録したハンドラーが、2 回目の Closing（閉じ直し）で DataContext を替える。
-                            // 1 回目の判定は true（Allow を上書き）、新しいビューモデルの判定は false を返す。
-                            ((EditorViewModel)window.DataContext).Allow = true;
+                            // 1 回目の判定は true、新しいビューモデルの判定は false を返す。
                             int later = 0;
                             window.Closing += (_, _) =>
                             {

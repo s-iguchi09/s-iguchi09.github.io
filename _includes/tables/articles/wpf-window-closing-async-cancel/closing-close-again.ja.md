@@ -15,4 +15,4 @@
 | ClosingGuard: 後のハンドラーが Closing 中に入れ子のメッセージループを回し、もう一度 ×（同期で完了） | 3 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
 | ClosingGuard: 入れ子のループ（500 ms）が判定（300 ms）より長い、もう一度 × | 3 | 2 / 2 | 判定の完了後 | なし | 閉じてプロセスも終了 |
 | ClosingGuard: 先に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false） | 2 | 2 / 2 | 発生しない | なし | 開いたまま |
-| ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（制約） | 2 | 1 / 1 | 判定の完了後 | なし | 閉じてプロセスも終了 |
+| ClosingGuard: 後に登録したハンドラーが閉じ直しの Closing で DataContext を替える（新しい判定は false） | 2 | 2 / 2 | 発生しない | なし | 開いたまま |
