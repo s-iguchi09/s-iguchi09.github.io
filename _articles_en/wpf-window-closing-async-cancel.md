@@ -270,7 +270,7 @@ A dialog that closes while the value is `null` returns `false` (`DoDialogHide` i
 Setting the `DialogResult` from before the cancel back when closing again returns `true`, as in row 3.
 Row 4 closes the `Owner` during the check: `Closed` was raised on the dialog, `ClosingGuard` did nothing when closing again, and no unhandled exception occurred.
 `ShowDialog` did not return within 1.5 s in this case.
-Closing the `Owner` of a dialog without `ClosingGuard` (row 5;  is not set there, because without  setting it closes the dialog at once) did not return either, so this is not caused by `ClosingGuard`.
+Closing the `Owner` of a dialog without `ClosingGuard` (row 5; `DialogResult` is not set there, because without `ClosingGuard` setting it closes the dialog at once) did not return either, so this is not caused by `ClosingGuard`.
 How `ShowDialog` returns when the `Owner` closes is outside the scope of this article and was not investigated further.
 On a modal window, setting `DialogResult` closes the window.
 
