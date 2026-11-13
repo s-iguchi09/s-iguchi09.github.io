@@ -36,7 +36,7 @@ public static class PasswordBoxAssist
         if (d is not PasswordBox box) return;
         string value = (string?)e.NewValue ?? string.Empty;
 
-        // 入力で書き戻した値と同じなら設定し直さない。設定し直すとキャレットが先頭へ戻る。
+        // 入力で書き戻した値と同じなら設定し直さない。Password を設定すると、次の入力が先頭に入る。
         if (box.Password != value) box.Password = value;
     }
 
@@ -74,7 +74,7 @@ public static class NaivePasswordAssist
     }
 }
 
-/// <summary>流通している書き方の 2: 購読はするが、値を比べずに Password を設定し直す。</summary>
+/// <summary>流通している書き方の 2: 購読はするが、値を比べずに Password を設定し直す（次の入力が先頭に入る）。</summary>
 public static class UncheckedPasswordAssist
 {
     public static readonly DependencyProperty AttachProperty =
@@ -155,6 +155,9 @@ public sealed class CommandParameterViewModel
     /// <summary>直前の実行で受け取ったパスワードの長さ。実行されていなければ -1。</summary>
     public int LastLength { get; private set; } = -1;
 
+    /// <summary>直前の実行で受け取ったものの型名。</summary>
+    public string LastType { get; private set; } = "(none)";
+
     private static bool HasInput(PasswordBox box)
     {
         using SecureString password = box.SecurePassword;
@@ -163,8 +166,12 @@ public sealed class CommandParameterViewModel
 
     private void SignIn(object parameter)
     {
+        LastType = parameter?.GetType().Name ?? "null";
         switch (parameter)
         {
+            case string text:
+                LastLength = text.Length;
+                break;
             case SecureString bound:
                 LastLength = bound.Length;
                 break;
@@ -176,5 +183,24 @@ public sealed class CommandParameterViewModel
 
                 break;
         }
+    }
+}
+
+/// <summary>記事の方法 2 のビューモデル（記事のコードと同じ）。計測のため、受け取った長さだけを記録する。</summary>
+public sealed class SignInViewModel
+{
+    public SignInViewModel() => SignInCommand = new RelayCommand<PasswordBox>(SignIn);
+
+    public RelayCommand<PasswordBox> SignInCommand { get; }
+
+    /// <summary>計測用。直前の実行で読んだ SecurePassword の長さ。</summary>
+    public int LastLength { get; private set; } = -1;
+
+    private void SignIn(PasswordBox box)
+    {
+        using SecureString password = box.SecurePassword;
+
+        // 認証の処理に password を渡す。
+        LastLength = password.Length;
     }
 }

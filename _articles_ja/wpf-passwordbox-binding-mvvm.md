@@ -4,16 +4,16 @@ title: "WPF の PasswordBox.Password をバインドできない理由と、MVVM
 date: 2026-11-13
 category: WPF
 image: /images/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.svg
-excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML でバインドすると XamlParseException になる。添付プロパティと CommandParameter の 2 つの渡し方を、キャレット・ボタンの有効化・メモリに残る平文で実測比較する。"
+excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML でバインドすると XamlParseException になる。添付プロパティと CommandParameter の 2 つの渡し方を、ボタンの有効化とメモリに残る平文で実測比較する。"
 ---
 
 ## 概要
 
-ログイン画面を MVVM で作ると、`TextBox` と同じ感覚で `PasswordBox` の `Password` をビューモデルの `string` にバインドしたくなる。
-しかし `Password="{Binding Password}"` と書いた XAML は、読み込みの時点で例外になる。
-回避策としてネットで流通している添付プロパティにも、そのままでは入力が届かない書き方や、入力した文字の順序が逆になる書き方が混ざっている。
+MVVM でログイン画面を作るとき、`TextBox` と同じように `PasswordBox` の `Password` をビューモデルの `string` にバインドする書き方が最初に試される。
+しかし `Password="{Binding Password}"` と書いた XAML は、読み込むと例外になる。
+回避策として Web 上で広く紹介されている添付プロパティにも、入力がビューモデルに届かない書き方と、入力した文字の順序が逆になる書き方が混ざっている。
 
-本記事では、バインドできない原因を例外のメッセージから確かめたうえで、ビューモデルへパスワードを渡す 2 つの方法（添付プロパティで `string` と同期する / `CommandParameter` で `PasswordBox` を渡す）を実装する。
+本記事では、バインドできない原因を例外と型の情報から確かめたうえで、ビューモデルへパスワードを渡す 2 つの方法（添付プロパティで `string` と同期する / `CommandParameter` で `PasswordBox` を渡す）を実装する。
 2 つの方法は、ボタンの有効・無効を入力に追従させられるか、パスワードの平文がプロセスのメモリに残るかで結果が分かれる。
 後者はプロセスのメモリを実際に走査して確かめた。
 
@@ -21,9 +21,9 @@ excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML �
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 6 以降の WPF
-- アーキテクチャ: MVVM（ビューモデルの基底クラスと `RelayCommand` は自前の最小実装）
-- 検証環境: .NET 10 / Windows 11
+- フレームワーク: WPF（.NET）
+- アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand` / `RelayCommand<T>` は自前の最小実装で、`CanExecuteChanged` はビューモデルが `RaiseCanExecuteChanged` を呼んだときだけ発生する（`CommandManager.RequerySuggested` にはつながない）
+- 検証環境: .NET 10 / Windows 11（64 ビットのプロセス）
 - 入力の再現: キーボードからの入力と同じく、1 文字ずつ `TextComposition` を送って `PasswordBox` に入力した
 
 ---
@@ -36,29 +36,30 @@ excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML �
 <PasswordBox Password="{Binding Password}" />
 ```
 
-この XAML は、ウィンドウを表示する前の読み込みで `XamlParseException` になる。
-メッセージは、`Password` が依存関係プロパティではないためバインドを設定できない、というものだった。
+この XAML を読み込むと `XamlParseException` になる。
+メッセージは、`PasswordBox` の `Password` プロパティには `Binding` を設定できず、`Binding` は `DependencyObject` の `DependencyProperty` にしか設定できない、というものだった。
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-binding-error.ja.md %}
 
-`Password` にバインドを設定したときの例外と、`PasswordBox` の型の性質。.NET 10 / Windows 11 で実測。メッセージは UI カルチャを ja-JP にして読んだもの。
+`Password` にバインドを設定したときの例外と、`PasswordBox` の型の性質。.NET 10 / Windows 11 で実測。XAML は `XamlReader.Parse` で読み込み、メッセージは UI カルチャを ja-JP にして 1 行目を読んだ。
 {: .table-caption}
 
 ---
 
 ## 原因・背景
 
-`Binding` を設定できるのは、`DependencyObject` の依存関係プロパティだけである。
-`PasswordBox` には `PasswordProperty` も `SecurePasswordProperty` も無く、`Password` と `SecurePassword` は普通の CLR プロパティである（表の 3 行目）。
+`PasswordBox` には `PasswordProperty` も `SecurePasswordProperty` も無く、`Password` と `SecurePassword` は依存関係プロパティではない（表の 3 行目）。
 `PasswordBox` は `INotifyPropertyChanged` も実装していない。
-そのため `Password` はバインドのターゲットにならず、値の変化を外へ知らせる手段は `PasswordChanged` イベントだけになる。
+そのため `Password` はバインドのターゲットにならず、バインドのソースにしても値の変化は伝わらない。
+入力の変化を知るために用意されているのは `PasswordChanged` イベントである（[PasswordBox](https://learn.microsoft.com/dotnet/api/system.windows.controls.passwordbox) の Examples）。
 
 依存関係プロパティにしなかった理由は、公式ドキュメントには書かれていない。
 ドキュメントが述べているのは、`Password` を読むと平文がメモリに出ること、それを避けるには `SecurePassword` で `SecureString` として受け取ること、の 2 点である（[PasswordBox.Password](https://learn.microsoft.com/dotnet/api/system.windows.controls.passwordbox.password)）。
 内部でも、パスワードは `string` ではなく `SecureString` のフィールドに保持されている（[PasswordBox のデモページ](/ja/apps/wpf-standard-control-demo/passwordbox.html)で、同じ環境で確かめている）。
 
-`PasswordBox` は `sealed` なので、派生クラスで依存関係プロパティを足すこともできない。
+`PasswordBox` は `sealed` なので（表の 2 行目）、派生クラスで依存関係プロパティを足すこともできない。
 ビューモデルへ渡すには、`PasswordBox` の外側から仕組みを足すことになる。
+本記事では、その手段として添付プロパティと `CommandParameter` の 2 つを比べる。
 
 ---
 
@@ -69,7 +70,7 @@ excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML �
 `PasswordBox` に添付プロパティ `BoundPassword` を付け、これをビューモデルの `string` にバインドする。
 入力されたら `PasswordChanged` で `BoundPassword` を書き換え、ビューモデルが値を変えたら `Password` を書き換える。
 
-この方向の実装は広く流通しているが、書き方によって次の 2 つの不具合が出た。
+この方向の実装は広く紹介されているが、書き方によって次の 2 つの不具合が出た。
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-attached-property.ja.md %}
 
@@ -81,12 +82,16 @@ excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML �
 購読されないまま入力が進み、ビューモデルの `Password` は空のままだった。
 
 2 つ目は、変更コールバックで値を比べずに `Password` を設定し直す書き方である。
-入力のたびに「ビューモデルへ書き戻す → 変更コールバックで同じ値を `Password` に設定する」が起き、キャレットが先頭へ戻る。
-「abc」と入力した結果は `"cba"` になった。
+入力のたびに `PasswordChanged` で `BoundPassword` が書き換わり、その変更コールバックが同じ値を `Password` に設定し直す。
+コードから `Password` を設定すると、その直後の入力は先頭に入る（表の「添付プロパティなし」の行。「ab」の後に設定してから「c」を入力すると `"cab"`）。
+これが 1 文字ごとに起きるため、「abc」と入力した結果は `"cba"` になった。
 
 記事の実装では、購読を専用の `Attach` プロパティに分け、`Password` と値が同じなら設定し直さない。
 
 ```csharp
+using System.Windows;
+using System.Windows.Controls;
+
 public static class PasswordBoxAssist
 {
     public static readonly DependencyProperty AttachProperty =
@@ -115,7 +120,7 @@ public static class PasswordBoxAssist
         if (d is not PasswordBox box) return;
         string value = (string?)e.NewValue ?? string.Empty;
 
-        // 入力で書き戻した値と同じなら設定し直さない。設定し直すとキャレットが先頭へ戻る。
+        // 入力で書き戻した値と同じなら設定し直さない。Password を設定すると、次の入力が先頭に入る。
         if (box.Password != value) box.Password = value;
     }
 
@@ -127,7 +132,7 @@ public static class PasswordBoxAssist
 }
 ```
 
-`Attach` は値が `false` から `true` に変わったときに必ず変更コールバックが呼ばれるため、ビューモデルの初期値に関係なく購読される。
+`Attach` は値が `false` から `true` に変わったときに変更コールバックが呼ばれるため、ビューモデルの初期値に関係なく購読される。
 `BoundPassword` は `BindsTwoWayByDefault` にしてあるので、XAML で `Mode=TwoWay` を書かなくても入力がビューモデルへ戻る。
 
 ビューモデルは、パスワードを `string` のプロパティとして持つ。
@@ -170,21 +175,22 @@ XAML では、`Attach` と `BoundPassword` の両方を付ける。
 </StackPanel>
 ```
 
-この実装では「abc」がそのまま `"abc"` としてビューモデルに届き、ビューモデルが `Password = ""` にすると `PasswordBox` も空になった（表の「記事の添付プロパティ」の行）。
+この実装では「abc」がそのまま `"abc"` としてビューモデルに届き、ビューモデルが `Password = ""` にすると `PasswordBox` も空になった（表の「記事の添付プロパティ」の行と、続く 2 行）。
 ボタンは入力の前は無効で、入力すると有効になった。
 
 ### 方法 2: CommandParameter で PasswordBox を渡し、実行時に SecurePassword を読む
 
 ビューモデルにパスワードを持たせず、ボタンを押したときだけ受け取る方法である。
-ここでも、流通している書き方の 1 つは期待どおりに動かなかった。
+ここでも、よく見かける書き方は期待どおりに動かなかった。
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-command-parameter.ja.md %}
 
 `CommandParameter` の書き方と、コマンドが受け取った値。.NET 10 / Windows 11 で実測。「abc」は 1 文字ずつ入力した。
 {: .table-caption}
 
-`CommandParameter="{Binding SecurePassword, ElementName=PasswordInput}"` と書くと、「abc」と入力してから押しても、コマンドに渡る `SecureString` の長さは 0 だった。
-`SecurePassword` も変更を通知しないプロパティなので（原因の表の 3 行目）、バインドは読み込みの時点の値（空の `SecureString`）を 1 回読んだきりになる。
+`CommandParameter` に `{Binding SecurePassword, ElementName=PasswordInput}` や `{Binding Password, ElementName=PasswordInput}` を書くと、「abc」と入力してから押しても、コマンドに渡る値の長さは 0 だった。
+入力の前の値（空）がそのまま渡っている。
+どちらのプロパティにも変更の通知が無いため（問題の節の表の 3 行目）、バインドが値を読み直すきっかけが無い。
 
 `PasswordBox` そのものを渡し、コマンドを実行するときに `SecurePassword` を読めば、入力した長さ（3）になった。
 
@@ -198,9 +204,13 @@ XAML では、`Attach` と `BoundPassword` の両方を付ける。
 ```
 
 ビューモデルは `PasswordBox` を受け取るコマンドを公開し、実行の中だけ `SecureString` を扱う。
+本記事の `RelayCommand<T>` は、パラメーターが `T` でなければ実行できないものとして扱う。
 `SecurePassword` は読むたびに新しいコピーを返すので（デモページで確認）、`using` で破棄する。
 
 ```csharp
+using System.Security;
+using System.Windows.Controls;
+
 public sealed class SignInViewModel
 {
     public SignInViewModel() => SignInCommand = new RelayCommand<PasswordBox>(SignIn);
@@ -218,69 +228,72 @@ public sealed class SignInViewModel
 
 この方法では、ビューモデルは入力が変わったことを知らない。
 `CanExecute` で `SecurePassword.Length > 0` を見る書き方にしても、ボタンは入力の前も後も無効のままだった（表の最後の行）。
-本記事の `RelayCommand` は `CanExecuteChanged` を自前のイベントで発生させるので、ビューモデルが呼ばない限り `CanExecute` は評価し直されない。
-`CommandManager.RequerySuggested` につなぐ実装のコマンドでは結果が変わりうるが、本記事では測っていない。
+入力しても `CanExecuteChanged` を発生させるコードが無いため、ボタンの状態は入力の前のまま変わらない。
+`CommandManager.RequerySuggested` につなぐ実装のコマンドでは、`TextBox` へのキー入力で問い直されることを[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)で実測している。
+`PasswordBox` との組み合わせでも結果が変わりうるが、本記事では測っていない。
 
 ---
 
 ## 判断の軸
 
-- **ボタンの有効・無効を入力に追従させるか。** 「パスワードが空なら押せない」を実現するには、ビューモデルが入力のたびに変更を知る必要がある。
-- **パスワードの平文をプロセスのメモリに残してよいか。** `string` は不変で、使い終わってもコードから消せない（[SecureString のドキュメント](https://learn.microsoft.com/dotnet/api/system.security.securestring)の String versus SecureString）。
+- **ボタンの有効・無効を入力に追従させる必要があるか。** 「パスワードが空なら押せない」を実現するには、ビューモデルが入力のたびに変更を知る必要がある。
+- **ビューモデルから値を消す必要があるか。** 認証に失敗したときに入力欄を空にする、といった操作である。
+- **パスワードの平文をプロセスのメモリに残してよいか。** `string` は不変で、使い終わってもコードから消せない（[SecureString](https://learn.microsoft.com/dotnet/api/system.security.securestring) の String versus SecureString）。
 - **ビューモデルが WPF のコントロールの型に依存してよいか。** 方法 2 のビューモデルは `PasswordBox` を引数に取るため、単体テストでも `PasswordBox` を作ることになる。
-
-2 つ目の軸は、プロセスのコミット済みメモリをすべて読み、パスワードの UTF-16 の並びがどこかに残っているかを探して確かめた。
-パスワードは条件ごとに乱数で作り直し、探す側のコードがパスワードの並びを作らないよう、マスクした形でだけ保持して 1 文字ずつ照合した。
-
-{% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.ja.md %}
-
-各操作の後に、12 文字のパスワードの UTF-16 の並びがプロセスのメモリに見つかったか。.NET 10 / Windows 11 で実測。条件ごとに乱数のパスワードを作り直し、1 文字ずつ `TextComposition` で入力した。探したのは UTF-16 の連続した並びだけで、ほかの形（ANSI、分割された断片など）は探していない。
-{: .table-caption}
-
-`PasswordBox` に入力しただけ、`SecurePassword` を読んだだけでは、並びは見つからなかった。
-`SecureString` を `Marshal.SecureStringToGlobalAllocUnicode` で非マネージドのメモリへ展開しても、`ZeroFreeGlobalAllocUnicode` で消した後には見つからなかった。
-
-一方、`Password` を 1 回読むと、参照を捨てた後でも並びが見つかった。
-方法 1 でビューモデルの `string` に同期した場合も見つかり、ビューモデルを空にして `GC.Collect` を実行した後でも見つかった。
-ビューモデルのプロパティを空にしても、それまでに作られた平文は消せない。
 
 ---
 
 ## 軸ごとの結論
 
+平文がメモリに残るかは、プロセスの読み取り可能なコミット済みメモリをすべて読み、パスワードの UTF-16 の並びを探して確かめた。
+パスワードは条件ごとに乱数で作り直し、探す側のコードがパスワードの並びを作らないよう、マスクした形でだけ保持して 1 文字ずつ照合した。
+
+{% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.ja.md %}
+
+各操作の後に、12 文字のパスワードの UTF-16 の並びがプロセスのメモリに見つかったか。.NET 10 / Windows 11（64 ビット）で実測。条件ごとに乱数のパスワードを作り直し、1 文字ずつ `TextComposition` で入力して、12 文字届いたことを確かめてから操作した。走査したのは `VirtualQuery` でコミット済みかつ読み取り可能な領域（アクセス不可とガードページを除く）で、2 バイト境界に揃った連続した並びだけを探した。ANSI や分割された断片は探していない。
+{: .table-caption}
+
+`PasswordBox` に入力しただけ、`SecurePassword` を読んだだけでは、並びは見つからなかった。
+`SecureString` を `Marshal.SecureStringToGlobalAllocUnicode` で非マネージドのメモリへ展開すると、その直後は見つかり、`ZeroFreeGlobalAllocUnicode` で消した後には見つからなかった。
+展開した直後に見つかったことは、この走査が非マネージドのメモリも読めていることを示している。
+
+一方、`Password` を 1 回読むと、参照を捨てた後でも並びが見つかった。
+方法 1 でビューモデルの `string` に同期した場合も見つかった。
+同期の後に `PasswordBox.Clear()` で空にして（ビューモデルも空文字列になる）、`GC.Collect` を実行した後でも見つかった。
+
 | 軸 | 方法 1: 添付プロパティで string と同期 | 方法 2: CommandParameter で PasswordBox を渡す |
 |---|---|---|
-| ボタンの有効・無効（入力の前 / 後） | False / True。入力に追従する | False / False。追従しない |
-| ビューモデルから値を消す | `Password = ""` で `PasswordBox` も空になる | ビューモデルは値を持たない |
-| 平文の並びがメモリに残るか | 同期した時点で残り、GC の後も残っていた | `SecurePassword` を読むだけなら見つからなかった |
+| ボタンの有効・無効 | 入力に追従した（添付プロパティの表の最後の行） | 本記事の `RelayCommand` では追従しなかった（CommandParameter の表の最後の行） |
+| ビューモデルから値を消す | `Password = ""` で `PasswordBox` も空になった | ビューモデルは値を持たない |
+| 平文の並びがメモリに残るか | 同期した時点で残り、空にして GC を実行した後も残っていた | `SecurePassword` を読むだけなら見つからなかった |
 | ビューモデルが依存する型 | `string` だけ | `PasswordBox`（WPF） |
 
 入力に応じた有効化やビューモデルからの消去が要るなら、方法 1 を選ぶ。
 その代わり、入力した時点から平文の `string` がプロセスに残ることを受け入れることになる。
 
 平文を `string` にする回数を減らしたいなら、方法 2 を選ぶ。
-ただし、ボタンを常に押せる状態にして、空のパスワードは実行の中で弾く設計になる。
+ただし本記事の `RelayCommand` では、ボタンを常に押せる状態にして、空のパスワードは実行の中で弾く設計になる。
 
 ---
 
 ## 注意点
 
-- **方法 2 の利点は、`string` に直すまでしか続かない。** 認証に使う API が `string` を受け取るなら、そこへ渡すために作った `string` は、表の「`Password` を 1 回読んだ」と同じ状態になる。`SecureString` を受け取る API（`NetworkCredential` の `SecureString` のコンストラクターなど）か、非マネージドのメモリへ展開してすぐ消す経路で渡せる場合に限って意味がある。
-- **`SecureString` は新規の開発で使うことを推奨されていない。** ドキュメントは、.NET（Core）での新規開発や .NET Framework からの移行では `SecureString` を使わないよう勧め、パスワードはプロセスの外に保存した資格情報へのハンドルで扱うことを代替に挙げている（[SecureString](https://learn.microsoft.com/dotnet/api/system.security.securestring) の Remarks）。Windows 以外では中身が暗号化されないことも明記されている。方法 2 はメモリ上の露出を減らすだけで、ダンプやスワップからの漏えいを防ぐものではない。
-- **本記事のメモリの計測は、「完全な並びが残るか」だけを見ている。** 残っていないことが、断片やほかの符号化でも残っていないことを示すわけではない。
+- **方法 2 の利点は、`string` に直すまでしか続かない。** 認証に使う API が `string` を受け取るなら、そこへ渡すために `string` を作ることになり、メモリの表の「`Password` を 1 回読んだ」の行と同じく平文の並びができる。`SecureString` を受け取る API（`NetworkCredential` の `SecureString` を取るコンストラクターなど）でも、受け取った先で `string` に直されないかは API ごとに確かめる必要がある。
+- **`SecureString` は新規の開発で使うことを推奨されていない。** ドキュメントは、.NET（Core）での新規開発や .NET Framework からの移行では `SecureString` を使わないよう勧め、パスワードはプロセスの外に保存した資格情報へのハンドルで扱うことを代替に挙げている。Windows 以外では中身が暗号化されないことと、プロセスのダンプやスワップファイルからは読まれうることも明記されている（[SecureString](https://learn.microsoft.com/dotnet/api/system.security.securestring) の Remarks の How secure is SecureString?）。方法 2 は、メモリ上に平文の `string` ができる機会を減らすだけである。
+- **本記事のメモリの計測は、「完全な並びが残るか」だけを見ている。** 見つからなかったことが、断片やほかの符号化でも残っていないことを示すわけではない。
 - **方法 1 の比較（`box.Password != value`）も `Password` を読む。** 同期するたびに `string` が作られる。方法 1 は、平文の `string` を作ることを前提にした方法である。
-- **`CommandParameter` に `SecurePassword` や `Password` をバインドしない。** どちらも変更を通知しないため、読み込みの時点の値のまま押される。
+- **`CommandParameter` に `SecurePassword` や `Password` をバインドしない。** どちらも、入力の前の値がそのままコマンドに渡る。
 
 ---
 
 ## まとめ
 
 `PasswordBox.Password` は依存関係プロパティではないため、XAML でバインドすると `XamlParseException` になる。
-`PasswordBox` は `sealed` なので、ビューモデルへ渡すには添付プロパティか `CommandParameter` を使う。
+`PasswordBox` は `sealed` なので外側から仕組みを足すことになり、本記事ではその手段として添付プロパティと `CommandParameter` を比べた。
 
-ボタンの有効・無効を入力に追従させる画面では、方法 1 の添付プロパティを使う。
+ボタンの有効・無効を入力に追従させる画面や、ビューモデルから入力欄を空にしたい画面では、方法 1 の添付プロパティを使う。
 購読は専用の `Attach` プロパティで行い、`Password` は値が違うときだけ設定し直す。
-平文の `string` がプロセスに残ることを避けたい画面では、方法 2 で `PasswordBox` を渡し、実行の中で `SecurePassword` を読んで破棄する。
+平文の `string` を作る回数を減らしたい画面では、方法 2 で `PasswordBox` を渡し、実行の中で `SecurePassword` を読んで破棄する。
 どちらを選んでも、認証の API が `string` を要求する時点で平文はメモリに出るので、メモリ上の秘匿を強く求める要件ではパスワードをプロセスの外の資格情報で扱う設計を検討する。
 
 ---

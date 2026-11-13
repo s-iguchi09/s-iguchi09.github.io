@@ -28,28 +28,29 @@ internal sealed class PasswordBoxBindingScene : IScene
 
     public IReadOnlyList<string> Verifies =>
     [
-        "XAML で Password=\"{Binding Password}\" と書くと XamlParseException になり、その内側の例外のメッセージ",
+        "XAML（XamlReader.Parse）で Password=\"{Binding Password}\" と書くと XamlParseException になり、そのメッセージの 1 行目（en-US と ja-JP）",
         "PasswordBox が sealed であること。PasswordProperty と SecurePasswordProperty の識別子が無く、INotifyPropertyChanged も実装していないこと",
         "添付プロパティの変更コールバックの中で PasswordChanged を購読する書き方は、ビューモデルの初期値が添付プロパティの既定値と同じ（空文字列）だと購読されず、入力がビューモデルに届かないこと",
-        "PasswordChanged の中でビューモデルへ書き戻し、変更コールバックで値を比べずに Password を設定し直す書き方は、\"abc\" を 1 文字ずつ入力した結果の並び",
-        "記事の添付プロパティ（購読用の bool と、値を比べてから設定する BoundPassword）で、入力がビューモデルへ届き、ビューモデルから空文字列を設定すると PasswordBox も空になること。ボタンの IsEnabled が入力の前後で変わること",
-        "CommandParameter を {Binding SecurePassword, ElementName=…} にすると、入力した後に実行しても渡る SecureString の長さが 0 であること。{Binding ElementName=…} で PasswordBox を渡して実行時に SecurePassword を読むと入力した長さになること",
-        "PasswordBox を CommandParameter で渡し、CanExecute で SecurePassword の長さを見る場合、入力の前後でボタンの IsEnabled が変わらないこと",
-        "PasswordBox に入力しただけ、SecurePassword を読んだだけ、SecureString を非マネージドのメモリへ展開して ZeroFreeGlobalAllocUnicode で消した後、Password を 1 回読んだ後、添付プロパティでビューモデルの string に同期した後、その後ビューモデルを空にして GC を実行した後に、プロセスのメモリにパスワードの UTF-16 の並びが残っているか",
+        "変更コールバックで値を比べずに Password を設定し直す書き方は、\"abc\" を 1 文字ずつ入力すると \"cba\" になること。添付プロパティを使わずに、\"ab\" を入力した後でコードから Password = \"ab\" を設定して \"c\" を入力すると、\"c\" が先頭に入ること",
+        "記事の添付プロパティ（購読用の bool と、値を比べてから設定する BoundPassword）で、入力がビューモデルへ届き、ビューモデルから空文字列を設定すると PasswordBox も空になること。CanExecuteChanged を自前のイベントで発生させる RelayCommand のボタンの IsEnabled が、入力の前後で False から True に変わること",
+        "CommandParameter を {Binding SecurePassword, ElementName=…} や {Binding Password, ElementName=…} にすると、入力した後に押しても渡る値の長さが 0 であること",
+        "記事の SignInViewModel（RelayCommand<PasswordBox>）に {Binding ElementName=…} で PasswordBox を渡し、実行時に SecurePassword を読むと入力した長さになること",
+        "PasswordBox を CommandParameter で渡し、CanExecute で SecurePassword の長さを見る場合、CanExecuteChanged を自前のイベントで発生させる RelayCommand では、入力の前後でボタンの IsEnabled が変わらないこと",
+        "64 ビットのプロセスで、読み取り可能なコミット済みメモリを走査し、各条件でパスワード（12 文字）の UTF-16 の並びが見つかるか。条件は、入力しただけ、SecurePassword を読んだ後、非マネージドのメモリへ展開した直後と ZeroFreeGlobalAllocUnicode の後、Password を 1 回読んだ後、添付プロパティでビューモデルの string に同期した後、同期の後に PasswordBox.Clear() で空にして GC を実行した後。各条件で入力が 12 文字届いたことも確かめる",
     ];
 
     private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
     public async Task CaptureAsync(SceneContext context)
     {
-        // Behavior() は、原因（3 行）・添付プロパティ（5 行）・CommandParameter（3 行）の順に行を返す。記事の節ごとに表を分ける。
+        // Behavior() は、原因（3 行）・添付プロパティ（6 行）・CommandParameter（4 行）の順に行を返す。記事の節ごとに表を分ける。
         List<IReadOnlyList<Loc>> rows = Behavior();
-        if (rows.Count != 11) throw new InvalidOperationException($"行の数が想定と異なる: {rows.Count}");
+        if (rows.Count != 13) throw new InvalidOperationException($"行の数が想定と異なる: {rows.Count}");
         Loc[] headers = [T("case", "条件"), T("measured", "計測値")];
 
         await context.SaveTableAsync("PasswordBox: binding to Password", headers, rows[..3], "passwordbox-binding-error.svg");
-        await context.SaveTableAsync("PasswordBox: syncing with an attached property", headers, rows[3..8], "passwordbox-attached-property.svg");
-        await context.SaveTableAsync("PasswordBox: passing it as CommandParameter", headers, rows[8..], "passwordbox-command-parameter.svg");
+        await context.SaveTableAsync("PasswordBox: syncing with an attached property", headers, rows[3..9], "passwordbox-attached-property.svg");
+        await context.SaveTableAsync("PasswordBox: passing it as CommandParameter", headers, rows[9..], "passwordbox-command-parameter.svg");
 
         await context.SaveTableAsync(
             "PasswordBox: is the whole password left in process memory as UTF-16?",
@@ -102,7 +103,7 @@ internal sealed class PasswordBoxBindingScene : IScene
             Type(box, "abc");
             rows.Add([T("subscribe in the change callback, ViewModel starts with \"\": type \"abc\"",
                         "変更コールバックの中で購読・ビューモデルの初期値 \"\": \"abc\" を入力"),
-                      T($"ViewModel.Password \"{vm.Password}\"", $"ViewModel.Password \"{vm.Password}\"")]);
+                      $"ViewModel.Password \"{vm.Password}\""]);
         }
 
         // 3. 添付プロパティ: 購読はするが、値を比べずに Password を設定し直す書き方。
@@ -114,7 +115,18 @@ internal sealed class PasswordBoxBindingScene : IScene
                       $"PasswordBox \"{box.Password}\" / ViewModel \"{vm.Password}\""]);
         }
 
-        // 4. 記事の添付プロパティ。
+        // 4. 添付プロパティを使わずに、Password を設定した直後の入力がどこに入るか。
+        {
+            var box = DemoProbe.Layout(new PasswordBox(), 200, 30);
+            Type(box, "ab");
+            box.Password = "ab";
+            Type(box, "c");
+            rows.Add([T("no attached property: type \"ab\", set Password = \"ab\" in code, then type \"c\"",
+                        "添付プロパティなし: \"ab\" を入力し、コードで Password = \"ab\" を設定してから \"c\" を入力"),
+                      $"PasswordBox \"{box.Password}\""]);
+        }
+
+        // 5. 記事の添付プロパティ。
         {
             var (box, vm, button) = BuildLogin(
                 """<PasswordBox local:PasswordBoxAssist.Attach="True" local:PasswordBoxAssist.BoundPassword="{Binding Password}" />""");
@@ -129,37 +141,39 @@ internal sealed class PasswordBoxBindingScene : IScene
             rows.Add([T("button IsEnabled before / after typing", "ボタンの IsEnabled: 入力の前 / 後"), $"{before} / {after}"]);
         }
 
-        // 5. CommandParameter で渡す。
+        // 6. CommandParameter で渡す。
+        foreach (string path in new[] { "SecurePassword", "Password" })
         {
-            var (box, vm, button) = BuildCommandParameter("""CommandParameter="{Binding SecurePassword, ElementName=PasswordInput}" """, requireInput: false);
+            var (box, vm, button) = BuildCommandParameter($$"""CommandParameter="{Binding {{path}}, ElementName=PasswordInput}" """, requireInput: false);
             Type(box, "abc");
             Invoke(button);
-            rows.Add([T("CommandParameter=\"{Binding SecurePassword, ElementName=PasswordInput}\": type \"abc\", then click",
-                        "CommandParameter=\"{Binding SecurePassword, ElementName=PasswordInput}\": \"abc\" を入力して押す"),
-                      $"SecureString.Length {vm.LastLength}"]);
+            rows.Add([T($"CommandParameter=\"{{Binding {path}, ElementName=PasswordInput}}\": type \"abc\", then click",
+                        $"CommandParameter=\"{{Binding {path}, ElementName=PasswordInput}}\": \"abc\" を入力して押す"),
+                      $"{vm.LastType}.Length {vm.LastLength}"]);
         }
 
         {
-            var (box, vm, button) = BuildCommandParameter("""CommandParameter="{Binding ElementName=PasswordInput}" """, requireInput: false);
-            Type(box, "abc");
-            Invoke(button);
-            rows.Add([T("CommandParameter=\"{Binding ElementName=PasswordInput}\": type \"abc\", then click (read SecurePassword in Execute)",
-                        "CommandParameter=\"{Binding ElementName=PasswordInput}\": \"abc\" を入力して押す（Execute で SecurePassword を読む）"),
+            var panel = SceneContext.LoadXaml<StackPanel>(CommandParameterXaml.Replace("{0}", """CommandParameter="{Binding ElementName=PasswordInput}" """));
+            var vm = new SignInViewModel();
+            panel.DataContext = vm;
+            DemoProbe.Layout(panel, 300, 100);
+            Type((PasswordBox)panel.Children[0], "abc");
+            Invoke((Button)panel.Children[1]);
+            rows.Add([T("article's SignInViewModel, CommandParameter=\"{Binding ElementName=PasswordInput}\": type \"abc\", then click",
+                        "記事の SignInViewModel・CommandParameter=\"{Binding ElementName=PasswordInput}\": \"abc\" を入力して押す"),
                       $"SecureString.Length {vm.LastLength}"]);
-            rows.Add([T("same, with CanExecute checking SecurePassword.Length > 0: button IsEnabled before / after typing",
-                        "同じ渡し方で CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後"),
-                      Enabled()]);
         }
 
-        return rows;
-
-        string Enabled()
         {
             var (box, _, button) = BuildCommandParameter("""CommandParameter="{Binding ElementName=PasswordInput}" """, requireInput: true);
             bool before = button.IsEnabled;
             Type(box, "abc");
-            return $"{before} / {button.IsEnabled}";
+            rows.Add([T("same, with CanExecute checking SecurePassword.Length > 0: button IsEnabled before / after typing",
+                        "同じ渡し方で CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後"),
+                      $"{before} / {button.IsEnabled}"]);
         }
+
+        return rows;
     }
 
     private const string LoginXaml = """
@@ -215,60 +229,77 @@ internal sealed class PasswordBoxBindingScene : IScene
 
     private static List<IReadOnlyList<Loc>> Memory()
     {
+        // MEMORY_BASIC_INFORMATION の並び（PartitionId を含む）は 64 ビットのもの。
+        if (!Environment.Is64BitProcess) throw new InvalidOperationException("メモリの走査は 64 ビットのプロセスでだけ行う。");
+
         var rows = new List<IReadOnlyList<Loc>>();
         using var scanner = new MemoryScanner();
 
-        void Row(Loc label, Action<PasswordBox> act, Func<PasswordBox>? build = null)
+        Loc Found(int count) => count == 0 ? T("no", "なし") : T("yes", "あり");
+
+        // 入力した後に act を実行し、走査する。act が自分で走査した結果を返す場合は、それを使う。
+        void Row(Loc label, Func<PasswordBox, MaskedSecret, int?> act, Func<PasswordBox>? build = null)
         {
             var secret = MaskedSecret.Create(12);
             PasswordBox box = build?.Invoke() ?? DemoProbe.Layout(new PasswordBox(), 200, 30);
             TypeMasked(box, secret);
-            act(box);
-            int count = scanner.Count(secret);
-            rows.Add([label, count == 0 ? T("no", "なし") : T("yes", "あり")]);
+            using (SecureString typed = box.SecurePassword)
+            {
+                // 入力が届いていなければ「なし」が偽陰性になるので止める。
+                if (typed.Length != secret.Length) throw new InvalidOperationException($"入力が届いていない: {typed.Length}");
+            }
+
+            int count = act(box, secret) ?? scanner.Count(secret);
+            rows.Add([label, Found(count)]);
             box.Clear();
         }
 
-        Row(T("typed into a PasswordBox only", "PasswordBox に入力しただけ"), _ => { });
+        Row(T("typed into a PasswordBox only", "PasswordBox に入力しただけ"), (_, _) => null);
 
-        Row(T("read SecurePassword (and disposed it)", "SecurePassword を読んだ（Dispose した）"), box =>
+        Row(T("read SecurePassword (and disposed it)", "SecurePassword を読んだ（Dispose した）"), (box, _) =>
         {
-            using SecureString s = box.SecurePassword;
-            _ = s.Length;
+            using SecureString value = box.SecurePassword;
+            return null;
         });
 
+        // 非マネージドのメモリへ展開した直後（消す前）にも走査し、その領域を読めていることを確かめる。
+        int beforeZeroFree = -1;
         Row(T("copied SecurePassword to unmanaged memory, then ZeroFreeGlobalAllocUnicode",
-              "SecurePassword を非マネージドのメモリへ展開し、ZeroFreeGlobalAllocUnicode で消した"), box =>
+              "SecurePassword を非マネージドのメモリへ展開し、ZeroFreeGlobalAllocUnicode で消した"), (box, secret) =>
         {
-            using SecureString s = box.SecurePassword;
-            nint p = Marshal.SecureStringToGlobalAllocUnicode(s);
+            using SecureString value = box.SecurePassword;
+            nint p = Marshal.SecureStringToGlobalAllocUnicode(value);
+            beforeZeroFree = scanner.Count(secret);
             Marshal.ZeroFreeGlobalAllocUnicode(p);
+            return null;
         });
+        rows.Insert(rows.Count - 1,
+            [T("copied SecurePassword to unmanaged memory (before ZeroFreeGlobalAllocUnicode)",
+               "SecurePassword を非マネージドのメモリへ展開した直後（ZeroFreeGlobalAllocUnicode の前）"), Found(beforeZeroFree)]);
 
-        Row(T("read Password once (string, reference dropped)", "Password を 1 回読んだ（string。参照は捨てた）"), box =>
+        Row(T("read Password once (string, reference dropped)", "Password を 1 回読んだ（string。参照は捨てた）"), (box, _) =>
         {
             ReadOnce(box);
+            return null;
         });
 
-        LoginViewModel? vm = null;
-        PasswordBox BuildBound()
-        {
-            var (box, model, _) = BuildLogin(
-                """<PasswordBox local:PasswordBoxAssist.Attach="True" local:PasswordBoxAssist.BoundPassword="{Binding Password}" />""");
-            vm = model;
-            return box;
-        }
+        PasswordBox BuildBound() => BuildLogin(
+            """<PasswordBox local:PasswordBoxAssist.Attach="True" local:PasswordBoxAssist.BoundPassword="{Binding Password}" />""").Box;
 
         Row(T("synced to a ViewModel string with the attached property", "添付プロパティでビューモデルの string に同期した"),
-            _ => { }, BuildBound);
+            (_, _) => null, BuildBound);
 
-        Row(T("same, then ViewModel.Password = \"\" and GC.Collect", "同じ同期の後、ViewModel.Password = \"\" にして GC.Collect を実行した"),
-            _ =>
+        // 空にする操作が完全な平文を新たに作らないよう、Clear() で空にする（ビューモデルへは空文字列が書き戻される）。
+        Row(T("same, then PasswordBox.Clear() (the ViewModel becomes \"\") and GC.Collect",
+              "同じ同期の後、PasswordBox.Clear() で空にして（ビューモデルも \"\" になる）GC.Collect を実行した"),
+            (box, _) =>
             {
-                vm!.Password = string.Empty;
+                box.Clear();
+                if (box.DataContext is not LoginViewModel { Password: "" }) throw new InvalidOperationException("ビューモデルが空になっていない");
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
+                return null;
             },
             BuildBound);
 
