@@ -5,7 +5,7 @@ seo_title: "WPF PasswordBox.Password Binding: Two Ways for MVVM"
 date: 2026-11-13
 category: WPF
 image: /images/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.svg
-excerpt: "PasswordBox.Password is not a dependency property, so binding it throws. Attached property vs. CommandParameter, measured on button state and leftover plaintext."
+excerpt: "PasswordBox.Password is not a dependency property, so binding it throws. Attached property vs. CommandParameter, compared on button state and leftover plaintext."
 ---
 
 ## Overview
