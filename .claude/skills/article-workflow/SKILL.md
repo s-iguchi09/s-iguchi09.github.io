@@ -550,7 +550,7 @@ dev.to のログインとアカウントの操作は Claude が行わない(ロ�
 2. 投稿の id を `https://dev.to/api/articles?username=s-iguchi09&_=<時刻>` の一覧から、URL が一致する要素で取る。その id で `https://dev.to/api/articles/<id>` を開き、`body_markdown` に `## Related Articles` の節があるかを確かめる(`&_=<時刻>` は一覧のキャッシュを避けるため)
 3. 本文の末尾の `## Related Articles` にスクリプトが出した 1 行を足した本文を作る。節が無ければ、本文の末尾に節を足してから行を足す(front matter とほかの行は変えない)
 4. 追記先と追記する 1 行を示して承認を得てから保存する。API なら `PUT` を送り、Chrome なら `https://dev.to/dashboard` で投稿を開いて Edit → 本文を直して Save changes を押す。保存の後、公開ページの本文に新しいリンクが出たことを確かめる(Chrome なら `find` / `read_page`、API なら読み直した `body_markdown`)
-5. `node .claude/skills/article-workflow/devto-export.js <slug>` をもう一度実行し、「既にリンク済み」になることを確かめる。出ないときは、手順 2 と同じ一覧(`&_=<時刻>` 付き)を取り直し、その投稿の本文にリンクがあるかを確かめる
+5. `node .claude/skills/article-workflow/devto-export.js <slug>` をもう一度実行し、「既にリンク済み」になることを確かめる。出ないときは、手順 2 の詳細 `https://dev.to/api/articles/<id>` を取り直し、`body_markdown` にリンクがあるかを確かめる(一覧の API は本文を返さない)
 6. 完了報告に、追記した投稿のタイトルと URL を書く。作ったタブは閉じる
 
 編集された記事は dev.to 側で再クロールされるため、新記事への経路がそこで作られる。
