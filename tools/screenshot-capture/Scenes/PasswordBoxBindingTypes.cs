@@ -139,16 +139,12 @@ public sealed class LoginViewModel : ObservableObject
 }
 
 /// <summary>
-/// 記事の方法 2 のビューモデル。CommandParameter で受け取ったものを記録する。
-/// SecurePassword をバインドした場合は SecureString が、PasswordBox を渡した場合は PasswordBox が届く。
+/// CommandParameter に SecurePassword や Password をバインドしたときに、コマンドが受け取ったものを記録する。
+/// SecurePassword なら SecureString が、Password なら string が届く。CanExecute は持たない。
 /// </summary>
 public sealed class CommandParameterViewModel
 {
-    public CommandParameterViewModel(bool requireInput)
-    {
-        SignInCommand = new RelayCommand<object>(SignIn,
-            p => !requireInput || p is not PasswordBox box || HasInput(box));
-    }
+    public CommandParameterViewModel() => SignInCommand = new RelayCommand<object>(SignIn);
 
     public RelayCommand<object> SignInCommand { get; }
 
@@ -157,12 +153,6 @@ public sealed class CommandParameterViewModel
 
     /// <summary>直前の実行で受け取ったものの型名。</summary>
     public string LastType { get; private set; } = "(none)";
-
-    private static bool HasInput(PasswordBox box)
-    {
-        using SecureString password = box.SecurePassword;
-        return password.Length > 0;
-    }
 
     private void SignIn(object parameter)
     {
@@ -174,13 +164,6 @@ public sealed class CommandParameterViewModel
                 break;
             case SecureString bound:
                 LastLength = bound.Length;
-                break;
-            case PasswordBox box:
-                using (SecureString password = box.SecurePassword)
-                {
-                    LastLength = password.Length;
-                }
-
                 break;
         }
     }

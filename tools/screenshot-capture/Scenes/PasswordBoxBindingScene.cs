@@ -154,7 +154,7 @@ internal sealed class PasswordBoxBindingScene : IScene
         // 6. CommandParameter で渡す。
         foreach (string path in new[] { "SecurePassword", "Password" })
         {
-            var (box, vm, button) = BuildCommandParameter($$"""CommandParameter="{Binding {{path}}, ElementName=PasswordInput}" """, requireInput: false);
+            var (box, vm, button) = BuildCommandParameter($$"""CommandParameter="{Binding {{path}}, ElementName=PasswordInput}" """);
             Type(box, "abc");
             Invoke(button);
             rows.Add([T($"CommandParameter=\"{{Binding {path}, ElementName=PasswordInput}}\": type \"abc\", then click",
@@ -220,10 +220,10 @@ internal sealed class PasswordBoxBindingScene : IScene
         </StackPanel>
         """;
 
-    private static (PasswordBox Box, CommandParameterViewModel Vm, Button Button) BuildCommandParameter(string parameter, bool requireInput)
+    private static (PasswordBox Box, CommandParameterViewModel Vm, Button Button) BuildCommandParameter(string parameter)
     {
         var panel = SceneContext.LoadXaml<StackPanel>(CommandParameterXaml.Replace("{0}", parameter));
-        var vm = new CommandParameterViewModel(requireInput);
+        var vm = new CommandParameterViewModel();
         panel.DataContext = vm;
         DemoProbe.Layout(panel, 300, 100);
         return ((PasswordBox)panel.Children[0], vm, (Button)panel.Children[1]);
