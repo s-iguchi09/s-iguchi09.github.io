@@ -190,7 +190,7 @@ internal sealed class PasswordBoxBindingScene : IScene
             string parameter = button.CommandParameter?.GetType().Name ?? "null";
             vm.SignInCommand.RaiseCanExecuteChanged();
             rows.Add([T("RelayCommand<PasswordBox> with CanExecute checking SecurePassword.Length > 0: button IsEnabled before / after typing (CommandParameter; after RaiseCanExecuteChanged)",
-                        "RelayCommand<PasswordBox> の CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後（CommandParameter の型、RaiseCanExecuteChanged を呼んだ後）"),
+                        "RelayCommand<PasswordBox> の CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後（CommandParameter の型; RaiseCanExecuteChanged を呼んだ後の IsEnabled）"),
                       $"{before} / {after} ({parameter}; {button.IsEnabled})"]);
         }
 
