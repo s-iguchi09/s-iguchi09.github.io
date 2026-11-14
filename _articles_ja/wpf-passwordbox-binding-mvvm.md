@@ -48,7 +48,7 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 
 ## 原因・背景
 
-`PasswordBox` には `PasswordProperty` も `SecurePasswordProperty` も無く、`Password` と `SecurePassword` は依存関係プロパティではない（表の 1 行目の例外と 3 行目）。
+`PasswordBox` には `PasswordProperty` も `SecurePasswordProperty` も無く、`Password` と `SecurePassword` は依存関係プロパティではない（表の 3 行目。`Password` については 1 行目の例外も同じことを示す）。
 `PasswordBox` は `INotifyPropertyChanged` も実装していない。
 そのため `Password` はバインドのターゲットにならない。
 バインドのソースにした場合も、入力による値の変化は伝わらなかった（後述の CommandParameter の表）。
@@ -228,7 +228,8 @@ public sealed class SignInViewModel
 ```
 
 この方法では、ビューモデルは入力が変わったことを知らない。
-`CanExecute` で `SecurePassword.Length > 0` を見る書き方にしても、ボタンは入力の前も後も無効のままだった（表の最後の行）。
+同じ `RelayCommand<PasswordBox>` の `CanExecute` で `SecurePassword.Length > 0` を見る書き方にしても、ボタンは入力の前も後も無効のままだった（表の最後の行）。
+このとき `CommandParameter` は `PasswordBox` に解決しており、ビューモデルが `RaiseCanExecuteChanged` を呼ぶと有効になった。
 入力しても `CanExecuteChanged` を発生させるコードが無いため、ボタンの状態は入力の前のまま変わらない。
 `CommandManager.RequerySuggested` につなぐ実装のコマンドでは、`TextBox` へのキー入力で問い直されることを[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)で実測している。
 `RequerySuggested` につなぐコマンドに `PasswordBox` を組み合わせた場合は、本記事の結果（追従しない）と異なる可能性があるが、本記事では測っていない。

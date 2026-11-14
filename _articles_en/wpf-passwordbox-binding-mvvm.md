@@ -49,7 +49,7 @@ The exception raised by binding `Password`, and properties of the `PasswordBox` 
 
 ## Cause / Background
 
-`PasswordBox` has neither a `PasswordProperty` nor a `SecurePasswordProperty`, so `Password` and `SecurePassword` are not dependency properties (the exception in the first row and the third row of the table).
+`PasswordBox` has neither a `PasswordProperty` nor a `SecurePasswordProperty`, so `Password` and `SecurePassword` are not dependency properties (third row of the table; for `Password`, the exception in the first row shows the same).
 `PasswordBox` does not implement `INotifyPropertyChanged` either.
 `Password` therefore cannot be a binding target.
 When it was used as a binding source, changes made by typing were not propagated either (the CommandParameter table below).
@@ -230,7 +230,8 @@ public sealed class SignInViewModel
 ```
 
 With this approach, the ViewModel does not know when the input changes.
-Even with a `CanExecute` that checks `SecurePassword.Length > 0`, the button stayed disabled both before and after typing (last row of the table).
+Even when the same `RelayCommand<PasswordBox>` gets a `CanExecute` that checks `SecurePassword.Length > 0`, the button stayed disabled both before and after typing (last row of the table).
+The `CommandParameter` had resolved to the `PasswordBox`, and the button became enabled once the ViewModel called `RaiseCanExecuteChanged`.
 Nothing raises `CanExecuteChanged` when the user types, so the button keeps the state it had before the input.
 For commands wired to `CommandManager.RequerySuggested`, the [related article](/articles/wpf-relaycommand-canexecute-not-updating/) measured that typing into a `TextBox` causes a requery.
 With such a command and a `PasswordBox`, the result may differ from the one in this article (the button not following the input); that combination was not measured here.

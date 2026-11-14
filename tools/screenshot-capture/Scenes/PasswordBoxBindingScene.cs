@@ -36,7 +36,7 @@ internal sealed class PasswordBoxBindingScene : IScene
         "記事の添付プロパティ（購読用の bool と、値を比べてから設定する BoundPassword）で、入力がビューモデルへ届き、ビューモデルから空文字列を設定すると PasswordBox も空になること。CanExecuteChanged を自前のイベントで発生させる RelayCommand のボタンの IsEnabled が、入力の前後で False から True に変わること",
         "CommandParameter を {Binding SecurePassword, ElementName=…} や {Binding Password, ElementName=…} にすると、入力した後に押しても渡る値の長さが 0 であること",
         "記事の SignInViewModel（RelayCommand<PasswordBox>）に {Binding ElementName=…} で PasswordBox を渡し、実行時に SecurePassword を読むと入力した長さになること",
-        "PasswordBox を CommandParameter で渡し、CanExecute で SecurePassword の長さを見る場合、CanExecuteChanged を自前のイベントで発生させる RelayCommand では、入力の前後でボタンの IsEnabled が変わらないこと",
+        "PasswordBox を CommandParameter で渡し、RelayCommand<PasswordBox>（CanExecuteChanged を自前のイベントで発生させる）の CanExecute で SecurePassword の長さを見る場合、CommandParameter が PasswordBox に解決していても入力の前後でボタンの IsEnabled が False のまま変わらず、ビューモデルが RaiseCanExecuteChanged を呼ぶと True になること",
         "64 ビットのプロセスで、読み取り可能なコミット済みメモリを走査し、各条件でパスワード（12 文字）の UTF-16 の並びが見つかるか。条件は、入力しただけ、SecurePassword を読んだ後、非マネージドのメモリへ展開した直後と ZeroFreeGlobalAllocUnicode の後、Password を 1 回読んだ後、添付プロパティでビューモデルの string に同期した後、同期の後に PasswordBox.Clear() で空にして GC を実行した後。各条件で入力が 12 文字届いたことも確かめる",
     ];
 
@@ -174,13 +174,24 @@ internal sealed class PasswordBoxBindingScene : IScene
                       $"SecureString.Length {vm.LastLength}"]);
         }
 
+        // 記事の SignInViewModel と同じ RelayCommand<PasswordBox> に、CanExecute（SecurePassword.Length > 0）を足したもの。
+        // False のままの原因を切り分けるため、CommandParameter が PasswordBox に解決していることと、
+        // ビューモデルが RaiseCanExecuteChanged を呼べば True になること（対照）も記録する。
         {
-            var (box, _, button) = BuildCommandParameter("""CommandParameter="{Binding ElementName=PasswordInput}" """, requireInput: true);
+            var panel = SceneContext.LoadXaml<StackPanel>(CommandParameterXaml.Replace("{0}", """CommandParameter="{Binding ElementName=PasswordInput}" """));
+            var vm = new GuardedSignInViewModel();
+            panel.DataContext = vm;
+            DemoProbe.Layout(panel, 300, 100);
+            var box = (PasswordBox)panel.Children[0];
+            var button = (Button)panel.Children[1];
             bool before = button.IsEnabled;
             Type(box, "abc");
-            rows.Add([T("same, with CanExecute checking SecurePassword.Length > 0: button IsEnabled before / after typing",
-                        "同じ渡し方で CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後"),
-                      $"{before} / {button.IsEnabled}"]);
+            bool after = button.IsEnabled;
+            string parameter = button.CommandParameter?.GetType().Name ?? "null";
+            vm.SignInCommand.RaiseCanExecuteChanged();
+            rows.Add([T("RelayCommand<PasswordBox> with CanExecute checking SecurePassword.Length > 0: button IsEnabled before / after typing (CommandParameter; after RaiseCanExecuteChanged)",
+                        "RelayCommand<PasswordBox> の CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後（CommandParameter の型、RaiseCanExecuteChanged を呼んだ後）"),
+                      $"{before} / {after} ({parameter}; {button.IsEnabled})"]);
         }
 
         return rows;
@@ -243,7 +254,7 @@ internal sealed class PasswordBoxBindingScene : IScene
         if (!Environment.Is64BitProcess) throw new InvalidOperationException("メモリの走査は 64 ビットのプロセスでだけ行う。");
 
         var rows = new List<IReadOnlyList<Loc>>();
-        using var scanner = new MemoryScanner();
+        var scanner = new MemoryScanner();
 
         Loc Found(int count) => count == 0 ? T("no", "なし") : T("yes", "あり");
 
@@ -281,20 +292,30 @@ internal sealed class PasswordBoxBindingScene : IScene
             return null;
         });
 
-        // 非マネージドのメモリへ展開した直後（消す前）にも走査し、その領域を読めていることを確かめる。
-        int beforeZeroFree = -1;
-        Row(T("copied SecurePassword to unmanaged memory, then ZeroFreeGlobalAllocUnicode",
-              "SecurePassword を非マネージドのメモリへ展開し、ZeroFreeGlobalAllocUnicode で消した"), (box, secret) =>
+        // 非マネージドのメモリへ展開した直後（消す前）に走査し、その領域を読めていることを確かめる（対照）。
+        Row(T("copied SecurePassword to unmanaged memory (before ZeroFreeGlobalAllocUnicode)",
+              "SecurePassword を非マネージドのメモリへ展開した直後（ZeroFreeGlobalAllocUnicode の前）"), (box, secret) =>
         {
             using SecureString value = box.SecurePassword;
             nint p = Marshal.SecureStringToGlobalAllocUnicode(value);
-            beforeZeroFree = scanner.Count(secret);
+            try
+            {
+                return scanner.Count(secret);
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(p);
+            }
+        });
+
+        Row(T("copied SecurePassword to unmanaged memory, then ZeroFreeGlobalAllocUnicode",
+              "SecurePassword を非マネージドのメモリへ展開し、ZeroFreeGlobalAllocUnicode で消した"), (box, _) =>
+        {
+            using SecureString value = box.SecurePassword;
+            nint p = Marshal.SecureStringToGlobalAllocUnicode(value);
             Marshal.ZeroFreeGlobalAllocUnicode(p);
             return null;
         });
-        rows.Insert(rows.Count - 1,
-            [T("copied SecurePassword to unmanaged memory (before ZeroFreeGlobalAllocUnicode)",
-               "SecurePassword を非マネージドのメモリへ展開した直後（ZeroFreeGlobalAllocUnicode の前）"), Found(beforeZeroFree)]);
 
         Row(T("read Password once (string, reference dropped)", "Password を 1 回読んだ（string。参照は捨てた）"), (box, _) =>
         {
@@ -368,7 +389,7 @@ internal sealed class PasswordBoxBindingScene : IScene
     /// このプロセスのコミット済みで読み取り可能なメモリを、ReadProcessMemory で読んで探す。
     /// 読み込み先のバッファー自身の範囲は読まない（前に読んだ内容の写しを数えないため）。読み終えたらバッファーを消す。
     /// </summary>
-    private sealed class MemoryScanner : IDisposable
+    private sealed class MemoryScanner
     {
         private const int ChunkSize = 1 << 20;
         private readonly byte[] _buffer = GC.AllocateArray<byte>(ChunkSize, pinned: true);
@@ -451,10 +472,6 @@ internal sealed class PasswordBoxBindingScene : IScene
             }
 
             return found;
-        }
-
-        public void Dispose()
-        {
         }
 
         private const uint MemCommit = 0x1000;

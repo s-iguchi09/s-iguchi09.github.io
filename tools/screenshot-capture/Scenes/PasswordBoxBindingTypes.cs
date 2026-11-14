@@ -186,6 +186,20 @@ public sealed class CommandParameterViewModel
     }
 }
 
+/// <summary>記事の方法 2 の SignInViewModel に、CanExecute（入力が空でないか）を足したもの。</summary>
+public sealed class GuardedSignInViewModel
+{
+    public GuardedSignInViewModel() => SignInCommand = new RelayCommand<PasswordBox>(_ => { }, HasInput);
+
+    public RelayCommand<PasswordBox> SignInCommand { get; }
+
+    private static bool HasInput(PasswordBox box)
+    {
+        using SecureString password = box.SecurePassword;
+        return password.Length > 0;
+    }
+}
+
 /// <summary>記事の方法 2 のビューモデル（記事のコードと同じ）。計測のため、受け取った長さだけを記録する。</summary>
 public sealed class SignInViewModel
 {
