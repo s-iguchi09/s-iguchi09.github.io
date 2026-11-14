@@ -535,14 +535,15 @@ wpf-datagrid-sort-reset: まだどこからもリンクされていない
 更新は起動中の Chrome(Claude in Chrome)で dev.to の編集画面を操作して行う。
 API で書き込む経路は使わない。dev.to の API の応答は共有キャッシュから古い本文を返すことがあり(クエリ文字列を足しても変わらない例がある)、
 本文全体を送る `PUT` では、承認を待つ間の編集を古い本文で上書きするおそれがあるためである。
-編集画面の HTML には、開いた時点のサーバーの本文が埋め込まれる(`[data-article]` 要素の `data-article` 属性の JSON。`body_markdown` と `updated_at` を含む)。
-これは API のキャッシュにも、下の下書きにも左右されないので、本文の確認はこれを使う。
+編集画面の HTML には、開いた時点のサーバーの記事の値が埋め込まれる(`[data-article]` 要素の `data-article` 属性の JSON。`title`・`cached_tag_list`・`main_image`・`body_markdown`・`video_source_url`・`updated_at` を含む)。
+これは API のキャッシュにも、下の下書きにも左右されないので、確認はこれを使う。
 
-**入力欄の本文は、サーバーの本文とは限らない。** Forem(dev.to の基盤)の編集画面は、保存せずに画面を閉じると、本文をブラウザの
-`localStorage` に `editor-<version>-<編集画面の URL>` のキーで残す。次に開いたとき、その時刻が記事の `updated_at` より新しければ、
-入力欄にはサーバーの本文ではなくこの下書きが出る(forem/forem の `app/javascript/article-form/articleForm.jsx`)。
-下書きには古い本文や、保存に失敗した追記が入っていることがある。
-キーは確認のために開いて閉じただけでも残る(2026-11-14 実測)ので、キーの有無では判定せず、手順 3 と 5 で入力欄と `data-article` を比べる。
+**編集画面の値は、サーバーの値とは限らない。** Forem(dev.to の基盤)の編集画面は、保存せずに画面を閉じると、編集中の値をブラウザの
+`localStorage` に `editor-<version>-<編集画面の URL>` のキーで残す。値は `title`・`tagList`・`mainImage`・`bodyMarkdown`・`videoSourceUrl` の 5 つと、閉じた時刻の `updatedAt` である。
+次に開いたとき、`updatedAt` が記事の `updated_at` より新しければ、5 つともサーバーの値ではなくこの下書きの値で画面に出る
+(forem/forem の `app/javascript/article-form/articleForm.jsx`)。
+下書きには古い値や、保存に失敗した追記が入っていることがある。
+キーは確認のために開いて閉じただけでも、閉じた時刻で残る(2026-11-14 実測)。キーの有無や時刻だけでは判定せず、手順 3 で下書きの値と `data-article` を比べる。
 
 | 状況 | 手段 |
 |---|---|
@@ -571,8 +572,9 @@ dev.to のログインとアカウントの操作は Claude が行わない(ロ�
 1. スクリプトが出した追記先の候補の先頭を選ぶ(候補はタグの重なり順、同点ならリンク数の少ない順に並ぶ。上の出力例のとおり)
 2. 追記先と追記する 1 行を示して承認を得る
 3. 承認の後で `https://dev.to/dashboard` から投稿の Edit を開く(承認の前に開いた編集画面では保存しない。開いた時点の本文に足すため)。
-   開いたら `javascript_tool` で、入力欄(`#article_body_markdown`)の本文が `data-article` の `body_markdown` と一致することを確かめる。
-   一致しなければ、入力欄は下書きから復元されている。追記も保存もせず、下書きも消さずに、そのことをユーザーに伝えて止める
+   開いたら `javascript_tool` で、その編集画面の URL の下書きのキーを読む。キーが無いか、`updatedAt` が `data-article` の `updated_at` より新しくなければ、画面はサーバーの値なので先へ進む。
+   新しければ、下書きの 5 つの値を `data-article` の値と比べる(`title` と `title`、`tagList` と `cached_tag_list`、`mainImage` と `main_image`、`bodyMarkdown` と `body_markdown`、`videoSourceUrl` と `video_source_url`。空文字と `null` は同じとみなす)。
+   1 つでも違えば、画面は下書きの値で復元されている。追記も保存もせず、下書きも消さずに、違った項目をユーザーに伝えて止める
 4. 本文に同じ URL の行が既にあれば、足さずに保存もしない(API の判定が古かったため。そのことを完了報告に書く)。無ければ、本文の末尾の `## Related Articles` に、スクリプトが出した 1 行を足す。節が無ければ、本文の末尾に節を足してから行を足す(front matter とほかの行は変えない)
 5. Save changes を押した後、保存が成功したことを確かめる。成功すると投稿のページへ移る(URL の末尾から `/edit` が消える)。
    移らなければ、完了と報告しない。画面の状態(エラーの表示など)をユーザーに伝えて止める。
