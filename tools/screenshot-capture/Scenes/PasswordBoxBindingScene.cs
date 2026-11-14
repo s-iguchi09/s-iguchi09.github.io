@@ -31,7 +31,7 @@ internal sealed class PasswordBoxBindingScene : IScene
     [
         "XAML（XamlReader.Parse）で Password=\"{Binding Password}\" と書くと XamlParseException になり、そのメッセージの 1 行目（en-US と ja-JP）",
         "PasswordBox が sealed であること。PasswordProperty と SecurePasswordProperty の識別子が無く、INotifyPropertyChanged も実装していないこと",
-        "添付プロパティの変更コールバックの中で PasswordChanged を購読する書き方は、ビューモデルの初期値が添付プロパティの既定値と同じ（空文字列）だと購読されず、入力がビューモデルに届かないこと",
+        "添付プロパティの変更コールバックの中で PasswordChanged を購読する書き方は、ビューモデルの初期値が添付プロパティの既定値と同じ（空文字列）だと、入力してもビューモデルの Password が空のままであること",
         "変更コールバックで値を比べずに Password を設定し直す書き方は、\"abc\" を 1 文字ずつ入力すると \"cba\" になること。添付プロパティを使わずに、\"ab\" を入力してから \"c\" を入力すると \"abc\" になり、間にコードから同じ値の Password = \"ab\" を設定すると \"c\" が先頭に入ること",
         "記事の添付プロパティ（購読用の bool と、値を比べてから設定する BoundPassword）で、入力がビューモデルへ届き、ビューモデルから空文字列を設定すると PasswordBox も空になること。CanExecuteChanged を自前のイベントで発生させる RelayCommand のボタンの IsEnabled が、入力の前後で False から True に変わること",
         "CommandParameter を {Binding SecurePassword, ElementName=…} や {Binding Password, ElementName=…} にすると、入力した後に押しても渡る値の長さが 0 であること",
@@ -189,8 +189,8 @@ internal sealed class PasswordBoxBindingScene : IScene
             bool after = button.IsEnabled;
             string parameter = button.CommandParameter?.GetType().Name ?? "null";
             vm.SignInCommand.RaiseCanExecuteChanged();
-            rows.Add([T("RelayCommand<PasswordBox> with CanExecute checking SecurePassword.Length > 0: button IsEnabled before / after typing (CommandParameter; after RaiseCanExecuteChanged)",
-                        "RelayCommand<PasswordBox> の CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled 入力の前 / 後（CommandParameter の型; RaiseCanExecuteChanged を呼んだ後の IsEnabled）"),
+            rows.Add([T("RelayCommand<PasswordBox> with CanExecute checking SecurePassword.Length > 0: button IsEnabled (before / after typing (CommandParameter type; after RaiseCanExecuteChanged))",
+                        "RelayCommand<PasswordBox> の CanExecute が SecurePassword.Length > 0 を見る: ボタンの IsEnabled（入力の前 / 後 (CommandParameter の型; RaiseCanExecuteChanged を呼んだ後))"),
                       $"{before} / {after} ({parameter}; {button.IsEnabled})"]);
         }
 

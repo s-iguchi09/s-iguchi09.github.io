@@ -2,7 +2,7 @@
 layout: article-en
 title: "Why WPF PasswordBox.Password Cannot Be Bound, and Two Ways to Pass It to a ViewModel"
 seo_title: "WPF PasswordBox.Password Binding: Two Ways for MVVM"
-date: 2026-11-13
+date: 2026-11-14
 category: WPF
 image: /images/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.svg
 excerpt: "PasswordBox.Password is not a dependency property, so binding it throws. Attached property vs. CommandParameter, compared on button state and plaintext left."
@@ -81,8 +81,8 @@ How the attached property is written, and the result of typing. Measured on .NET
 
 The first one subscribes to `PasswordChanged` inside the change callback of `BoundPassword`.
 A change callback runs when the effective value of the property changes ([PropertyChangedCallback](https://learn.microsoft.com/dotnet/api/system.windows.propertychangedcallback)).
-When the ViewModel starts with an empty string, the value equals the attached property's default (also an empty string), so the effective value does not change and the callback is never called.
-The handler is never attached, and the ViewModel's `Password` stayed empty after typing.
+When the ViewModel starts with an empty string, the value equals the attached property's default (also an empty string), so the effective value does not change and, by that rule, the callback is not called.
+In the measurement, the ViewModel's `Password` indeed stayed empty after typing.
 
 The second one sets `Password` again in the change callback without comparing the values.
 Every keystroke updates `BoundPassword` through `PasswordChanged`, and its change callback then sets the same value on `Password` again.
@@ -179,8 +179,8 @@ In XAML, set both `Attach` and `BoundPassword`.
 </StackPanel>
 ```
 
-With this implementation, "abc" reached the ViewModel unchanged as `"abc"`, and setting `Password = ""` on the ViewModel also emptied the `PasswordBox` (the "article's attached property" row and the two rows after it).
-The button was disabled before typing and became enabled after it.
+With this implementation, "abc" reached the ViewModel unchanged as `"abc"`, and setting `Password = ""` on the ViewModel also emptied the `PasswordBox` (the "article's attached property" row and the row after it).
+The button was disabled before typing and became enabled after it (last row of the table).
 
 ### Option 2: Pass the PasswordBox as a CommandParameter and read SecurePassword when the command runs
 

@@ -1,7 +1,7 @@
 ---
 layout: article-ja
 title: "WPF の PasswordBox.Password をバインドできない理由と、MVVM でビューモデルへ渡す 2 つの方法"
-date: 2026-11-13
+date: 2026-11-14
 category: WPF
 image: /images/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.svg
 excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML でバインドすると XamlParseException になる。添付プロパティと CommandParameter の 2 つの渡し方を、ボタンの有効化とメモリに残る平文で実測比較する。"
@@ -80,8 +80,8 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 
 1 つ目は、`PasswordChanged` の購読を `BoundPassword` の変更コールバックの中で行う書き方である。
 変更コールバックは、プロパティの有効値が変わったときに呼ばれる（[PropertyChangedCallback](https://learn.microsoft.com/dotnet/api/system.windows.propertychangedcallback)）。
-ビューモデルの初期値が空文字列だと、添付プロパティの既定値（空文字列）と同じなので有効値が変わらず、変更コールバックが呼ばれない。
-購読されないまま入力が進み、ビューモデルの `Password` は空のままだった。
+ビューモデルの初期値が空文字列だと、添付プロパティの既定値（空文字列）と同じなので有効値が変わらず、この規則のとおりなら変更コールバックは呼ばれない。
+実際に、入力してもビューモデルの `Password` は空のままだった。
 
 2 つ目は、変更コールバックで値を比べずに `Password` を設定し直す書き方である。
 入力のたびに `PasswordChanged` で `BoundPassword` が書き換わり、その変更コールバックが同じ値を `Password` に設定し直す。
@@ -177,8 +177,8 @@ XAML では、`Attach` と `BoundPassword` の両方を付ける。
 </StackPanel>
 ```
 
-この実装では「abc」がそのまま `"abc"` としてビューモデルに届き、ビューモデルが `Password = ""` にすると `PasswordBox` も空になった（表の「記事の添付プロパティ」の行と、続く 2 行）。
-ボタンは入力の前は無効で、入力すると有効になった。
+この実装では「abc」がそのまま `"abc"` としてビューモデルに届き、ビューモデルが `Password = ""` にすると `PasswordBox` も空になった（表の「記事の添付プロパティ」の行と、続く 1 行）。
+ボタンは入力の前は無効で、入力すると有効になった（表の最後の行）。
 
 ### 方法 2: CommandParameter で PasswordBox を渡し、実行時に SecurePassword を読む
 
