@@ -546,11 +546,11 @@ dev.to のログインとアカウントの操作は Claude が行わない(ロ�
 **保存の前に、追記先の投稿と追記する 1 行を示してユーザーの承認を得る。** dev.to の保存は公開中の投稿を変える操作であり、
 オートモードでもこの承認は省かない(このセッションで同じ追記を承認済みなら省く)。これは「判断の原則」の真の停止条件に含める。
 
-1. スクリプトが出した追記先の候補のうち、タグの重なりが最も大きく、リンク数が最も少ない先頭の候補を選ぶ(直前に追記した投稿へ続けて足さない)
-2. 追記の前に、その投稿の `body_markdown`(`https://dev.to/api/articles/<id>`)で `## Related Articles` の節があるかを確かめる
-3. `https://dev.to/dashboard` でその投稿を開き、Edit → `## Related Articles` の末尾にスクリプトが出した 1 行を貼る。節が無ければ、本文の末尾に `## Related Articles` の節を足してから貼る(front matter とほかの行は変えない)
-4. 承認を得てから Save changes を押し、公開ページの本文に新しいリンクが出たことを `find` / `read_page` で確かめる
-5. `node .claude/skills/article-workflow/devto-export.js <slug>` をもう一度実行し、「既にリンク済み」になることを確かめる(一覧の API はキャッシュで古い結果を返すことがあるので、出ないときはスクリプトが使う API の URL にクエリ `&_=<時刻>` を付けて取り直し、反映を確かめる)
+1. スクリプトが出した追記先の候補の先頭を選ぶ(候補はタグの重なり順、同点ならリンク数の少ない順に並ぶ。上の出力例のとおり)
+2. 投稿の id を `https://dev.to/api/articles?username=s-iguchi09&_=<時刻>` の一覧から、URL が一致する要素で取る。その id で `https://dev.to/api/articles/<id>` を開き、`body_markdown` に `## Related Articles` の節があるかを確かめる(`&_=<時刻>` は一覧のキャッシュを避けるため)
+3. 本文の末尾の `## Related Articles` にスクリプトが出した 1 行を足した本文を作る。節が無ければ、本文の末尾に節を足してから行を足す(front matter とほかの行は変えない)
+4. 追記先と追記する 1 行を示して承認を得てから保存する。API なら `PUT` を送り、Chrome なら `https://dev.to/dashboard` で投稿を開いて Edit → 本文を直して Save changes を押す。保存の後、公開ページの本文に新しいリンクが出たことを確かめる(Chrome なら `find` / `read_page`、API なら読み直した `body_markdown`)
+5. `node .claude/skills/article-workflow/devto-export.js <slug>` をもう一度実行し、「既にリンク済み」になることを確かめる。出ないときは、手順 2 と同じ一覧(`&_=<時刻>` 付き)を取り直し、その投稿の本文にリンクがあるかを確かめる
 6. 完了報告に、追記した投稿のタイトルと URL を書く。作ったタブは閉じる
 
 編集された記事は dev.to 側で再クロールされるため、新記事への経路がそこで作られる。
