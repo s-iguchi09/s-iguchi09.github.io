@@ -11,7 +11,7 @@ excerpt: "PasswordBox.Password は依存関係プロパティでなく、XAML �
 
 MVVM でログイン画面を作るとき、`TextBox` と同じように `PasswordBox` の `Password` をビューモデルの `string` にバインドする書き方が最初に試される。
 しかし `Password="{Binding Password}"` と書いた XAML は、読み込むと例外になる。
-回避策として Web 上で広く紹介されている添付プロパティにも、入力がビューモデルに届かない書き方と、入力した文字の順序が逆になる書き方が混ざっている。
+回避策の添付プロパティも、書き方によっては入力がビューモデルに届かなかったり、入力した文字の順序が逆になったりする。
 
 本記事では、バインドできない原因を例外と型の情報から確かめたうえで、ビューモデルへパスワードを渡す 2 つの方法（添付プロパティで `string` と同期する / `CommandParameter` で `PasswordBox` を渡す）を実装する。
 2 つの方法は、ボタンの有効・無効を入力に追従させられるか、パスワードの平文がプロセスのメモリに残るかで結果が分かれる。
@@ -21,8 +21,8 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 
 ## 前提・対象環境
 
-- フレームワーク: WPF（.NET）
-- アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand` / `RelayCommand<T>` は自前の最小実装で、`CanExecuteChanged` はビューモデルが `RaiseCanExecuteChanged` を呼んだときだけ発生する（`CommandManager.RequerySuggested` にはつながない）
+- フレームワーク: .NET 5 以降の WPF（コード例は C# 9 の `is not` パターンと `using` 宣言を使う。.NET Framework では測っていない）
+- アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand` / `RelayCommand<T>` は自前の最小実装で、`CanExecuteChanged` はビューモデルが `RaiseCanExecuteChanged` を呼んだときだけ発生する（`CommandManager.RequerySuggested` にはつながない。この方式の実装例は[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)にある）
 - 検証環境: .NET 10 / Windows 11（64 ビットのプロセス）
 - 入力の再現: キーボードからの入力と同じく、1 文字ずつ `TextComposition` を送って `PasswordBox` に入力した
 
@@ -48,9 +48,10 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 
 ## 原因・背景
 
-`PasswordBox` には `PasswordProperty` も `SecurePasswordProperty` も無く、`Password` と `SecurePassword` は依存関係プロパティではない（表の 3 行目）。
+`PasswordBox` には `PasswordProperty` も `SecurePasswordProperty` も無く、`Password` と `SecurePassword` は依存関係プロパティではない（表の 1 行目の例外と 3 行目）。
 `PasswordBox` は `INotifyPropertyChanged` も実装していない。
-そのため `Password` はバインドのターゲットにならず、バインドのソースにしても値の変化は伝わらない。
+そのため `Password` はバインドのターゲットにならない。
+バインドのソースにした場合も、入力による値の変化は伝わらなかった（後述の CommandParameter の表）。
 入力の変化を知るために用意されているのは `PasswordChanged` イベントである（[PasswordBox](https://learn.microsoft.com/dotnet/api/system.windows.controls.passwordbox) の Examples）。
 
 依存関係プロパティにしなかった理由は、公式ドキュメントには書かれていない。
@@ -70,7 +71,7 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 `PasswordBox` に添付プロパティ `BoundPassword` を付け、これをビューモデルの `string` にバインドする。
 入力されたら `PasswordChanged` で `BoundPassword` を書き換え、ビューモデルが値を変えたら `Password` を書き換える。
 
-この方向の実装は広く紹介されているが、書き方によって次の 2 つの不具合が出た。
+この方向の実装は、書き方によって次の 2 つの不具合が出た。
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-attached-property.ja.md %}
 
@@ -78,12 +79,13 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 {: .table-caption}
 
 1 つ目は、`PasswordChanged` の購読を `BoundPassword` の変更コールバックの中で行う書き方である。
-ビューモデルの初期値が空文字列だと、添付プロパティの既定値（空文字列）と同じなので変更コールバックが呼ばれない。
+変更コールバックは、プロパティの有効値が変わったときに呼ばれる（[PropertyChangedCallback](https://learn.microsoft.com/dotnet/api/system.windows.propertychangedcallback)）。
+ビューモデルの初期値が空文字列だと、添付プロパティの既定値（空文字列）と同じなので有効値が変わらず、変更コールバックが呼ばれない。
 購読されないまま入力が進み、ビューモデルの `Password` は空のままだった。
 
 2 つ目は、変更コールバックで値を比べずに `Password` を設定し直す書き方である。
 入力のたびに `PasswordChanged` で `BoundPassword` が書き換わり、その変更コールバックが同じ値を `Password` に設定し直す。
-コードから `Password` を設定すると、その直後の入力は先頭に入る（表の「添付プロパティなし」の行。「ab」の後に設定してから「c」を入力すると `"cab"`）。
+コードから同じ値を `Password` に設定し直すと、その直後の入力は先頭に入る（表の「添付プロパティなし」の 2 行。設定しなければ `"abc"`、「ab」の後に設定し直してから「c」を入力すると `"cab"`）。
 これが 1 文字ごとに起きるため、「abc」と入力した結果は `"cba"` になった。
 
 記事の実装では、購読を専用の `Attach` プロパティに分け、`Password` と値が同じなら設定し直さない。
@@ -181,7 +183,7 @@ XAML では、`Attach` と `BoundPassword` の両方を付ける。
 ### 方法 2: CommandParameter で PasswordBox を渡し、実行時に SecurePassword を読む
 
 ビューモデルにパスワードを持たせず、ボタンを押したときだけ受け取る方法である。
-ここでも、よく見かける書き方は期待どおりに動かなかった。
+ここでも、`SecurePassword` や `Password` をバインドする書き方は期待どおりに動かなかった。
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-command-parameter.ja.md %}
 
@@ -190,7 +192,7 @@ XAML では、`Attach` と `BoundPassword` の両方を付ける。
 
 `CommandParameter` に `{Binding SecurePassword, ElementName=PasswordInput}` や `{Binding Password, ElementName=PasswordInput}` を書くと、「abc」と入力してから押しても、コマンドに渡る値の長さは 0 だった。
 入力の前の値（空）がそのまま渡っている。
-どちらのプロパティにも変更の通知が無いため（問題の節の表の 3 行目）、バインドが値を読み直すきっかけが無い。
+`PasswordBox` には `PasswordChanged` イベントがあるが、バインドは入力の後に値を読み直さなかった。
 
 `PasswordBox` そのものを渡し、コマンドを実行するときに `SecurePassword` を読めば、入力した長さ（3）になった。
 
@@ -204,7 +206,6 @@ XAML では、`Attach` と `BoundPassword` の両方を付ける。
 ```
 
 ビューモデルは `PasswordBox` を受け取るコマンドを公開し、実行の中だけ `SecureString` を扱う。
-本記事の `RelayCommand<T>` は、パラメーターが `T` でなければ実行できないものとして扱う。
 `SecurePassword` は読むたびに新しいコピーを返すので（デモページで確認）、`using` で破棄する。
 
 ```csharp
@@ -230,7 +231,7 @@ public sealed class SignInViewModel
 `CanExecute` で `SecurePassword.Length > 0` を見る書き方にしても、ボタンは入力の前も後も無効のままだった（表の最後の行）。
 入力しても `CanExecuteChanged` を発生させるコードが無いため、ボタンの状態は入力の前のまま変わらない。
 `CommandManager.RequerySuggested` につなぐ実装のコマンドでは、`TextBox` へのキー入力で問い直されることを[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)で実測している。
-`PasswordBox` との組み合わせでも結果が変わりうるが、本記事では測っていない。
+`RequerySuggested` につなぐコマンドに `PasswordBox` を組み合わせた場合は、本記事の結果（追従しない）と異なる可能性があるが、本記事では測っていない。
 
 ---
 
@@ -250,7 +251,7 @@ public sealed class SignInViewModel
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.ja.md %}
 
-各操作の後に、12 文字のパスワードの UTF-16 の並びがプロセスのメモリに見つかったか。.NET 10 / Windows 11（64 ビット）で実測。条件ごとに乱数のパスワードを作り直し、1 文字ずつ `TextComposition` で入力して、12 文字届いたことを確かめてから操作した。走査したのは `VirtualQuery` でコミット済みかつ読み取り可能な領域（アクセス不可とガードページを除く）で、2 バイト境界に揃った連続した並びだけを探した。ANSI や分割された断片は探していない。
+各操作の後に、12 文字のパスワードの UTF-16 の並びがプロセスのメモリに見つかったか。.NET 10 / Windows 11（64 ビット）で実測。条件ごとに乱数のパスワードを作り直し、1 文字ずつ `TextComposition` で入力して、12 文字届いたことを確かめてから操作した。走査したのは `VirtualQuery` でコミット済みかつ読み取り可能な領域（アクセス不可とガードページを除く）で、2 バイト境界に揃った連続した並びだけを探した。読み込みに失敗した範囲は飛ばした。ANSI や分割された断片は探していない。
 {: .table-caption}
 
 `PasswordBox` に入力しただけ、`SecurePassword` を読んだだけでは、並びは見つからなかった。
@@ -268,18 +269,18 @@ public sealed class SignInViewModel
 | 平文の並びがメモリに残るか | 同期した時点で残り、空にして GC を実行した後も残っていた | `SecurePassword` を読むだけなら見つからなかった |
 | ビューモデルが依存する型 | `string` だけ | `PasswordBox`（WPF） |
 
-入力に応じた有効化やビューモデルからの消去が要るなら、方法 1 を選ぶ。
+本記事の `RelayCommand` で入力に応じた有効化を行いたい場合や、ビューモデルからの消去が要る場合は、方法 1 を選ぶ。
 その代わり、入力した時点から平文の `string` がプロセスに残ることを受け入れることになる。
 
 平文を `string` にする回数を減らしたいなら、方法 2 を選ぶ。
-ただし本記事の `RelayCommand` では、ボタンを常に押せる状態にして、空のパスワードは実行の中で弾く設計になる。
+ただし本記事の `RelayCommand` では、`CanExecute` で入力を見ず、空のパスワードは実行の中で弾く設計になる。
 
 ---
 
 ## 注意点
 
 - **方法 2 の利点は、`string` に直すまでしか続かない。** 認証に使う API が `string` を受け取るなら、そこへ渡すために `string` を作ることになり、メモリの表の「`Password` を 1 回読んだ」の行と同じく平文の並びができる。`SecureString` を受け取る API（`NetworkCredential` の `SecureString` を取るコンストラクターなど）でも、受け取った先で `string` に直されないかは API ごとに確かめる必要がある。
-- **`SecureString` は新規の開発で使うことを推奨されていない。** ドキュメントは、.NET（Core）での新規開発や .NET Framework からの移行では `SecureString` を使わないよう勧め、パスワードはプロセスの外に保存した資格情報へのハンドルで扱うことを代替に挙げている。Windows 以外では中身が暗号化されないことと、プロセスのダンプやスワップファイルからは読まれうることも明記されている（[SecureString](https://learn.microsoft.com/dotnet/api/system.security.securestring) の Remarks の How secure is SecureString?）。方法 2 は、メモリ上に平文の `string` ができる機会を減らすだけである。
+- **`SecureString` は新規の開発で使うことを推奨されていない。** ドキュメントは、.NET（Core）での新規開発や .NET Framework からの移行では `SecureString` を使わないよう勧め、パスワードはプロセスの外に保存した資格情報へのハンドルで扱うことを代替に挙げている。Windows 以外では中身が暗号化されないことと、プロセスのダンプやスワップファイルからは読まれうることも明記されている（[SecureString](https://learn.microsoft.com/dotnet/api/system.security.securestring) の Remarks。冒頭の Important と How secure is SecureString?）。方法 2 は、メモリ上に平文の `string` ができる機会を減らすだけである。
 - **本記事のメモリの計測は、「完全な並びが残るか」だけを見ている。** 見つからなかったことが、断片やほかの符号化でも残っていないことを示すわけではない。
 - **方法 1 の比較（`box.Password != value`）も `Password` を読む。** 同期するたびに `string` が作られる。方法 1 は、平文の `string` を作ることを前提にした方法である。
 - **`CommandParameter` に `SecurePassword` や `Password` をバインドしない。** どちらも、入力の前の値がそのままコマンドに渡る。
@@ -291,7 +292,7 @@ public sealed class SignInViewModel
 `PasswordBox.Password` は依存関係プロパティではないため、XAML でバインドすると `XamlParseException` になる。
 `PasswordBox` は `sealed` なので外側から仕組みを足すことになり、本記事ではその手段として添付プロパティと `CommandParameter` を比べた。
 
-ボタンの有効・無効を入力に追従させる画面や、ビューモデルから入力欄を空にしたい画面では、方法 1 の添付プロパティを使う。
+`CanExecuteChanged` をビューモデルから発生させるコマンドでボタンの有効・無効を入力に追従させる画面や、ビューモデルから入力欄を空にしたい画面では、方法 1 の添付プロパティを使う。
 購読は専用の `Attach` プロパティで行い、`Password` は値が違うときだけ設定し直す。
 平文の `string` を作る回数を減らしたい画面では、方法 2 で `PasswordBox` を渡し、実行の中で `SecurePassword` を読んで破棄する。
 どちらを選んでも、認証の API が `string` を要求する時点で平文はメモリに出るので、メモリ上の秘匿を強く求める要件ではパスワードをプロセスの外の資格情報で扱う設計を検討する。

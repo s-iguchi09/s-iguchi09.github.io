@@ -15,7 +15,8 @@ namespace ScreenshotCapture.Scenes;
 /// 文字の入力は、キーボードからの入力と同じく 1 文字ずつ TextComposition を送って再現する（PasswordBoxDemoScene と同じ経路）。
 /// ボタンの押下は、クリックと同じ ButtonBase.OnClick を呼んで Command を実行する。
 ///
-/// 平文が残るかどうかは、このプロセスのコミット済みメモリをすべて読み、パスワードの UTF-16 の並びを探して確かめる。
+/// 平文が残るかどうかは、このプロセスのコミット済みで読み取り可能なメモリ（アクセス不可とガードページを除く）を読み、
+/// 2 バイト境界に揃ったパスワードの UTF-16 の並びを探して確かめる。読み込みに失敗した範囲は飛ばす。
 /// パスワードは条件ごとに乱数で作り直し、前の条件の残りを数えないようにする。
 /// 探す側がパスワードの並びを持つと自分自身を見つけてしまうため、パスワードは常に乱数のマスクと XOR した形で持ち、
 /// 1 文字ずつ取り出して入力し、照合も 1 文字ずつ XOR を外して行う。完全な並びをどこにも作らない。
@@ -43,14 +44,14 @@ internal sealed class PasswordBoxBindingScene : IScene
 
     public async Task CaptureAsync(SceneContext context)
     {
-        // Behavior() は、原因（3 行）・添付プロパティ（6 行）・CommandParameter（4 行）の順に行を返す。記事の節ごとに表を分ける。
+        // Behavior() は、原因（3 行）・添付プロパティ（7 行）・CommandParameter（4 行）の順に行を返す。記事の節ごとに表を分ける。
         List<IReadOnlyList<Loc>> rows = Behavior();
-        if (rows.Count != 13) throw new InvalidOperationException($"行の数が想定と異なる: {rows.Count}");
+        if (rows.Count != 14) throw new InvalidOperationException($"行の数が想定と異なる: {rows.Count}");
         Loc[] headers = [T("case", "条件"), T("measured", "計測値")];
 
         await context.SaveTableAsync("PasswordBox: binding to Password", headers, rows[..3], "passwordbox-binding-error.svg");
-        await context.SaveTableAsync("PasswordBox: syncing with an attached property", headers, rows[3..9], "passwordbox-attached-property.svg");
-        await context.SaveTableAsync("PasswordBox: passing it as CommandParameter", headers, rows[9..], "passwordbox-command-parameter.svg");
+        await context.SaveTableAsync("PasswordBox: syncing with an attached property", headers, rows[3..10], "passwordbox-attached-property.svg");
+        await context.SaveTableAsync("PasswordBox: passing it as CommandParameter", headers, rows[10..], "passwordbox-command-parameter.svg");
 
         await context.SaveTableAsync(
             "PasswordBox: is the whole password left in process memory as UTF-16?",
@@ -115,7 +116,16 @@ internal sealed class PasswordBoxBindingScene : IScene
                       $"PasswordBox \"{box.Password}\" / ViewModel \"{vm.Password}\""]);
         }
 
-        // 4. 添付プロパティを使わずに、Password を設定した直後の入力がどこに入るか。
+        // 4. 添付プロパティを使わずに、Password を設定した直後の入力がどこに入るか。設定しない場合を対照に置く。
+        {
+            var box = DemoProbe.Layout(new PasswordBox(), 200, 30);
+            Type(box, "ab");
+            Type(box, "c");
+            rows.Add([T("no attached property: type \"ab\", then type \"c\" (Password not set)",
+                        "添付プロパティなし: \"ab\" を入力してから \"c\" を入力（Password は設定しない）"),
+                      $"PasswordBox \"{box.Password}\""]);
+        }
+
         {
             var box = DemoProbe.Layout(new PasswordBox(), 200, 30);
             Type(box, "ab");
@@ -243,13 +253,22 @@ internal sealed class PasswordBoxBindingScene : IScene
             var secret = MaskedSecret.Create(12);
             PasswordBox box = build?.Invoke() ?? DemoProbe.Layout(new PasswordBox(), 200, 30);
             TypeMasked(box, secret);
-            using (SecureString typed = box.SecurePassword)
+
+            // 入力が届いたかの確認は、操作と走査の後に行う（確認のために SecurePassword を読むのが、行の操作に混ざらないように）。
+            // 添付プロパティの行は操作で Clear() することがあるため、入力の直後にビューモデルの Password の長さで確かめる（既にある string の長さを読むだけで、新しい string は作らない）。
+            int typedLength = box.DataContext is LoginViewModel bound ? bound.Password.Length : -1;
+            int count = act(box, secret) ?? scanner.Count(secret);
+            if (typedLength < 0)
             {
-                // 入力が届いていなければ「なし」が偽陰性になるので止める。
-                if (typed.Length != secret.Length) throw new InvalidOperationException($"入力が届いていない: {typed.Length}");
+                using SecureString typed = box.SecurePassword;
+                typedLength = typed.Length;
             }
 
-            int count = act(box, secret) ?? scanner.Count(secret);
+            // 入力が届いていなければ「なし」が偽陰性になるので止める。
+            if (typedLength != secret.Length)
+            {
+                throw new InvalidOperationException($"入力が届いていない: {typedLength}");
+            }
             rows.Add([label, Found(count)]);
             box.Clear();
         }
