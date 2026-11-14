@@ -547,9 +547,12 @@ dev.to のログインとアカウントの操作は Claude が行わない(ロ�
 オートモードでもこの承認は省かない(このセッションで同じ追記を承認済みなら省く)。これは「判断の原則」の真の停止条件に含める。
 
 1. スクリプトが出した追記先の候補の先頭を選ぶ(候補はタグの重なり順、同点ならリンク数の少ない順に並ぶ。上の出力例のとおり)
-2. 投稿の id を `https://dev.to/api/articles?username=s-iguchi09&_=<時刻>` の一覧から、URL が一致する要素で取る。その id で `https://dev.to/api/articles/<id>` を開き、`body_markdown` に `## Related Articles` の節があるかを確かめる(`&_=<時刻>` は一覧のキャッシュを避けるため)
+2. 投稿の id を一覧 `https://dev.to/api/articles?username=s-iguchi09&per_page=100&page=<n>&_=<時刻>` から、URL が一致する要素で取る。一覧はページ単位で返るので、`page` を 1 から増やし、見つかるか空の配列が返るまで巡回する(`devto-export.js` と同じ取り方。`&_=<時刻>` は各ページでキャッシュを避けるため)。その id で `https://dev.to/api/articles/<id>` を開き、`body_markdown` に `## Related Articles` の節があるかを確かめる
 3. 本文の末尾の `## Related Articles` にスクリプトが出した 1 行を足した本文を作る。節が無ければ、本文の末尾に節を足してから行を足す(front matter とほかの行は変えない)
-4. 追記先と追記する 1 行を示して承認を得てから保存する。API なら `PUT` を送り、Chrome なら `https://dev.to/dashboard` で投稿を開いて Edit → 本文を直して Save changes を押す。保存の後、公開ページの本文に新しいリンクが出たことを確かめる(Chrome なら `find` / `read_page`、API なら読み直した `body_markdown`)
+4. 追記先と追記する 1 行を示して承認を得てから保存する。承認を待つ間に投稿が編集されていても、古い本文で上書きしないようにする
+   - API: 承認の後、`PUT` の直前に `https://dev.to/api/articles/<id>` をもう一度取り、`body_markdown` が手順 2 で取ったものと同じかを確かめる。変わっていれば、最新の本文で手順 3 からやり直して承認を取り直す。同じなら `PUT` を送る
+   - Chrome: 承認の後で `https://dev.to/dashboard` から投稿の Edit を開き、開いた時点の本文に 1 行を足して Save changes を押す(承認の前に開いた編集画面で保存しない)
+   - 保存の後、公開ページの本文に新しいリンクが出たことを確かめる(Chrome なら `find` / `read_page`、API なら読み直した `body_markdown`)
 5. `node .claude/skills/article-workflow/devto-export.js <slug>` をもう一度実行し、「既にリンク済み」になることを確かめる。出ないときは、手順 2 の詳細 `https://dev.to/api/articles/<id>` を取り直し、`body_markdown` にリンクがあるかを確かめる(一覧の API は本文を返さない)
 6. 完了報告に、追記した投稿のタイトルと URL を書く。作ったタブは閉じる
 
