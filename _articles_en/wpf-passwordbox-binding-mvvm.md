@@ -22,8 +22,8 @@ The second point was checked by actually scanning the process memory.
 
 ## Prerequisites / Environment
 
-- Framework: WPF on .NET 5 or later (the code uses C# 9 `is not` patterns and `using` declarations; .NET Framework was not measured)
-- Architecture: MVVM. The ViewModel base class `ObservableObject` and `RelayCommand` / `RelayCommand<T>` are minimal hand-written implementations; `CanExecuteChanged` is raised only when the ViewModel calls `RaiseCanExecuteChanged` (not wired to `CommandManager.RequerySuggested`; an example of this style is in the [related article](/articles/wpf-relaycommand-canexecute-not-updating/))
+- Framework: WPF. The code requires C# 9 or later (`is not` patterns are C# 9; `using` declarations are C# 8). Behavior was measured only in the environment below
+- Architecture: MVVM. The ViewModel base class `ObservableObject` and `RelayCommand` / `RelayCommand<T>` are minimal hand-written implementations; `CanExecuteChanged` is raised only when the ViewModel calls `RaiseCanExecuteChanged` (not wired to `CommandManager.RequerySuggested`). `RelayCommand<T>` returns `false` from `CanExecute` and does nothing in `Execute` when the parameter is not a `T`. A non-generic `RelayCommand` with its own event, and one wired to `RequerySuggested`, are shown in the [related article](/articles/wpf-relaycommand-canexecute-not-updating/)
 - Verified on: .NET 10 / Windows 11 (64-bit process)
 - Input: typed into the `PasswordBox` one character at a time with `TextComposition`, the same path as keyboard input
 
@@ -253,7 +253,7 @@ A new random password was generated for each case, and the scanning code held it
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.en.md %}
 
-Whether the UTF-16 sequence of a 12-character password was found in process memory after each operation. Measured on .NET 10 / Windows 11 (64-bit). A new random password was generated for each case, typed one character at a time with `TextComposition`, and confirmed to have arrived as 12 characters before the operation. The scan covered regions that `VirtualQuery` reported as committed and readable (excluding no-access and guard pages), and searched only for contiguous sequences aligned to 2-byte boundaries. Ranges that failed to read were skipped. ANSI and split fragments were not searched for.
+Whether the UTF-16 sequence of a 12-character password was found in process memory after each operation. Measured on .NET 10 / Windows 11 (64-bit). A new random password was generated for each case, and typed one character at a time with `TextComposition`. Each row confirmed that all 12 characters arrived (rows with a ViewModel by the length of its string before the operation, the others by the length of `SecurePassword` after the scan). The scan covered regions that `VirtualQuery` reported as committed and readable (excluding no-access and guard pages), and searched only for contiguous sequences aligned to 2-byte boundaries. Ranges that failed to read were skipped. ANSI and split fragments were not searched for.
 {: .table-caption}
 
 Typing into a `PasswordBox`, or only reading `SecurePassword`, left no such sequence.
@@ -294,7 +294,7 @@ With the article's `RelayCommand`, the design then does not check the input in `
 `PasswordBox.Password` is not a dependency property, so binding it in XAML throws `XamlParseException`.
 `PasswordBox` is `sealed`, so a mechanism has to be added from outside; this article compared an attached property and a `CommandParameter` for that purpose.
 
-On screens where, with a command whose `CanExecuteChanged` is raised by the ViewModel, the button's enabled state must follow the input, or where the ViewModel must empty the field, use the Option 1 attached property.
+Use the Option 1 attached property on screens where the ViewModel must empty the field, or where the button's enabled state must follow the input with a command whose `CanExecuteChanged` is raised by the ViewModel.
 Subscribe through a dedicated `Attach` property, and set `Password` only when the value differs.
 On screens that should reduce how often a plaintext `string` is created, use Option 2: pass the `PasswordBox` and read and dispose of `SecurePassword` inside the command.
 With either option, the plaintext reaches memory once the authentication API requires a `string`, so when keeping the password out of memory is a hard requirement, consider handling it as credentials stored outside the process.

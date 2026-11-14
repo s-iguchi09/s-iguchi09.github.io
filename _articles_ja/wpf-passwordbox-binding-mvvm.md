@@ -21,8 +21,8 @@ MVVM でログイン画面を作るとき、`TextBox` と同じように `Passwo
 
 ## 前提・対象環境
 
-- フレームワーク: .NET 5 以降の WPF（コード例は C# 9 の `is not` パターンと `using` 宣言を使う。.NET Framework では測っていない）
-- アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand` / `RelayCommand<T>` は自前の最小実装で、`CanExecuteChanged` はビューモデルが `RaiseCanExecuteChanged` を呼んだときだけ発生する（`CommandManager.RequerySuggested` にはつながない。この方式の実装例は[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)にある）
+- フレームワーク: WPF。コード例は C# 9 以降が要る（`is not` パターンは C# 9、`using` 宣言は C# 8）。動作は下記の検証環境でだけ測った
+- アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand` / `RelayCommand<T>` は自前の最小実装で、`CanExecuteChanged` はビューモデルが `RaiseCanExecuteChanged` を呼んだときだけ発生する（`CommandManager.RequerySuggested` にはつながない）。`RelayCommand<T>` は、パラメーターが `T` でなければ `CanExecute` が `false` を返し、`Execute` も何もしない。ジェネリックでない `RelayCommand` を自前のイベントで実装する例と、`RequerySuggested` につなぐ例は[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)にある
 - 検証環境: .NET 10 / Windows 11（64 ビットのプロセス）
 - 入力の再現: キーボードからの入力と同じく、1 文字ずつ `TextComposition` を送って `PasswordBox` に入力した
 
@@ -251,7 +251,7 @@ public sealed class SignInViewModel
 
 {% include tables/articles/wpf-passwordbox-binding-mvvm/passwordbox-plaintext-in-memory.ja.md %}
 
-各操作の後に、12 文字のパスワードの UTF-16 の並びがプロセスのメモリに見つかったか。.NET 10 / Windows 11（64 ビット）で実測。条件ごとに乱数のパスワードを作り直し、1 文字ずつ `TextComposition` で入力して、12 文字届いたことを確かめてから操作した。走査したのは `VirtualQuery` でコミット済みかつ読み取り可能な領域（アクセス不可とガードページを除く）で、2 バイト境界に揃った連続した並びだけを探した。読み込みに失敗した範囲は飛ばした。ANSI や分割された断片は探していない。
+各操作の後に、12 文字のパスワードの UTF-16 の並びがプロセスのメモリに見つかったか。.NET 10 / Windows 11（64 ビット）で実測。条件ごとに乱数のパスワードを作り直し、1 文字ずつ `TextComposition` で入力した。12 文字届いたことは各行で確かめた（ビューモデルを持つ行は操作の前にビューモデルの string の長さで、ほかの行は走査の後に `SecurePassword` の長さで）。走査したのは `VirtualQuery` でコミット済みかつ読み取り可能な領域（アクセス不可とガードページを除く）で、2 バイト境界に揃った連続した並びだけを探した。読み込みに失敗した範囲は飛ばした。ANSI や分割された断片は探していない。
 {: .table-caption}
 
 `PasswordBox` に入力しただけ、`SecurePassword` を読んだだけでは、並びは見つからなかった。
