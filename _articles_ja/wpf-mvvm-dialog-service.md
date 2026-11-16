@@ -12,7 +12,7 @@ excerpt: "ビューモデルから MessageBox.Show を呼ぶとテストが止�
 MVVM で「削除の前に確認する」「読み込むファイルを選ばせる」「子ウィンドウで編集させる」といった処理を書くと、ビューモデルの中からダイアログを出したくなる。
 ビューモデルで `MessageBox.Show` を呼べば動くが、その書き方はテストから実行すると止まる。
 ダイアログを別のクラスへ移すと、今度はビューモデルがウィンドウを知らないため、ダイアログの所有者（`Owner`）を決められない。
-所有者の無い子ウィンドウは、メインウィンドウが前に来ると、その下に回る。
+所有者の無い子ウィンドウは、メインウィンドウを Z オーダーの先頭へ移すと、その下に回る。
 
 本記事では、この 3 つの壁を順に越えながら、確認・ファイル選択・子ウィンドウをまとめて扱う `IDialogService` を自前で実装する。
 各段階の挙動は、別のスレッドからのコマンドの実行、Win32 の所有者と Z オーダー、ビューモデルが受け取った値を実測して確かめた。
@@ -184,13 +184,13 @@ public void Delete_does_not_remove_when_cancelled()
 
 {% include tables/articles/wpf-mvvm-dialog-service/dialog-service-owner.ja.md %}
 
-各ダイアログの Win32 の所有者と、メインウィンドウを `SetWindowPos`（`HWND_TOP`、アクティブにはしない）で Z オーダーの先頭へ移した後に、ダイアログがメインより上にあるか。.NET 10 / Windows 11 で実測。重なりは DWM の拡張フレームの矩形（見えている枠）で比べ、「メインは有効か」は `IsWindowEnabled` で読んだ。メインは作業領域の左上寄りに 520×360 で置き、「検索」は同じアプリが開いている `Owner` を持たない別のウィンドウで、メインと重ならない右側に置いた。「メインの中央に出た」は、`WindowStartupLocation="CenterOwner"` を指定した子ウィンドウについて見る列で、メッセージボックスとファイル選択は位置を指定していない。
+各ダイアログの Win32 の所有者と、メインウィンドウを `SetWindowPos`（`HWND_TOP`、アクティブにはしない）で Z オーダーの先頭へ移した後に、ダイアログがメインより上にあるか。.NET 10 / Windows 11 で実測。重なりは DWM の拡張フレームの矩形（見えている枠）で比べた。ダイアログの位置はシステムが決める（`Owner` の無い子ウィンドウは Windows の既定の位置、メッセージボックスとファイル選択はそれぞれの決め方による）ので、重なりは回によって変わりうる。「メインは有効か」は `IsWindowEnabled` で読んだ。メインは作業領域の左上寄りに 520×360 で置き、「検索」は同じアプリが開いている `Owner` を持たない別のウィンドウで、メインと重ならない右側に置いた。「メインの中央に出た」は、`WindowStartupLocation="CenterOwner"` を指定した子ウィンドウについて見る列で、メッセージボックスとファイル選択は位置を指定していない。
 {: .table-caption}
 
 `Owner` を設定せずに `Window.ShowDialog()` で開いた子ウィンドウは、Win32 の所有者を持たなかった。
-位置は Windows が決める既定の位置で（所有者が無いと `CenterOwner` は `Manual` と同じ扱いになる。[Window.WindowStartupLocation](https://learn.microsoft.com/dotnet/api/system.windows.window.windowstartuplocation)）、この環境では矩形の全体がメインの内側に出た。
+位置は Windows が決める既定の位置で（所有者が無いと `CenterOwner` は `Manual` と同じ扱いになる。[Window.WindowStartupLocation](https://learn.microsoft.com/dotnet/api/system.windows.window.windowstartuplocation)）、測った回によって違った（矩形の全体がメインの内側に出た回と、一部だけがメインと重なった回があった）。
 メインを Z オーダーの先頭へ移すと子ウィンドウはメインより下になり、メインは無効のままだった。
-次の 2 枚は、表で測った上下関係を、撮る間だけ Topmost を付けて再現した画面である（画面の撮影はほかのアプリのウィンドウも写すため）。
+次の 2 枚は、表で測った上下関係を、撮る間だけ Topmost を付けて再現した画面で、メインの範囲だけを撮った（画面の撮影はほかのアプリのウィンドウも写すため）。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-mvvm-dialog-service/owner-not-set.png" alt="顧客台帳のメインウィンドウだけが見え、Owner を設定せずに開いた顧客の編集ウィンドウはメインの下にあって見えない画面" width="506" height="353" loading="lazy">
@@ -202,14 +202,14 @@ public void Delete_does_not_remove_when_cancelled()
   <figcaption>DialogService で Owner をメインにした子ウィンドウで、同じ操作をした画面。子ウィンドウはメインの中央に出て、メインより上に残る。表の 2 行目で測った上下関係のとおりに、撮る間だけメインと子ウィンドウをこの順に Topmost にして撮った。.NET 10 / Windows 11 で撮影。</figcaption>
 </figure>
 
-1 枚目の状態では、見えているのは無効になったメインだけで、利用者からは操作を受け付けないアプリに見える。
+子ウィンドウのうちメインと重なる部分は隠れ、全体がメインの内側に出た場合は、見えているのが無効になったメインだけになるので、利用者からは操作を受け付けないアプリに見える。
 本記事では `SetWindowPos` で前に移しており、タスクバーや Alt+Tab の操作そのものは測っていない（`Owner` が無いとタスクバーで子と親が別々の候補になることは、[Window.Owner](https://learn.microsoft.com/dotnet/api/system.windows.window.owner) のドキュメントにある）。
 
 `MessageBox.Show` と `OpenFileDialog.ShowDialog()` は、所有者の引数を省いても、メインがアクティブなら所有者がメインになった。
 どちらも、開いた時点でアクティブなウィンドウをまず所有者に選ぶためである（[MessageBox](https://learn.microsoft.com/dotnet/api/system.windows.messagebox)、[CommonDialog.ShowDialog](https://learn.microsoft.com/dotnet/api/microsoft.win32.commondialog.showdialog)）。
 同じアプリの別のウィンドウ（検索）がアクティブだと、所有者は検索ウィンドウになり、メインを Z オーダーの先頭へ移すとダイアログはメインより下になった。
 このときメインは無効にならなかった（表の「メインは有効か」が「有効」）。
-この配置ではダイアログがメインと重ならなかったため見えたままだったが、メインと重なる位置に出た場合の見え方は測っていない。
+表の回ではこの 2 つのダイアログがメインと重ならず見えたままだったが、メインと重なる位置に出た場合の見え方は測っていない。
 
 サービスには、呼び出したビューモデルを `DataContext` に持つウィンドウを探させ、それを所有者にする。
 
@@ -426,7 +426,7 @@ protected override void OnStartup(StartupEventArgs e)
 ダイアログは `IDialogService` の向こうへ移し、テストでは決めた答えを返す実装を渡す。
 
 サービスは、呼び出したビューモデルを `DataContext` に持つウィンドウを所有者にする。
-`Owner` の無い子ウィンドウは、メインが Z オーダーの先頭に来るとその下に回る。
+`Owner` の無い子ウィンドウは、メインを Z オーダーの先頭へ移すとその下に回る。
 引数を省いた `MessageBox` やファイル選択はその時点でアクティブなウィンドウを所有者にするので、所有者は常に明示して渡す。
 
 子ウィンドウの結果は、ビューモデルが `CloseRequested` で知らせ、サービスが `DialogResult` に設定する。

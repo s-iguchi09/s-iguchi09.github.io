@@ -10,7 +10,7 @@ using ScreenshotCapture.Scenes.MvvmDialogService;
 namespace ScreenshotCapture.Scenes;
 
 /// <summary>
-/// 記事「WPF の MVVM でダイアログを出す: IDialogService で確認・ファイル選択・子ウィンドウの結果を受け取る」の計測。
+/// 記事「WPF MVVM でダイアログを出す: IDialogService の最小実装と Owner・戻り値の落とし穴」の計測。
 ///
 /// 1. テストのスレッドからコマンドを実行したとき、ビューモデルが MessageBox.Show を直接呼ぶと、誰かが閉じるまで戻らないこと。
 /// 2. Owner の有無で、ダイアログの所有者（Win32）・メインを Z オーダーの先頭へ移した後の順序・矩形の重なり・出る位置が変わること。
@@ -27,7 +27,7 @@ internal sealed class MvvmDialogServiceScene : IScene
     [
         "ビューモデルの中で MessageBox.Show を呼ぶ書き方では、別に作った MTA のスレッドから DeleteCommand.Execute を呼ぶと、1 秒の時点でそのスレッドがメッセージボックス（#32770）を開いたまま Execute が戻っておらず、外からメッセージボックスに OK（IDOK）を送って初めて戻ること",
         "IDialogService を受け取るビューモデルにテスト用の実装（決めた答えを返す）を渡すと、同じ方法で作った MTA のスレッドから呼んだ Execute が 1 秒以内に戻り、Confirm が 1 回呼ばれ、答えが true なら削除し、false なら削除しないこと",
-        "Owner を設定せずに Window.ShowDialog で開いた子ウィンドウは Win32 の所有者を持たず、矩形の全体がメインの内側に出て、メインを SetWindowPos で Z オーダーの先頭へ移すとメインより下になること。WindowStartupLocation=CenterOwner でもメインの中央に出ないこと",
+        "Owner を設定せずに Window.ShowDialog で開いた子ウィンドウは Win32 の所有者を持たず、メインを SetWindowPos で Z オーダーの先頭へ移すとメインより下になること。WindowStartupLocation=CenterOwner でもメインの中央に出ないこと",
         "DialogService.ShowDialog で開いた子ウィンドウは、メインと別のウィンドウ（検索）のどちらがアクティブでも所有者がメインになり、メインを Z オーダーの先頭へ移してもメインより上に残り、メインの中央に出ること",
         "MessageBox.Show と OpenFileDialog.ShowDialog は、所有者の引数を省くと、メインがアクティブならメイン、Owner を持たない別のウィンドウ（検索）がアクティブならそのウィンドウが所有者になり、DialogService を通すとどちらの場合もメインになること。所有者がメインでないダイアログは、メインを Z オーダーの先頭へ移すとメインより下になること",
         "DialogService を通すと、DeleteCommand の確認が OK で true（削除する）、キャンセルで false（削除しない）になり、ImportCommand のファイル選択がキャンセルで null、ファイル名を入れて開くとそのファイルの完全なパスになること",
@@ -39,11 +39,112 @@ internal sealed class MvvmDialogServiceScene : IScene
 
     private static Loc T(string en, string ja) => Loc.Of(en, ja);
 
+    // 各表の期待値。行の日本語のセルを「|」でつないだもの。「*」のセルは照合しない。
+    // ダイアログの出る位置（メインとの重なり）はシステムが決める（Owner の無い子ウィンドウは Windows の既定の位置、
+    // メッセージボックスとファイル選択はそれぞれの決め方）ため、記事が位置を前提にしていない行は照合しない。
+    // 検索がアクティブなときの所有者の引数なしの 2 行も、位置はシステムが決めるため照合しない。本文はこの 2 行の重なりを表の回の値として書いている。
+    private static readonly string[] ExpectedTestCalls =
+    [
+        "MessageBox.Show を直接呼ぶ|メッセージボックス（#32770）|いいえ（外から OK（IDOK）を送った後に戻った）|1",
+        "IDialogService（テスト用の実装が true を返す）|（戻っていた）|はい|1",
+        "IDialogService（テスト用の実装が false を返す）|（戻っていた）|はい|2",
+    ];
+
+    private static readonly string[] ExpectedOwners =
+    [
+        "Window.ShowDialog()・Owner を設定しない|（なし）|ダイアログがメインより下|*|いいえ|無効",
+        "DialogService.ShowDialog（Owner = メイン）|メインウィンドウ|ダイアログがメインより上|全体がメインの内側|はい|無効",
+        "MessageBox.Show(message, …)・所有者の引数なし|メインウィンドウ|ダイアログがメインより上|*|いいえ|無効",
+        "DialogService.Confirm（MessageBox.Show(owner, …)）|メインウィンドウ|ダイアログがメインより上|*|いいえ|無効",
+        "OpenFileDialog.ShowDialog()・所有者の引数なし|メインウィンドウ|ダイアログがメインより上|*|いいえ|無効",
+        "DialogService.OpenFile（ShowDialog(owner)）|メインウィンドウ|ダイアログがメインより上|*|いいえ|無効",
+        "DialogService.ShowDialog・検索がアクティブ|メインウィンドウ|ダイアログがメインより上|全体がメインの内側|はい|無効",
+        "MessageBox.Show(message, …)・所有者の引数なし・検索がアクティブ|別のウィンドウ（検索）|ダイアログがメインより下|*|いいえ|有効",
+        "DialogService.Confirm・検索がアクティブ|メインウィンドウ|ダイアログがメインより上|*|いいえ|無効",
+        "OpenFileDialog.ShowDialog()・所有者の引数なし・検索がアクティブ|別のウィンドウ（検索）|ダイアログがメインより下|*|いいえ|有効",
+        "DialogService.OpenFile・検索がアクティブ|メインウィンドウ|ダイアログがメインより上|*|いいえ|無効",
+    ];
+
+    private static readonly string[] ExpectedResults =
+    [
+        "DeleteCommand → OK|Confirm: true|顧客 2 件 → 1 件",
+        "DeleteCommand → キャンセル|Confirm: false|顧客 2 件 → 2 件",
+        "ImportCommand → キャンセル|OpenFile: null|ImportPath: null",
+        "ImportCommand → ファイル名を入れて開く|OpenFile: ファイルの完全なパス|ImportPath: 同じパス",
+        "EditCommand →「x」を入力して OK|ShowDialog: true|Customer.Name: \"Alicex\"",
+        "EditCommand →「x」を入力してキャンセル|ShowDialog: false|Customer.Name: \"Alice\"",
+        "EditCommand →「x」を入力して ×|ShowDialog: false|Customer.Name: \"Alice\"",
+        "Window.ShowDialog() そのもの → ×|ShowDialog(): false|DialogResult は設定していない",
+        "Customer そのものをバインド →「x」を入力してキャンセル|ShowDialog: false|Customer.Name: \"Alicex\"",
+        "どのウィンドウの DataContext でもないビューモデルの DeleteCommand|例外 InvalidOperationException|表示中のウィンドウ * → *、Application.Windows 1 → 1、顧客 1 → 1 件",
+        "どのウィンドウの DataContext でもないビューモデルの EditCommand|例外 InvalidOperationException|表示中のウィンドウ * → *、Application.Windows 1 → 1、顧客 1 → 1 件",
+        "同じ EditCommand・ウィンドウを作ってから所有者を探す順序のサービス|例外 InvalidOperationException|表示中のウィンドウ * → *、Application.Windows 1 → 2、顧客 1 → 1 件",
+    ];
+
+    /// <summary>
+    /// 表の各行（日本語のセル）を期待値と照合する。セルが「*」なら照合しない。セルの中の「*」は、
+    /// 前後と同じ数（表示中のウィンドウの数）を表し、同じ行の中で前と後が等しいことを確かめる。
+    /// </summary>
+    private static void Expect(string table, IReadOnlyList<IReadOnlyList<Loc>> rows, string[] expected)
+    {
+        if (rows.Count != expected.Length)
+        {
+            throw new InvalidOperationException($"{table}: 行数が期待と違う（{rows.Count} 行、期待 {expected.Length} 行）。");
+        }
+
+        for (int i = 0; i < rows.Count; i++)
+        {
+            string[] want = expected[i].Split('|');
+            if (rows[i].Count != want.Length)
+            {
+                throw new InvalidOperationException($"{table} の {i + 1} 行目: 列数が期待と違う。");
+            }
+
+            for (int j = 0; j < want.Length; j++)
+            {
+                string actual = rows[i][j].Ja;
+                if (want[j] == "*")
+                {
+                    continue;
+                }
+
+                bool ok = want[j].Contains("* → *", StringComparison.Ordinal)
+                    ? MatchesSameCount(actual, want[j])
+                    : actual == want[j];
+                if (!ok)
+                {
+                    throw new InvalidOperationException($"{table} の {i + 1} 行目 {j + 1} 列目が期待と違う: 実測「{actual}」、期待「{want[j]}」。");
+                }
+            }
+        }
+    }
+
+    /// <summary>「* → *」の部分が同じ数どうしで、残りが期待と一致するか。</summary>
+    private static bool MatchesSameCount(string actual, string pattern)
+    {
+        // Regex.Escape は空白もエスケープするため、「* → *」で分けてから各部分をエスケープしてつなぐ。
+        // 後方参照を 1 つしか使わないので、「* → *」は 1 つだけにする（2 つ以上は誤判定になる）。
+        string[] parts = pattern.Split("* → *");
+        if (parts.Length != 2)
+        {
+            throw new ArgumentException($"「* → *」は 1 つだけ書ける: {pattern}", nameof(pattern));
+        }
+
+        string regex = "^" + string.Join(@"(\d+) → \1", parts.Select(System.Text.RegularExpressions.Regex.Escape)) + "$";
+        return System.Text.RegularExpressions.Regex.IsMatch(actual, regex);
+    }
+
     public async Task CaptureAsync(SceneContext context)
     {
         var testRows = MeasureTestCalls();
         var ownerRows = await MeasureOwnersAsync(context);
         var resultRows = await MeasureResultsAsync();
+
+        // 記事の本文と Verifies はこの値を前提に書いている。食い違えば、どの表も記録も書き換えずに止める。
+        // 画面の撮影（PNG）は計測の途中で行うため、撮る直前にその行全体を ExpectedOwners の同じ行と照合している（Measure の expectedRow）。
+        Expect("test-call", testRows, ExpectedTestCalls);
+        Expect("owner", ownerRows, ExpectedOwners);
+        Expect("results", resultRows, ExpectedResults);
 
         await context.SaveTableAsync(
             "Executing DeleteCommand from a separate MTA thread (standing in for a test)",
@@ -273,7 +374,7 @@ internal sealed class MvvmDialogServiceScene : IScene
             await Capture.ShowAndSettleAsync(other);
             IntPtr otherHandle = new WindowInteropHelper(other).Handle;
 
-            async Task Measure(Loc label, Action open, bool otherActive = false, string? screenshot = null)
+            async Task Measure(Loc label, Action open, bool otherActive = false, string? screenshot = null, int expectedRow = -1)
             {
                 Window active = otherActive ? other! : main;
                 active.Activate();
@@ -306,6 +407,9 @@ internal sealed class MvvmDialogServiceScene : IScene
 
                     if (screenshot is not null)
                     {
+                        // 記事と逆の図で上書きしないよう、撮る前にこの行全体を ExpectedOwners の同じ行と照合する（表と同じ照合）。
+                        Expect("owner (before capture)", [[label, owner, afterTop, overlap, centered, mainEnabled]], [ExpectedOwners[expectedRow]]);
+
                         // 子ウィンドウの枠の色もメインと同じ既定の配色に揃えてから、画面に見えているとおりにメインの範囲を撮る。
                         Window? dialogWindow = Application.Current.Windows.OfType<Window>()
                             .SingleOrDefault(w => new WindowInteropHelper(w).Handle == dialog);
@@ -341,10 +445,10 @@ internal sealed class MvvmDialogServiceScene : IScene
                 Window window = CreateEditWindow();
                 window.DataContext = new CustomerEditViewModel("Alice");
                 window.ShowDialog();
-            }, screenshot: "owner-not-set.png");
+            }, screenshot: "owner-not-set.png", expectedRow: 0);
 
             await Measure(T("DialogService.ShowDialog (Owner = main)", "DialogService.ShowDialog（Owner = メイン）"),
-                () => service.ShowDialog(vm, new CustomerEditViewModel("Alice")), screenshot: "owner-main.png");
+                () => service.ShowDialog(vm, new CustomerEditViewModel("Alice")), screenshot: "owner-main.png", expectedRow: 1);
 
             await Measure(T("MessageBox.Show(message, …), no owner argument", "MessageBox.Show(message, …)・所有者の引数なし"),
                 () => MessageBox.Show("Alice を削除しますか。", "削除の確認", MessageBoxButton.OKCancel, MessageBoxImage.Question));

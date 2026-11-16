@@ -1,6 +1,6 @@
 | how the dialog is opened | Win32 owner | after main is moved to the top of the z-order | rectangle vs. main | centered on main | main enabled |
 |---|---|---|---|---|---|
-| Window.ShowDialog(), Owner not set | (none) | dialog below main | partly overlaps main | no | disabled |
+| Window.ShowDialog(), Owner not set | (none) | dialog below main | entirely inside main | no | disabled |
 | DialogService.ShowDialog (Owner = main) | main window | dialog above main | entirely inside main | yes | disabled |
 | MessageBox.Show(message, …), no owner argument | main window | dialog above main | does not overlap main | no | disabled |
 | DialogService.Confirm (MessageBox.Show(owner, …)) | main window | dialog above main | does not overlap main | no | disabled |

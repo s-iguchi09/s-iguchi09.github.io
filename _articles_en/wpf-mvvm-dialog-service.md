@@ -13,7 +13,7 @@ excerpt: "MessageBox.Show in a view model blocks tests; an owner-less child wind
 In MVVM, actions such as "confirm before deleting", "pick a file to import", and "edit in a child window" tempt the view model to open dialogs itself.
 Calling `MessageBox.Show` from the view model works, but the same code blocks when it runs from a test.
 Moving the dialog code into a separate class raises the next problem: the view model does not know any window, so it cannot decide the dialog's owner (`Owner`).
-A child window without an owner falls behind the main window once the main window comes to the front.
+A child window without an owner falls behind the main window once the main window is moved to the top of the z-order.
 
 This article works through these three obstacles in order and builds a self-written `IDialogService` that handles confirmations, file selection, and child windows.
 Each stage was measured: running a command from a separate thread, the Win32 owner and z-order of every dialog, and the values the view model actually received.
@@ -185,13 +185,13 @@ The effect of a missing `Owner` was measured as the dialog's Win32 owner (`GetWi
 
 {% include tables/articles/wpf-mvvm-dialog-service/dialog-service-owner.en.md %}
 
-The Win32 owner of each dialog, and whether the dialog was above the main window after the main window was moved to the top of the z-order with `SetWindowPos` (`HWND_TOP`, without activating it). Measured on .NET 10 / Windows 11. Overlap compares the DWM extended frame bounds (the visible frame), and "Main enabled" was read with `IsWindowEnabled`. The main window is 520×360 near the top-left of the work area, and "Search" is another window of the same application with no `Owner`, placed to the right where it does not overlap the main window. "Centered on main" applies to the child window with `WindowStartupLocation="CenterOwner"`; the message box and file picker do not specify a position.
+The Win32 owner of each dialog, and whether the dialog was above the main window after the main window was moved to the top of the z-order with `SetWindowPos` (`HWND_TOP`, without activating it). Measured on .NET 10 / Windows 11. Overlap compares the DWM extended frame bounds (the visible frame); the system chooses each dialog's position (the Windows default for the child window without an `Owner`, and each dialog's own rule for the message box and file picker), so the overlap can differ between runs. "Main enabled" was read with `IsWindowEnabled`. The main window is 520×360 near the top-left of the work area, and "Search" is another window of the same application with no `Owner`, placed to the right where it does not overlap the main window. "Centered on main" applies to the child window with `WindowStartupLocation="CenterOwner"`; the message box and file picker do not specify a position.
 {: .table-caption}
 
 A child window opened with `Window.ShowDialog()` without an `Owner` had no Win32 owner.
-Its position was the default chosen by Windows (without an owner, `CenterOwner` is treated like `Manual`; [Window.WindowStartupLocation](https://learn.microsoft.com/dotnet/api/system.windows.window.windowstartuplocation)), and in this environment its whole rectangle lay inside the main window.
+Its position was the default chosen by Windows (without an owner, `CenterOwner` is treated like `Manual`; [Window.WindowStartupLocation](https://learn.microsoft.com/dotnet/api/system.windows.window.windowstartuplocation)), and it differed between the runs measured (in one run its whole rectangle lay inside the main window, and in another it only partly overlapped it).
 After the main window was moved to the top of the z-order the child was below it, and the main window stayed disabled.
-The next two images reproduce the measured order on screen, with Topmost applied only while capturing (a screen capture would otherwise include other applications' windows).
+The next two images reproduce the measured order on screen, with Topmost applied only while capturing, and show only the main window's area (a screen capture would otherwise include other applications' windows).
 The UI strings in the images are Japanese, as in the measurement scene.
 
 <figure class="article-figure">
@@ -204,14 +204,14 @@ The UI strings in the images are Japanese, as in the measurement scene.
   <figcaption>The same operation with a child window whose Owner was set to the main window by DialogService. The child appears at the center of the main window and stays above it. Captured with the main window and then the child made Topmost only while capturing, following the order measured in the second row of the table. Captured on .NET 10 / Windows 11.</figcaption>
 </figure>
 
-In the first image, the only visible window is the disabled main window, so the application looks unresponsive to the user.
+The part of the child window that overlaps the main window is hidden, and when the whole child lies inside the main window, the only visible window is the disabled main window, so the application looks unresponsive to the user.
 This article moved the window with `SetWindowPos` and did not measure the taskbar or Alt+Tab themselves (the [Window.Owner](https://learn.microsoft.com/dotnet/api/system.windows.window.owner) documentation states that without an `Owner`, the taskbar offers the child and the parent as separate choices).
 
 `MessageBox.Show` and `OpenFileDialog.ShowDialog()` got the main window as their owner even without an owner argument, as long as the main window was active.
 Both pick the window that is active when they open as the owner first ([MessageBox](https://learn.microsoft.com/dotnet/api/system.windows.messagebox), [CommonDialog.ShowDialog](https://learn.microsoft.com/dotnet/api/microsoft.win32.commondialog.showdialog)).
 When another window of the same application (Search) was active, the owner became the Search window, and after the main window was moved to the top of the z-order the dialog was below it.
 The main window was not disabled in that case ("Main enabled" is "enabled" in the table).
-In this layout those dialogs did not overlap the main window and stayed visible; how they look when they open over the main window was not measured.
+In the run shown in the table, these two dialogs did not overlap the main window and stayed visible; how they look when they open over the main window was not measured.
 
 The service therefore looks for the window whose `DataContext` is the calling view model and makes it the owner.
 
@@ -427,7 +427,7 @@ Calling `MessageBox.Show` directly from a view model opens a message box on the 
 Dialogs belong behind `IDialogService`, and tests receive an implementation that returns a predetermined answer.
 
 The service makes the window whose `DataContext` is the calling view model the owner.
-A child window without an `Owner` falls below the main window when the main window reaches the top of the z-order.
+A child window without an `Owner` falls below the main window when the main window is moved to the top of the z-order.
 A `MessageBox` or file picker without an owner argument takes whichever window is active at the time, so the owner is always passed explicitly.
 
 For child windows, the view model announces the result through `CloseRequested`, and the service sets it as `DialogResult`.

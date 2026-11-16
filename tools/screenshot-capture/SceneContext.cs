@@ -97,7 +97,7 @@ internal sealed class SceneContext(string slug, string outputDirectory, string t
 
     /// <summary>
     /// 表示中のウィンドウの範囲を、画面に表示されているとおりに（重なっている別のウィンドウも含めて）PNG として保存する。
-    /// ウィンドウどうしの重なりを見せる図に使う。範囲に <paramref name="allowed"/> 以外のウィンドウが写っていれば止める。
+    /// ウィンドウどうしの重なりを見せる図に使う。範囲に <paramref name="allowed"/> 以外のウィンドウが Z オーダーで上から重なっていれば、撮影の前でも後でも止める。
     /// SCREENSHOT_SKIP_WINDOW_CAPTURE=1 では撮らない。
     /// </summary>
     public void SaveScreenArea(Window window, string fileName, IReadOnlyList<Window> allowed)

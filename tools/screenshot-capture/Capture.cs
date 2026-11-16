@@ -36,14 +36,30 @@ internal static class Capture
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr WindowFromPoint(POINT point);
+    private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
     [DllImport("user32.dll")]
-    private static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
+    private static extern IntPtr GetWindow(IntPtr hwnd, uint command);
 
-    /// <summary>GA_ROOT。</summary>
-    private const uint GaRoot = 2;
+    /// <summary>GW_HWNDPREV。Z オーダーで 1 つ上のウィンドウ。</summary>
+    private const uint GwHwndPrev = 3;
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowVisible(IntPtr hwnd);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassName(IntPtr hwnd, System.Text.StringBuilder name, int length);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out int value, int size);
+
+    /// <summary>DWMWA_CLOAKED。別の仮想デスクトップにあるなど、DWM が隠しているウィンドウ。</summary>
+    private const int DwmwaCloaked = 14;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT
@@ -228,7 +244,7 @@ internal static class Capture
             throw new InvalidOperationException($"ウィンドウ矩形が不正である: {width}x{height}");
         }
 
-        // DWM の矩形は物理ピクセルで、WindowFromPoint と CopyFromScreen はプロセスの DPI 対応で座標が変わりうる。
+        // DWM の矩形は物理ピクセルで、CopyFromScreen はプロセスの DPI 対応で座標が変わりうる。
         // 座標系が一致することを確かめた表示倍率 100% のときだけ撮る。GetDpi はプロセスの DPI 対応によってはシステムの DPI を返すため、
         // 撮るウィンドウは主モニターに置く前提である。
         DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(window);
@@ -237,25 +253,10 @@ internal static class Capture
             throw new InvalidOperationException($"画面の撮影は表示倍率 100% でだけ行う（現在 {dpi.PixelsPerDip * 100}%）。表だけを測るなら SCREENSHOT_SKIP_WINDOW_CAPTURE=1 を付けて実行する。");
         }
 
-        // 範囲の四隅の内側と中心にあるウィンドウが、撮ってよいウィンドウ（allowed）のどれかであることを確かめる。
+        // 撮る範囲に、撮ってよいウィンドウ（allowed）以外が重なっていないことを、撮影の前と後の両方で確かめる。
         // 通知やほかのアプリの Topmost のウィンドウが写り込んだ図をリポジトリに残さないため。
-        // WindowFromPoint は無効なウィンドウを返さないとドキュメントにあるが、無効なトップレベルのウィンドウ（モーダルの間のメイン）も
-        // 返ることを Windows 11 で確かめた。返らない環境では後ろのウィンドウが返り、ここで止まる（誤った図は保存しない側に倒れる）。
-        var allowedRoots = allowed.Select(w => new WindowInteropHelper(w).Handle).ToHashSet();
-        int inset = 12;
-        foreach ((int x, int y) in new[]
-        {
-            (bounds.Left + inset, bounds.Top + inset), (bounds.Right - inset, bounds.Top + inset),
-            (bounds.Left + inset, bounds.Bottom - inset), (bounds.Right - inset, bounds.Bottom - inset),
-            ((bounds.Left + bounds.Right) / 2, (bounds.Top + bounds.Bottom) / 2),
-        })
-        {
-            IntPtr root = GetAncestor(WindowFromPoint(new POINT { X = x, Y = y }), GaRoot);
-            if (!allowedRoots.Contains(root))
-            {
-                throw new InvalidOperationException($"撮る範囲（{x}, {y}）に、撮ってよいウィンドウ以外が写っている。撮影を止めた。");
-            }
-        }
+        var allowedHandles = allowed.Select(w => new WindowInteropHelper(w).Handle).ToHashSet();
+        EnsureNothingElseAbove(hwnd, bounds, allowedHandles);
 
         using var image = new Bitmap(width, height, PixelFormat.Format32bppArgb);
         using (Graphics g = Graphics.FromImage(image))
@@ -263,9 +264,82 @@ internal static class Capture
             g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, new System.Drawing.Size(width, height));
         }
 
+        // 確かめてから写すまでの間に現れたウィンドウも、保存の前に止める。
+        EnsureNothingElseAbove(hwnd, bounds, allowedHandles);
+
         EnsureContentRendered(image, ClientAreaIn(hwnd, bounds, image.Size));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         image.Save(path, ImageFormat.Png);
+    }
+
+    /// <summary>
+    /// <paramref name="bottom"/> より Z オーダーで上にある、表示中（非表示でも、DWM で隠された状態でもない）のトップレベルのウィンドウを
+    /// すべてたどり、<paramref name="allowed"/> 以外で <paramref name="bounds"/> と重なるものがあれば例外にする。
+    /// 画面のうち bottom の範囲に見えるのは、bottom 自身とそれより上のウィンドウだけなので、標本点ではなく列挙で確かめる。
+    /// （DWM の枠の角の丸みの外側の数ピクセルは、bottom より下が見える。）
+    /// </summary>
+    private static void EnsureNothingElseAbove(IntPtr bottom, RECT bounds, HashSet<IntPtr> allowed)
+    {
+        // EnumWindows でトップレベルのウィンドウを列挙し、bottom に着いたら止める。列挙が Z オーダーの上から順になることは
+        // ドキュメントには無く、この環境で確かめた挙動である。そのため、bottom より後に列挙されたウィンドウも、
+        // GW_HWNDPREV でたどって bottom より上にあれば調べる対象に入れる（順序が違っても見逃さない側に倒す）。
+        // GetWindow だけでたどるのと違い、列挙の時点で一覧を作るので、途中で Z オーダーが変わっても無限ループにならない。
+        var above = new List<IntPtr>();
+        bool reachedBottom = false;
+        var after = new List<IntPtr>();
+        EnumWindows((h, _) =>
+        {
+            if (h == bottom)
+            {
+                reachedBottom = true;
+            }
+            else if (reachedBottom)
+            {
+                after.Add(h);
+            }
+            else
+            {
+                above.Add(h);
+            }
+
+            return true;
+        }, IntPtr.Zero);
+
+        // bottom より後に列挙されたものでも、実際に bottom より上にあれば調べる（GW_HWNDPREV で bottom から上をたどって確かめる）。
+        var actuallyAbove = new HashSet<IntPtr>();
+        for (IntPtr h = GetWindow(bottom, GwHwndPrev); h != IntPtr.Zero && actuallyAbove.Count < 10000; h = GetWindow(h, GwHwndPrev))
+        {
+            actuallyAbove.Add(h);
+        }
+
+        above.AddRange(after.Where(actuallyAbove.Contains));
+
+        if (!reachedBottom)
+        {
+            throw new InvalidOperationException("撮るウィンドウがトップレベルの列挙に見つからない。撮影を止めた。");
+        }
+
+        foreach (IntPtr h in above)
+        {
+            if (allowed.Contains(h) || !IsWindowVisible(h))
+            {
+                continue;
+            }
+
+            if (DwmGetWindowAttribute(h, DwmwaCloaked, out int cloaked, sizeof(int)) == 0 && cloaked != 0)
+            {
+                continue;
+            }
+
+            RECT other = GetCaptureBounds(h);
+            bool intersects = other.Left < bounds.Right && bounds.Left < other.Right && other.Top < bounds.Bottom && bounds.Top < other.Bottom;
+            if (intersects)
+            {
+                var name = new System.Text.StringBuilder(256);
+                GetClassName(h, name, name.Capacity);
+                throw new InvalidOperationException($"撮る範囲に、撮ってよいウィンドウ以外（クラス {name}）が重なっている。撮影を止めた。");
+            }
+        }
     }
 
     /// <summary>
