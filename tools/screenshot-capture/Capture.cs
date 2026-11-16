@@ -36,6 +36,15 @@ internal static class Capture
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr WindowFromPoint(POINT point);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
+
+    /// <summary>GA_ROOT。</summary>
+    private const uint GaRoot = 2;
+
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT
     {
@@ -195,6 +204,68 @@ internal static class Capture
         }
 
         cropped.Save(path, ImageFormat.Png);
+    }
+
+    /// <summary>
+    /// ウィンドウの枠の範囲を、画面に表示されているとおりに PNG として保存する。
+    /// <see cref="SaveWindow"/>（PrintWindow）はウィンドウを 1 つずつしか描かないため、
+    /// ほかのウィンドウとの重なりそのものを見せる図ではこちらを使う。重なっている別のウィンドウも写る。
+    /// 画面が消灯していると中身が写らないため、クライアント領域が一色なら止める。
+    /// </summary>
+    public static void SaveScreenArea(Window window, string path, IReadOnlyList<Window> allowed)
+    {
+        IntPtr hwnd = new WindowInteropHelper(window).Handle;
+        if (hwnd == IntPtr.Zero)
+        {
+            throw new InvalidOperationException("ウィンドウハンドルが未生成のため取得できない。");
+        }
+
+        RECT bounds = GetCaptureBounds(hwnd);
+        int width = bounds.Right - bounds.Left;
+        int height = bounds.Bottom - bounds.Top;
+        if (width <= 0 || height <= 0)
+        {
+            throw new InvalidOperationException($"ウィンドウ矩形が不正である: {width}x{height}");
+        }
+
+        // DWM の矩形は物理ピクセルで、WindowFromPoint と CopyFromScreen はプロセスの DPI 対応で座標が変わりうる。
+        // 座標系が一致することを確かめた表示倍率 100% のときだけ撮る。GetDpi はプロセスの DPI 対応によってはシステムの DPI を返すため、
+        // 撮るウィンドウは主モニターに置く前提である。
+        DpiScale dpi = System.Windows.Media.VisualTreeHelper.GetDpi(window);
+        if (dpi.DpiScaleX != 1.0 || dpi.DpiScaleY != 1.0)
+        {
+            throw new InvalidOperationException($"画面の撮影は表示倍率 100% でだけ行う（現在 {dpi.PixelsPerDip * 100}%）。表だけを測るなら SCREENSHOT_SKIP_WINDOW_CAPTURE=1 を付けて実行する。");
+        }
+
+        // 範囲の四隅の内側と中心にあるウィンドウが、撮ってよいウィンドウ（allowed）のどれかであることを確かめる。
+        // 通知やほかのアプリの Topmost のウィンドウが写り込んだ図をリポジトリに残さないため。
+        // WindowFromPoint は無効なウィンドウを返さないとドキュメントにあるが、無効なトップレベルのウィンドウ（モーダルの間のメイン）も
+        // 返ることを Windows 11 で確かめた。返らない環境では後ろのウィンドウが返り、ここで止まる（誤った図は保存しない側に倒れる）。
+        var allowedRoots = allowed.Select(w => new WindowInteropHelper(w).Handle).ToHashSet();
+        int inset = 12;
+        foreach ((int x, int y) in new[]
+        {
+            (bounds.Left + inset, bounds.Top + inset), (bounds.Right - inset, bounds.Top + inset),
+            (bounds.Left + inset, bounds.Bottom - inset), (bounds.Right - inset, bounds.Bottom - inset),
+            ((bounds.Left + bounds.Right) / 2, (bounds.Top + bounds.Bottom) / 2),
+        })
+        {
+            IntPtr root = GetAncestor(WindowFromPoint(new POINT { X = x, Y = y }), GaRoot);
+            if (!allowedRoots.Contains(root))
+            {
+                throw new InvalidOperationException($"撮る範囲（{x}, {y}）に、撮ってよいウィンドウ以外が写っている。撮影を止めた。");
+            }
+        }
+
+        using var image = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+        using (Graphics g = Graphics.FromImage(image))
+        {
+            g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, new System.Drawing.Size(width, height));
+        }
+
+        EnsureContentRendered(image, ClientAreaIn(hwnd, bounds, image.Size));
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        image.Save(path, ImageFormat.Png);
     }
 
     /// <summary>

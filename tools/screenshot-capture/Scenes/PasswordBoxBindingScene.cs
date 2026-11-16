@@ -156,7 +156,7 @@ internal sealed class PasswordBoxBindingScene : IScene
         {
             var (box, vm, button) = BuildCommandParameter($$"""CommandParameter="{Binding {{path}}, ElementName=PasswordInput}" """);
             Type(box, "abc");
-            Invoke(button);
+            DemoProbe.Click(button);
             rows.Add([T($"CommandParameter=\"{{Binding {path}, ElementName=PasswordInput}}\": type \"abc\", then click",
                         $"CommandParameter=\"{{Binding {path}, ElementName=PasswordInput}}\": \"abc\" を入力して押す"),
                       $"{vm.LastType}.Length {vm.LastLength}"]);
@@ -168,7 +168,7 @@ internal sealed class PasswordBoxBindingScene : IScene
             panel.DataContext = vm;
             DemoProbe.Layout(panel, 300, 100);
             Type((PasswordBox)panel.Children[0], "abc");
-            Invoke((Button)panel.Children[1]);
+            DemoProbe.Click((Button)panel.Children[1]);
             rows.Add([T("article's SignInViewModel, CommandParameter=\"{Binding ElementName=PasswordInput}\": type \"abc\", then click",
                         "記事の SignInViewModel・CommandParameter=\"{Binding ElementName=PasswordInput}\": \"abc\" を入力して押す"),
                       $"SecureString.Length {vm.LastLength}"]);
@@ -237,12 +237,6 @@ internal sealed class PasswordBoxBindingScene : IScene
             TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, box, c.ToString()));
         }
     }
-
-    /// <summary>クリックと同じ経路（ButtonBase.OnClick）で Command を実行する。AutomationPeer の Invoke は非同期に実行されるため使わない。</summary>
-    private static void Invoke(Button button) =>
-        typeof(System.Windows.Controls.Primitives.ButtonBase)
-            .GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
-            .Invoke(button, null);
 
     // ------------------------------------------------------------------
     // 平文がメモリに残るか
