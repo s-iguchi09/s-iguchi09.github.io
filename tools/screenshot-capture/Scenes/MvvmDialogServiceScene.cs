@@ -920,8 +920,10 @@ internal sealed class MvvmDialogServiceScene : IScene
         /// <summary><paramref name="upper"/> が Z オーダーで <paramref name="lower"/> より上にあるか。</summary>
         public static bool IsAbove(IntPtr upper, IntPtr lower)
         {
-            for (IntPtr h = GetWindow(lower, GW_HWNDPREV); h != IntPtr.Zero; h = GetWindow(h, GW_HWNDPREV))
+            var seen = new HashSet<IntPtr>();
+            for (IntPtr h = GetWindow(lower, GW_HWNDPREV); h != IntPtr.Zero && seen.Add(h); h = GetWindow(h, GW_HWNDPREV))
             {
+                // 同じハンドルに戻ったら止める（たどる途中で Z オーダーが変わったときに終わらなくならないため）。
                 if (h == upper) return true;
             }
 

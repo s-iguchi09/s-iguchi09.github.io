@@ -227,6 +227,7 @@ internal static class Capture
     /// <see cref="SaveWindow"/>（PrintWindow）はウィンドウを 1 つずつしか描かないため、
     /// ほかのウィンドウとの重なりそのものを見せる図ではこちらを使う。重なっている別のウィンドウも写る。
     /// 画面が消灯していると中身が写らないため、クライアント領域が一色なら止める。
+    /// 別のウィンドウの写り込みは撮影の前後で確かめるが、その間だけ現れたウィンドウは検出できないので、PNG は目で確かめてからコミットする。
     /// </summary>
     public static void SaveScreenArea(Window window, string path, IReadOnlyList<Window> allowed)
     {
@@ -264,7 +265,9 @@ internal static class Capture
             g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, new System.Drawing.Size(width, height));
         }
 
-        // 確かめてから写すまでの間に現れたウィンドウも、保存の前に止める。
+        // 写した後にも同じ確認をして、写している間も重なったままのウィンドウを保存の前に止める。
+        // ただし、1 回目の確認の後に現れて 2 回目の確認の前に消えたウィンドウ（短い通知など）は検出できない。
+        // この確認が防ぐのは「確かめた時点で重なっているもの」までで、保存した PNG はコミットの前に必ず目で確かめる。
         EnsureNothingElseAbove(hwnd, bounds, allowedHandles);
 
         EnsureContentRendered(image, ClientAreaIn(hwnd, bounds, image.Size));
@@ -283,7 +286,7 @@ internal static class Capture
         // EnumWindows でトップレベルのウィンドウを列挙し、bottom に着いたら止める。列挙が Z オーダーの上から順になることは
         // ドキュメントには無く、この環境で確かめた挙動である。そのため、bottom より後に列挙されたウィンドウも、
         // GW_HWNDPREV でたどって bottom より上にあれば調べる対象に入れる（順序が違っても見逃さない側に倒す）。
-        // GetWindow だけでたどるのと違い、列挙の時点で一覧を作るので、途中で Z オーダーが変わっても無限ループにならない。
+        // EnumWindows は列挙の時点で一覧を作る。GW_HWNDPREV でたどる部分は、同じハンドルに戻ったら止める。
         var above = new List<IntPtr>();
         bool reachedBottom = false;
         var after = new List<IntPtr>();
@@ -307,9 +310,13 @@ internal static class Capture
 
         // bottom より後に列挙されたものでも、実際に bottom より上にあれば調べる（GW_HWNDPREV で bottom から上をたどって確かめる）。
         var actuallyAbove = new HashSet<IntPtr>();
-        for (IntPtr h = GetWindow(bottom, GwHwndPrev); h != IntPtr.Zero && actuallyAbove.Count < 10000; h = GetWindow(h, GwHwndPrev))
+        for (IntPtr h = GetWindow(bottom, GwHwndPrev); h != IntPtr.Zero; h = GetWindow(h, GwHwndPrev))
         {
-            actuallyAbove.Add(h);
+            // たどる途中で Z オーダーが変わって同じハンドルに戻ったら止める（巡回で終わらなくならないため）。
+            if (!actuallyAbove.Add(h))
+            {
+                break;
+            }
         }
 
         above.AddRange(after.Where(actuallyAbove.Contains));
