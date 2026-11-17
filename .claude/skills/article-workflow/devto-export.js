@@ -344,11 +344,72 @@ function linkedSlugs(text) {
 // AbortSignal.timeout で上限を切る。
 const FETCH_TIMEOUT_MS = 15000;
 
-function getJson(url) {
-  return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }).then((res) => {
-    if (!res.ok) throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
-    return res.json();
-  });
+// dev.to の公開 API は、間を空けずに続けて呼ぶと 429 を返す。投稿ごとに詳細 API を
+// 呼ぶので、投稿が十数本でも途中で 429 になり、判定がまるごと「未取得」になっていた
+// (2026-11-17 JST に 2 回続けて発生)。呼ぶ間隔を 1.5 秒空けると、同じ日の 3 回の実行で
+// いずれも 429 なしで全件を取得できた。それでも 429 が返ったときは Retry-After だけ待って
+// 同じ URL を呼び直す。
+const MIN_REQUEST_INTERVAL_MS = 1500;
+const MAX_RETRIES_ON_429 = 4;
+// Retry-After が無い・読めないときの待ち時間。
+const DEFAULT_RETRY_AFTER_MS = 10000;
+// 1 回に待つ時間の上限と、429 のために待ってよい締め切り(実行の開始からの時間)。
+// 指定が 1 回の上限を超える場合や、待ち終わりが締め切りを過ぎる場合は、待たずに「未取得」の
+// 経路へ入れる(429 の待ちが際限なく延びないようにするため)。
+// 締め切りが抑えるのは 429 で待つ時間だけで、実行全体の長さは抑えない(待った分だけ後の
+// 呼び出しが後ろへずれ、投稿が増えれば間隔の分だけ延びる)。
+// 投稿が増えて、間隔だけで締め切りに近づくようなら値を見直す(2026-11-17 時点で 11 本・約 17 秒)。
+const MAX_RETRY_AFTER_MS = 30000;
+const RETRY_DEADLINE_MS = 90000;
+
+const startedAt = Date.now();
+let lastRequestAt = 0;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Retry-After をミリ秒にする。RFC 9110 の 2 つの形(秒数の整数と IMF-fixdate)だけを読み、
+ * それ以外は既定値にする。Date.parse は "May 2" のような値も日付として読むため、先に形を見る。
+ */
+function retryAfterMs(res) {
+  const value = (res.headers.get('retry-after') || '').trim();
+  if (/^\d+$/.test(value)) return Number(value) * 1000;
+  if (/^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(value)) {
+    const ms = Date.parse(value) - Date.now();
+    if (Number.isFinite(ms)) return Math.max(ms, 0);
+  }
+  return DEFAULT_RETRY_AFTER_MS;
+}
+
+async function getJson(url) {
+  for (let attempt = 0; ; attempt++) {
+    const waitMs = lastRequestAt + MIN_REQUEST_INTERVAL_MS - Date.now();
+    if (waitMs > 0) await sleep(waitMs);
+    lastRequestAt = Date.now();
+    const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (res.ok) return res.json();
+    // 読まない本文を残すと接続が解放されない。呼び直すときも throw するときも捨てる。
+    await res.body?.cancel();
+    if (res.status === 429) {
+      if (attempt >= MAX_RETRIES_ON_429) {
+        console.error(`dev.to API が 429 を返した。${MAX_RETRIES_ON_429} 回呼び直しても 429 なので打ち切る: ${url}`);
+      } else {
+        const ms = retryAfterMs(res);
+        // 0 秒の指定でも、次の呼び出しの前に MIN_REQUEST_INTERVAL_MS は空くので、その分で判定する。
+        const effectiveMs = Math.max(ms, MIN_REQUEST_INTERVAL_MS);
+        if (ms <= MAX_RETRY_AFTER_MS && Date.now() + effectiveMs <= startedAt + RETRY_DEADLINE_MS) {
+          console.error(`dev.to API が 429 を返した。${Math.ceil(effectiveMs / 1000)} 秒ほど待って呼び直す (${attempt + 1}/${MAX_RETRIES_ON_429}): ${url}`);
+          await sleep(ms);
+          continue;
+        }
+        const reason = ms > MAX_RETRY_AFTER_MS
+          ? `Retry-After (${Math.ceil(ms / 1000)} 秒) が 1 回の上限 (${MAX_RETRY_AFTER_MS / 1000} 秒) を超える`
+          : `${Math.ceil(effectiveMs / 1000)} 秒待つと、待ち終わりが開始から ${RETRY_DEADLINE_MS / 1000} 秒を過ぎる`;
+        console.error(`dev.to API が 429 を返した。${reason}ので呼び直さない: ${url}`);
+      }
+    }
+    throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
+  }
 }
 
 /** dev.to の公開投稿と、その本文が張っている自サイト記事を集める。 */
