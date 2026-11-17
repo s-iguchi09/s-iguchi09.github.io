@@ -1,0 +1,31 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-mvvm-dialog-service
+slug: "wpf-mvvm-dialog-service"
+scene: "MvvmDialogServiceScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "ビューモデルの中で MessageBox.Show を呼ぶ書き方では、別に作った MTA のスレッドから DeleteCommand.Execute を呼ぶと、1 秒の時点でそのスレッドがメッセージボックス（#32770）を開いたまま Execute が戻っておらず、外からメッセージボックスに OK（IDOK）を送って初めて戻ること"
+  - "IDialogService を受け取るビューモデルにテスト用の実装（決めた答えを返す）を渡すと、同じ方法で作った MTA のスレッドから呼んだ Execute が 1 秒以内に戻り、Confirm が 1 回呼ばれ、答えが true なら削除し、false なら削除しないこと"
+  - "Owner を設定せずに Window.ShowDialog で開いた子ウィンドウは Win32 の所有者を持たず、メインを SetWindowPos で Z オーダーの先頭へ移すとメインより下になること。WindowStartupLocation=CenterOwner でもメインの中央に出ないこと"
+  - "DialogService.ShowDialog で開いた子ウィンドウは、メインと別のウィンドウ（検索）のどちらがアクティブでも所有者がメインになり、メインを Z オーダーの先頭へ移してもメインより上に残り、メインの中央に出ること"
+  - "MessageBox.Show と OpenFileDialog.ShowDialog は、所有者の引数を省くと、メインがアクティブならメイン、Owner を持たない別のウィンドウ（検索）がアクティブならそのウィンドウが所有者になり、DialogService を通すとどちらの場合もメインになること。所有者がメインでないダイアログは、メインを Z オーダーの先頭へ移すとメインより下になること"
+  - "DialogService を通すと、DeleteCommand の確認が OK で true（削除する）、キャンセルで false（削除しない）になり、ImportCommand のファイル選択がキャンセルで null、ファイル名を入れて開くとそのファイルの完全なパスになること"
+  - "EditCommand の子ウィンドウを OK で閉じると ShowDialog が true を返して写しの編集が一覧の Customer に入り、キャンセルや ×（WM_CLOSE）で閉じると false を返して元の値のまま残ること。一覧の Customer そのものをバインドすると、キャンセルしても編集が残ること"
+  - "呼び出したビューモデルを DataContext に持つウィンドウが無いと、DeleteCommand・EditCommand とも InvalidOperationException になり、表示中のウィンドウの数と Application.Windows の数が呼ぶ前と変わらず、顧客も消えないこと。ウィンドウを作ってから所有者を探す順序のサービスでは、表示はされないまま Application.Windows が 1 つ増えること"
+  - "Window.ShowDialog で開いた子ウィンドウ（Owner の有無にかかわらず）と、所有者がメインのメッセージボックス・ファイル選択を開いている間は、メインウィンドウが無効（IsWindowEnabled が false）になること。所有者の引数を省いたメッセージボックスとファイル選択は、所有者が別のウィンドウ（検索）になると、メインを無効にしないこと"
+  - "Owner を設定した子ウィンドウを × で閉じると、Window.ShowDialog() そのものは false を返すこと（DialogResult は設定しない）"
+images:
+  - "images/articles/wpf-mvvm-dialog-service/owner-not-set.png"
+  - "images/articles/wpf-mvvm-dialog-service/owner-main.png"
+  - "images/articles/wpf-mvvm-dialog-service/dialog-service-test-call.svg"
+  - "images/articles/wpf-mvvm-dialog-service/dialog-service-owner.svg"
+  - "images/articles/wpf-mvvm-dialog-service/dialog-service-results.svg"
+tables:
+  - "_includes/tables/articles/wpf-mvvm-dialog-service/dialog-service-test-call.en.md"
+  - "_includes/tables/articles/wpf-mvvm-dialog-service/dialog-service-test-call.ja.md"
+  - "_includes/tables/articles/wpf-mvvm-dialog-service/dialog-service-owner.en.md"
+  - "_includes/tables/articles/wpf-mvvm-dialog-service/dialog-service-owner.ja.md"
+  - "_includes/tables/articles/wpf-mvvm-dialog-service/dialog-service-results.en.md"
+  - "_includes/tables/articles/wpf-mvvm-dialog-service/dialog-service-results.ja.md"

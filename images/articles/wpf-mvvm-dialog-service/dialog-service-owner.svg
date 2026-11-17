@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1660 410" width="1660" height="410" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1660" height="410" />
+  <text class="title" x="12" y="24">Owner of each dialog, and z-order after the main window is moved to the top</text>
+  <rect class="head" x="12" y="38" width="1636" height="30" />
+  <text class="cell" x="26" y="57.5">how the dialog is opened</text>
+  <text class="cell" x="784" y="57.5" text-anchor="end">Win32 owner</text>
+  <text class="cell" x="1165" y="57.5" text-anchor="end">after main is moved to the top of the z-order</text>
+  <text class="cell" x="1358" y="57.5" text-anchor="end">rectangle vs. main</text>
+  <text class="cell" x="1512" y="57.5" text-anchor="end">centered on main</text>
+  <text class="cell" x="1634" y="57.5" text-anchor="end">main enabled</text>
+  <text class="cell" x="26" y="87.5">Window.ShowDialog(), Owner not set</text>
+  <text class="cell" x="784" y="87.5" text-anchor="end">(none)</text>
+  <text class="cell" x="1165" y="87.5" text-anchor="end">dialog below main</text>
+  <text class="cell" x="1358" y="87.5" text-anchor="end">entirely inside main</text>
+  <text class="cell" x="1512" y="87.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="87.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="117.5">DialogService.ShowDialog (Owner = main)</text>
+  <text class="cell" x="784" y="117.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="117.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="117.5" text-anchor="end">entirely inside main</text>
+  <text class="cell" x="1512" y="117.5" text-anchor="end">yes</text>
+  <text class="cell" x="1634" y="117.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="147.5">MessageBox.Show(message, …), no owner argument</text>
+  <text class="cell" x="784" y="147.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="147.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="147.5" text-anchor="end">does not overlap main</text>
+  <text class="cell" x="1512" y="147.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="147.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="177.5">DialogService.Confirm (MessageBox.Show(owner, …))</text>
+  <text class="cell" x="784" y="177.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="177.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="177.5" text-anchor="end">does not overlap main</text>
+  <text class="cell" x="1512" y="177.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="177.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="207.5">OpenFileDialog.ShowDialog(), no owner argument</text>
+  <text class="cell" x="784" y="207.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="207.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="207.5" text-anchor="end">partly overlaps main</text>
+  <text class="cell" x="1512" y="207.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="207.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="237.5">DialogService.OpenFile (ShowDialog(owner))</text>
+  <text class="cell" x="784" y="237.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="237.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="237.5" text-anchor="end">partly overlaps main</text>
+  <text class="cell" x="1512" y="237.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="237.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="267.5">DialogService.ShowDialog, Search window active</text>
+  <text class="cell" x="784" y="267.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="267.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="267.5" text-anchor="end">entirely inside main</text>
+  <text class="cell" x="1512" y="267.5" text-anchor="end">yes</text>
+  <text class="cell" x="1634" y="267.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="297.5">MessageBox.Show(message, …), no owner argument, Search window active</text>
+  <text class="cell" x="784" y="297.5" text-anchor="end">the other window (Search)</text>
+  <text class="cell" x="1165" y="297.5" text-anchor="end">dialog below main</text>
+  <text class="cell" x="1358" y="297.5" text-anchor="end">does not overlap main</text>
+  <text class="cell" x="1512" y="297.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="297.5" text-anchor="end">enabled</text>
+  <text class="cell" x="26" y="327.5">DialogService.Confirm, Search window active</text>
+  <text class="cell" x="784" y="327.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="327.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="327.5" text-anchor="end">does not overlap main</text>
+  <text class="cell" x="1512" y="327.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="327.5" text-anchor="end">disabled</text>
+  <text class="cell" x="26" y="357.5">OpenFileDialog.ShowDialog(), no owner argument, Search window active</text>
+  <text class="cell" x="784" y="357.5" text-anchor="end">the other window (Search)</text>
+  <text class="cell" x="1165" y="357.5" text-anchor="end">dialog below main</text>
+  <text class="cell" x="1358" y="357.5" text-anchor="end">does not overlap main</text>
+  <text class="cell" x="1512" y="357.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="357.5" text-anchor="end">enabled</text>
+  <text class="cell" x="26" y="387.5">DialogService.OpenFile, Search window active</text>
+  <text class="cell" x="784" y="387.5" text-anchor="end">main window</text>
+  <text class="cell" x="1165" y="387.5" text-anchor="end">dialog above main</text>
+  <text class="cell" x="1358" y="387.5" text-anchor="end">partly overlaps main</text>
+  <text class="cell" x="1512" y="387.5" text-anchor="end">no</text>
+  <text class="cell" x="1634" y="387.5" text-anchor="end">disabled</text>
+  <line class="line" x1="12" y1="38" x2="1648" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1648" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1648" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1648" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1648" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1648" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1648" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1648" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1648" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1648" y2="308" />
+  <line class="line" x1="12" y1="338" x2="1648" y2="338" />
+  <line class="line" x1="12" y1="368" x2="1648" y2="368" />
+  <line class="line" x1="12" y1="398" x2="1648" y2="398" />
+  <line class="line" x1="12" y1="38" x2="12" y2="398" />
+  <line class="line" x1="574" y1="38" x2="574" y2="398" />
+  <line class="line" x1="798" y1="38" x2="798" y2="398" />
+  <line class="line" x1="1179" y1="38" x2="1179" y2="398" />
+  <line class="line" x1="1372" y1="38" x2="1372" y2="398" />
+  <line class="line" x1="1526" y1="38" x2="1526" y2="398" />
+  <line class="line" x1="1648" y1="38" x2="1648" y2="398" />
+</svg>

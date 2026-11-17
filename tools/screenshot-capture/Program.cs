@@ -73,6 +73,7 @@ internal static class Program
         new TaskResultDeadlockScene(),
         new WindowClosingAsyncScene(),
         new PasswordBoxBindingScene(),
+        new MvvmDialogServiceScene(),
 
         // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
         new GridDemoScene(),

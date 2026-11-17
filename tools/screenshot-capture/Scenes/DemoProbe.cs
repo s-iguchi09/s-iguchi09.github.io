@@ -149,6 +149,15 @@ internal static class DemoProbe
         return await FrontAsync(content);
     }
 
+    /// <summary>
+    /// クリックと同じ経路（ButtonBase.OnClick）でボタンを押し、Command を実行する。
+    /// AutomationPeer の Invoke は非同期に実行されるため使わない。
+    /// </summary>
+    public static void Click(System.Windows.Controls.Primitives.ButtonBase button) =>
+        typeof(System.Windows.Controls.Primitives.ButtonBase)
+            .GetMethod("OnClick", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(button, null);
+
     /// <summary>表示中の要素へキー押下のイベントを送る。</summary>
     public static void PressKey(UIElement target, System.Windows.Input.Key key)
     {
