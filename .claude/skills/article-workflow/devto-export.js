@@ -344,11 +344,65 @@ function linkedSlugs(text) {
 // AbortSignal.timeout で上限を切る。
 const FETCH_TIMEOUT_MS = 15000;
 
-function getJson(url) {
-  return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }).then((res) => {
-    if (!res.ok) throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
-    return res.json();
-  });
+// dev.to の公開 API は、間を空けずに続けて呼ぶと 429 を返す。投稿ごとに詳細 API を
+// 呼ぶので、投稿が十数本でも途中で 429 になり、判定がまるごと「未取得」になっていた
+// (2026-11-17 JST に 2 回続けて発生)。呼ぶ間隔を 1.5 秒空けると、同じ日の 3 回の実行で
+// いずれも 429 なしで全件を取得できた。それでも 429 が返ったときは Retry-After だけ待って
+// 同じ URL を呼び直す。
+const MIN_REQUEST_INTERVAL_MS = 1500;
+const MAX_RETRIES_ON_429 = 4;
+// Retry-After が無い・読めないときの待ち時間。
+const DEFAULT_RETRY_AFTER_MS = 10000;
+// 1 回に待つ時間と、1 回の実行で 429 のために待つ時間の合計の上限。
+// これを超える指定には従わず、待たずに「未取得」の経路へ入れる(指定より前に呼んでも
+// 429 になるだけで、長く待ったあとで結局未取得になるため)。
+// 合計の上限は、Claude Code の Bash ツールの既定のタイムアウト(120 秒)に、間隔の分
+// (投稿数 × 1.5 秒)と fetch の時間を足しても収まるように決めた。上げるときはここを見直す。
+const MAX_RETRY_AFTER_MS = 30000;
+const MAX_TOTAL_RETRY_WAIT_MS = 60000;
+
+let lastRequestAt = 0;
+let totalRetryWaitMs = 0;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Retry-After をミリ秒にする。RFC 9110 の 2 つの形(秒数の整数と IMF-fixdate)だけを読み、
+ * それ以外は既定値にする。Date.parse は "May 2" のような値も日付として読むため、先に形を見る。
+ */
+function retryAfterMs(res) {
+  const value = (res.headers.get('retry-after') || '').trim();
+  if (/^\d+$/.test(value)) return Number(value) * 1000;
+  if (/^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(value)) {
+    const ms = Date.parse(value) - Date.now();
+    if (Number.isFinite(ms)) return Math.max(ms, 0);
+  }
+  return DEFAULT_RETRY_AFTER_MS;
+}
+
+async function getJson(url) {
+  for (let attempt = 0; ; attempt++) {
+    const waitMs = lastRequestAt + MIN_REQUEST_INTERVAL_MS - Date.now();
+    if (waitMs > 0) await sleep(waitMs);
+    lastRequestAt = Date.now();
+    const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (res.ok) return res.json();
+    // 読まない本文を残すと接続が解放されない。呼び直すときも throw するときも捨てる。
+    await res.body?.cancel();
+    if (res.status === 429 && attempt < MAX_RETRIES_ON_429) {
+      const ms = retryAfterMs(res);
+      const shownMs = Math.max(ms, MIN_REQUEST_INTERVAL_MS);
+      if (ms <= MAX_RETRY_AFTER_MS && totalRetryWaitMs + shownMs <= MAX_TOTAL_RETRY_WAIT_MS) {
+        // 0 秒の指定でも、次の呼び出しの前に MIN_REQUEST_INTERVAL_MS は空くので、その分で数える。
+        totalRetryWaitMs += shownMs;
+        console.error(`dev.to API が 429 を返した。${Math.ceil(shownMs / 1000)} 秒ほど待って呼び直す (${attempt + 1}/${MAX_RETRIES_ON_429}): ${url}`);
+        await sleep(ms);
+        continue;
+      }
+      console.error(`dev.to API が 429 を返した。待ち時間 (${Math.ceil(ms / 1000)} 秒。Retry-After が無い・読めないときは既定値) を待つと、1 回 (${MAX_RETRY_AFTER_MS / 1000} 秒) か合計 (${MAX_TOTAL_RETRY_WAIT_MS / 1000} 秒) の上限を超えるので呼び直さない: ${url}`);
+    }
+    throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
+  }
 }
 
 /** dev.to の公開投稿と、その本文が張っている自サイト記事を集める。 */
