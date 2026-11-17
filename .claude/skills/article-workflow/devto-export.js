@@ -353,16 +353,17 @@ const MIN_REQUEST_INTERVAL_MS = 1500;
 const MAX_RETRIES_ON_429 = 4;
 // Retry-After が無い・読めないときの待ち時間。
 const DEFAULT_RETRY_AFTER_MS = 10000;
-// 1 回に待つ時間と、1 回の実行で 429 のために待つ時間の合計の上限。
-// これを超える指定には従わず、待たずに「未取得」の経路へ入れる(指定より前に呼んでも
-// 429 になるだけで、長く待ったあとで結局未取得になるため)。
-// 合計の上限は、Claude Code の Bash ツールの既定のタイムアウト(120 秒)に、間隔の分
-// (投稿数 × 1.5 秒)と fetch の時間を足しても収まるように決めた。上げるときはここを見直す。
+// 1 回に待つ時間の上限と、429 のために待ってよい締め切り(実行の開始からの時間)。
+// 待ち終わりがこれを超える場合は指定に従わず、待たずに「未取得」の経路へ入れる
+// (指定より前に呼んでも 429 になるだけで、長く待ったあとで結局未取得になるため)。
+// 締め切りは、Claude Code の Bash ツールの既定のタイムアウト(120 秒)より前に置いた。
+// これが保証するのは「429 で待つことで実行が 90 秒を過ぎることはない」までで、実行全体の
+// 長さは保証しない(投稿が増えれば間隔の分、応答が遅ければ fetch の分だけ延びる)。
 const MAX_RETRY_AFTER_MS = 30000;
-const MAX_TOTAL_RETRY_WAIT_MS = 60000;
+const RETRY_DEADLINE_MS = 90000;
 
+const startedAt = Date.now();
 let lastRequestAt = 0;
-let totalRetryWaitMs = 0;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -389,17 +390,20 @@ async function getJson(url) {
     if (res.ok) return res.json();
     // 読まない本文を残すと接続が解放されない。呼び直すときも throw するときも捨てる。
     await res.body?.cancel();
-    if (res.status === 429 && attempt < MAX_RETRIES_ON_429) {
-      const ms = retryAfterMs(res);
-      const shownMs = Math.max(ms, MIN_REQUEST_INTERVAL_MS);
-      if (ms <= MAX_RETRY_AFTER_MS && totalRetryWaitMs + shownMs <= MAX_TOTAL_RETRY_WAIT_MS) {
-        // 0 秒の指定でも、次の呼び出しの前に MIN_REQUEST_INTERVAL_MS は空くので、その分で数える。
-        totalRetryWaitMs += shownMs;
-        console.error(`dev.to API が 429 を返した。${Math.ceil(shownMs / 1000)} 秒ほど待って呼び直す (${attempt + 1}/${MAX_RETRIES_ON_429}): ${url}`);
-        await sleep(ms);
-        continue;
+    if (res.status === 429) {
+      if (attempt >= MAX_RETRIES_ON_429) {
+        console.error(`dev.to API が 429 を返した。${MAX_RETRIES_ON_429} 回呼び直しても 429 なので打ち切る: ${url}`);
+      } else {
+        const ms = retryAfterMs(res);
+        // 0 秒の指定でも、次の呼び出しの前に MIN_REQUEST_INTERVAL_MS は空くので、その分で判定する。
+        const effectiveMs = Math.max(ms, MIN_REQUEST_INTERVAL_MS);
+        if (ms <= MAX_RETRY_AFTER_MS && Date.now() + effectiveMs <= startedAt + RETRY_DEADLINE_MS) {
+          console.error(`dev.to API が 429 を返した。${Math.ceil(effectiveMs / 1000)} 秒ほど待って呼び直す (${attempt + 1}/${MAX_RETRIES_ON_429}): ${url}`);
+          await sleep(ms);
+          continue;
+        }
+        console.error(`dev.to API が 429 を返した。待ち時間 (${Math.ceil(effectiveMs / 1000)} 秒。Retry-After が無い・読めないときは既定値) が 1 回の上限 (${MAX_RETRY_AFTER_MS / 1000} 秒) を超えるか、待ち終わりが開始から ${RETRY_DEADLINE_MS / 1000} 秒を過ぎるので呼び直さない: ${url}`);
       }
-      console.error(`dev.to API が 429 を返した。待ち時間 (${Math.ceil(ms / 1000)} 秒。Retry-After が無い・読めないときは既定値) を待つと、1 回 (${MAX_RETRY_AFTER_MS / 1000} 秒) か合計 (${MAX_TOTAL_RETRY_WAIT_MS / 1000} 秒) の上限を超えるので呼び直さない: ${url}`);
     }
     throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
   }
