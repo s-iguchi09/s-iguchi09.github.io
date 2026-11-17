@@ -354,11 +354,11 @@ const MAX_RETRIES_ON_429 = 4;
 // Retry-After が無い・読めないときの待ち時間。
 const DEFAULT_RETRY_AFTER_MS = 10000;
 // 1 回に待つ時間の上限と、429 のために待ってよい締め切り(実行の開始からの時間)。
-// 待ち終わりがこれを超える場合は指定に従わず、待たずに「未取得」の経路へ入れる
-// (指定より前に呼んでも 429 になるだけで、長く待ったあとで結局未取得になるため)。
-// 締め切りは、Claude Code の Bash ツールの既定のタイムアウト(120 秒)より前に置いた。
-// これが保証するのは「429 で待つことで実行が 90 秒を過ぎることはない」までで、実行全体の
-// 長さは保証しない(投稿が増えれば間隔の分、応答が遅ければ fetch の分だけ延びる)。
+// 指定が 1 回の上限を超える場合や、待ち終わりが締め切りを過ぎる場合は、待たずに「未取得」の
+// 経路へ入れる(429 の待ちが際限なく延びないようにするため)。
+// 締め切りが抑えるのは 429 で待つ時間だけで、実行全体の長さは抑えない(待った分だけ後の
+// 呼び出しが後ろへずれ、投稿が増えれば間隔の分だけ延びる)。
+// 投稿が増えて、間隔だけで締め切りに近づくようなら値を見直す(2026-11-17 時点で 11 本・約 17 秒)。
 const MAX_RETRY_AFTER_MS = 30000;
 const RETRY_DEADLINE_MS = 90000;
 
@@ -402,7 +402,10 @@ async function getJson(url) {
           await sleep(ms);
           continue;
         }
-        console.error(`dev.to API が 429 を返した。待ち時間 (${Math.ceil(effectiveMs / 1000)} 秒。Retry-After が無い・読めないときは既定値) が 1 回の上限 (${MAX_RETRY_AFTER_MS / 1000} 秒) を超えるか、待ち終わりが開始から ${RETRY_DEADLINE_MS / 1000} 秒を過ぎるので呼び直さない: ${url}`);
+        const reason = ms > MAX_RETRY_AFTER_MS
+          ? `Retry-After (${Math.ceil(ms / 1000)} 秒) が 1 回の上限 (${MAX_RETRY_AFTER_MS / 1000} 秒) を超える`
+          : `${Math.ceil(effectiveMs / 1000)} 秒待つと、待ち終わりが開始から ${RETRY_DEADLINE_MS / 1000} 秒を過ぎる`;
+        console.error(`dev.to API が 429 を返した。${reason}ので呼び直さない: ${url}`);
       }
     }
     throw new Error(`dev.to API がエラーを返した: ${res.status} (${url})`);
