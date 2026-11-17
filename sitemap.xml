@@ -1778,6 +1778,30 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-mvvm-dialog-service/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-not-set.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-main.png</image:loc></image:image>
+    <lastmod>2026-11-17T13:46:24Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-mvvm-dialog-service/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-mvvm-dialog-service/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-not-set.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-main.png</image:loc></image:image>
+    <lastmod>2026-11-17T13:46:24Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-mvvm-library-command-requery/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-mvvm-library-command-requery/" />
