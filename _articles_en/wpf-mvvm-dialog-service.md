@@ -5,15 +5,15 @@ seo_title: "WPF MVVM Dialogs: IDialogService, Owner, and Results"
 date: 2026-11-16
 category: WPF
 image: /images/articles/wpf-mvvm-dialog-service/owner-main.png
-excerpt: "MessageBox.Show in a view model blocks tests; an owner-less child window falls behind a raised main window. A minimal IDialogService handles both, plus results."
+excerpt: "MessageBox.Show in a view model blocks tests; a non-Topmost owner-less child window falls behind a main window moved to the top. An IDialogService fixes both."
 ---
 
 ## Overview
 
 In MVVM, actions such as "confirm before deleting", "pick a file to import", and "edit in a child window" tempt the view model to open dialogs itself.
-Calling `MessageBox.Show` from the view model works, but the same code blocks when it runs from a test.
+Calling `MessageBox.Show` from the view model works, but the same code blocks when it runs on a test thread.
 Moving the dialog code into a separate class raises the next problem: the view model does not know any window, so it cannot decide the dialog's owner (`Owner`).
-A child window without an owner falls behind the main window once the main window is moved to the top of the z-order.
+A child window without an owner that is not `Topmost` falls behind the main window once the main window is moved to the top of the z-order.
 
 This article works through these three obstacles in order and builds a self-written `IDialogService` that handles confirmations, file selection, and child windows.
 Each stage was measured: running a command from a separate thread, the Win32 owner and z-order of every dialog, and the values the view model actually received.
@@ -24,7 +24,7 @@ Each stage was measured: running a command from a separate thread, the Win32 own
 
 - Framework: WPF on .NET 5 or later (.NET Framework 4.8 was not measured). The code requires C# 9 or later (`is not null` and target-typed `new()`). Type definitions include their using directives; method-only excerpts omit them. Behavior was measured only in the environment below
 - Architecture: MVVM. The view model base class `ObservableObject` (with a `SetProperty` that returns `true` when the value changed) and `RelayCommand` (with `RaiseCanExecuteChanged`) are minimal self-written implementations; no external library is used. A `RelayCommand` implementation is shown in a [related article](/articles/wpf-relaycommand-canexecute-not-updating/)
-- Verified on: .NET 10 / Windows 11 (run on an interactive desktop)
+- Verified on: .NET 10 / Windows 11 (run on an interactive desktop). The windows opened for the measurements were not `Topmost` when the z-order was read; `Topmost` was applied only while capturing the images (see the Second Obstacle). A `Topmost` window appears above all windows that are not `Topmost` ([Window.Topmost](https://learn.microsoft.com/dotnet/api/system.windows.window.topmost)).
 - Scenario: from a customer list (the main window), show a delete confirmation (`MessageBox`), a file picker for importing (`OpenFileDialog`), and a child window for editing a customer's name
 
 A customer is a class that only notifies changes to its name.
@@ -68,7 +68,7 @@ Writing `new CustomerEditWindow().ShowDialog()` for a child window likewise ties
 
 ---
 
-## First Obstacle: A View Model That Calls MessageBox.Show Blocks Tests
+## First Obstacle: A View Model That Calls MessageBox.Show Blocks the Test Thread
 
 To stand in for a test thread, a separate MTA thread without a UI message loop called `DeleteCommand.Execute`, and the call was given one second to return.
 
@@ -427,7 +427,7 @@ Calling `MessageBox.Show` directly from a view model opens a message box on the 
 Dialogs belong behind `IDialogService`, and tests receive an implementation that returns a predetermined answer.
 
 The service makes the window whose `DataContext` is the calling view model the owner.
-A child window without an `Owner` falls below the main window when the main window is moved to the top of the z-order.
+A child window without an `Owner` that is not `Topmost` falls below the main window when the main window is moved to the top of the z-order.
 A `MessageBox` or file picker without an owner argument takes whichever window is active at the time, so the owner is always passed explicitly.
 
 For child windows, the view model announces the result through `CloseRequested`, and the service sets it as `DialogResult`.

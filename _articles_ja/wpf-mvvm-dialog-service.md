@@ -4,15 +4,15 @@ title: "WPF MVVM でダイアログを出す: IDialogService の最小実装と 
 date: 2026-11-16
 category: WPF
 image: /images/articles/wpf-mvvm-dialog-service/owner-main.png
-excerpt: "ビューモデルから MessageBox.Show を呼ぶとテストが止まり、Owner の無い子ウィンドウはメインが前に来るとその下に回る。確認・ファイル選択・子ウィンドウを IDialogService に任せる最小の実装と、戻り値の受け渡しを実測で確かめる。"
+excerpt: "ビューモデルから MessageBox.Show を呼ぶとテストが止まり、Owner も Topmost も無い子ウィンドウはメインを Z オーダーの先頭へ移すとその下に回る。ダイアログを IDialogService に任せる最小の実装と、戻り値の受け渡しを実測で確かめる。"
 ---
 
 ## 概要
 
 MVVM で「削除の前に確認する」「読み込むファイルを選ばせる」「子ウィンドウで編集させる」といった処理を書くと、ビューモデルの中からダイアログを出したくなる。
-ビューモデルで `MessageBox.Show` を呼べば動くが、その書き方はテストから実行すると止まる。
+ビューモデルで `MessageBox.Show` を呼べば動くが、その書き方はテストのスレッドから実行すると止まる。
 ダイアログを別のクラスへ移すと、今度はビューモデルがウィンドウを知らないため、ダイアログの所有者（`Owner`）を決められない。
-所有者の無い子ウィンドウは、メインウィンドウを Z オーダーの先頭へ移すと、その下に回る。
+所有者の無い子ウィンドウは、`Topmost` でなければ、メインウィンドウを Z オーダーの先頭へ移すとその下に回る。
 
 本記事では、この 3 つの壁を順に越えながら、確認・ファイル選択・子ウィンドウをまとめて扱う `IDialogService` を自前で実装する。
 各段階の挙動は、別のスレッドからのコマンドの実行、Win32 の所有者と Z オーダー、ビューモデルが受け取った値を実測して確かめた。
@@ -23,7 +23,7 @@ MVVM で「削除の前に確認する」「読み込むファイルを選ばせ
 
 - フレームワーク: .NET 5 以降の WPF（.NET Framework 4.8 では測っていない）。コード例は C# 9 以降が要る（`is not null` と、型を省いた `new()`）。型の定義には using を付け、メソッドだけを抜き出したコードでは省いた。動作は下記の検証環境でだけ測った
 - アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject`（値が変わったときに `true` を返す `SetProperty` を持つ）と `RelayCommand`（`RaiseCanExecuteChanged` を持つ）は自前の最小実装で、外部のライブラリは使わない。`RelayCommand` の実装例は[関連記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)にある
-- 検証環境: .NET 10 / Windows 11（対話できるデスクトップで実行）
+- 検証環境: .NET 10 / Windows 11（対話できるデスクトップで実行）。計測で開いたウィンドウには、表の上下関係を読む時点では `Topmost` を設定していない（図の撮影の間だけ付けた。第二の壁を参照。`Topmost` のウィンドウは、`Topmost` でないすべてのウィンドウより上に表示される。[Window.Topmost](https://learn.microsoft.com/dotnet/api/system.windows.window.topmost)）
 - 題材: 顧客の一覧画面（メインウィンドウ）から、削除の確認（`MessageBox`）、読み込むファイルの選択（`OpenFileDialog`）、顧客名の編集（子ウィンドウ）を出す
 
 顧客は、名前の変更を通知するだけのクラスである。
@@ -67,7 +67,7 @@ private void Delete()
 
 ---
 
-## 第一の壁: MessageBox.Show を呼ぶビューモデルはテストで止まる
+## 第一の壁: MessageBox.Show を呼ぶビューモデルはテストのスレッドで止まる
 
 テストのスレッドを模して、UI のメッセージループを持たない MTA のスレッドを別に作り、そこから `DeleteCommand.Execute` を呼んで 1 秒待った。
 
@@ -426,7 +426,7 @@ protected override void OnStartup(StartupEventArgs e)
 ダイアログは `IDialogService` の向こうへ移し、テストでは決めた答えを返す実装を渡す。
 
 サービスは、呼び出したビューモデルを `DataContext` に持つウィンドウを所有者にする。
-`Owner` の無い子ウィンドウは、メインを Z オーダーの先頭へ移すとその下に回る。
+`Owner` の無い子ウィンドウは、`Topmost` でなければ、メインを Z オーダーの先頭へ移すとその下に回る。
 引数を省いた `MessageBox` やファイル選択はその時点でアクティブなウィンドウを所有者にするので、所有者は常に明示して渡す。
 
 子ウィンドウの結果は、ビューモデルが `CloseRequested` で知らせ、サービスが `DialogResult` に設定する。
