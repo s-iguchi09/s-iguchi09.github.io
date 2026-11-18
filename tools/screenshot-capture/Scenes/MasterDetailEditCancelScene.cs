@@ -24,15 +24,15 @@ internal sealed class MasterDetailEditCancelScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "詳細欄を SelectedCustomer.Name に直接バインドすると、UpdateSourceTrigger=PropertyChanged では入力の直後に、既定のトリガー（LostFocus）では Cancel のコマンドの実行時までに、ソースが入力した値に変わっていて、Cancel の後の一覧の表示も入力した値であること（UpdateSourceTrigger=PropertyChanged では、入力の直後の一覧の表示も入力した値であること）",
-        "詳細欄を編集用のコピー（Editing）にバインドすると、入力の直後も Cancel の実行時もソースは元の値のままで、Cancel の後は一覧の表示と詳細欄が元の値になり、Save をクリックするとソースと一覧の表示が入力した値になること",
-        "IEditableObject を実装したアイテムに既定のトリガーで直接バインドし、選んだときに BeginEdit を呼ぶと、入力の直後のソースは元の値のままで、Cancel の実行時には入力した値に変わっているが、CancelEdit の後は一覧の表示と詳細欄が元の値に戻ること",
+        "詳細欄を編集用のコピー（Editing）にバインドすると、入力の直後も Cancel の実行時もソースは元の値のままで、Cancel の後は一覧の表示と詳細欄が元の値になり、Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると Save した値に戻ること",
+        "IEditableObject を実装したアイテムに既定のトリガーで直接バインドし、選んだときに BeginEdit を呼ぶと、入力の直後のソースは元の値のままで、Cancel の実行時には入力した値に変わっているが、CancelEdit の後は一覧の表示と詳細欄が元の値に戻ること。Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると Save した値に戻ること（EndEdit の後に BeginEdit を呼び直しているため）",
         "編集中に一覧の 2 行目をクリックすると、何も止めなければ選択が移り、編集用のコピーでは入力した値が捨てられ、IEditableObject では入力した値が 1 行目に残ること",
         "詳細欄が既定のトリガーのまま、SelectedCustomer のセッターで選択の変更を拒むと（PropertyChanged をその場で発生させても、既定の優先度（Normal）の Dispatcher.BeginInvoke で遅らせても）、ビューモデルと SelectedItem は 1 行目のままだが、SelectedIndex と画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと",
         "詳細欄が既定のトリガーのまま、IsSynchronizedWithCurrentItem=True にして ICollectionView.CurrentChanging で e.Cancel = true にすると、CurrentItem とビューモデルは 1 行目のままだが、SelectedItem・SelectedIndex・画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと",
-        "一覧の IsEnabled を変更の有無にバインドし、詳細欄を UpdateSourceTrigger=PropertyChanged にすると、2 行目の上へカーソルを動かしてボタンを押す直前の一覧の IsEnabled が False で、2 行目をクリックしても選択はどこも 1 行目のままで、入力した値が詳細欄に残ること（ListBox・DataGrid）",
-        "同じ構成で詳細欄が既定のトリガー（LostFocus）だと、2 行目の上へカーソルを動かしてボタンを押す直前の一覧の IsEnabled は True のままで、2 行目のクリックで選択が移り、入力した値が捨てられること",
+        "一覧の IsEnabled を変更の有無にバインドし、詳細欄を UpdateSourceTrigger=PropertyChanged にすると、2 行目の上へカーソルを動かしてマウスのボタンを押す直前の一覧の IsEnabled が False で、2 行目をクリックしても選択はどこも 1 行目のままで、入力した値が詳細欄に残ること（ListBox・DataGrid）",
+        "同じ構成で詳細欄が既定のトリガー（LostFocus）だと、2 行目の上へカーソルを動かしてマウスのボタンを押す直前の一覧の IsEnabled は True のままで、2 行目のクリックで選択が移り、入力した値が捨てられること",
         "選択の変更をセッターで拒んだ後、または CurrentChanging で取り消した後に Save をクリックすると、画面で選ばれている 2 行目ではなく 1 行目が入力した値に更新されること（ListBox・DataGrid）",
-        "一覧を無効にした状態で Cancel をクリックすると一覧の IsEnabled が True に戻り、その後 2 行目をクリックすると選択と詳細欄が 2 行目に移ること",
+        "一覧を無効にした状態で Cancel をクリックすると一覧の IsEnabled が True に戻り、その後 2 行目をクリックすると選択と詳細欄が 2 行目に移ること（ListBox・DataGrid）。Save をクリックした場合も IsEnabled が True に戻り、1 行目は入力した値のまま、選択と詳細欄が 2 行目に移ること（ListBox）",
     ];
 
     public string Slug => "wpf-master-detail-edit-cancel-selecteditem";
@@ -46,7 +46,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
             "Clicking Cancel after typing \"edited\" in the Name box",
             [
                 T("detail form bound to", "詳細欄のバインド先"),
-                T("source while typing", "入力中のソース"),
+                T("source right after typing", "入力の直後のソース"),
                 T("source when Cancel runs", "Cancel の実行時のソース"),
                 T("list after Cancel", "Cancel 後の一覧の表示"),
                 T("detail form after Cancel", "Cancel 後の詳細欄"),
@@ -60,6 +60,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
                 T("detail form bound to", "詳細欄のバインド先"),
                 T("source after Save", "Save 後のソース"),
                 T("list after Save", "Save 後の一覧の表示"),
+                T("source after typing \"again\" and clicking Cancel", "続けて \"again\" と打って Cancel をクリックした後のソース"),
             ],
             await SaveCasesAsync(),
             "master-detail-save.svg");
@@ -75,7 +76,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
                 "CurrentItem",
                 T("detail form", "詳細欄"),
                 T("first row in the list", "一覧の 1 行目"),
-                T("list IsEnabled just before the mouse press", "ボタンを押す直前の一覧の IsEnabled"),
+                T("list IsEnabled just before the mouse press", "マウスのボタンを押す直前の一覧の IsEnabled"),
             ],
             await SwitchCasesAsync(),
             "master-detail-switch.svg");
@@ -601,32 +602,40 @@ internal sealed class MasterDetailEditCancelScene : IScene
     {
         Page page = Build(mode, Guard.None);
         Customer first = page.ViewModel.Customers[0];
+        string saved = "";
         string list = "";
         await ShowAsync(page.Root, async () =>
         {
             Window window = await FrontCenteredAsync(page.Root);
             await TypeInNameAsync(page, "edited");
             await ClickButtonAsync(window, page, "save");
+            saved = Quote(first.Name);
             list = ShownText(page.List, 0);
+
+            // Save の後も続けて編集でき、Cancel で Save した値に戻ることを確かめる。
+            await TypeInNameAsync(page, "again");
+            await ClickButtonAsync(window, page, "cancel");
         }, activate: true);
 
-        return [Describe(mode, propertyChangedTrigger: false), Quote(first.Name), list];
+        return [Describe(mode, propertyChangedTrigger: false), saved, list, Quote(first.Name)];
     }
 
     // ---------------------------------------------------------------- 第二の壁: 編集中の行の切り替え
 
-    private static Loc Describe(Guard guard, Mode mode, bool propertyChangedTrigger, bool cancelFirst) => guard switch
+    private static Loc Describe(Guard guard, Mode mode, bool propertyChangedTrigger, string? finishFirst) => guard switch
     {
         Guard.None when mode == Mode.Copy => T("nothing (copy for editing)", "なし（編集用のコピー）"),
         Guard.None => T("nothing (IEditableObject)", "なし（IEditableObject）"),
         Guard.RejectInSetter => T("reject in the setter, raise PropertyChanged", "セッターで拒んで PropertyChanged"),
         Guard.RejectDeferred => T("reject in the setter, raise PropertyChanged via Dispatcher.BeginInvoke (Normal priority)", "セッターで拒んで Dispatcher.BeginInvoke（Normal の優先度）で PropertyChanged"),
         Guard.CurrentChanging => T("IsSynchronizedWithCurrentItem, e.Cancel = true in CurrentChanging", "IsSynchronizedWithCurrentItem ＋ CurrentChanging で e.Cancel = true"),
-        Guard.DisableList when cancelFirst => T("IsEnabled=\"{Binding CanChangeSelection}\", detail with UpdateSourceTrigger=PropertyChanged, click Cancel first", "IsEnabled=\"{Binding CanChangeSelection}\"、詳細欄は UpdateSourceTrigger=PropertyChanged、先に Cancel をクリック"),
+        Guard.DisableList when finishFirst is not null => T($"IsEnabled=\"{{Binding CanChangeSelection}}\", detail with UpdateSourceTrigger=PropertyChanged, click {ButtonText(finishFirst)} first", $"IsEnabled=\"{{Binding CanChangeSelection}}\"、詳細欄は UpdateSourceTrigger=PropertyChanged、先に {ButtonText(finishFirst)} をクリック"),
         Guard.DisableList when propertyChangedTrigger => T("IsEnabled=\"{Binding CanChangeSelection}\", detail with UpdateSourceTrigger=PropertyChanged", "IsEnabled=\"{Binding CanChangeSelection}\"、詳細欄は UpdateSourceTrigger=PropertyChanged"),
         Guard.DisableList => T("IsEnabled=\"{Binding CanChangeSelection}\", detail with the default trigger", "IsEnabled=\"{Binding CanChangeSelection}\"、詳細欄は既定のトリガー"),
         _ => throw new ArgumentOutOfRangeException(nameof(guard)),
     };
+
+    private static string ButtonText(string name) => name == "save" ? "Save" : "Cancel";
 
     private static async Task<List<IReadOnlyList<Loc>>> SwitchCasesAsync()
     {
@@ -646,11 +655,13 @@ internal sealed class MasterDetailEditCancelScene : IScene
         }
 
         rows.Add(await SwitchAsync(Mode.Copy, Guard.DisableList, dataGrid: false, propertyChangedTrigger: false));
-        rows.Add(await SwitchAsync(Mode.Copy, Guard.DisableList, dataGrid: false, propertyChangedTrigger: true, cancelFirst: true));
+        rows.Add(await SwitchAsync(Mode.Copy, Guard.DisableList, dataGrid: false, propertyChangedTrigger: true, finishFirst: "cancel"));
+        rows.Add(await SwitchAsync(Mode.Copy, Guard.DisableList, dataGrid: true, propertyChangedTrigger: true, finishFirst: "cancel"));
+        rows.Add(await SwitchAsync(Mode.Copy, Guard.DisableList, dataGrid: false, propertyChangedTrigger: true, finishFirst: "save"));
         return rows;
     }
 
-    private static async Task<IReadOnlyList<Loc>> SwitchAsync(Mode mode, Guard guard, bool dataGrid, bool propertyChangedTrigger = false, bool cancelFirst = false)
+    private static async Task<IReadOnlyList<Loc>> SwitchAsync(Mode mode, Guard guard, bool dataGrid, bool propertyChangedTrigger = false, string? finishFirst = null)
     {
         Page page = Build(mode, guard, dataGrid, propertyChangedTrigger);
         IReadOnlyList<Loc>? row = null;
@@ -660,19 +671,19 @@ internal sealed class MasterDetailEditCancelScene : IScene
             Window window = await FrontCenteredAsync(page.Root);
             await TypeInNameAsync(page, "edited");
             string afterTyping = page.List.IsEnabled ? "True" : "False";
-            if (cancelFirst)
+            if (finishFirst is not null)
             {
-                await ClickButtonAsync(window, page, "cancel");
+                await ClickButtonAsync(window, page, finishFirst);
             }
 
             using (RealMouse.Preserve())
             {
-                // カーソルを 2 行目へ動かし終えてから、ボタンを押す直前の IsEnabled を読む。
+                // カーソルを 2 行目へ動かし終えてから、マウスのボタンを押す直前の IsEnabled を読む。
                 FrameworkElement second = SecondRow(page);
                 await RealMouse.MoveToAsync(second, null, window);
                 string beforePress = page.List.IsEnabled ? "True" : "False";
-                enabledBeforeClick = cancelFirst
-                    ? T($"{afterTyping} → {beforePress} (Cancel clicked in between)", $"{afterTyping} → {beforePress}（間に Cancel をクリック）")
+                enabledBeforeClick = finishFirst is not null
+                    ? T($"{afterTyping} → {beforePress} ({ButtonText(finishFirst)} clicked in between)", $"{afterTyping} → {beforePress}（間に {ButtonText(finishFirst)} をクリック）")
                     : beforePress;
                 await RealMouse.LeftDownAsync(window, second);
                 await RealMouse.LeftUpAsync(window);
@@ -684,7 +695,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
             row =
             [
                 dataGrid ? "DataGrid" : "ListBox",
-                Describe(guard, mode, propertyChangedTrigger, cancelFirst),
+                Describe(guard, mode, propertyChangedTrigger, finishFirst),
                 NameOf(page.ViewModel.SelectedCustomer),
                 $"{NameOf(page.List.SelectedItem)} / {page.List.SelectedIndex}",
                 SelectedOnScreen(page.List),
@@ -730,7 +741,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
         return
         [
             dataGrid ? "DataGrid" : "ListBox",
-            Describe(guard, Mode.Copy, propertyChangedTrigger: false, cancelFirst: false),
+            Describe(guard, Mode.Copy, propertyChangedTrigger: false, finishFirst: null),
             highlighted,
             Quote(page.ViewModel.Customers[0].Name),
             Quote(page.ViewModel.Customers[1].Name),

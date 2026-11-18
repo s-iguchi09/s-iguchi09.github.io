@@ -12,3 +12,5 @@
 | DataGrid | IsEnabled=\"&#123;Binding CanChangeSelection&#125;\", detail with UpdateSourceTrigger=PropertyChanged | \"alpha\" | \"alpha\" / 0 | \"alpha\" | \"alpha\" | \"edited\" | \"alpha\" | False |
 | ListBox | IsEnabled=\"&#123;Binding CanChangeSelection&#125;\", detail with the default trigger | \"beta\" | \"beta\" / 1 | \"beta\" | \"alpha\" | \"beta\" | \"alpha\" | True |
 | ListBox | IsEnabled=\"&#123;Binding CanChangeSelection&#125;\", detail with UpdateSourceTrigger=PropertyChanged, click Cancel first | \"beta\" | \"beta\" / 1 | \"beta\" | \"alpha\" | \"beta\" | \"alpha\" | False → True (Cancel clicked in between) |
+| DataGrid | IsEnabled=\"&#123;Binding CanChangeSelection&#125;\", detail with UpdateSourceTrigger=PropertyChanged, click Cancel first | \"beta\" | \"beta\" / 1 | \"beta\" | \"alpha\" | \"beta\" | \"alpha\" | False → True (Cancel clicked in between) |
+| ListBox | IsEnabled=\"&#123;Binding CanChangeSelection&#125;\", detail with UpdateSourceTrigger=PropertyChanged, click Save first | \"beta\" | \"beta\" / 1 | \"beta\" | \"edited\" | \"beta\" | \"edited\" | False → True (Save clicked in between) |

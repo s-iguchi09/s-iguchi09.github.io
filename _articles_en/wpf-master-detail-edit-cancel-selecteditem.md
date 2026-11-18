@@ -5,7 +5,7 @@ seo_title: "WPF SelectedItem Detail Form: Cancel Edits via a Copy"
 date: 2026-11-18
 category: WPF
 image: /images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-rejected-selection.png
-excerpt: "A detail form bound to SelectedItem writes into the list item, so Cancel cannot undo it. Measured: an edit copy, IEditableObject, and guards that desync rows."
+excerpt: "A detail form bound to SelectedItem writes into the list item, so Cancel cannot undo it. Measured: an edit copy, IEditableObject, and guards that split selection."
 ---
 
 ## Overview
@@ -13,7 +13,7 @@ excerpt: "A detail form bound to SelectedItem writes into the list item, so Canc
 A user picks a customer in a list, corrects the name or city in the detail form beside it, and presses Save or Cancel.
 This master-detail screen is one of the most common screens in line-of-business applications, and binding the detail form directly to the list's `SelectedItem` is enough to make it look finished.
 With that design, however, pressing Cancel leaves the typed value in the list.
-The detail form and the list look at the same item, so the input is written straight into that item (even with the default trigger, at the moment the Cancel button is clicked), and the original value is no longer kept anywhere.
+The detail form and the list look at the same item, so the input is written straight into that item (even with the default trigger, by the time the Cancel command runs), and the original value is no longer kept anywhere.
 
 This article builds a cancelable detail form in two stages.
 The first stage compares receiving the input in a copy for editing with saving the original values through `IEditableObject`.
@@ -93,7 +93,7 @@ With `UpdateSourceTrigger=PropertyChanged`, which updates the source on every ke
 
 With the default trigger of `TextBox.Text` (`LostFocus`, which updates when the box loses focus), nothing is written while typing, so it looks as if the write can wait until Save.
 Clicking the Cancel button, however, moves focus from the `TextBox` to the button.
-The source is written at that moment, and by the time the Cancel command runs, the original `"alpha"` is gone.
+In the measurement, the source had already been written by the time the Cancel command ran, and the original `"alpha"` was gone.
 
 ---
 
@@ -104,7 +104,7 @@ The table shows the result of typing `"edited"` into the Name box and clicking C
 {% include tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-cancel.en.md %}
 
 In every row, "source" is the `Name` of the first item in the list (`Customers[0]`), not the value in a copy for editing.
-"Source while typing" was read right after typing, and "source when Cancel runs" was read inside `CancelCommand`.
+"Source right after typing" was read right after typing, and "source when Cancel runs" was read inside `CancelCommand`.
 Measured on .NET 10 / Windows 11.
 {: .table-caption}
 
@@ -222,10 +222,13 @@ Because the input is written straight into the item, the unsaved value appears i
 This implementation calls neither `EndEdit` nor `CancelEdit` on the previous row when the selection moves, so, as the code shows, that row stays in the editing state with its values saved (in the row "nothing (IEditableObject)" of the second obstacle's table, `"edited"` remained in the first row).
 
 When Save was clicked instead, both approaches set the source and the list to the typed value.
+Typing `"again"` after Save and clicking Cancel returned both to the saved `"edited"`.
+With `IEditableObject`, Save calls `BeginEdit` again after `EndEdit`, so the saved value becomes the new point to cancel back to.
 
 {% include tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save.en.md %}
 
-The result of typing `"edited"` into the Name box and clicking Save.
+The result of typing `"edited"` into the Name box, clicking Save, then typing `"again"` and clicking Cancel.
+The detail form uses the default trigger.
 Measured on .NET 10 / Windows 11.
 {: .table-caption}
 
@@ -255,13 +258,13 @@ The table compares doing nothing, the two commonly suggested guards (three varia
 
 {% include tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-switch.en.md %}
 
-Columns that show an item show that item's `Name` at the time of measurement.
+Columns that show an item show that item's `Name` at the time of measurement (a `CurrentItem` of `"edited"` is still the first item, whose `Name` has changed).
 "SelectedItem / SelectedIndex" are the control's property values (`SelectedIndex` counts from 0), and "row highlighted on screen" is the row whose container has `IsSelected` set to `true`.
 In rows that leave `IsSynchronizedWithCurrentItem` at its default and pass the collection directly to `ItemsSource`, `CurrentItem` did not follow the selection and stayed on the first item.
 Except for the row "nothing (IEditableObject)", the detail form is bound to a copy for editing.
 The detail form uses the default trigger (`LostFocus`) except in the rows marked `UpdateSourceTrigger=PropertyChanged`.
 "List IsEnabled just before the mouse press" is read after the cursor has moved over the second row and just before the mouse button is pressed.
-In the row with `→`, the left value is right after typing, and the right value is just before the press, after Cancel was clicked.
+In the rows with `→`, the left value is right after typing, and the right value is just before the press on the second row, after Save or Cancel was clicked.
 The guards that reject the change treat the discard confirmation as answered "do not discard", and the scene also checks that the confirmation was called.
 Measured on .NET 10 / Windows 11.
 {: .table-caption}
@@ -351,7 +354,7 @@ As the table shows, `CurrentItem` and the view model stayed on the first row.
 `SelectedItem`, `SelectedIndex`, and the selection on screen, however, all moved to the second row.
 The current item stops moving, but the selection of `ListBox` and `DataGrid` does not go back.
 
-In all three variants, the view model's refusal showed up in `SelectedItem` or `CurrentItem`, but the selection on screen (`SelectedIndex` and the row's `IsSelected`) moved to the second row and did not come back.
+In all three variants, the view model's refusal showed up in `SelectedItem` for the setter guards and in `CurrentItem` for the `CurrentChanging` guard, but the selection on screen (`SelectedIndex` and the row's `IsSelected`) moved to the second row and did not come back.
 
 ### Disabling the List So the Selection Cannot Change
 
@@ -379,7 +382,8 @@ Because the input goes to a copy, updating the source on every keystroke does no
 Choosing a copy for editing in the first obstacle is what makes this work.
 
 While the list is disabled, the user cannot select another row until they finish the edit with Save or Cancel.
-As the last row of the table shows, clicking Cancel set the list's `IsEnabled` back to `True`, and a subsequent click on the second row moved the selection and the detail form to `"beta"`.
+As the rows "click Cancel first" show, clicking Cancel set the list's `IsEnabled` back to `True`, and a subsequent click on the second row moved the selection and the detail form to `"beta"` (`ListBox` and `DataGrid`).
+In the row "click Save first", `IsEnabled` also returned to `True`, the first row kept `"edited"`, and the selection and the detail form moved to `"beta"`.
 
 ---
 
@@ -507,7 +511,7 @@ Apart from sizes and names (`x:Name`), the scene used for the measurements build
 
 ## Summary
 
-- Binding the detail form directly to `SelectedItem` writes the input into the list item. Even with the default trigger, the write happens when the Cancel button is clicked, leaving nothing to restore
+- Binding the detail form directly to `SelectedItem` writes the input into the list item. Even with the default trigger, the write happens before the Cancel command runs, leaving nothing to restore
 - To cancel, receive the input in a copy for editing or save the original values with `IEditableObject`. A copy for editing suits screens that should not show unsaved values in the list
 - Stopping a row switch during an edit by rejecting it in the `SelectedItem` setter or by canceling `CurrentChanging` leaves the selection of `ListBox` and `DataGrid` out of step with the view model
 - While unsaved input exists, set the list's `IsEnabled` to `false` so the selection cannot change at all. For that, bind the detail form to the copy for editing with `UpdateSourceTrigger=PropertyChanged`

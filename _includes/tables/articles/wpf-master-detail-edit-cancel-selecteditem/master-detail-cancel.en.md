@@ -1,4 +1,4 @@
-| detail form bound to | source while typing | source when Cancel runs | list after Cancel | detail form after Cancel |
+| detail form bound to | source right after typing | source when Cancel runs | list after Cancel | detail form after Cancel |
 |---|---|---|---|---|
 | SelectedCustomer.Name (default trigger) | \"alpha\" | \"edited\" | \"edited\" | \"edited\" |
 | SelectedCustomer.Name, UpdateSourceTrigger=PropertyChanged | \"edited\" | \"edited\" | \"edited\" | \"edited\" |
