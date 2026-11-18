@@ -1756,6 +1756,30 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-master-detail-edit-cancel-selecteditem/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-direct-typing.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-rejected-selection.png</image:loc></image:image>
+    <lastmod>2026-11-18T19:12:16Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-master-detail-edit-cancel-selecteditem/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-master-detail-edit-cancel-selecteditem/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/" />
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-direct-typing.png</image:loc></image:image>
+    <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-rejected-selection.png</image:loc></image:image>
+    <lastmod>2026-11-18T19:12:16Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-memory-leak-binding-non-inpc-source/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-memory-leak-binding-non-inpc-source/" />
