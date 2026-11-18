@@ -1,0 +1,34 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-master-detail-edit-cancel-selecteditem
+slug: "wpf-master-detail-edit-cancel-selecteditem"
+scene: "MasterDetailEditCancelScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "詳細欄を SelectedCustomer.Name に直接バインドすると、UpdateSourceTrigger=PropertyChanged では入力の直後に、既定のトリガー（LostFocus）では Cancel のコマンドの実行時までに、ソースが入力した値に変わっていて、Cancel の後の一覧の表示も入力した値であること（UpdateSourceTrigger=PropertyChanged では、入力の直後の一覧の表示も入力した値であること）"
+  - "詳細欄を編集用のコピー（Editing）にバインドすると、入力の直後も Cancel の実行時もソースは元の値のままで、Cancel の後は一覧の表示と詳細欄が元の値になり、Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると、ソースは Save した値のままで、詳細欄が Save した値に戻ること"
+  - "IEditableObject を実装したアイテムに既定のトリガーで直接バインドし、選んだときに BeginEdit を呼ぶと、入力の直後のソースは元の値のままで、Cancel の実行時には入力した値に変わっているが、CancelEdit の後は一覧の表示と詳細欄が元の値に戻ること。Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると、Cancel の実行時にはソースがその値に変わっているが、CancelEdit の後はソースと詳細欄が Save した値に戻ること（EndEdit の後に BeginEdit を呼び直しているため）"
+  - "編集中に一覧の 2 行目をクリックすると、何も止めなければ選択が移り、編集用のコピーでは入力した値が捨てられ、IEditableObject では入力した値が 1 行目に残ること"
+  - "詳細欄が既定のトリガーのまま、SelectedCustomer のセッターで選択の変更を拒むと（PropertyChanged をその場で発生させても、既定の優先度（Normal）の Dispatcher.BeginInvoke で遅らせても）、ビューモデルと SelectedItem は 1 行目のままだが、SelectedIndex と画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと"
+  - "詳細欄が既定のトリガーのまま、IsSynchronizedWithCurrentItem=True にして ICollectionView.CurrentChanging で e.Cancel = true にすると、CurrentItem とビューモデルは 1 行目のままだが、SelectedItem・SelectedIndex・画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと"
+  - "一覧の IsEnabled を変更の有無にバインドし、詳細欄を UpdateSourceTrigger=PropertyChanged にすると、2 行目の上へカーソルを動かしてマウスのボタンを押す直前の一覧の IsEnabled が False で、2 行目をクリックしても選択はどこも 1 行目のままで、入力した値が詳細欄に残ること（ListBox・DataGrid）"
+  - "同じ構成で詳細欄が既定のトリガー（LostFocus）だと、2 行目の上へカーソルを動かしてマウスのボタンを押す直前の一覧の IsEnabled は True のままで、2 行目のクリックで選択が移り、入力した値が捨てられること"
+  - "選択の変更をセッターで拒んだ後、または CurrentChanging で取り消した後に Save をクリックすると、画面で選ばれている 2 行目ではなく 1 行目が入力した値に更新されること（ListBox・DataGrid）"
+  - "一覧を無効にした状態で Cancel をクリックすると一覧の IsEnabled が True に戻り、その後 2 行目をクリックすると選択と詳細欄が 2 行目に移ること（ListBox・DataGrid）。Save をクリックした場合も IsEnabled が True に戻り、1 行目は入力した値のまま、選択と詳細欄が 2 行目に移ること（ListBox）"
+images:
+  - "images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-direct-typing.png"
+  - "images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-rejected-selection.png"
+  - "images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-cancel.svg"
+  - "images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save.svg"
+  - "images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-switch.svg"
+  - "images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save-after-stopped.svg"
+tables:
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-cancel.en.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-cancel.ja.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save.en.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save.ja.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-switch.en.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-switch.ja.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save-after-stopped.en.md"
+  - "_includes/tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save-after-stopped.ja.md"
