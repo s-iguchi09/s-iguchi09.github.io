@@ -23,14 +23,14 @@ internal sealed class MasterDetailEditCancelScene : IScene
 {
     public IReadOnlyList<string> Verifies =>
     [
-        "詳細欄を SelectedCustomer.Name に直接バインドすると、UpdateSourceTrigger=PropertyChanged では入力中に、既定のトリガー（LostFocus）では Cancel ボタンをクリックした時点で、ソースと一覧の表示が入力した値に変わり、Cancel のコマンドの実行時には元の値がどこにも残っていないこと",
+        "詳細欄を SelectedCustomer.Name に直接バインドすると、UpdateSourceTrigger=PropertyChanged では入力の直後に、既定のトリガー（LostFocus）では Cancel のコマンドの実行時までに、ソースが入力した値に変わっていて、Cancel の後の一覧の表示も入力した値であること（UpdateSourceTrigger=PropertyChanged では、入力の直後の一覧の表示も入力した値であること）",
         "詳細欄を編集用のコピー（Editing）にバインドすると、入力の直後も Cancel の実行時もソースは元の値のままで、Cancel の後は一覧の表示と詳細欄が元の値になり、Save をクリックするとソースと一覧の表示が入力した値になること",
         "IEditableObject を実装したアイテムに既定のトリガーで直接バインドし、選んだときに BeginEdit を呼ぶと、入力の直後のソースは元の値のままで、Cancel の実行時には入力した値に変わっているが、CancelEdit の後は一覧の表示と詳細欄が元の値に戻ること",
         "編集中に一覧の 2 行目をクリックすると、何も止めなければ選択が移り、編集用のコピーでは入力した値が捨てられ、IEditableObject では入力した値が 1 行目に残ること",
         "詳細欄が既定のトリガーのまま、SelectedCustomer のセッターで選択の変更を拒むと（PropertyChanged をその場で発生させても、既定の優先度（Normal）の Dispatcher.BeginInvoke で遅らせても）、ビューモデルと SelectedItem は 1 行目のままだが、SelectedIndex と画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと",
         "詳細欄が既定のトリガーのまま、IsSynchronizedWithCurrentItem=True にして ICollectionView.CurrentChanging で e.Cancel = true にすると、CurrentItem とビューモデルは 1 行目のままだが、SelectedItem・SelectedIndex・画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと",
-        "一覧の IsEnabled を変更の有無にバインドし、詳細欄を UpdateSourceTrigger=PropertyChanged にすると、入力の後（2 行目のクリックの直前）の一覧の IsEnabled が False で、2 行目をクリックしても選択はどこも 1 行目のままで、入力した値が詳細欄に残ること（ListBox・DataGrid）",
-        "同じ構成で詳細欄が既定のトリガー（LostFocus）だと、入力の後（2 行目のクリックの直前）の一覧の IsEnabled は True のままで、2 行目のクリックで選択が移り、入力した値が捨てられること",
+        "一覧の IsEnabled を変更の有無にバインドし、詳細欄を UpdateSourceTrigger=PropertyChanged にすると、2 行目の上へカーソルを動かしてボタンを押す直前の一覧の IsEnabled が False で、2 行目をクリックしても選択はどこも 1 行目のままで、入力した値が詳細欄に残ること（ListBox・DataGrid）",
+        "同じ構成で詳細欄が既定のトリガー（LostFocus）だと、2 行目の上へカーソルを動かしてボタンを押す直前の一覧の IsEnabled は True のままで、2 行目のクリックで選択が移り、入力した値が捨てられること",
         "選択の変更をセッターで拒んだ後、または CurrentChanging で取り消した後に Save をクリックすると、画面で選ばれている 2 行目ではなく 1 行目が入力した値に更新されること（ListBox・DataGrid）",
         "一覧を無効にした状態で Cancel をクリックすると一覧の IsEnabled が True に戻り、その後 2 行目をクリックすると選択と詳細欄が 2 行目に移ること",
     ];
@@ -75,7 +75,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
                 "CurrentItem",
                 T("detail form", "詳細欄"),
                 T("first row in the list", "一覧の 1 行目"),
-                T("list IsEnabled before the click", "クリック直前の一覧の IsEnabled"),
+                T("list IsEnabled just before the mouse press", "ボタンを押す直前の一覧の IsEnabled"),
             ],
             await SwitchCasesAsync(),
             "master-detail-switch.svg");
@@ -296,6 +296,12 @@ internal sealed class MasterDetailEditCancelScene : IScene
         /// <summary>破棄の確認が呼ばれた回数。</summary>
         public int Confirmations { get; private set; }
 
+        /// <summary>Save のコマンドが実行された回数。</summary>
+        public int Saves { get; private set; }
+
+        /// <summary>Cancel のコマンドが実行された回数。</summary>
+        public int Cancels { get; private set; }
+
         /// <summary>Cancel のコマンドが実行された時点のソース（SelectedCustomer）の Name。</summary>
         public string? NameWhenCancelRan { get; private set; }
 
@@ -389,6 +395,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
 
         private void Save()
         {
+            Saves++;
             switch (_mode)
             {
                 case Mode.Copy when _selectedCustomer is not null && _editing is not null:
@@ -404,6 +411,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
 
         private void Cancel()
         {
+            Cancels++;
             NameWhenCancelRan = _selectedCustomer?.Name;
             switch (_mode)
             {
@@ -480,6 +488,18 @@ internal sealed class MasterDetailEditCancelScene : IScene
         }
 
         await Capture.SettleAsync(window, 200);
+    }
+
+    /// <summary>Save か Cancel のボタンを実際のマウスでクリックし、そのコマンドが 1 回だけ実行されたことを確かめる。</summary>
+    private static async Task ClickButtonAsync(Window window, Page page, string name)
+    {
+        int Count() => name == "save" ? page.ViewModel.Saves : page.ViewModel.Cancels;
+        int before = Count();
+        await ClickAsync(window, (Button)page.Root.FindName(name));
+        if (Count() != before + 1)
+        {
+            throw new InvalidOperationException($"{name} のクリックでコマンドが 1 回だけ実行されていない（{before} → {Count()}）。");
+        }
     }
 
     /// <summary>選択の変更を拒む止め方で、破棄の確認（拒む処理）が実際に呼ばれたことを確かめる。呼ばれずに結果だけ残る計測を防ぐ。</summary>
@@ -563,7 +583,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
             Window window = await FrontCenteredAsync(page.Root);
             await TypeInNameAsync(page, "edited");
             typing = Quote(first.Name);
-            await ClickAsync(window, (Button)page.Root.FindName("cancel"));
+            await ClickButtonAsync(window, page, "cancel");
             list = ShownText(page.List, 0);
             detail = Quote(page.Name.Text);
         }, activate: true);
@@ -586,7 +606,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
         {
             Window window = await FrontCenteredAsync(page.Root);
             await TypeInNameAsync(page, "edited");
-            await ClickAsync(window, (Button)page.Root.FindName("save"));
+            await ClickButtonAsync(window, page, "save");
             list = ShownText(page.List, 0);
         }, activate: true);
 
@@ -639,17 +659,26 @@ internal sealed class MasterDetailEditCancelScene : IScene
         {
             Window window = await FrontCenteredAsync(page.Root);
             await TypeInNameAsync(page, "edited");
-            string enabled = page.List.IsEnabled ? "True" : "False";
+            string afterTyping = page.List.IsEnabled ? "True" : "False";
             if (cancelFirst)
             {
-                await ClickAsync(window, (Button)page.Root.FindName("cancel"));
-                enabled += page.List.IsEnabled ? " → True (after Cancel)" : " → False (after Cancel)";
+                await ClickButtonAsync(window, page, "cancel");
             }
 
-            enabledBeforeClick = cancelFirst
-                ? T(enabled, enabled.Replace(" (after Cancel)", "（Cancel 後）"))
-                : enabled;
-            await ClickAsync(window, SecondRow(page));
+            using (RealMouse.Preserve())
+            {
+                // カーソルを 2 行目へ動かし終えてから、ボタンを押す直前の IsEnabled を読む。
+                FrameworkElement second = SecondRow(page);
+                await RealMouse.MoveToAsync(second, null, window);
+                string beforePress = page.List.IsEnabled ? "True" : "False";
+                enabledBeforeClick = cancelFirst
+                    ? T($"{afterTyping} → {beforePress} (Cancel clicked in between)", $"{afterTyping} → {beforePress}（間に Cancel をクリック）")
+                    : beforePress;
+                await RealMouse.LeftDownAsync(window, second);
+                await RealMouse.LeftUpAsync(window);
+            }
+
+            await Capture.SettleAsync(window, 200);
             EnsureGuardRan(page, guard);
             ICollectionView view = CollectionViewSource.GetDefaultView(page.ViewModel.Customers);
             row =
@@ -695,7 +724,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
             await ClickAsync(window, SecondRow(page));
             EnsureGuardRan(page, guard);
             highlighted = SelectedOnScreen(page.List);
-            await ClickAsync(window, (Button)page.Root.FindName("save"));
+            await ClickButtonAsync(window, page, "save");
         }, activate: true);
 
         return

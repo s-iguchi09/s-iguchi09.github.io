@@ -179,6 +179,8 @@ public sealed class EditableCustomer : Customer, IEditableObject
 }
 ```
 
+一覧の `Customers` には、`Customer` ではなく `EditableCustomer` のインスタンスを入れる。
+`Customer` のままでは `value as IEditableObject` が `null` になり、次のコードの `BeginEdit`・`EndEdit`・`CancelEdit` はどれも呼ばれない。
 ビューモデルは、選んだときに `BeginEdit` を呼び、Save で `EndEdit`、Cancel で `CancelEdit` を呼ぶ。
 確定・取り消しの後も続けて編集できるよう、どちらの後にも `BeginEdit` を呼び直す。
 詳細欄は `SelectedCustomer.Name` に直接バインドしたままでよい。
@@ -258,7 +260,8 @@ Name に `"edited"` と打ってから Save をクリックした結果。
 `IsSynchronizedWithCurrentItem` を既定値のまま `ItemsSource` にコレクションを直接渡した行では、`CurrentItem` は選択に追従せず 1 行目のアイテムのままだった。
 「なし（IEditableObject）」の行以外は、詳細欄を編集用のコピーにバインドしている。
 詳細欄のトリガーは、`UpdateSourceTrigger=PropertyChanged` と書いた行を除き、既定のトリガー（`LostFocus`）である。
-「クリック直前の一覧の IsEnabled」の `→` は、左が入力の直後、右が Cancel の後（2 行目をクリックする直前）の値である。
+「ボタンを押す直前の一覧の IsEnabled」は、カーソルを 2 行目の上へ動かし終え、マウスのボタンを押す直前に読んだ値である。
+`→` のある行は、左が入力の直後、右が Cancel をクリックした後のボタンを押す直前の値である。
 変更を拒む止め方では、破棄の確認に「破棄しない」と答えたものとして扱い、確認が呼ばれたことも確かめた。
 .NET 10 / Windows 11 で実測。
 {: .table-caption}
@@ -365,12 +368,12 @@ SelectedCustomer = view.CurrentItem as Customer; // 最初の選択を受け取�
 </StackPanel>
 ```
 
-表のとおり、入力の後（クリックの直前）の一覧の `IsEnabled` は `False` で、2 行目をクリックしても、ビューモデル・`SelectedItem`・`SelectedIndex`・画面の選択は、すべて 1 行目のままだった。
+表のとおり、2 行目でボタンを押す直前の一覧の `IsEnabled` は `False` で、2 行目をクリックしても、ビューモデル・`SelectedItem`・`SelectedIndex`・画面の選択は、すべて 1 行目のままだった。
 詳細欄の `"edited"` も残っている。
 `DataGrid` でも同じ結果になった。
 
 ここで詳細欄の `UpdateSourceTrigger=PropertyChanged` が欠かせない。
-既定のトリガーのままでは、打っている間はコピーが変わらないため、クリックの直前の一覧の `IsEnabled` は `True` だった。
+既定のトリガーのままでは、打っている間はコピーが変わらないため、2 行目でボタンを押す直前の一覧の `IsEnabled` は `True` だった。
 表の「詳細欄は既定のトリガー」の行では、2 行目のクリックで選択が移り、`"edited"` が捨てられた。
 入力をコピーで受けているので、入力のたびにソースを更新しても一覧のアイテムは変わらない。
 第一の壁で編集用のコピーを選んだことが、ここで効いている。

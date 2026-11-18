@@ -179,6 +179,8 @@ public sealed class EditableCustomer : Customer, IEditableObject
 }
 ```
 
+The list's `Customers` must hold `EditableCustomer` instances, not `Customer`.
+With plain `Customer`, `value as IEditableObject` is `null`, and none of `BeginEdit`, `EndEdit`, or `CancelEdit` in the following code is called.
 The view model calls `BeginEdit` when an item is selected, `EndEdit` on Save, and `CancelEdit` on Cancel.
 To let the user keep editing after a commit or cancel, it calls `BeginEdit` again after both.
 The detail form stays bound directly to `SelectedCustomer.Name`.
@@ -258,7 +260,8 @@ Columns that show an item show that item's `Name` at the time of measurement.
 In rows that leave `IsSynchronizedWithCurrentItem` at its default and pass the collection directly to `ItemsSource`, `CurrentItem` did not follow the selection and stayed on the first item.
 Except for the row "nothing (IEditableObject)", the detail form is bound to a copy for editing.
 The detail form uses the default trigger (`LostFocus`) except in the rows marked `UpdateSourceTrigger=PropertyChanged`.
-In "list IsEnabled before the click", the value left of `→` is right after typing, and the value on the right is after Cancel (just before clicking the second row).
+"List IsEnabled just before the mouse press" is read after the cursor has moved over the second row and just before the mouse button is pressed.
+In the row with `→`, the left value is right after typing, and the right value is just before the press, after Cancel was clicked.
 The guards that reject the change treat the discard confirmation as answered "do not discard", and the scene also checks that the confirmation was called.
 Measured on .NET 10 / Windows 11.
 {: .table-caption}
@@ -365,12 +368,12 @@ The view model exposes `CanChangeSelection`, which says whether the selection ma
 </StackPanel>
 ```
 
-As the table shows, the list's `IsEnabled` was `False` after typing (just before the click), and clicking the second row left the view model, `SelectedItem`, `SelectedIndex`, and the selection on screen all on the first row.
+As the table shows, the list's `IsEnabled` was `False` just before the mouse press on the second row, and clicking the second row left the view model, `SelectedItem`, `SelectedIndex`, and the selection on screen all on the first row.
 The `"edited"` in the detail form also remained.
 `DataGrid` gave the same result.
 
 `UpdateSourceTrigger=PropertyChanged` on the detail form is essential here.
-With the default trigger, the copy does not change while typing, so the list's `IsEnabled` was still `True` just before the click.
+With the default trigger, the copy does not change while typing, so the list's `IsEnabled` was still `True` just before the mouse press on the second row.
 In the row "detail with the default trigger", clicking the second row moved the selection and discarded `"edited"`.
 Because the input goes to a copy, updating the source on every keystroke does not change the list item.
 Choosing a copy for editing in the first obstacle is what makes this work.
