@@ -222,7 +222,9 @@ private void Cancel()
 この実装は、選択が別の行に移っても前の行の `EndEdit` も `CancelEdit` も呼ばないため、コードのとおり、前の行は値を控えたまま編集中の状態で残る（第二の壁の表の「なし（IEditableObject）」の行では、1 行目に `"edited"` が残った）。
 
 Save をクリックした場合は、どちらの方法でもソースと一覧が入力した値になった。
-Save の後に続けて `"again"` と打って Cancel をクリックすると、どちらも Save した `"edited"` に戻った。
+Save の後に続けて `"again"` と打って Cancel をクリックすると、どちらも詳細欄が Save した `"edited"` に戻った。
+編集用のコピーでは、ソースは一度も `"again"` にならなかった。
+`IEditableObject` では、Cancel の実行時にソースが `"again"` になっていたが、`CancelEdit` で `"edited"` に戻った。
 `IEditableObject` では、Save で `EndEdit` の後に `BeginEdit` を呼び直しているため、Save した値が新しい取り消し先になる。
 
 {% include tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save.ja.md %}
@@ -382,7 +384,7 @@ SelectedCustomer = view.CurrentItem as Customer; // 最初の選択を受け取�
 第一の壁で編集用のコピーを選んだことが、ここで効いている。
 
 一覧が無効の間、利用者は Save か Cancel を押して編集を終えるまで別の行を選べない。
-表の「先に Cancel をクリック」の行のとおり、Cancel をクリックすると一覧の `IsEnabled` は `True` に戻り、その後の 2 行目のクリックで選択と詳細欄が `"beta"` に移った（`ListBox`・`DataGrid`）。
+表の「先に Cancel をクリック」の 2 行のとおり、Cancel をクリックすると一覧の `IsEnabled` は `True` に戻り、その後の 2 行目のクリックで選択と詳細欄が `"beta"` に移った（`ListBox`・`DataGrid`）。
 「先に Save をクリック」の行でも `IsEnabled` は `True` に戻り、1 行目は `"edited"` のまま、選択と詳細欄が `"beta"` に移った。
 
 ---

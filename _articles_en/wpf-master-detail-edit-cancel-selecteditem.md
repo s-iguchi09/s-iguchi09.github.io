@@ -5,7 +5,7 @@ seo_title: "WPF SelectedItem Detail Form: Cancel Edits via a Copy"
 date: 2026-11-18
 category: WPF
 image: /images/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-rejected-selection.png
-excerpt: "A detail form bound to SelectedItem writes into the list item, so Cancel cannot undo it. Measured: an edit copy, IEditableObject, and guards that split selection."
+excerpt: "A detail form bound to SelectedItem writes into the list item, so Cancel cannot undo it. Measured: a copy, IEditableObject, and guards that split selection."
 ---
 
 ## Overview
@@ -222,7 +222,9 @@ Because the input is written straight into the item, the unsaved value appears i
 This implementation calls neither `EndEdit` nor `CancelEdit` on the previous row when the selection moves, so, as the code shows, that row stays in the editing state with its values saved (in the row "nothing (IEditableObject)" of the second obstacle's table, `"edited"` remained in the first row).
 
 When Save was clicked instead, both approaches set the source and the list to the typed value.
-Typing `"again"` after Save and clicking Cancel returned both to the saved `"edited"`.
+Typing `"again"` after Save and clicking Cancel returned the detail form to the saved `"edited"` in both approaches.
+With a copy for editing, the source never became `"again"`.
+With `IEditableObject`, the source was `"again"` when Cancel ran, and `CancelEdit` returned it to `"edited"`.
 With `IEditableObject`, Save calls `BeginEdit` again after `EndEdit`, so the saved value becomes the new point to cancel back to.
 
 {% include tables/articles/wpf-master-detail-edit-cancel-selecteditem/master-detail-save.en.md %}

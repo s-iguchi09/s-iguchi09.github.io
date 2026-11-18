@@ -24,8 +24,8 @@ internal sealed class MasterDetailEditCancelScene : IScene
     public IReadOnlyList<string> Verifies =>
     [
         "詳細欄を SelectedCustomer.Name に直接バインドすると、UpdateSourceTrigger=PropertyChanged では入力の直後に、既定のトリガー（LostFocus）では Cancel のコマンドの実行時までに、ソースが入力した値に変わっていて、Cancel の後の一覧の表示も入力した値であること（UpdateSourceTrigger=PropertyChanged では、入力の直後の一覧の表示も入力した値であること）",
-        "詳細欄を編集用のコピー（Editing）にバインドすると、入力の直後も Cancel の実行時もソースは元の値のままで、Cancel の後は一覧の表示と詳細欄が元の値になり、Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると Save した値に戻ること",
-        "IEditableObject を実装したアイテムに既定のトリガーで直接バインドし、選んだときに BeginEdit を呼ぶと、入力の直後のソースは元の値のままで、Cancel の実行時には入力した値に変わっているが、CancelEdit の後は一覧の表示と詳細欄が元の値に戻ること。Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると Save した値に戻ること（EndEdit の後に BeginEdit を呼び直しているため）",
+        "詳細欄を編集用のコピー（Editing）にバインドすると、入力の直後も Cancel の実行時もソースは元の値のままで、Cancel の後は一覧の表示と詳細欄が元の値になり、Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると、ソースは Save した値のままで、詳細欄が Save した値に戻ること",
+        "IEditableObject を実装したアイテムに既定のトリガーで直接バインドし、選んだときに BeginEdit を呼ぶと、入力の直後のソースは元の値のままで、Cancel の実行時には入力した値に変わっているが、CancelEdit の後は一覧の表示と詳細欄が元の値に戻ること。Save をクリックするとソースと一覧の表示が入力した値になり、続けて別の値を打って Cancel をクリックすると、Cancel の実行時にはソースがその値に変わっているが、CancelEdit の後はソースと詳細欄が Save した値に戻ること（EndEdit の後に BeginEdit を呼び直しているため）",
         "編集中に一覧の 2 行目をクリックすると、何も止めなければ選択が移り、編集用のコピーでは入力した値が捨てられ、IEditableObject では入力した値が 1 行目に残ること",
         "詳細欄が既定のトリガーのまま、SelectedCustomer のセッターで選択の変更を拒むと（PropertyChanged をその場で発生させても、既定の優先度（Normal）の Dispatcher.BeginInvoke で遅らせても）、ビューモデルと SelectedItem は 1 行目のままだが、SelectedIndex と画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと",
         "詳細欄が既定のトリガーのまま、IsSynchronizedWithCurrentItem=True にして ICollectionView.CurrentChanging で e.Cancel = true にすると、CurrentItem とビューモデルは 1 行目のままだが、SelectedItem・SelectedIndex・画面の選択は 2 行目になり、ListBox・DataGrid のどちらでも食い違うこと",
@@ -60,7 +60,9 @@ internal sealed class MasterDetailEditCancelScene : IScene
                 T("detail form bound to", "詳細欄のバインド先"),
                 T("source after Save", "Save 後のソース"),
                 T("list after Save", "Save 後の一覧の表示"),
-                T("source after typing \"again\" and clicking Cancel", "続けて \"again\" と打って Cancel をクリックした後のソース"),
+                T("then \"again\" + Cancel: source when Cancel runs", "続けて \"again\" ＋ Cancel: Cancel の実行時のソース"),
+                T("then \"again\" + Cancel: source after Cancel", "続けて \"again\" ＋ Cancel: Cancel 後のソース"),
+                T("then \"again\" + Cancel: detail form after Cancel", "続けて \"again\" ＋ Cancel: Cancel 後の詳細欄"),
             ],
             await SaveCasesAsync(),
             "master-detail-save.svg");
@@ -603,6 +605,7 @@ internal sealed class MasterDetailEditCancelScene : IScene
         Page page = Build(mode, Guard.None);
         Customer first = page.ViewModel.Customers[0];
         string saved = "";
+        string detail = "";
         string list = "";
         await ShowAsync(page.Root, async () =>
         {
@@ -615,9 +618,10 @@ internal sealed class MasterDetailEditCancelScene : IScene
             // Save の後も続けて編集でき、Cancel で Save した値に戻ることを確かめる。
             await TypeInNameAsync(page, "again");
             await ClickButtonAsync(window, page, "cancel");
+            detail = Quote(page.Name.Text);
         }, activate: true);
 
-        return [Describe(mode, propertyChangedTrigger: false), saved, list, Quote(first.Name)];
+        return [Describe(mode, propertyChangedTrigger: false), saved, list, Quote(page.ViewModel.NameWhenCancelRan), Quote(first.Name), detail];
     }
 
     // ---------------------------------------------------------------- 第二の壁: 編集中の行の切り替え
