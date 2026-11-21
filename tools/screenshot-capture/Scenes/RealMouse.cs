@@ -134,10 +134,12 @@ internal static class RealMouse
 
     /// <summary>
     /// 要素の中心（または <paramref name="offset"/> の位置）へカーソルを動かし、<paramref name="button"/> で指定したボタン（左か右）の押す・離すを 2 回続けて送る。
-    /// 4 つの入力を 1 回の SendInput で送るため、間隔はダブルクリックの時間（GetDoubleClickTime）より十分に短い。
+    /// <paramref name="interval"/> を省くと 4 つの入力を 1 回の SendInput で送るため、間隔はダブルクリックの時間（GetDoubleClickTime）より十分に短い。
+    /// <paramref name="interval"/> を渡すと、1 回目のクリックと 2 回目のクリックを、その時間だけ空けて送る。
     /// </summary>
     public static async Task DoubleClickAsync(
-        Window window, FrameworkElement target, Point? offset = null, System.Windows.Input.MouseButton button = System.Windows.Input.MouseButton.Left)
+        Window window, FrameworkElement target, Point? offset = null, System.Windows.Input.MouseButton button = System.Windows.Input.MouseButton.Left,
+        TimeSpan? interval = null)
     {
         (uint down, uint up) = button switch
         {
@@ -148,6 +150,24 @@ internal static class RealMouse
         await MoveToAsync(target, offset, window);
         GetCursorPos(out NativePoint point);
         EnsureOver(HandleOf(target), point);
+        if (interval is TimeSpan gap)
+        {
+            // 人が操作するときのように、1 回目のクリックと 2 回目のクリックの間を空ける。
+            // 間隔がダブルクリックの時間を超えると 2 回のクリックになるため、超える指定は受け付けない。
+            if (gap.TotalMilliseconds >= GetDoubleClickTime())
+            {
+                throw new ArgumentOutOfRangeException(nameof(interval), $"間隔 {gap.TotalMilliseconds} ms がダブルクリックの時間 {GetDoubleClickTime()} ms 以上。");
+            }
+
+            SendClick(down, up, button);
+            await Task.Delay(gap);
+            GetCursorPos(out NativePoint second);
+            EnsureOver(HandleOf(target), second);
+            SendClick(down, up, button);
+            await Capture.SettleAsync(window, 100);
+            return;
+        }
+
         var inputs = new[] { down, up, down, up }
             .Select(flags => new Input { Type = InputMouse, Mouse = new MouseInput { Flags = flags } })
             .ToArray();
@@ -183,6 +203,48 @@ internal static class RealMouse
         }
 
         await Capture.SettleAsync(window, 100);
+    }
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDoubleClickTime();
+
+    /// <summary>
+    /// 押す・離すを 1 回の SendInput で送る。押す入力だけが受け付けられたときは、押したまま残らないよう離し、
+    /// 離せなければ押したままの状態を残して <see cref="Preserve"/> の破棄でもう一度離させる。
+    /// </summary>
+    private static void SendClick(uint down, uint up, System.Windows.Input.MouseButton button)
+    {
+        var inputs = new[] { down, up }
+            .Select(flags => new Input { Type = InputMouse, Mouse = new MouseInput { Flags = flags } })
+            .ToArray();
+        uint accepted = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>());
+        if (accepted == inputs.Length)
+        {
+            return;
+        }
+
+        int error = Marshal.GetLastWin32Error();
+        if (accepted == 1)
+        {
+            try
+            {
+                Send(up);
+            }
+            catch (InvalidOperationException)
+            {
+                if (button == System.Windows.Input.MouseButton.Left)
+                {
+                    s_leftDown = true;
+                }
+                else
+                {
+                    s_rightDown = true;
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"SendInput が入力を {accepted} 件しか受け付けなかった（画面のロック中など）。Win32 エラー {error}。");
     }
 
     /// <summary>要素を表示しているトップレベルの HWND（ポップアップの中ならポップアップの HWND）。</summary>

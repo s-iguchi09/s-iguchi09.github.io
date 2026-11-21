@@ -25,7 +25,7 @@ MVVM で書く場合によく紹介されるのは、`Microsoft.Xaml.Behaviors.W
 
 - フレームワーク: .NET の WPF。コード例は C# 9 以降の構文（`is not null and not DataGridRow` などのパターン）と、null 許容参照型を有効にしたプロジェクトを前提にする。`EventTrigger` と `InvokeCommandAction` は NuGet パッケージ `Microsoft.Xaml.Behaviors.Wpf` のもので、`EventArgsConverter` プロパティを使う。動作は下記の検証環境でだけ測り、.NET Framework 4.8 と、ほかの版のパッケージでは測っていない
 - アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand<T>` は自前の最小実装である。`RelayCommand<T>` の `CanExecute` は、引数が `T` でないとき（`null` を含む）に `false` を返す。`CanExecute` の更新については [WPF で RelayCommand の CanExecute がボタンの有効・無効に反映されない問題の記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)にまとめている
-- 検証環境: .NET 10 / Windows 11 / `Microsoft.Xaml.Behaviors.Wpf` 1.1.135。クリックとダブルクリックは OS の実際のマウス入力で行い、ダブルクリックは押す・離すを 2 回、1 回の `SendInput` で続けて送った。毎回、`DataGrid` に 2 回目のクリック（`ClickCount` が 2）のマウスダウンが 1 回届いたことを確かめている。計測では XAML を `XamlReader` で読み込んだため、`xmlns:b` だけは同じアセンブリを `clr-namespace` 形式で指定した
+- 検証環境: .NET 10 / Windows 11 / `Microsoft.Xaml.Behaviors.Wpf` 1.1.135。クリックとダブルクリックは OS の実際のマウス入力で行い、ダブルクリックは、1 回目と 2 回目のクリックの間を 100 ms 空けて送った（ダブルクリックの時間の既定値 500 ms より短い）。毎回、`DataGrid` に 2 つのマウスダウンが `ClickCount` 1、2 として届いたことを確かめている。なお、間を空けずに 4 つの入力を一度に送ると、編集できるセルを選択中の行でダブルクリックしたときに 2 つ目のマウスダウンが `DataGrid` に届かず、間を空けた場合と結果が変わった。人の操作に近い、間を空けた送り方の結果を載せている計測では XAML を `XamlReader` で読み込んだため、`xmlns:b` だけは同じアセンブリを `clr-namespace` 形式で指定した
 - 題材: `Name` と `City` の 2 列を持つ顧客の `DataGrid`（幅 240、高さ 150、20 行）。最後の行より下の空白（以下、空白）を測るときだけ 3 行にする。2 行目の `beta` をクリックで選び、ダブルクリックの時間より長く待ってから、各場所をダブルクリックする
 - 扱う範囲: マウスのダブルクリックで詳細を開く操作。キーボード（Enter キーなど）で開く操作、複数行を選んだ状態で開く操作、スクロールバーの矢印のボタン、行ヘッダー（`DataGridRowHeader`）、`RowDetails`、`DataGrid` を入れ子にした場合は測っていない
 
@@ -117,8 +117,8 @@ public sealed class CustomersViewModel : ObservableObject
 `MouseDoubleClick` のハンドラーが動いた時点で、セルの `IsEditing` はすでに `True` になっている。
 このとき `OriginalSource` の `TextBlock` は、visual の親が `null` になっている。
 セルが編集状態に入って、表示用の `TextBlock` が visual ツリーから外れた後に、`DataGrid` の `MouseDoubleClick` が届いている。
-選択中の `beta` をダブルクリックすると、1 回目のクリックで編集が始まり、2 つ目のマウスダウンは `DataGrid` に届かなかった。
-`DataGrid` の `MouseDoubleClick` も発生しなかった。
+選択中の `beta` をダブルクリックすると、1 回目のクリックで編集が始まり、2 回目のクリックは編集用の `TextBox` に当たる。
+このときの `OriginalSource` は `TextBox` の中の `TextBoxView` で、visual ツリーに残っている。
 編集が始まるかは列（セル）ごとに決まる。
 `Name` 列だけを `IsReadOnly="True"` にした `DataGrid` では、`Name` のセルは編集状態にならず、`Handled` は `False`、`TextBlock` の親も `ContentPresenter` のままだった。
 同じ `DataGrid` の編集できる `City` 列のセルでは、`DataGrid` も列も `IsReadOnly=False` のときと同じ値になった。
@@ -230,10 +230,11 @@ XAML では、`CommandParameter` を書かずに `EventArgsConverter` だけを�
 
 行の外の 4 か所と右ボタンのダブルクリックでは、コンバーターが `null` を返し、`CanExecute` が `false` になるので実行されない。
 行のダブルクリックでは、Ctrl を押しながら未選択の `gamma` をダブルクリックした場合も、`gamma` が渡された。
-ところが、編集できるセルでは実行されなかった。
-「原因・背景」の表のとおり、未選択の行では、`DataGrid` の `MouseDoubleClick` が届いた時点で `OriginalSource` の `TextBlock` が visual ツリーから外れており、`DataGridRow` までさかのぼれない。
-選択中の行では、`MouseDoubleClick` そのものが発生しない。
-この書き方が使えるのは、ダブルクリックするセルが編集できない場合（`DataGrid` かその列が `IsReadOnly="True"` の場合）に限られる。
+ところが、編集できるセルを未選択の行でダブルクリックしたときは実行されなかった。
+「原因・背景」の表のとおり、`DataGrid` の `MouseDoubleClick` が届いた時点で `OriginalSource` の `TextBlock` が visual ツリーから外れており、`DataGridRow` までさかのぼれないためである。
+選択中の行では、2 回目のクリックが編集用の `TextBox` に当たり、`OriginalSource` が visual ツリーに残るので、`beta` が渡された。
+このため、ダブルクリックする行が選択済みかどうかで結果が変わる。
+この書き方を安定して使えるのは、ダブルクリックするセルが編集できない場合（`DataGrid` かその列が `IsReadOnly="True"` の場合）に限られる。
 `Name` 列だけを `IsReadOnly="True"` にした `DataGrid` でも、`Name` のセルでは `gamma` が渡され、編集できる `City` のセルでは実行されなかった。
 
 ### RowStyle ＋ 添付プロパティ（行のアイテム）
@@ -302,8 +303,7 @@ public static class RowDoubleClick
 行の `DataContext` は顧客そのものなので、`OpenCommand` は `DataGrid` の `DataContext`（ビューモデル）から取る。
 `InputBindings` と違って添付プロパティは依存関係プロパティなので、`Setter` で設定できる。
 表のとおり、行の外の 4 か所と右ボタンのダブルクリックでは実行されなかった。
-行のダブルクリックでは、読み取り専用の `DataGrid` で測った 4 通り（Ctrl なしで未選択の行・選択中の行、Ctrl ありで選択中の行・未選択の行）でも、編集できるセルの未選択の行（Ctrl なし）でも、ダブルクリックした行が渡された。
-ただし、編集できるセルの選択中の行をダブルクリックしたときは、`MouseDoubleClick` が発生せず、この書き方でも実行されなかった。
+行のダブルクリックでは、読み取り専用の `DataGrid` で測った 4 通り（Ctrl なしで未選択の行・選択中の行、Ctrl ありで選択中の行・未選択の行）でも、編集できるセルの未選択の行と選択中の行（Ctrl なし）でも、ダブルクリックした行が渡された。
 編集できるセルを Ctrl を押しながらダブルクリックした場合は測っていない。
 
 添付プロパティのクラスは画面の処理ではなく、どの画面でも使い回す部品のコードである。
@@ -329,13 +329,12 @@ public static class RowDoubleClick
 
 | 書き方 | 行の外で実行されない | 編集できるセルで動く | Ctrl を押したダブルクリック | 右ボタンを除ける | 足すもの |
 |---|---|---|---|---|---|
-| DataGrid の EventTrigger ＋ SelectedItem | ×（4 か所すべてで実行） | △（未選択の行だけ） | ×（未選択の行では別の行を渡す） | ×（実行される） | パッケージ |
+| DataGrid の EventTrigger ＋ SelectedItem | ×（4 か所すべてで実行） | ○ | ×（未選択の行では別の行を渡す） | ×（実行される） | パッケージ |
 | DataGrid の MouseBinding ＋ SelectedItem | △（空白で実行） | ×（実行されない） | ×（実行されない） | ○（`LeftDoubleClick`） | なし |
-| EventTrigger ＋ EventArgsConverter | ○（`null` を拒むコマンドのとき） | ×（実行されない） | ○ | ○（コンバーターで判定。`null` を拒むコマンドのとき） | パッケージ＋コンバーター |
-| RowStyle ＋ 添付プロパティ | ○ | △（未選択の行だけ） | ○（IsReadOnly=True の DataGrid でだけ測定） | ○（ハンドラーで判定） | 添付プロパティ |
+| EventTrigger ＋ EventArgsConverter | ○（`null` を拒むコマンドのとき） | △（選択中の行だけ） | ○ | ○（コンバーターで判定。`null` を拒むコマンドのとき） | パッケージ＋コンバーター |
+| RowStyle ＋ 添付プロパティ | ○ | ○ | ○（IsReadOnly=True の DataGrid でだけ測定） | ○（ハンドラーで判定） | 添付プロパティ |
 
-行の外で実行されず、編集できるセルの未選択の行でも動くのは、`RowStyle` ＋添付プロパティの書き方だけだった。
-編集できるセルの選択中の行では、4 つの書き方のどれも実行されなかった。
+行の外で実行されず、編集できるセルでも選択の有無によらず動くのは、`RowStyle` ＋添付プロパティの書き方だけだった。
 パッケージを使わずに済むため、新しく書くならこの書き方が適する。
 すでに `Microsoft.Xaml.Behaviors.Wpf` を使っていて、ダブルクリックするセルが編集できない（`DataGrid` かその列が `IsReadOnly="True"` の）まま変わらないなら、`EventArgsConverter` の書き方でもよい。
 `SelectedItem` を渡す 2 つの書き方は、行の外のダブルクリックを行のダブルクリックと区別できないため、詳細を開く操作には向かない。
@@ -344,7 +343,7 @@ public static class RowDoubleClick
 
 ## 注意点
 
-- **編集できるセルでは、ダブルクリックで詳細を開くことを当てにできない。** 表の「そのほかの変化」のとおり、編集できるセルをダブルクリックすると、未選択の行では `RowStyle` ＋添付プロパティの書き方で詳細が開くのと同時にセルが編集状態になり、選択中の行ではどの書き方でも詳細が開かずに編集だけが始まった。一覧で直接編集させないなら、`DataGrid` を `IsReadOnly="True"` にする。編集が始まるかは列ごとに決まるため、列だけを読み取り専用にする場合は、ダブルクリックされうるすべての列を `IsReadOnly="True"` にする（表のとおり、`Name` 列だけを読み取り専用にした `DataGrid` でも、`City` のセルでは編集が始まった）。直接の編集と詳細を開く操作を両立させるなら、詳細を開くのを行の先頭のボタンにするなど、ダブルクリックとは別の操作に分ける。
+- **編集できるセルでは、ダブルクリックでセルの編集も始まる。** 表の「そのほかの変化」のとおり、編集できるセルをダブルクリックすると、`RowStyle` ＋添付プロパティの書き方で詳細が開くのと同時に、セルが編集状態になった（未選択の行・選択中の行とも）。一覧で直接編集させないなら、`DataGrid` を `IsReadOnly="True"` にする。編集が始まるかは列ごとに決まるため、列だけを読み取り専用にする場合は、ダブルクリックされうるすべての列を `IsReadOnly="True"` にする（表のとおり、`Name` 列だけを読み取り専用にした `DataGrid` でも、`City` のセルでは編集が始まった）。直接の編集と詳細を開く操作を両立させるなら、詳細を開くのを行の先頭のボタンにするなど、ダブルクリックとは別の操作に分ける。
 - **列ヘッダーのダブルクリックでは、並び替えも起きる。** 表のとおり、並び替えていない `Name` の列は、ダブルクリックの後に降順になった。行だけを拾う書き方にしても、この並び替えは変わらない。並び替えの状態を戻す方法は [WPFのDataGridのソートを初期化する方法](/ja/articles/wpf-datagrid-sort-reset/)にある。
 - **`EventArgsConverter` の書き方が行の外と右ボタンで実行されないのは、`CanExecute` が `null` を拒むためである。** コンバーターは行の外と右ボタンのダブルクリックで `null` を返し、`InvokeCommandAction` はその `null` で `CanExecute` を呼ぶ。本記事の `RelayCommand<T>` は `null` を拒むが、`null` を受け付けるコマンドを使う場合は、行の外や右ボタンでも `Execute` が `null` で呼ばれる。コマンドの側でも `null` を確かめる。`RowStyle` ＋添付プロパティの書き方は、行の外ではイベントが届かず、右ボタンはハンドラーで除くため、この注意は当てはまらない。
 - **キーボードでは開けない。** マウスのダブルクリックだけを拾う書き方なので、Enter キーなどで詳細を開くには、別に `KeyBinding` などの割り当てが要る。本記事ではキーボードの操作を測っていない。
@@ -359,6 +358,6 @@ public static class RowDoubleClick
 `MouseBinding` に替えても空白では同じことが起き、編集できるセルと Ctrl を押しながらのダブルクリックでは、行のダブルクリックそのものを拾えなかった。
 
 行のダブルクリックだけを拾うには、`RowStyle` の `Setter` で `DataGridRow` に添付プロパティを付け、行の `MouseDoubleClick` で、左ボタンのときだけ行のアイテムを渡す。
-ただし編集できるセルでは、選択中の行のダブルクリックで `MouseDoubleClick` が発生しないため、詳細を開く操作には `DataGrid` を読み取り専用にするか、ダブルクリックとは別の操作を用意する。
+編集できるセルでは、詳細が開くのと同時にセルの編集も始まるため、一覧で直接編集させないなら `DataGrid` を読み取り専用にする。
 セルが編集できない一覧で、すでに `Microsoft.Xaml.Behaviors.Wpf` を使っているなら、`EventArgsConverter` で行のアイテムに変換する書き方も選べる。
 開いた詳細で編集を取り消せるようにする方法は [WPF マスター詳細で SelectedItem に直接バインドすると編集を取り消せない問題の記事](/ja/articles/wpf-master-detail-edit-cancel-selecteditem/)に、詳細をダイアログで開く方法は [WPF MVVM でダイアログを出す IDialogService の記事](/ja/articles/wpf-mvvm-dialog-service/)にまとめている。
