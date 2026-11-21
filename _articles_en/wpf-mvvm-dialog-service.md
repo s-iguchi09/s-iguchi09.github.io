@@ -442,3 +442,4 @@ The edit is made on a copy and written back only when `true` is returned.
 - [Controlling When TextBox Input Reaches the Source with UpdateSourceTrigger in WPF](/articles/wpf-textbox-updatesourcetrigger-binding-timing/)
 - [Why WPF PasswordBox.Password Cannot Be Bound, and Two Ways to Pass It to a ViewModel](/articles/wpf-passwordbox-binding-mvvm/)
 - [Exceptions WPF's DispatcherUnhandledException Never Sees — Where Thread, Task and async void Exceptions Go](/articles/wpf-unhandled-exception-dispatcher-task-thread/)
+- [WPF DataGrid Row Double-Click to a Command: MouseDoubleClick Also Fires on Column Headers](/articles/wpf-datagrid-row-doubleclick-command-mvvm/)

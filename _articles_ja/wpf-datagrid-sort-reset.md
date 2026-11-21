@@ -328,4 +328,5 @@ WPF `DataGrid` のソート状態は `ICollectionView.SortDescriptions` と `Dat
 ## 関連記事
 
 - [WPF DataGrid の並び替えを実装する方法](/ja/articles/wpf-datagrid-sorting/)
+- [WPF DataGrid の行のダブルクリックをコマンドにつなぐ: MouseDoubleClick は列ヘッダーでも発火する](/ja/articles/wpf-datagrid-row-doubleclick-command-mvvm/)：列ヘッダーのダブルクリックで、並び替えと同時に直前に選んでいた行の詳細が開く書き方を実測した記事
 - [DataGrid（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しの 3 回目のクリックでも並べ替えが解除されないことと、コードから並べ替える前に編集を終える方法を実測したページ
