@@ -17,7 +17,7 @@ However, it also runs when a column header, the scroll bar thumb or track, or th
 On a column header the double-click also sorts the column, so the opened row may no longer even be on screen.
 
 This article compares four ways of catching the double-click by double-clicking the same places with a real mouse.
-It shows where the two grid-level approaches fire by mistake, which of the two row-level approaches still works in an editable `DataGrid`, and how to choose among the four.
+It shows where the two grid-level approaches fire by mistake, which of the two row-level approaches still works when the double-click starts editing a cell, and how to choose among the four.
 
 ---
 
@@ -107,20 +107,21 @@ The following table shows what reaches the `DataGrid` on the second click.
 Values read by handlers added to the `DataGrid` with `handledEventsToo` after selecting the second row, `beta`, with a click and then double-clicking each place (.NET 10 / Windows 11, real mouse input). "At that time" means when the handler for the `DataGrid`'s `MouseDoubleClick` ran.
 {: .table-caption}
 
-On the column header, the scroll bar thumb and track, a cell double-clicked with Ctrl held, and a cell of an editable `DataGrid`, the second `MouseLeftButtonDown` is already handled (`Handled` is `True`) when it reaches the handler on the `DataGrid`.
+On the column header, the scroll bar thumb and track, a cell double-clicked with Ctrl held, and a cell that enters edit mode (a cell whose `DataGrid` and column are both not read-only), the second `MouseLeftButtonDown` is already handled (`Handled` is `True`) when it reaches the handler on the `DataGrid`.
 `MouseDoubleClick` is still raised in every place.
 This is because `Control` registers the class handler that detects double-clicks so that it also receives handled events, with `handledEventsToo` set to `true` ([the static constructor in Control.cs](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/Control.cs#L28-L31)).
 
-On a cell of an editable `DataGrid`, the cell's `IsEditing` is already `True` when the `MouseDoubleClick` handler runs.
+On a cell that enters edit mode, the cell's `IsEditing` is already `True` when the `MouseDoubleClick` handler runs.
 At that point the visual parent of the `TextBlock` that is the `OriginalSource` is `null`.
 The `DataGrid`'s `MouseDoubleClick` arrives after the cell has entered edit mode and the display `TextBlock` has left the visual tree.
+Even in an editable `DataGrid`, a cell in a column with `IsReadOnly="True"` did not enter edit mode; `Handled` stayed `False` and the parent of the `TextBlock` stayed `ContentPresenter`.
 These two differences (whether the input is already handled, and whether the `OriginalSource` is still in the tree) separate the results of the approaches compared in the next section.
 
 ---
 
 ## Four Ways to Catch the Double-Click
 
-The following table shows the results of the same eleven double-click cases with the four approaches.
+The following table shows the results of the same twelve double-click cases with the four approaches.
 In the columns for the four approaches, each cell is the customer passed to `OpenCommand`, and "not executed" means `OpenCommand` never ran.
 
 {% include tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-doubleclick-results.en.md %}
@@ -151,14 +152,16 @@ Putting a `MouseBinding` in the `InputBindings` of the `DataGrid` is also often 
 </DataGrid.InputBindings>
 ```
 
-This approach did not run on the column header, the scroll bar thumb and track, a double-click with Ctrl held, or a cell of an editable `DataGrid`.
+This approach did not run on the column header, the scroll bar thumb and track, a double-click with Ctrl held, or a cell that enters edit mode.
 All of these are places where the second `MouseLeftButtonDown` was already handled in the Cause / Background table.
 Input bindings are matched only when the mouse-down has not been handled ([`OnMouseDownThunk` in UIElement](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Generated/UIElement.cs#L837-L842)), so a `MouseBinding` does not run where the input is already handled.
+A double-click with Ctrl held would not match even if it were checked.
+`MouseGesture` matching also requires the modifier keys to match ([`Matches` in MouseGesture.cs](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Input/Command/MouseGesture.cs#L132)), so `LeftDoubleClick`, which has no modifier key, does not match input with Ctrl held.
 With its `Gesture` set to `LeftDoubleClick`, this approach did not run on a right-button double-click.
 
 On the other hand, it ran on the blank area and received `beta`.
 The places where it fires by mistake outside the rows are fewer, but not gone.
-Moreover, in an editable `DataGrid` and with Ctrl held, it does not catch the row double-click at all.
+Moreover, on a cell that enters edit mode and with Ctrl held, it does not catch the row double-click at all.
 
 Attaching the `MouseBinding` to the row (`DataGridRow`) instead of the `DataGrid` is not possible through `RowStyle`, because `InputBindings` cannot be set with a `Setter`.
 
@@ -220,9 +223,10 @@ This is because `InvokeCommandAction` calls `EventArgsConverter` only when `Comm
 
 In the four places outside the rows and on a right-button double-click, the converter returns `null` and `CanExecute` returns `false`, so the command does not run.
 Even when the unselected `gamma` was double-clicked with Ctrl held, `gamma` was passed.
-However, the command did not run on a cell of an editable `DataGrid`.
+However, the command did not run on a cell that enters edit mode.
 As the Cause / Background table shows, the `TextBlock` that is the `OriginalSource` has already left the visual tree when the `DataGrid`'s `MouseDoubleClick` arrives, so the converter cannot walk up to the `DataGridRow`.
-This approach is usable only with a read-only `DataGrid`.
+This approach is usable only where a double-click does not start editing a cell.
+Even in an editable `DataGrid`, `gamma` was passed for a cell in a column with `IsReadOnly="True"`.
 
 ### RowStyle + Attached Property (Row Item)
 
@@ -290,8 +294,8 @@ A `Setter` in `RowStyle` attaches the property to every row.
 The row's `DataContext` is the customer itself, so `OpenCommand` is taken from the `DataContext` of the `DataGrid` (the view model).
 Unlike `InputBindings`, an attached property is a dependency property, so a `Setter` can set it.
 As the table shows, it did not run in the four places outside the rows or on a right-button double-click.
-On a row double-click, it passed the double-clicked row in the four cases measured in a read-only `DataGrid` (an unselected row and a selected row without Ctrl, and a selected row and an unselected row with Ctrl) and in an editable `DataGrid` (an unselected row without Ctrl).
-A double-click with Ctrl held in an editable `DataGrid` was not measured.
+On a row double-click, it passed the double-clicked row in the four cases measured in a read-only `DataGrid` (an unselected row and a selected row without Ctrl, and a selected row and an unselected row with Ctrl) and on a cell that enters edit mode (an unselected row without Ctrl).
+A double-click with Ctrl held on a cell that enters edit mode was not measured.
 
 The attached property class is not screen logic but a reusable component.
 The code-behind of each screen can stay limited to `InitializeComponent`.
@@ -303,7 +307,7 @@ The code-behind of each screen can stay limited to `InitializeComponent`.
 The four approaches differ on five points.
 
 - **Whether it ignores double-clicks outside the rows**: If a double-click on a column header, the scroll bar thumb or track, or the blank area opens details, a row the user is not looking at opens.
-- **Whether it works in an editable DataGrid**: In a list with `IsReadOnly=False`, a double-click puts the cell into edit mode. Whether the row double-click is still caught differs by approach.
+- **Whether it works when the double-click starts editing a cell**: If neither the `DataGrid` nor the column is read-only, a double-click puts the cell into edit mode. Whether the row double-click is still caught differs by approach.
 - **Whether it passes the double-clicked row when Ctrl is held**: A click with Ctrl held toggles the selection, so `SelectedItem` can differ from the double-clicked row. Some approaches do not run at all.
 - **Whether right-button double-clicks can be excluded**: `MouseDoubleClick` is also raised by the right button, so without a check a right-button double-click also opens details.
 - **What has to be added**: Whether the package (`Microsoft.Xaml.Behaviors.Wpf`) is needed, and whether an in-house class (a converter or an attached property) is needed.
@@ -314,23 +318,23 @@ The four approaches differ on five points.
 
 Summarizing the measured table by criterion gives the following.
 
-| Approach | Ignores double-clicks outside the rows | Works in an editable DataGrid | Double-click with Ctrl held | Excludes the right button | What to add |
+| Approach | Ignores double-clicks outside the rows | Works on a cell that enters edit mode | Double-click with Ctrl held | Excludes the right button | What to add |
 |---|---|---|---|---|---|
 | EventTrigger on DataGrid + SelectedItem | No (runs in all four places) | Yes | No (passes another row for an unselected row) | No (runs) | Package |
 | MouseBinding on DataGrid + SelectedItem | Partly (runs on the blank area) | No (does not run) | No (does not run) | Yes (`LeftDoubleClick`) | Nothing |
 | EventTrigger + EventArgsConverter | Yes (with a command that rejects `null`) | No (does not run) | Yes | Yes (checked in the converter, with a command that rejects `null`) | Package + converter |
 | RowStyle + attached property | Yes | Yes | Yes (measured only when read-only) | Yes (checked in the handler) | Attached property |
 
-Only the `RowStyle` + attached property approach ignored double-clicks outside the rows and also worked in an editable `DataGrid`.
+Only the `RowStyle` + attached property approach ignored double-clicks outside the rows and also worked on a cell that enters edit mode.
 It also needs no package, so it is the right choice for new code.
-If the project already uses `Microsoft.Xaml.Behaviors.Wpf` and the list is read-only and will stay that way, the `EventArgsConverter` approach is also acceptable.
+If the project already uses `Microsoft.Xaml.Behaviors.Wpf` and its cells will stay out of edit mode (the `DataGrid` or the column is read-only), the `EventArgsConverter` approach is also acceptable.
 The two approaches that pass `SelectedItem` cannot tell a double-click outside the rows from one on a row, so they are not suitable for opening details.
 
 ---
 
 ## Notes
 
-- **In an editable DataGrid, a double-click also starts editing the cell.** As "other effects" in the table shows, double-clicking a cell with `IsReadOnly=False` put the cell into edit mode at the same time as the `RowStyle` + attached property approach opened the details. If the list should not be edited in place, set `IsReadOnly="True"` on the `DataGrid`. To support both in-place editing and opening details, move opening the details to a separate action, such as a button at the start of each row, instead of the double-click.
+- **On a cell that enters edit mode, a double-click also starts editing the cell.** As "other effects" in the table shows, double-clicking a cell with `IsReadOnly=False` put the cell into edit mode at the same time as the `RowStyle` + attached property approach opened the details. If the list should not be edited in place, set `IsReadOnly="True"` on the `DataGrid` or the column. As the table shows, with only the `Name` column set to `IsReadOnly="True"`, the cell did not enter edit mode and all four approaches passed `gamma`. To support both in-place editing and opening details, move opening the details to a separate action, such as a button at the start of each row, instead of the double-click.
 - **A double-click on a column header also sorts.** As the table shows, the `Name` column, which was not sorted before, was in descending order after the double-click. Catching only row double-clicks does not change this sorting. How to reset the sort state is covered in [How to Reset DataGrid Sorting in WPF](/articles/wpf-datagrid-sort-reset/).
 - **In the `EventArgsConverter` approach, only `CanExecute` rejecting `null` keeps the command from running outside the rows and on the right button.** The converter returns `null` for those double-clicks, and `InvokeCommandAction` calls `CanExecute` with that `null`. The `RelayCommand<T>` in this article rejects `null`, but with a command that accepts `null`, `Execute` is called with `null` outside the rows and on the right button. Check for `null` in the command as well. This does not apply to the `RowStyle` + attached property approach, because no event reaches it outside the rows and its handler ignores the right button.
 - **The keyboard cannot open details.** These approaches catch only mouse double-clicks, so opening details with the Enter key or similar needs a separate key binding such as a `KeyBinding`. This article did not measure keyboard operation.
@@ -342,8 +346,8 @@ The two approaches that pass `SelectedItem` cannot tell a double-click outside t
 
 The `DataGrid`'s own `MouseDoubleClick` is also raised by double-clicks on the column headers, the scroll bar thumb or track, and the blank area, and at that moment `SelectedItem` still holds the row selected before.
 For this reason, the commonly shown approach of passing `SelectedItem` from an `EventTrigger` on the `DataGrid` opens a row the user did not double-click.
-With `MouseBinding`, the command still runs on the blank area, and in an editable `DataGrid` or with Ctrl held it did not catch the row double-click at all.
+With `MouseBinding`, the command still runs on the blank area, and on a cell that enters edit mode or with Ctrl held it did not catch the row double-click at all.
 
 To catch only row double-clicks, attach a property to `DataGridRow` with a `Setter` in `RowStyle` and pass the row's item from the row's `MouseDoubleClick` only for the left button.
-For a read-only list in a project that already uses `Microsoft.Xaml.Behaviors.Wpf`, converting the event to the row's item with `EventArgsConverter` is also an option.
+For a list whose cells do not enter edit mode in a project that already uses `Microsoft.Xaml.Behaviors.Wpf`, converting the event to the row's item with `EventArgsConverter` is also an option.
 How to make edits in the opened details cancelable is covered in [the article on master-detail forms bound to SelectedItem](/articles/wpf-master-detail-edit-cancel-selecteditem/), and how to open the details in a dialog is covered in [the article on a minimal IDialogService](/articles/wpf-mvvm-dialog-service/).

@@ -10,4 +10,5 @@
 | Ctrl を押しながら beta（選択中）のセル | \"beta\" | - | \"beta\" | 実行されない | \"beta\" | \"beta\" |
 | Ctrl を押しながら gamma（未選択）のセル | \"beta\" | - | \"beta\" | 実行されない | \"gamma\" | \"gamma\" |
 | gamma のセル（IsReadOnly=False） | \"gamma\" | IsEditing: True | \"gamma\" | 実行されない | 実行されない | \"gamma\" |
+| gamma のセル（DataGrid は IsReadOnly=False、Name 列は IsReadOnly=True） | \"gamma\" | IsEditing: False | \"gamma\" | \"gamma\" | \"gamma\" | \"gamma\" |
 | 右ボタンで gamma のセル | \"gamma\" | - | \"gamma\" | 実行されない | 実行されない | 実行されない |

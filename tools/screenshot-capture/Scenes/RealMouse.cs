@@ -27,6 +27,9 @@ internal static class RealMouse
     /// <summary>押したまま例外で抜けたときに、<see cref="Preserve"/> の破棄で離すための状態。</summary>
     private static bool s_leftDown;
 
+    /// <summary><see cref="DoubleClickAsync"/> で右ボタンを離せずに抜けたときに、<see cref="Preserve"/> の破棄で離すための状態。</summary>
+    private static bool s_rightDown;
+
     [StructLayout(LayoutKind.Sequential)]
     private struct NativePoint
     {
@@ -154,7 +157,8 @@ internal static class RealMouse
             int error = Marshal.GetLastWin32Error();
 
             // 押す入力だけが受け付けられた（受け付けた数が奇数の）ときは、押したまま残らないよう離す。
-            // 離す入力も失敗したときは、受け付けた件数を含む元の例外を残すため、その失敗は無視する。
+            // 離す入力も失敗したときは、押したままの状態を残して Preserve の破棄でもう一度離させ、
+            // 受け付けた件数を含む元の例外はそのまま投げる。
             if (accepted % 2 == 1)
             {
                 try
@@ -163,6 +167,14 @@ internal static class RealMouse
                 }
                 catch (InvalidOperationException)
                 {
+                    if (button == System.Windows.Input.MouseButton.Left)
+                    {
+                        s_leftDown = true;
+                    }
+                    else
+                    {
+                        s_rightDown = true;
+                    }
                 }
             }
 
@@ -220,15 +232,39 @@ internal static class RealMouse
 
     private sealed class Restore(NativePoint original) : IDisposable
     {
+        /// <summary>
+        /// 押したままのボタンを離してから、カーソルを元へ戻す。
+        /// 離せなかったときは、押したままカーソルを動かすとドラッグになるので戻さず、標準エラーに書く
+        /// （using の中で起きた例外を隠さないよう、ここでは例外を投げない）。
+        /// </summary>
         public void Dispose()
         {
-            if (s_leftDown)
+            bool released = Release(ref s_leftDown, MouseEventLeftUp, "左")
+                & Release(ref s_rightDown, MouseEventRightUp, "右");
+            if (released)
             {
-                Send(MouseEventLeftUp);
-                s_leftDown = false;
+                SetCursorPos(original.X, original.Y);
+            }
+        }
+
+        private static bool Release(ref bool down, uint upFlag, string name)
+        {
+            if (!down)
+            {
+                return true;
             }
 
-            SetCursorPos(original.X, original.Y);
+            try
+            {
+                Send(upFlag);
+                down = false;
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                Console.Error.WriteLine($"マウスの{name}ボタンを離せなかった。押されたまま残っている可能性があるため、カーソルを元へ戻さない。");
+                return false;
+            }
         }
     }
 }

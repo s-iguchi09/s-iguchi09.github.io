@@ -8,3 +8,4 @@
 | cell of beta (selected) with Ctrl held | True | TextBlock | ContentPresenter | - |
 | cell of gamma (not selected) with Ctrl held | True | TextBlock | ContentPresenter | - |
 | cell of gamma, IsReadOnly=False | True | TextBlock | null | True |
+| cell of gamma, DataGrid IsReadOnly=False, Name column IsReadOnly=True | False | TextBlock | ContentPresenter | False |

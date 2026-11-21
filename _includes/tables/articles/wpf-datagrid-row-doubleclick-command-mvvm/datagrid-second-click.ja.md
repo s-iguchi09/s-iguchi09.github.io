@@ -8,3 +8,4 @@
 | Ctrl を押しながら beta（選択中）のセル | True | TextBlock | ContentPresenter | - |
 | Ctrl を押しながら gamma（未選択）のセル | True | TextBlock | ContentPresenter | - |
 | gamma のセル（IsReadOnly=False） | True | TextBlock | null | True |
+| gamma のセル（DataGrid は IsReadOnly=False、Name 列は IsReadOnly=True） | False | TextBlock | ContentPresenter | False |

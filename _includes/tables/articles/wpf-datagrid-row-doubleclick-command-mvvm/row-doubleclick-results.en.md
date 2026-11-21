@@ -10,4 +10,5 @@
 | cell of beta (selected) with Ctrl held | \"beta\" | - | \"beta\" | not executed | \"beta\" | \"beta\" |
 | cell of gamma (not selected) with Ctrl held | \"beta\" | - | \"beta\" | not executed | \"gamma\" | \"gamma\" |
 | cell of gamma, IsReadOnly=False | \"gamma\" | IsEditing: True | \"gamma\" | not executed | not executed | \"gamma\" |
+| cell of gamma, DataGrid IsReadOnly=False, Name column IsReadOnly=True | \"gamma\" | IsEditing: False | \"gamma\" | \"gamma\" | \"gamma\" | \"gamma\" |
 | cell of gamma with the right button | \"gamma\" | - | \"gamma\" | not executed | not executed | not executed |
