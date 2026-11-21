@@ -27,15 +27,15 @@ internal sealed class DataGridRowDoubleClickScene : IScene
 
     public IReadOnlyList<string> Verifies =>
     [
-        "4 つの書き方の計測・2 回目のクリックの観測・図の撮影のいずれでも、ダブルクリックが DataGrid に ClickCount=2 のマウスダウンとして 1 回だけ届いたこと（そうでなければ計測を止める）",
-        "2 行目（beta）をクリックで選んだ後、DataGrid 自身の MouseDoubleClick を EventTrigger（Microsoft.Xaml.Behaviors.Wpf）の InvokeCommandAction で拾い、CommandParameter に SelectedItem を渡すと、列ヘッダー・縦のスクロールバーのつまみ・つまみより下のトラック・最後の行より下の空白のダブルクリックでも OpenCommand が実行されて beta が渡され、Ctrl を押しながら未選択の gamma をダブルクリックしても beta が渡され、右ボタンのダブルクリックでも実行されること。何も選ばずに空白をダブルクリックしたときは実行されないこと",
+        "4 つの書き方の計測・2 回目のクリックの観測・図の撮影のいずれでも、ダブルクリックの 2 つのマウスダウンが DataGrid に ClickCount 1、2 として届いたこと（そうでなければ計測を止める）。DataGrid も列も IsReadOnly=False のときに選択中の beta の Name のセルをダブルクリックした場合だけは、DataGrid に届いたマウスダウンが 1 つ（ClickCount 1）だけだったこと",
+        "IsReadOnly=True の DataGrid で 2 行目（beta）をクリックで選んだ後、DataGrid 自身の MouseDoubleClick を EventTrigger（Microsoft.Xaml.Behaviors.Wpf）の InvokeCommandAction で拾い、CommandParameter に SelectedItem を渡すと、列ヘッダー・縦のスクロールバーのつまみ・つまみより下のトラック・最後の行より下の空白のダブルクリックでも OpenCommand が実行されて beta が渡され、Ctrl を押しながら未選択の gamma をダブルクリックしても beta が渡され、右ボタンのダブルクリックでも実行されること。何も選ばずに空白をダブルクリックしたときは実行されないこと",
         "列ヘッダーのダブルクリックで、並び替えていない Name の列が降順になること。トラックのダブルクリックで VerticalOffset が 0 より大きくなること",
-        "DataGrid の InputBindings に MouseBinding（LeftDoubleClick）を置き、CommandParameter に SelectedItem を渡すと、行と最後の行より下の空白のダブルクリックでは OpenCommand が実行され（空白では beta が渡される）、列ヘッダー・スクロールバーのつまみ・トラック・Ctrl を押しながらのダブルクリック（選択中の行・未選択の行）・IsReadOnly=False のセル・右ボタンのダブルクリックでは実行されないこと",
-        "2 回目の MouseLeftButtonDown（ClickCount=2）が DataGrid のハンドラーに届いた時点で、列ヘッダー・スクロールバーのつまみ・トラック・Ctrl を押しながらのセル・IsReadOnly=False のセルでは Handled が True、IsReadOnly=True の未選択の gamma のセル（Ctrl なし）と空白では False であること。そのいずれでも DataGrid の MouseDoubleClick は発生すること",
-        "IsReadOnly=False の DataGrid でセルをダブルクリックすると、DataGrid の MouseDoubleClick のハンドラーが動いた時点で、そのセルの IsEditing が True で、OriginalSource（TextBlock）の visual の親が null であること",
-        "DataGrid を IsReadOnly=False にして Name 列だけ IsReadOnly=True にすると、gamma のセルのダブルクリックで編集状態にならず（MouseDoubleClick のハンドラーが動いた時点の IsEditing も False）、2 回目の MouseLeftButtonDown の Handled が False で、OriginalSource（TextBlock）の visual の親が ContentPresenter のままで、4 つの書き方すべてで gamma が渡されること",
-        "InvokeCommandAction の EventArgsConverter で OriginalSource から DataGridRow をさかのぼって行のアイテムを渡すと（左ボタン以外は null）、列ヘッダー・スクロールバーのつまみ・トラック・空白・右ボタンのダブルクリックと IsReadOnly=False のセルのダブルクリックでは OpenCommand が実行されず、IsReadOnly=True の行のダブルクリック（Ctrl なしで未選択の gamma・選択中の beta、Ctrl ありで選択中の beta・未選択の gamma）ではその行が渡されること",
-        "RowStyle の Setter で DataGridRow に添付プロパティを付け、行の MouseDoubleClick で左ボタンのときだけ DataGridRow.Item を渡すと、列ヘッダー・スクロールバーのつまみ・トラック・空白・右ボタンのダブルクリックでは実行されず、IsReadOnly=True の行（Ctrl なしで未選択の gamma・選択中の beta、Ctrl ありで選択中の beta・未選択の gamma）と IsReadOnly=False の行（Ctrl なしで未選択の gamma）のダブルクリックではその行が渡されること",
+        "DataGrid の InputBindings に MouseBinding（LeftDoubleClick）を置き、CommandParameter に SelectedItem を渡すと、IsReadOnly=True の DataGrid の行と最後の行より下の空白のダブルクリックでは OpenCommand が実行され（空白では beta が渡される）、列ヘッダー・スクロールバーのつまみ・トラック・Ctrl を押しながらのダブルクリック（選択中の行・未選択の行）・DataGrid も列も IsReadOnly=False のセル・右ボタンのダブルクリックでは実行されないこと",
+        "2 回目の MouseLeftButtonDown（ClickCount=2）が DataGrid のハンドラーに届いた時点で、列ヘッダー・スクロールバーのつまみ・トラック・Ctrl を押しながらのセル・DataGrid も列も IsReadOnly=False の未選択の gamma の Name のセル・同じ条件の City のセル（Name 列だけ IsReadOnly=True の DataGrid）では Handled が True、IsReadOnly=True の DataGrid の未選択の gamma のセル（Ctrl なし）・空白・IsReadOnly=True の Name 列のセルでは False であること。これらのいずれでも DataGrid の MouseDoubleClick は発生すること",
+        "DataGrid も列も IsReadOnly=False のとき、未選択の gamma の Name のセルをダブルクリックすると、DataGrid の MouseDoubleClick のハンドラーが動いた時点で、そのセルの IsEditing が True で、OriginalSource（TextBlock）の visual の親が null であること。選択中の beta の Name のセルをダブルクリックすると、セルの IsEditing が True になり、DataGrid の MouseDoubleClick は発生せず、4 つの書き方のどれでも OpenCommand が実行されないこと",
+        "DataGrid を IsReadOnly=False にして Name 列だけ IsReadOnly=True にすると、gamma の Name のセルのダブルクリックで編集状態にならず（MouseDoubleClick のハンドラーが動いた時点の IsEditing も False）、2 回目の MouseLeftButtonDown の Handled が False で、OriginalSource（TextBlock）の visual の親が ContentPresenter のままで、4 つの書き方すべてで gamma が渡されること。同じ DataGrid の gamma の City のセルでは、編集状態になり、DataGrid も列も IsReadOnly=False の Name のセルと同じ結果（EventTrigger ＋ SelectedItem と RowStyle ＋ 添付プロパティでは gamma、MouseBinding と EventArgsConverter では実行されない）になること",
+        "InvokeCommandAction の EventArgsConverter で OriginalSource から DataGridRow をさかのぼって行のアイテムを渡すと（左ボタン以外は null）、列ヘッダー・スクロールバーのつまみ・トラック・空白・右ボタンのダブルクリックと、編集できるセル（DataGrid も列も IsReadOnly=False）のダブルクリックでは OpenCommand が実行されず、IsReadOnly=True の DataGrid の行のダブルクリック（Ctrl なしで未選択の gamma・選択中の beta、Ctrl ありで選択中の beta・未選択の gamma）ではその行が渡されること",
+        "RowStyle の Setter で DataGridRow に添付プロパティを付け、行の MouseDoubleClick で左ボタンのときだけ DataGridRow.Item を渡すと、列ヘッダー・スクロールバーのつまみ・トラック・空白・右ボタンのダブルクリックでは実行されず、IsReadOnly=True の DataGrid の行（Ctrl なしで未選択の gamma・選択中の beta、Ctrl ありで選択中の beta・未選択の gamma）と、編集できるセルの未選択の gamma（Ctrl なし）のダブルクリックではその行が渡されること",
         "Style の Setter で DataGridRow の InputBindings を設定する XAML は、読み込み時に XamlParseException（内側は ParamName が property の ArgumentNullException）になること",
     ];
 
@@ -66,7 +66,8 @@ internal sealed class DataGridRowDoubleClickScene : IScene
         foreach (Target target in new[]
         {
             Target.Row, Target.ColumnHeader, Target.ScrollBarThumb, Target.ScrollBarTrack, Target.BlankArea,
-            Target.CtrlOnSelectedRow, Target.CtrlOnUnselectedRow, Target.EditableRow, Target.EditableGridReadOnlyColumn,
+            Target.CtrlOnSelectedRow, Target.CtrlOnUnselectedRow, Target.EditableRow, Target.EditableSelectedRow,
+            Target.EditableGridReadOnlyColumn, Target.EditableGridReadOnlyColumnCityCell,
         })
         {
             observed.Add(await ObserveAsync(target));
@@ -76,6 +77,7 @@ internal sealed class DataGridRowDoubleClickScene : IScene
             "What the DataGrid receives on the second click",
             [
                 T("double-clicked", "ダブルクリックした場所"),
+                T("ClickCount of the two mouse-downs", "2 つのマウスダウンの ClickCount"),
                 T("MouseLeftButtonDown (ClickCount=2) handled at the DataGrid", "DataGrid での MouseLeftButtonDown（ClickCount=2）の Handled"),
                 T("OriginalSource of DataGrid.MouseDoubleClick", "DataGrid.MouseDoubleClick の OriginalSource"),
                 T("its visual parent at that time", "その時点の OriginalSource の visual の親"),
@@ -204,14 +206,24 @@ internal sealed class DataGridRowDoubleClickScene : IScene
         /// <summary>IsReadOnly=False の DataGrid の、3 行目（gamma）の Name のセル。</summary>
         EditableRow,
 
+        /// <summary>DataGrid も列も IsReadOnly=False のときの、選んでいる 2 行目（beta）の Name のセル（1 回目のクリックで編集が始まる）。</summary>
+        EditableSelectedRow,
+
         /// <summary>DataGrid は IsReadOnly=False で、Name 列だけ IsReadOnly=True にしたときの、3 行目（gamma）の Name のセル。</summary>
         EditableGridReadOnlyColumn,
+
+        /// <summary>DataGrid は IsReadOnly=False で、Name 列だけ IsReadOnly=True にしたときの、3 行目（gamma）の City のセル（編集できる列）。</summary>
+        EditableGridReadOnlyColumnCityCell,
 
         /// <summary>右ボタンでの、3 行目（gamma）の Name のセル。</summary>
         RightButtonOnRow,
     }
 
-    private static bool IsEditableGrid(Target target) => target is Target.EditableRow or Target.EditableGridReadOnlyColumn;
+    private static bool IsEditableGrid(Target target) =>
+        target is Target.EditableRow or Target.EditableSelectedRow or Target.EditableGridReadOnlyColumn or Target.EditableGridReadOnlyColumnCityCell;
+
+    private static bool IsReadOnlyNameColumn(Target target) =>
+        target is Target.EditableGridReadOnlyColumn or Target.EditableGridReadOnlyColumnCityCell;
 
     private static bool IsShort(Target target) => target is Target.BlankArea or Target.BlankAreaNothingSelected;
 
@@ -235,8 +247,10 @@ internal sealed class DataGridRowDoubleClickScene : IScene
         Target.SelectedRow => T("cell of beta (selected)", "beta（選択中）のセル"),
         Target.CtrlOnSelectedRow => T("cell of beta (selected) with Ctrl held", "Ctrl を押しながら beta（選択中）のセル"),
         Target.CtrlOnUnselectedRow => T("cell of gamma (not selected) with Ctrl held", "Ctrl を押しながら gamma（未選択）のセル"),
-        Target.EditableRow => T("cell of gamma, IsReadOnly=False", "gamma のセル（IsReadOnly=False）"),
-        Target.EditableGridReadOnlyColumn => T("cell of gamma, DataGrid IsReadOnly=False, Name column IsReadOnly=True", "gamma のセル（DataGrid は IsReadOnly=False、Name 列は IsReadOnly=True）"),
+        Target.EditableRow => T("Name cell of gamma, DataGrid and columns IsReadOnly=False", "gamma の Name のセル（DataGrid も列も IsReadOnly=False）"),
+        Target.EditableSelectedRow => T("Name cell of beta (selected), DataGrid and columns IsReadOnly=False", "beta（選択中）の Name のセル（DataGrid も列も IsReadOnly=False）"),
+        Target.EditableGridReadOnlyColumn => T("Name cell of gamma, DataGrid IsReadOnly=False, only the Name column IsReadOnly=True", "gamma の Name のセル（DataGrid は IsReadOnly=False、Name 列だけ IsReadOnly=True）"),
+        Target.EditableGridReadOnlyColumnCityCell => T("City cell of gamma, DataGrid IsReadOnly=False, only the Name column IsReadOnly=True", "gamma の City のセル（DataGrid は IsReadOnly=False、Name 列だけ IsReadOnly=True）"),
         Target.RightButtonOnRow => T("cell of gamma with the right button", "右ボタンで gamma のセル"),
         _ => throw new ArgumentOutOfRangeException(nameof(target)),
     };
@@ -251,7 +265,7 @@ internal sealed class DataGridRowDoubleClickScene : IScene
 
     /// <summary>ターゲットに合わせて DataGrid を作る（行数、DataGrid の IsReadOnly、Name 列の IsReadOnly）。</summary>
     private static Page Build(Hook hook, Target target) =>
-        Build(hook, IsShort(target) ? 3 : 20, readOnly: !IsEditableGrid(target), readOnlyNameColumn: target == Target.EditableGridReadOnlyColumn);
+        Build(hook, IsShort(target) ? 3 : 20, readOnly: !IsEditableGrid(target), readOnlyNameColumn: IsReadOnlyNameColumn(target));
 
     private static Page Build(Hook hook, int rowCount, bool readOnly, bool readOnlyNameColumn = false)
     {
@@ -286,6 +300,17 @@ internal sealed class DataGridRowDoubleClickScene : IScene
 
     private static DataGridCell NameCell(DataGrid grid, int index) =>
         Descendants(RowAt(grid, index)).OfType<DataGridCell>().First(c => c.Column == grid.Columns[0]);
+
+    private static DataGridCell CityCell(DataGrid grid, int index) =>
+        Descendants(RowAt(grid, index)).OfType<DataGridCell>().First(c => c.Column == grid.Columns[1]);
+
+    /// <summary>編集できる DataGrid の計測で、ダブルクリックするセル（IsEditing を読むセル）。</summary>
+    private static DataGridCell EditableTargetCell(DataGrid grid, Target target) => target switch
+    {
+        Target.EditableSelectedRow => NameCell(grid, 1),
+        Target.EditableGridReadOnlyColumnCityCell => CityCell(grid, 2),
+        _ => NameCell(grid, 2),
+    };
 
     /// <summary>直前のクリックと次のダブルクリックが 1 続きのクリック（ClickCount 3）にならないよう、ダブルクリックの時間より長く待つ。</summary>
     private static Task WaitDoubleClickTimeAsync() =>
@@ -333,8 +358,10 @@ internal sealed class DataGridRowDoubleClickScene : IScene
             {
                 case Target.Row:
                 case Target.EditableRow:
+                case Target.EditableSelectedRow:
                 case Target.EditableGridReadOnlyColumn:
-                    await RealMouse.DoubleClickAsync(window, NameCell(grid, 2));
+                case Target.EditableGridReadOnlyColumnCityCell:
+                    await RealMouse.DoubleClickAsync(window, EditableTargetCell(grid, target));
                     break;
                 case Target.SelectedRow:
                     await RealMouse.DoubleClickAsync(window, NameCell(grid, 1));
@@ -413,28 +440,38 @@ internal sealed class DataGridRowDoubleClickScene : IScene
     }
 
     /// <summary>
-    /// ダブルクリックが WPF に 2 回目のクリック（ClickCount=2）として届いた回数を数えるハンドラーを足す（観測のためだけで、記事のコードではない）。
+    /// DataGrid に届いたマウスダウンの ClickCount を順に記録するハンドラーを足す（観測のためだけで、記事のコードではない）。
     /// 届かなかった回を「実行されない」と記録しないため、計測の後に <see cref="EnsureDoubleClickArrived"/> で確かめる。
     /// </summary>
-    private static Func<int> CountSecondClicks(DataGrid grid)
+    private static List<int> RecordClickCounts(DataGrid grid)
     {
-        int count = 0;
-        grid.AddHandler(UIElement.PreviewMouseDownEvent, new MouseButtonEventHandler((_, e) =>
-        {
-            if (e.ClickCount == 2)
-            {
-                count++;
-            }
-        }), handledEventsToo: true);
-        return () => count;
+        var counts = new List<int>();
+        grid.AddHandler(UIElement.PreviewMouseDownEvent, new MouseButtonEventHandler((_, e) => counts.Add(e.ClickCount)), handledEventsToo: true);
+        return counts;
     }
 
-    private static void EnsureDoubleClickArrived(int secondClicks, Hook hook, Target target)
+    /// <summary>
+    /// ダブルクリックの 2 つのマウスダウンが DataGrid に届き、WPF に 1 回目・2 回目のクリック（ClickCount が 1、2）として認識されたことを確かめる。
+    /// 編集できる DataGrid で選択中のセルをダブルクリックする場合だけは、2 つ目のマウスダウンが DataGrid に届かない（実測）。
+    /// それ自体を表に出すため、この場所では 1 つ以上届いたことだけを確かめ、届いた ClickCount を返す。
+    /// </summary>
+    private static string EnsureDoubleClickArrived(List<int> counts, int before, Hook hook, Target target)
     {
-        if (secondClicks != 1)
+        List<int> arrived = counts.Skip(before).ToList();
+        string text = string.Join(", ", arrived);
+        if (target == Target.EditableSelectedRow)
         {
-            throw new InvalidOperationException($"{hook} / {target}: ClickCount=2 のマウスダウンが 1 回だけ届いていない（{secondClicks} 回）。");
+            return arrived.Count is 1 or 2
+                ? text
+                : throw new InvalidOperationException($"{hook} / {target}: マウスダウンが届いていない（ClickCount: {text}）。");
         }
+
+        if (arrived is not [1, 2])
+        {
+            throw new InvalidOperationException($"{hook} / {target}: ダブルクリックとして認識されていない（ClickCount: {text}）。");
+        }
+
+        return text;
     }
 
     /// <summary>空白をダブルクリックする位置が、行（DataGridRow）の中でも列ヘッダーの中でもないことを確かめる。</summary>
@@ -458,7 +495,7 @@ internal sealed class DataGridRowDoubleClickScene : IScene
     private static string OtherEffects(Page page, Target target) => target switch
     {
         Target.ColumnHeader => $"SortDirection: {page.Grid.Columns[0].SortDirection?.ToString() ?? "null"}",
-        Target.EditableRow or Target.EditableGridReadOnlyColumn => $"IsEditing: {NameCell(page.Grid, 2).IsEditing}",
+        _ when IsEditableGrid(target) => $"IsEditing: {EditableTargetCell(page.Grid, target).IsEditing}",
         Target.ScrollBarTrack => $"VerticalOffset > 0: {Descendants(page.Grid).OfType<ScrollViewer>().First().VerticalOffset > 0}",
         _ => "-",
     };
@@ -470,14 +507,14 @@ internal sealed class DataGridRowDoubleClickScene : IScene
     {
         Page page = Build(Hook.GridEventTrigger, 20, readOnly: true);
         var window = new Window { Title = "Customers", Content = page.Grid, SizeToContent = SizeToContent.WidthAndHeight };
-        Func<int> secondClicks = CountSecondClicks(page.Grid);
+        List<int> clickCounts = RecordClickCounts(page.Grid);
         await context.ShootAsync(window, "header-doubleclick.png", async w =>
         {
             await FrontCenteredAsync(page.Grid);
             await PrepareSelectionAsync(w, page);
-            int before = secondClicks();
+            int before = clickCounts.Count;
             await DoubleClickAsync(w, page, Target.ColumnHeader);
-            EnsureDoubleClickArrived(secondClicks() - before, Hook.GridEventTrigger, Target.ColumnHeader);
+            EnsureDoubleClickArrived(clickCounts, before, Hook.GridEventTrigger, Target.ColumnHeader);
             if (page.ViewModel.Opened is not ["beta"])
             {
                 throw new InvalidOperationException($"列ヘッダーのダブルクリックで beta が開かれていない（{string.Join(", ", page.ViewModel.Opened)}）。図の前提が崩れている。");
@@ -504,27 +541,30 @@ internal sealed class DataGridRowDoubleClickScene : IScene
     }
 
     /// <summary>書き方によらず同じ値ならその値を、食い違えば書き方ごとの値を並べる。</summary>
-    private static string Merge(List<string> values) =>
+    private static Loc Merge(List<string> values) =>
         values.Distinct().Count() == 1
             ? values[0]
-            : string.Join(" / ", values.Select((v, i) => $"{(Hook)i}: {v}"));
+            : T(
+                string.Join(" / ", values.Select((v, i) => $"{Describe((Hook)i).En}: {v}")),
+                string.Join(" / ", values.Select((v, i) => $"{Describe((Hook)i).Ja}: {v}")));
 
     private static async Task<(string SelectedAfter, string Effect, string Opened)> MeasureAsync(Hook hook, Target target)
     {
         Page page = Build(hook, target);
-        Func<int> secondClicks = CountSecondClicks(page.Grid);
+        List<int> clickCounts = RecordClickCounts(page.Grid);
         (string, string, string)? result = null;
         await ShowAsync(page.Grid, async () =>
         {
             Window window = await FrontCenteredAsync(page.Grid);
             await PrepareSelectionAsync(window, page, target);
-            int before = secondClicks();
+            int before = clickCounts.Count;
             await DoubleClickAsync(window, page, target);
-            EnsureDoubleClickArrived(secondClicks() - before, hook, target);
+            string counts = EnsureDoubleClickArrived(clickCounts, before, hook, target);
             List<string> opened = page.ViewModel.Opened;
+            string effects = OtherEffects(page, target);
             result = (
                 NameOf(page.Grid.SelectedItem),
-                OtherEffects(page, target),
+                counts == "1, 2" ? effects : $"{effects}, ClickCount: {counts}",
                 opened.Count == 0 ? NotExecuted : string.Join(", ", opened.Select(Quote)));
         }, activate: true);
 
@@ -542,7 +582,8 @@ internal sealed class DataGridRowDoubleClickScene : IScene
         string? originalSource = null;
         string parent = "-";
         string editing = "-";
-        Func<int> secondClicks = CountSecondClicks(page.Grid);
+        List<int> clickCounts = RecordClickCounts(page.Grid);
+        string counts = "";
         page.Grid.AddHandler(UIElement.MouseLeftButtonDownEvent, new MouseButtonEventHandler((_, e) =>
         {
             if (e.ClickCount == 2)
@@ -556,7 +597,7 @@ internal sealed class DataGridRowDoubleClickScene : IScene
             parent = e.OriginalSource is Visual visual ? VisualTreeHelper.GetParent(visual)?.GetType().Name ?? "null" : "(not a Visual)";
             if (IsEditableGrid(target))
             {
-                editing = NameCell(page.Grid, 2).IsEditing.ToString();
+                editing = EditableTargetCell(page.Grid, target).IsEditing.ToString();
             }
         }), handledEventsToo: true);
 
@@ -564,21 +605,23 @@ internal sealed class DataGridRowDoubleClickScene : IScene
         {
             Window window = await FrontCenteredAsync(page.Grid);
             await PrepareSelectionAsync(window, page, target);
-            int before = secondClicks();
+            int before = clickCounts.Count;
             await DoubleClickAsync(window, page, target);
-            EnsureDoubleClickArrived(secondClicks() - before, Hook.GridEventTrigger, target);
+            counts = EnsureDoubleClickArrived(clickCounts, before, Hook.GridEventTrigger, target);
         }, activate: true);
 
-        if (downHandled is null || originalSource is null)
+        // ClickCount=2 のマウスダウンが届いた回では、MouseDoubleClick も届いていなければならない。
+        if (downHandled is not null && originalSource is null)
         {
-            throw new InvalidOperationException($"{target}: 2 回目のマウスダウンか MouseDoubleClick が DataGrid に届いていない。");
+            throw new InvalidOperationException($"{target}: ClickCount=2 のマウスダウンは届いたが、MouseDoubleClick が DataGrid に届いていない。");
         }
 
         return
         [
             Describe(target),
-            downHandled.Value.ToString(),
-            originalSource,
+            counts,
+            downHandled?.ToString() ?? T("(no ClickCount=2)", "（ClickCount=2 が無い）"),
+            originalSource ?? T("(not raised)", "（発生しない）"),
             parent,
             editing,
         ];
