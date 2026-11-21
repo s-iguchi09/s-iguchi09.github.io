@@ -75,6 +75,7 @@ internal static class Program
         new PasswordBoxBindingScene(),
         new MvvmDialogServiceScene(),
         new MasterDetailEditCancelScene(),
+        new DataGridRowDoubleClickScene(),
 
         // コントロール別デモページ（apps/wpf-standard-control-demo/）の記述の検証。
         new GridDemoScene(),

@@ -20,10 +20,15 @@ internal static class RealMouse
     private const uint MouseEventMove = 0x0001;
     private const uint MouseEventLeftDown = 0x0002;
     private const uint MouseEventLeftUp = 0x0004;
+    private const uint MouseEventRightDown = 0x0008;
+    private const uint MouseEventRightUp = 0x0010;
     private const uint AncestorRoot = 2;
 
     /// <summary>押したまま例外で抜けたときに、<see cref="Preserve"/> の破棄で離すための状態。</summary>
     private static bool s_leftDown;
+
+    /// <summary><see cref="DoubleClickAsync"/> で右ボタンを離せずに抜けたときに、<see cref="Preserve"/> の破棄で離すための状態。</summary>
+    private static bool s_rightDown;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct NativePoint
@@ -127,6 +132,121 @@ internal static class RealMouse
         await LeftUpAsync(window);
     }
 
+    /// <summary>
+    /// 要素の中心（または <paramref name="offset"/> の位置）へカーソルを動かし、<paramref name="button"/> で指定したボタン（左か右）の押す・離すを 2 回続けて送る。
+    /// <paramref name="interval"/> を省くと 4 つの入力を 1 回の SendInput で送るため、間隔はダブルクリックの時間（GetDoubleClickTime）より十分に短い。
+    /// <paramref name="interval"/> を渡すと、1 回目のクリックと 2 回目のクリックを、その時間だけ空けて送る。
+    /// </summary>
+    public static async Task DoubleClickAsync(
+        Window window, FrameworkElement target, Point? offset = null, System.Windows.Input.MouseButton button = System.Windows.Input.MouseButton.Left,
+        TimeSpan? interval = null)
+    {
+        (uint down, uint up) = button switch
+        {
+            System.Windows.Input.MouseButton.Left => (MouseEventLeftDown, MouseEventLeftUp),
+            System.Windows.Input.MouseButton.Right => (MouseEventRightDown, MouseEventRightUp),
+            _ => throw new ArgumentOutOfRangeException(nameof(button)),
+        };
+        await MoveToAsync(target, offset, window);
+        GetCursorPos(out NativePoint point);
+        EnsureOver(HandleOf(target), point);
+        if (interval is TimeSpan gap)
+        {
+            // 人が操作するときのように、1 回目のクリックと 2 回目のクリックの間を空ける。
+            // 間隔がダブルクリックの時間を超えると 2 回のクリックになるため、超える指定は受け付けない。
+            if (gap.TotalMilliseconds >= GetDoubleClickTime())
+            {
+                throw new ArgumentOutOfRangeException(nameof(interval), $"間隔 {gap.TotalMilliseconds} ms がダブルクリックの時間 {GetDoubleClickTime()} ms 以上。");
+            }
+
+            SendClick(down, up, button);
+            await Task.Delay(gap);
+            GetCursorPos(out NativePoint second);
+            EnsureOver(HandleOf(target), second);
+            SendClick(down, up, button);
+            await Capture.SettleAsync(window, 100);
+            return;
+        }
+
+        var inputs = new[] { down, up, down, up }
+            .Select(flags => new Input { Type = InputMouse, Mouse = new MouseInput { Flags = flags } })
+            .ToArray();
+        uint accepted = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>());
+        if (accepted != inputs.Length)
+        {
+            int error = Marshal.GetLastWin32Error();
+
+            // 押す入力だけが受け付けられた（受け付けた数が奇数の）ときは、押したまま残らないよう離す。
+            // 離す入力も失敗したときは、押したままの状態を残して Preserve の破棄でもう一度離させ、
+            // 受け付けた件数を含む元の例外はそのまま投げる。
+            if (accepted % 2 == 1)
+            {
+                try
+                {
+                    Send(up);
+                }
+                catch (InvalidOperationException)
+                {
+                    if (button == System.Windows.Input.MouseButton.Left)
+                    {
+                        s_leftDown = true;
+                    }
+                    else
+                    {
+                        s_rightDown = true;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException(
+                $"SendInput が入力を {accepted} 件しか受け付けなかった（画面のロック中など）。Win32 エラー {error}。");
+        }
+
+        await Capture.SettleAsync(window, 100);
+    }
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDoubleClickTime();
+
+    /// <summary>
+    /// 押す・離すを 1 回の SendInput で送る。押す入力だけが受け付けられたときは、押したまま残らないよう離し、
+    /// 離せなければ押したままの状態を残して <see cref="Preserve"/> の破棄でもう一度離させる。
+    /// </summary>
+    private static void SendClick(uint down, uint up, System.Windows.Input.MouseButton button)
+    {
+        var inputs = new[] { down, up }
+            .Select(flags => new Input { Type = InputMouse, Mouse = new MouseInput { Flags = flags } })
+            .ToArray();
+        uint accepted = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>());
+        if (accepted == inputs.Length)
+        {
+            return;
+        }
+
+        int error = Marshal.GetLastWin32Error();
+        if (accepted == 1)
+        {
+            try
+            {
+                Send(up);
+            }
+            catch (InvalidOperationException)
+            {
+                if (button == System.Windows.Input.MouseButton.Left)
+                {
+                    s_leftDown = true;
+                }
+                else
+                {
+                    s_rightDown = true;
+                }
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"SendInput が入力を {accepted} 件しか受け付けなかった（画面のロック中など）。Win32 エラー {error}。");
+    }
+
     /// <summary>要素を表示しているトップレベルの HWND（ポップアップの中ならポップアップの HWND）。</summary>
     private static IntPtr HandleOf(FrameworkElement element) =>
         (PresentationSource.FromVisual(element) as HwndSource)?.Handle
@@ -174,15 +294,39 @@ internal static class RealMouse
 
     private sealed class Restore(NativePoint original) : IDisposable
     {
+        /// <summary>
+        /// 押したままのボタンを離してから、カーソルを元へ戻す。
+        /// 離せなかったときは、押したままカーソルを動かすとドラッグになるので戻さず、標準エラーに書く
+        /// （using の中で起きた例外を隠さないよう、ここでは例外を投げない）。
+        /// </summary>
         public void Dispose()
         {
-            if (s_leftDown)
+            bool released = Release(ref s_leftDown, MouseEventLeftUp, "左")
+                & Release(ref s_rightDown, MouseEventRightUp, "右");
+            if (released)
             {
-                Send(MouseEventLeftUp);
-                s_leftDown = false;
+                SetCursorPos(original.X, original.Y);
+            }
+        }
+
+        private static bool Release(ref bool down, uint upFlag, string name)
+        {
+            if (!down)
+            {
+                return true;
             }
 
-            SetCursorPos(original.X, original.Y);
+            try
+            {
+                Send(upFlag);
+                down = false;
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                Console.Error.WriteLine($"マウスの{name}ボタンを離せなかった。押されたまま残っている可能性があるため、カーソルを元へ戻さない。");
+                return false;
+            }
         }
     }
 }
