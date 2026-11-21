@@ -517,3 +517,5 @@ Apart from sizes and names (`x:Name`), the scene used for the measurements build
 - To cancel, receive the input in a copy for editing or save the original values with `IEditableObject`. A copy for editing suits screens that should not show unsaved values in the list
 - Stopping a row switch during an edit by rejecting it in the `SelectedItem` setter or by canceling `CurrentChanging` leaves the selection of `ListBox` and `DataGrid` out of step with the view model
 - While unsaved input exists, set the list's `IsEnabled` to `false` so the selection cannot change at all. For that, bind the detail form to the copy for editing with `UpdateSourceTrigger=PropertyChanged`
+
+Four ways to open this detail form by double-clicking a row in the list are compared in [WPF DataGrid Row Double-Click to a Command: MouseDoubleClick Also Fires on Column Headers](/articles/wpf-datagrid-row-doubleclick-command-mvvm/).

@@ -517,3 +517,5 @@ Save の後は、コピーとアイテムの値が同じになるので `IsDirty
 - 取り消すには、入力を編集用のコピーで受けるか、`IEditableObject` で元の値を控える。一覧に未保存の値を出したくない画面には、編集用のコピーが向く
 - 編集中の行の切り替えを、`SelectedItem` のセッターで拒んだり `CurrentChanging` を取り消したりして止めると、`ListBox`・`DataGrid` の選択とビューモデルが食い違う
 - 未保存の入力がある間は、一覧の `IsEnabled` を `false` にして、選択の変更そのものを起こさせない。そのために詳細欄は `UpdateSourceTrigger=PropertyChanged` で編集用のコピーにバインドする
+
+一覧の行をダブルクリックしてこの詳細欄を開く操作をコマンドにつなぐ方法は、[WPF DataGrid の行のダブルクリックをコマンドにつなぐ: MouseDoubleClick は列ヘッダーでも発火する](/ja/articles/wpf-datagrid-row-doubleclick-command-mvvm/)で 4 つの書き方を比べている。
