@@ -7,12 +7,12 @@ excerpt: "WPF DataGrid のソート状態は SortDescriptions と SortDirection 
 image: /images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png
 ---
 
-WPF の `DataGrid` は便利なソート機能を持っていますが、要件によっては「初期状態に戻す（ソートを解除する）」動作を明示的に実装したいことがあります。  
-本記事では、`DataGrid` のソート初期化を実現する代表的な方法を整理します。
+WPF の `DataGrid` はソート機能を標準で持つが、要件によっては「初期状態に戻す（ソートを解除する）」動作を明示的に実装する必要がある。
+本記事では、`DataGrid` のソート初期化を実現する代表的な方法を整理する。
 
 ## 概要
 
-本記事では、以下の方法で `DataGrid` のソート初期化を扱います。  
+本記事では、以下の方法で `DataGrid` のソート初期化を扱う。
 
 - コードで明示的にソートをクリアする方法
 - `Sorting` イベントで未ソート状態を制御する方法
@@ -39,18 +39,18 @@ WPF の `DataGrid` は便利なソート機能を持っていますが、要件�
 
 ## 問題
 
-WPF `DataGrid` では、業務要件として「現在の並び替え状態を初期状態へ戻す」操作が必要になる場合があります。  
-このとき、標準操作だけでは意図したタイミングでの初期化を統一しづらいケースがあります。
+WPF `DataGrid` では、業務要件として「現在の並び替え状態を初期状態へ戻す」操作が必要になる場合がある。
+このとき、標準操作だけでは意図したタイミングでの初期化を統一しづらい。
 
 ## 原因・背景
 
-まず前提として、WPF `DataGrid` で `Shift + 列ヘッダークリック` は、標準では**複数列ソートの追加**です。  
-つまり、既存ソートに列を積み増すための操作であり、ソート解除のショートカットではありません。
+WPF `DataGrid` で `Shift + 列ヘッダークリック` は、標準では**複数列ソートの追加**である。
+既存ソートに列を積み増すための操作であり、ソート解除のショートカットではない。
 
 - 単独クリック: その列の昇順/降順を切り替え
 - Shift+クリック: 複数列ソートとして追加
 
-そのため、「初期状態に戻す」にはコードによる制御が必要です。
+そのため、「初期状態に戻す」にはコードによる制御が必要である。
 
 並び替えの状態は 2 か所に分かれている。操作ごとに両方を測った結果が次の表である。
 
@@ -74,7 +74,7 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 
 ## 4 つの初期化方法
 
-以下の方針で要件に応じて初期化方法を選択します。  
+要件に応じて、以下の方針で初期化方法を選択する。
 
 - 明示的にソート条件と表示状態をクリアする
 - `Sorting` イベントを処理して列単位の未ソート状態を制御する
@@ -83,7 +83,7 @@ WPF `DataGrid` では、業務要件として「現在の並び替え状態を�
 
 ### コードで明示的にソートをクリアする
 
-最もシンプルなのは、`SortDescriptions` と列ヘッダー矢印の両方をクリアする方法です。
+最も単純なのは、`SortDescriptions` と列ヘッダーの矢印の両方をクリアする方法である。
 
 ```csharp
 using System.Windows.Controls;
@@ -116,8 +116,8 @@ public static class DataGridSortHelper
 
 ### 3回目のクリックで自動的に初期化する（カスタム挙動）
 
-「昇順 → 降順 → 未ソート」の3状態にしたい場合は、`Sorting` イベントを使って制御します。  
-3つの状態を実際に表示すると次のようになります。
+「昇順 → 降順 → 未ソート」の 3 状態にする場合は、`Sorting` イベントを使って制御する。
+3 つの状態を実際に表示すると次のようになる。
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="3 つの DataGrid を並べた画面。左は Name 列に昇順の矢印が付き名前順、中央は降順の矢印が付き逆順、右は矢印が無くデータ本来の並びになっている。" width="650" height="171" loading="lazy">
@@ -168,7 +168,7 @@ private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
 
 ### CollectionView を使って ViewModel から初期化する
 
-MVVM 構成では、`DataGrid` を直接操作せず `ICollectionView` を使うと管理しやすくなります。
+MVVM 構成では、`DataGrid` を直接操作せず `ICollectionView` を使うと管理しやすい。
 
 ```csharp
 using System.Collections.ObjectModel;
@@ -219,8 +219,8 @@ public class RowItem
 
 ### Behavior として共通化する
 
-同じカスタムソート挙動を複数画面で使うなら、Behavior 化が有効です。  
-以下は `Microsoft.Xaml.Behaviors.Wpf` を利用する例です。
+同じカスタムソート挙動を複数画面で使うなら、Behavior 化が有効である。
+以下は `Microsoft.Xaml.Behaviors.Wpf` を利用する例である。
 
 ```csharp
 using Microsoft.Xaml.Behaviors;
@@ -283,19 +283,23 @@ XAML 側は Behavior を宣言するだけで済むため、利用画面追加�
 
 ## 選択の分岐点
 
-どの方法を使うかは、初期化を起こす操作と、同じ挙動を何画面に広げるかで決まります。
+どの方法を使うかは、初期化を起こす操作と、同じ挙動を何画面に広げるかで決まる。
 
 **ボタンやメニューから即時に全解除するなら、明示クリア。**
-`SortDescriptions.Clear()` と `SortDirection = null` を並べるだけで済み、導入が最も速い。ただしコードビハインドから `DataGrid` を参照するため、MVVM の分離は緩みます。
+`SortDescriptions.Clear()` と `SortDirection = null` を並べるだけで済み、導入が最も速い。
+ただしコードビハインドから `DataGrid` を参照するため、MVVM の分離は緩む。
 
 **ヘッダークリックだけで完結させるなら、`Sorting` イベントで三状態にする。**
-「昇順 → 降順 → 未ソート」を 1 つの操作系にまとめられます。列単位で解除するのか全解除なのかを先に決めておかないと、イベント処理が複雑になります。
+「昇順 → 降順 → 未ソート」を 1 つの操作系にまとめられる。
+列単位で解除するのか全解除なのかを先に決めておかないと、イベント処理が複雑になる。
 
 **MVVM を徹底し、コマンド経由で初期化するなら `ICollectionView`。**
-ソート状態を ViewModel 側に置けるため、UI へ依存せずテストできます。View と ViewModel の責務分離が前提になります。
+ソート状態を ViewModel 側に置けるため、UI へ依存せずテストできる。
+View と ViewModel の責務分離が前提になる。
 
 **同じルールを複数の `DataGrid` へ適用するなら Behavior 化。**
-XAML に宣言を 1 行足すだけで横展開でき、重複コードを減らせます。画面ごとの差分を吸収する拡張ポイントを設計しておく必要があります。
+XAML に宣言を 1 行足すだけで横展開でき、重複コードを減らせる。
+画面ごとの差分を吸収する拡張ポイントを設計しておく必要がある。
 
 ---
 
@@ -312,21 +316,23 @@ XAML に宣言を 1 行足すだけで横展開でき、重複コードを減ら
 
 ## 注意点
 
-- `SortDescriptions` のクリアだけでは、ヘッダーの矢印の表示と並び順が食い違う。  
-- `Sorting` イベント例で `SortMemberPath` をキーに解除する場合、対象列に `SortMemberPath` が未設定だと解除処理が意図どおり動作しない可能性があります。  
-- 複数列ソートを併用する場合は、対象列のみを解除するか全解除するかを要件で明確化する必要があります。  
+- `SortDescriptions` のクリアだけでは、ヘッダーの矢印の表示と並び順が食い違う。
+- `Sorting` イベント例で `SortMemberPath` をキーに解除する場合、対象列に `SortMemberPath` が未設定だと解除処理が意図どおり動作しない可能性がある。
+- 複数列ソートを併用する場合は、対象列のみを解除するか全解除するかを要件で明確化する必要がある。
 
 ---
 
 ## まとめ
 
-WPF `DataGrid` のソート状態は `ICollectionView.SortDescriptions` と `DataGridColumn.SortDirection` の 2 か所に分かれており、コードから一方だけを触ると食い違います。初期化ではその両方を戻す必要があります。
+WPF `DataGrid` のソート状態は `ICollectionView.SortDescriptions` と `DataGridColumn.SortDirection` の 2 か所に分かれており、コードから一方だけを触ると食い違う。
+初期化ではその両方を戻す必要がある。
 
-分岐点は、初期化を起こす操作と、同じ挙動を何画面に広げるかにあります。
-ボタンから即時に解除するなら明示クリア、ヘッダークリックで完結させるなら `Sorting` イベント、MVVM 徹底なら `ICollectionView`、複数画面へ広げるなら Behavior 化を選びます。
+分岐点は、初期化を起こす操作と、同じ挙動を何画面に広げるかにある。
+ボタンから即時に解除するなら明示クリア、ヘッダークリックで完結させるなら `Sorting` イベント、MVVM 徹底なら `ICollectionView`、複数画面へ広げるなら Behavior 化を選ぶ。
 
 ## 関連記事
 
 - [WPF DataGrid の並び替えを実装する方法](/ja/articles/wpf-datagrid-sorting/)
 - [WPF DataGrid の行のダブルクリックをコマンドにつなぐ: MouseDoubleClick は列ヘッダーでも発火する](/ja/articles/wpf-datagrid-row-doubleclick-command-mvvm/)：列ヘッダーのダブルクリックで、並び替えと同時に直前に選んでいた行の詳細が開く書き方を実測した記事
+- [WPF DataGrid でセル編集中と表示時でコントロールを切り替える方法](/ja/articles/wpf-datagrid-cell-editing-template/)
 - [DataGrid（WPF 標準コントロールデモアプリ）](/ja/apps/wpf-standard-control-demo/datagrid.html)：見出しの 3 回目のクリックでも並べ替えが解除されないことと、コードから並べ替える前に編集を終える方法を実測したページ
