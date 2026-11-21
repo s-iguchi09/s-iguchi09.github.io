@@ -242,38 +242,41 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Controls;
 
-public class TriStateSortBehavior : Behavior<DataGrid>
+namespace YourApp.Behaviors
 {
-    protected override void OnAttached()
+    public class TriStateSortBehavior : Behavior<DataGrid>
     {
-        base.OnAttached();
-        AssociatedObject.Sorting += OnSorting;
-    }
-
-    protected override void OnDetaching()
-    {
-        AssociatedObject.Sorting -= OnSorting;
-        base.OnDetaching();
-    }
-
-    private void OnSorting(object sender, DataGridSortingEventArgs e)
-    {
-        if (sender is not DataGrid grid) return;
-
-        if (e.Column.SortDirection == ListSortDirection.Descending)
+        protected override void OnAttached()
         {
-            e.Handled = true;
+            base.OnAttached();
+            AssociatedObject.Sorting += OnSorting;
+        }
 
-            var sd = grid.Items.SortDescriptions
-                .FirstOrDefault(x => x.PropertyName == e.Column.SortMemberPath);
+        protected override void OnDetaching()
+        {
+            AssociatedObject.Sorting -= OnSorting;
+            base.OnDetaching();
+        }
 
-            if (!string.IsNullOrEmpty(sd.PropertyName))
+        private void OnSorting(object sender, DataGridSortingEventArgs e)
+        {
+            if (sender is not DataGrid grid) return;
+
+            if (e.Column.SortDirection == ListSortDirection.Descending)
             {
-                grid.Items.SortDescriptions.Remove(sd);
-            }
+                e.Handled = true;
 
-            e.Column.SortDirection = null;
-            grid.Items.Refresh();
+                var sd = grid.Items.SortDescriptions
+                    .FirstOrDefault(x => x.PropertyName == e.Column.SortMemberPath);
+
+                if (!string.IsNullOrEmpty(sd.PropertyName))
+                {
+                    grid.Items.SortDescriptions.Remove(sd);
+                }
+
+                e.Column.SortDirection = null;
+                grid.Items.Refresh();
+            }
         }
     }
 }
