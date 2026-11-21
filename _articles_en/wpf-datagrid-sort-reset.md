@@ -265,6 +265,7 @@ This design reduces duplicated event handlers and centralizes behavior-level cus
 
 ```xml
 <Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:local="clr-namespace:YourApp.Behaviors">
     <DataGrid>
