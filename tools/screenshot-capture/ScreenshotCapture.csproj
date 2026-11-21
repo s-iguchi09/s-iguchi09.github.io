@@ -26,6 +26,8 @@
          Prism は MIT ライセンスの最後の版に固定する。 -->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Prism.Core" Version="8.1.97" />
+    <!-- 記事 wpf-datagrid-row-doubleclick-command-mvvm の EventTrigger と InvokeCommandAction（Scenes/DataGridRowDoubleClickScene.cs）。 -->
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
   </ItemGroup>
 
   <ItemGroup>

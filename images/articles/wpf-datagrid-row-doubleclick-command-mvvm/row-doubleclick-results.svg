@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2347 410" width="2347" height="410" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="2347" height="410" />
+  <text class="title" x="12" y="24">Double-clicking each place: which customer OpenCommand received</text>
+  <rect class="head" x="12" y="38" width="2323" height="30" />
+  <text class="cell" x="26" y="57.5">double-clicked</text>
+  <text class="cell" x="721" y="57.5" text-anchor="end">SelectedItem after</text>
+  <text class="cell" x="945" y="57.5" text-anchor="end">other effects</text>
+  <text class="cell" x="1280" y="57.5" text-anchor="end">EventTrigger on DataGrid + SelectedItem</text>
+  <text class="cell" x="1614" y="57.5" text-anchor="end">MouseBinding on DataGrid + SelectedItem</text>
+  <text class="cell" x="1987" y="57.5" text-anchor="end">EventTrigger + EventArgsConverter (row item)</text>
+  <text class="cell" x="2321" y="57.5" text-anchor="end">RowStyle + attached property (row item)</text>
+  <text class="cell" x="26" y="87.5">cell of gamma (row 3)</text>
+  <text class="cell" x="721" y="87.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="945" y="87.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="87.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="1614" y="87.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="1987" y="87.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="2321" y="87.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="26" y="117.5">Name column header</text>
+  <text class="cell" x="721" y="117.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="117.5" text-anchor="end">SortDirection: Descending</text>
+  <text class="cell" x="1280" y="117.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="117.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="117.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="117.5" text-anchor="end">not executed</text>
+  <text class="cell" x="26" y="147.5">vertical scroll bar thumb</text>
+  <text class="cell" x="721" y="147.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="147.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="147.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="147.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="147.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="147.5" text-anchor="end">not executed</text>
+  <text class="cell" x="26" y="177.5">vertical scroll bar track below the thumb</text>
+  <text class="cell" x="721" y="177.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="177.5" text-anchor="end">VerticalOffset &gt; 0: True</text>
+  <text class="cell" x="1280" y="177.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="177.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="177.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="177.5" text-anchor="end">not executed</text>
+  <text class="cell" x="26" y="207.5">blank area below the last row (3 rows)</text>
+  <text class="cell" x="721" y="207.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="207.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="207.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="207.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1987" y="207.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="207.5" text-anchor="end">not executed</text>
+  <text class="cell" x="26" y="237.5">blank area below the last row (3 rows), nothing selected beforehand</text>
+  <text class="cell" x="721" y="237.5" text-anchor="end">null</text>
+  <text class="cell" x="945" y="237.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="237.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1614" y="237.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="237.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="237.5" text-anchor="end">not executed</text>
+  <text class="cell" x="26" y="267.5">cell of beta (selected)</text>
+  <text class="cell" x="721" y="267.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="267.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="267.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="267.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1987" y="267.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="2321" y="267.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="26" y="297.5">cell of beta (selected) with Ctrl held</text>
+  <text class="cell" x="721" y="297.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="297.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="297.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="297.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="297.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="2321" y="297.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="26" y="327.5">cell of gamma (not selected) with Ctrl held</text>
+  <text class="cell" x="721" y="327.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="945" y="327.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="327.5" text-anchor="end">"beta"</text>
+  <text class="cell" x="1614" y="327.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="327.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="2321" y="327.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="26" y="357.5">cell of gamma, IsReadOnly=False</text>
+  <text class="cell" x="721" y="357.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="945" y="357.5" text-anchor="end">IsEditing: True</text>
+  <text class="cell" x="1280" y="357.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="1614" y="357.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="357.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="357.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="26" y="387.5">cell of gamma with the right button</text>
+  <text class="cell" x="721" y="387.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="945" y="387.5" text-anchor="end">-</text>
+  <text class="cell" x="1280" y="387.5" text-anchor="end">"gamma"</text>
+  <text class="cell" x="1614" y="387.5" text-anchor="end">not executed</text>
+  <text class="cell" x="1987" y="387.5" text-anchor="end">not executed</text>
+  <text class="cell" x="2321" y="387.5" text-anchor="end">not executed</text>
+  <line class="line" x1="12" y1="38" x2="2335" y2="38" />
+  <line class="line" x1="12" y1="68" x2="2335" y2="68" />
+  <line class="line" x1="12" y1="98" x2="2335" y2="98" />
+  <line class="line" x1="12" y1="128" x2="2335" y2="128" />
+  <line class="line" x1="12" y1="158" x2="2335" y2="158" />
+  <line class="line" x1="12" y1="188" x2="2335" y2="188" />
+  <line class="line" x1="12" y1="218" x2="2335" y2="218" />
+  <line class="line" x1="12" y1="248" x2="2335" y2="248" />
+  <line class="line" x1="12" y1="278" x2="2335" y2="278" />
+  <line class="line" x1="12" y1="308" x2="2335" y2="308" />
+  <line class="line" x1="12" y1="338" x2="2335" y2="338" />
+  <line class="line" x1="12" y1="368" x2="2335" y2="368" />
+  <line class="line" x1="12" y1="398" x2="2335" y2="398" />
+  <line class="line" x1="12" y1="38" x2="12" y2="398" />
+  <line class="line" x1="566" y1="38" x2="566" y2="398" />
+  <line class="line" x1="735" y1="38" x2="735" y2="398" />
+  <line class="line" x1="959" y1="38" x2="959" y2="398" />
+  <line class="line" x1="1294" y1="38" x2="1294" y2="398" />
+  <line class="line" x1="1628" y1="38" x2="1628" y2="398" />
+  <line class="line" x1="2001" y1="38" x2="2001" y2="398" />
+  <line class="line" x1="2335" y1="38" x2="2335" y2="398" />
+</svg>

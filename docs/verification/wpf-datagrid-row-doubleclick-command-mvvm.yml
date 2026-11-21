@@ -1,0 +1,29 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-datagrid-row-doubleclick-command-mvvm
+slug: "wpf-datagrid-row-doubleclick-command-mvvm"
+scene: "DataGridRowDoubleClickScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26200"
+verifies:
+  - "4 つの書き方の計測・2 回目のクリックの観測・図の撮影のいずれでも、ダブルクリックが DataGrid に ClickCount=2 のマウスダウンとして 1 回だけ届いたこと（そうでなければ計測を止める）"
+  - "2 行目（beta）をクリックで選んだ後、DataGrid 自身の MouseDoubleClick を EventTrigger（Microsoft.Xaml.Behaviors.Wpf）の InvokeCommandAction で拾い、CommandParameter に SelectedItem を渡すと、列ヘッダー・縦のスクロールバーのつまみ・つまみより下のトラック・最後の行より下の空白のダブルクリックでも OpenCommand が実行されて beta が渡され、Ctrl を押しながら未選択の gamma をダブルクリックしても beta が渡され、右ボタンのダブルクリックでも実行されること。何も選ばずに空白をダブルクリックしたときは実行されないこと"
+  - "列ヘッダーのダブルクリックで、並び替えていない Name の列が降順になること。トラックのダブルクリックで VerticalOffset が 0 より大きくなること"
+  - "DataGrid の InputBindings に MouseBinding（LeftDoubleClick）を置き、CommandParameter に SelectedItem を渡すと、行と最後の行より下の空白のダブルクリックでは OpenCommand が実行され（空白では beta が渡される）、列ヘッダー・スクロールバーのつまみ・トラック・Ctrl を押しながらのダブルクリック（選択中の行・未選択の行）・IsReadOnly=False のセル・右ボタンのダブルクリックでは実行されないこと"
+  - "2 回目の MouseLeftButtonDown（ClickCount=2）が DataGrid のハンドラーに届いた時点で、列ヘッダー・スクロールバーのつまみ・トラック・Ctrl を押しながらのセル・IsReadOnly=False のセルでは Handled が True、IsReadOnly=True の未選択の gamma のセル（Ctrl なし）と空白では False であること。そのいずれでも DataGrid の MouseDoubleClick は発生すること"
+  - "IsReadOnly=False の DataGrid でセルをダブルクリックすると、DataGrid の MouseDoubleClick のハンドラーが動いた時点で、そのセルの IsEditing が True で、OriginalSource（TextBlock）の visual の親が null であること"
+  - "InvokeCommandAction の EventArgsConverter で OriginalSource から DataGridRow をさかのぼって行のアイテムを渡すと（左ボタン以外は null）、列ヘッダー・スクロールバーのつまみ・トラック・空白・右ボタンのダブルクリックと IsReadOnly=False のセルのダブルクリックでは OpenCommand が実行されず、IsReadOnly=True の行のダブルクリック（Ctrl なしで未選択の gamma・選択中の beta、Ctrl ありで選択中の beta・未選択の gamma）ではその行が渡されること"
+  - "RowStyle の Setter で DataGridRow に添付プロパティを付け、行の MouseDoubleClick で左ボタンのときだけ DataGridRow.Item を渡すと、列ヘッダー・スクロールバーのつまみ・トラック・空白・右ボタンのダブルクリックでは実行されず、IsReadOnly=True の行（Ctrl なしで未選択の gamma・選択中の beta、Ctrl ありで選択中の beta・未選択の gamma）と IsReadOnly=False の行（Ctrl なしで未選択の gamma）のダブルクリックではその行が渡されること"
+  - "Style の Setter で DataGridRow の InputBindings を設定する XAML は、読み込み時に XamlParseException（内側は ParamName が property の ArgumentNullException）になること"
+images:
+  - "images/articles/wpf-datagrid-row-doubleclick-command-mvvm/header-doubleclick.png"
+  - "images/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-doubleclick-results.svg"
+  - "images/articles/wpf-datagrid-row-doubleclick-command-mvvm/datagrid-second-click.svg"
+  - "images/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-style-inputbindings.svg"
+tables:
+  - "_includes/tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-doubleclick-results.en.md"
+  - "_includes/tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-doubleclick-results.ja.md"
+  - "_includes/tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/datagrid-second-click.en.md"
+  - "_includes/tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/datagrid-second-click.ja.md"
+  - "_includes/tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-style-inputbindings.en.md"
+  - "_includes/tables/articles/wpf-datagrid-row-doubleclick-command-mvvm/row-style-inputbindings.ja.md"

@@ -20,6 +20,8 @@ internal static class RealMouse
     private const uint MouseEventMove = 0x0001;
     private const uint MouseEventLeftDown = 0x0002;
     private const uint MouseEventLeftUp = 0x0004;
+    private const uint MouseEventRightDown = 0x0008;
+    private const uint MouseEventRightUp = 0x0010;
     private const uint AncestorRoot = 2;
 
     /// <summary>押したまま例外で抜けたときに、<see cref="Preserve"/> の破棄で離すための状態。</summary>
@@ -125,6 +127,50 @@ internal static class RealMouse
         await MoveToAsync(target, null, window);
         await LeftDownAsync(window, target);
         await LeftUpAsync(window);
+    }
+
+    /// <summary>
+    /// 要素の中心（または <paramref name="offset"/> の位置）へカーソルを動かし、<paramref name="button"/> で指定したボタン（左か右）の押す・離すを 2 回続けて送る。
+    /// 4 つの入力を 1 回の SendInput で送るため、間隔はダブルクリックの時間（GetDoubleClickTime）より十分に短い。
+    /// </summary>
+    public static async Task DoubleClickAsync(
+        Window window, FrameworkElement target, Point? offset = null, System.Windows.Input.MouseButton button = System.Windows.Input.MouseButton.Left)
+    {
+        (uint down, uint up) = button switch
+        {
+            System.Windows.Input.MouseButton.Left => (MouseEventLeftDown, MouseEventLeftUp),
+            System.Windows.Input.MouseButton.Right => (MouseEventRightDown, MouseEventRightUp),
+            _ => throw new ArgumentOutOfRangeException(nameof(button)),
+        };
+        await MoveToAsync(target, offset, window);
+        GetCursorPos(out NativePoint point);
+        EnsureOver(HandleOf(target), point);
+        var inputs = new[] { down, up, down, up }
+            .Select(flags => new Input { Type = InputMouse, Mouse = new MouseInput { Flags = flags } })
+            .ToArray();
+        uint accepted = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<Input>());
+        if (accepted != inputs.Length)
+        {
+            int error = Marshal.GetLastWin32Error();
+
+            // 押す入力だけが受け付けられた（受け付けた数が奇数の）ときは、押したまま残らないよう離す。
+            // 離す入力も失敗したときは、受け付けた件数を含む元の例外を残すため、その失敗は無視する。
+            if (accepted % 2 == 1)
+            {
+                try
+                {
+                    Send(up);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+
+            throw new InvalidOperationException(
+                $"SendInput が入力を {accepted} 件しか受け付けなかった（画面のロック中など）。Win32 エラー {error}。");
+        }
+
+        await Capture.SettleAsync(window, 100);
     }
 
     /// <summary>要素を表示しているトップレベルの HWND（ポップアップの中ならポップアップの HWND）。</summary>

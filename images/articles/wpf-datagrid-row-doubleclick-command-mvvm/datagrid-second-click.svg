@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1915 320" width="1915" height="320" role="img">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .head { fill: #f5f7fb; }
+      .line { stroke: #c3ccdb; stroke-width: 1; }
+      .cell { font-family: Consolas, "Courier New", monospace; font-size: 13px; fill: #1f2933; }
+      .title { font-family: Consolas, "Courier New", monospace; font-size: 11px; fill: #5b6673; }
+    </style>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1915" height="320" />
+  <text class="title" x="12" y="24">What the DataGrid receives on the second click</text>
+  <rect class="head" x="12" y="38" width="1891" height="30" />
+  <text class="cell" x="26" y="57.5">double-clicked</text>
+  <text class="cell" x="847" y="57.5" text-anchor="end">MouseLeftButtonDown (ClickCount=2) handled at the DataGrid</text>
+  <text class="cell" x="1212" y="57.5" text-anchor="end">OriginalSource of DataGrid.MouseDoubleClick</text>
+  <text class="cell" x="1476" y="57.5" text-anchor="end">its visual parent at that time</text>
+  <text class="cell" x="1889" y="57.5" text-anchor="end">IsEditing of the double-clicked cell at that time</text>
+  <text class="cell" x="26" y="87.5">cell of gamma (row 3)</text>
+  <text class="cell" x="847" y="87.5" text-anchor="end">False</text>
+  <text class="cell" x="1212" y="87.5" text-anchor="end">TextBlock</text>
+  <text class="cell" x="1476" y="87.5" text-anchor="end">ContentPresenter</text>
+  <text class="cell" x="1889" y="87.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="117.5">Name column header</text>
+  <text class="cell" x="847" y="117.5" text-anchor="end">True</text>
+  <text class="cell" x="1212" y="117.5" text-anchor="end">DataGridHeaderBorder</text>
+  <text class="cell" x="1476" y="117.5" text-anchor="end">Grid</text>
+  <text class="cell" x="1889" y="117.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="147.5">vertical scroll bar thumb</text>
+  <text class="cell" x="847" y="147.5" text-anchor="end">True</text>
+  <text class="cell" x="1212" y="147.5" text-anchor="end">Rectangle</text>
+  <text class="cell" x="1476" y="147.5" text-anchor="end">Thumb</text>
+  <text class="cell" x="1889" y="147.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="177.5">vertical scroll bar track below the thumb</text>
+  <text class="cell" x="847" y="177.5" text-anchor="end">True</text>
+  <text class="cell" x="1212" y="177.5" text-anchor="end">Rectangle</text>
+  <text class="cell" x="1476" y="177.5" text-anchor="end">RepeatButton</text>
+  <text class="cell" x="1889" y="177.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="207.5">blank area below the last row (3 rows)</text>
+  <text class="cell" x="847" y="207.5" text-anchor="end">False</text>
+  <text class="cell" x="1212" y="207.5" text-anchor="end">ScrollViewer</text>
+  <text class="cell" x="1476" y="207.5" text-anchor="end">Border</text>
+  <text class="cell" x="1889" y="207.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="237.5">cell of beta (selected) with Ctrl held</text>
+  <text class="cell" x="847" y="237.5" text-anchor="end">True</text>
+  <text class="cell" x="1212" y="237.5" text-anchor="end">TextBlock</text>
+  <text class="cell" x="1476" y="237.5" text-anchor="end">ContentPresenter</text>
+  <text class="cell" x="1889" y="237.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="267.5">cell of gamma (not selected) with Ctrl held</text>
+  <text class="cell" x="847" y="267.5" text-anchor="end">True</text>
+  <text class="cell" x="1212" y="267.5" text-anchor="end">TextBlock</text>
+  <text class="cell" x="1476" y="267.5" text-anchor="end">ContentPresenter</text>
+  <text class="cell" x="1889" y="267.5" text-anchor="end">-</text>
+  <text class="cell" x="26" y="297.5">cell of gamma, IsReadOnly=False</text>
+  <text class="cell" x="847" y="297.5" text-anchor="end">True</text>
+  <text class="cell" x="1212" y="297.5" text-anchor="end">TextBlock</text>
+  <text class="cell" x="1476" y="297.5" text-anchor="end">null</text>
+  <text class="cell" x="1889" y="297.5" text-anchor="end">True</text>
+  <line class="line" x1="12" y1="38" x2="1903" y2="38" />
+  <line class="line" x1="12" y1="68" x2="1903" y2="68" />
+  <line class="line" x1="12" y1="98" x2="1903" y2="98" />
+  <line class="line" x1="12" y1="128" x2="1903" y2="128" />
+  <line class="line" x1="12" y1="158" x2="1903" y2="158" />
+  <line class="line" x1="12" y1="188" x2="1903" y2="188" />
+  <line class="line" x1="12" y1="218" x2="1903" y2="218" />
+  <line class="line" x1="12" y1="248" x2="1903" y2="248" />
+  <line class="line" x1="12" y1="278" x2="1903" y2="278" />
+  <line class="line" x1="12" y1="308" x2="1903" y2="308" />
+  <line class="line" x1="12" y1="38" x2="12" y2="308" />
+  <line class="line" x1="378" y1="38" x2="378" y2="308" />
+  <line class="line" x1="861" y1="38" x2="861" y2="308" />
+  <line class="line" x1="1226" y1="38" x2="1226" y2="308" />
+  <line class="line" x1="1490" y1="38" x2="1490" y2="308" />
+  <line class="line" x1="1903" y1="38" x2="1903" y2="308" />
+</svg>
