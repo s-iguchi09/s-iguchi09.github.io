@@ -226,8 +226,8 @@ internal sealed class DataGridRowDoubleClickScene : IScene
 
     /// <summary>
     /// ダブルクリックの 1 回目と 2 回目のクリックの間隔。人が操作するときのように間を空ける（ダブルクリックの時間の既定 500 ms より短い）。
-    /// 4 つの入力を間を空けずに 1 回の SendInput で送ると、編集できるセルを選択中の行でダブルクリックしたときに、
-    /// 2 つ目のマウスダウンが DataGrid に届かなかった（1 回目のクリックで始まる編集の処理と重なるため）。人の操作では起きない結果を測らないよう、すべて間を空ける。
+    /// 4 つの入力を間を空けずに 1 回の SendInput で送った試行では、編集できるセルを選択中の行でダブルクリックしたときの結果が変わった（原因は調べていない）。
+    /// 人の操作に近い条件で測るため、すべて間を空ける。
     /// </summary>
     private static readonly TimeSpan ClickInterval = TimeSpan.FromMilliseconds(100);
 
@@ -629,6 +629,12 @@ internal sealed class DataGridRowDoubleClickScene : IScene
         }, activate: true);
 
         // ClickCount=2 のマウスダウンが届いた回では、MouseDoubleClick も届いていなければならない。
+        // Verifies に書いたとおり、DataGrid より外側のウィンドウにも 2 つのマウスダウンが届いていなければならない。
+        if (windowDowns != 2)
+        {
+            throw new InvalidOperationException($"{target}: ウィンドウに届いたマウスダウンが 2 つではない（{windowDowns} 個）。");
+        }
+
         if (downHandled is not null && originalSource is null)
         {
             throw new InvalidOperationException($"{target}: ClickCount=2 のマウスダウンは届いたが、MouseDoubleClick が DataGrid に届いていない。");

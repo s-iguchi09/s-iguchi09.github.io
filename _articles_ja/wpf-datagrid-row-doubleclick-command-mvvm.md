@@ -25,7 +25,7 @@ MVVM で書く場合によく紹介されるのは、`Microsoft.Xaml.Behaviors.W
 
 - フレームワーク: .NET の WPF。コード例は C# 9 以降の構文（`is not null and not DataGridRow` などのパターン）と、null 許容参照型を有効にしたプロジェクトを前提にする。`EventTrigger` と `InvokeCommandAction` は NuGet パッケージ `Microsoft.Xaml.Behaviors.Wpf` のもので、`EventArgsConverter` プロパティを使う。動作は下記の検証環境でだけ測り、.NET Framework 4.8 と、ほかの版のパッケージでは測っていない
 - アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` と `RelayCommand<T>` は自前の最小実装である。`RelayCommand<T>` の `CanExecute` は、引数が `T` でないとき（`null` を含む）に `false` を返す。`CanExecute` の更新については [WPF で RelayCommand の CanExecute がボタンの有効・無効に反映されない問題の記事](/ja/articles/wpf-relaycommand-canexecute-not-updating/)にまとめている
-- 検証環境: .NET 10 / Windows 11 / `Microsoft.Xaml.Behaviors.Wpf` 1.1.135。クリックとダブルクリックは OS の実際のマウス入力で行い、ダブルクリックは、1 回目と 2 回目のクリックの間を 100 ms 空けて送った（ダブルクリックの時間の既定値 500 ms より短い）。毎回、`DataGrid` に 2 つのマウスダウンが `ClickCount` 1、2 として届いたことを確かめている。なお、間を空けずに 4 つの入力を一度に送ると、編集できるセルを選択中の行でダブルクリックしたときに 2 つ目のマウスダウンが `DataGrid` に届かず、間を空けた場合と結果が変わった。人の操作に近い、間を空けた送り方の結果を載せている計測では XAML を `XamlReader` で読み込んだため、`xmlns:b` だけは同じアセンブリを `clr-namespace` 形式で指定した
+- 検証環境: .NET 10 / Windows 11 / `Microsoft.Xaml.Behaviors.Wpf` 1.1.135。クリックとダブルクリックは OS の実際のマウス入力で行い、ダブルクリックは、1 回目と 2 回目のクリックの間を 100 ms 空けて送った（ダブルクリックの時間の既定値 500 ms より短い）。毎回、`DataGrid` に 2 つのマウスダウンが `ClickCount` 1、2 として届いたことを確かめている。間を空けずに 4 つの入力を一度に送った試行では、編集できるセルを選択中の行でダブルクリックしたときの結果が変わったため、人の操作に近い、間を空けた送り方にそろえた。計測では XAML を `XamlReader` で読み込んだため、`xmlns:b` だけは同じアセンブリを `clr-namespace` 形式で指定した
 - 題材: `Name` と `City` の 2 列を持つ顧客の `DataGrid`（幅 240、高さ 150、20 行）。最後の行より下の空白（以下、空白）を測るときだけ 3 行にする。2 行目の `beta` をクリックで選び、ダブルクリックの時間より長く待ってから、各場所をダブルクリックする
 - 扱う範囲: マウスのダブルクリックで詳細を開く操作。キーボード（Enter キーなど）で開く操作、複数行を選んだ状態で開く操作、スクロールバーの矢印のボタン、行ヘッダー（`DataGridRowHeader`）、`RowDetails`、`DataGrid` を入れ子にした場合は測っていない
 
