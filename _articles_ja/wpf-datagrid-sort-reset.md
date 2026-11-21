@@ -7,7 +7,7 @@ excerpt: "WPF DataGrid のソート状態は SortDescriptions と SortDirection 
 image: /images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png
 ---
 
-WPF の `DataGrid` はソート機能を標準で持つが、要件によっては「初期状態に戻す（ソートを解除する）」動作を明示的に実装する必要がある。
+WPF の `DataGrid` はソート機能を標準で持つが、要件によっては「初期状態に戻す（ソートを解除する）」動作の明示的な実装が求められる場合がある。
 本記事では、`DataGrid` のソート初期化を実現する代表的な方法を整理する。
 
 ## 概要
@@ -35,12 +35,13 @@ WPF の `DataGrid` はソート機能を標準で持つが、要件によって�
 - 並び替えの状態は、`ICollectionView` の `SortDescriptions` と列の `SortDirection` に分かれて保持される。
 - `SortDescriptions` を消しただけでは列の `SortDirection` が残り、ヘッダーの矢印が消えない。
 - `SortDescriptions` を足しただけでは、列の `SortDirection` は付かない。
-- `SortDescriptions` を 2 つ足すと、複数列ソートになる。1 つ目の条件で同点の行は、2 つ目の条件で並ぶ。
+- `SortDescriptions` を 2 つ足すと、複数列ソートになる。
+  1 つ目の条件で同点の行は、2 つ目の条件で並ぶ。
 
 ## 問題
 
 WPF `DataGrid` では、業務要件として「現在の並び替え状態を初期状態へ戻す」操作が必要になる場合がある。
-このとき、標準操作だけでは意図したタイミングでの初期化を統一しづらい。
+このとき、標準操作だけでは意図したタイミングでの初期化を統一しづらい場合がある。
 
 ## 原因・背景
 
@@ -52,22 +53,30 @@ WPF `DataGrid` で `Shift + 列ヘッダークリック` は、標準では**複
 
 そのため、「初期状態に戻す」にはコードによる制御が必要である。
 
-並び替えの状態は 2 か所に分かれている。操作ごとに両方を測った結果が次の表である。
+並び替えの状態は 2 か所に分かれている。
+操作ごとに両方を測った結果が次の表である。
 
 {% include tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.ja.md %}
 
-.NET 10 / Windows 11 での実測結果。<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。最終行以外はコードから直接操作した場合である。「同点あり」の 2 行は、carol と同じ <code>Score</code> の行（anna）を足している。
+.NET 10 / Windows 11 での実測結果。
+<code>SortDescriptions</code> はビュー側の並び替え条件の件数、<code>column.SortDirection</code> は列ヘッダーの矢印を決めるプロパティである。
+最終行以外はコードから直接操作した場合である。
+「同点あり」の 2 行は、carol と同じ <code>Score</code> の行（anna）を足している。
 {: .table-caption}
 
 **`SortDescriptions.Clear()` を呼んだ行を見ると、並び順は初期状態に戻っているのに `column.SortDirection` は `Ascending` のまま残っている。**
 この状態ではヘッダーに矢印が表示されたままになり、並び替えが効いているように見える。
 
 逆に `SortDescriptions` を足しただけの行では、並び順が変わっているのに `SortDirection` は `null` のままである。
-**コードから一方を操作しても、もう一方は追随しない。** どちらの向きにも、両方を明示的に設定する必要がある。
+**コードから一方を操作しても、もう一方は追随しない。**
+どちらの向きにも、両方を明示的に設定する必要がある。
 
-「同点あり」の 2 行が複数列ソートを示している。`Score` だけでは同点の carol と anna が元の順のままで、`Name` を足すと anna が前になる。Shift + クリックはこの状態を作る操作であり、解除ではない。
+「同点あり」の 2 行が複数列ソートを示している。
+`Score` だけでは同点の carol と anna が元の順のままで、`Name` を足すと anna が前になる。
+Shift + クリックはこの状態を作る操作であり、解除ではない。
 
-最終行はその対照で、列ヘッダーのクリックで走る標準の並び替えである。**この経路では `SortDescriptions` と `SortDirection` が同時に更新される。**
+最終行はその対照で、列ヘッダーのクリックで走る標準の並び替えである。
+**この経路では `SortDescriptions` と `SortDirection` が同時に更新される。**
 ユーザーが並び替えたときに矢印と並び順が食い違わないのはこのためであり、食い違いが生じるのはコードから一方だけを触ったときである。
 
 ---
@@ -114,7 +123,7 @@ public static class DataGridSortHelper
 - `SortDescriptions.Clear()` だけでは見た目の矢印が残る
 - `column.SortDirection = null` を併用して UI 整合性を保つ
 
-### 3回目のクリックで自動的に初期化する（カスタム挙動）
+### 3 回目のクリックで自動的に初期化する（カスタム挙動）
 
 「昇順 → 降順 → 未ソート」の 3 状態にする場合は、`Sorting` イベントを使って制御する。
 3 つの状態を実際に表示すると次のようになる。
@@ -168,7 +177,7 @@ private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
 
 ### CollectionView を使って ViewModel から初期化する
 
-MVVM 構成では、`DataGrid` を直接操作せず `ICollectionView` を使うと管理しやすい。
+MVVM 構成では、`DataGrid` を直接操作するより、`ICollectionView` を使うほうが管理しやすい。
 
 ```csharp
 using System.Collections.ObjectModel;
@@ -201,15 +210,20 @@ public class RowItem
 
 `SortDescriptions` を `ItemsView` 側で管理することで、UI コンポーネントへの依存を減らし、テスト容易性を確保できる。
 
-**ただし、この `ClearSort` が解除するのはビューの並び順だけである。** `DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `ItemsSource = ICollectionView` の行がまさにこれを測っており、ビューの `SortDescriptions` を消しても `SortDirection` は `Ascending` のまま残った）。
-また、この `ClearSort` は `SortDescriptions` だけを消すため、`ListCollectionView.CustomSort` で並べ替えている場合は解除されない。`CustomSort` を設定したビューに `ClearSort` と同じ手順を実行しても、`CustomSort` は残り、並びも変わらなかった。`CustomSort` を使う画面では、`ClearSort` で `CustomSort` にも `null` を代入する。
+**ただし、この `ClearSort` が解除するのはビューの並び順だけである。**
+`DataGridColumn.SortDirection` は `DataGrid` 側に残るため、並び順は初期状態に戻ってもヘッダーの矢印は表示されたままになる（前掲の表の `ItemsSource = ICollectionView` の行がまさにこれを測っており、ビューの `SortDescriptions` を消しても `SortDirection` は `Ascending` のまま残った）。
+また、この `ClearSort` は `SortDescriptions` だけを消すため、`ListCollectionView.CustomSort` で並べ替えている場合は解除されない。
+`CustomSort` を設定したビューに `ClearSort` と同じ手順を実行しても、`CustomSort` は残り、並びも変わらなかった。
+`CustomSort` を使う画面では、`ClearSort` で `CustomSort` にも `null` を代入する。
 
 {% include tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.ja.md %}
 
-.NET 10 / Windows 11 で、サンプルデータの <code>ListCollectionView</code> に操作を順に行って測った結果。<code>SortDescriptions</code> の列は条件の数である。
+.NET 10 / Windows 11 で、サンプルデータの <code>ListCollectionView</code> に操作を順に行って測った結果。
+<code>SortDescriptions</code> の列は条件の数である。
 {: .table-caption}
 
-矢印まで戻すには、ViewModel から列の状態を触れない以上、`DataGrid` 側で `SortDirection` を `null` にする処理が別に要る。Behavior 化する場合は、その処理を Behavior に含めるとコマンドから一度に初期化できる。
+矢印まで戻すには、ViewModel から列の状態を触れない以上、`DataGrid` 側で `SortDirection` を `null` にする処理が別に要る。
+Behavior 化する場合は、その処理を Behavior に含めるとコマンドから一度に初期化できる。
 
 ```xml
 <DataGrid ItemsSource="{Binding ItemsView}" />
