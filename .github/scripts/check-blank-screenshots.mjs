@@ -1,0 +1,294 @@
+// 記事の図（ウィンドウの画面キャプチャ）が空白になっていないかを調べる。
+//
+// 画面の消灯中やロック中に撮ると、PrintWindow はタイトルバーだけを描き、その下を一色で返す。
+// tools/screenshot-capture の Capture.SaveWindow は撮影時にこれを止めるが、ツールを通らずに
+// 入った PNG（手で置いた画像、検査を入れる前に撮った画像など）は止められない。
+// CodeRabbit も画像をレビューしないため、PR ごとにすべての PNG をここで調べる。
+//
+// 判定: タイトルバーより下（上端から TITLE_BAR_HEIGHT 画素を除き、左右と下の縁 EDGE 画素も除く）が
+// すべて同じ色なら空白とみなす。間引かずに全画素を見るので、1 画素幅の線だけの図でも通る。
+//
+// 使い方:
+//   node .github/scripts/check-blank-screenshots.mjs            # images/articles 以下のすべての PNG
+//   node .github/scripts/check-blank-screenshots.mjs a.png b.png # 指定した PNG だけ
+//   node --test .github/scripts/check-blank-screenshots.test.mjs # 判定と PNG の検証のテスト
+//
+// 空白の図や読めない PNG が 1 枚でもあれば終了コード 1 を返す。外部パッケージは使わない。
+
+import { readFileSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
+import { inflateSync } from "node:zlib";
+
+// 空白だった 5 枚（表示倍率 100% で撮影）では、一色の領域が上端から 22〜23 画素目で始まっていた。
+// 余裕を見て 30 画素を除く。Capture.SaveWindow は表示倍率を確かめない（100% 以外を拒むのは
+// SaveScreenArea だけ）。倍率を上げて撮るとタイトルバーが 30 画素を超えることがあり、
+// その文字が検査領域に入ると、空白の図でも一色にならずに見逃す。
+const TITLE_BAR_HEIGHT = 30;
+// ウィンドウの枠（1 画素）と影を避ける。
+const EDGE = 3;
+const DEFAULT_ROOT = "images/articles";
+
+const CHANNELS = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 };
+// 色の型ごとに許されるビット深度（PNG の仕様）。
+const BIT_DEPTHS = { 0: [1, 2, 4, 8, 16], 2: [8, 16], 3: [1, 2, 4, 8], 4: [8, 16], 6: [8, 16] };
+
+// チャンクの CRC（PNG の仕様の CRC-32）。古い Node でも動くよう zlib.crc32 は使わない。
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) {
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  }
+  return c >>> 0;
+});
+
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (const b of bytes) {
+    c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8);
+  }
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+export function decodePng(buffer) {
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (!signature.every((b, i) => buffer[i] === b)) {
+    throw new Error("PNG のシグネチャではない");
+  }
+
+  let offset = 8;
+  let header;
+  let palette;
+  let paletteAlpha;
+  const idat = [];
+  let ended = false;
+  while (offset < buffer.length) {
+    // 長さ 4・型 4・データ・CRC 4 バイトのチャンク全体がファイルに収まっていること。
+    if (offset + 12 > buffer.length) {
+      throw new Error("チャンクが途中で切れている");
+    }
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString("latin1", offset + 4, offset + 8);
+    if (offset + 12 + length > buffer.length) {
+      throw new Error(`${type} チャンクが途中で切れている`);
+    }
+    const data = buffer.subarray(offset + 8, offset + 8 + length);
+    if (crc32(buffer.subarray(offset + 4, offset + 8 + length)) !== buffer.readUInt32BE(offset + 8 + length)) {
+      throw new Error(`${type} チャンクの CRC が合わない`);
+    }
+    offset += 12 + length;
+    if (type === "IHDR") {
+      header = {
+        width: data.readUInt32BE(0),
+        height: data.readUInt32BE(4),
+        bitDepth: data[8],
+        colorType: data[9],
+        compression: data[10],
+        filterMethod: data[11],
+        interlace: data[12],
+      };
+    } else if (type === "PLTE") {
+      palette = data;
+    } else if (type === "tRNS") {
+      paletteAlpha = data;
+    } else if (type === "IDAT") {
+      idat.push(data);
+    } else if (type === "IEND") {
+      ended = true;
+      break;
+    }
+  }
+
+  if (!ended) {
+    throw new Error("IEND が無い（ファイルが途中で切れている）");
+  }
+  if (!header) {
+    throw new Error("IHDR が無い");
+  }
+  const { width, height, bitDepth, colorType, compression, filterMethod, interlace } = header;
+  if (width === 0 || height === 0) {
+    throw new Error(`幅か高さが 0 (${width}x${height})`);
+  }
+  const channels = CHANNELS[colorType];
+  if (!channels) {
+    throw new Error(`未知の色の型 ${colorType}`);
+  }
+  if (!BIT_DEPTHS[colorType].includes(bitDepth)) {
+    throw new Error(`色の型 ${colorType} に許されないビット深度 ${bitDepth}`);
+  }
+  if (compression !== 0 || filterMethod !== 0) {
+    throw new Error(`未知の圧縮方式 ${compression} かフィルター方式 ${filterMethod}`);
+  }
+  if (interlace !== 0) {
+    throw new Error("インターレースの PNG は未対応");
+  }
+  // パレットは判定の色を決めるので、仕様どおりかを確かめる。
+  const entries = palette ? palette.length / 3 : 0;
+  if (colorType === 3) {
+    if (!palette) {
+      throw new Error("パレットの画像に PLTE が無い");
+    }
+    if (!Number.isInteger(entries) || entries === 0 || entries > 2 ** bitDepth) {
+      throw new Error(`PLTE の長さ ${palette.length} が仕様に合わない`);
+    }
+    if (paletteAlpha && paletteAlpha.length > entries) {
+      throw new Error(`tRNS の項目数 ${paletteAlpha.length} がパレットの ${entries} を超える`);
+    }
+  }
+
+  const bitsPerPixel = channels * bitDepth;
+  const stride = Math.ceil((width * bitsPerPixel) / 8);
+  // フィルターの左隣は 1 画素ぶん（1 バイト未満なら 1 バイト）。
+  const filterStep = Math.max(1, bitsPerPixel / 8);
+  const raw = inflateSync(Buffer.concat(idat));
+  if (raw.length < (stride + 1) * height) {
+    throw new Error("画像データが足りない");
+  }
+
+  const rows = [];
+  let previous = Buffer.alloc(stride);
+  for (let y = 0; y < height; y++) {
+    const start = y * (stride + 1);
+    const filter = raw[start];
+    const line = Buffer.from(raw.subarray(start + 1, start + 1 + stride));
+    for (let i = 0; i < stride; i++) {
+      const left = i >= filterStep ? line[i - filterStep] : 0;
+      const up = previous[i];
+      const upLeft = i >= filterStep ? previous[i - filterStep] : 0;
+      let add;
+      switch (filter) {
+        case 0: add = 0; break;
+        case 1: add = left; break;
+        case 2: add = up; break;
+        case 3: add = (left + up) >> 1; break;
+        case 4: {
+          const p = left + up - upLeft;
+          const pa = Math.abs(p - left);
+          const pb = Math.abs(p - up);
+          const pc = Math.abs(p - upLeft);
+          add = pa <= pb && pa <= pc ? left : pb <= pc ? up : upLeft;
+          break;
+        }
+        default:
+          throw new Error(`未知のフィルター ${filter}（${y} 行目）`);
+      }
+      line[i] = (line[i] + add) & 0xff;
+    }
+    rows.push(line);
+    previous = line;
+  }
+
+  // 画素の生の値（チャネルごとのバイト、1 バイト未満の深度ではその値）を返す。
+  function rawValues(x, y) {
+    const line = rows[y];
+    if (bitDepth < 8) {
+      const bit = x * bitDepth;
+      const shift = 8 - bitDepth - (bit % 8);
+      return [(line[bit >> 3] >> shift) & ((1 << bitDepth) - 1)];
+    }
+    const at = x * channels * (bitDepth / 8);
+    return Array.from(line.subarray(at, at + channels * (bitDepth / 8)));
+  }
+
+  // パレットの範囲外の番号は仕様上の誤り。空白の判定は途中で打ち切るので、
+  // その前にタイトルバーや縁も含めた全画素の番号を確かめる。
+  if (colorType === 3) {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = rawValues(x, y)[0];
+        if (index >= entries) {
+          throw new Error(`パレットに無い番号 ${index}（${x}, ${y}）`);
+        }
+      }
+    }
+  }
+
+  // 画素の値を、色の比較に使う文字列で返す。パレットは色を引いてから比べる。
+  function pixel(x, y) {
+    const values = rawValues(x, y);
+    if (colorType === 3) {
+      // 同じ RGB でもアルファが違う項目があるので、tRNS のアルファ（省略時は 255）も比べる。
+      const index = values[0];
+      const alpha = paletteAlpha && index < paletteAlpha.length ? paletteAlpha[index] : 255;
+      return [...palette.subarray(index * 3, index * 3 + 3), alpha].join(",");
+    }
+    return values.join(",");
+  }
+
+  return { width, height, pixel };
+}
+
+// 空白なら理由の文字列、そうでなければ null を返す。
+export function findBlank(image) {
+  const { width, height, pixel } = image;
+  const top = TITLE_BAR_HEIGHT;
+  const bottom = height - EDGE;
+  const left = EDGE;
+  const right = width - EDGE;
+  if (bottom <= top || right <= left) {
+    return null;
+  }
+
+  const first = pixel(left, top);
+  for (let y = top; y < bottom; y++) {
+    for (let x = left; x < right; x++) {
+      if (pixel(x, y) !== first) {
+        return null;
+      }
+    }
+  }
+  return `タイトルバーより下（${width}x${height} の y=${top} 以降）がすべて同じ色 (${first})`;
+}
+
+function listPngs(directory) {
+  const found = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      found.push(...listPngs(path));
+    } else if (entry.isFile() && entry.name.toLowerCase().endsWith(".png")) {
+      found.push(path);
+    }
+  }
+  return found.sort();
+}
+
+// 1 枚を調べ、空白か読めないなら理由の文字列、問題が無ければ null を返す。
+export function checkPng(buffer) {
+  try {
+    return findBlank(decodePng(buffer));
+  } catch (error) {
+    return `読めない PNG (${error.message})`;
+  }
+}
+
+function main() {
+  const files = process.argv.length > 2 ? process.argv.slice(2) : listPngs(DEFAULT_ROOT);
+  const failures = [];
+  for (const file of files) {
+    const name = relative(process.cwd(), file).replaceAll("\\", "/");
+    const reason = checkPng(readFileSync(file));
+    if (reason) {
+      failures.push({ name, reason });
+    }
+  }
+
+  console.log(`${files.length} 枚の PNG を調べた。`);
+  if (failures.length > 0) {
+    for (const { name, reason } of failures) {
+      // GitHub Actions の注釈として PR の画面に出す。
+      console.log(`::error file=${name}::${name}: ${reason}`);
+    }
+    console.log(
+      `空白か読めない PNG が ${failures.length} 枚ある。空白の図は、画面を点けた状態で ` +
+        "dotnet run --project tools/screenshot-capture -c Release -- <slug> を実行して撮り直す。",
+    );
+    process.exit(1);
+  }
+  console.log("空白の図は無い。");
+}
+
+// テストから import されたときは実行しない。
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

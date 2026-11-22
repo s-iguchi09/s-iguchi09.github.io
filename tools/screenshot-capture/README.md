@@ -33,7 +33,11 @@ dotnet run --project tools/screenshot-capture -c Release -- wpf-label-underscore
 > ⚠️ **ディスプレイが表示状態である必要がある。**
 > 電源管理でモニターが切れていると、DWM がウィンドウの内容を合成しないため、
 > `PrintWindow` はタイトルバーと枠だけが写った**中身が白紙の画像**を返す。
-> 失敗ではなく正常終了するので、生成後は画像を目視で確認する。
+> `Capture.SaveWindow` はクライアント領域が一色なら保存せずに例外で止める（既存の図は上書きしない）。
+> さらに PR では、ワークフロー `Check blank screenshots`（`.github/scripts/check-blank-screenshots.mjs`）が
+> `images/articles/` のすべての PNG を調べ、タイトルバーより下が一色の図があれば失敗する。
+> ツールを通らずに入った PNG もここで止まる。ローカルでは `node .github/scripts/check-blank-screenshots.mjs` で同じ検査ができる。
+> どちらも一色の空白しか見分けられないので、生成後は画像を目視で確認する。
 > 無人で回す場合は、実行前にマウス操作などで画面を復帰させる
 > （`powercfg /query SCHEME_CURRENT SUB_VIDEO VIDEOIDLE` で現在のタイムアウトを確認できる）。
 
