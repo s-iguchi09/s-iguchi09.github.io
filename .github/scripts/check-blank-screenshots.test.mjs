@@ -126,3 +126,22 @@ test("パレットの色が RGB だけ同じでもアルファが違えば空白
   // tRNS が無ければ両方とも不透明な黒なので、一色の空白になる。
   assert.match(checkPng(makePng({ colorType: 3, channels: 1, pixel, palette })), /すべて同じ色/);
 });
+
+test("パレットに無い番号は、空白の判定を打ち切った後ろやタイトルバーにあっても読めない", () => {
+  const palette = [[255, 255, 255], [0, 0, 0]];
+  // (4, 30) で別の色が見つかり空白の判定は打ち切られるが、その後ろの (5, 30) が範囲外。
+  const afterDot = (x, y) => [x === 4 && y === 30 ? 1 : x === 5 && y === 30 ? 2 : 0];
+  assert.match(checkPng(makePng({ colorType: 3, channels: 1, pixel: afterDot, palette })), /パレットに無い番号 2（5, 30）/);
+  // 検査領域の外（タイトルバー）にある範囲外の番号。
+  const inTitleBar = (x, y) => [x === 10 && y === 5 ? 2 : y === 30 && x === 4 ? 1 : 0];
+  assert.match(checkPng(makePng({ colorType: 3, channels: 1, pixel: inTitleBar, palette })), /パレットに無い番号 2（10, 5）/);
+});
+
+test("PLTE と tRNS の長さが仕様に合わなければ読めない", () => {
+  const pixel = (x, y) => [y === 30 && x === 4 ? 1 : 0];
+  assert.match(checkPng(makePng({ colorType: 3, channels: 1, pixel, palette: [[0, 0, 0], [255, 255]] })), /PLTE の長さ 5/);
+  assert.match(
+    checkPng(makePng({ colorType: 3, channels: 1, pixel, palette: [[0, 0, 0], [255, 255, 255]], alpha: [255, 255, 255] })),
+    /tRNS の項目数 3 がパレットの 2 を超える/,
+  );
+});

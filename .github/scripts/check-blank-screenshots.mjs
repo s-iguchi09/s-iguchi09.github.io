@@ -122,8 +122,18 @@ export function decodePng(buffer) {
   if (interlace !== 0) {
     throw new Error("インターレースの PNG は未対応");
   }
-  if (colorType === 3 && !palette) {
-    throw new Error("パレットの画像に PLTE が無い");
+  // パレットは判定の色を決めるので、仕様どおりかを確かめる。
+  const entries = palette ? palette.length / 3 : 0;
+  if (colorType === 3) {
+    if (!palette) {
+      throw new Error("パレットの画像に PLTE が無い");
+    }
+    if (!Number.isInteger(entries) || entries === 0 || entries > 2 ** bitDepth) {
+      throw new Error(`PLTE の長さ ${palette.length} が仕様に合わない`);
+    }
+    if (paletteAlpha && paletteAlpha.length > entries) {
+      throw new Error(`tRNS の項目数 ${paletteAlpha.length} がパレットの ${entries} を超える`);
+    }
   }
 
   const bitsPerPixel = channels * bitDepth;
@@ -168,27 +178,39 @@ export function decodePng(buffer) {
     previous = line;
   }
 
-  // 画素の値を、色の比較に使う文字列で返す。パレットは色を引いてから比べる。
-  function pixel(x, y) {
+  // 画素の生の値（チャネルごとのバイト、1 バイト未満の深度ではその値）を返す。
+  function rawValues(x, y) {
     const line = rows[y];
-    let values;
     if (bitDepth < 8) {
       const bit = x * bitDepth;
       const shift = 8 - bitDepth - (bit % 8);
-      values = [(line[bit >> 3] >> shift) & ((1 << bitDepth) - 1)];
-    } else {
-      const bytes = bitDepth / 8;
-      const at = x * channels * bytes;
-      values = Array.from(line.subarray(at, at + channels * bytes));
+      return [(line[bit >> 3] >> shift) & ((1 << bitDepth) - 1)];
     }
+    const at = x * channels * (bitDepth / 8);
+    return Array.from(line.subarray(at, at + channels * (bitDepth / 8)));
+  }
+
+  // パレットの範囲外の番号は仕様上の誤り。空白の判定は途中で打ち切るので、
+  // その前にタイトルバーや縁も含めた全画素の番号を確かめる。
+  if (colorType === 3) {
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = rawValues(x, y)[0];
+        if (index >= entries) {
+          throw new Error(`パレットに無い番号 ${index}（${x}, ${y}）`);
+        }
+      }
+    }
+  }
+
+  // 画素の値を、色の比較に使う文字列で返す。パレットは色を引いてから比べる。
+  function pixel(x, y) {
+    const values = rawValues(x, y);
     if (colorType === 3) {
       // 同じ RGB でもアルファが違う項目があるので、tRNS のアルファ（省略時は 255）も比べる。
       const index = values[0];
-      if (index * 3 + 3 > palette.length) {
-        throw new Error(`パレットに無い番号 ${index}`);
-      }
       const alpha = paletteAlpha && index < paletteAlpha.length ? paletteAlpha[index] : 255;
-      values = [...palette.subarray(index * 3, index * 3 + 3), alpha];
+      return [...palette.subarray(index * 3, index * 3 + 3), alpha].join(",");
     }
     return values.join(",");
   }
