@@ -11,11 +11,13 @@
 // 使い方:
 //   node .github/scripts/check-blank-screenshots.mjs            # images/articles 以下のすべての PNG
 //   node .github/scripts/check-blank-screenshots.mjs a.png b.png # 指定した PNG だけ
+//   node --test .github/scripts/check-blank-screenshots.test.mjs # 判定と PNG の検証のテスト
 //
 // 空白の図や読めない PNG が 1 枚でもあれば終了コード 1 を返す。外部パッケージは使わない。
 
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 import { inflateSync } from "node:zlib";
 
 // 空白だった 5 枚（表示倍率 100% で撮影）では、一色の領域が上端から 22〜23 画素目で始まっていた。
@@ -48,7 +50,7 @@ function crc32(bytes) {
   return (c ^ 0xffffffff) >>> 0;
 }
 
-function decodePng(buffer) {
+export function decodePng(buffer) {
   const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
   if (!signature.every((b, i) => buffer[i] === b)) {
     throw new Error("PNG のシグネチャではない");
@@ -195,7 +197,7 @@ function decodePng(buffer) {
 }
 
 // 空白なら理由の文字列、そうでなければ null を返す。
-function findBlank(image) {
+export function findBlank(image) {
   const { width, height, pixel } = image;
   const top = TITLE_BAR_HEIGHT;
   const bottom = height - EDGE;
@@ -229,30 +231,42 @@ function listPngs(directory) {
   return found.sort();
 }
 
-const files = process.argv.length > 2 ? process.argv.slice(2) : listPngs(DEFAULT_ROOT);
-const failures = [];
-for (const file of files) {
-  const name = relative(process.cwd(), file).replaceAll("\\", "/");
+// 1 枚を調べ、空白か読めないなら理由の文字列、問題が無ければ null を返す。
+export function checkPng(buffer) {
   try {
-    const reason = findBlank(decodePng(readFileSync(file)));
-    if (reason) {
-      failures.push({ name, reason });
-    }
+    return findBlank(decodePng(buffer));
   } catch (error) {
-    failures.push({ name, reason: `読めない PNG (${error.message})` });
+    return `読めない PNG (${error.message})`;
   }
 }
 
-console.log(`${files.length} 枚の PNG を調べた。`);
-if (failures.length > 0) {
-  for (const { name, reason } of failures) {
-    // GitHub Actions の注釈として PR の画面に出す。
-    console.log(`::error file=${name}::${name}: ${reason}`);
+function main() {
+  const files = process.argv.length > 2 ? process.argv.slice(2) : listPngs(DEFAULT_ROOT);
+  const failures = [];
+  for (const file of files) {
+    const name = relative(process.cwd(), file).replaceAll("\\", "/");
+    const reason = checkPng(readFileSync(file));
+    if (reason) {
+      failures.push({ name, reason });
+    }
   }
-  console.log(
-    `空白の図が ${failures.length} 枚ある。画面を点けた状態で ` +
-      "dotnet run --project tools/screenshot-capture -c Release -- <slug> を実行して撮り直す。",
-  );
-  process.exit(1);
+
+  console.log(`${files.length} 枚の PNG を調べた。`);
+  if (failures.length > 0) {
+    for (const { name, reason } of failures) {
+      // GitHub Actions の注釈として PR の画面に出す。
+      console.log(`::error file=${name}::${name}: ${reason}`);
+    }
+    console.log(
+      `空白か読めない PNG が ${failures.length} 枚ある。空白の図は、画面を点けた状態で ` +
+        "dotnet run --project tools/screenshot-capture -c Release -- <slug> を実行して撮り直す。",
+    );
+    process.exit(1);
+  }
+  console.log("空白の図は無い。");
 }
-console.log("空白の図は無い。");
+
+// テストから import されたときは実行しない。
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

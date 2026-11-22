@@ -25,5 +25,9 @@ jobs:
           persist-credentials: false
 
       # ubuntu-latest に入っている Node を使う。スクリプトは外部パッケージを使わない。
+      # 先に判定と PNG の検証のテストを走らせ、検査そのものが壊れていないことを確かめる。
+      - name: Test the checker
+        run: node --test .github/scripts/check-blank-screenshots.test.mjs
+
       - name: Check images/articles for blank screenshots
         run: node .github/scripts/check-blank-screenshots.mjs
