@@ -266,7 +266,7 @@ Phase 4 の CodeRabbit で補完する**。特に技術検証(手順 2)は、公
    - [ ] CodeRabbit 等の全自動レビューボットの再レビューが**完了**(処理中表示なし)し、
          actionable な未解決指摘がゼロ。
          **例外:** PR の変更ファイルが **すべて** `.coderabbit.yaml` の `path_filters` で除外され、
-         CodeRabbit の応答が「Review skipped due to path filters」の場合は、レビュー無しで満たしたものとして扱う
+         CodeRabbit の応答が「Review was skipped due to path filters」の場合は、レビュー無しで満たしたものとして扱う
          (図の撮り直しだけの PR など。1 ファイルでも対象のファイルがあれば例外にならない。画像はマージ前に目視する)。
    - [ ] **全レビュースレッドが解決済みである**(作成者に関係なく `is_resolved == true`)。
    - [ ] **`CHANGES_REQUESTED` のレビューが残っていない。** `get_reviews` で、dismiss されていない

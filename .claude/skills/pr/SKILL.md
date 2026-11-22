@@ -214,7 +214,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
       その場合は check run 不在(未実行)を許容し、この項目は満たされたものとして扱う。
 - [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし)し、actionable な未解決指摘がゼロ。
       **例外:** PR の変更ファイルが **すべて** `.coderabbit.yaml` の `path_filters` で除外され、
-      CodeRabbit の応答が「Review skipped due to path filters」の場合は、レビュー無しで満たしたものとして扱う
+      CodeRabbit の応答が「Review was skipped due to path filters」の場合は、レビュー無しで満たしたものとして扱う
       (画像や `docs/verification/` の検証記録だけの PR。読めるファイルが無いので待っても通らない)。
       1 ファイルでも対象のファイルがあれば例外にならない。画像はマージ前に自分で目視する。
 - [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
