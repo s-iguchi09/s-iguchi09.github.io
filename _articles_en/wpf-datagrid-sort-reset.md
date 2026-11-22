@@ -139,6 +139,7 @@ The reset logic goes into a static class so that the Behavior later in this arti
 
 ```csharp
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -156,25 +157,28 @@ public static class TriStateSort
         SortDescriptionCollection sorts = dataGrid.Items.SortDescriptions;
         int groupingCount = CountGroupingSorts(dataGrid.Items);
 
-        if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+        using (dataGrid.Items.DeferRefresh()) // Re-sort once after all removals.
         {
-            // Shift+click: remove only the clicked column's descriptor. Other descriptors and arrows stay.
-            for (int i = groupingCount; i < sorts.Count; i++)
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
             {
-                if (sorts[i].PropertyName == e.Column.SortMemberPath)
+                // Shift+click: remove only the clicked column's descriptor. Other descriptors and arrows stay.
+                for (int i = groupingCount; i < sorts.Count; i++)
                 {
-                    sorts.RemoveAt(i);
-                    break;
+                    if (sorts[i].PropertyName == e.Column.SortMemberPath)
+                    {
+                        sorts.RemoveAt(i);
+                        break;
+                    }
                 }
             }
-        }
-        else
-        {
-            // Plain click: DataGrid has already cleared the other columns' arrows before this event.
-            // Remove every descriptor except the grouping ones so that none is left without an arrow.
-            while (sorts.Count > groupingCount)
+            else
             {
-                sorts.RemoveAt(sorts.Count - 1);
+                // Plain click: DataGrid has already cleared the other columns' arrows before this event.
+                // Remove every descriptor except the grouping ones so that none is left without an arrow.
+                while (sorts.Count > groupingCount)
+                {
+                    sorts.RemoveAt(sorts.Count - 1);
+                }
             }
         }
 
@@ -182,28 +186,26 @@ public static class TriStateSort
     }
 
     // When grouped, DataGrid inserts ascending descriptors for grouping at the start. Count them.
+    // Reordering GroupDescriptions later does not reinsert them, so match by property name, not by position.
     private static int CountGroupingSorts(ItemCollection items)
     {
-        int count = 0;
+        var groupProperties = new List<string>();
         foreach (GroupDescription group in items.GroupDescriptions)
         {
-            if (group is not PropertyGroupDescription property
-                || property.Converter != null
-                || property.StringComparison != StringComparison.Ordinal)
+            if (group is PropertyGroupDescription property
+                && property.Converter == null
+                && property.StringComparison == StringComparison.Ordinal)
             {
-                continue;
+                groupProperties.Add(property.PropertyName);
             }
+        }
 
-            if (count < items.SortDescriptions.Count
-                && items.SortDescriptions[count].PropertyName == property.PropertyName
-                && items.SortDescriptions[count].Direction == ListSortDirection.Ascending)
-            {
-                count++;
-            }
-            else
-            {
-                break;
-            }
+        int count = 0;
+        while (count < items.SortDescriptions.Count
+            && items.SortDescriptions[count].Direction == ListSortDirection.Ascending
+            && groupProperties.Remove(items.SortDescriptions[count].PropertyName))
+        {
+            count++;
         }
 
         return count;
@@ -230,7 +232,7 @@ A Shift+click keeps the other arrows, so only the clicked column's descriptor is
 
 When the view is grouped and a column header is clicked, `DataGrid` inserts an ascending descriptor at the start of `SortDescriptions` for each `PropertyGroupDescription` that has no `Converter` and uses `Ordinal` comparison ([AddGroupingSortDescriptions](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7334-L7361)).
 Sorting a column on the same property as the grouping produces two descriptors with the same `PropertyName`.
-`CountGroupingSorts` counts the grouping descriptors at the start and excludes them from the reset.
+`CountGroupingSorts` counts the grouping descriptors at the start, matching them by property name, and excludes them from the reset.
 
 The following table compares this handler with one that removes the first descriptor whose `PropertyName` matches the column (`FirstOrDefault`).
 

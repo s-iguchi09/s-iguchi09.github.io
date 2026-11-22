@@ -151,6 +151,7 @@ public static class DataGridSortHelper
 
 ```csharp
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -168,25 +169,28 @@ public static class TriStateSort
         SortDescriptionCollection sorts = dataGrid.Items.SortDescriptions;
         int groupingCount = CountGroupingSorts(dataGrid.Items);
 
-        if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+        using (dataGrid.Items.DeferRefresh()) // 外し終えてから 1 回だけ並べ直す
         {
-            // Shift + クリック: 対象列の条件だけを外す。他の列の条件と矢印は残る
-            for (int i = groupingCount; i < sorts.Count; i++)
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
             {
-                if (sorts[i].PropertyName == e.Column.SortMemberPath)
+                // Shift + クリック: 対象列の条件だけを外す。他の列の条件と矢印は残る
+                for (int i = groupingCount; i < sorts.Count; i++)
                 {
-                    sorts.RemoveAt(i);
-                    break;
+                    if (sorts[i].PropertyName == e.Column.SortMemberPath)
+                    {
+                        sorts.RemoveAt(i);
+                        break;
+                    }
                 }
             }
-        }
-        else
-        {
-            // 通常のクリック: 他の列の矢印は、DataGrid がこのイベントの前に消している。
-            // 矢印の無い条件が残らないよう、グループ化用を除く条件をすべて外す
-            while (sorts.Count > groupingCount)
+            else
             {
-                sorts.RemoveAt(sorts.Count - 1);
+                // 通常のクリック: 他の列の矢印は、DataGrid がこのイベントの前に消している。
+                // 矢印の無い条件が残らないよう、グループ化用を除く条件をすべて外す
+                while (sorts.Count > groupingCount)
+                {
+                    sorts.RemoveAt(sorts.Count - 1);
+                }
             }
         }
 
@@ -194,28 +198,26 @@ public static class TriStateSort
     }
 
     // グループ化していると、DataGrid は並び替えの条件の先頭に、グループ化用の昇順の条件を入れる。その数を数える
+    // GroupDescriptions の順を後から入れ替えても条件は入れ直されないので、順ではなくプロパティ名で照らす
     private static int CountGroupingSorts(ItemCollection items)
     {
-        int count = 0;
+        var groupProperties = new List<string>();
         foreach (GroupDescription group in items.GroupDescriptions)
         {
-            if (group is not PropertyGroupDescription property
-                || property.Converter != null
-                || property.StringComparison != StringComparison.Ordinal)
+            if (group is PropertyGroupDescription property
+                && property.Converter == null
+                && property.StringComparison == StringComparison.Ordinal)
             {
-                continue;
+                groupProperties.Add(property.PropertyName);
             }
+        }
 
-            if (count < items.SortDescriptions.Count
-                && items.SortDescriptions[count].PropertyName == property.PropertyName
-                && items.SortDescriptions[count].Direction == ListSortDirection.Ascending)
-            {
-                count++;
-            }
-            else
-            {
-                break;
-            }
+        int count = 0;
+        while (count < items.SortDescriptions.Count
+            && items.SortDescriptions[count].Direction == ListSortDirection.Ascending
+            && groupProperties.Remove(items.SortDescriptions[count].PropertyName))
+        {
+            count++;
         }
 
         return count;
@@ -242,7 +244,7 @@ Shift を押しながらのクリックでは他の列の矢印は消えない�
 
 グループ化しているときに列ヘッダーで並び替えると、`DataGrid` は `PropertyGroupDescription`（`Converter` が無く、比較が `Ordinal` のもの）ごとに、昇順の条件を `SortDescriptions` の先頭に入れる（[AddGroupingSortDescriptions](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7334-L7361)）。
 グループ化と同じプロパティの列で並び替えると、同じ `PropertyName` の条件が 2 つ並ぶ。
-`CountGroupingSorts` は先頭にあるグループ化用の条件を数え、解除の対象から外している。
+`CountGroupingSorts` は、先頭にあるグループ化用の条件をプロパティ名で照らして数え、解除の対象から外している。
 
 対象列と同じ `PropertyName` の最初の条件を外す書き方（`FirstOrDefault`）と比べた結果が次の表である。
 
