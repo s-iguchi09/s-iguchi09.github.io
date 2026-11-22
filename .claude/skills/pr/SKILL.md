@@ -145,7 +145,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
    - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
      状況を確認して進める(ユーザーへ指示を仰がない)。
    - **例外:** CodeRabbit の応答が「Review was skipped due to path filters」で、PR の変更ファイルが **すべて**
-     除外されている場合は、レビューが走らないので**この待機だけ**を終える(条件は Phase 4 の例外と同じ)。
+     除外されている場合は、レビューが走らないので**CodeRabbit の待機だけ**を終える
+     (条件は Phase 4 の例外と同じ)。他の自動レビューボットが処理中なら、その完了は引き続き待つ。
      CI 失敗・マージコンフリクト・他のレビュアーの指摘が残っていれば、手順 3〜6 で処理してから Phase 4 へ進む。
 
 3. **指摘・CI 失敗を修正する。** レビュー指摘または CI 失敗があるたびに:
@@ -217,7 +218,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
       その場合は check run 不在(未実行)を許容し、この項目は満たされたものとして扱う。
 - [ ] CodeRabbit 等の全自動レビューボットの再レビューが **完了**(処理中表示なし)し、actionable な未解決指摘がゼロ。
       **例外:** PR の変更ファイルが **すべて** `.coderabbit.yaml` の `path_filters` か CodeRabbit の既定のフィルター（`!**/*.png` など）で除外され、
-      CodeRabbit の応答が「Review was skipped due to path filters」の場合は、レビュー無しで満たしたものとして扱う
+      CodeRabbit の応答が「Review was skipped due to path filters」の場合は、CodeRabbit については
+      満たしたものとして扱う(他の自動レビューボットは従来どおり完了と指摘ゼロを要する)
       (画像や `docs/verification/` の検証記録だけの PR。読めるファイルが無いので待っても通らない)。
       1 ファイルでも対象のファイルがあれば例外にならない。画像はマージ前に自分で目視する。
 - [ ] **全レビュースレッドが解決済みである。** `get_review_comments` で取得した **すべての** スレッドについて、
