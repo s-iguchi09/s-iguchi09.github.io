@@ -144,6 +144,8 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      これらは中間シグナルで、後から actionable な指摘が追加されることがある。
    - 判断が付かない場合は、次の Webhook イベントの到着を待つか、`mcp__github__pull_request_read` で
      状況を確認して進める(ユーザーへ指示を仰がない)。
+   - **例外:** CodeRabbit の応答が「Review was skipped due to path filters」で、PR の変更ファイルが **すべて**
+     除外されている場合は、レビューが走らないので待機を終えて Phase 4 へ進む(条件は Phase 4 の例外と同じ)。
 
 3. **指摘・CI 失敗を修正する。** レビュー指摘または CI 失敗があるたびに:
    - 原因を診断してコード・記事・設定を修正する。
