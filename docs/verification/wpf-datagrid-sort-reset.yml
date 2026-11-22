@@ -3,8 +3,8 @@
 slug: "wpf-datagrid-sort-reset"
 scene: "DataGridSortResetScene"
 environment:
-  runtime: ".NET 10.0.10"
-  os: "Microsoft Windows 10.0.26200"
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26300"
 verifies:
   - "並び替えの状態が ICollectionView の SortDescriptions と列の SortDirection に分かれていること"
   - "SortDescriptions を消しただけでは列の SortDirection が残ること（ヘッダーの矢印が消えない）"
@@ -13,12 +13,19 @@ verifies:
   - "ItemsSource に渡した ICollectionView の SortDescriptions を消しても、列の SortDirection が残ること"
   - "コードから一方だけを操作すると 2 か所が食い違うのに対し、列ヘッダークリックで走る標準の並び替えでは両方が同時に更新されること"
   - "ListCollectionView.CustomSort を設定したビューに、記事の ClearSort（SortDescriptions.Clear と Refresh）を呼んでも CustomSort が残るか"
+  - "列ヘッダーは実際のマウスで 1 回ずつクリックし（クリックの間はダブルクリックの時間より長く空ける）、Shift は実際のキー入力で押したままにすること。途中の手順の後に、列の SortDirection が標準の並べ替えのとおりになっていなければ計測を止めること"
+  - "Category を降順にしてから Shift + クリックで Name を足し、Shift なしで Category をクリックすると、対象列と同じ PropertyName の最初の条件だけを外す以前のハンドラーでは Name の条件が残って Name の矢印が消え、記事の TriStateSort では条件も矢印も残らないこと"
+  - "同じ状態から Shift を押しながら Category をクリックすると、どちらのハンドラーでも Name の条件と矢印が残ること"
+  - "Category でグループ化（PropertyGroupDescription）して Category を降順にしてからもう一度クリックすると、以前のハンドラーではグループ化用の昇順の条件が外れて降順の条件と並びが残り、記事の TriStateSort ではグループ化用の条件だけが残ること"
 images:
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png"
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-state.svg"
   - "images/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.svg"
+  - "images/articles/wpf-datagrid-sort-reset/datagrid-tristate-sort.svg"
 tables:
   - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.en.md"
   - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-state.ja.md"
   - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.en.md"
   - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-sort-customsort.ja.md"
+  - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-tristate-sort.en.md"
+  - "_includes/tables/articles/wpf-datagrid-sort-reset/datagrid-tristate-sort.ja.md"

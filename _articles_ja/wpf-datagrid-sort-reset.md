@@ -37,6 +37,8 @@ WPF の `DataGrid` はソート機能を標準で持つが、要件によって�
 - `SortDescriptions` を足しただけでは、列の `SortDirection` は付かない。
 - `SortDescriptions` を 2 つ足すと、複数列ソートになる。
   1 つ目の条件で同点の行は、2 つ目の条件で並ぶ。
+- 複数列ソート中に、Shift を押さずに降順の列をもう一度クリックすると、他の列の矢印は消える。
+  `Sorting` イベントで対象列の条件だけを外すと、他の列の条件は矢印の無いまま残る。
 
 ## 問題
 
@@ -130,7 +132,7 @@ public static class DataGridSortHelper
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="3 つの DataGrid を並べた画面。左は Name 列に昇順の矢印が付き名前順、中央は降順の矢印が付き逆順、右は矢印が無くデータ本来の並びになっている。" width="650" height="171" loading="lazy">
-  <figcaption>同じデータに対する 3 状態の表示。未ソート（右）では対象列の <code>SortDescription</code> とヘッダーの矢印がどちらも消える。この例は 1 列だけでソートしているため、解除するとコレクション本来の並びに戻る。複数列でソートしている場合は他の列の条件が残るため、必ずしも元の並びには戻らない。</figcaption>
+  <figcaption>同じデータに対する 3 状態の表示。未ソート（右）では対象列の <code>SortDescription</code> とヘッダーの矢印がどちらも消える。この例は 1 列だけでソートしているため、解除するとコレクション本来の並びに戻る。複数列でソートしていて Shift を押しながら解除した場合は他の列の条件が残るため、必ずしも元の並びには戻らない。</figcaption>
 </figure>
 
 #### XAML
@@ -145,35 +147,118 @@ public static class DataGridSortHelper
 
 #### C\#
 
+解除の処理は、後の Behavior からも使えるよう静的クラスにまとめる。
+
 ```csharp
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 
-private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
+public static class TriStateSort
 {
-    if (sender is not DataGrid dataGrid) return;
-
-    if (e.Column.SortDirection == ListSortDirection.Descending)
+    // DataGrid の Sorting イベントから呼ぶ。降順の列をもう一度クリックしたときだけ、標準の処理の代わりに解除する
+    public static void OnSorting(DataGrid dataGrid, DataGridSortingEventArgs e)
     {
+        if (e.Column.SortDirection != ListSortDirection.Descending) return;
+
         e.Handled = true; // 標準処理をキャンセル
 
-        // 対象列の SortDescription のみ削除
-        var target = dataGrid.Items.SortDescriptions
-            .FirstOrDefault(sd => sd.PropertyName == e.Column.SortMemberPath);
+        SortDescriptionCollection sorts = dataGrid.Items.SortDescriptions;
+        int groupingCount = CountGroupingSorts(dataGrid.Items);
 
-        if (!string.IsNullOrEmpty(target.PropertyName))
+        using (dataGrid.Items.DeferRefresh()) // 外し終えてから 1 回だけ並べ直す
         {
-            dataGrid.Items.SortDescriptions.Remove(target);
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            {
+                // Shift + クリック: 対象列の条件だけを外す。他の列の条件と矢印は残る
+                for (int i = groupingCount; i < sorts.Count; i++)
+                {
+                    if (sorts[i].PropertyName == e.Column.SortMemberPath)
+                    {
+                        sorts.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // 通常のクリック: 他の列の矢印は、DataGrid がこのイベントの前に消している。
+                // 矢印の無い条件が残らないよう、グループ化用を除く条件をすべて外す
+                while (sorts.Count > groupingCount)
+                {
+                    sorts.RemoveAt(sorts.Count - 1);
+                }
+            }
         }
 
         e.Column.SortDirection = null;
-        dataGrid.Items.Refresh();
+    }
+
+    // グループ化していると、DataGrid は並び替えの条件の先頭に、グループ化用の昇順の条件を入れる。その数を数える
+    // GroupDescriptions の順を後から入れ替えても条件は入れ直されないので、順ではなくプロパティ名で照らす
+    private static int CountGroupingSorts(ItemCollection items)
+    {
+        var groupProperties = new List<string>();
+        foreach (GroupDescription group in items.GroupDescriptions)
+        {
+            if (group is PropertyGroupDescription property
+                && property.Converter == null
+                && property.StringComparison == StringComparison.Ordinal)
+            {
+                groupProperties.Add(property.PropertyName);
+            }
+        }
+
+        int count = 0;
+        while (count < items.SortDescriptions.Count
+            && items.SortDescriptions[count].Direction == ListSortDirection.Ascending
+            && groupProperties.Remove(items.SortDescriptions[count].PropertyName))
+        {
+            count++;
+        }
+
+        return count;
     }
 }
 ```
 
-この実装では、降順状態でさらにクリックされた場合のみ対象列のソートを解除し、複数列ソート時でも他列の条件は維持される。
+コードビハインドのハンドラーは、これを呼ぶだけである。
+
+```csharp
+private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
+{
+    if (sender is DataGrid dataGrid) TriStateSort.OnSorting(dataGrid, e);
+}
+```
+
+この実装は、降順の列をもう一度クリックしたときだけ標準の処理を止めて解除する。
+解除する範囲は、Shift を押しているかどうかで分けている。
+
+Shift を押さないクリックでは、`DataGrid` は `Sorting` イベントを発生させる前に、クリックした列以外の `SortDirection` を `null` にする（[DataGrid.cs の PerformSort](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7084-L7099) と [PrepareForSort](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7119-L7136)）。
+ここで対象列の条件だけを外すと、他の列の条件が矢印の無いまま残る。
+そのため、Shift なしのクリックでは列の条件をすべて外す。
+Shift を押しながらのクリックでは他の列の矢印は消えないので、対象列の条件だけを外す。
+
+グループ化しているときに列ヘッダーで並び替えると、`DataGrid` は `PropertyGroupDescription`（`Converter` が無く、比較が `Ordinal` のもの）ごとに、昇順の条件を `SortDescriptions` の先頭に入れる（[AddGroupingSortDescriptions](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7334-L7361)）。
+グループ化と同じプロパティの列で並び替えると、同じ `PropertyName` の条件が 2 つ並ぶ。
+`CountGroupingSorts` は、先頭にあるグループ化用の条件をプロパティ名で照らして数え、解除の対象から外している。
+
+対象列と同じ `PropertyName` の最初の条件を外す書き方（`FirstOrDefault`）と比べた結果が次の表である。
+
+{% include tables/articles/wpf-datagrid-sort-reset/datagrid-tristate-sort.ja.md %}
+
+.NET 10 / Windows 11 で、列ヘッダーを実際のマウスでクリックして測った結果。
+クリックの間はダブルクリックの時間より長く空け、Shift は実際のキー入力で押した。
+「列の矢印」は <code>SortDirection</code> が付いている列である。
+{: .table-caption}
+
+**最初に一致した条件を外す書き方では、Shift なしのクリックで `Name` の条件が残り、並びは名前順のままなのに矢印はどの列にも出ない。**
+グループ化した場合は、外れるのがグループ化用の条件で、降順の並びが残る。
+`TriStateSort` では、グループ化用の条件を除けば、どちらの場合も条件と矢印が一致する。
+Shift を押しながらのクリックでは、どちらの書き方でも `Name` の条件と矢印が残る。
 
 ### CollectionView を使って ViewModel から初期化する
 
@@ -238,8 +323,6 @@ Behavior 化する場合は、その処理を Behavior に含めるとコマン�
 
 ```csharp
 using Microsoft.Xaml.Behaviors;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows.Controls;
 
 namespace YourApp.Behaviors
@@ -258,26 +341,9 @@ namespace YourApp.Behaviors
             base.OnDetaching();
         }
 
-        private void OnSorting(object sender, DataGridSortingEventArgs e)
-        {
-            if (sender is not DataGrid grid) return;
-
-            if (e.Column.SortDirection == ListSortDirection.Descending)
-            {
-                e.Handled = true;
-
-                var sd = grid.Items.SortDescriptions
-                    .FirstOrDefault(x => x.PropertyName == e.Column.SortMemberPath);
-
-                if (!string.IsNullOrEmpty(sd.PropertyName))
-                {
-                    grid.Items.SortDescriptions.Remove(sd);
-                }
-
-                e.Column.SortDirection = null;
-                grid.Items.Refresh();
-            }
-        }
+        // 解除の処理は、3 回目のクリックの節の TriStateSort に任せる
+        private void OnSorting(object sender, DataGridSortingEventArgs e) =>
+            TriStateSort.OnSorting(AssociatedObject, e);
     }
 }
 ```
@@ -309,7 +375,8 @@ XAML 側は Behavior を宣言するだけで済むため、利用画面追加�
 
 **ヘッダークリックだけで完結させるなら、`Sorting` イベントで三状態にする。**
 「昇順 → 降順 → 未ソート」を 1 つの操作系にまとめられる。
-列単位で解除するのか全解除なのかを先に決めておかないと、イベント処理が複雑になる。
+この記事の `TriStateSort` は、Shift の有無で列単位の解除と全解除を分けている。
+要件が違う場合は、その分岐を変える。
 
 **MVVM を徹底し、コマンド経由で初期化するなら `ICollectionView`。**
 ソート状態を ViewModel 側に置けるため、UI へ依存せずテストできる。
@@ -335,8 +402,11 @@ XAML に宣言を 1 行足すだけで横展開でき、重複コードを減ら
 ## 注意点
 
 - `SortDescriptions` のクリアだけでは、ヘッダーの矢印の表示と並び順が食い違う。
-- `Sorting` イベント例で `SortMemberPath` をキーに解除する場合、対象列に `SortMemberPath` が未設定だと解除処理が意図どおり動作しない可能性がある。
-- 複数列ソートを併用する場合は、対象列のみを解除するか全解除するかを要件で明確化する必要がある。
+- `SortMemberPath` が空の列は、標準の並び替えでも並ばず、矢印も付かない（[DefaultSort](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7145-L7209)）。
+  そのため、解除の対象にもならない。
+  `DataGridTemplateColumn` では `SortMemberPath` を設定する。
+- この記事の `TriStateSort` は、Shift なしのクリックでは列の条件をすべて外し、Shift を押しながらのクリックでは対象列の条件だけを外す。
+  要件が違う場合は、この分岐を変える。
 
 ---
 

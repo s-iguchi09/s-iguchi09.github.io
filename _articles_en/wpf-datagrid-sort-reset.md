@@ -36,6 +36,8 @@ The following points were confirmed in that environment:
 - Clearing `SortDescriptions` alone leaves `SortDirection` on the column, so the header arrow stays.
 - Adding to `SortDescriptions` alone does not set `SortDirection` on the column.
 - Adding two entries to `SortDescriptions` produces a multi-column sort: rows that tie on the first condition are ordered by the second.
+- During a multi-column sort, clicking a descending column again without Shift removes the other columns' arrows.
+  If the `Sorting` handler then removes only the clicked column's descriptor, the other descriptors remain without an arrow.
 
 ## Problem
 
@@ -118,7 +120,7 @@ The three states appear as follows.
 
 <figure class="article-figure">
   <img src="/images/articles/wpf-datagrid-sort-reset/datagrid-sort-three-states.png" alt="Three DataGrid controls side by side. The left one shows an ascending arrow on the Name column with rows in name order, the middle one a descending arrow with the reverse order, and the right one has no arrow and shows the original data order." width="650" height="171" loading="lazy">
-  <figcaption>The three states rendered over the same data. In the unsorted state on the right, both the column's <code>SortDescription</code> and the header arrow are removed. Because this example sorts on a single column, clearing it returns the rows to the order of the underlying collection; when several columns are sorted, the remaining descriptors still apply and the original order is not necessarily restored.</figcaption>
+  <figcaption>The three states rendered over the same data. In the unsorted state on the right, both the column's <code>SortDescription</code> and the header arrow are removed. Because this example sorts on a single column, clearing it returns the rows to the order of the underlying collection; when several columns are sorted and one is cleared with Shift held, the remaining descriptors still apply and the original order is not necessarily restored.</figcaption>
 </figure>
 
 #### XAML
@@ -133,35 +135,118 @@ When columns such as `DataGridTemplateColumn` are used, `SortMemberPath` should 
 
 #### C\#
 
+The reset logic goes into a static class so that the Behavior later in this article can reuse it.
+
 ```csharp
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Input;
 
-private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
+public static class TriStateSort
 {
-    if (sender is not DataGrid dataGrid) return;
-
-    if (e.Column.SortDirection == ListSortDirection.Descending)
+    // Call this from the DataGrid Sorting event. It replaces the default processing only when a descending column is clicked again, and resets the sort instead.
+    public static void OnSorting(DataGrid dataGrid, DataGridSortingEventArgs e)
     {
+        if (e.Column.SortDirection != ListSortDirection.Descending) return;
+
         e.Handled = true; // Cancel default sorting behavior.
 
-        // Remove only the sort descriptor for the target column.
-        var target = dataGrid.Items.SortDescriptions
-            .FirstOrDefault(sd => sd.PropertyName == e.Column.SortMemberPath);
+        SortDescriptionCollection sorts = dataGrid.Items.SortDescriptions;
+        int groupingCount = CountGroupingSorts(dataGrid.Items);
 
-        if (!string.IsNullOrEmpty(target.PropertyName))
+        using (dataGrid.Items.DeferRefresh()) // Re-sort once after all removals.
         {
-            dataGrid.Items.SortDescriptions.Remove(target);
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            {
+                // Shift+click: remove only the clicked column's descriptor. Other descriptors and arrows stay.
+                for (int i = groupingCount; i < sorts.Count; i++)
+                {
+                    if (sorts[i].PropertyName == e.Column.SortMemberPath)
+                    {
+                        sorts.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                // Plain click: DataGrid has already cleared the other columns' arrows before this event.
+                // Remove every descriptor except the grouping ones so that none is left without an arrow.
+                while (sorts.Count > groupingCount)
+                {
+                    sorts.RemoveAt(sorts.Count - 1);
+                }
+            }
         }
 
         e.Column.SortDirection = null;
-        dataGrid.Items.Refresh();
+    }
+
+    // When grouped, DataGrid inserts ascending descriptors for grouping at the start. Count them.
+    // Reordering GroupDescriptions later does not reinsert them, so match by property name, not by position.
+    private static int CountGroupingSorts(ItemCollection items)
+    {
+        var groupProperties = new List<string>();
+        foreach (GroupDescription group in items.GroupDescriptions)
+        {
+            if (group is PropertyGroupDescription property
+                && property.Converter == null
+                && property.StringComparison == StringComparison.Ordinal)
+            {
+                groupProperties.Add(property.PropertyName);
+            }
+        }
+
+        int count = 0;
+        while (count < items.SortDescriptions.Count
+            && items.SortDescriptions[count].Direction == ListSortDirection.Ascending
+            && groupProperties.Remove(items.SortDescriptions[count].PropertyName))
+        {
+            count++;
+        }
+
+        return count;
     }
 }
 ```
 
-This logic removes only the clicked column from sorting, so existing sort conditions on other columns can remain intact.
+The code-behind handler only calls it.
+
+```csharp
+private void DataGrid_Sorting(object sender, DataGridSortingEventArgs e)
+{
+    if (sender is DataGrid dataGrid) TriStateSort.OnSorting(dataGrid, e);
+}
+```
+
+This handler cancels the default processing only when a descending column is clicked again.
+How much it clears depends on whether Shift is held.
+
+On a click without Shift, `DataGrid` sets `SortDirection` of every other column to `null` before it raises `Sorting` ([PerformSort](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7084-L7099) and [PrepareForSort](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7119-L7136) in DataGrid.cs).
+Removing only the clicked column's descriptor at that point would leave the other descriptors in effect with no arrow.
+A plain click therefore removes all column descriptors.
+A Shift+click keeps the other arrows, so only the clicked column's descriptor is removed.
+
+When the view is grouped and a column header is clicked, `DataGrid` inserts an ascending descriptor at the start of `SortDescriptions` for each `PropertyGroupDescription` that has no `Converter` and uses `Ordinal` comparison ([AddGroupingSortDescriptions](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7334-L7361)).
+Sorting a column on the same property as the grouping produces two descriptors with the same `PropertyName`.
+`CountGroupingSorts` counts the grouping descriptors at the start, matching them by property name, and excludes them from the reset.
+
+The following table compares this handler with one that removes the first descriptor whose `PropertyName` matches the column (`FirstOrDefault`).
+
+{% include tables/articles/wpf-datagrid-sort-reset/datagrid-tristate-sort.en.md %}
+
+Measured on .NET 10 / Windows 11 by clicking the column headers with real mouse input.
+Clicks were spaced longer than the double-click time, and Shift was pressed as real keyboard input.
+"Column arrows" lists the columns whose <code>SortDirection</code> is set.
+{: .table-caption}
+
+**With the first-match handler, a plain click leaves the `Name` descriptor in place, so the rows stay in name order while no column shows an arrow.**
+When grouped, the descriptor that gets removed is the grouping one, and the descending order remains.
+With `TriStateSort`, apart from the grouping descriptor, the descriptors and the arrows agree in both cases.
+A Shift+click keeps the `Name` descriptor and its arrow with either handler.
 
 ### Reset from ViewModel using `ICollectionView`
 
@@ -220,8 +305,6 @@ When the same tri-state rule is required in multiple screens, encapsulate the lo
 
 ```csharp
 using Microsoft.Xaml.Behaviors;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows.Controls;
 
 namespace YourApp.Behaviors
@@ -240,26 +323,9 @@ namespace YourApp.Behaviors
             base.OnDetaching();
         }
 
-        private void OnSorting(object sender, DataGridSortingEventArgs e)
-        {
-            if (sender is not DataGrid grid) return;
-
-            if (e.Column.SortDirection == ListSortDirection.Descending)
-            {
-                e.Handled = true;
-
-                var sd = grid.Items.SortDescriptions
-                    .FirstOrDefault(x => x.PropertyName == e.Column.SortMemberPath);
-
-                if (!string.IsNullOrEmpty(sd.PropertyName))
-                {
-                    grid.Items.SortDescriptions.Remove(sd);
-                }
-
-                e.Column.SortDirection = null;
-                grid.Items.Refresh();
-            }
-        }
+        // Delegate the reset to TriStateSort from the third-click section.
+        private void OnSorting(object sender, DataGridSortingEventArgs e) =>
+            TriStateSort.OnSorting(AssociatedObject, e);
     }
 }
 ```
@@ -289,7 +355,7 @@ Which approach applies is settled by what triggers the reset and by how many scr
 Placing `SortDescriptions.Clear()` next to `SortDirection = null` is all it takes, which makes it the fastest to adopt. It does reference the `DataGrid` from code-behind, so MVVM separation loosens.
 
 **Keeping the whole interaction on the header calls for tri-state handling in the `Sorting` event.**
-Ascending, descending and unsorted all live in one gesture. Decide up front whether a reset clears one column or all of them, or the event handling grows complicated.
+Ascending, descending and unsorted all live in one gesture. `TriStateSort` in this article uses Shift to choose between clearing one column and clearing all of them; change that branch if your requirement differs.
 
 **Strict MVVM with a command-driven reset calls for `ICollectionView`.**
 Sort state lives on the ViewModel side, which makes it testable without the UI. It assumes the View and ViewModel responsibilities are already separated.
@@ -313,8 +379,11 @@ One line of XAML per screen carries it across, cutting duplicated code. Provide 
 ## Notes
 
 - Clearing `SortDescriptions` alone leaves header arrows out of sync with actual data order.
-- In the `Sorting` event example, if reset logic uses `SortMemberPath` as the key, columns without `SortMemberPath` can fail to reset as expected.
-- For multi-column sorting, requirements should define whether reset means full clear or only target-column clear.
+- A column with an empty `SortMemberPath` is not sorted by the default sorting and gets no arrow ([DefaultSort](https://github.com/dotnet/wpf/blob/v10.0.13/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Controls/DataGrid.cs#L7145-L7209)).
+  It therefore never reaches the reset either.
+  Set `SortMemberPath` on a `DataGridTemplateColumn`.
+- `TriStateSort` in this article removes all column descriptors on a plain click and only the clicked column's descriptor on a Shift+click.
+  If your requirement differs, change that branch.
 
 ---
 
