@@ -1,0 +1,29 @@
+name: Check blank screenshots
+
+# 記事の図（ウィンドウの画面キャプチャ）に、タイトルバーの下が一色の空白の図が無いかを調べる。
+# 画面の消灯中に撮ると空白になり、CodeRabbit は画像をレビューしないため、ここで止める。
+#
+# main の ruleset で必須チェックにするため、paths で絞らずにすべての PR で実行する。
+# paths で絞ると、画像に触れない PR ではチェックが作られず、必須チェックが待機のまま残る。
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-blank-screenshots:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # ubuntu-latest に入っている Node を使う。スクリプトは外部パッケージを使わない。
+      - name: Check images/articles for blank screenshots
+        run: node .github/scripts/check-blank-screenshots.mjs
