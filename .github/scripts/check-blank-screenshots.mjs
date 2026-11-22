@@ -18,14 +18,18 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { inflateSync } from "node:zlib";
 
-// 撮影は表示倍率 100% だけで行う（Capture.SaveWindow が確かめる）。空白だった 5 枚では、
-// 一色の領域が上端から 22〜23 画素目で始まっていた。余裕を見て 30 画素を除く。
+// 空白だった 5 枚（表示倍率 100% で撮影）では、一色の領域が上端から 22〜23 画素目で始まっていた。
+// 余裕を見て 30 画素を除く。Capture.SaveWindow は表示倍率を確かめない（100% 以外を拒むのは
+// SaveScreenArea だけ）。倍率を上げて撮るとタイトルバーが 30 画素を超えることがあり、
+// その文字が検査領域に入ると、空白の図でも一色にならずに見逃す。
 const TITLE_BAR_HEIGHT = 30;
 // ウィンドウの枠（1 画素）と影を避ける。
 const EDGE = 3;
 const DEFAULT_ROOT = "images/articles";
 
 const CHANNELS = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 };
+// 色の型ごとに許されるビット深度（PNG の仕様）。
+const BIT_DEPTHS = { 0: [1, 2, 4, 8, 16], 2: [8, 16], 3: [1, 2, 4, 8], 4: [8, 16], 6: [8, 16] };
 
 function decodePng(buffer) {
   const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -36,11 +40,15 @@ function decodePng(buffer) {
   let offset = 8;
   let header;
   let palette;
+  let paletteAlpha;
   const idat = [];
   while (offset < buffer.length) {
     const length = buffer.readUInt32BE(offset);
     const type = buffer.toString("latin1", offset + 4, offset + 8);
     const data = buffer.subarray(offset + 8, offset + 8 + length);
+    if (data.length !== length) {
+      throw new Error(`${type} チャンクが途中で切れている`);
+    }
     offset += 12 + length;
     if (type === "IHDR") {
       header = {
@@ -48,10 +56,14 @@ function decodePng(buffer) {
         height: data.readUInt32BE(4),
         bitDepth: data[8],
         colorType: data[9],
+        compression: data[10],
+        filterMethod: data[11],
         interlace: data[12],
       };
     } else if (type === "PLTE") {
       palette = data;
+    } else if (type === "tRNS") {
+      paletteAlpha = data;
     } else if (type === "IDAT") {
       idat.push(data);
     } else if (type === "IEND") {
@@ -62,13 +74,25 @@ function decodePng(buffer) {
   if (!header) {
     throw new Error("IHDR が無い");
   }
-  const { width, height, bitDepth, colorType, interlace } = header;
+  const { width, height, bitDepth, colorType, compression, filterMethod, interlace } = header;
+  if (width === 0 || height === 0) {
+    throw new Error(`幅か高さが 0 (${width}x${height})`);
+  }
   const channels = CHANNELS[colorType];
   if (!channels) {
-    throw new Error(`未対応の色の型 ${colorType}`);
+    throw new Error(`未知の色の型 ${colorType}`);
+  }
+  if (!BIT_DEPTHS[colorType].includes(bitDepth)) {
+    throw new Error(`色の型 ${colorType} に許されないビット深度 ${bitDepth}`);
+  }
+  if (compression !== 0 || filterMethod !== 0) {
+    throw new Error(`未知の圧縮方式 ${compression} かフィルター方式 ${filterMethod}`);
   }
   if (interlace !== 0) {
     throw new Error("インターレースの PNG は未対応");
+  }
+  if (colorType === 3 && !palette) {
+    throw new Error("パレットの画像に PLTE が無い");
   }
 
   const bitsPerPixel = channels * bitDepth;
@@ -126,9 +150,14 @@ function decodePng(buffer) {
       const at = x * channels * bytes;
       values = Array.from(line.subarray(at, at + channels * bytes));
     }
-    if (colorType === 3 && palette) {
-      const index = values[0] * 3;
-      values = Array.from(palette.subarray(index, index + 3));
+    if (colorType === 3) {
+      // 同じ RGB でもアルファが違う項目があるので、tRNS のアルファ（省略時は 255）も比べる。
+      const index = values[0];
+      if (index * 3 + 3 > palette.length) {
+        throw new Error(`パレットに無い番号 ${index}`);
+      }
+      const alpha = paletteAlpha && index < paletteAlpha.length ? paletteAlpha[index] : 255;
+      values = [...palette.subarray(index * 3, index * 3 + 3), alpha];
     }
     return values.join(",");
   }
