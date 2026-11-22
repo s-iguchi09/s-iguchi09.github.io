@@ -31,6 +31,23 @@ const CHANNELS = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 };
 // 色の型ごとに許されるビット深度（PNG の仕様）。
 const BIT_DEPTHS = { 0: [1, 2, 4, 8, 16], 2: [8, 16], 3: [1, 2, 4, 8], 4: [8, 16], 6: [8, 16] };
 
+// チャンクの CRC（PNG の仕様の CRC-32）。古い Node でも動くよう zlib.crc32 は使わない。
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) {
+    c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  }
+  return c >>> 0;
+});
+
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (const b of bytes) {
+    c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8);
+  }
+  return (c ^ 0xffffffff) >>> 0;
+}
+
 function decodePng(buffer) {
   const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
   if (!signature.every((b, i) => buffer[i] === b)) {
@@ -42,12 +59,20 @@ function decodePng(buffer) {
   let palette;
   let paletteAlpha;
   const idat = [];
+  let ended = false;
   while (offset < buffer.length) {
+    // 長さ 4・型 4・データ・CRC 4 バイトのチャンク全体がファイルに収まっていること。
+    if (offset + 12 > buffer.length) {
+      throw new Error("チャンクが途中で切れている");
+    }
     const length = buffer.readUInt32BE(offset);
     const type = buffer.toString("latin1", offset + 4, offset + 8);
-    const data = buffer.subarray(offset + 8, offset + 8 + length);
-    if (data.length !== length) {
+    if (offset + 12 + length > buffer.length) {
       throw new Error(`${type} チャンクが途中で切れている`);
+    }
+    const data = buffer.subarray(offset + 8, offset + 8 + length);
+    if (crc32(buffer.subarray(offset + 4, offset + 8 + length)) !== buffer.readUInt32BE(offset + 8 + length)) {
+      throw new Error(`${type} チャンクの CRC が合わない`);
     }
     offset += 12 + length;
     if (type === "IHDR") {
@@ -67,10 +92,14 @@ function decodePng(buffer) {
     } else if (type === "IDAT") {
       idat.push(data);
     } else if (type === "IEND") {
+      ended = true;
       break;
     }
   }
 
+  if (!ended) {
+    throw new Error("IEND が無い（ファイルが途中で切れている）");
+  }
   if (!header) {
     throw new Error("IHDR が無い");
   }
