@@ -31,9 +31,10 @@ As the foundation article of the series, this piece explains the rationale behin
 - Approach: split public methods from iterators; disable automatically on migration via `#if !NETCOREAPP`
 - Verification environment: .NET 10 / Windows 11
 
-The four methods were built for `net48` (polyfill) and for `net10.0` (where `#if` switches to the BCL), run on the same input, and the results compared.
+A `net48` build (the polyfill for `TakeLast` / `SkipLast`, and the BCL versions of `Append` / `Prepend`, which exist from .NET Framework 4.7.1) was run on the same input as the `net10.0` BCL and the results compared.
 How `TakeLast` / `SkipLast` treat edge counts is where implementations tend to diverge, so 0, counts beyond the length, and negative counts were compared in particular.
-Findings:
+Which targets have the four methods in the BCL, and how the project format affects symbol definitions, were also checked by actually building.
+The results:
 
 - `Append` and `Prepend` are present in the BCL from .NET Framework 4.7.1 onward, so adding the polyfill causes a conflict.
 - Passing 0, a value larger than the element count, or a negative value to `TakeLast` / `SkipLast` produces the same result on both targets.
@@ -239,7 +240,7 @@ Two structural traits carry the design principles explained below: every method 
 
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.en.md %}
 
-The four methods applied to <code>1..5</code> and to an empty sequence, with the <code>net48</code> polyfill and the <code>net10.0</code> built-in run through the same driver. They agree including counts of <code>0</code>, beyond the length, and negative. Measured with .NET SDK 10.0.302.
+The four methods applied to <code>1..5</code>, and <code>TakeLast</code> to an empty sequence, with <code>net48</code> (polyfill for <code>TakeLast</code> / <code>SkipLast</code>, BCL for <code>Append</code> / <code>Prepend</code>) and the <code>net10.0</code> built-in run through the same driver. They agree including counts of <code>0</code>, beyond the length, and negative. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 ---

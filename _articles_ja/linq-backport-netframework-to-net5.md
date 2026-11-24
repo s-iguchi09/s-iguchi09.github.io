@@ -32,9 +32,10 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 - 方針: public メソッドと iterator を分離し、`#if !NETCOREAPP` で移行時に自動無効化する
 - 検証環境: .NET 10 / Windows 11
 
-4 メソッドを `net48`（ポリフィル）と `net10.0`（`#if` で本家に切り替わる）の両方でビルドし、同じ入力で実行して結果を突き合わせた。
+`net48` でビルドした結果（`TakeLast` / `SkipLast` はポリフィル、`Append` / `Prepend` は .NET Framework 4.7.1 以降にある BCL 版）を、`net10.0` の本家と同じ入力で突き合わせた。
 `TakeLast` / `SkipLast` は件数指定の端の扱いが実装によって分かれやすいため、0・要素数超過・負数を重点的に比べている。
-確認した点は次のとおり。
+あわせて、4 メソッドが BCL にあるターゲットと、プロジェクト形式によるシンボル定義の違いも、実際にビルドして調べた。
+分かった点は次のとおり。
 
 - `Append` / `Prepend` は .NET Framework 4.7.1 以降の BCL に存在するため、ポリフィルを足すと衝突する。
 - `TakeLast` / `SkipLast` に 0・要素数を超える値・負数を渡した場合の結果は、両ターゲットで一致する。
@@ -237,7 +238,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.ja.md %}
 
-<code>1..5</code> と空の並びに 4 メソッドを適用し、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
+<code>1..5</code> に 4 メソッドを、空の並びに <code>TakeLast</code> を適用し、<code>net48</code>（<code>TakeLast</code> / <code>SkipLast</code> はポリフィル、<code>Append</code> / <code>Prepend</code> は BCL 版）と <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 境界値を含めて一致することが、この表の要点である。

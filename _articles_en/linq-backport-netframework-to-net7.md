@@ -62,7 +62,7 @@ A dedicated method with the identity function baked in removes that noise, and .
 
 ## Implementation by Delegation
 
-The following is the complete polyfill for all four signatures.
+Here are the four `Order` / `OrderDescending` signatures as a single polyfill.
 Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS. On .NET 5 and later, the default depends on the Windows version (on Windows Server 2019, for example, ICU became the default only in .NET 7), and an app can also be configured to use NLS. On the test machine (.NET 10 on Windows 11), net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
 With nothing but delegation and no dependencies, it works as soon as it is dropped into a project as, for example, `LinqExtensions.Net7.cs`.
 
@@ -122,7 +122,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.en.md %}
 
-The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, culture-sensitive ordering, and incomparable elements. All three mismatching rows stem from the runtime’s own comparison. Measured with .NET SDK 10.0.302.
+The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, culture-sensitive ordering, and incomparable elements. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. Both are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
@@ -198,11 +198,11 @@ Code that handles exceptions by type should account for this difference during m
 
 All four `Order` / `OrderDescending` signatures sit inside a single `#if !NET7_0_OR_GREATER`.
 Guarding with `!NETCOREAPP` would strip the polyfill on .NET Core, .NET 5 and .NET 6, and `!NET6_0_OR_GREATER` would strip it on .NET 6 — runtimes that do not have `Order` yet.
-Call sites then fail with `CS1061`, "does not contain a definition for 'Order'" (confirmed by calling `Order()` on `net6.0` without the polyfill).
+Call sites then fail with `CS1061`, "does not contain a definition for 'Order'" (confirmed with .NET SDK 10.0.404 on Linux by calling `Order()` on `net6.0` without the polyfill).
 
-Because this polyfill is pure delegation, call sites need no rewriting once the guard flips.
+Because its return type matches the BCL, this polyfill asks nothing of call sites once the guard flips.
 The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` keeps compiling unchanged after moving to .NET 7 or later.
-Matching the return type, as discussed in compatibility question 1, is what lets the migration leave call sites alone.
+Had the return type been narrowed to `IEnumerable<T>`, pre-migration code could not chain `ThenBy`, leaving a rewrite for after the migration (Compatibility Question 1).
 
 The general rule for choosing version symbols is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
@@ -222,7 +222,7 @@ The general rule for choosing version symbols is laid out in the [.NET 6 backpor
 | --- | --- | --- | --- |
 | Delegation polyfill (this article) | A few lines; no algorithmic bugs possible | Cannot reproduce behavior the delegate itself lacks (exception type) | Using the `Order` spelling before migrating |
 | Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to `Order` | Few call sites and no migration planned |
-| Upgrade to .NET 7 or later | Root fix; exception types for incomparable elements match the BCL | .NET 7 itself is out of support, so the real target is .NET 10 or similar | When exception types must match the BCL too |
+| Upgrade to .NET 7 or later | Root fix; the delegation file can simply be deleted | .NET 7 was an STS release that [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in May 2024, so an upgrade goes on to an LTS such as .NET 10 | When you want other APIs from .NET 7 onward, not just `Order` |
 
 Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after a .NET 7 migration means hunting down and replacing every call site.
 With the polyfill in place, code uses `Order` from day one, and conditional compilation switches to the built-in implementation automatically at migration time.

@@ -29,8 +29,9 @@ The two approaches differ not just in memory efficiency but in how they treat `n
 - Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0+. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj`
 - Verification environment: .NET 10 / Windows 11
 
-The API does not guarantee the order of keys in the aggregated result, so the same input was aggregated on `net48` (polyfill) and `net10.0` (BCL) and compared down to the key order, not just the values.
-Findings:
+The API does not guarantee the order of keys in the aggregated result, so two implementations may disagree on it.
+The same input was therefore aggregated on `net48` (polyfill) and `net10.0` (BCL) and compared down to the key order, not just the values.
+This showed:
 
 - `CountBy` and `AggregateBy` return keys in first-seen order.
 - The contents of the tuple returned by `Index`, and its result for an empty sequence, match on both targets.
@@ -343,15 +344,13 @@ This matches the built-in .NET 9 behavior of the internal dictionary rejecting `
 
 ## Migration Guard
 
-The polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
+Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/) — disable at and above the introducing version — the polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
 `CountBy`, `AggregateBy` and `Index` do not exist on .NET 8 or earlier, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would strip the polyfill on .NET 8 and break compilation at the call sites.
 
 What deserves attention with this guard is that the polyfill keeps running after a move to .NET 8.
 In a project that still targets `net8.0`, or a library multi-targeting `net48` and `net8.0`, the three methods are missing from the BCL, so this article's dictionary-based implementation is what runs in production.
 The BCL implementation takes over only once the project moves to .NET 9 or later.
-Since key enumeration order is not guaranteed by the API, as noted above, making the ordering explicit at the .NET 8 stage keeps order-dependent code safe from that switch.
-
-The general rule for choosing the symbol is summarized in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+Since key enumeration order is not guaranteed by the API, as noted above, making the ordering explicit while the polyfill is still running keeps order-dependent code safe from that switch.
 
 ---
 
@@ -371,7 +370,7 @@ The general rule for choosing the symbol is summarized in the [.NET 6 backport a
 | Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
 | Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; mass replacement at migration | Few aggregation sites where allocations do not matter |
-| Upgrade to .NET 9 or later | Root fix plus the allocation savings | .NET 9 was a standard-term support (STS) release and is out of support, so the real target is .NET 10 | When you want the BCL's lower-allocation aggregation |
+| Upgrade to .NET 9 or later | Root fix plus the allocation savings | .NET 9, an STS release, [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026 together with .NET 8, so a move should target a supported release such as .NET 10 | When you want the BCL's lower-allocation aggregation |
 
 ---
 

@@ -28,11 +28,11 @@ It also covers the version-specific migration guard that first becomes necessary
 - Language version: beyond `#nullable enable` and `using var` (C# 8.0), the implementation uses the `TSource?` return type of `MaxBy` / `MinBy` (a nullable annotation on an unconstrained type parameter), which requires C# 9.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `9.0` or later in the `.csproj`
 - Verification environment: .NET 10 / Windows 11
 
-The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying the `Chunk` size and the element type passed to `MaxBy` / `MinBy`.
+The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying the `Chunk` size, the element type passed to `MaxBy` / `MinBy`, and the key for `DistinctBy`.
 The comparison showed:
 
 - `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source` (including `int.MaxValue`), or uses an invalid `size`.
-- What `MaxBy` / `MinBy` return for an empty sequence differs between a non-nullable value type such as `int` and a reference type.
+- What `MaxBy` returns for an empty sequence differs between a non-nullable value type such as `int` and a reference type.
 - The elements `DistinctBy` keeps, and their order, match on both targets.
 
 ---
@@ -260,7 +260,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.en.md %}
 
-Four <code>Chunk</code> sizes plus an invalid one, and <code>MaxBy</code> over empty value-type and reference-type sequences, compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. Measured with .NET SDK 10.0.302.
+Mainly four <code>Chunk</code> sizes plus an invalid one and <code>MaxBy</code> over empty value-type and reference-type sequences, along with <code>MinBy</code> and <code>DistinctBy</code>, compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides agree even on `MaxBy` over an empty sequence, which throws `InvalidOperationException` for a value type and returns `null` for a reference type. That difference is not readable from the signature.
@@ -428,7 +428,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 | Hand-rolled polyfill (this article) | No dependency; also fixes the complexity problems | Implementation effort | Projects minimizing dependencies |
 | Keep the workaround idioms | No extra code | Complexity and allocation waste persists | Data that is always tiny |
 | MoreLINQ (NuGet) | Rich, battle-tested method set | Adds an external dependency | Projects needing many extra methods |
-| Upgrade to .NET 6 or later | Root fix; the single-pass implementations come from the BCL | .NET 6 itself is out of support, so the real target is .NET 10 or similar | When you also want the other new APIs |
+| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | .NET 6 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you also want the other new APIs |
 
 `MoreLINQ` (NuGet package `morelinq`) covers `Chunk` and `MaxBy` equivalents, but when only these four methods are needed, a dependency-free polyfill is simpler to maintain.
 

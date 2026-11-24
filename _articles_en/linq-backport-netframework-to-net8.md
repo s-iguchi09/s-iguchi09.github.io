@@ -87,9 +87,9 @@ On top of that, three signature-design points are aligned with the built-in API.
 
 ## Implementation
 
-The following is the complete polyfill for all 4 signatures.
+The polyfill below provides four signatures: the `KeyValuePair` and tuple forms, each with and without a comparer.
 For sources implementing `ICollection<T>`, the dictionary capacity is pre-sized from the element count, avoiding rehashing just as the built-in implementation does.
-Adding it as, for example, `LinqExtensions.Net8.cs` does not change what existing `ToDictionary` calls that pass a `keySelector` bind to.
+Adding it as, for example, `LinqExtensions.Net8.cs` does not make existing `ToDictionary` calls that pass a `keySelector` ambiguous (a `net48` build with this polyfill and three existing call forms side by side compiled cleanly).
 
 ```csharp
 #nullable enable
@@ -287,10 +287,12 @@ What .NET 8 added to `ToDictionary` is not a new method but new overloads of an 
 So when a wrong guard strips the polyfill on .NET 7 or earlier, the symptom differs from the other backports, which add new methods.
 
 - Existing calls that pass a `keySelector` still bind to the old overloads and compile without complaint
-- Only selector-free calls fail, and the error is not "no such method" but `CS1501`, "No overload for method 'ToDictionary' takes 0 arguments"
+- Only selector-free calls fail, and the error is not "no such method"
+- A parameterless `ToDictionary()` fails with `CS1501`, "No overload for method 'ToDictionary' takes 0 arguments"
+- A comparer-only `ToDictionary(comparer)` is matched against the existing `ToDictionary(keySelector)` and fails with `CS0411`, "The type arguments … cannot be inferred from the usage"
 
-The message reads like a mistake at the call site, which makes it easy to miss that the guard condition is the real cause.
-Building `pairs.ToDictionary()` without the polyfill on `net6.0` and `net7.0` produced `CS1501` on both.
+Both messages read like a mistake at the call site, which makes it easy to miss that the guard condition is the real cause.
+Both errors were confirmed with .NET SDK 10.0.404 on Linux by building for `net7.0` without the polyfill (the parameterless call gave the same `CS1501` on `net6.0` too).
 Guarding with `!NETCOREAPP` triggers this error on .NET Core and .NET 5–7; guarding with `!NET7_0_OR_GREATER` triggers it on .NET 7.
 
 For the general rule — disable at and above the version that introduced the API — see the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
@@ -312,7 +314,7 @@ For the general rule — disable at and above the version that introduced the AP
 | --- | --- | --- | --- |
 | Hand-rolled polyfill (this article) | No dependency; signatures match the built-ins exactly | Requires overload-design care | `#nullable enable` codebases heading toward migration |
 | Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Both selectors written every time; mass replacement at migration | When only a handful of conversions exist |
-| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | .NET 8 support ended in November 2026, so the real target is .NET 10 | When you also want the other new APIs |
+| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | .NET 8 [also went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, so a new move should pick a supported release such as .NET 10 | When you also want the other new APIs |
 
 Inline selectors cost nothing today, but consolidating to the selector-free spelling after a .NET 8 migration means finding and replacing every call site.
 

@@ -28,7 +28,7 @@ It then digs into a concern unique to this backport, born from the fact that out
 - Verification environment: .NET 10 / Windows 11
 
 The two join methods were compared output-for-output, and `Shuffle` — being random — as a set of elements, between `net48` (polyfill) and `net10.0` (BCL).
-Confirmed:
+Two points were confirmed:
 
 - The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.
 - `Shuffle` returns a permutation of the original sequence (compared after sorting, since the order is random).
@@ -77,7 +77,8 @@ Random ordering has the same shape of problem: `OrderBy(_ => Guid.NewGuid())` ge
 The following is the complete polyfill for `LeftJoin` (2 signatures), `RightJoin` (2 signatures) and `Shuffle` (1 signature).
 `LeftJoin` / `RightJoin` embed the composition idiom above in the same shape as the built-ins, and `Shuffle` buffers the source into an array before applying a Fisher–Yates shuffle.
 The reasons for placing the polyfill in `System.Linq` and for the migration guard are covered in the [series foundation article](/articles/linq-backport-netframework-to-net5/).
-Add it as, for example, `LinqExtensions.Net10.cs`. Only the choice of random source branches per target, through the inner `#if`.
+Add it as, for example, `LinqExtensions.Net10.cs`.
+Only the choice of random source branches per target, through the inner `#if`.
 
 ```csharp
 #nullable enable
@@ -345,15 +346,16 @@ For server-side outer joins in database queries below .NET 10, keep writing the 
 
 ## Migration Guard
 
-The polyfill is wrapped in `#if !NET10_0_OR_GREATER`.
+Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/), the polyfill is wrapped in `#if !NET10_0_OR_GREATER`, which turns it off on .NET 10, where the methods arrived.
 `LeftJoin`, `RightJoin` and `Shuffle` do not exist on .NET 9 or earlier, so guarding with `!NETCOREAPP` strips the polyfill on .NET Core and .NET 5–9, and `!NET9_0_OR_GREATER` strips it on .NET 9 — both break compilation.
 
-Two things behave differently before and after this guard flips:
+When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
+.NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` polyfill.
+A query that joined on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
+If the provider can translate `LeftJoin`, the join moves to the server; if it cannot, a query that worked before the migration may throw at run time.
 
-- **Calls on `IQueryable<T>`**: .NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` one. A query that joined on the client before the migration is handed to the provider afterwards — the flip side of the pitfall in the previous section, where the execution location changes without touching the source. Calling `LeftJoin` on an `IQueryable<int>` on `net10.0` confirmed that it returns an `IQueryable<T>`.
-- **The random source of `Shuffle`**: separately from the outer guard, an inner `#if NET6_0_OR_GREATER` chooses the random source. On .NET 6–9 the polyfill stays active and uses `Random.Shared`, a path different from both .NET Framework and the .NET 10 BCL.
-
-The general rule for choosing the symbol is covered in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+Calling `LeftJoin` on an `IQueryable<int>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that it returns an `IQueryable<T>` (binding to the `Queryable` version).
+Translation support was not checked per provider, so run the affected queries against the actual provider when migrating.
 
 ---
 
