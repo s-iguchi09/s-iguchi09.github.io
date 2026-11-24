@@ -269,6 +269,7 @@ XAML では、列挙体のプロパティごとに異なる `GroupName` を与�
   一方でクリック時の `ConvertBack` は文字列を返し、WPF の既定の型変換で列挙体へ変換されるため、ソースの更新だけは成功する。
   実測では、ViewModel の値だけが変わり、`Quality` 側の画面はどれも未選択のまま、という状態になった（表の「ConverterParameter=Draft（string）」）。
   `x:Static` で列挙体の値を渡すか、`Convert` 側で `Enum.Parse` して受けること。
+  `bool` の値を `ConverterParameter=True` と書いた場合に同じ理由で反転しない例は、[IValueConverter の記事](/ja/articles/wpf-ivalueconverter-visibility-enum-display-name/)で測っている。
 - **`ConverterParameter` にはバインドできない。**
   `Binding` は `BindingBase` を経て `MarkupExtension` を継承しており、`DependencyObject` ではない。
   したがって `ConverterParameter` は依存関係プロパティではなく、`{Binding ...}` を入れ子にして動的な値を渡すことはできない。

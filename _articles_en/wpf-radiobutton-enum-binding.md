@@ -268,6 +268,7 @@ Selecting `Draft` changes only `Quality`, leaving the `PageLayout` selection int
   On click, `ConvertBack` still returns that string, and WPF's default type conversion turns it into the enum value, so only the source update succeeds.
   In the measured run, the ViewModel value changed while every button on the `Quality` side stayed cleared (the `ConverterParameter=Draft (string)` rows).
   Pass the enum value with `x:Static`, or call `Enum.Parse` inside `Convert`.
+  The same cause keeps a `bool` written as `ConverterParameter=True` from inverting; that case is measured in the [IValueConverter article](/articles/wpf-ivalueconverter-visibility-enum-display-name/).
 - **`ConverterParameter` cannot be data bound.**
   `Binding` derives from `BindingBase` and ultimately from `MarkupExtension`, not from `DependencyObject`.
   `ConverterParameter` is therefore not a dependency property and cannot host a nested `{Binding ...}`.
