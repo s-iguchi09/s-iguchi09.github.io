@@ -32,9 +32,9 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 - 方針: public メソッドと iterator を分離し、`#if !NETCOREAPP` で移行時に自動無効化する
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+4 メソッドを `net48`（ポリフィル）と `net10.0`（`#if` で本家に切り替わる）の両方でビルドし、同じ入力で実行して結果を突き合わせた。
+`TakeLast` / `SkipLast` は件数指定の端の扱いが実装によって分かれやすいため、0・要素数超過・負数を重点的に比べている。
+確認した点は次のとおり。
 
 - `Append` / `Prepend` は .NET Framework 4.7.1 以降の BCL に存在するため、ポリフィルを足すと衝突する。
 - `TakeLast` / `SkipLast` に 0・要素数を超える値・負数を渡した場合の結果は、両ターゲットで一致する。
@@ -235,11 +235,9 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。境界値（<code>0</code>・要素数超過・負数・空の並び）も含めて一致している。.NET SDK 10.0.302 で測定した。
+<code>1..5</code> と空の並びに 4 メソッドを適用し、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 境界値を含めて一致することが、この表の要点である。

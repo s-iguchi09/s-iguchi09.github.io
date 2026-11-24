@@ -28,9 +28,8 @@ image: /images/articles/linq-backport-netframework-to-net9/linq-countby-aggregat
 - 言語バージョン: `#nullable enable` と `where TKey : notnull` は C# 8.0 以上を必要とする。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+集計結果のキーの並び順は API として保証されていないため、`net48`（ポリフィル）と `net10.0`（本家）で同じ入力を集計し、値だけでなく並び順まで比べた。
+分かったのは次の点である。
 
 - `CountBy` / `AggregateBy` が返すキーは、最初に現れた順に並ぶ。
 - `Index` が返すタプルの中身と、空の並びに対する結果は、両ターゲットで一致する。
@@ -111,7 +110,7 @@ public static IEnumerable<KeyValuePair<TKey, int>> CountBy<TSource, TKey>(
 ## 実装例
 
 以下は 3 メソッド（`AggregateBy` の `seed` 版・`seedSelector` 版を含む計 4 シグネチャ）のポリフィル実装一式である。
-プロジェクトに `LinqExtensions.Net9.cs` などの名前でそのまま追加して使用できる。
+`LinqExtensions.Net9.cs` などのファイル名で追加する。
 
 ```csharp
 #nullable enable
@@ -238,11 +237,9 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+大文字小文字だけが違うキーを混ぜた入力を集計し、キーの並び順と <code>null</code> キーの例外まで <code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 この入力とこの実行環境では、どちらもキーが最初に現れた順に並んだ。出力はその順序まで含めて一致している。
@@ -251,7 +248,6 @@ namespace System.Linq
 `CountBy` と `AggregateBy` はいずれも `Dictionary<TKey, TValue>` を列挙して結果を返すため、列挙順は実装に依存する。
 順序に意味を持たせる場合は、呼び出し側で明示的に並べ替える。
 
-コンパイル時に `NET9_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 9 未満の環境）でのみ、上記クラスが有効になる。
 `AggregateBy` の `seed` 版は、初期値を返すだけの `seedSelector`（`key => seed`）に読み替えて共通の集計本体へ委譲している。
 
 ---
@@ -348,8 +344,14 @@ var query = numbers.CountBy(n => n);
 ## 移行ガード
 
 本ポリフィルは `#if !NET9_0_OR_GREATER` で囲む。
-`CountBy`・`AggregateBy`・`Index` は .NET 8 以前に存在しないため、`!NETCOREAPP` や `!NET8_0_OR_GREATER` を条件にすると .NET 8 向けビルドでポリフィルが無効化され、コンパイルエラーになる。
-シンボル選択の一般規則（追加されたバージョン以上で無効化する）は[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
+`CountBy`・`AggregateBy`・`Index` は .NET 8 以前に無いため、`!NETCOREAPP` や `!NET8_0_OR_GREATER` を条件にすると .NET 8 でポリフィルが外れ、呼び出し箇所がコンパイルエラーになる。
+
+このガードで意識しておきたいのは、.NET 8 へ移行した時点ではまだポリフィルが動き続けることである。
+`net8.0` をターゲットにしたまま運用しているプロジェクトや、`net48` と `net8.0` をマルチターゲットしているライブラリでは、3 メソッドが BCL に無いため、本記事の辞書ベース実装がそのまま本番で使われる。
+本家の実装に入れ替わるのは、.NET 9 以降へ上げたときである。
+前述のとおりキーの列挙順は API として保証されていないため、順序に依存する箇所は .NET 8 の段階で並べ替えを明示しておくと、その入れ替わりの影響を受けない。
+
+シンボル選択の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)にまとめている。
 
 ---
 
@@ -368,8 +370,8 @@ var query = numbers.CountBy(n => n);
 | --- | --- | --- | --- |
 | 辞書ベースのポリフィル（本記事） | 本家と同じメモリ特性・例外挙動 | 実装がやや長い | 移行時に挙動を変えたくない場合 |
 | `GroupBy` への委譲ポリフィル | 実装が数行で済む | 中間グルーピングを割り当てる・`null` キーの挙動が本家と異なる | 挙動差を理解したうえで暫定利用する場合 |
-| `GroupBy(...).Select(...)` を直書き | 追加コード不要 | 記述が冗長・移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
-| .NET 9 へのアップグレード | 根本的解決・割り当て削減の恩恵を受けられる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| `GroupBy(...).Select(...)` を直書き | 追加コード不要 | 中間のグループを作るぶん割り当てが増える・移行時に一括置換が必要 | 集計箇所が少なく、割り当てが問題にならない場合 |
+| .NET 9 以降へのアップグレード | 根本的解決・割り当て削減の恩恵を受けられる | .NET 9 は標準期間サポート（STS）でサポートが終了しており、実際の移行先は .NET 10 になる | 集計まわりの割り当てを本家の実装で減らしたい場合 |
 
 ---
 

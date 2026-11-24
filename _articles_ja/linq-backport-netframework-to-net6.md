@@ -27,9 +27,8 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 - 言語バージョン: 実装例は `#nullable enable` と `using var`（C# 8.0）に加え、`MaxBy` / `MinBy` の戻り値 `TSource?`（制約なし型パラメータへの null 許容注釈）を用いるため C# 9.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `9.0` 以上に設定する
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+`Chunk` の分割サイズと、`MaxBy` / `MinBy` に渡す要素の型を変えながら、同じ呼び出しを `net48`（ポリフィル）と `net10.0`（本家）で実行して比べた。
+比べて分かったのは次の点である。
 
 - `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合（`int.MaxValue` を含む）・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
 - `MaxBy` / `MinBy` が空の並びに対して返す値は、`int` のような null 非許容の値型と、参照型とで異なる。
@@ -89,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 ## 実装例
 
 以下は 4 メソッドのポリフィル実装一式である。
-プロジェクトに `LinqExtensions.Net6.cs` などの名前でそのまま追加して使用できる。
+ファイル 1 つで完結するため、`LinqExtensions.Net6.cs` などの名前でプロジェクトに加えればよい。
 
 ```csharp
 #nullable enable
@@ -258,16 +257,12 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+<code>Chunk</code> の分割サイズ 4 通りと不正値、値型・参照型それぞれの空の並びに対する <code>MaxBy</code> を中心に、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みを比べた結果。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 空の並びに対する `MaxBy` が、値型では `InvalidOperationException`、参照型では `null` になる点まで一致している。この違いはシグネチャからは読み取れない。
-
-コンパイル時に `NET6_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 6 未満の環境）でのみ、上記クラスが有効になる。
 
 ---
 
@@ -432,7 +427,7 @@ yield return chunk.ToArray();
 | 自作ポリフィル（本記事） | 外部依存なし・回避イディオムの計算量問題も解消 | 実装コストがある | 依存を最小化したいプロジェクト |
 | 回避イディオムの継続 | 追加コード不要 | 計算量・割り当ての無駄が残り続ける | 対象データが常に少件数の場合 |
 | MoreLINQ（NuGet） | 豊富なメソッド・テスト済み | 外部ライブラリへの依存が増える | 多数の追加メソッドが必要なプロジェクト |
-| .NET 6 へのアップグレード | 根本的解決・性能改善も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| .NET 6 以降へのアップグレード | 根本的解決・1 パス走査の実装を本家で得られる | .NET 6 自体はサポートが終了しており、実際の移行先は .NET 10 などになる | 4 メソッド以外の新しい API もまとめて使いたい場合 |
 
 `MoreLINQ`（NuGet パッケージ名: `morelinq`）は `Chunk` や `MaxBy` に相当するメソッドを含む充実したライブラリだが、必要なメソッドが本記事の 4 件に限られるなら、外部依存のない自作ポリフィルのほうが保守はシンプルである。
 

@@ -31,9 +31,8 @@ A polyfill built purely on delegation to existing APIs is the counterpart to the
 - Language version: `#nullable enable` and nullable reference annotations require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (dropping `#nullable enable` and the `?` annotations allows C# 7.3)
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+Because `Order` delegates to `OrderBy`, the question is whether the delegate target itself behaves differently across runtimes.
+The same sorts were run on `net48` (polyfill) and `net10.0` (BCL), confirming the following:
 
 - The return value is an `IOrderedEnumerable`, so `ThenBy` can be chained onto it.
 - Elements that compare equal keep their relative order (a stable sort).
@@ -65,7 +64,7 @@ A dedicated method with the identity function baked in removes that noise, and .
 
 The following is the complete polyfill for all four signatures.
 Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS. On .NET 5 and later, the default depends on the Windows version (on Windows Server 2019, for example, ICU became the default only in .NET 7), and an app can also be configured to use NLS. On the test machine (.NET 10 on Windows 11), net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
-Add it to the project as, for example, `LinqExtensions.Net7.cs`.
+With nothing but delegation and no dependencies, it works as soon as it is dropped into a project as, for example, `LinqExtensions.Net7.cs`.
 
 ```csharp
 #nullable enable
@@ -121,11 +120,9 @@ namespace System.Linq
 #endif
 ```
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, culture-sensitive ordering, and incomparable elements. All three mismatching rows stem from the runtime’s own comparison. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. Both are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
@@ -199,9 +196,15 @@ Code that handles exceptions by type should account for this difference during m
 
 ## Migration Guard
 
-The polyfill is wrapped in `#if !NET7_0_OR_GREATER`.
-`Order` / `OrderDescending` do not exist before .NET 7, so guarding with `!NETCOREAPP` or `!NET6_0_OR_GREATER` would disable the polyfill in .NET 5 / .NET 6 builds and break compilation.
-The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+All four `Order` / `OrderDescending` signatures sit inside a single `#if !NET7_0_OR_GREATER`.
+Guarding with `!NETCOREAPP` would strip the polyfill on .NET Core, .NET 5 and .NET 6, and `!NET6_0_OR_GREATER` would strip it on .NET 6 — runtimes that do not have `Order` yet.
+Call sites then fail with `CS1061`, "does not contain a definition for 'Order'" (confirmed by calling `Order()` on `net6.0` without the polyfill).
+
+Because this polyfill is pure delegation, call sites need no rewriting once the guard flips.
+The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` keeps compiling unchanged after moving to .NET 7 or later.
+Matching the return type, as discussed in compatibility question 1, is what lets the migration leave call sites alone.
+
+The general rule for choosing version symbols is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
@@ -219,7 +222,7 @@ The general rule — disable at and above the version that introduced the method
 | --- | --- | --- | --- |
 | Delegation polyfill (this article) | A few lines; no algorithmic bugs possible | Cannot reproduce behavior the delegate itself lacks (exception type) | Using the `Order` spelling before migrating |
 | Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to `Order` | Few call sites and no migration planned |
-| Upgrade to .NET 7 | Root fix plus language features | Migration cost | When migration is feasible |
+| Upgrade to .NET 7 or later | Root fix; exception types for incomparable elements match the BCL | .NET 7 itself is out of support, so the real target is .NET 10 or similar | When exception types must match the BCL too |
 
 Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after a .NET 7 migration means hunting down and replacing every call site.
 With the polyfill in place, code uses `Order` from day one, and conditional compilation switches to the built-in implementation automatically at migration time.

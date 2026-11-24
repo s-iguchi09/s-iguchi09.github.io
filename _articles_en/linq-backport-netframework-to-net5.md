@@ -31,9 +31,9 @@ As the foundation article of the series, this piece explains the rationale behin
 - Approach: split public methods from iterators; disable automatically on migration via `#if !NETCOREAPP`
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+The four methods were built for `net48` (polyfill) and for `net10.0` (where `#if` switches to the BCL), run on the same input, and the results compared.
+How `TakeLast` / `SkipLast` treat edge counts is where implementations tend to diverge, so 0, counts beyond the length, and negative counts were compared in particular.
+Findings:
 
 - `Append` and `Prepend` are present in the BCL from .NET Framework 4.7.1 onward, so adding the polyfill causes a conflict.
 - Passing 0, a value larger than the element count, or a negative value to `TakeLast` / `SkipLast` produces the same result on both targets.
@@ -237,11 +237,9 @@ namespace System.Linq
 
 Two structural traits carry the design principles explained below: every method is split into a validating public method and a private iterator containing `yield return`, and `TakeLast` / `SkipLast` are built on a `Queue<T>`.
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. The boundary cases — <code>0</code>, a count past the end, a negative count, and an empty sequence — agree as well. Measured with .NET SDK 10.0.302.
+The four methods applied to <code>1..5</code> and to an empty sequence, with the <code>net48</code> polyfill and the <code>net10.0</code> built-in run through the same driver. They agree including counts of <code>0</code>, beyond the length, and negative. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 ---

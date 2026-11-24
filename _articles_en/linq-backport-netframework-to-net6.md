@@ -28,9 +28,8 @@ It also covers the version-specific migration guard that first becomes necessary
 - Language version: beyond `#nullable enable` and `using var` (C# 8.0), the implementation uses the `TSource?` return type of `MaxBy` / `MinBy` (a nullable annotation on an unconstrained type parameter), which requires C# 9.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `9.0` or later in the `.csproj`
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying the `Chunk` size and the element type passed to `MaxBy` / `MinBy`.
+The comparison showed:
 
 - `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source` (including `int.MaxValue`), or uses an invalid `size`.
 - What `MaxBy` / `MinBy` return for an empty sequence differs between a non-nullable value type such as `int` and a reference type.
@@ -90,7 +89,7 @@ Second, the migration guard must be `!NET6_0_OR_GREATER`, not `!NETCOREAPP`.
 ## Implementation
 
 The following is the complete polyfill for all four methods.
-Add it to the project as, for example, `LinqExtensions.Net6.cs`.
+It is self-contained in one file; add it to the project as, for example, `LinqExtensions.Net6.cs`.
 
 ```csharp
 #nullable enable
@@ -259,16 +258,12 @@ namespace System.Linq
 #endif
 ```
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+Four <code>Chunk</code> sizes plus an invalid one, and <code>MaxBy</code> over empty value-type and reference-type sequences, compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides agree even on `MaxBy` over an empty sequence, which throws `InvalidOperationException` for a value type and returns `null` for a reference type. That difference is not readable from the signature.
-
-The class is active only when the `NET6_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 6, including .NET Framework.
 
 ---
 
@@ -433,7 +428,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 | Hand-rolled polyfill (this article) | No dependency; also fixes the complexity problems | Implementation effort | Projects minimizing dependencies |
 | Keep the workaround idioms | No extra code | Complexity and allocation waste persists | Data that is always tiny |
 | MoreLINQ (NuGet) | Rich, battle-tested method set | Adds an external dependency | Projects needing many extra methods |
-| Upgrade to .NET 6 | Root fix plus performance gains | Migration cost | When migration is feasible |
+| Upgrade to .NET 6 or later | Root fix; the single-pass implementations come from the BCL | .NET 6 itself is out of support, so the real target is .NET 10 or similar | When you also want the other new APIs |
 
 `MoreLINQ` (NuGet package `morelinq`) covers `Chunk` and `MaxBy` equivalents, but when only these four methods are needed, a dependency-free polyfill is simpler to maintain.
 

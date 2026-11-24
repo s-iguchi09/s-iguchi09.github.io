@@ -26,9 +26,8 @@ SQL では `LEFT JOIN` の 1 句で書ける外部結合が、LINQ では長ら�
 - 言語バージョン: 制約なし型パラメータの `null` 許容注釈（`TInner?` / `TOuter?`）を用いるため、`LangVersion` を 9.0 以上（推奨: `latest`）に設定する。ターゲットフレームワークやその他のプロジェクト構成は変更しない
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+結合の 2 メソッドは出力をそのまま、`Shuffle` は乱数を使うため要素の集合として、`net48`（ポリフィル）と `net10.0`（本家）の結果を比べた。
+確認した点は次のとおり。
 
 - 相手が居ない行に対して `LeftJoin` / `RightJoin` が渡す既定値は、両ターゲットで一致する。
 - `Shuffle` の結果は、元の並びの並べ替えになっている（乱数のため、整列してから比較している）。
@@ -77,7 +76,7 @@ var result = employees
 以下は `LeftJoin`（2 シグネチャ）・`RightJoin`（2 シグネチャ）・`Shuffle`（1 シグネチャ）のポリフィル実装一式である。
 `LeftJoin`・`RightJoin` は前述の合成イディオムを本家と同じ形で内包し、`Shuffle` はソースを配列へバッファリングしてから Fisher–Yates 法で並べ替える。
 名前空間を `System.Linq` に置く理由と移行ガードの仕組みは[シリーズ基礎編](/ja/articles/linq-backport-netframework-to-net5/)のとおりである。
-プロジェクトに `LinqExtensions.Net10.cs` などの名前でそのまま追加して使用できる。
+`LinqExtensions.Net10.cs` などの名前で追加して使う。乱数源の選択だけは、内側の `#if` でターゲットごとに分かれる。
 
 ```csharp
 #nullable enable
@@ -222,11 +221,9 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+結合 4 ケースと <code>Shuffle</code> 4 ケースを、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。<code>Shuffle</code> は並べ直した結果・要素数・8 スレッド同時実行で得られた並びの種類数で比べている。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 `Shuffle` は乱数を使うため、整列し直したうえで比較している。相手が居ない行に既定値が渡る点も一致している。
@@ -348,8 +345,14 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 ## 移行ガード
 
 本ポリフィルは `#if !NET10_0_OR_GREATER` で囲む。
-`LeftJoin`・`RightJoin`・`Shuffle` は .NET 9 以前に存在しないため、誤ったガードはコンパイルエラーを招く。`!NETCOREAPP` は `NETCOREAPP` が定義される全ターゲット（.NET Core・.NET 5〜9）でポリフィルを無効化し、`!NET9_0_OR_GREATER` は `net9.0` 以降でのみ無効化する（`.NET 8` では `NET9_0_OR_GREATER` が未定義のため有効なまま、`.NET 9` で無効化されエラーになる）。いずれもオーバーロードを持たない環境でポリフィルを外してしまうため、正しくは `#if !NET10_0_OR_GREATER` を用いる。
-シンボル選択の一般規則（追加されたバージョン以上で無効化する）は[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
+`LeftJoin`・`RightJoin`・`Shuffle` は .NET 9 以前に無いため、条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜9 で、`!NET9_0_OR_GREATER` にすると .NET 9 でポリフィルが外れ、コンパイルエラーになる。
+
+このポリフィルでは、ガードが切り替わる前後で振る舞いが変わる箇所が 2 つある。
+
+- **`IQueryable<T>` に対する呼び出し**: .NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版ではなく `Queryable` 版に解決される。移行前はクライアント側で結合していたクエリが、移行後はプロバイダへ渡る。前節の落とし穴の裏返しで、ソースを変えないまま実行場所が変わる。`net10.0` で `IQueryable<int>` に `LeftJoin` を呼び、戻り値が `IQueryable<T>` になることを確かめた。
+- **`Shuffle` の乱数源**: 外側のガードとは別に、内側の `#if NET6_0_OR_GREATER` が乱数源を選ぶ。.NET 6〜9 ではポリフィルが有効なまま `Random.Shared` を使うため、.NET Framework とも .NET 10 の本家とも違う経路を通る。
+
+シンボル選択の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で扱っている。
 
 ---
 
@@ -371,7 +374,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 | `GroupJoin` + `DefaultIfEmpty` を直書き | 追加コード不要・`IQueryable` でも翻訳される | 記述が冗長・意図を誤りやすい | DB クエリの外部結合 |
 | `OrderBy(_ => Guid.NewGuid())` で代用 | 追加コード不要 | 非効率で一様性が保証されない | 少数要素の並べ替えで厳密さを問わない場合 |
 | MoreLINQ などのライブラリ導入 | 実装済みで検証されている | 外部依存が増える・API が本家と異なる | 既に依存を許容している場合 |
-| .NET 10 へのアップグレード | 根本的解決・`Queryable` 版も使える | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| .NET 10 へのアップグレード | 根本的解決・`Queryable` 版も使える | フレームワーク移行の工数がかかる | DB クエリでも `LeftJoin` の記法を使いたい場合（翻訳できるかはプロバイダ次第） |
 
 インメモリのコレクション操作にはポリフィルを、DB クエリには従来の `GroupJoin` イディオムを使い分けるのが、.NET 10 移行までの現実的な構成である。
 

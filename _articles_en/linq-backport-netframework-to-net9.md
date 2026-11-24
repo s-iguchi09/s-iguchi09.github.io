@@ -29,9 +29,8 @@ The two approaches differ not just in memory efficiency but in how they treat `n
 - Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0+. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj`
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+The API does not guarantee the order of keys in the aggregated result, so the same input was aggregated on `net48` (polyfill) and `net10.0` (BCL) and compared down to the key order, not just the values.
+Findings:
 
 - `CountBy` and `AggregateBy` return keys in first-seen order.
 - The contents of the tuple returned by `Index`, and its result for an empty sequence, match on both targets.
@@ -111,7 +110,7 @@ To keep lazy evaluation while validating arguments eagerly, the public methods a
 ## Implementation
 
 The following is the complete polyfill — 4 signatures including the `seed` and `seedSelector` forms of `AggregateBy`.
-Add it to the project as, for example, `LinqExtensions.Net9.cs`.
+Add it under a file name such as `LinqExtensions.Net9.cs`.
 
 ```csharp
 #nullable enable
@@ -238,11 +237,9 @@ namespace System.Linq
 #endif
 ```
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+An input mixing keys that differ only in case, aggregated and compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in down to key order and the exception for a <code>null</code> key. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 On this input and this runtime, both sides placed the keys in the order they first appeared, and the output matches down to that ordering.
@@ -251,7 +248,6 @@ That ordering is not an API guarantee, however.
 `CountBy` and `AggregateBy` both return their results by enumerating a `Dictionary<TKey, TValue>`, so the enumeration order is implementation-defined.
 Sort explicitly at the call site if the order carries meaning.
 
-The class is active only when the `NET9_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 9, including .NET Framework.
 The `seed` form of `AggregateBy` is expressed as a `seedSelector` that ignores the key (`key => seed`) and delegates to the shared accumulation body.
 
 ---
@@ -348,8 +344,14 @@ This matches the built-in .NET 9 behavior of the internal dictionary rejecting `
 ## Migration Guard
 
 The polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
-`CountBy`, `AggregateBy` and `Index` do not exist before .NET 9, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would disable the polyfill in a .NET 8 build and break compilation.
-The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+`CountBy`, `AggregateBy` and `Index` do not exist on .NET 8 or earlier, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would strip the polyfill on .NET 8 and break compilation at the call sites.
+
+What deserves attention with this guard is that the polyfill keeps running after a move to .NET 8.
+In a project that still targets `net8.0`, or a library multi-targeting `net48` and `net8.0`, the three methods are missing from the BCL, so this article's dictionary-based implementation is what runs in production.
+The BCL implementation takes over only once the project moves to .NET 9 or later.
+Since key enumeration order is not guaranteed by the API, as noted above, making the ordering explicit at the .NET 8 stage keeps order-dependent code safe from that switch.
+
+The general rule for choosing the symbol is summarized in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
@@ -368,8 +370,8 @@ The general rule — disable at and above the version that introduced the method
 | --- | --- | --- | --- |
 | Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
-| Write `GroupBy(...).Select(...)` inline | No extra code | Verbose; mass replacement at migration | Few call sites and no migration planned |
-| Upgrade to .NET 9 | Root fix plus the allocation savings | Migration cost | When migration is feasible |
+| Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; mass replacement at migration | Few aggregation sites where allocations do not matter |
+| Upgrade to .NET 9 or later | Root fix plus the allocation savings | .NET 9 was a standard-term support (STS) release and is out of support, so the real target is .NET 10 | When you want the BCL's lower-allocation aggregation |
 
 ---
 
