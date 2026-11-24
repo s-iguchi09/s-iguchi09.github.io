@@ -176,7 +176,7 @@ The `Visibility` of a `Border` shown in a `Window`, read on .NET 10 / Windows 11
 The built-in `BooleanToVisibilityConverter` and `BoolToVisibility` with its default values give the same result.
 `InverseBoolToVisibility`, with `TrueValue` and `FalseValue` swapped, inverts, and `BoolToHidden` (`FalseValue="Hidden"`) becomes `Hidden` on `false`.
 The built-in converter has no properties to specify these.
-As the second row shows, the built-in converter does not invert even when a `bool` `True` is passed through `ConverterParameter`.
+As the second row shows, the built-in converter does not invert even when a `bool` `True` (the `sys:Boolean` resource placed in the next section) is passed through `ConverterParameter`.
 The public properties with a setter were listed for the two types.
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/converter-properties.en.md %}
@@ -349,7 +349,7 @@ public object Convert(object? value, Type targetType, object? parameter, Culture
     value!.GetType().GetField(value.ToString()!)!.GetCustomAttribute<DescriptionAttribute>()!.Description;
 ```
 
-`TextBlock.Text` was bound to a source property of type `object`, shown with `AwaitingPayment` (a value that appears nowhere in the table), and then the source was set on the UI thread to each value in the table.
+`TextBlock.Text` was bound to a source property of type `object`, shown with `AwaitingPayment` (a value absent from the table's source value column), and then the source was set on the UI thread to each value in the table.
 `FileAttributes.ReadOnly | FileAttributes.Hidden` is a combination of two values of a .NET enum marked `[Flags]`.
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/enum-description.en.md %}

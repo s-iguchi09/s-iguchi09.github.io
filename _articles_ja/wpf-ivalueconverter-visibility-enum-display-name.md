@@ -176,7 +176,7 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 組み込みの `BooleanToVisibilityConverter` と、既定値のままの `BoolToVisibility` は同じ結果になる。
 `TrueValue` と `FalseValue` を入れ替えた `InverseBoolToVisibility` は反転し、`FalseValue="Hidden"` の `BoolToHidden` は `false` で `Hidden` になる。
 組み込みのコンバーターには、これを指定するプロパティが無い。
-表の 2 行目のとおり、組み込みのコンバーターは `ConverterParameter` に `bool` の `True` を渡しても反転しない。
+表の 2 行目のとおり、組み込みのコンバーターは `ConverterParameter` に `bool` の `True`（次の節で置く `sys:Boolean` のリソース）を渡しても反転しない。
 2 つの型の、公開されていて値を設定できるプロパティを列挙した。
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/converter-properties.ja.md %}
@@ -303,7 +303,8 @@ public sealed class StringParameterBoolToVisibilityConverter : IValueConverter
 .NET 10 / Windows 11 で、上 2 行はバインドした `Border` の `Visibility` を、下 2 行はリソースを含む XAML を `XamlReader.Parse` で読み込んだときの例外の有無と型を読んだ。3 行目は、同じ XAML で正しく綴った対照である。
 {: .table-caption}
 
-`ConverterParameter=Ture` は例外を出さずに反転しないだけで、正しく綴った `FalseValue="Hidden"` では例外が出ない同じ XAML でも、`FalseValue="Hiden"` は `XamlReader.Parse` での読み込みで `XamlParseException` になる。
+`ConverterParameter=Ture` は例外を出さずに反転しないだけである。
+一方、同じ XAML で正しく綴った `FalseValue="Hidden"` は例外を出さず、`FalseValue="Hiden"` は `XamlReader.Parse` での読み込みで `XamlParseException` になる。
 プロパティの値は `Visibility` への変換を受けるので、誤った値はその変換で失敗する。
 ビルドした XAML で、この誤りがビルド時と実行時のどちらで表に出るかは測っていない。
 反転を指定する手段としては、コンバーターのプロパティを選ぶ。
@@ -348,7 +349,7 @@ public object Convert(object? value, Type targetType, object? parameter, Culture
     value!.GetType().GetField(value.ToString()!)!.GetCustomAttribute<DescriptionAttribute>()!.Description;
 ```
 
-`TextBlock.Text` を `object` 型のソースのプロパティにバインドし、表のどの値とも違う `AwaitingPayment` で表示した後に、UI スレッドでソースの値を表の値に変えた。
+`TextBlock.Text` を `object` 型のソースのプロパティにバインドし、表の「ソースの値」の列に無い `AwaitingPayment` で表示した後に、UI スレッドでソースの値を表の値に変えた。
 `FileAttributes.ReadOnly | FileAttributes.Hidden` は、`[Flags]` の付いた .NET の列挙型で 2 つの値を組み合わせた値である。
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/enum-description.ja.md %}
