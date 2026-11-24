@@ -4,14 +4,14 @@ title: "WPF IValueConverter: Inverse Visibility, Enum Display Names"
 date: 2026-11-24
 category: WPF
 image: /images/articles/wpf-ivalueconverter-visibility-enum-display-name/visibility-hidden-collapsed.png
-excerpt: "Inverse bool-to-Visibility and Hidden via properties, plus enum display names. Measured: ConverterParameter=True arrives as a string; missing null checks throw."
+excerpt: "IValueConverter for inverse Visibility, Hidden, and enum display names. ConverterParameter=True arrives as a string and won't invert; missing null checks throw."
 ---
 
 ## Overview
 
 Showing or hiding an element from a view model `bool`, and showing enum values under readable display names, are both written with `IValueConverter` in WPF.
 The built-in `BooleanToVisibilityConverter` only has its default mapping of `true` to `Visible` and `false` to `Collapsed`; it cannot be told to invert or to produce `Hidden`.
-So a custom converter is needed, and the commonly seen "invert with `ConverterParameter=True`" approach does not invert when the implementation compares `parameter` with a `bool`.
+So a custom converter is needed, and the "invert with `ConverterParameter=True`" approach does not invert when the implementation compares `parameter` with a `bool`.
 This is because a `ConverterParameter` written as an attribute arrives as a string.
 
 This article writes a `BoolToVisibilityConverter` whose inversion and `Hidden` are set through converter properties, and an `EnumDescriptionConverter` that reads the display name from a `Description` attribute.
@@ -23,7 +23,7 @@ It also measures the type in which `ConverterParameter` arrives, the layout diff
 
 - Framework: WPF on .NET 5 or later (because `Enum.GetValues<T>()` is an API from .NET 5 onward). The code assumes C# 8 or later and a project with nullable reference types enabled (`<Nullable>enable</Nullable>`)
 - Architecture: MVVM. The view model base class `ObservableObject` is the minimal in-house implementation below; no external library is used
-- Verified on: .NET 10 / Windows 11. Not measured on .NET Framework 4.8
+- Verified on: .NET 10 / Windows 11. XAML was loaded with `XamlReader.Parse` for the measurements; compiled XAML was not measured. Not measured on .NET Framework 4.8 either
 - Scope: `IValueConverter` (converting a single value). Not covered: `IMultiValueConverter` for combining several values, the difference between the `ConvertBack` return values (`Binding.DoNothing` and `DependencyProperty.UnsetValue`), and number/date formats and cultures. The return values are measured in the [article on binding RadioButton to an enum](/articles/wpf-radiobutton-enum-binding/), and cultures in the [StringFormat article](/articles/wpf-binding-stringformat-number-currency-date/)
 
 The C# code in this article refers to the following namespaces with `using`.
@@ -164,7 +164,7 @@ The first entry, `BooleanToVisibilityConverter`, is the converter built into WPF
 
 ## Converting bool to Visibility
 
-For each resource above, a `Border`'s `Visibility` was bound and read.
+For each resource above and the resources placed in the next section, a `Border`'s `Visibility` was bound and read.
 The two `IsBusy` columns are after showing with `IsBusy` set to `true` and after changing it to `false`; the two right-hand columns put `null` and the string `"True"` into a source property of type `object`.
 The last three rows are implementations that specify inversion through `ConverterParameter`, covered in the next section.
 
@@ -176,6 +176,7 @@ The `Visibility` of a `Border` shown in a `Window`, read on .NET 10 / Windows 11
 The built-in `BooleanToVisibilityConverter` and `BoolToVisibility` with its default values give the same result.
 `InverseBoolToVisibility`, with `TrueValue` and `FalseValue` swapped, inverts, and `BoolToHidden` (`FalseValue="Hidden"`) becomes `Hidden` on `false`.
 The built-in converter has no properties to specify these.
+As the second row shows, the built-in converter does not invert even when a `bool` `True` is passed through `ConverterParameter`.
 The public properties with a setter were listed for the two types.
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/converter-properties.en.md %}
@@ -216,7 +217,7 @@ Choose `Hidden` when hiding must not move the elements after it (for example, in
 
 ## Specifying Inversion with ConverterParameter
 
-Specifying inversion through `ConverterParameter` instead of a converter property is also widely seen.
+Inversion can also be specified through `ConverterParameter` instead of a converter property.
 The following implementation inverts when `parameter` is the `bool` `true`.
 
 ```csharp
@@ -295,15 +296,15 @@ public sealed class StringParameterBoolToVisibilityConverter : IValueConverter
 
 As the last row of the first table in the previous section shows (`ConverterParameter=True` passed to `StringParameterBoolToVisibility`), this implementation inverts.
 A misspelling, however, behaves differently from the property approach.
-A misspelled value was compared for this implementation, placed in resources under the key `StringParameterBoolToVisibility`, and for the `FalseValue` of `BoolToVisibilityConverter`.
+A misspelled value was compared for this implementation, placed in resources with `<local:StringParameterBoolToVisibilityConverter x:Key="StringParameterBoolToVisibility" />`, and for the `FalseValue` of `BoolToVisibilityConverter`.
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/inverse-typo.en.md %}
 
-On .NET 10 / Windows 11. The first two rows read the `Visibility` of the bound `Border`; the last row reads the type of the exception thrown when XAML containing the resource was loaded with `XamlReader.Parse`.
+On .NET 10 / Windows 11. The first two rows read the `Visibility` of the bound `Border`; the last two read whether loading XAML containing the resource with `XamlReader.Parse` threw, and the exception type. The third row is a control with the correct spelling in the same XAML.
 {: .table-caption}
 
 `ConverterParameter=Ture` fails silently and just does not invert.
-`FalseValue="Hiden"` fails with `XamlParseException` when loaded through `XamlReader.Parse`.
+While the same XAML with the correct `FalseValue="Hidden"` throws nothing, `FalseValue="Hiden"` fails with `XamlParseException` when loaded through `XamlReader.Parse`.
 Property values go through conversion to `Visibility`, so a misspelled value fails in that conversion.
 Whether compiled XAML reports this mistake at build time or at run time was not measured.
 As the way to specify inversion, use the converter properties.
@@ -348,7 +349,7 @@ public object Convert(object? value, Type targetType, object? parameter, Culture
     value!.GetType().GetField(value.ToString()!)!.GetCustomAttribute<DescriptionAttribute>()!.Description;
 ```
 
-`TextBlock.Text` was bound to a source property of type `object`, shown with `InProgress`, and then the source was set on the UI thread to each value in the table.
+`TextBlock.Text` was bound to a source property of type `object`, shown with `AwaitingPayment` (a value that appears nowhere in the table), and then the source was set on the UI thread to each value in the table.
 `FileAttributes.ReadOnly | FileAttributes.Hidden` is a combination of two values of a .NET enum marked `[Flags]`.
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/enum-description.en.md %}
@@ -435,7 +436,7 @@ Choose between the two as follows.
 | --- | --- | --- |
 | The same conversion is used on several screens or for several enums | Converter | One instance in resources can be attached to any binding |
 | Converting values that do not go through a view model property, such as `ComboBox` items | Converter | There is no per-item property |
-| The display name should be unit-tested, or used outside the screen (logs, CSV) | View model property | Reading `StatusText` is enough to check it |
+| The display name is also used outside the screen (logs, CSV), or should be tested together with the state in view model tests | View model property | `StatusText` after changing `Status` can be read from the view model alone |
 | The display depends on several properties | View model property | An `IValueConverter` receives the value of only one binding, so updating on each source property's change needs an `IMultiValueConverter` or a view model property that is raised from each source property |
 
 With `Describe` as a static method, as in this article, both the converter and the view model build display names with the same rule.
@@ -445,7 +446,7 @@ With `Describe` as a static method, as in this article, both the converter and t
 ## Constraints and Boundaries
 
 - **The text passed to the `Description` attribute is a constant.** As written, it does not change with the display language. For several languages, either derive an attribute that overrides the (virtual) `Description` property to read resources (the [official documentation for DescriptionAttribute.DescriptionValue](https://learn.microsoft.com/dotnet/api/system.componentmodel.descriptionattribute.descriptionvalue) names this use), or look up resource files (`.resx`) inside `Describe`. Neither is measured in this article.
-- **Combinations of a `[Flags]` enum get no display name.** As the table in "Converting an Enum to a Display Name" shows, the list of names from `ToString()` is displayed as is.
+- **Combinations of a `[Flags]` enum get no display name.** As the first table in "Converting an Enum to a Display Name" (the one per source value) shows, the list of names from `ToString()` is displayed as is.
 - **`ConvertBack` assumes display-only conversion.** Every binding in this article is for display, and the paths on which `ConvertBack` is called are not measured. That returning `Binding.DoNothing` leaves the source unchanged is measured in the [article on binding RadioButton to an enum](/articles/wpf-radiobutton-enum-binding/). When attaching a converter to a binding that accepts input (such as `TextBox.Text`), write the reverse conversion in `ConvertBack`.
 
 ---

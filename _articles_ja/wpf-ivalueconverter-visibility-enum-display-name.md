@@ -11,7 +11,7 @@ excerpt: "IValueConverter で bool を Visibility に、enum を表示名に変�
 
 ビューモデルの `bool` による要素の表示の切り替えと、列挙値の画面向けの表示名は、どちらも WPF では `IValueConverter` で書く。
 組み込みの `BooleanToVisibilityConverter` は `true` を `Visible`、`false` を `Collapsed` にする既定の変換しか持たず、反転も `Hidden` も指定できない。
-そのため自作することになるが、よく見かける「`ConverterParameter=True` で反転する」書き方は、`parameter` を `bool` と比べる実装では反転しない。
+そのため自作することになるが、「`ConverterParameter=True` で反転を指定する」書き方は、`parameter` を `bool` と比べる実装では反転しない。
 XAML の属性に書いた `ConverterParameter` は文字列で届くからである。
 
 本記事では、反転と `Hidden` をコンバーターのプロパティで指定する `BoolToVisibilityConverter` と、`Description` 属性から表示名を引く `EnumDescriptionConverter` を書く。
@@ -23,7 +23,7 @@ XAML の属性に書いた `ConverterParameter` は文字列で届くからで�
 
 - フレームワーク: .NET 5 以降の WPF（`Enum.GetValues<T>()` が .NET 5 以降の API であるため）。コード例は C# 8 以降と、null 許容参照型を有効にしたプロジェクト（`<Nullable>enable</Nullable>`）を前提にする
 - アーキテクチャ: MVVM。ビューモデルの基底クラス `ObservableObject` は下記の自前の最小実装で、外部のライブラリは使わない
-- 検証環境: .NET 10 / Windows 11。.NET Framework 4.8 では測っていない
+- 検証環境: .NET 10 / Windows 11。XAML は `XamlReader.Parse` で読み込んで測り、ビルドした XAML では測っていない。.NET Framework 4.8 でも測っていない
 - 扱う範囲: `IValueConverter`（値 1 つの変換）。複数の値を組み合わせる `IMultiValueConverter`、`ConvertBack` の戻り値（`Binding.DoNothing` と `DependencyProperty.UnsetValue`）の違い、数値や日付の書式とカルチャは扱わない。戻り値は [RadioButton を enum にバインドする記事](/ja/articles/wpf-radiobutton-enum-binding/)で、カルチャは [StringFormat の記事](/ja/articles/wpf-binding-stringformat-number-currency-date/)で測っている
 
 本記事の C# のコードは、次の名前空間を `using` で参照する。
@@ -164,7 +164,7 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 
 ## bool から Visibility への変換
 
-上のリソースのそれぞれで `Border` の `Visibility` をバインドし、`Visibility` を読んだ。
+上のリソースと、次の節で置くリソースのそれぞれで `Border` の `Visibility` をバインドし、`Visibility` を読んだ。
 `IsBusy` の 2 列は `IsBusy` を `true` で表示した後と `false` に変えた後で、右の 2 列は `object` 型のソースのプロパティに `null` と文字列の `"True"` を入れた場合である。
 表の下 3 行は、次の節で扱う `ConverterParameter` で反転を指定する実装である。
 
@@ -176,6 +176,7 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 組み込みの `BooleanToVisibilityConverter` と、既定値のままの `BoolToVisibility` は同じ結果になる。
 `TrueValue` と `FalseValue` を入れ替えた `InverseBoolToVisibility` は反転し、`FalseValue="Hidden"` の `BoolToHidden` は `false` で `Hidden` になる。
 組み込みのコンバーターには、これを指定するプロパティが無い。
+表の 2 行目のとおり、組み込みのコンバーターは `ConverterParameter` に `bool` の `True` を渡しても反転しない。
 2 つの型の、公開されていて値を設定できるプロパティを列挙した。
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/converter-properties.ja.md %}
@@ -216,7 +217,7 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 
 ## ConverterParameter で反転を指定する場合
 
-反転をコンバーターのプロパティではなく `ConverterParameter` で指定する書き方も広く見かける。
+反転をコンバーターのプロパティではなく `ConverterParameter` で指定する書き方もある。
 次の実装は、`parameter` が `bool` の `true` のときに反転する。
 
 ```csharp
@@ -295,14 +296,14 @@ public sealed class StringParameterBoolToVisibilityConverter : IValueConverter
 
 前節の最初の表の最後の行（`StringParameterBoolToVisibility` に `ConverterParameter=True` を渡した行）のとおり、この実装は反転する。
 ただし、綴りを誤ったときの振る舞いは、コンバーターのプロパティで指定する場合と違う。
-`StringParameterBoolToVisibility` のキーでリソースに置いたこの実装と、`BoolToVisibilityConverter` の `FalseValue` で、それぞれ値の綴りを誤った場合を比べた。
+`<local:StringParameterBoolToVisibilityConverter x:Key="StringParameterBoolToVisibility" />` でリソースに置いたこの実装と、`BoolToVisibilityConverter` の `FalseValue` で、それぞれ値の綴りを誤った場合を比べた。
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/inverse-typo.ja.md %}
 
-.NET 10 / Windows 11 で、上 2 行はバインドした `Border` の `Visibility` を、最後の行はリソースを含む XAML を `XamlReader.Parse` で読み込んだときの例外の型を読んだ。
+.NET 10 / Windows 11 で、上 2 行はバインドした `Border` の `Visibility` を、下 2 行はリソースを含む XAML を `XamlReader.Parse` で読み込んだときの例外の有無と型を読んだ。3 行目は、同じ XAML で正しく綴った対照である。
 {: .table-caption}
 
-`ConverterParameter=Ture` は例外を出さずに反転しないだけで、`FalseValue="Hiden"` は `XamlReader.Parse` での読み込みで `XamlParseException` になる。
+`ConverterParameter=Ture` は例外を出さずに反転しないだけで、正しく綴った `FalseValue="Hidden"` では例外が出ない同じ XAML でも、`FalseValue="Hiden"` は `XamlReader.Parse` での読み込みで `XamlParseException` になる。
 プロパティの値は `Visibility` への変換を受けるので、誤った値はその変換で失敗する。
 ビルドした XAML で、この誤りがビルド時と実行時のどちらで表に出るかは測っていない。
 反転を指定する手段としては、コンバーターのプロパティを選ぶ。
@@ -347,7 +348,7 @@ public object Convert(object? value, Type targetType, object? parameter, Culture
     value!.GetType().GetField(value.ToString()!)!.GetCustomAttribute<DescriptionAttribute>()!.Description;
 ```
 
-`TextBlock.Text` を `object` 型のソースのプロパティにバインドし、`InProgress` で表示した後に、UI スレッドでソースの値を表の値に変えた。
+`TextBlock.Text` を `object` 型のソースのプロパティにバインドし、表のどの値とも違う `AwaitingPayment` で表示した後に、UI スレッドでソースの値を表の値に変えた。
 `FileAttributes.ReadOnly | FileAttributes.Hidden` は、`[Flags]` の付いた .NET の列挙型で 2 つの値を組み合わせた値である。
 
 {% include tables/articles/wpf-ivalueconverter-visibility-enum-display-name/enum-description.ja.md %}
@@ -434,7 +435,7 @@ public sealed class SilentOrderViewModel : ObservableObject
 | --- | --- | --- |
 | 同じ変換を複数の画面・複数の列挙型で使う | コンバーター | リソースに 1 つ置けば、どのバインドにも付けられる |
 | `ComboBox` の項目など、ビューモデルのプロパティを経由しない値を変換する | コンバーター | 項目ごとのプロパティが無い |
-| 表示名を単体テストで確かめたい、画面以外（ログ・CSV）でも使う | ビューモデルのプロパティ | `StatusText` を読むだけで確かめられる |
+| 表示名を画面以外（ログ・CSV）でも使う、ビューモデルのテストで状態と一緒に確かめたい | ビューモデルのプロパティ | `Status` を変えた後の `StatusText` を、ビューモデルだけで読める |
 | 表示が複数のプロパティから決まる | ビューモデルのプロパティ | `IValueConverter` は 1 つのバインドの値しか受け取らないため、元のプロパティごとの変更で更新させるには `IMultiValueConverter` か、元のプロパティごとに通知を足したビューモデルのプロパティが要る |
 
 本記事のように `Describe` を静的なメソッドにしておけば、コンバーターとビューモデルのどちらからも同じ規則で表示名を作れる。
@@ -444,7 +445,7 @@ public sealed class SilentOrderViewModel : ObservableObject
 ## 制約と境界
 
 - **`Description` 属性に渡す文字列は定数である。** そのままでは表示言語ごとに変わらない。多言語にするには、`Description` プロパティ（virtual）をオーバーライドしてリソースを引く派生属性を作るか（[DescriptionAttribute.DescriptionValue の公式ドキュメント](https://learn.microsoft.com/dotnet/api/system.componentmodel.descriptionattribute.descriptionvalue)はこの用途を挙げている）、`Describe` の中でリソースファイル（`.resx`）を引く。本記事ではどちらも測っていない。
-- **`[Flags]` の列挙型の組み合わせには表示名が付かない。** 「enum から表示名への変換」の表のとおり、`ToString()` の名前の並びがそのまま出る。
+- **`[Flags]` の列挙型の組み合わせには表示名が付かない。** 「enum から表示名への変換」の最初の表（ソースの値ごとの表）のとおり、`ToString()` の名前の並びがそのまま出る。
 - **`ConvertBack` は表示用の変換しか想定していない。** 本記事のバインドはどれも表示用で、`ConvertBack` が呼ばれる経路は測っていない。`Binding.DoNothing` を返したときにソースが変わらないことは [RadioButton を enum にバインドする記事](/ja/articles/wpf-radiobutton-enum-binding/)で測っている。入力を受けるバインド（`TextBox.Text` など）に付ける場合は、`ConvertBack` で逆の変換を書く。
 
 ---

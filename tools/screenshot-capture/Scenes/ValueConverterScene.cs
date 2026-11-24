@@ -1,11 +1,7 @@
-using System.ComponentModel;
-using System.Globalization;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Media;
 using System.Windows.Threading;
 using ScreenshotCapture.Scenes.ValueConverter;
 using static ScreenshotCapture.Scenes.DemoProbe;
@@ -26,12 +22,12 @@ internal sealed class ValueConverterScene : IScene
 
     public IReadOnlyList<string> Verifies =>
     [
-        "組み込みの BooleanToVisibilityConverter と記事の BoolToVisibilityConverter（既定）が true を Visible、false を Collapsed にし、ソースが null と文字列の \"True\" のときも Collapsed になること",
+        "組み込みの BooleanToVisibilityConverter と記事の BoolToVisibilityConverter（既定）が true を Visible、false を Collapsed にし、ソースが null と文字列の \"True\" のときも Collapsed になること。組み込みのコンバーターは ConverterParameter に sys:Boolean の True を渡しても反転しないこと",
         "BooleanToVisibilityConverter には公開の設定できるプロパティが無く、記事の BoolToVisibilityConverter には TrueValue と FalseValue があること",
         "BoolToVisibilityConverter の TrueValue・FalseValue を XAML で設定すると、反転（true→Collapsed、false→Visible）と false→Hidden になること",
         "ConverterParameter=True と書いた場合、parameter is true で判定する実装では反転せず、sys:Boolean のリソースを渡すと反転すること",
         "ConverterParameter に属性の文字列で書いた値（True・1・Hidden）は System.String で届き、x:Static と StaticResource で渡すと Visibility・Boolean で届くこと",
-        "parameter を文字列の \"True\" と比べる実装は ConverterParameter=True で反転し、ConverterParameter=Ture と綴りを誤ると例外を出さずに反転しないこと。FalseValue=\"Hiden\" と誤ると XamlReader.Parse で XamlParseException になること",
+        "parameter を文字列の \"True\" と比べる実装は ConverterParameter=True で反転し、ConverterParameter=Ture と綴りを誤ると例外を出さずに反転しないこと。同じ XAML で FalseValue=\"Hidden\" なら例外が出ず、FalseValue=\"Hiden\" と誤ると XamlReader.Parse で XamlParseException になること",
         "Hidden では後ろの要素の位置が Visible と同じで、Collapsed では隠した要素の高さの分だけ上へ詰まること",
         "記事の EnumDescriptionConverter が、Description 属性の文字列、属性の無い値の名前、定義の無い値の数字、[Flags] の組み合わせの ToString() の結果、null の空文字列を返すこと",
         "GetField と GetCustomAttribute の結果を null と確かめない実装は、属性の無い値と null で NullReferenceException、定義の無い値で ArgumentNullException を投げ、ソースのセッターを呼んだ側へ例外が上がって Text が前の値のまま残ること",
@@ -187,6 +183,7 @@ internal sealed class ValueConverterScene : IScene
     private static readonly string[] VisibilityBindings =
     [
         "Converter={StaticResource BooleanToVisibility}",
+        "Converter={StaticResource BooleanToVisibility}, ConverterParameter={StaticResource True}",
         "Converter={StaticResource BoolToVisibility}",
         "Converter={StaticResource InverseBoolToVisibility}",
         "Converter={StaticResource BoolToHidden}",
@@ -271,12 +268,19 @@ internal sealed class ValueConverterScene : IScene
         })
         {
             (string onTrue, string onFalse) = await ReadIsBusyVisibilityAsync(binding);
-            rows.Add([binding, Loc.Of($"no exception; True → {onTrue}, False → {onFalse}", $"例外なし。True → {onTrue}、False → {onFalse}")]);
+            rows.Add([binding, Loc.Of($"no exception; IsBusy=True → {onTrue}, IsBusy=False → {onFalse}", $"例外なし。IsBusy=True → {onTrue}、IsBusy=False → {onFalse}")]);
         }
 
-        const string Resource = """<local:BoolToVisibilityConverter x:Key="BoolToHidden" FalseValue="Hiden" />""";
-        string thrown = Throws(() => LoadPanel($"""<Border><Border.Resources>{Resource}</Border.Resources></Border>"""));
-        rows.Add([Resource, Loc.Of($"{thrown} from XamlReader.Parse", $"XamlReader.Parse で {thrown}")]);
+        // 同じ包み方で正しい綴りの対照を並べ、例外が綴りの誤りによるものであることを示す。
+        foreach (string resource in new[]
+        {
+            """<local:BoolToVisibilityConverter x:Key="BoolToHidden" FalseValue="Hidden" />""",
+            """<local:BoolToVisibilityConverter x:Key="BoolToHidden" FalseValue="Hiden" />""",
+        })
+        {
+            string thrown = Throws(() => LoadPanel($"""<Border><Border.Resources>{resource}</Border.Resources></Border>"""));
+            rows.Add([resource, thrown == "no exception" ? T("no exception from XamlReader.Parse", "XamlReader.Parse で例外なし") : Loc.Of($"{thrown} from XamlReader.Parse", $"XamlReader.Parse で {thrown}")]);
+        }
 
         return rows;
     }
@@ -342,12 +346,12 @@ internal sealed class ValueConverterScene : IScene
 
     /// <summary>
     /// 表示した後にソースの値を変え、TextBlock.Text と例外の届き先を返す。
-    /// 表示は例外の起きない InProgress で始め、変えるのはソースのセッターを呼んだ時点にする。
+    /// 表示は例外の起きない AwaitingPayment（表のどの値とも違う値）で始め、変えるのはソースのセッターを呼んだ時点にする。
     /// </summary>
     private static async Task<Loc> DescribeEnumAsync(string converterKey, object? value)
     {
         StackPanel panel = LoadPanel($$$"""<TextBlock x:Name="target" Text="{Binding Value, Converter={StaticResource {{{converterKey}}}}}" />""");
-        var probe = new ValueHolder { Value = OrderStatus.InProgress };
+        var probe = new ValueHolder { Value = OrderStatus.AwaitingPayment };
         panel.DataContext = probe;
         Loc result = "";
         await ShowAsync(panel, async () =>
