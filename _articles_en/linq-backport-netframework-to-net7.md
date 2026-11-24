@@ -64,7 +64,7 @@ A dedicated method with the identity function baked in removes that noise, and .
 
 Here are the four `Order` / `OrderDescending` signatures as a single polyfill.
 Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS. On .NET 5 and later, the default depends on the Windows version (on Windows Server 2019, for example, ICU became the default only in .NET 7), and an app can also be configured to use NLS. On the test machine (.NET 10 on Windows 11), net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
-With nothing but delegation and no dependencies, it works as soon as it is dropped into a project as, for example, `LinqExtensions.Net7.cs`.
+With nothing but delegation and no dependencies, it works as soon as it is dropped into a project (with the `LangVersion` from the prerequisites) as, for example, `LinqExtensions.Net7.cs`.
 
 ```csharp
 #nullable enable

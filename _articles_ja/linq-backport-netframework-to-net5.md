@@ -33,7 +33,7 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 - 検証環境: .NET 10 / Windows 11
 
 `net48` でビルドした結果（`TakeLast` / `SkipLast` はポリフィル、`Append` / `Prepend` は .NET Framework 4.7.1 以降にある BCL 版）を、`net10.0` の本家と同じ入力で突き合わせた。
-`TakeLast` / `SkipLast` は件数指定の端の扱いが実装によって分かれやすいため、0・要素数超過・負数を重点的に比べている。
+`TakeLast` / `SkipLast` は件数指定の端の扱いを自作の実装で誤りやすいため、0・要素数超過・負数を重点的に比べている。
 あわせて、4 メソッドが BCL にあるターゲットと、プロジェクト形式によるシンボル定義の違いも、実際にビルドして調べた。
 分かった点は次のとおり。
 
@@ -238,7 +238,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.ja.md %}
 
-<code>1..5</code> に 4 メソッドを、空の並びに <code>TakeLast</code> を適用し、<code>net48</code>（<code>TakeLast</code> / <code>SkipLast</code> はポリフィル、<code>Append</code> / <code>Prepend</code> は BCL 版）と <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
+<code>1..5</code> に 4 メソッドを、空の並びに <code>TakeLast</code> を適用し、<code>net48</code>（<code>TakeLast</code> / <code>SkipLast</code> はポリフィル、<code>Append</code> / <code>Prepend</code> は BCL 版）と <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>SkipLast(0)</code> が元の並びをそのまま返すかも比べている。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 境界値を含めて一致することが、この表の要点である。

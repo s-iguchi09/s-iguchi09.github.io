@@ -32,7 +32,7 @@ As the foundation article of the series, this piece explains the rationale behin
 - Verification environment: .NET 10 / Windows 11
 
 A `net48` build (the polyfill for `TakeLast` / `SkipLast`, and the BCL versions of `Append` / `Prepend`, which exist from .NET Framework 4.7.1) was run on the same input as the `net10.0` BCL and the results compared.
-How `TakeLast` / `SkipLast` treat edge counts is where implementations tend to diverge, so 0, counts beyond the length, and negative counts were compared in particular.
+Edge counts are where a hand-written `TakeLast` / `SkipLast` most easily goes wrong, so 0, counts beyond the length, and negative counts were compared in particular.
 Which targets have the four methods in the BCL, and how the project format affects symbol definitions, were also checked by actually building.
 The results:
 
@@ -240,7 +240,7 @@ Two structural traits carry the design principles explained below: every method 
 
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.en.md %}
 
-The four methods applied to <code>1..5</code>, and <code>TakeLast</code> to an empty sequence, with <code>net48</code> (polyfill for <code>TakeLast</code> / <code>SkipLast</code>, BCL for <code>Append</code> / <code>Prepend</code>) and the <code>net10.0</code> built-in run through the same driver. They agree including counts of <code>0</code>, beyond the length, and negative. Measured with .NET SDK 10.0.302.
+The four methods applied to <code>1..5</code>, and <code>TakeLast</code> to an empty sequence, with <code>net48</code> (polyfill for <code>TakeLast</code> / <code>SkipLast</code>, BCL for <code>Append</code> / <code>Prepend</code>) and the <code>net10.0</code> built-in run through the same driver. Whether <code>SkipLast(0)</code> returns the original sequence itself was compared too. They agree including counts of <code>0</code>, beyond the length, and negative. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 ---

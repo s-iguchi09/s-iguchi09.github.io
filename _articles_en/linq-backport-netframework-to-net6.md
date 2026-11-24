@@ -28,7 +28,7 @@ It also covers the version-specific migration guard that first becomes necessary
 - Language version: beyond `#nullable enable` and `using var` (C# 8.0), the implementation uses the `TSource?` return type of `MaxBy` / `MinBy` (a nullable annotation on an unconstrained type parameter), which requires C# 9.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `9.0` or later in the `.csproj`
 - Verification environment: .NET 10 / Windows 11
 
-The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying the `Chunk` size, the element type passed to `MaxBy` / `MinBy`, and the key for `DistinctBy`.
+The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying the `Chunk` size, the element type passed to `MaxBy`, and the key for `DistinctBy`.
 The comparison showed:
 
 - `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source` (including `int.MaxValue`), or uses an invalid `size`.
@@ -89,7 +89,7 @@ Second, the migration guard must be `!NET6_0_OR_GREATER`, not `!NETCOREAPP`.
 ## Implementation
 
 The following is the complete polyfill for all four methods.
-It is self-contained in one file; add it to the project as, for example, `LinqExtensions.Net6.cs`.
+It is self-contained in one file: with the `LangVersion` from the prerequisites, add it to the project as, for example, `LinqExtensions.Net6.cs`.
 
 ```csharp
 #nullable enable

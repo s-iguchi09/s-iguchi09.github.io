@@ -63,7 +63,7 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 
 以下は `Order` / `OrderDescending` の 4 シグネチャをまとめたポリフィルである。
 実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS で比べる。.NET 5 以降の既定は Windows のバージョンによって異なり（たとえば Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS を使うようにもできる。計測した環境（Windows 11 の .NET 10）では net48 が NLS、net10.0 が ICU で（表の「比較エンジン」の行）、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の「ja-JP の比較子」の行）。
-委譲だけで外部依存が無いため、`LinqExtensions.Net7.cs` などの名前で既存のプロジェクトに置くだけで使える。
+委譲だけで外部依存が無いため、前提の `LangVersion` を満たしていれば、`LinqExtensions.Net7.cs` などの名前で既存のプロジェクトに置くだけで使える。
 
 ```csharp
 #nullable enable

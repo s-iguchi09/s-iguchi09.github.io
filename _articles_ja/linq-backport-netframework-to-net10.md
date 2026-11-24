@@ -26,11 +26,12 @@ SQL では `LEFT JOIN` の 1 句で書ける外部結合が、LINQ では長ら�
 - 言語バージョン: 制約なし型パラメータの `null` 許容注釈（`TInner?` / `TOuter?`）を用いるため、`LangVersion` を 9.0 以上（推奨: `latest`）に設定する。ターゲットフレームワークやその他のプロジェクト構成は変更しない
 - 検証環境: .NET 10 / Windows 11
 
-結合の 2 メソッドは出力をそのまま、`Shuffle` は乱数を使うため要素の集合として、`net48`（ポリフィル）と `net10.0`（本家）の結果を比べた。
-確かめられたのは次の 2 点である。
+結合の 2 メソッドは出力をそのまま、`Shuffle` は乱数を使うため要素の集合と、同時に動かしたスレッドの間で並びが分かれるかで、`net48`（ポリフィル）と `net10.0`（本家）の結果を比べた。
+確かめられたのは次の 3 点である。
 
 - 相手が居ない行に対して `LeftJoin` / `RightJoin` が渡す既定値は、両ターゲットで一致する。
 - `Shuffle` の結果は、元の並びの並べ替えになっている（乱数のため、整列してから比較している）。
+- 8 スレッドを同時に開始して `Shuffle` を呼ぶと、両ターゲットとも 8 通りの異なる並びになる。
 
 ---
 
@@ -77,7 +78,6 @@ var result = employees
 `LeftJoin`・`RightJoin` は前述の合成イディオムを本家と同じ形で内包し、`Shuffle` はソースを配列へバッファリングしてから Fisher–Yates 法で並べ替える。
 名前空間を `System.Linq` に置く理由と移行ガードの仕組みは[シリーズ基礎編](/ja/articles/linq-backport-netframework-to-net5/)のとおりである。
 `LinqExtensions.Net10.cs` などの名前で追加して使う。
-乱数源の選択だけは、内側の `#if` でターゲットごとに分かれる。
 
 ```csharp
 #nullable enable
@@ -349,11 +349,12 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 `LeftJoin`・`RightJoin`・`Shuffle` は .NET 9 以前に無いため、条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜9 で、`!NET9_0_OR_GREATER` にすると .NET 9 でポリフィルが外れ、コンパイルエラーになる。
 
 このガードが切り替わるとき、ソースを変えないまま振る舞いが変わるのが `IQueryable<T>` に対する呼び出しである。
-.NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版のポリフィルではなく `Queryable` 版に解決される。
-移行前はクライアント側で結合していたクエリが、移行後は式ツリーとしてプロバイダへ渡る。前節の落とし穴の裏返しである。
-プロバイダが `LeftJoin` を翻訳できれば結合はサーバー側へ移るが、翻訳できないプロバイダでは、移行前に動いていたクエリが実行時に例外になり得る。
+.NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版のポリフィルではなく `Queryable` 版に解決される。
+移行前はクライアント側で結合していたクエリが、移行後は式ツリーとしてプロバイダへ渡る。
+前節の落とし穴の裏返しである。
+プロバイダがこれらを翻訳できれば処理はサーバー側へ移るが、翻訳できないプロバイダでは、移行前に動いていたクエリが実行時に例外になり得る。
 
-.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<int>` へ `LeftJoin` を呼び、戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
+.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<int>` へ `LeftJoin` と `Shuffle` を呼び、どちらも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
 プロバイダごとの翻訳の可否は確かめていないため、移行時には実際に使うプロバイダで該当クエリを実行して確認する。
 
 ---

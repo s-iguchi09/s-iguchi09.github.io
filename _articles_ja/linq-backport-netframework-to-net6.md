@@ -27,7 +27,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 - 言語バージョン: 実装例は `#nullable enable` と `using var`（C# 8.0）に加え、`MaxBy` / `MinBy` の戻り値 `TSource?`（制約なし型パラメータへの null 許容注釈）を用いるため C# 9.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `9.0` 以上に設定する
 - 検証環境: .NET 10 / Windows 11
 
-`Chunk` の分割サイズ、`MaxBy` / `MinBy` に渡す要素の型、`DistinctBy` のキーを変えながら、同じ呼び出しを `net48`（ポリフィル）と `net10.0`（本家）で実行して比べた。
+`Chunk` の分割サイズ、`MaxBy` に渡す要素の型、`DistinctBy` のキーを変えながら、同じ呼び出しを `net48`（ポリフィル）と `net10.0`（本家）で実行して比べた。
 比べて分かったのは次の点である。
 
 - `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合（`int.MaxValue` を含む）・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
@@ -88,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 ## 実装例
 
 以下は 4 メソッドのポリフィル実装一式である。
-ファイル 1 つで完結するため、`LinqExtensions.Net6.cs` などの名前でプロジェクトに加えればよい。
+ファイル 1 つで完結するため、前提の `LangVersion` を満たしていれば、`LinqExtensions.Net6.cs` などの名前でプロジェクトに加えればよい。
 
 ```csharp
 #nullable enable
