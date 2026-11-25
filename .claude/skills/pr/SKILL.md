@@ -79,7 +79,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        - **規約・体裁(`haiku`):** 上の観点のうち、番号と参照(参照先のファイル・節・リンク先の実在を含む)・字数と件数の上限・体裁。
          スクリプトで測る機械的な確認が中心のため、軽いモデルで足りる。取りこぼしが目立つ場合は `sonnet` に上げる。
          このレビュアーが利用上限などで止まったときは、依頼者が同じ機械チェック
-         (markdownlint、参照先のファイル・節・リンク先の実在の確認、記事を含む場合は `docs/rules/article/guidelines.md` §9 の改行規則の確認と、§10(関連記事の差別化)を確かめるための記事間で同じ文の抽出)を実行して代える
+         (markdownlint、参照先のファイル・節・リンク先の実在の確認、字数と件数の上限の計測、記事を含む場合は `docs/rules/article/guidelines.md` §9 の改行規則の確認と、§10(関連記事の差別化)を確かめるための記事間で同じ文の抽出)を実行して代える
      - **「要修正」の基準を 1 回目から固定して渡す。** 要修正は、事実の誤り・記事内やファイル間の矛盾・根拠の無い断定・
        日英の意味の食い違い・手順やコマンドが書かれたとおりに動かないこと・規約の明確な違反
        (markdownlint の違反、字数・件数の上限の超過など)に限る。言い回しの好みは「軽微」とさせる。
@@ -171,18 +171,22 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
      遷移は Webhook で届かないことがあるが、`sleep` ポーリングも `send_later` 予約もしない(例外は次の項目)。
      長時間反応が無い場合はユーザーへ指示を仰がず、`mcp__github__pull_request_read`
      (`get_status` / `get_check_runs` / `get_review_comments`)で状況を確認し、Phase 3 を続行する。
-   - **例外: CodeRabbit のレビュー上限。** 次のどちらかの上限の通知を受けた場合に限り、上限が解除される時刻の 1〜2 分後に `send_later` を予約する。
+   - **例外: CodeRabbit の上限。** 次のいずれかの上限の通知を受けた場合に限り、上限が解除される時刻の 1〜2 分後に `send_later` を予約する。
      - `@coderabbitai review` への返信が「Action not completed」の「Review rate limited.」だった
      - PR 作成時の自動レビューが上限で行われず、概要コメントに「Review limit reached」が出た
        (`@coderabbitai review` を投稿していないので、上の返信は来ない)
-     解除までの時間は、概要コメントに出る「Review limit reached」の「Next included review available in N minutes」で読み、その概要コメントの更新時刻に N 分を足す。
+     - `@coderabbitai review` への返信が「Rate Limit Exceeded」だった。これはレビューではなくチャットの上限で、
+       `@coderabbitai review` もスレッドへの返信も 1 回と数える。上限に当たった依頼は処理されず、後で処理されることもない。
+       返信に書かれた待ち時間が過ぎた時刻を解除の時刻とする
+       (CodeRabbit のドキュメント [Chat rate limits](https://docs.coderabbit.ai/guide/chat#chat-rate-limits) による)
+     レビューの上限(上の 2 つ)の解除までの時間は、概要コメントに出る「Review limit reached」の「Next included review available in N minutes」で読み、その概要コメントの更新時刻に N 分を足す。
      概要コメントは後から上書きされて読めなくなるので、読めないときは `@coderabbitai rate limit` を投稿し、
      返信に出る再試行の目安を解除の時刻とする。目安が時刻か残り時間として読めなければ、その返信の時刻から 60 分後とする
      (このリポジトリのプランでは 1 時間に 1 回。2026-11 時点の CodeRabbit のレビューに出る「Included review availability」の表示による。
      上限の返信は枠を使い切ったあとに来るので、その 60 分後には解除されている)。
      この PR で直前に通ったレビューの時刻からは計算しない。上限は PR を開いた開発者の単位で、他の PR のレビューも数に入るためである
      (CodeRabbit のドキュメント [Rate limits](https://docs.coderabbit.ai/management/rate-limits) による)。
-     予約は、上限の通知 1 回につき 1 回とする(同じ依頼について 2 種類の通知を両方受けたときは 1 回にまとめる)。
+     予約は、上限の通知 1 回につき 1 回とする(同じ依頼について複数の通知を受けたときは 1 回にまとめる)。
      予約の文面には、`@coderabbitai review` を投稿して再レビューを依頼すること、対象のコミット、その後に続ける手順を書く。
      上限の解除は Webhook で届かず、予約しないと誰も再開のきっかけを作れないためである。
      再開して投稿した `@coderabbitai review` にまだ上限中と返ってきたら、その返信について同じように 1 回予約する。
@@ -239,7 +243,7 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
 
 5. **再レビューを依頼する。** 修正して push したら、**再レビュー依頼はレビュアーに対してのみ**行えばよい。
    ただし **MarkdownLint(`Lint Markdown` CI)も併せて再レビュー(再実行結果の確認)する**。
-   `@coderabbitai review` への返信がレビュー上限(「Review rate limited.」)だったときは、手順 1 の例外に従って予約する。
+   `@coderabbitai review` への返信が上限(「Review rate limited.」か「Rate Limit Exceeded」)だったときは、手順 1 の例外に従って予約する。
    - **CodeRabbit(主レビュアー)** — `.coderabbit.yaml` で `auto_incremental_review: false` としているため、
      push だけでは自動再レビューされない。PR に `@coderabbitai review` とコメントして明示的に再レビューを要求する。
      本リポジトリでは Copilot の自動レビューを使わない方針のため、構文・正確性の検証は CodeRabbit
@@ -342,7 +346,7 @@ Phase 4  マージ直前チェックリスト → マージ →(head ブラン�
   届くので、届くものは到着を待つ。CI 成功・新規 push・マージコンフリクトの遷移など **Webhook で届かない
   イベント** は、購読直後の再取得(Phase 2 手順 4)や、長時間反応が無い場合の `mcp__github__pull_request_read`
   での状況確認で補う(ユーザーへ指示を仰がず自分で確認して進める)。
-  例外は、CodeRabbit のレビュー上限の通知 1 回につき 1 回の予約(Phase 3 手順 1)に限る。
+  例外は、CodeRabbit の上限の通知 1 回につき 1 回の予約(Phase 3 手順 1)に限る。
 - **対応を終えたレビュー指摘はスレッドを解決済みにする。** マージ前に未解決スレッドを残さない。
 - **処理中の自動レビューボットがある間はマージしない。** 中間シグナルでマージ判断をしない。
 - **リモートブランチの手動削除コマンドは実行しない**(Web 環境では 403 で必ず失敗する)。head ブランチの削除は自動削除に任せる。
