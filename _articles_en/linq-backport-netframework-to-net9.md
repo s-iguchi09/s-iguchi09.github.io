@@ -97,7 +97,7 @@ Option A is shorter but diverges from the built-in behavior on two counts.
 | `null` keys | Accepted as one group | `ArgumentNullException` at enumeration | `ArgumentNullException` at enumeration |
 
 `GroupBy` accepts `null` keys as a group of their own, so the delegating implementation silently passes input that the built-in would reject.
-Since the whole point of a polyfill is to keep behavior unchanged across migration as far as it can be verified, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception as well as memory.
+Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception, a point that was verified, as well as memory.
 
 To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
 `Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
@@ -368,16 +368,17 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Dictionary-backed polyfill (this article) | Same memory profile and `null`-key exception as the built-ins | Somewhat longer implementation; disposes the source enumerator before returning any result (the built-ins dispose it after the last result) | Keeping `null`-key handling and memory profile unchanged across migration |
+| Dictionary-backed polyfill (this article) | Same memory profile and `null`-key exception as the built-ins | Somewhat longer implementation; disposes the source enumerator before returning any result (the built-ins dispose it when enumeration of the results ends) | Keeping `null`-key handling and memory profile unchanged across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
 | Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; `null`-key behavior differs from the built-ins; mass replacement at migration | Few aggregation sites where allocations do not matter |
 | Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
 
 The polyfill finishes aggregating before it returns results, so it disposes the source enumerator before returning any result.
-The built-in `CountBy` and `AggregateBy` keep the source enumerator until they have returned every result.
+The built-in `CountBy` and `AggregateBy` keep the source enumerator until enumeration of the results finishes or the result enumerator is disposed.
 The difference shows with sources that do work on disposal.
-If `Dispose` throws, the polyfill throws before returning any result, and the built-ins throw after returning all of them.
-If disposal releases a lock, after the migration the lock stays held while the results are being processed, and anything waiting for that lock meanwhile cannot proceed.
+If `Dispose` throws, the polyfill throws before returning any result, and the built-ins throw after the results have been enumerated to the end.
+If disposal releases a lock, after the migration the lock stays held while the results are being processed, and another thread waiting for that lock meanwhile cannot proceed.
+This lock behavior was not measured; it follows from the difference in when the enumerator is disposed.
 With .NET SDK 10.0.404 on Linux, the `net10.0` built-in `CountBy` and `AggregateBy` were run next to a renamed copy of the polyfill to check when `Dispose` is called.
 The number of results returned when `Dispose` throws was checked with `CountBy` (the built-in returned two results first; the polyfill returned none).
 
