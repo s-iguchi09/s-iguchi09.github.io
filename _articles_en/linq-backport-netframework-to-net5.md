@@ -381,8 +381,7 @@ foreach (var item in source)
 
 The output always trails the input by `count` elements — that is the crux.
 Regardless of the source size, at most `count` elements are held at any time, keeping space complexity at O(count).
-The queue is created without an initial capacity.
-With `new Queue<TSource>(count)`, passing a large `count` such as `TakeLast(int.MaxValue)` makes it try to allocate a huge internal array even when the source has only a few elements, and it throws `OutOfMemoryException` (confirmed on .NET 10).
+The queue is created without an initial capacity and grows only as elements actually arrive.
 The double enumeration of the `Count()`-then-`Skip`/`Take` workaround also disappears.
 
 ```csharp
@@ -424,7 +423,7 @@ The choice of version-specific symbols (`NET6_0_OR_GREATER` and friends) is cove
 
 ## Caveats
 
-- **`TakeLast` / `SkipLast` consume memory proportional to `count`**: the sliding window is frugal, but a huge `count` still allocates a buffer of that size. The approach brings no benefit when the window effectively spans the whole sequence.
+- **`TakeLast` / `SkipLast` consume memory for up to `count` elements**: the sliding window holds no more than the smaller of `count` and the number of source elements. A long source with a large `count` uses memory accordingly. The approach brings no benefit when the window effectively spans the whole sequence.
 - **Behavior for `count <= 0`**: `TakeLast` returns an empty sequence and `SkipLast` returns every element. No exception is thrown, matching the built-in behavior. For a non-empty array, `SkipLast(0)` returns a new iterator rather than the source object, as the built-in does (the `SkipLast(0) is source` row of the table, measured on a five-element array). An empty source was not measured for this.
 - **Re-execution on every enumeration**: all four methods are lazy, so enumerating the same query twice walks the source twice. Materialize with `.ToList()` when the result is reused.
 - **Performance optimizations are simpler than the originals**: the built-in implementations special-case `IList<T>` sources and more. This polyfill is generic-only; results and exceptions match, but certain collection types may run slower than on modern .NET.
