@@ -29,9 +29,8 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 - 言語バージョン: `#nullable enable`・nullable 参照型注釈・`where TKey : notnull` 制約は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`LangVersion` を明示しない古い非 SDK 形式プロジェクトでは特に注意する）
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+セレクタを省いた `ToDictionary`（比較子あり・なしの両方）を `net48`（ポリフィル）と `net10.0`（本家）で同じ入力に対して呼び、できあがった辞書と送出される例外を比べた。
+結果は次のとおり。
 
 - `KeyValuePair` 版とタプル版、およびそれぞれの `IEqualityComparer` オーバーロードは、両ターゲットで同じ結果になる。
 - キーが重複したときに送出される例外の型は、両ターゲットで一致する。
@@ -87,9 +86,10 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 
 ## 実装例
 
-以下は 4 シグネチャのポリフィル実装一式である。
+以下は、`KeyValuePair` 版とタプル版をそれぞれ比較子あり・なしで用意した、計 4 シグネチャのポリフィルである。
 `ICollection<T>` を実装するソースでは要素数から辞書の容量をあらかじめ確保し、本家と同様に不要な再ハッシュを避ける。
-プロジェクトに `LinqExtensions.Net8.cs` などの名前でそのまま追加して使用できる。
+既存の `ToDictionary` 呼び出しはそのまま残せるので、前提の `LangVersion` を設定したうえで、`LinqExtensions.Net8.cs` などのファイルを足すだけでよい。
+.NET SDK 10.0.404 / Linux で、参照アセンブリを使って `net48` 向けに、このポリフィルと `keySelector` を渡す既存の呼び出し方 3 通り（`ToDictionary(k)`・`ToDictionary(k, v)`・`ToDictionary(k, comparer)`）を同じプロジェクトに並べたところ、曖昧さのエラーにならずにコンパイルが通った。
 
 ```csharp
 #nullable enable
@@ -165,16 +165,12 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+<code>KeyValuePair</code> 版とタプル版をそれぞれ比較子あり・なしで呼び、キー重複時の例外も含めて <code>net48</code> のポリフィルと <code>net10.0</code> の組み込みを比べた結果。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 キーが重複したときに `ArgumentException` になる点まで一致している。比較子に `OrdinalIgnoreCase` を渡すと、大文字小文字だけが違うキーが重複と判定されて同じ例外になる。
-
-コンパイル時に `NET8_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 8 未満の環境）でのみ、上記クラスが有効になる。
 
 ---
 
@@ -287,8 +283,19 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 ## 移行ガード
 
 本ポリフィルは `#if !NET8_0_OR_GREATER` で囲む。
-これらのオーバーロードは .NET 7 以前に存在しないため、誤ったガードはコンパイルエラーを招く。`!NETCOREAPP` は `NETCOREAPP` が定義される全ターゲット（.NET Core・.NET 5〜7）でポリフィルを無効化し、`!NET7_0_OR_GREATER` は `net7.0` 以降でのみ無効化する（`.NET 6` では `NET7_0_OR_GREATER` が未定義のため有効なまま、`.NET 7` で無効化されエラーになる）。いずれもオーバーロードを持たない環境でポリフィルを外してしまうため、正しくは対象バージョンで無効化する `#if !NET8_0_OR_GREATER` を用いる。
-シンボル選択の一般規則（追加されたバージョン以上で無効化する）は[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
+.NET 8 が `ToDictionary` に加えたのは、新しいメソッドではなく既存メソッドのオーバーロードである。
+そのため、ガードを誤り、.NET 7 以前でポリフィルが外れたときの症状が、新メソッドを足す他のバックポートと異なる。
+
+- `keySelector` を渡している既存の呼び出しは、従来のオーバーロードに解決されるため、何事もなくコンパイルが通る。
+- エラーになるのはセレクタを省いた呼び出しだけで、内容も「メソッドが無い」ではない。
+  - 引数なしの `ToDictionary()` は、引数を 0 個とるオーバーロードが無いという趣旨の `CS1501` になる。
+  - 比較子だけを渡す `ToDictionary(comparer)` は、既存の `ToDictionary(keySelector)` に当てはめられて、型引数を推論できないという趣旨の `CS0411` になる。
+
+どちらもメッセージだけを見ると呼び出し側の書き間違いに見えるため、原因がガードの条件にあると気付きにくい。
+.NET SDK 10.0.404 / Linux で、`net7.0` をターゲットにポリフィル無しでビルドし、この 2 つのエラーを確かめた（引数なしの呼び出しは `net6.0` でも同じ `CS1501` だった）。
+条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜7 で、`!NET7_0_OR_GREATER` にすると .NET 7 でポリフィルが外れ、これらのエラーになり得る。
+
+シンボル選択の一般規則（追加されたバージョン以上で無効化する）は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)にまとめてある。
 
 ---
 
@@ -297,7 +304,7 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 - **既存の `ToDictionary` との使い分け**: 本オーバーロードは、要素がすでに `KeyValuePair` またはタプルの形になっている場合にのみ有効である。任意の要素型 `TSource` から辞書を作る場合は、従来どおりキーセレクタ（必要なら値セレクタ）を渡す既存の `ToDictionary` を使う。
 - **キーの重複は例外になる**: 実装は `Dictionary<TKey, TValue>.Add` を用いるため、キーが重複すると `ArgumentException` が発生する。この挙動は本家の `ToDictionary` と一致する。重複を許容して後勝ちにしたい場合は、`ToDictionary` ではなく手動で `dictionary[key] = value` を用いる。
 - **キーの `null` は例外になる**: キーに `null` が現れると `ArgumentNullException` が発生する。`where TKey : notnull` 制約により参照型のキーは非 `null` が前提となるが、実行時に `null` が混入した場合はこの例外で検出される。
-- **即時評価である**: `source` を最後まで列挙するため、無限シーケンスや、列挙のたびに副作用を起こすソースには使わない。`source` が `null` の場合の `ArgumentNullException` は呼び出し時点で即座に投げられる。
+- **即時評価である**: `source` を最後まで列挙するため、無限シーケンスや、列挙のたびに副作用を起こすソースには使わない。`source` に `null` を渡した場合は、その場で `ArgumentNullException` になる。
 
 ---
 
@@ -306,10 +313,10 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
 | 自作ポリフィル（本記事） | 外部依存なし・シグネチャを本家と完全一致させられる | オーバーロード設計の検討が必要 | `#nullable enable` なコードベースで移行を見据える場合 |
-| `ToDictionary(p => p.Key, p => p.Value)` を直書き | 追加コード不要 | 記述が冗長・移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
-| .NET 8 へのアップグレード | 根本的解決・言語機能も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| `ToDictionary(p => p.Key, p => p.Value)` を直書き | 追加コード不要 | キーと値のセレクタを毎回書く・移行時に一括置換が必要 | 辞書化が数か所しかない場合 |
+| .NET 8 以降へのアップグレード | 根本的解決・`KeyValuePair` 版とタプル版が標準で揃う | 移行の工数がかかるうえ、.NET 8 は 2026 年 11 月に[サポートが終わった](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core)ため、新たに移るならサポート中の .NET 10 などを選ぶ | 辞書化以外の新しい API もまとめて使いたい場合 |
 
-セレクタの直書きは追加コードこそ不要だが、後日 .NET 8 へ移行してセレクタなしの記法へ統一する際に、使用箇所を洗い出して置換する手間が残る。
+セレクタの直書きは追加コードこそ不要だが、後日 .NET 8 以降へ移行してセレクタなしの記法へ統一する際に、使用箇所を洗い出して置換する手間が残る。
 
 ---
 

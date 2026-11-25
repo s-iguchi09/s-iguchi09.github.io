@@ -30,9 +30,8 @@ This article implements the selector-free `ToDictionary` polyfill (the `KeyValue
 - Language version: `#nullable enable`, nullable reference annotations, and the `where TKey : notnull` constraint require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (take particular care in older non-SDK projects that do not set `LangVersion` explicitly)
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+Selector-free `ToDictionary` (with and without a comparer) was called on the same input on `net48` (polyfill) and `net10.0` (BCL), comparing the resulting dictionaries and the exceptions thrown.
+Results:
 
 - The `KeyValuePair` and tuple overloads, along with their `IEqualityComparer` variants, produce the same results on both targets.
 - The exception type thrown on a duplicate key matches on both targets.
@@ -88,9 +87,10 @@ On top of that, three signature-design points are aligned with the built-in API.
 
 ## Implementation
 
-The following is the complete polyfill for all 4 signatures.
+The polyfill below provides four signatures: the `KeyValuePair` and tuple forms, each with and without a comparer.
 For sources implementing `ICollection<T>`, the dictionary capacity is pre-sized from the element count, avoiding rehashing just as the built-in implementation does.
-Add it to the project as, for example, `LinqExtensions.Net8.cs`.
+Existing `ToDictionary` calls can stay as they are, so with the `LangVersion` from the prerequisites set, adding a file such as `LinqExtensions.Net8.cs` is all it takes.
+A `net48` build with .NET SDK 10.0.404 on Linux, using reference assemblies, placed this polyfill next to three existing call forms that pass a `keySelector` — `ToDictionary(k)`, `ToDictionary(k, v)` and `ToDictionary(k, comparer)` — and compiled without any ambiguity error.
 
 ```csharp
 #nullable enable
@@ -166,16 +166,12 @@ namespace System.Linq
 #endif
 ```
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net8/linq-net8-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+The <code>KeyValuePair</code> and tuple overloads, each with and without a comparer, compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in, including the exception on duplicate keys. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides agree down to raising `ArgumentException` on a duplicate key. Passing `OrdinalIgnoreCase` as the comparer makes keys that differ only in case count as duplicates, producing the same exception.
-
-The class is active only when the `NET8_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 8, including .NET Framework.
 
 ---
 
@@ -288,8 +284,19 @@ Later changes to the underlying data do not affect the constructed dictionary.
 ## Migration Guard
 
 The polyfill is wrapped in `#if !NET8_0_OR_GREATER`.
-These overloads do not exist before .NET 8, so the wrong guard breaks compilation. `!NETCOREAPP` disables the polyfill on every target where `NETCOREAPP` is defined (.NET Core and .NET 5–7), whereas `!NET7_0_OR_GREATER` disables it only on `net7.0` and later (on .NET 6 the `NET7_0_OR_GREATER` symbol is undefined, so the polyfill stays active; on .NET 7 it is disabled and fails to compile). Both switch the polyfill off where the overloads are missing, so the correct guard is `#if !NET8_0_OR_GREATER`, disabling it only from the introducing version.
-The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+What .NET 8 added to `ToDictionary` is not a new method but new overloads of an existing one.
+So when a wrong guard strips the polyfill on .NET 7 or earlier, the symptom differs from the other backports, which add new methods.
+
+- Existing calls that pass a `keySelector` still bind to the old overloads and compile without complaint.
+- Only selector-free calls fail, and the error is not "no such method".
+  - A parameterless `ToDictionary()` fails with `CS1501`, "No overload for method 'ToDictionary' takes 0 arguments".
+  - A comparer-only `ToDictionary(comparer)` is matched against the existing `ToDictionary(keySelector)` and fails with `CS0411`, "The type arguments … cannot be inferred from the usage".
+
+Both messages read like a mistake at the call site, which makes it easy to miss that the guard condition is the real cause.
+Both errors were confirmed with .NET SDK 10.0.404 on Linux by building for `net7.0` without the polyfill (the parameterless call gave the same `CS1501` on `net6.0` too).
+Guarding with `!NETCOREAPP` strips the polyfill on .NET Core and .NET 5–7, and `!NET7_0_OR_GREATER` strips it on .NET 7, so these errors can appear there.
+
+For the general rule — disable at and above the version that introduced the API — see the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
 ---
 
@@ -298,7 +305,7 @@ The general rule — disable at and above the version that introduced the method
 - **When to use the existing `ToDictionary` instead**: the new overloads apply only when elements are already `KeyValuePair` or tuples. For arbitrary element types, keep passing a key selector (and value selector) to the existing `ToDictionary`.
 - **Duplicate keys throw**: the implementation uses `Dictionary<TKey, TValue>.Add`, so a duplicate key raises `ArgumentException`, matching the built-in behavior. For last-wins semantics, populate manually with `dictionary[key] = value`.
 - **`null` keys throw**: a `null` key raises `ArgumentNullException`. The `where TKey : notnull` constraint makes reference-type keys non-null by contract, and runtime `null` leakage is caught by this exception.
-- **Eager evaluation**: the source is enumerated to the end, so avoid infinite sequences and sources with per-enumeration side effects. The `ArgumentNullException` for a `null` source is thrown immediately at call time.
+- **Eager evaluation**: the source is enumerated to the end, so avoid infinite sequences and sources with per-enumeration side effects. Passing a `null` source throws `ArgumentNullException` on the spot.
 
 ---
 
@@ -307,10 +314,10 @@ The general rule — disable at and above the version that introduced the method
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
 | Hand-rolled polyfill (this article) | No dependency; signatures match the built-ins exactly | Requires overload-design care | `#nullable enable` codebases heading toward migration |
-| Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Verbose; mass replacement at migration | Few call sites and no migration planned |
-| Upgrade to .NET 8 | Root fix plus language features | Migration cost | When migration is feasible |
+| Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Both selectors written every time; mass replacement at migration | When only a handful of conversions exist |
+| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | Migration work, and .NET 8 [went out of support](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, so a new move should pick a supported release such as .NET 10 | When you want new APIs beyond dictionary conversion too |
 
-Inline selectors cost nothing today, but consolidating to the selector-free spelling after a .NET 8 migration means finding and replacing every call site.
+Inline selectors cost nothing today, but consolidating to the selector-free spelling after migrating to .NET 8 or later means finding and replacing every call site.
 
 ---
 

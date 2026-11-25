@@ -30,9 +30,8 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 - 言語バージョン: `#nullable enable` と nullable 参照型注釈は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`#nullable enable` と `?` 注釈を外せば C# 7.3 でも動作する）
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+`Order` は `OrderBy` への委譲なので、確かめるべきは、戻り値型が本家と揃うかと、委譲先の振る舞いがランタイムによって変わるかの 2 点である。
+同じ並べ替えを `net48`（ポリフィル）と `net10.0`（本家）で実行し、次の点を確かめた。
 
 - 戻り値は `IOrderedEnumerable` であり、`ThenBy` を連結できる。
 - 比較子で等しくなる要素どうしの順序は保たれる（安定ソート）。
@@ -62,9 +61,10 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 
 ## 委譲による実装
 
-以下は 4 シグネチャのポリフィル実装一式である。
+以下は `Order` / `OrderDescending` の 4 シグネチャをまとめたポリフィルである。
 実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS で比べる。.NET 5 以降の既定は Windows のバージョンによって異なり（たとえば Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS を使うようにもできる。計測した環境（Windows 11 の .NET 10）では net48 が NLS、net10.0 が ICU で（表の「比較エンジン」の行）、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の「ja-JP の比較子」の行）。
-プロジェクトに `LinqExtensions.Net7.cs` などの名前でそのまま追加して使用できる。
+`OrderBy` に委ねるだけなので、追加の型や補助メソッドは要らない。
+`LinqExtensions.Net7.cs` などの名前で置き、前提の `LangVersion` を設定する。
 
 ```csharp
 #nullable enable
@@ -120,14 +120,14 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+既定の比較・比較子つき・安定性・<code>ThenBy</code> の連結・空の並び・カルチャ依存・比較できない要素の観点で、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みを並べた。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
-比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。食い違うのは、ランタイムの比較そのものに由来する 3 行（比較エンジン、カルチャ依存の並び、全体を並べたときの例外の型）で、その理由は後述する。`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
+比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。
+食い違うのは、ランタイムの比較そのものに由来する 3 行（比較エンジン、カルチャ依存の並び、全体を並べたときの例外の型）で、その理由は後述する。
+`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
 
 委譲型では `yield return` を書かないため、イテレータ自作型で必要だった「引数検証とイテレータの分離」（[基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)）は考えなくてよい。
 `source` の null チェックは呼び出し時点で即座に実行され、並び替え自体は委譲先の `OrderBy` が持つ遅延評価のまま動く。
@@ -199,9 +199,21 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 
 ## 移行ガード
 
-本ポリフィルは `#if !NET7_0_OR_GREATER` で囲む。
-`Order` / `OrderDescending` は .NET 6 以前に存在しないため、`!NETCOREAPP` や `!NET6_0_OR_GREATER` を条件にすると .NET 5 / .NET 6 向けビルドでポリフィルが無効化され、コンパイルエラーになる。
-「対象メソッドが追加されたバージョン以上で無効化する」というシンボル選択の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
+`Order` / `OrderDescending` の 4 シグネチャは、1 つの `#if !NET7_0_OR_GREATER` でまとめて囲む。
+条件を `!NETCOREAPP` にすると .NET Core と .NET 5・.NET 6 で、`!NET6_0_OR_GREATER` にすると .NET 6 で、まだ `Order` を持たないランタイムからポリフィルが外れる。
+呼び出し箇所は、`Order` の定義が見つからないという趣旨の `CS1061` エラーになる（.NET SDK 10.0.404 / Linux で、`net6.0` をターゲットにポリフィル無しで `Order()` を呼んで確かめた）。
+
+戻り値型を本家と揃えたこのポリフィルは、ガードが切り替わった後も、`IEnumerable<T>` の呼び出し側にコンパイルのための書き換えを求めない（例外型の差は互換性論点 2 のとおり）。
+本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`IEnumerable<T>` に対して `Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
+`IQueryable<T>` に対する呼び出しは別である。
+移行前はポリフィル（`Enumerable` 版）に解決されてクライアント側で並べ替えるが、移行後は `Queryable.Order` に解決されてプロバイダへ渡り、続く `ThenBy` のセレクタも式ツリーになる。
+そのため `IQueryable<T>` の `q` に対する `q.Order().ThenBy(x => x.Name?.Length)` のように、`?.` を含むセレクタは `CS8072` になる。
+`?.` が無くても、`Func<T, TKey>` 型の変数を渡す `q.Order().ThenBy(selector)` は、移行後は `IOrderedQueryable<T>` を受け取りデリゲートを引数に取る `ThenBy` が無く、コンパイルエラー（`CS1929`）になる。
+クライアント側で並べ替えたままにするなら、`q.AsEnumerable().Order().ThenBy(selector)` と書く。
+いずれも .NET SDK 10.0.404 / Linux で、`net10.0` をターゲットにビルドして確かめた。
+戻り値型を `IEnumerable<T>` に縮めていたら、移行前は第 2 ソートキーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
+
+バージョン別シンボルの選び方の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
 
 ---
 
@@ -218,10 +230,10 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
 | 委譲型ポリフィル（本記事） | 実装が数行・アルゴリズム起因のバグが入らない | 委譲先と本家の挙動差（例外型）は再現できない | `Order` の記法を移行前から使いたい場合 |
-| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・.NET 7 移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
-| .NET 7 へのアップグレード | 根本的解決・言語機能も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・`Order` にそろえるなら移行時に一括置換が要る | `OrderBy(x => x)` の呼び出しが数か所しかなく、移行予定もない場合 |
+| .NET 7 以降へのアップグレード | 根本的解決・委譲用のファイル自体を消せる | フレームワーク移行の工数に加え、.NET 7 は 2024 年 5 月に[サポートが終わった](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) STS 版のため、上げるなら LTS の .NET 10 などまで進むことになる | `Order` 以外にも .NET 7 以降の API を使いたい場合 |
 
-`OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。
+`OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 以降へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。
 ポリフィルを導入しておけば移行前から `Order` で記述でき、移行時には条件付きコンパイルが自動で本家へ切り替える。
 
 ---

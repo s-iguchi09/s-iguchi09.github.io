@@ -29,11 +29,12 @@ The two approaches differ not just in memory efficiency but in how they treat `n
 - Language version: `#nullable enable` and `where TKey : notnull` require C# 8.0+. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj`
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+The API does not guarantee the order of keys in the aggregated result, so two implementations may disagree on it.
+The same input was therefore aggregated on `net48` (polyfill) and `net10.0` (BCL) and compared down to the key order, not just the values.
+For `Index`, the results for the same input and for an empty sequence were compared.
+This showed:
 
-- `CountBy` and `AggregateBy` return keys in first-seen order.
+- For this input, `CountBy` and `AggregateBy` returned keys in first-seen order on both targets.
 - The contents of the tuple returned by `Index`, and its result for an empty sequence, match on both targets.
 
 ---
@@ -96,7 +97,7 @@ Option A is shorter but diverges from the built-in behavior on two counts.
 | `null` keys | Accepted as one group | `ArgumentNullException` at enumeration | `ArgumentNullException` at enumeration |
 
 `GroupBy` accepts `null` keys as a group of their own, so the delegating implementation silently passes input that the built-in would reject.
-Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on exception fidelity as well as memory.
+Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception, a point that was verified, as well as memory.
 
 To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
 `Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
@@ -111,7 +112,7 @@ To keep lazy evaluation while validating arguments eagerly, the public methods a
 ## Implementation
 
 The following is the complete polyfill — 4 signatures including the `seed` and `seedSelector` forms of `AggregateBy`.
-Add it to the project as, for example, `LinqExtensions.Net9.cs`.
+Placed in a file such as `LinqExtensions.Net9.cs`, it takes effect only on targets below .NET 9.
 
 ```csharp
 #nullable enable
@@ -238,11 +239,9 @@ namespace System.Linq
 #endif
 ```
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+An input mixing keys that differ only in case, aggregated and compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in down to key order, the exception for a <code>null</code> key, and empty sequences. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 On this input and this runtime, both sides placed the keys in the order they first appeared, and the output matches down to that ordering.
@@ -251,7 +250,6 @@ That ordering is not an API guarantee, however.
 `CountBy` and `AggregateBy` both return their results by enumerating a `Dictionary<TKey, TValue>`, so the enumeration order is implementation-defined.
 Sort explicitly at the call site if the order carries meaning.
 
-The class is active only when the `NET9_0_OR_GREATER` symbol is undefined — that is, on any environment below .NET 9, including .NET Framework.
 The `seed` form of `AggregateBy` is expressed as a `seedSelector` that ignores the key (`key => seed`) and delegates to the shared accumulation body.
 
 ---
@@ -347,9 +345,13 @@ This matches the built-in .NET 9 behavior of the internal dictionary rejecting `
 
 ## Migration Guard
 
-The polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
-`CountBy`, `AggregateBy` and `Index` do not exist before .NET 9, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would disable the polyfill in a .NET 8 build and break compilation.
-The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/) — disable at and above the introducing version — the polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
+`CountBy`, `AggregateBy` and `Index` do not exist on .NET 8 or earlier, so guarding with `!NETCOREAPP` would strip the polyfill on .NET Core and .NET 5–8, and `!NET8_0_OR_GREATER` would strip it on .NET 8, breaking compilation at the call sites.
+
+With this guard, the polyfill keeps running after a move to .NET 8.
+In a project still left on `net8.0` after its end of support, or a library multi-targeting `net48` and `net8.0`, the three methods are missing from the BCL, so this article's dictionary-based implementation is what runs in production (a `net8.0` build run with .NET SDK 10.0.404 on Linux confirmed that the `CountBy` result comes from the polyfill's assembly).
+The BCL implementation takes over only once the project moves to .NET 9 or later.
+Since key enumeration order is not guaranteed by the API, as noted above, making the ordering explicit while the polyfill is still running keeps order-dependent code safe from that switch.
 
 ---
 
@@ -366,10 +368,20 @@ The general rule — disable at and above the version that introduced the method
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
+| Dictionary-backed polyfill (this article) | Same memory profile and `null`-key exception as the built-ins | Somewhat longer implementation; disposes the source enumerator before returning any result (the built-ins dispose it when enumeration of the results ends) | Keeping `null`-key handling and memory profile unchanged across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
-| Write `GroupBy(...).Select(...)` inline | No extra code | Verbose; mass replacement at migration | Few call sites and no migration planned |
-| Upgrade to .NET 9 | Root fix plus the allocation savings | Migration cost | When migration is feasible |
+| Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; `null`-key behavior differs from the built-ins; mass replacement at migration | Few aggregation sites where allocations do not matter |
+| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
+
+The polyfill finishes aggregating before it returns results, so it disposes the source enumerator before returning any result.
+The built-in `CountBy` and `AggregateBy` keep the source enumerator until enumeration of the results finishes or the result enumerator is disposed.
+The difference shows with sources that do work on disposal.
+If `Dispose` throws, the polyfill throws before returning any result.
+The built-ins throw after the last result when the results are enumerated to the end, and at the point the result enumerator is disposed when a `foreach` is left early.
+If disposal releases a lock, after the migration the lock stays held while the results are being processed, and another thread waiting for that lock meanwhile cannot proceed.
+This lock behavior was not measured; it follows from the difference in when the enumerator is disposed.
+With .NET SDK 10.0.404 on Linux, the `net10.0` built-in `CountBy` and `AggregateBy` were run next to a renamed copy of the polyfill to check when `Dispose` is called.
+The number of results returned when `Dispose` throws was checked with `CountBy` (enumerating to the end, the built-in returned two results first; breaking after the first, it returned one; the polyfill returned none in both cases).
 
 ---
 
@@ -377,7 +389,7 @@ The general rule — disable at and above the version that introduced the method
 
 What a `CountBy` / `AggregateBy` backport is judged on is not "returning the same result" but "returning it the same way."
 Delegating to `GroupBy` produces identical values while diverging from the built-ins on two counts: intermediate-grouping allocations and tolerance of `null` keys.
-Direct dictionary accumulation aligns the memory profile, the exception behavior and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` genuinely safe.
+Direct dictionary accumulation aligns the memory profile, the `null`-key exception and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` safe on those points (only the point at which the source enumerator is disposed differs, as noted after the table).
 
 | Method | Implementation | State held |
 | --- | --- | --- |

@@ -27,12 +27,13 @@ It then digs into a concern unique to this backport, born from the fact that out
 - Language version: nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) require `LangVersion` 9.0 or later (recommended: `latest`). No other project configuration changes
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+Between `net48` (polyfill) and `net10.0` (BCL), the two join methods were compared output-for-output.
+Because `Shuffle` is random, it was compared by its re-sorted result, its length, its result for an empty sequence, and whether threads running together get distinct orders.
+Three points were confirmed:
 
 - The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.
-- `Shuffle` returns a permutation of the original sequence (compared after sorting, since the order is random).
+- `Shuffle` returns a permutation of the original sequence.
+- Shuffling 1–10 on each of eight threads started together yielded eight distinct orders on both targets.
 
 ---
 
@@ -78,7 +79,7 @@ Random ordering has the same shape of problem: `OrderBy(_ => Guid.NewGuid())` ge
 The following is the complete polyfill for `LeftJoin` (2 signatures), `RightJoin` (2 signatures) and `Shuffle` (1 signature).
 `LeftJoin` / `RightJoin` embed the composition idiom above in the same shape as the built-ins, and `Shuffle` buffers the source into an array before applying a Fisher–Yates shuffle.
 The reasons for placing the polyfill in `System.Linq` and for the migration guard are covered in the [series foundation article](/articles/linq-backport-netframework-to-net5/).
-Add it to the project as, for example, `LinqExtensions.Net10.cs`.
+Both join methods and `Shuffle` fit in a single file such as `LinqExtensions.Net10.cs`.
 
 ```csharp
 #nullable enable
@@ -223,14 +224,12 @@ namespace System.Linq
 #endif
 ```
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. Measured with .NET SDK 10.0.302.
+Four join cases and four <code>Shuffle</code> cases compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. <code>Shuffle</code> is compared by its re-sorted result, its length, an empty input, and the number of distinct orders produced when eight threads started together each shuffle 1–10. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
-`Shuffle` draws on randomness, so its output is re-sorted before the comparison. The two sides also agree on the default value handed to a row that has no counterpart.
+The two sides also agree on the default value handed to a row that has no counterpart.
 
 The result selectors of `LeftJoin` / `RightJoin` carry the same nullable annotations as the built-ins — `TInner?` for `LeftJoin`, `TOuter?` for `RightJoin`.
 The signature itself thus documents which side can be missing, and nullable analysis agrees before and after migration.
@@ -337,20 +336,41 @@ Outer joins live next door to database queries, which gives this polyfill a risk
 It extends `Enumerable` (`IEnumerable<T>`), but `IQueryable<T>` inherits `IEnumerable<T>`, so the compiler happily applies it to Entity Framework queries too.
 
 What happens then is not a runtime error but **silent performance degradation**.
-With no `Queryable` counterpart available, the `Enumerable` polyfill binds, and the join is never translated to SQL — it executes client-side.
+Below .NET 10, with no `Queryable` counterpart available, the `Enumerable` polyfill binds, and the join is never translated to SQL — it executes client-side.
 Entire tables are transferred and joined in memory, and nothing looks wrong until data volume grows.
 
 For server-side outer joins in database queries below .NET 10, keep writing the provider-translatable `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` form.
+Written against an `IQueryable<T>`, its lambdas become expression trees, so the null-conditional operator in `d?.DeptName` from the example in the "How SQL Join Clauses Map to LINQ Idioms" section cannot be used.
+Inside the anonymous type, write it with the conditional operator and an explicit member name, as in `DeptName = d == null ? null : d.DeptName` (without the member name, the name cannot be inferred and the code fails with `CS0746`).
 `AsEnumerable` only draws the client-evaluation boundary; it does not keep the join on the server.
-.NET 10 does add `LeftJoin` / `RightJoin` to `Queryable` as well, but their translatability depends on the provider, and this article's scope is `Enumerable` only.
+.NET 10 does add `LeftJoin` / `RightJoin` / `Shuffle` to `Queryable` as well, but their translatability depends on the provider, and this article's scope is `Enumerable` only.
 
 ---
 
 ## Migration Guard
 
-The polyfill is wrapped in `#if !NET10_0_OR_GREATER`.
-`LeftJoin`, `RightJoin` and `Shuffle` do not exist before .NET 10, so the wrong guard breaks compilation. `!NETCOREAPP` disables the polyfill on every target where `NETCOREAPP` is defined (.NET Core and .NET 5–9), whereas `!NET9_0_OR_GREATER` disables it only on `net9.0` and later (on .NET 8 the `NET9_0_OR_GREATER` symbol is undefined, so the polyfill stays active; on .NET 9 it is disabled and fails to compile). Both switch the polyfill off where the operators are missing, so the correct guard is `#if !NET10_0_OR_GREATER`.
-The general rule — disable at and above the version that introduced the methods — is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
+Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/), the polyfill is wrapped in `#if !NET10_0_OR_GREATER`, which turns it off on .NET 10 and later, where the methods exist.
+`LeftJoin`, `RightJoin` and `Shuffle` do not exist on .NET 9 or earlier, so guarding with `!NETCOREAPP` strips the polyfill on .NET Core and .NET 5–9, and `!NET9_0_OR_GREATER` strips it on .NET 9 — both break compilation.
+
+When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
+.NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` polyfill.
+For `LeftJoin` / `RightJoin`, this holds when all three selectors are lambdas (or `Expression<Func<...>>` values).
+If any of them is passed as a `Func` variable and the rest are lambdas, the call cannot become an expression tree, so it still binds to the `Enumerable` version (the built-in one on .NET 10) after the migration, and the join keeps running on the client.
+Mixing a `Func` variable with an `Expression<Func<...>>` variable fits neither version and fails to compile with `CS1503`.
+To run it on the `Enumerable` version, call `Compile()` on the expression tree so that every selector is a delegate.
+`Shuffle`, which takes no delegate, always binds to the `Queryable` version.
+A query that joined or shuffled on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
+If the provider can translate them, the work moves to the server; if it cannot, a query that worked before the migration may throw at run time.
+
+Some calls stop even earlier, at compile time.
+Because the result selector becomes an expression tree, a lambda that uses the null-conditional operator, like `d?.DeptName` above, fails with `CS8072`, "An expression tree lambda may not contain a null propagating operator".
+If any calls are still made on an `IQueryable<T>`, writing them with the conditional operator, as in `d == null ? null : d.DeptName`, compiles unchanged both before and after the migration.
+
+Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions).
+A `LeftJoin` given its result selector or outer key selector as a `Func` variable did not return an `IQueryable<T>`, while one given its outer key selector as an `Expression<Func<...>>` variable did.
+Passing the outer key as a `Func` variable and the inner key as an `Expression<Func<...>>` variable failed with `CS1503`, and calling `Compile()` on the inner key made it bind to the `Enumerable` version.
+In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, the conditional-operator version built and ran, and a conditional operator without a member name inside an anonymous type failed with `CS0746`.
+Translation support was not checked per provider, so run the affected queries against the actual provider when migrating.
 
 ---
 
@@ -372,7 +392,7 @@ The general rule — disable at and above the version that introduced the method
 | Write `GroupJoin` + `DefaultIfEmpty` inline | No extra code; translates under `IQueryable` too | Verbose; easy to get subtly wrong | Outer joins in database queries |
 | Substitute `OrderBy(_ => Guid.NewGuid())` | No extra code | Inefficient; no uniformity guarantee | Small collections where rigor is irrelevant |
 | Adopt MoreLINQ or similar | Implemented and tested | External dependency; API differs from the built-ins | Projects already accepting the dependency |
-| Upgrade to .NET 10 | Root fix; `Queryable` versions available | Migration cost | When migration is feasible |
+| Upgrade to .NET 10 | Root fix; `Queryable` versions available | The effort of a framework migration | When you want `LeftJoin` syntax in DB queries too (translation depends on the provider) |
 
 Until a .NET 10 migration, the pragmatic split is: polyfill for in-memory collections, classic `GroupJoin` idiom for database queries.
 

@@ -27,12 +27,11 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 - 言語バージョン: 実装例は `#nullable enable` と `using var`（C# 8.0）に加え、`MaxBy` / `MinBy` の戻り値 `TSource?`（制約なし型パラメータへの null 許容注釈）を用いるため C# 9.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `9.0` 以上に設定する
 - 検証環境: .NET 10 / Windows 11
 
-本記事のポリフィル実装は、上記の環境で `net48` と `net10.0` の両方に対してビルドして実行し、出力を突き合わせて確かめている。
-`net10.0` では移行ガードの `#if` によってポリフィルが無効になり、BCL の実装が使われる。
-この環境で確認しているのは次の点である。
+`Chunk` の分割サイズ、`MaxBy` に渡す要素の型、`DistinctBy` のキーを変えながら、同じ呼び出しを `net48`（ポリフィル）と `net10.0`（本家）で実行して比べた。
+比べて分かったのは次の点である。
 
 - `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合（`int.MaxValue` を含む）・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
-- `MaxBy` / `MinBy` が空の並びに対して返す値は、`int` のような null 非許容の値型と、参照型とで異なる。
+- 空の並びに対する `MaxBy` は、`int` のような null 非許容の値型と参照型とで結果が異なり、その違いまで両ターゲットで一致する。
 - `DistinctBy` が残す要素とその順序は、両ターゲットで一致する。
 
 ---
@@ -89,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 ## 実装例
 
 以下は 4 メソッドのポリフィル実装一式である。
-プロジェクトに `LinqExtensions.Net6.cs` などの名前でそのまま追加して使用できる。
+ファイル 1 つで完結するため、前提の `LangVersion` を満たしていれば、`LinqExtensions.Net6.cs` などの名前でプロジェクトに加えるだけで使える。
 
 ```csharp
 #nullable enable
@@ -258,16 +257,12 @@ namespace System.Linq
 #endif
 ```
 
-この実装が標準 LINQ と同じ結果を返すかは、同じ呼び出しコードを `net48`（ポリフィル有効）と `net10.0`（組み込みが有効）の両方でビルドして実行し、出力を突き合わせて確かめられる。
-
 {% include tables/articles/linq-backport-netframework-to-net6/linq-net6-polyfill-parity.ja.md %}
 
-上の実装コードをそのまま <code>net48</code> でビルドしたものと、<code>#if</code> により組み込みへ切り替わる <code>net10.0</code> でビルドしたものを、同一のドライバーで実行して比較した結果。.NET SDK 10.0.302 で測定した。
+<code>Chunk</code> の分割サイズ 4 通りと不正値、値型・参照型それぞれの空の並びに対する <code>MaxBy</code> を中心に、<code>MinBy</code> と <code>DistinctBy</code> も含めて <code>net48</code> のポリフィルと <code>net10.0</code> の組み込みを比べた結果。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 空の並びに対する `MaxBy` が、値型では `InvalidOperationException`、参照型では `null` になる点まで一致している。この違いはシグネチャからは読み取れない。
-
-コンパイル時に `NET6_0_OR_GREATER` シンボルが定義されていない環境（.NET Framework を含む .NET 6 未満の環境）でのみ、上記クラスが有効になる。
 
 ---
 
@@ -418,7 +413,7 @@ yield return chunk.ToArray();
 
 ## 注意点
 
-- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、要素型が参照型または null 許容値型なら `default`（= `null`）を返し、非 null 値型（`int` や `struct` など）でのみ `InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である（戻り値型も `TSource?`）。非 null 値型で空になりうる場合は、`try-catch` で対処するか、事前に要素の有無を確認する。ただし `.Any()` はソースを列挙するため、遅延評価のソースでは後続の `MaxBy` / `MinBy` と合わせて二重列挙になり、単一利用の列挙子や副作用を伴うソースでは不正確になりうる。その場合は `.ToList()` などで一度実体化してから判定・適用する。
+- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、要素型が参照型または null 許容値型なら `default`（= `null`）を返し、非 null 値型（`int` や `struct` など）でのみ `InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である（戻り値型も `TSource?`）。表で本家との一致を確かめたのは、値型と参照型の空の並びに対する `MaxBy` である。非 null 値型で空になりうる場合は、`try-catch` で対処するか、事前に要素の有無を確認する。ただし `.Any()` はソースを列挙するため、遅延評価のソースでは後続の `MaxBy` / `MinBy` と合わせて二重列挙になり、単一利用の列挙子や副作用を伴うソースでは不正確になりうる。その場合は `.ToList()` などで一度実体化してから判定・適用する。
 - **`Chunk` の末尾チャンクのサイズ**: 入力要素数が `size` の倍数でない場合、最後のチャンクは `size` より小さくなる。チャンクが常に一定サイズであることを前提とした呼び出し元の実装は誤りである。
 - **`DistinctBy` のキーと `null`**: キーに `null` が含まれる場合、`null` 同士は同一キーとして扱われ、最初に現れた `null` キー要素のみが出力される。
 - **`#nullable enable` の適用範囲**: ファイル先頭の `#nullable enable` はファイルスコープで有効化する。プロジェクト全体で `<Nullable>enable</Nullable>` を設定している場合でも、重複して記述することに害はない。
@@ -432,7 +427,7 @@ yield return chunk.ToArray();
 | 自作ポリフィル（本記事） | 外部依存なし・回避イディオムの計算量問題も解消 | 実装コストがある | 依存を最小化したいプロジェクト |
 | 回避イディオムの継続 | 追加コード不要 | 計算量・割り当ての無駄が残り続ける | 対象データが常に少件数の場合 |
 | MoreLINQ（NuGet） | 豊富なメソッド・テスト済み | 外部ライブラリへの依存が増える | 多数の追加メソッドが必要なプロジェクト |
-| .NET 6 へのアップグレード | 根本的解決・性能改善も享受できる | 移行コストが発生する | 移行が技術的・ビジネス的に許容できる場合 |
+| .NET 6 以降へのアップグレード | 根本的解決・ポリフィルの保守とテストが不要になる | .NET Framework から移る工数がかかり、.NET 6 も 2024 年 11 月に[サポートが終了](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core)しているので、上げるなら現行の LTS である .NET 10 以降まで進むことになる | 4 メソッド以外の新しい API もまとめて使いたい場合 |
 
 `MoreLINQ`（NuGet パッケージ名: `morelinq`）は `Chunk` や `MaxBy` に相当するメソッドを含む充実したライブラリだが、必要なメソッドが本記事の 4 件に限られるなら、外部依存のない自作ポリフィルのほうが保守はシンプルである。
 

@@ -31,12 +31,13 @@ As the foundation article of the series, this piece explains the rationale behin
 - Approach: split public methods from iterators; disable automatically on migration via `#if !NETCOREAPP`
 - Verification environment: .NET 10 / Windows 11
 
-The polyfill implementation in this article was built and run for both `net48` and `net10.0` in the environment above, and the outputs were compared.
-On `net10.0` the migration `#if` guard disables the polyfill, so the BCL implementation is used.
-The following points were confirmed in that environment:
+A `net48` build (the polyfill for `TakeLast` / `SkipLast`, and the BCL versions of `Append` / `Prepend`, which exist from .NET Framework 4.7.1) was run on the same input as a `net10.0` build, and the results compared.
+Edge counts are easy to get wrong in a hand-written `TakeLast` / `SkipLast`, so 0, a count (10) beyond the element count (5), and negative counts were compared in particular.
+Which targets have the four methods in the BCL, and how the project format affects symbol definitions, were also checked by actually building.
+The results:
 
 - `Append` and `Prepend` are present in the BCL from .NET Framework 4.7.1 onward, so adding the polyfill causes a conflict.
-- Passing 0, a value larger than the element count, or a negative value to `TakeLast` / `SkipLast` produces the same result on both targets.
+- Passing 0, a count (10) larger than the element count (5), or a negative value to `TakeLast` / `SkipLast` produces the same result on both targets.
 - `TakeLast` on an empty sequence also produces the same result on both targets.
 - `NET471_OR_GREATER` relies on the implicit definitions of the SDK-style project. With those definitions turned off, and in legacy-format projects, the same source fails with `CS0121`; declaring it through `DefineConstants` makes it compile.
 
@@ -237,12 +238,13 @@ namespace System.Linq
 
 Two structural traits carry the design principles explained below: every method is split into a validating public method and a private iterator containing `yield return`, and `TakeLast` / `SkipLast` are built on a `Queue<T>`.
 
-Whether this implementation returns what the standard LINQ returns can be checked by building the same calling code for `net48` (polyfill active) and for `net10.0` (built-in active), running both, and comparing the output.
-
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.en.md %}
 
-The implementation above, built as-is for <code>net48</code> and built for <code>net10.0</code> where <code>#if</code> switches it to the built-in, run through one and the same driver. The boundary cases — <code>0</code>, a count past the end, a negative count, and an empty sequence — agree as well. Measured with .NET SDK 10.0.302.
+The four methods applied to <code>1..5</code>, and <code>TakeLast</code> to an empty sequence, with <code>net48</code> (polyfill for <code>TakeLast</code> / <code>SkipLast</code>, BCL for <code>Append</code> / <code>Prepend</code>) and the <code>net10.0</code> built-in run through the same driver. Whether <code>SkipLast(0)</code> returns the original sequence itself (the same instance) was compared too. They agree including counts of <code>0</code>, <code>10</code> (beyond the element count of 5), and negative. Measured with .NET SDK 10.0.302.
 {: .table-caption}
+
+Agreement including the edge cases is the point of this table.
+Behaviors such as `TakeLast(-1)` returning an empty sequence and `SkipLast(-1)` returning everything do not follow automatically from matching the signatures.
 
 ---
 
