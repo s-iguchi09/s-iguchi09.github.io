@@ -189,7 +189,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> TakeLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -220,7 +220,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> SkipLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -345,7 +345,7 @@ Both therefore use a `Queue<T>` as a sliding window holding only the most recent
 `TakeLast` keeps updating the queue, evicting the oldest element when full; whatever remains after the source ends is exactly the last N.
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -366,7 +366,7 @@ foreach (var item in queue)
 When the queue is full and a new element arrives, the evicted front element is guaranteed *not* to be among the last N — so that is the moment to emit it.
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -380,7 +380,8 @@ foreach (var item in source)
 ```
 
 The output always trails the input by `count` elements — that is the crux.
-Regardless of the source size, only `count` elements are held at any time, keeping space complexity at O(count).
+Regardless of the source size, at most `count` elements are held at any time, keeping space complexity at O(count).
+The queue is created without an initial capacity.
 The double enumeration of the `Count()`-then-`Skip`/`Take` workaround also disappears.
 
 ```csharp
@@ -422,7 +423,7 @@ The choice of version-specific symbols (`NET6_0_OR_GREATER` and friends) is cove
 
 ## Caveats
 
-- **`TakeLast` / `SkipLast` consume memory proportional to `count`**: the sliding window is frugal, but a huge `count` still allocates a buffer of that size. The approach brings no benefit when the window effectively spans the whole sequence.
+- **`TakeLast` / `SkipLast` hold up to `count` elements**: the sliding window holds no more elements than the smaller of `count` and the number of source elements. A long source with a large `count` uses memory accordingly. The approach brings no benefit when the window effectively spans the whole sequence.
 - **Behavior for `count <= 0`**: `TakeLast` returns an empty sequence and `SkipLast` returns every element. No exception is thrown, matching the built-in behavior. For a non-empty array, `SkipLast(0)` returns a new iterator rather than the source object, as the built-in does (the `SkipLast(0) is source` row of the table, measured on a five-element array). An empty source was not measured for this.
 - **Re-execution on every enumeration**: all four methods are lazy, so enumerating the same query twice walks the source twice. Materialize with `.ToList()` when the result is reused.
 - **Performance optimizations are simpler than the originals**: the built-in implementations special-case `IList<T>` sources and more. This polyfill is generic-only; results and exceptions match, but certain collection types may run slower than on modern .NET.

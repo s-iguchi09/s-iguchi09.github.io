@@ -189,7 +189,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> TakeLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -220,7 +220,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> SkipLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -345,7 +345,7 @@ var prepended = new[] { 1, 2, 3 }.Prepend(0); // 0, 1, 2, 3
 `TakeLast` は、満杯になったら古いものを捨てながらキューを更新し、元データが尽きた時点でキューに残った「最後の N 個」を出力する。
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -366,7 +366,7 @@ foreach (var item in queue)
 キューが満杯の状態で次の要素が来たとき、押し出される先頭要素は「末尾から N 個以内ではない」ことが確定しているので、そのタイミングで出力する。
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -380,7 +380,8 @@ foreach (var item in source)
 ```
 
 出力が常に `count` 個分遅れて進む点が要点である。
-元データの総数に関係なく、保持するのは常に `count` 個だけなので、空間計算量は O(count) に抑えられる。
+元データの総数に関係なく、保持するのは多くても `count` 個なので、空間計算量は O(count) に抑えられる。
+キューは初期容量を指定せずに作る。
 `Count()` を先に数えてから `Skip` / `Take` する回避コードのような二重列挙も発生しない。
 
 ```csharp
@@ -422,7 +423,7 @@ namespace System.Linq
 
 ## 注意点
 
-- **`TakeLast` / `SkipLast` は `count` 個分のメモリを消費する**: スライディングウィンドウは省メモリだが、`count` に巨大な値を渡せばその分のバッファが確保される。全件保持が前提になるような使い方では効果がない。
+- **`TakeLast` / `SkipLast` が保持する要素は最大で `count` 個**: スライディングウィンドウが保持する要素は、`count` 個と元データの件数のうち少ないほうまでである。元データが長く `count` も大きいと、その分のメモリを使う。全件保持が前提になるような使い方では効果がない。
 - **`count <= 0` の扱い**: `TakeLast` は空シーケンスを、`SkipLast` はすべての要素を返す。例外にはならず、本家 .NET の挙動と一致する。空でない配列に対しては、`SkipLast(0)` は本家と同じく元のオブジェクトではなく新しいイテレーターを返す（表の「SkipLast(0) が元のシーケンスそのものか」の行。5 要素の配列で計測）。空のシーケンスについては、この点を測っていない。
 - **列挙のたびに再実行される**: 4 メソッドとも遅延評価であるため、同じクエリを複数回列挙するとソースの走査も毎回やり直される。結果を再利用する場合は `.ToList()` などで実体化する。
 - **性能の最適化は本家より簡素である**: 本家 .NET の実装はソースが `IList<T>` の場合の特殊化などを持つが、本ポリフィルは汎用実装のみである。返す結果と例外の挙動は一致するが、コレクション型によっては本家より遅くなる余地がある。
