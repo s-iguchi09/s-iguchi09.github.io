@@ -336,11 +336,12 @@ Outer joins live next door to database queries, which gives this polyfill a risk
 It extends `Enumerable` (`IEnumerable<T>`), but `IQueryable<T>` inherits `IEnumerable<T>`, so the compiler happily applies it to Entity Framework queries too.
 
 What happens then is not a runtime error but **silent performance degradation**.
-With no `Queryable` counterpart available, the `Enumerable` polyfill binds, and the join is never translated to SQL — it executes client-side.
+Below .NET 10, with no `Queryable` counterpart available, the `Enumerable` polyfill binds, and the join is never translated to SQL — it executes client-side.
 Entire tables are transferred and joined in memory, and nothing looks wrong until data volume grows.
 
 For server-side outer joins in database queries below .NET 10, keep writing the provider-translatable `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` form.
-Written against an `IQueryable<T>`, its lambdas become expression trees, so the null-conditional operator in the opening example's `d?.DeptName` cannot be used; write `d == null ? null : d.DeptName` with the conditional operator instead.
+Written against an `IQueryable<T>`, its lambdas become expression trees, so the null-conditional operator in `d?.DeptName` from the example in the "How SQL Join Clauses Map to LINQ Idioms" section cannot be used.
+Inside the anonymous type, write it with the conditional operator and an explicit member name, as in `DeptName = d == null ? null : d.DeptName` (without the member name, the name cannot be inferred and the code fails with `CS0746`).
 `AsEnumerable` only draws the client-evaluation boundary; it does not keep the join on the server.
 .NET 10 does add `LeftJoin` / `RightJoin` / `Shuffle` to `Queryable` as well, but their translatability depends on the provider, and this article's scope is `Enumerable` only.
 
@@ -353,8 +354,8 @@ Following the rule from the [.NET 6 backport article](/articles/linq-backport-ne
 
 When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
 .NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` polyfill.
-For `LeftJoin` / `RightJoin`, this holds when all three selectors are written as lambdas in place.
-If any of them is passed as a `Func` variable, it cannot become an expression tree, so the call still binds to the `Enumerable` version (the BCL one on .NET 10) after the migration, and the join keeps running on the client.
+For `LeftJoin` / `RightJoin`, this holds when all three selectors are lambdas (or `Expression<Func<...>>` values).
+If any of them is passed as a `Func` variable, it cannot become an expression tree, so the call still binds to the `Enumerable` version (the built-in one on .NET 10) after the migration, and the join keeps running on the client.
 `Shuffle`, which takes no delegate, always binds to the `Queryable` version.
 A query that joined or shuffled on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
 If the provider can translate them, the work moves to the server; if it cannot, a query that worked before the migration may throw at run time.
@@ -363,8 +364,9 @@ Some calls stop even earlier, at compile time.
 Because the result selector becomes an expression tree, a lambda that uses the null-conditional operator, like `d?.DeptName` above, fails with `CS8072`, "An expression tree lambda may not contain a null propagating operator".
 If any calls are still made on an `IQueryable<T>`, writing them with the conditional operator, as in `d == null ? null : d.DeptName`, compiles unchanged both before and after the migration.
 
-Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions), and that a `LeftJoin` given its result selector as a `Func` variable does not.
-In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, and the conditional-operator version built and ran.
+Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions).
+A `LeftJoin` given its result selector or outer key selector as a `Func` variable did not return an `IQueryable<T>`, while one given its outer key selector as an `Expression<Func<...>>` variable did.
+In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, the conditional-operator version built and ran, and a conditional operator without a member name inside an anonymous type failed with `CS0746`.
 Translation support was not checked per provider, so run the affected queries against the actual provider when migrating.
 
 ---

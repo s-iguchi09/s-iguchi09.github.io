@@ -335,11 +335,12 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 本ポリフィルは `Enumerable`（`IEnumerable<T>`）の拡張メソッドだが、`IQueryable<T>` は `IEnumerable<T>` を継承するため、Entity Framework などの DB クエリにもコンパイル上は適用できてしまう。
 
 その場合に起きるのは実行時エラーではなく、**静かな性能劣化**である。
-`Queryable` 版が存在しないため `Enumerable` 版のポリフィルが選択され、結合が SQL へ翻訳されずにクライアント側で実行される。
+.NET 10 未満では `Queryable` 版が存在しないため `Enumerable` 版のポリフィルが選択され、結合が SQL へ翻訳されずにクライアント側で実行される。
 テーブル全件が転送された後にメモリ上で結合される形になり、データ量が増えるまで問題が表面化しない。
 
 .NET 10 未満で DB クエリにサーバー側の外部結合を求める場合は、プロバイダが翻訳できる `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` の形で記述する。
-この形を `IQueryable<T>` に書くとラムダが式ツリーになるため、冒頭の例の `d?.DeptName` のような null 条件演算子は使えず、`d == null ? null : d.DeptName` のように条件演算子で書く。
+この形を `IQueryable<T>` に書くとラムダが式ツリーになるため、「SQL の結合句と LINQ イディオムの対応」の節の例にある `d?.DeptName` のような null 条件演算子は使えない。
+匿名型の中では、`DeptName = d == null ? null : d.DeptName` のようにメンバー名を付けて条件演算子で書く（メンバー名を省くと、名前を推論できずに `CS0746` になる）。
 `AsEnumerable` はクライアント評価の境界を引くだけで、結合をサーバー側に保つ効果はない。
 なお .NET 10 では `Queryable` にも `LeftJoin`・`RightJoin`・`Shuffle` が追加されているが、その翻訳可否はプロバイダに依存し、本記事の対象は `Enumerable` に限る。
 
@@ -352,7 +353,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 
 このガードが切り替わるとき、ソースを変えないまま振る舞いが変わるのが `IQueryable<T>` に対する呼び出しである。
 .NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版のポリフィルではなく `Queryable` 版に解決される。
-ただし `LeftJoin` / `RightJoin` でこうなるのは、3 つのセレクタをすべてラムダ式で直接書いた場合である。
+ただし `LeftJoin` / `RightJoin` でこうなるのは、3 つのセレクタがすべてラムダ式（または `Expression<Func<...>>` 型の値）の場合である。
 いずれかを `Func` 型の変数で渡すと式ツリーにできないため、移行後も `Enumerable` 版（.NET 10 では本家）に解決され、結合はクライアント側のまま動く。
 引数にデリゲートを取らない `Shuffle` は、常に `Queryable` 版に解決される。
 移行前はクライアント側で結合や並べ替えをしていたクエリが、移行後は式ツリーとしてプロバイダへ渡る。
@@ -363,8 +364,9 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 結果セレクタが式ツリーに変わるため、前述の `d?.DeptName` のように null 条件演算子を使ったラムダは、式ツリーのラムダには null 条件演算子を使えないという趣旨の `CS8072` になる。
 それでも `IQueryable<T>` に対して呼んでいる箇所があれば、`d == null ? null : d.DeptName` のように条件演算子で書いておくと、移行の前後どちらでもそのままコンパイルが通る。
 
-.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<T>` へ `LeftJoin`・`RightJoin`・`Shuffle` を呼び、いずれも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことと、結果セレクタを `Func` 型の変数で渡した `LeftJoin` は `IQueryable<T>` にならないことを確かめた。
-同じ環境で、`?.` を使った結果セレクタの `LeftJoin` が `CS8072` になり、条件演算子に書き換えるとビルド・実行できることも確かめた。
+.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<T>` へ `LeftJoin`・`RightJoin`・`Shuffle` を呼び、いずれも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
+結果セレクタや外部キーのセレクタを `Func` 型の変数で渡した `LeftJoin` は `IQueryable<T>` にならず、外部キーのセレクタを `Expression<Func<...>>` 型の変数で渡すと `IQueryable<T>` になることも確かめた。
+同じ環境で、`?.` を使った結果セレクタの `LeftJoin` が `CS8072` になり、条件演算子に書き換えるとビルド・実行できること、匿名型のメンバー名を省いた条件演算子が `CS0746` になることも確かめた。
 プロバイダごとの翻訳の可否は確かめていないため、移行時には実際に使うプロバイダで該当クエリを実行して確認する。
 
 ---

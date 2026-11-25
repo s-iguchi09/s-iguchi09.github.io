@@ -88,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 
 以下は、`KeyValuePair` 版とタプル版をそれぞれ比較子あり・なしで用意した、計 4 シグネチャのポリフィルである。
 `ICollection<T>` を実装するソースでは要素数から辞書の容量をあらかじめ確保し、本家と同様に不要な再ハッシュを避ける。
-既存の `ToDictionary` 呼び出しはそのまま残せるので、`LinqExtensions.Net8.cs` などのファイルを足すだけでよい。
+既存の `ToDictionary` 呼び出しはそのまま残せるので、前提の `LangVersion` を設定したうえで、`LinqExtensions.Net8.cs` などのファイルを足すだけでよい。
 .NET SDK 10.0.404 / Linux で、参照アセンブリを使って `net48` 向けに、このポリフィルと `keySelector` を渡す既存の呼び出し方 3 通り（`ToDictionary(k)`・`ToDictionary(k, v)`・`ToDictionary(k, comparer)`）を同じプロジェクトに並べたところ、曖昧さのエラーにならずにコンパイルが通った。
 
 ```csharp

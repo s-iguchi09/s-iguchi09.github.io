@@ -89,7 +89,7 @@ On top of that, three signature-design points are aligned with the built-in API.
 
 The polyfill below provides four signatures: the `KeyValuePair` and tuple forms, each with and without a comparer.
 For sources implementing `ICollection<T>`, the dictionary capacity is pre-sized from the element count, avoiding rehashing just as the built-in implementation does.
-Existing `ToDictionary` calls can stay as they are, so adding a file such as `LinqExtensions.Net8.cs` is all it takes.
+Existing `ToDictionary` calls can stay as they are, so with the `LangVersion` from the prerequisites set, adding a file such as `LinqExtensions.Net8.cs` is all it takes.
 A `net48` build with .NET SDK 10.0.404 on Linux, using reference assemblies, placed this polyfill next to three existing call forms that pass a `keySelector` — `ToDictionary(k)`, `ToDictionary(k, v)` and `ToDictionary(k, comparer)` — and compiled without any ambiguity error.
 
 ```csharp
