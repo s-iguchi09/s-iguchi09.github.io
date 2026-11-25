@@ -97,7 +97,7 @@ Option A is shorter but diverges from the built-in behavior on two counts.
 | `null` keys | Accepted as one group | `ArgumentNullException` at enumeration | `ArgumentNullException` at enumeration |
 
 `GroupBy` accepts `null` keys as a group of their own, so the delegating implementation silently passes input that the built-in would reject.
-Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception as well as memory.
+Since the whole point of a polyfill is to keep behavior unchanged across migration as far as it can, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception as well as memory.
 
 To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
 `Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
@@ -383,7 +383,7 @@ The polyfill finishes aggregating before it returns results, so it disposes the 
 
 What a `CountBy` / `AggregateBy` backport is judged on is not "returning the same result" but "returning it the same way."
 Delegating to `GroupBy` produces identical values while diverging from the built-ins on two counts: intermediate-grouping allocations and tolerance of `null` keys.
-Direct dictionary accumulation aligns the memory profile, the `null`-key exception and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` genuinely safe.
+Direct dictionary accumulation aligns the memory profile, the `null`-key exception and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` safe on those points (only the timing of an exception thrown while disposing the source enumerator differs, as noted after the table).
 
 | Method | Implementation | State held |
 | --- | --- | --- |
