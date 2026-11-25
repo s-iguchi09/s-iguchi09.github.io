@@ -238,7 +238,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net5/linq-net5-polyfill-parity.ja.md %}
 
-<code>1..5</code> に 4 メソッドを、空の並びに <code>TakeLast</code> を適用し、<code>net48</code>（<code>TakeLast</code> / <code>SkipLast</code> はポリフィル、<code>Append</code> / <code>Prepend</code> は BCL 版）と <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>SkipLast(0)</code> が元の並びをそのまま返すかも比べている。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
+<code>1..5</code> に 4 メソッドを、空の並びに <code>TakeLast</code> を適用し、<code>net48</code>（<code>TakeLast</code> / <code>SkipLast</code> はポリフィル、<code>Append</code> / <code>Prepend</code> は BCL 版）と <code>net10.0</code> の組み込みの結果を同じドライバーで並べた。<code>SkipLast(0)</code> が元の並びそのもの（同じインスタンス）を返すかも比べている。<code>0</code>・要素数超過・負数の指定も含めて一致している。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 境界値を含めて一致することが、この表の要点である。

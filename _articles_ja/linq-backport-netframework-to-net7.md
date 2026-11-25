@@ -202,7 +202,7 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 
 戻り値型を本家と揃えたこのポリフィルは、ガードが切り替わった後の呼び出し側に書き換えを求めない。
 本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
-戻り値型を `IEnumerable<T>` に縮めていたら、移行前のコードには `ThenBy` を連結できず、移行後に書き直す手間が残っていた（互換性論点 1）。
+戻り値型を `IEnumerable<T>` に縮めていたら、移行前は二次キーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
 
 バージョン別シンボルの選び方の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
 
@@ -222,9 +222,9 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 | --- | --- | --- | --- |
 | 委譲型ポリフィル（本記事） | 実装が数行・アルゴリズム起因のバグが入らない | 委譲先と本家の挙動差（例外型）は再現できない | `Order` の記法を移行前から使いたい場合 |
 | `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・.NET 7 移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
-| .NET 7 以降へのアップグレード | 根本的解決・委譲用のファイル自体を消せる | .NET 7 は 2024 年 5 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support) STS 版のため、上げるなら LTS の .NET 10 などまで進むことになる | `Order` 以外にも .NET 7 以降の API を使いたい場合 |
+| .NET 7 以降へのアップグレード | 根本的解決・委譲用のファイル自体を消せる | フレームワーク移行の工数に加え、.NET 7 は 2024 年 5 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support) STS 版のため、上げるなら LTS の .NET 10 などまで進むことになる | `Order` 以外にも .NET 7 以降の API を使いたい場合 |
 
-`OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。
+`OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 以降へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。
 ポリフィルを導入しておけば移行前から `Order` で記述でき、移行時には条件付きコンパイルが自動で本家へ切り替える。
 
 ---

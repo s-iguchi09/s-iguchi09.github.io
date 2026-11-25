@@ -29,7 +29,7 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 - 言語バージョン: `#nullable enable`・nullable 参照型注釈・`where TKey : notnull` 制約は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`LangVersion` を明示しない古い非 SDK 形式プロジェクトでは特に注意する）
 - 検証環境: .NET 10 / Windows 11
 
-セレクタを省いた `ToDictionary()` を `net48`（ポリフィル）と `net10.0`（本家）で同じ入力に対して呼び、できあがった辞書と送出される例外を比べた。
+セレクタを省いた `ToDictionary`（比較子あり・なしの両方）を `net48`（ポリフィル）と `net10.0`（本家）で同じ入力に対して呼び、できあがった辞書と送出される例外を比べた。
 結果は次のとおり。
 
 - `KeyValuePair` 版とタプル版、およびそれぞれの `IEqualityComparer` オーバーロードは、両ターゲットで同じ結果になる。
@@ -88,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 
 以下は、`KeyValuePair` 版とタプル版をそれぞれ比較子あり・なしで用意した、計 4 シグネチャのポリフィルである。
 `ICollection<T>` を実装するソースでは要素数から辞書の容量をあらかじめ確保し、本家と同様に不要な再ハッシュを避ける。
-`LinqExtensions.Net8.cs` などの名前で追加しても、`keySelector` を渡す既存の `ToDictionary` 呼び出しと曖昧になることはない（.NET SDK 10.0.404 / Linux で、参照アセンブリを使って `net48` 向けに、このポリフィルと既存の呼び出し方 3 通りを同じプロジェクトに並べ、コンパイルが通ることを確かめた）。
+`LinqExtensions.Net8.cs` などの名前で追加しても、`keySelector` を渡す既存の `ToDictionary` 呼び出しと曖昧になることはない（.NET SDK 10.0.404 / Linux で、参照アセンブリを使って `net48` 向けに、このポリフィルと既存の呼び出し方 3 通り（`ToDictionary(k)`・`ToDictionary(k, v)`・`ToDictionary(k, comparer)`）を同じプロジェクトに並べ、コンパイルが通ることを確かめた）。
 
 ```csharp
 #nullable enable
@@ -282,7 +282,7 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 ## 移行ガード
 
 本ポリフィルは `#if !NET8_0_OR_GREATER` で囲む。
-`ToDictionary` の追加は新しいメソッドではなく、既存メソッドへのオーバーロードの追加である。
+.NET 8 が `ToDictionary` に加えたのは、新しいメソッドではなく既存メソッドのオーバーロードである。
 そのため、ガードを誤り、.NET 7 以前でポリフィルが外れたときの症状が、新メソッドを足す他のバックポートと異なる。
 
 - `keySelector` を渡している既存の呼び出しは、従来のオーバーロードに解決されるため、何事もなくコンパイルが通る
@@ -313,9 +313,9 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 | --- | --- | --- | --- |
 | 自作ポリフィル（本記事） | 外部依存なし・シグネチャを本家と完全一致させられる | オーバーロード設計の検討が必要 | `#nullable enable` なコードベースで移行を見据える場合 |
 | `ToDictionary(p => p.Key, p => p.Value)` を直書き | 追加コード不要 | キーと値のセレクタを毎回書く・移行時に一括置換が必要 | 辞書化が数か所しかない場合 |
-| .NET 8 以降へのアップグレード | 根本的解決・`KeyValuePair` 版とタプル版が標準で揃う | .NET 8 は 2026 年 11 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support)ため、新たに移るならサポート中の .NET 10 などを選ぶ | 辞書化以外の新しい API もまとめて使いたい場合 |
+| .NET 8 以降へのアップグレード | 根本的解決・`KeyValuePair` 版とタプル版が標準で揃う | 移行の工数がかかるうえ、.NET 8 は 2026 年 11 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support)ため、新たに移るならサポート中の .NET 10 などを選ぶ | 辞書化以外の新しい API もまとめて使いたい場合 |
 
-セレクタの直書きは追加コードこそ不要だが、後日 .NET 8 へ移行してセレクタなしの記法へ統一する際に、使用箇所を洗い出して置換する手間が残る。
+セレクタの直書きは追加コードこそ不要だが、後日 .NET 8 以降へ移行してセレクタなしの記法へ統一する際に、使用箇所を洗い出して置換する手間が残る。
 
 ---
 

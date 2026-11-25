@@ -32,7 +32,7 @@ The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying 
 The comparison showed:
 
 - `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source` (including `int.MaxValue`), or uses an invalid `size`.
-- What `MaxBy` returns for an empty sequence differs between a non-nullable value type such as `int` and a reference type.
+- `MaxBy` on an empty sequence throws `InvalidOperationException` for a non-nullable value type such as `int` and returns `null` for a reference type, on both targets alike.
 - The elements `DistinctBy` keeps, and their order, match on both targets.
 
 ---
@@ -414,7 +414,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 
 ## Caveats
 
-- **`MaxBy` / `MinBy` on an empty sequence**: for a reference or nullable value element type, an empty source returns `default` (`null`); only a non-nullable value type (such as `int` or a `struct`) throws `InvalidOperationException`. This matches the .NET 6 built-in behavior (the return type is `TSource?`). When the element type is a non-nullable value type and the sequence may be empty, wrap the call in `try-catch` or check for elements beforehand. Note that `.Any()` enumerates the source, so for a deferred source it causes a second enumeration together with the following `MaxBy` / `MinBy` — incorrect for single-use enumerators or sources with side effects; in that case materialize once with `.ToList()` before checking and selecting.
+- **`MaxBy` / `MinBy` on an empty sequence**: for a reference or nullable value element type, an empty source returns `default` (`null`); only a non-nullable value type (such as `int` or a `struct`) throws `InvalidOperationException`. This matches the .NET 6 built-in behavior (the return type is `TSource?`); the table confirms the match for `MaxBy` over empty value-type and reference-type sequences. When the element type is a non-nullable value type and the sequence may be empty, wrap the call in `try-catch` or check for elements beforehand. Note that `.Any()` enumerates the source, so for a deferred source it causes a second enumeration together with the following `MaxBy` / `MinBy` — incorrect for single-use enumerators or sources with side effects; in that case materialize once with `.ToList()` before checking and selecting.
 - **Size of the trailing chunk**: when the element count is not a multiple of `size`, the last chunk is smaller. Caller code that assumes uniform chunk sizes is incorrect.
 - **`DistinctBy` and `null` keys**: `null` keys compare equal to each other, so only the first element with a `null` key is emitted.
 - **Scope of `#nullable enable`**: the directive at the top of the file enables the annotation context file-wide. Repeating it is harmless even when the project sets `<Nullable>enable</Nullable>` globally.
@@ -428,7 +428,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 | Hand-rolled polyfill (this article) | No dependency; also fixes the complexity problems | Implementation effort | Projects minimizing dependencies |
 | Keep the workaround idioms | No extra code | Complexity and allocation waste persists | Data that is always tiny |
 | MoreLINQ (NuGet) | Rich, battle-tested method set | Adds an external dependency | Projects needing many extra methods |
-| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | .NET 6 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you also want the other new APIs |
+| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | The effort of leaving .NET Framework; .NET 6 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you also want the other new APIs |
 
 `MoreLINQ` (NuGet package `morelinq`) covers `Chunk` and `MaxBy` equivalents, but when only these four methods are needed, a dependency-free polyfill is simpler to maintain.
 

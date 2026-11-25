@@ -30,7 +30,7 @@ This article implements the selector-free `ToDictionary` polyfill (the `KeyValue
 - Language version: `#nullable enable`, nullable reference annotations, and the `where TKey : notnull` constraint require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (take particular care in older non-SDK projects that do not set `LangVersion` explicitly)
 - Verification environment: .NET 10 / Windows 11
 
-Selector-free `ToDictionary()` was called on the same input on `net48` (polyfill) and `net10.0` (BCL), comparing the resulting dictionaries and the exceptions thrown.
+Selector-free `ToDictionary` (with and without a comparer) was called on the same input on `net48` (polyfill) and `net10.0` (BCL), comparing the resulting dictionaries and the exceptions thrown.
 Results:
 
 - The `KeyValuePair` and tuple overloads, along with their `IEqualityComparer` variants, produce the same results on both targets.
@@ -89,7 +89,7 @@ On top of that, three signature-design points are aligned with the built-in API.
 
 The polyfill below provides four signatures: the `KeyValuePair` and tuple forms, each with and without a comparer.
 For sources implementing `ICollection<T>`, the dictionary capacity is pre-sized from the element count, avoiding rehashing just as the built-in implementation does.
-Adding it as, for example, `LinqExtensions.Net8.cs` does not make existing `ToDictionary` calls that pass a `keySelector` ambiguous (a `net48` build with .NET SDK 10.0.404 on Linux, using reference assemblies, with this polyfill and three existing call forms side by side compiled cleanly).
+Adding it as, for example, `LinqExtensions.Net8.cs` does not make existing `ToDictionary` calls that pass a `keySelector` ambiguous (a `net48` build with .NET SDK 10.0.404 on Linux, using reference assemblies, with this polyfill and three existing call forms — `ToDictionary(k)`, `ToDictionary(k, v)` and `ToDictionary(k, comparer)` — side by side compiled cleanly).
 
 ```csharp
 #nullable enable
@@ -314,9 +314,9 @@ For the general rule — disable at and above the version that introduced the AP
 | --- | --- | --- | --- |
 | Hand-rolled polyfill (this article) | No dependency; signatures match the built-ins exactly | Requires overload-design care | `#nullable enable` codebases heading toward migration |
 | Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Both selectors written every time; mass replacement at migration | When only a handful of conversions exist |
-| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | .NET 8 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, so a new move should pick a supported release such as .NET 10 | When you also want the other new APIs |
+| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | Migration work, and .NET 8 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, so a new move should pick a supported release such as .NET 10 | When you also want the other new APIs |
 
-Inline selectors cost nothing today, but consolidating to the selector-free spelling after a .NET 8 migration means finding and replacing every call site.
+Inline selectors cost nothing today, but consolidating to the selector-free spelling after migrating to .NET 8 or later means finding and replacing every call site.
 
 ---
 

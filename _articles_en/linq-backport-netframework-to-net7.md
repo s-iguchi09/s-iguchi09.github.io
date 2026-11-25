@@ -125,7 +125,7 @@ namespace System.Linq
 The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, culture-sensitive ordering, and incomparable elements. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
-The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. Both are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
+The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. All three are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
 
 Because the delegation style contains no `yield return`, the validation/iterator split required for hand-written iterators ([principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)) does not apply.
 The `source` null check runs immediately at call time, while the sort itself stays lazy through the delegated `OrderBy`.
@@ -202,7 +202,7 @@ Call sites then fail with `CS1061`, "does not contain a definition for 'Order'" 
 
 Because its return type matches the BCL, this polyfill asks nothing of call sites once the guard flips.
 The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` keeps compiling unchanged after moving to .NET 7 or later.
-Had the return type been narrowed to `IEnumerable<T>`, pre-migration code could not chain `ThenBy`, leaving a rewrite for after the migration (Compatibility Question 1).
+Had the return type been narrowed to `IEnumerable<T>`, pre-migration code needing a secondary key would have had to fall back to `OrderBy(x => x).ThenBy(...)`, leaving a replacement with `Order` for after the migration (Compatibility Question 1).
 
 The general rule for choosing version symbols is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
@@ -222,9 +222,9 @@ The general rule for choosing version symbols is laid out in the [.NET 6 backpor
 | --- | --- | --- | --- |
 | Delegation polyfill (this article) | A few lines; no algorithmic bugs possible | Cannot reproduce behavior the delegate itself lacks (exception type) | Using the `Order` spelling before migrating |
 | Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to `Order` | Few call sites and no migration planned |
-| Upgrade to .NET 7 or later | Root fix; the delegation file can simply be deleted | .NET 7 was an STS release that [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in May 2024, so an upgrade goes on to an LTS such as .NET 10 | When you want other APIs from .NET 7 onward, not just `Order` |
+| Upgrade to .NET 7 or later | Root fix; the delegation file can simply be deleted | Besides the migration effort, .NET 7 was an STS release that [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in May 2024, so an upgrade goes on to an LTS such as .NET 10 | When you want other APIs from .NET 7 onward, not just `Order` |
 
-Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after a .NET 7 migration means hunting down and replacing every call site.
+Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after migrating to .NET 7 or later means hunting down and replacing every call site.
 With the polyfill in place, code uses `Order` from day one, and conditional compilation switches to the built-in implementation automatically at migration time.
 
 ---

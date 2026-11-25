@@ -27,12 +27,13 @@ It then digs into a concern unique to this backport, born from the fact that out
 - Language version: nullable annotations on unconstrained type parameters (`TInner?` / `TOuter?`) require `LangVersion` 9.0 or later (recommended: `latest`). No other project configuration changes
 - Verification environment: .NET 10 / Windows 11
 
-The two join methods were compared output-for-output, and `Shuffle` — being random — as a set of elements and by whether threads running together get distinct orders, between `net48` (polyfill) and `net10.0` (BCL).
+Between `net48` (polyfill) and `net10.0` (BCL), the two join methods were compared output-for-output.
+Because `Shuffle` is random, it was compared by its re-sorted result, its length, and whether threads running together get distinct orders.
 Three points were confirmed:
 
 - The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.
 - `Shuffle` returns a permutation of the original sequence (compared after sorting, since the order is random).
-- Calling `Shuffle` from eight threads started together yields eight distinct orders on both targets.
+- Shuffling 1–10 on each of eight threads started together yields eight distinct orders on both targets.
 
 ---
 
@@ -225,10 +226,10 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.en.md %}
 
-Four join cases and four <code>Shuffle</code> cases compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. <code>Shuffle</code> is compared by its re-sorted result, its length, and the number of distinct orders produced by eight threads started together. Measured with .NET SDK 10.0.302.
+Four join cases and four <code>Shuffle</code> cases compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. <code>Shuffle</code> is compared by its re-sorted result, its length, and the number of distinct orders produced when eight threads started together each shuffle 1–10. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
-`Shuffle` draws on randomness, so its output is re-sorted before the comparison. The two sides also agree on the default value handed to a row that has no counterpart.
+The two sides also agree on the default value handed to a row that has no counterpart.
 
 The result selectors of `LeftJoin` / `RightJoin` carry the same nullable annotations as the built-ins — `TInner?` for `LeftJoin`, `TOuter?` for `RightJoin`.
 The signature itself thus documents which side can be missing, and nullable analysis agrees before and after migration.
@@ -340,7 +341,7 @@ Entire tables are transferred and joined in memory, and nothing looks wrong unti
 
 For server-side outer joins in database queries below .NET 10, keep writing the provider-translatable `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` form.
 `AsEnumerable` only draws the client-evaluation boundary; it does not keep the join on the server.
-.NET 10 does add `LeftJoin` / `RightJoin` to `Queryable` as well, but their translatability depends on the provider, and this article's scope is `Enumerable` only.
+.NET 10 does add `LeftJoin` / `RightJoin` / `Shuffle` to `Queryable` as well, but their translatability depends on the provider, and this article's scope is `Enumerable` only.
 
 ---
 
@@ -351,7 +352,7 @@ Following the rule from the [.NET 6 backport article](/articles/linq-backport-ne
 
 When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
 .NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` polyfill.
-A query that joined on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
+A query that joined or shuffled on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
 If the provider can translate them, the work moves to the server; if it cannot, a query that worked before the migration may throw at run time.
 
 Calling `LeftJoin` and `Shuffle` on an `IQueryable<int>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that both return an `IQueryable<T>` (binding to the `Queryable` versions).

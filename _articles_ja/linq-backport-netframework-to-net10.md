@@ -26,12 +26,13 @@ SQL では `LEFT JOIN` の 1 句で書ける外部結合が、LINQ では長ら�
 - 言語バージョン: 制約なし型パラメータの `null` 許容注釈（`TInner?` / `TOuter?`）を用いるため、`LangVersion` を 9.0 以上（推奨: `latest`）に設定する。ターゲットフレームワークやその他のプロジェクト構成は変更しない
 - 検証環境: .NET 10 / Windows 11
 
-結合の 2 メソッドは出力をそのまま、`Shuffle` は乱数を使うため要素の集合と、同時に動かしたスレッドの間で並びが分かれるかで、`net48`（ポリフィル）と `net10.0`（本家）の結果を比べた。
+`net48`（ポリフィル）と `net10.0`（本家）で、結合の 2 メソッドは出力をそのまま比べた。
+`Shuffle` は乱数を使うため、整列し直した結果と要素数、同時に動かしたスレッドの間で並びが分かれるかで比べた。
 確かめられたのは次の 3 点である。
 
 - 相手が居ない行に対して `LeftJoin` / `RightJoin` が渡す既定値は、両ターゲットで一致する。
 - `Shuffle` の結果は、元の並びの並べ替えになっている（乱数のため、整列してから比較している）。
-- 8 スレッドを同時に開始して `Shuffle` を呼ぶと、両ターゲットとも 8 通りの異なる並びになる。
+- 8 スレッドを同時に開始してそれぞれ 1〜10 を `Shuffle` すると、両ターゲットとも 8 通りの異なる並びになる。
 
 ---
 
@@ -224,10 +225,10 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.ja.md %}
 
-結合 4 ケースと <code>Shuffle</code> 4 ケースを、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。<code>Shuffle</code> は並べ直した結果・要素数・8 スレッド同時実行で得られた並びの種類数で比べている。.NET SDK 10.0.302 で測定した。
+結合 4 ケースと <code>Shuffle</code> 4 ケースを、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。<code>Shuffle</code> は並べ直した結果・要素数・8 スレッドが同時に 1〜10 を並べ替えたときの並びの種類数で比べている。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
-`Shuffle` は乱数を使うため、整列し直したうえで比較している。相手が居ない行に既定値が渡る点も一致している。
+相手が居ない行に既定値が渡る点も一致している。
 
 `LeftJoin`・`RightJoin` の結果セレクタには、本家と一致する `null` 許容注釈（`LeftJoin` は内部要素 `TInner?`、`RightJoin` は外部要素 `TOuter?`）を付けている。
 これにより「どちら側が欠けうるか」がシグネチャ上で表現され、移行前後の null 許容解析も一致する。
@@ -339,7 +340,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 
 .NET 10 未満で DB クエリにサーバー側の外部結合を求める場合は、プロバイダが翻訳できる `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` の形で記述する。
 `AsEnumerable` はクライアント評価の境界を引くだけで、結合をサーバー側に保つ効果はない。
-なお .NET 10 では `Queryable` にも `LeftJoin`・`RightJoin` が追加されているが、その翻訳可否はプロバイダに依存し、本記事の対象は `Enumerable` に限る。
+なお .NET 10 では `Queryable` にも `LeftJoin`・`RightJoin`・`Shuffle` が追加されているが、その翻訳可否はプロバイダに依存し、本記事の対象は `Enumerable` に限る。
 
 ---
 
@@ -350,7 +351,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 
 このガードが切り替わるとき、ソースを変えないまま振る舞いが変わるのが `IQueryable<T>` に対する呼び出しである。
 .NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版のポリフィルではなく `Queryable` 版に解決される。
-移行前はクライアント側で結合していたクエリが、移行後は式ツリーとしてプロバイダへ渡る。
+移行前はクライアント側で結合や並べ替えをしていたクエリが、移行後は式ツリーとしてプロバイダへ渡る。
 前節の落とし穴の裏返しである。
 プロバイダがこれらを翻訳できれば処理はサーバー側へ移るが、翻訳できないプロバイダでは、移行前に動いていたクエリが実行時に例外になり得る。
 

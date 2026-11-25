@@ -31,7 +31,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 比べて分かったのは次の点である。
 
 - `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合（`int.MaxValue` を含む）・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
-- `MaxBy` が空の並びに対して返す値は、`int` のような null 非許容の値型と、参照型とで異なる。
+- 空の並びに対する `MaxBy` の結果は、`int` のような null 非許容の値型では `InvalidOperationException`、参照型では `null` で、両ターゲットで一致する。
 - `DistinctBy` が残す要素とその順序は、両ターゲットで一致する。
 
 ---
@@ -88,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 ## 実装例
 
 以下は 4 メソッドのポリフィル実装一式である。
-ファイル 1 つで完結するため、前提の `LangVersion` を満たしていれば、`LinqExtensions.Net6.cs` などの名前でプロジェクトに加えればよい。
+ファイル 1 つで完結するため、前提の `LangVersion` を満たしていれば、`LinqExtensions.Net6.cs` などの名前でプロジェクトに加えるだけで使える。
 
 ```csharp
 #nullable enable
@@ -413,7 +413,7 @@ yield return chunk.ToArray();
 
 ## 注意点
 
-- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、要素型が参照型または null 許容値型なら `default`（= `null`）を返し、非 null 値型（`int` や `struct` など）でのみ `InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である（戻り値型も `TSource?`）。非 null 値型で空になりうる場合は、`try-catch` で対処するか、事前に要素の有無を確認する。ただし `.Any()` はソースを列挙するため、遅延評価のソースでは後続の `MaxBy` / `MinBy` と合わせて二重列挙になり、単一利用の列挙子や副作用を伴うソースでは不正確になりうる。その場合は `.ToList()` などで一度実体化してから判定・適用する。
+- **空のシーケンスに対する `MaxBy` / `MinBy`**: 空のシーケンスが渡された場合、要素型が参照型または null 許容値型なら `default`（= `null`）を返し、非 null 値型（`int` や `struct` など）でのみ `InvalidOperationException` を投げる。これは .NET 6 本家の挙動と同一である（戻り値型も `TSource?`）。表で本家との一致を確かめたのは、値型と参照型の空の並びに対する `MaxBy` である。非 null 値型で空になりうる場合は、`try-catch` で対処するか、事前に要素の有無を確認する。ただし `.Any()` はソースを列挙するため、遅延評価のソースでは後続の `MaxBy` / `MinBy` と合わせて二重列挙になり、単一利用の列挙子や副作用を伴うソースでは不正確になりうる。その場合は `.ToList()` などで一度実体化してから判定・適用する。
 - **`Chunk` の末尾チャンクのサイズ**: 入力要素数が `size` の倍数でない場合、最後のチャンクは `size` より小さくなる。チャンクが常に一定サイズであることを前提とした呼び出し元の実装は誤りである。
 - **`DistinctBy` のキーと `null`**: キーに `null` が含まれる場合、`null` 同士は同一キーとして扱われ、最初に現れた `null` キー要素のみが出力される。
 - **`#nullable enable` の適用範囲**: ファイル先頭の `#nullable enable` はファイルスコープで有効化する。プロジェクト全体で `<Nullable>enable</Nullable>` を設定している場合でも、重複して記述することに害はない。
@@ -427,7 +427,7 @@ yield return chunk.ToArray();
 | 自作ポリフィル（本記事） | 外部依存なし・回避イディオムの計算量問題も解消 | 実装コストがある | 依存を最小化したいプロジェクト |
 | 回避イディオムの継続 | 追加コード不要 | 計算量・割り当ての無駄が残り続ける | 対象データが常に少件数の場合 |
 | MoreLINQ（NuGet） | 豊富なメソッド・テスト済み | 外部ライブラリへの依存が増える | 多数の追加メソッドが必要なプロジェクト |
-| .NET 6 以降へのアップグレード | 根本的解決・ポリフィルの保守とテストが不要になる | .NET 6 は 2024 年 11 月に[サポートが終了](https://learn.microsoft.com/dotnet/core/releases-and-support)しており、上げるなら現行の LTS である .NET 10 などまで進むことになる | 4 メソッド以外の新しい API もまとめて使いたい場合 |
+| .NET 6 以降へのアップグレード | 根本的解決・ポリフィルの保守とテストが不要になる | .NET Framework からの移行工数がかかる。.NET 6 は 2024 年 11 月に[サポートが終了](https://learn.microsoft.com/dotnet/core/releases-and-support)しており、上げるなら現行の LTS である .NET 10 以降まで進むことになる | 4 メソッド以外の新しい API もまとめて使いたい場合 |
 
 `MoreLINQ`（NuGet パッケージ名: `morelinq`）は `Chunk` や `MaxBy` に相当するメソッドを含む充実したライブラリだが、必要なメソッドが本記事の 4 件に限られるなら、外部依存のない自作ポリフィルのほうが保守はシンプルである。
 
