@@ -177,9 +177,11 @@ description: PR を作成し、レビュー(CodeRabbit 等)の Webhook 通知を
        (`@coderabbitai review` を投稿していないので、上の返信は来ない)
      解除までの時間は、概要コメントに出る「Review limit reached」の「Next included review available in N minutes」で読み、その概要コメントの更新時刻に N 分を足す。
      概要コメントは後から上書きされて読めなくなるので、読めないときは `@coderabbitai rate limit` を投稿し、
-     返信に出る再試行の目安を解除の時刻とする。目安が時刻として読めなければ、その返信の時刻から 60 分後とする(このリポジトリのプランでは 1 時間に 1 回。2026-11 時点の CodeRabbit のレビューに出る「Included review availability」の表示による)
-     (上限は PR を開いた開発者の単位で他の PR のレビューも数に入り、回数は利用量で変わることがあるため、
-     この PR のレビューの時刻からは計算しない。CodeRabbit のドキュメント [Rate limits](https://docs.coderabbit.ai/management/rate-limits) による)。
+     返信に出る再試行の目安を解除の時刻とする。目安が時刻か残り時間として読めなければ、その返信の時刻から 60 分後とする
+     (このリポジトリのプランでは 1 時間に 1 回。2026-11 時点の CodeRabbit のレビューに出る「Included review availability」の表示による。
+     上限の返信は枠を使い切ったあとに来るので、その 60 分後には解除されている)。
+     この PR で直前に通ったレビューの時刻からは計算しない。上限は PR を開いた開発者の単位で、他の PR のレビューも数に入るためである
+     (CodeRabbit のドキュメント [Rate limits](https://docs.coderabbit.ai/management/rate-limits) による)。
      予約は、上限の通知 1 回につき 1 回とする(同じ依頼について 2 種類の通知を両方受けたときは 1 回にまとめる)。
      予約の文面には、`@coderabbitai review` を投稿して再レビューを依頼すること、対象のコミット、その後に続ける手順を書く。
      上限の解除は Webhook で届かず、予約しないと誰も再開のきっかけを作れないためである。
