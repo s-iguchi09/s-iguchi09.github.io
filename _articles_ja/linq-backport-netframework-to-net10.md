@@ -27,12 +27,12 @@ SQL では `LEFT JOIN` の 1 句で書ける外部結合が、LINQ では長ら�
 - 検証環境: .NET 10 / Windows 11
 
 `net48`（ポリフィル）と `net10.0`（本家）で、結合の 2 メソッドは出力をそのまま比べた。
-`Shuffle` は乱数を使うため、整列し直した結果と要素数、同時に動かしたスレッドの間で並びが分かれるかで比べた。
+`Shuffle` は乱数を使うため、整列し直した結果と要素数、空の並びに対する結果、同時に動かしたスレッドの間で並びが分かれるかで比べた。
 確かめられたのは次の 3 点である。
 
 - 相手が居ない行に対して `LeftJoin` / `RightJoin` が渡す既定値は、両ターゲットで一致する。
 - `Shuffle` の結果は、元の並びの並べ替えになっている（乱数のため、整列してから比較している）。
-- 8 スレッドを同時に開始してそれぞれ 1〜10 を `Shuffle` すると、両ターゲットとも 8 通りの異なる並びになる。
+- 8 スレッドを同時に開始してそれぞれ 1〜10 を `Shuffle` すると、両ターゲットとも 8 通りの異なる並びになった。
 
 ---
 
@@ -225,7 +225,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.ja.md %}
 
-結合 4 ケースと <code>Shuffle</code> 4 ケースを、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。<code>Shuffle</code> は並べ直した結果・要素数・8 スレッドが同時に 1〜10 を並べ替えたときの並びの種類数で比べている。.NET SDK 10.0.302 で測定した。
+結合 4 ケースと <code>Shuffle</code> 4 ケースを、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。<code>Shuffle</code> は並べ直した結果・要素数・空の並び・8 スレッドが同時に 1〜10 を並べ替えたときの並びの種類数で比べている。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 相手が居ない行に既定値が渡る点も一致している。
@@ -357,7 +357,8 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 
 その前に、コンパイルの段階で止まる場合もある。
 結果セレクタが式ツリーに変わるため、前述の `d?.DeptName` のように null 条件演算子を使ったラムダは、「式ツリーのラムダに null 条件演算子は使えない」という `CS8072` になる。
-`IQueryable<T>` に対して呼ぶ箇所では、`d == null ? null : d.DeptName` のように条件演算子で書いておくと、移行の前後どちらでもそのままコンパイルが通る。
+それでも `IQueryable<T>` に対して呼んでいる箇所があれば、`d == null ? null : d.DeptName` のように条件演算子で書いておくと、移行の前後どちらでもそのままコンパイルが通る。
+前節で勧めた `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` の形も、`IQueryable<T>` に書くとラムダが式ツリーになるため、同じく `?.` は使えない。
 
 .NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<T>` へ `LeftJoin`・`RightJoin`・`Shuffle` を呼び、いずれも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
 同じ環境で、`?.` を使った結果セレクタの `LeftJoin` が `CS8072` になり、条件演算子に書き換えるとビルド・実行できることも確かめた。

@@ -32,7 +32,7 @@ As the foundation article of the series, this piece explains the rationale behin
 - Verification environment: .NET 10 / Windows 11
 
 A `net48` build (the polyfill for `TakeLast` / `SkipLast`, and the BCL versions of `Append` / `Prepend`, which exist from .NET Framework 4.7.1) was run on the same input as a `net10.0` build, and the results compared.
-Edge counts are where a hand-written `TakeLast` / `SkipLast` most easily goes wrong, so 0, counts beyond the length, and negative counts were compared in particular.
+Edge counts are easy to get wrong in a hand-written `TakeLast` / `SkipLast`, so 0, counts beyond the length, and negative counts were compared in particular.
 Which targets have the four methods in the BCL, and how the project format affects symbol definitions, were also checked by actually building.
 The results:
 

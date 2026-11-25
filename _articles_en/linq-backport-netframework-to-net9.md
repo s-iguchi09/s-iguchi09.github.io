@@ -31,7 +31,7 @@ The two approaches differ not just in memory efficiency but in how they treat `n
 
 The API does not guarantee the order of keys in the aggregated result, so two implementations may disagree on it.
 The same input was therefore aggregated on `net48` (polyfill) and `net10.0` (BCL) and compared down to the key order, not just the values.
-For `Index`, the tuples returned for the same input were compared.
+For `Index`, the results for the same input and for an empty sequence were compared.
 This showed:
 
 - For this input, `CountBy` and `AggregateBy` returned keys in first-seen order on both targets.
@@ -241,7 +241,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.en.md %}
 
-An input mixing keys that differ only in case, aggregated and compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in down to key order and the exception for a <code>null</code> key, with <code>Index</code> also checked on an empty sequence. Measured with .NET SDK 10.0.302.
+An input mixing keys that differ only in case, aggregated and compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in down to key order, the exception for a <code>null</code> key, and empty sequences. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 On this input and this runtime, both sides placed the keys in the order they first appeared, and the output matches down to that ordering.
@@ -371,7 +371,7 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 | Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
 | Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; mass replacement at migration | Few aggregation sites where allocations do not matter |
-| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; .NET 9, an STS release, [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026 together with .NET 8, so a move should target a supported release such as .NET 10 | When you also want other APIs from .NET 9 onward |
+| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, the same month as .NET 8, so the upgrade skips straight to .NET 10 | When you also want other APIs from .NET 9 onward |
 
 ---
 

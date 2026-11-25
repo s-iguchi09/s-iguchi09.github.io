@@ -122,10 +122,12 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.ja.md %}
 
-既定の比較・比較子つき・安定性・カルチャ依存・比較できない要素の観点で、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みを並べた。.NET SDK 10.0.302 で測定した。
+既定の比較・比較子つき・安定性・<code>ThenBy</code> の連結・空の並び・カルチャ依存・比較できない要素の観点で、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みを並べた。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
-比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。食い違うのは、ランタイムの比較そのものに由来する 3 行（比較エンジン、カルチャ依存の並び、全体を並べたときの例外の型）で、その理由は後述する。`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
+比較子で等しくなる要素どうしの順序が保たれる点（安定ソート）まで一致している。
+食い違うのは、ランタイムの比較そのものに由来する 3 行（比較エンジン、カルチャ依存の並び、全体を並べたときの例外の型）で、その理由は後述する。
+`ThenByDescending` を連結できることも、戻り値が `IOrderedEnumerable<T>` である証拠になる。
 
 委譲型では `yield return` を書かないため、イテレータ自作型で必要だった「引数検証とイテレータの分離」（[基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)）は考えなくてよい。
 `source` の null チェックは呼び出し時点で即座に実行され、並び替え自体は委譲先の `OrderBy` が持つ遅延評価のまま動く。

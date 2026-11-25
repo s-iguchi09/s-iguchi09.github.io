@@ -123,7 +123,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net7/linq-net7-polyfill-parity.en.md %}
 
-The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, culture-sensitive ordering, and incomparable elements. Measured with .NET SDK 10.0.302.
+The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, <code>ThenBy</code> chaining, an empty sequence, culture-sensitive ordering, and incomparable elements. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort).
@@ -225,7 +225,7 @@ The general rule for choosing version symbols is laid out in the [.NET 6 backpor
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
 | Delegation polyfill (this article) | A few lines; no algorithmic bugs possible | Cannot reproduce behavior the delegate itself lacks (exception type) | Using the `Order` spelling before migrating |
-| Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to `Order` | Few call sites and no migration planned |
+| Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to .NET 7 or later | Few call sites and no migration planned |
 | Upgrade to .NET 7 or later | Root fix; the delegation file can simply be deleted | Besides the migration effort, .NET 7 was an STS release that [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in May 2024, so an upgrade goes on to an LTS such as .NET 10 | When you want other APIs from .NET 7 onward, not just `Order` |
 
 Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after migrating to .NET 7 or later means hunting down and replacing every call site.

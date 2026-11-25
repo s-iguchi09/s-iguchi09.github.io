@@ -34,7 +34,7 @@ image: /images/articles/linq-backport-netframework-to-net5/linq-append-prepend-t
 
 `net48` でビルドした結果（`TakeLast` / `SkipLast` はポリフィル、`Append` / `Prepend` は .NET Framework 4.7.1 以降にある BCL 版）を、`net10.0` の本家と同じ入力で突き合わせた。
 `TakeLast` / `SkipLast` は件数指定の端の扱いを自作の実装で誤りやすいため、0・要素数超過・負数を重点的に比べている。
-あわせて、4 メソッドが BCL にあるターゲットと、プロジェクト形式によるシンボル定義の違いも、実際にビルドして調べた。
+あわせて、4 メソッドがそれぞれどのターゲットの BCL にあるかと、プロジェクト形式によるシンボル定義の違いも、実際にビルドして調べた。
 分かった点は次のとおり。
 
 - `Append` / `Prepend` は .NET Framework 4.7.1 以降の BCL に存在するため、ポリフィルを足すと衝突する。

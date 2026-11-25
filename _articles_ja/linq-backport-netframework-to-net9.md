@@ -30,7 +30,7 @@ image: /images/articles/linq-backport-netframework-to-net9/linq-countby-aggregat
 
 集計結果のキーの並び順は API として保証されておらず、実装が違えば食い違い得る。
 そこで `net48`（ポリフィル）と `net10.0`（本家）で同じ入力を集計し、値だけでなく並び順まで比べた。
-`Index` は、同じ入力に対して返すタプルの中身を比べた。
+`Index` は、同じ入力と空の並びに対する結果を比べた。
 分かったのは次の点である。
 
 - この入力では、両ターゲットとも `CountBy` / `AggregateBy` のキーが最初に現れた順に並んだ。
@@ -241,7 +241,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.ja.md %}
 
-大文字小文字だけが違うキーを混ぜた入力を集計し、キーの並び順と <code>null</code> キーの例外まで、<code>Index</code> は空の並びも含めて、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。.NET SDK 10.0.302 で測定した。
+大文字小文字だけが違うキーを混ぜた入力を集計し、キーの並び順と <code>null</code> キーの例外と空の並びまで、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 この入力とこの実行環境では、どちらもキーが最初に現れた順に並んだ。出力はその順序まで含めて一致している。
@@ -371,7 +371,7 @@ var query = numbers.CountBy(n => n);
 | 辞書ベースのポリフィル（本記事） | 本家と同じメモリ特性・例外挙動 | 実装がやや長い | 移行時に挙動を変えたくない場合 |
 | `GroupBy` への委譲ポリフィル | 実装が数行で済む | 中間グルーピングを割り当てる・`null` キーの挙動が本家と異なる | 挙動差を理解したうえで暫定利用する場合 |
 | `GroupBy(...).Select(...)` を直書き | 追加コード不要 | 中間のグループを作るぶん割り当てが増える・移行時に一括置換が必要 | 集計箇所が少なく、割り当てが問題にならない場合 |
-| .NET 9 以降へのアップグレード | 根本的解決・自作の集計コードを手放せる | 移行作業が要る。STS 版の .NET 9 は .NET 8 と同じ 2026 年 11 月に[サポートが終わっている](https://learn.microsoft.com/dotnet/core/releases-and-support)ため、移るならサポート中の .NET 10 などを選ぶ | 集計以外にも .NET 9 以降の API を使いたい場合 |
+| .NET 9 以降へのアップグレード | 根本的解決・自作の集計コードを手放せる | 移行作業が要る。STS 版の .NET 9 のサポート期限は、.NET 8 と同じ 2026 年 11 月に[切れている](https://learn.microsoft.com/dotnet/core/releases-and-support)ので、.NET 9 を飛ばして .NET 10 へ上げることになる | 集計以外にも .NET 9 以降の API を使いたい場合 |
 
 ---
 

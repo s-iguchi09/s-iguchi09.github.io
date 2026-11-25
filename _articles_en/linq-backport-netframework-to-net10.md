@@ -28,12 +28,12 @@ It then digs into a concern unique to this backport, born from the fact that out
 - Verification environment: .NET 10 / Windows 11
 
 Between `net48` (polyfill) and `net10.0` (BCL), the two join methods were compared output-for-output.
-Because `Shuffle` is random, it was compared by its re-sorted result, its length, and whether threads running together get distinct orders.
+Because `Shuffle` is random, it was compared by its re-sorted result, its length, its result for an empty sequence, and whether threads running together get distinct orders.
 Three points were confirmed:
 
 - The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.
 - `Shuffle` returns a permutation of the original sequence (compared after sorting, since the order is random).
-- Shuffling 1–10 on each of eight threads started together yields eight distinct orders on both targets.
+- Shuffling 1–10 on each of eight threads started together yielded eight distinct orders on both targets.
 
 ---
 
@@ -226,7 +226,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net10/linq-net10-polyfill-parity.en.md %}
 
-Four join cases and four <code>Shuffle</code> cases compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. <code>Shuffle</code> is compared by its re-sorted result, its length, and the number of distinct orders produced when eight threads started together each shuffle 1–10. Measured with .NET SDK 10.0.302.
+Four join cases and four <code>Shuffle</code> cases compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in. <code>Shuffle</code> is compared by its re-sorted result, its length, an empty input, and the number of distinct orders produced when eight threads started together each shuffle 1–10. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 The two sides also agree on the default value handed to a row that has no counterpart.
@@ -357,7 +357,8 @@ If the provider can translate them, the work moves to the server; if it cannot, 
 
 Some calls stop even earlier, at compile time.
 Because the result selector becomes an expression tree, a lambda that uses the null-conditional operator, like `d?.DeptName` above, fails with `CS8072`, "An expression tree lambda may not contain a null propagating operator".
-Where the call is made on an `IQueryable<T>`, writing it with the conditional operator, as in `d == null ? null : d.DeptName`, compiles unchanged both before and after the migration.
+If any calls are still made on an `IQueryable<T>`, writing them with the conditional operator, as in `d == null ? null : d.DeptName`, compiles unchanged both before and after the migration.
+The `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` form recommended in the previous section is no exception: written against an `IQueryable<T>`, its lambdas become expression trees and cannot use `?.` either.
 
 Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions).
 In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, and the conditional-operator version built and ran.
