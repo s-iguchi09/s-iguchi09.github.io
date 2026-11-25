@@ -370,8 +370,8 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 | --- | --- | --- | --- |
 | Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
-| Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; mass replacement at migration | Few aggregation sites where allocations do not matter |
-| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, the same month as .NET 8, so the upgrade skips straight to .NET 10 | When you also want other APIs from .NET 9 onward |
+| Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; null keys behave differently from the BCL; mass replacement at migration | Few aggregation sites where allocations do not matter |
+| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
 
 ---
 

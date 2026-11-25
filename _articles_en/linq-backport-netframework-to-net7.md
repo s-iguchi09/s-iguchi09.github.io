@@ -204,7 +204,7 @@ All four `Order` / `OrderDescending` signatures sit inside a single `#if !NET7_0
 Guarding with `!NETCOREAPP` would strip the polyfill on .NET Core, .NET 5 and .NET 6, and `!NET6_0_OR_GREATER` would strip it on .NET 6 — runtimes that do not have `Order` yet.
 Call sites then fail with `CS1061`, "does not contain a definition for 'Order'" (confirmed with .NET SDK 10.0.404 on Linux by calling `Order()` on `net6.0` without the polyfill).
 
-Because its return type matches the BCL, this polyfill asks nothing of call sites once the guard flips.
+Because its return type matches the BCL, this polyfill asks no source changes of call sites to keep compiling once the guard flips (the exception-type difference in Compatibility Question 2 still applies).
 The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` keeps compiling unchanged after moving to .NET 7 or later.
 Had the return type been narrowed to `IEnumerable<T>`, pre-migration code needing a secondary key would have had to fall back to `OrderBy(x => x).ThenBy(...)`, leaving a replacement with `Order` for after the migration (Compatibility Question 1).
 
@@ -225,7 +225,7 @@ The general rule for choosing version symbols is laid out in the [.NET 6 backpor
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
 | Delegation polyfill (this article) | A few lines; no algorithmic bugs possible | Cannot reproduce behavior the delegate itself lacks (exception type) | Using the `Order` spelling before migrating |
-| Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to .NET 7 or later | Few call sites and no migration planned |
+| Write `OrderBy(x => x)` inline | No extra code | Verbose; mass replacement needed when moving to .NET 7 or later | Only a few `OrderBy(x => x)` calls and no migration planned |
 | Upgrade to .NET 7 or later | Root fix; the delegation file can simply be deleted | Besides the migration effort, .NET 7 was an STS release that [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in May 2024, so an upgrade goes on to an LTS such as .NET 10 | When you want other APIs from .NET 7 onward, not just `Order` |
 
 Writing `OrderBy(x => x)` inline works fine today, but consolidating to `Order` after migrating to .NET 7 or later means hunting down and replacing every call site.

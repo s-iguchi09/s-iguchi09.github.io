@@ -32,7 +32,7 @@ Because `Shuffle` is random, it was compared by its re-sorted result, its length
 Three points were confirmed:
 
 - The default value that `LeftJoin` / `RightJoin` pass for a row with no counterpart matches on both targets.
-- `Shuffle` returns a permutation of the original sequence (compared after sorting, since the order is random).
+- `Shuffle` returns a permutation of the original sequence.
 - Shuffling 1–10 on each of eight threads started together yielded eight distinct orders on both targets.
 
 ---
