@@ -30,7 +30,7 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 - 言語バージョン: `#nullable enable` と nullable 参照型注釈は C# 8.0 以上を要する。.NET Framework 4.8 の既定は C# 7.3 のため、`.csproj` の `LangVersion` を `8.0` 以上に設定する（`#nullable enable` と `?` 注釈を外せば C# 7.3 でも動作する）
 - 検証環境: .NET 10 / Windows 11
 
-`Order` は `OrderBy` への委譲なので、確かめるべきは委譲先の振る舞いがランタイムによって変わるかどうかである。
+`Order` は `OrderBy` への委譲なので、確かめるべきは、戻り値型が本家と揃うかと、委譲先の振る舞いがランタイムによって変わるかの 2 点である。
 同じ並べ替えを `net48`（ポリフィル）と `net10.0`（本家）で実行し、次の点を確かめた。
 
 - 戻り値は `IOrderedEnumerable` であり、`ThenBy` を連結できる。
@@ -63,7 +63,8 @@ image: /images/articles/linq-backport-netframework-to-net7/linq-order-orderdesce
 
 以下は `Order` / `OrderDescending` の 4 シグネチャをまとめたポリフィルである。
 実装は内部で `OrderBy` / `OrderByDescending` に恒等ラムダを渡すだけであり、並び替えの安定性は本家と同じになる。ただし、カルチャ依存の比較は実行しているランタイムのものになる。.NET Framework は NLS で比べる。.NET 5 以降の既定は Windows のバージョンによって異なり（たとえば Windows Server 2019 で ICU が既定になったのは .NET 7 から）、設定で NLS を使うようにもできる。計測した環境（Windows 11 の .NET 10）では net48 が NLS、net10.0 が ICU で（表の「比較エンジン」の行）、ja-JP の比較子では net48 で `co_op, coop, co-op, Co-op`、net10.0 で `co_op, co-op, Co-op, coop` と並びが変わった（表の「ja-JP の比較子」の行）。
-委譲だけで外部依存が無いため、前提の `LangVersion` を満たしていれば、`LinqExtensions.Net7.cs` などの名前で既存のプロジェクトに置くだけで使える。
+`OrderBy` に委ねるだけなので、追加の型や補助メソッドは要らない。
+`LinqExtensions.Net7.cs` などの名前で置き、前提の `LangVersion` を設定する。
 
 ```csharp
 #nullable enable
@@ -202,7 +203,7 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 
 戻り値型を本家と揃えたこのポリフィルは、ガードが切り替わった後の呼び出し側に書き換えを求めない。
 本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
-戻り値型を `IEnumerable<T>` に縮めていたら、移行前は二次キーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
+戻り値型を `IEnumerable<T>` に縮めていたら、移行前は第 2 ソートキーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
 
 バージョン別シンボルの選び方の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
 
@@ -221,7 +222,7 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
 | 委譲型ポリフィル（本記事） | 実装が数行・アルゴリズム起因のバグが入らない | 委譲先と本家の挙動差（例外型）は再現できない | `Order` の記法を移行前から使いたい場合 |
-| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・.NET 7 移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
+| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・.NET 7 以降への移行時に一括置換が必要 | 使用箇所が少なく移行予定もない場合 |
 | .NET 7 以降へのアップグレード | 根本的解決・委譲用のファイル自体を消せる | フレームワーク移行の工数に加え、.NET 7 は 2024 年 5 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support) STS 版のため、上げるなら LTS の .NET 10 などまで進むことになる | `Order` 以外にも .NET 7 以降の API を使いたい場合 |
 
 `OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 以降へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。

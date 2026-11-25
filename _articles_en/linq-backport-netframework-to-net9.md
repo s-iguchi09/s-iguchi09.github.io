@@ -31,6 +31,7 @@ The two approaches differ not just in memory efficiency but in how they treat `n
 
 The API does not guarantee the order of keys in the aggregated result, so two implementations may disagree on it.
 The same input was therefore aggregated on `net48` (polyfill) and `net10.0` (BCL) and compared down to the key order, not just the values.
+For `Index`, the tuples returned for the same input were compared.
 This showed:
 
 - For this input, `CountBy` and `AggregateBy` returned keys in first-seen order on both targets.
@@ -240,7 +241,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.en.md %}
 
-An input mixing keys that differ only in case, aggregated and compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in down to key order and the exception for a <code>null</code> key. Measured with .NET SDK 10.0.302.
+An input mixing keys that differ only in case, aggregated and compared between the <code>net48</code> polyfill and the <code>net10.0</code> built-in down to key order and the exception for a <code>null</code> key, with <code>Index</code> also checked on an empty sequence. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
 On this input and this runtime, both sides placed the keys in the order they first appeared, and the output matches down to that ordering.
@@ -347,7 +348,7 @@ This matches the built-in .NET 9 behavior of the internal dictionary rejecting `
 Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/) — disable at and above the introducing version — the polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
 `CountBy`, `AggregateBy` and `Index` do not exist on .NET 8 or earlier, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would strip the polyfill on .NET 8 and break compilation at the call sites.
 
-What deserves attention with this guard is that the polyfill keeps running after a move to .NET 8.
+With this guard, the polyfill keeps running after a move to .NET 8.
 In a project still left on `net8.0` after its end of support, or a library multi-targeting `net48` and `net8.0`, the three methods are missing from the BCL, so this article's dictionary-based implementation is what runs in production (a `net8.0` build run with .NET SDK 10.0.404 on Linux confirmed that the `CountBy` result comes from the polyfill's assembly).
 The BCL implementation takes over only once the project moves to .NET 9 or later.
 Since key enumeration order is not guaranteed by the API, as noted above, making the ordering explicit while the polyfill is still running keeps order-dependent code safe from that switch.

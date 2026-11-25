@@ -346,7 +346,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 
 ## 移行ガード
 
-本ポリフィルは、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)の規則どおり、対象メソッドが入った .NET 10 で無効になる `#if !NET10_0_OR_GREATER` で囲む。
+本ポリフィルは、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)の規則どおり、対象メソッドが入った .NET 10 以降で無効になる `#if !NET10_0_OR_GREATER` で囲む。
 `LeftJoin`・`RightJoin`・`Shuffle` は .NET 9 以前に無いため、条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜9 で、`!NET9_0_OR_GREATER` にすると .NET 9 でポリフィルが外れ、コンパイルエラーになる。
 
 このガードが切り替わるとき、ソースを変えないまま振る舞いが変わるのが `IQueryable<T>` に対する呼び出しである。
@@ -355,7 +355,12 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 前節の落とし穴の裏返しである。
 プロバイダがこれらを翻訳できれば処理はサーバー側へ移るが、翻訳できないプロバイダでは、移行前に動いていたクエリが実行時に例外になり得る。
 
-.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<int>` へ `LeftJoin` と `Shuffle` を呼び、どちらも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
+その前に、コンパイルの段階で止まる場合もある。
+結果セレクタが式ツリーに変わるため、前述の `d?.DeptName` のように null 条件演算子を使ったラムダは、「式ツリーのラムダに null 条件演算子は使えない」という `CS8072` になる。
+`IQueryable<T>` に対して呼ぶ箇所では、`d == null ? null : d.DeptName` のように条件演算子で書いておくと、移行の前後どちらでもそのままコンパイルが通る。
+
+.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<T>` へ `LeftJoin`・`RightJoin`・`Shuffle` を呼び、いずれも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
+同じ環境で、`?.` を使った結果セレクタの `LeftJoin` が `CS8072` になり、条件演算子に書き換えるとビルド・実行できることも確かめた。
 プロバイダごとの翻訳の可否は確かめていないため、移行時には実際に使うプロバイダで該当クエリを実行して確認する。
 
 ---

@@ -347,7 +347,7 @@ For server-side outer joins in database queries below .NET 10, keep writing the 
 
 ## Migration Guard
 
-Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/), the polyfill is wrapped in `#if !NET10_0_OR_GREATER`, which turns it off on .NET 10, where the methods arrived.
+Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/), the polyfill is wrapped in `#if !NET10_0_OR_GREATER`, which turns it off on .NET 10 and later, where the methods exist.
 `LeftJoin`, `RightJoin` and `Shuffle` do not exist on .NET 9 or earlier, so guarding with `!NETCOREAPP` strips the polyfill on .NET Core and .NET 5–9, and `!NET9_0_OR_GREATER` strips it on .NET 9 — both break compilation.
 
 When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
@@ -355,7 +355,12 @@ When this guard flips, calls on `IQueryable<T>` change behavior without any chan
 A query that joined or shuffled on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
 If the provider can translate them, the work moves to the server; if it cannot, a query that worked before the migration may throw at run time.
 
-Calling `LeftJoin` and `Shuffle` on an `IQueryable<int>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that both return an `IQueryable<T>` (binding to the `Queryable` versions).
+Some calls stop even earlier, at compile time.
+Because the result selector becomes an expression tree, a lambda that uses the null-conditional operator, like `d?.DeptName` above, fails with `CS8072`, "An expression tree lambda may not contain a null propagating operator".
+Where the call is made on an `IQueryable<T>`, writing it with the conditional operator, as in `d == null ? null : d.DeptName`, compiles unchanged both before and after the migration.
+
+Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions).
+In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, and the conditional-operator version built and ran.
 Translation support was not checked per provider, so run the affected queries against the actual provider when migrating.
 
 ---

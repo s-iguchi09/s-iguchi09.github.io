@@ -32,7 +32,7 @@ The same calls were run on `net48` (polyfill) and `net10.0` (BCL) while varying 
 The comparison showed:
 
 - `Chunk` produces the same result on both targets whether the count divides evenly, leaves a remainder, uses a `size` larger than `source` (including `int.MaxValue`), or uses an invalid `size`.
-- `MaxBy` on an empty sequence throws `InvalidOperationException` for a non-nullable value type such as `int` and returns `null` for a reference type, on both targets alike.
+- `MaxBy` on an empty sequence behaves differently for a non-nullable value type such as `int` and for a reference type, and both targets agree on that difference.
 - The elements `DistinctBy` keeps, and their order, match on both targets.
 
 ---
@@ -428,7 +428,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 | Hand-rolled polyfill (this article) | No dependency; also fixes the complexity problems | Implementation effort | Projects minimizing dependencies |
 | Keep the workaround idioms | No extra code | Complexity and allocation waste persists | Data that is always tiny |
 | MoreLINQ (NuGet) | Rich, battle-tested method set | Adds an external dependency | Projects needing many extra methods |
-| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | The effort of leaving .NET Framework; .NET 6 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you also want the other new APIs |
+| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | The effort of leaving .NET Framework; .NET 6 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you want new APIs beyond these four methods too |
 
 `MoreLINQ` (NuGet package `morelinq`) covers `Chunk` and `MaxBy` equivalents, but when only these four methods are needed, a dependency-free polyfill is simpler to maintain.
 

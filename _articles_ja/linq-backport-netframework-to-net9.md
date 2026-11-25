@@ -30,6 +30,7 @@ image: /images/articles/linq-backport-netframework-to-net9/linq-countby-aggregat
 
 集計結果のキーの並び順は API として保証されておらず、実装が違えば食い違い得る。
 そこで `net48`（ポリフィル）と `net10.0`（本家）で同じ入力を集計し、値だけでなく並び順まで比べた。
+`Index` は、同じ入力に対して返すタプルの中身を比べた。
 分かったのは次の点である。
 
 - この入力では、両ターゲットとも `CountBy` / `AggregateBy` のキーが最初に現れた順に並んだ。
@@ -240,7 +241,7 @@ namespace System.Linq
 
 {% include tables/articles/linq-backport-netframework-to-net9/linq-net9-polyfill-parity.ja.md %}
 
-大文字小文字だけが違うキーを混ぜた入力を集計し、キーの並び順と <code>null</code> キーの例外まで <code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。.NET SDK 10.0.302 で測定した。
+大文字小文字だけが違うキーを混ぜた入力を集計し、キーの並び順と <code>null</code> キーの例外まで、<code>Index</code> は空の並びも含めて、<code>net48</code> のポリフィルと <code>net10.0</code> の組み込みで比べた結果。.NET SDK 10.0.302 で測定した。
 {: .table-caption}
 
 この入力とこの実行環境では、どちらもキーが最初に現れた順に並んだ。出力はその順序まで含めて一致している。
@@ -347,7 +348,7 @@ var query = numbers.CountBy(n => n);
 本ポリフィルは、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理した「追加されたバージョン以上で無効化する」規則に従い、`#if !NET9_0_OR_GREATER` で囲む。
 `CountBy`・`AggregateBy`・`Index` は .NET 8 以前に無いため、`!NETCOREAPP` や `!NET8_0_OR_GREATER` を条件にすると .NET 8 でポリフィルが外れ、呼び出し箇所がコンパイルエラーになる。
 
-このガードで意識しておきたいのは、.NET 8 へ移行した時点ではまだポリフィルが動き続けることである。
+このガードでは、.NET 8 へ移行した時点でもポリフィルが動き続ける。
 サポート終了後も `net8.0` をターゲットにしたまま残っているプロジェクトや、`net48` と `net8.0` をマルチターゲットしているライブラリでは、3 メソッドが BCL に無いため、本記事の辞書ベース実装がそのまま本番で使われる（.NET SDK 10.0.404 / Linux で `net8.0` 向けにビルドして実行し、`CountBy` の結果がポリフィル側のアセンブリから返ることを確かめた）。
 本家の実装に入れ替わるのは、.NET 9 以降へ上げたときである。
 前述のとおりキーの列挙順は API として保証されていないため、順序に依存する箇所は、ポリフィルが動いているうちに並べ替えを明示しておくと、その入れ替わりの影響を受けない。

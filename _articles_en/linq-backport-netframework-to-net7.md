@@ -31,7 +31,7 @@ A polyfill built purely on delegation to existing APIs is the counterpart to the
 - Language version: `#nullable enable` and nullable reference annotations require C# 8.0 or later. The .NET Framework 4.8 default is C# 7.3, so set `LangVersion` to `8.0` or later in the `.csproj` (dropping `#nullable enable` and the `?` annotations allows C# 7.3)
 - Verification environment: .NET 10 / Windows 11
 
-Because `Order` delegates to `OrderBy`, the question is whether the delegate target itself behaves differently across runtimes.
+Because `Order` delegates to `OrderBy`, two questions matter: whether the return type matches the BCL, and whether the delegate target behaves differently across runtimes.
 The same sorts were run on `net48` (polyfill) and `net10.0` (BCL), confirming the following:
 
 - The return value is an `IOrderedEnumerable`, so `ThenBy` can be chained onto it.
@@ -64,7 +64,8 @@ A dedicated method with the identity function baked in removes that noise, and .
 
 Here are the four `Order` / `OrderDescending` signatures as a single polyfill.
 Each method just passes an identity lambda to `OrderBy` / `OrderByDescending`, so sort stability matches the originals. Culture-sensitive comparison, however, is whatever the runtime provides: .NET Framework compares with NLS. On .NET 5 and later, the default depends on the Windows version (on Windows Server 2019, for example, ICU became the default only in .NET 7), and an app can also be configured to use NLS. On the test machine (.NET 10 on Windows 11), net48 used NLS and net10.0 used ICU (the `comparison engine` row of the table), and a ja-JP comparer ordered `co_op, coop, co-op, Co-op` on net48 but `co_op, co-op, Co-op, coop` on net10.0 (the `ja-JP comparer` row).
-With nothing but delegation and no dependencies, it works as soon as it is dropped into a project (with the `LangVersion` from the prerequisites) as, for example, `LinqExtensions.Net7.cs`.
+Since it only hands off to `OrderBy`, it needs no extra types or helper methods.
+Put it in a file such as `LinqExtensions.Net7.cs` and set the `LangVersion` from the prerequisites.
 
 ```csharp
 #nullable enable
@@ -125,7 +126,10 @@ namespace System.Linq
 The <code>net48</code> polyfill and the <code>net10.0</code> built-in side by side for default comparison, explicit comparers, stability, culture-sensitive ordering, and incomparable elements. Measured with .NET SDK 10.0.302.
 {: .table-caption}
 
-The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort). The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted. All three are explained below. That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
+The two sides agree down to the ordering of elements the comparer treats as equal, which is preserved (a stable sort).
+The only differences are three rows that come from the runtime's own comparison: the comparison engine, the culture-sensitive order, and the exception type when the whole sequence is sorted.
+All three are explained below.
+That `ThenByDescending` can be chained onto the result is also evidence that the return value is an `IOrderedEnumerable<T>`.
 
 Because the delegation style contains no `yield return`, the validation/iterator split required for hand-written iterators ([principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)) does not apply.
 The `source` null check runs immediately at call time, while the sort itself stays lazy through the delegated `OrderBy`.

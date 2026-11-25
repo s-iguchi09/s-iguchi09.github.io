@@ -292,7 +292,7 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 
 どちらもメッセージだけを見ると呼び出し側の書き間違いに見えるため、原因がガードの条件にあると気付きにくい。
 .NET SDK 10.0.404 / Linux で、`net7.0` をターゲットにポリフィル無しでビルドし、この 2 つのエラーを確かめた（引数なしの呼び出しは `net6.0` でも同じ `CS1501` だった）。
-条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜7 で、`!NET7_0_OR_GREATER` にすると .NET 7 でポリフィルが外れ、これらのエラーになり得る（実際にビルドして確かめたのは `net6.0` と `net7.0`）。
+条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜7 で、`!NET7_0_OR_GREATER` にすると .NET 7 でポリフィルが外れ、これらのエラーになり得る。
 
 シンボル選択の一般規則（追加されたバージョン以上で無効化する）は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)を参照。
 

@@ -293,7 +293,7 @@ So when a wrong guard strips the polyfill on .NET 7 or earlier, the symptom diff
 
 Both messages read like a mistake at the call site, which makes it easy to miss that the guard condition is the real cause.
 Both errors were confirmed with .NET SDK 10.0.404 on Linux by building for `net7.0` without the polyfill (the parameterless call gave the same `CS1501` on `net6.0` too).
-Guarding with `!NETCOREAPP` strips the polyfill on .NET Core and .NET 5–7, and `!NET7_0_OR_GREATER` strips it on .NET 7, so these errors can appear there (actually built and checked on `net6.0` and `net7.0`).
+Guarding with `!NETCOREAPP` strips the polyfill on .NET Core and .NET 5–7, and `!NET7_0_OR_GREATER` strips it on .NET 7, so these errors can appear there.
 
 For the general rule — disable at and above the version that introduced the API — see the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).
 
@@ -314,7 +314,7 @@ For the general rule — disable at and above the version that introduced the AP
 | --- | --- | --- | --- |
 | Hand-rolled polyfill (this article) | No dependency; signatures match the built-ins exactly | Requires overload-design care | `#nullable enable` codebases heading toward migration |
 | Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Both selectors written every time; mass replacement at migration | When only a handful of conversions exist |
-| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | Migration work, and .NET 8 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, so a new move should pick a supported release such as .NET 10 | When you also want the other new APIs |
+| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | Migration work, and .NET 8 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, so a new move should pick a supported release such as .NET 10 | When you want new APIs beyond dictionary conversion too |
 
 Inline selectors cost nothing today, but consolidating to the selector-free spelling after migrating to .NET 8 or later means finding and replacing every call site.
 

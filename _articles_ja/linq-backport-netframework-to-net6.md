@@ -31,7 +31,7 @@ image: /images/articles/linq-backport-netframework-to-net6/linq-chunk-maxby-minb
 比べて分かったのは次の点である。
 
 - `Chunk` は、端数が出る場合・ちょうど割り切れる場合・`size` が `source` より大きい場合（`int.MaxValue` を含む）・`size` が不正な場合のいずれでも、両ターゲットで同じ結果になる。
-- 空の並びに対する `MaxBy` の結果は、`int` のような null 非許容の値型では `InvalidOperationException`、参照型では `null` で、両ターゲットで一致する。
+- 空の並びに対する `MaxBy` は、`int` のような null 非許容の値型と参照型とで結果が異なり、その違いまで両ターゲットで一致する。
 - `DistinctBy` が残す要素とその順序は、両ターゲットで一致する。
 
 ---
