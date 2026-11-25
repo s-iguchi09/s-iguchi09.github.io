@@ -189,7 +189,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> TakeLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -220,7 +220,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> SkipLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -345,7 +345,7 @@ var prepended = new[] { 1, 2, 3 }.Prepend(0); // 0, 1, 2, 3
 `TakeLast` は、満杯になったら古いものを捨てながらキューを更新し、元データが尽きた時点でキューに残った「最後の N 個」を出力する。
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -366,7 +366,7 @@ foreach (var item in queue)
 キューが満杯の状態で次の要素が来たとき、押し出される先頭要素は「末尾から N 個以内ではない」ことが確定しているので、そのタイミングで出力する。
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -380,7 +380,9 @@ foreach (var item in source)
 ```
 
 出力が常に `count` 個分遅れて進む点が要点である。
-元データの総数に関係なく、保持するのは常に `count` 個だけなので、空間計算量は O(count) に抑えられる。
+元データの総数に関係なく、保持するのは多くても `count` 個なので、空間計算量は O(count) に抑えられる。
+キューは初期容量を指定せずに作る。
+`new Queue<TSource>(count)` とすると、`TakeLast(int.MaxValue)` のように大きな `count` を渡しただけで、元データが数個でも巨大な内部配列を確保しようとして `OutOfMemoryException` になる（.NET 10 で確認）。
 `Count()` を先に数えてから `Skip` / `Take` する回避コードのような二重列挙も発生しない。
 
 ```csharp

@@ -189,7 +189,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> TakeLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -220,7 +220,7 @@ namespace System.Linq
 
         private static IEnumerable<TSource> SkipLastIterator<TSource>(IEnumerable<TSource> source, int count)
         {
-            var queue = new Queue<TSource>(count);
+            var queue = new Queue<TSource>();
             foreach (var item in source)
             {
                 if (queue.Count == count)
@@ -345,7 +345,7 @@ Both therefore use a `Queue<T>` as a sliding window holding only the most recent
 `TakeLast` keeps updating the queue, evicting the oldest element when full; whatever remains after the source ends is exactly the last N.
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -366,7 +366,7 @@ foreach (var item in queue)
 When the queue is full and a new element arrives, the evicted front element is guaranteed *not* to be among the last N — so that is the moment to emit it.
 
 ```csharp
-var queue = new Queue<TSource>(count);
+var queue = new Queue<TSource>();
 
 foreach (var item in source)
 {
@@ -380,7 +380,9 @@ foreach (var item in source)
 ```
 
 The output always trails the input by `count` elements — that is the crux.
-Regardless of the source size, only `count` elements are held at any time, keeping space complexity at O(count).
+Regardless of the source size, at most `count` elements are held at any time, keeping space complexity at O(count).
+The queue is created without an initial capacity.
+With `new Queue<TSource>(count)`, passing a large `count` such as `TakeLast(int.MaxValue)` makes it try to allocate a huge internal array even when the source has only a few elements, and it throws `OutOfMemoryException` (confirmed on .NET 10).
 The double enumeration of the `Count()`-then-`Skip`/`Take` workaround also disappears.
 
 ```csharp
