@@ -204,8 +204,10 @@ All four `Order` / `OrderDescending` signatures sit inside a single `#if !NET7_0
 Guarding with `!NETCOREAPP` would strip the polyfill on .NET Core, .NET 5 and .NET 6, and `!NET6_0_OR_GREATER` would strip it on .NET 6 — runtimes that do not have `Order` yet.
 Call sites then fail with `CS1061`, "does not contain a definition for 'Order'" (confirmed with .NET SDK 10.0.404 on Linux by calling `Order()` on `net6.0` without the polyfill).
 
-Because its return type matches the BCL, this polyfill asks no source changes of call sites to keep compiling once the guard flips (the exception-type difference in Compatibility Question 2 still applies).
-The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` keeps compiling unchanged after moving to .NET 7 or later.
+Because its return type matches the BCL, this polyfill asks no source changes of `IEnumerable<T>` call sites to keep compiling once the guard flips (the exception-type difference in Compatibility Question 2 still applies).
+The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` on an `IEnumerable<T>` keeps compiling unchanged after moving to .NET 7 or later.
+Calls on an `IQueryable<T>` are different: after the migration they bind to `Queryable.Order`, and the selector of the following `ThenBy` becomes an expression tree.
+A selector containing `?.`, such as `x => x.Name?.Length`, therefore fails with `CS8072` (confirmed with .NET SDK 10.0.404 on Linux by building for `net10.0`).
 Had the return type been narrowed to `IEnumerable<T>`, pre-migration code needing a secondary key would have had to fall back to `OrderBy(x => x).ThenBy(...)`, leaving a replacement with `Order` for after the migration (Compatibility Question 1).
 
 The general rule for choosing version symbols is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).

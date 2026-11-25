@@ -352,6 +352,9 @@ Following the rule from the [.NET 6 backport article](/articles/linq-backport-ne
 
 When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
 .NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` polyfill.
+For `LeftJoin` / `RightJoin`, this holds when the selectors are written as lambdas in place.
+Selectors passed as `Func` variables cannot become expression trees, so the call still binds to the `Enumerable` version (the BCL one on .NET 10) after the migration, and the join keeps running on the client.
+`Shuffle`, which takes no delegate, always binds to the `Queryable` version.
 A query that joined or shuffled on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
 If the provider can translate them, the work moves to the server; if it cannot, a query that worked before the migration may throw at run time.
 
@@ -360,7 +363,7 @@ Because the result selector becomes an expression tree, a lambda that uses the n
 If any calls are still made on an `IQueryable<T>`, writing them with the conditional operator, as in `d == null ? null : d.DeptName`, compiles unchanged both before and after the migration.
 The `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` form recommended in the previous section is no exception: written against an `IQueryable<T>`, its lambdas become expression trees and cannot use `?.` either.
 
-Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions).
+Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions), and that a `LeftJoin` given its result selector as a `Func` variable does not.
 In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, and the conditional-operator version built and ran.
 Translation support was not checked per provider, so run the affected queries against the actual provider when migrating.
 

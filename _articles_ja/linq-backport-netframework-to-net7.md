@@ -203,8 +203,10 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 条件を `!NETCOREAPP` にすると .NET Core と .NET 5・.NET 6 で、`!NET6_0_OR_GREATER` にすると .NET 6 で、まだ `Order` を持たないランタイムからポリフィルが外れる。
 呼び出し箇所は「`Order` の定義が見つからない」という `CS1061` エラーになる（.NET SDK 10.0.404 / Linux で、`net6.0` をターゲットにポリフィル無しで `Order()` を呼んで確かめた）。
 
-戻り値型を本家と揃えたこのポリフィルは、ガードが切り替わった後も、呼び出し側にコンパイルのための書き換えを求めない（例外型の差は互換性論点 2 のとおり）。
-本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
+戻り値型を本家と揃えたこのポリフィルは、ガードが切り替わった後も、`IEnumerable<T>` の呼び出し側にコンパイルのための書き換えを求めない（例外型の差は互換性論点 2 のとおり）。
+本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`IEnumerable<T>` に対して `Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
+`IQueryable<T>` に対する呼び出しは別で、移行後は `Queryable.Order` に解決され、続く `ThenBy` のセレクタが式ツリーになる。
+そのため `x => x.Name?.Length` のように `?.` を含むセレクタは `CS8072` になる（.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットにビルドして確かめた）。
 戻り値型を `IEnumerable<T>` に縮めていたら、移行前は第 2 ソートキーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
 
 バージョン別シンボルの選び方の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
