@@ -368,14 +368,18 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Dictionary-backed polyfill (this article) | Same memory profile and `null`-key exception as the built-ins | Somewhat longer implementation; an exception thrown while disposing the source enumerator surfaces before any result, earlier than in the built-ins | Keeping `null`-key handling and memory profile unchanged across migration |
+| Dictionary-backed polyfill (this article) | Same memory profile and `null`-key exception as the built-ins | Somewhat longer implementation; disposes the source enumerator before returning any result (the built-ins dispose it after the last result) | Keeping `null`-key handling and memory profile unchanged across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
 | Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; `null`-key behavior differs from the built-ins; mass replacement at migration | Few aggregation sites where allocations do not matter |
 | Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
 
-The timing of an exception thrown while disposing the source enumerator was checked with .NET SDK 10.0.404 on Linux by running the `net10.0` built-in `CountBy` next to a renamed copy of the polyfill.
-The built-in threw after returning two results; the polyfill threw before returning any.
-The polyfill finishes aggregating before it returns results, so it disposes the source enumerator at that point.
+The polyfill finishes aggregating before it returns results, so it disposes the source enumerator before returning any result.
+The built-in `CountBy` and `AggregateBy` keep the source enumerator until they have returned every result.
+The difference shows with sources that do work on disposal.
+If `Dispose` throws, the polyfill throws before returning any result, and the built-ins throw after returning all of them.
+If disposal releases a lock, after the migration the lock stays held while the results are being processed, and anything waiting for that lock meanwhile cannot proceed.
+With .NET SDK 10.0.404 on Linux, the `net10.0` built-in `CountBy` and `AggregateBy` were run next to a renamed copy of the polyfill to check when `Dispose` is called.
+The number of results returned when `Dispose` throws was checked with `CountBy` (the built-in returned two results first; the polyfill returned none).
 
 ---
 
@@ -383,7 +387,7 @@ The polyfill finishes aggregating before it returns results, so it disposes the 
 
 What a `CountBy` / `AggregateBy` backport is judged on is not "returning the same result" but "returning it the same way."
 Delegating to `GroupBy` produces identical values while diverging from the built-ins on two counts: intermediate-grouping allocations and tolerance of `null` keys.
-Direct dictionary accumulation aligns the memory profile, the `null`-key exception and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` safe on those points (only the timing of an exception thrown while disposing the source enumerator differs, as noted after the table).
+Direct dictionary accumulation aligns the memory profile, the `null`-key exception and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` safe on those points (only the point at which the source enumerator is disposed differs, as noted after the table).
 
 | Method | Implementation | State held |
 | --- | --- | --- |
