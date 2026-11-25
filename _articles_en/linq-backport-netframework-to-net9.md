@@ -376,11 +376,12 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 The polyfill finishes aggregating before it returns results, so it disposes the source enumerator before returning any result.
 The built-in `CountBy` and `AggregateBy` keep the source enumerator until enumeration of the results finishes or the result enumerator is disposed.
 The difference shows with sources that do work on disposal.
-If `Dispose` throws, the polyfill throws before returning any result, and the built-ins throw after the results have been enumerated to the end.
+If `Dispose` throws, the polyfill throws before returning any result.
+The built-ins throw after the last result when the results are enumerated to the end, and at the point the result enumerator is disposed when a `foreach` is left early.
 If disposal releases a lock, after the migration the lock stays held while the results are being processed, and another thread waiting for that lock meanwhile cannot proceed.
 This lock behavior was not measured; it follows from the difference in when the enumerator is disposed.
 With .NET SDK 10.0.404 on Linux, the `net10.0` built-in `CountBy` and `AggregateBy` were run next to a renamed copy of the polyfill to check when `Dispose` is called.
-The number of results returned when `Dispose` throws was checked with `CountBy` (the built-in returned two results first; the polyfill returned none).
+The number of results returned when `Dispose` throws was checked with `CountBy` (enumerating to the end, the built-in returned two results first; breaking after the first, it returned one; the polyfill returned none in both cases).
 
 ---
 
