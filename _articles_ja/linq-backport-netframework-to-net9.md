@@ -97,7 +97,7 @@ public static IEnumerable<KeyValuePair<TKey, int>> CountBy<TSource, TKey>(
 | `null` キー | 1 グループとして許容 | 列挙時に `ArgumentNullException` | 列挙時に `ArgumentNullException` |
 
 `GroupBy` は `null` キーを 1 つのグループとして受け入れるため、委譲実装は本家なら例外になる入力を黙って通してしまう。
-ポリフィルの目的が「移行時に挙動を変えないこと」である以上、メモリ効率だけでなく、確かめられる範囲の例外として `null` キーの例外の一致という点でも、本家と同じ辞書ベースの実装（選択肢 B)を採る。
+ポリフィルの目的が「移行時に挙動を変えないこと」である以上、メモリ効率だけでなく `null` キーの例外の一致という、確かめられた点でも、本家と同じ辞書ベースの実装（選択肢 B）を採る。
 
 あわせて、遅延評価を保ったまま引数検証を即時化するため、public メソッドと `yield return` を含むイテレータ本体を分離する（根拠は[シリーズ基礎編の設計原則 1](/ja/articles/linq-backport-netframework-to-net5/)を参照）。
 `Index` だけは集計を伴わないため、`Select` のインデックス付きオーバーロードへの委譲で足りる。

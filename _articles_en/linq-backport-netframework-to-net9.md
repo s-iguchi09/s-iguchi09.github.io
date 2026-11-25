@@ -97,7 +97,7 @@ Option A is shorter but diverges from the built-in behavior on two counts.
 | `null` keys | Accepted as one group | `ArgumentNullException` at enumeration | `ArgumentNullException` at enumeration |
 
 `GroupBy` accepts `null` keys as a group of their own, so the delegating implementation silently passes input that the built-in would reject.
-Since the whole point of a polyfill is to keep behavior unchanged across migration as far as it can, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception as well as memory.
+Since the whole point of a polyfill is to keep behavior unchanged across migration as far as it can be verified, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception as well as memory.
 
 To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
 `Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
