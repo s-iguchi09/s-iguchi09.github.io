@@ -97,7 +97,7 @@ Option A is shorter but diverges from the built-in behavior on two counts.
 | `null` keys | Accepted as one group | `ArgumentNullException` at enumeration | `ArgumentNullException` at enumeration |
 
 `GroupBy` accepts `null` keys as a group of their own, so the delegating implementation silently passes input that the built-in would reject.
-Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on exception fidelity as well as memory.
+Since the whole point of a polyfill is to keep behavior unchanged across migration, option B — the same dictionary-based accumulation as the built-in — wins on matching the `null`-key exception as well as memory.
 
 To keep lazy evaluation while validating arguments eagerly, the public methods are split from the `yield return` iterator bodies (see [principle 1 of the foundation article](/articles/linq-backport-netframework-to-net5/)).
 `Index` alone involves no aggregation and is served by delegating to the indexed overload of `Select`.
@@ -368,10 +368,14 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping exception behavior and memory profile unchanged across migration |
+| Dictionary-backed polyfill (this article) | Same memory profile and `null`-key exception as the built-ins | Somewhat longer implementation; an exception thrown while disposing the source enumerator surfaces before any result, earlier than in the built-ins | Keeping `null`-key handling and memory profile unchanged across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
 | Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; `null`-key behavior differs from the built-ins; mass replacement at migration | Few aggregation sites where allocations do not matter |
 | Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
+
+The timing of an exception thrown while disposing the source enumerator was checked with .NET SDK 10.0.404 on Linux by running the `net10.0` built-in `CountBy` next to a renamed copy of the polyfill.
+The built-in threw after returning two results; the polyfill threw before returning any.
+The polyfill finishes aggregating before it returns results, so it disposes the source enumerator at that point.
 
 ---
 
@@ -379,7 +383,7 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 
 What a `CountBy` / `AggregateBy` backport is judged on is not "returning the same result" but "returning it the same way."
 Delegating to `GroupBy` produces identical values while diverging from the built-ins on two counts: intermediate-grouping allocations and tolerance of `null` keys.
-Direct dictionary accumulation aligns the memory profile, the exception behavior and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` genuinely safe.
+Direct dictionary accumulation aligns the memory profile, the `null`-key exception and the `where TKey : notnull` constraint with the built-ins, making the zero-edit switchover under `#if !NET9_0_OR_GREATER` genuinely safe.
 
 | Method | Implementation | State held |
 | --- | --- | --- |

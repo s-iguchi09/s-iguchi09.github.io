@@ -354,7 +354,9 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 このガードが切り替わるとき、ソースを変えないまま振る舞いが変わるのが `IQueryable<T>` に対する呼び出しである。
 .NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版のポリフィルではなく `Queryable` 版に解決される。
 ただし `LeftJoin` / `RightJoin` でこうなるのは、3 つのセレクタがすべてラムダ式（または `Expression<Func<...>>` 型の値）の場合である。
-いずれかを `Func` 型の変数で渡すと式ツリーにできないため、移行後も `Enumerable` 版（.NET 10 では本家）に解決され、結合はクライアント側のまま動く。
+いずれかを `Func` 型の変数で渡し、残りをラムダ式で書くと、式ツリーにできないため、移行後も `Enumerable` 版（.NET 10 では本家）に解決され、結合はクライアント側のまま動く。
+`Func` 型の変数と `Expression<Func<...>>` 型の変数を混ぜて渡すと、どちらの版にも当てはまらず `CS1503` のコンパイルエラーになる。
+`Enumerable` 版で動かすなら、式ツリーの側を `Compile()` してデリゲートにそろえる。
 引数にデリゲートを取らない `Shuffle` は、常に `Queryable` 版に解決される。
 移行前はクライアント側で結合や並べ替えをしていたクエリが、移行後は式ツリーとしてプロバイダへ渡る。
 前節の落とし穴の裏返しである。
@@ -365,7 +367,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 それでも `IQueryable<T>` に対して呼んでいる箇所があれば、`d == null ? null : d.DeptName` のように条件演算子で書いておくと、移行の前後どちらでもそのままコンパイルが通る。
 
 .NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<T>` へ `LeftJoin`・`RightJoin`・`Shuffle` を呼び、いずれも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことを確かめた。
-結果セレクタや外部キーのセレクタを `Func` 型の変数で渡した `LeftJoin` は `IQueryable<T>` にならず、外部キーのセレクタを `Expression<Func<...>>` 型の変数で渡すと `IQueryable<T>` になることも確かめた。
+結果セレクタや外部キーのセレクタを `Func` 型の変数で渡した `LeftJoin` は `IQueryable<T>` にならず、外部キーのセレクタを `Expression<Func<...>>` 型の変数で渡すと `IQueryable<T>` になること、外部キーを `Func` 型・内部キーを `Expression<Func<...>>` 型の変数で渡すと `CS1503` になり、内部キーを `Compile()` すると `Enumerable` 版に解決されることも確かめた。
 同じ環境で、`?.` を使った結果セレクタの `LeftJoin` が `CS8072` になり、条件演算子に書き換えるとビルド・実行できること、匿名型のメンバー名を省いた条件演算子が `CS0746` になることも確かめた。
 プロバイダごとの翻訳の可否は確かめていないため、移行時には実際に使うプロバイダで該当クエリを実行して確認する。
 

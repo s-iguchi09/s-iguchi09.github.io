@@ -355,7 +355,9 @@ Following the rule from the [.NET 6 backport article](/articles/linq-backport-ne
 When this guard flips, calls on `IQueryable<T>` change behavior without any change to the source.
 .NET 10 has `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle`, so the same call on an `IQueryable<T>` binds to the `Queryable` version instead of the `Enumerable` polyfill.
 For `LeftJoin` / `RightJoin`, this holds when all three selectors are lambdas (or `Expression<Func<...>>` values).
-If any of them is passed as a `Func` variable, it cannot become an expression tree, so the call still binds to the `Enumerable` version (the built-in one on .NET 10) after the migration, and the join keeps running on the client.
+If any of them is passed as a `Func` variable and the rest are lambdas, the call cannot become an expression tree, so it still binds to the `Enumerable` version (the built-in one on .NET 10) after the migration, and the join keeps running on the client.
+Mixing a `Func` variable with an `Expression<Func<...>>` variable fits neither version and fails to compile with `CS1503`.
+To run it on the `Enumerable` version, call `Compile()` on the expression tree so that every selector is a delegate.
 `Shuffle`, which takes no delegate, always binds to the `Queryable` version.
 A query that joined or shuffled on the client before the migration is handed to the provider as an expression tree afterwards — the flip side of the pitfall in the previous section.
 If the provider can translate them, the work moves to the server; if it cannot, a query that worked before the migration may throw at run time.
@@ -366,6 +368,7 @@ If any calls are still made on an `IQueryable<T>`, writing them with the conditi
 
 Calling `LeftJoin`, `RightJoin` and `Shuffle` on an `IQueryable<T>` targeting `net10.0` with .NET SDK 10.0.404 on Linux confirmed that each returns an `IQueryable<T>` (binding to the `Queryable` versions).
 A `LeftJoin` given its result selector or outer key selector as a `Func` variable did not return an `IQueryable<T>`, while one given its outer key selector as an `Expression<Func<...>>` variable did.
+Passing the outer key as a `Func` variable and the inner key as an `Expression<Func<...>>` variable failed with `CS1503`, and calling `Compile()` on the inner key made it bind to the `Enumerable` version.
 In the same environment, a `LeftJoin` whose result selector used `?.` failed with `CS8072`, the conditional-operator version built and ran, and a conditional operator without a member name inside an anonymous type failed with `CS0746`.
 Translation support was not checked per provider, so run the affected queries against the actual provider when migrating.
 

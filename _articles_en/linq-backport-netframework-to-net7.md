@@ -208,7 +208,10 @@ Because its return type matches the BCL, this polyfill asks no source changes of
 The BCL `Order` returns the same `IOrderedEnumerable<T>` as the polyfill, so code chained as `Order().ThenBy(...)` on an `IEnumerable<T>` keeps compiling unchanged after moving to .NET 7 or later.
 Calls on an `IQueryable<T>` are different.
 Before the migration they bind to the polyfill (the `Enumerable` version) and sort on the client; after it they bind to `Queryable.Order`, go to the provider, and the selector of the following `ThenBy` becomes an expression tree as well.
-A selector containing `?.`, as in `q.Order().ThenBy(x => x.Name?.Length)` on an `IQueryable<T>` `q`, therefore fails with `CS8072` (confirmed with .NET SDK 10.0.404 on Linux by building for `net10.0`).
+A selector containing `?.`, as in `q.Order().ThenBy(x => x.Name?.Length)` on an `IQueryable<T>` `q`, therefore fails with `CS8072`.
+Even without `?.`, `q.Order().ThenBy(selector)` with a `Func<T, TKey>` variable fails to compile after the migration (`CS1929`), because no `ThenBy` accepts an `IOrderedQueryable<T>` with a delegate.
+To keep sorting on the client, write `q.AsEnumerable().Order().ThenBy(selector)`.
+Both were confirmed with .NET SDK 10.0.404 on Linux by building for `net10.0`.
 Had the return type been narrowed to `IEnumerable<T>`, pre-migration code needing a secondary key would have had to fall back to `OrderBy(x => x).ThenBy(...)`, leaving a replacement with `Order` for after the migration (Compatibility Question 1).
 
 The general rule for choosing version symbols is laid out in the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/).

@@ -207,7 +207,10 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`IEnumerable<T>` に対して `Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
 `IQueryable<T>` に対する呼び出しは別である。
 移行前はポリフィル（`Enumerable` 版）に解決されてクライアント側で並べ替えるが、移行後は `Queryable.Order` に解決されてプロバイダへ渡り、続く `ThenBy` のセレクタも式ツリーになる。
-そのため `IQueryable<T>` の `q` に対する `q.Order().ThenBy(x => x.Name?.Length)` のように、`?.` を含むセレクタは `CS8072` になる（.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットにビルドして確かめた）。
+そのため `IQueryable<T>` の `q` に対する `q.Order().ThenBy(x => x.Name?.Length)` のように、`?.` を含むセレクタは `CS8072` になる。
+`?.` が無くても、`Func<T, TKey>` 型の変数を渡す `q.Order().ThenBy(selector)` は、移行後は `IOrderedQueryable<T>` に合う `ThenBy` が無く、コンパイルエラー（`CS1929`）になる。
+クライアント側で並べ替えたままにするなら、`q.AsEnumerable().Order().ThenBy(selector)` と書く。
+いずれも .NET SDK 10.0.404 / Linux で、`net10.0` をターゲットにビルドして確かめた。
 戻り値型を `IEnumerable<T>` に縮めていたら、移行前は第 2 ソートキーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
 
 バージョン別シンボルの選び方の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
