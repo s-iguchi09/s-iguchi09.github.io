@@ -89,7 +89,7 @@ On top of that, three signature-design points are aligned with the built-in API.
 
 The polyfill below provides four signatures: the `KeyValuePair` and tuple forms, each with and without a comparer.
 For sources implementing `ICollection<T>`, the dictionary capacity is pre-sized from the element count, avoiding rehashing just as the built-in implementation does.
-Add it as, for example, `LinqExtensions.Net8.cs`.
+Existing `ToDictionary` calls can stay as they are, so adding a file such as `LinqExtensions.Net8.cs` is all it takes.
 A `net48` build with .NET SDK 10.0.404 on Linux, using reference assemblies, placed this polyfill next to three existing call forms that pass a `keySelector` — `ToDictionary(k)`, `ToDictionary(k, v)` and `ToDictionary(k, comparer)` — and compiled without any ambiguity error.
 
 ```csharp
@@ -287,10 +287,10 @@ The polyfill is wrapped in `#if !NET8_0_OR_GREATER`.
 What .NET 8 added to `ToDictionary` is not a new method but new overloads of an existing one.
 So when a wrong guard strips the polyfill on .NET 7 or earlier, the symptom differs from the other backports, which add new methods.
 
-- Existing calls that pass a `keySelector` still bind to the old overloads and compile without complaint
-- Only selector-free calls fail, and the error is not "no such method"
-  - A parameterless `ToDictionary()` fails with `CS1501`, "No overload for method 'ToDictionary' takes 0 arguments"
-  - A comparer-only `ToDictionary(comparer)` is matched against the existing `ToDictionary(keySelector)` and fails with `CS0411`, "The type arguments … cannot be inferred from the usage"
+- Existing calls that pass a `keySelector` still bind to the old overloads and compile without complaint.
+- Only selector-free calls fail, and the error is not "no such method".
+  - A parameterless `ToDictionary()` fails with `CS1501`, "No overload for method 'ToDictionary' takes 0 arguments".
+  - A comparer-only `ToDictionary(comparer)` is matched against the existing `ToDictionary(keySelector)` and fails with `CS0411`, "The type arguments … cannot be inferred from the usage".
 
 Both messages read like a mistake at the call site, which makes it easy to miss that the guard condition is the real cause.
 Both errors were confirmed with .NET SDK 10.0.404 on Linux by building for `net7.0` without the polyfill (the parameterless call gave the same `CS1501` on `net6.0` too).
@@ -315,7 +315,7 @@ For the general rule — disable at and above the version that introduced the AP
 | --- | --- | --- | --- |
 | Hand-rolled polyfill (this article) | No dependency; signatures match the built-ins exactly | Requires overload-design care | `#nullable enable` codebases heading toward migration |
 | Write `ToDictionary(p => p.Key, p => p.Value)` inline | No extra code | Both selectors written every time; mass replacement at migration | When only a handful of conversions exist |
-| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | Migration work, and .NET 8 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, so a new move should pick a supported release such as .NET 10 | When you want new APIs beyond dictionary conversion too |
+| Upgrade to .NET 8 or later | Root fix; both the `KeyValuePair` and tuple overloads come built in | Migration work, and .NET 8 [went out of support](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, so a new move should pick a supported release such as .NET 10 | When you want new APIs beyond dictionary conversion too |
 
 Inline selectors cost nothing today, but consolidating to the selector-free spelling after migrating to .NET 8 or later means finding and replacing every call site.
 

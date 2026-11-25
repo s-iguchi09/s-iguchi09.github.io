@@ -78,7 +78,7 @@ var result = employees
 以下は `LeftJoin`（2 シグネチャ）・`RightJoin`（2 シグネチャ）・`Shuffle`（1 シグネチャ）のポリフィル実装一式である。
 `LeftJoin`・`RightJoin` は前述の合成イディオムを本家と同じ形で内包し、`Shuffle` はソースを配列へバッファリングしてから Fisher–Yates 法で並べ替える。
 名前空間を `System.Linq` に置く理由と移行ガードの仕組みは[シリーズ基礎編](/ja/articles/linq-backport-netframework-to-net5/)のとおりである。
-`LinqExtensions.Net10.cs` などの名前で追加して使う。
+結合の 2 メソッドと `Shuffle` を、`LinqExtensions.Net10.cs` のような 1 ファイルにまとめて置ける。
 
 ```csharp
 #nullable enable
@@ -339,6 +339,7 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 テーブル全件が転送された後にメモリ上で結合される形になり、データ量が増えるまで問題が表面化しない。
 
 .NET 10 未満で DB クエリにサーバー側の外部結合を求める場合は、プロバイダが翻訳できる `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` の形で記述する。
+この形を `IQueryable<T>` に書くとラムダが式ツリーになるため、冒頭の例の `d?.DeptName` のような null 条件演算子は使えず、`d == null ? null : d.DeptName` のように条件演算子で書く。
 `AsEnumerable` はクライアント評価の境界を引くだけで、結合をサーバー側に保つ効果はない。
 なお .NET 10 では `Queryable` にも `LeftJoin`・`RightJoin`・`Shuffle` が追加されているが、その翻訳可否はプロバイダに依存し、本記事の対象は `Enumerable` に限る。
 
@@ -351,17 +352,16 @@ var second = query.ToArray(); // 再列挙すると別の順序になり得る
 
 このガードが切り替わるとき、ソースを変えないまま振る舞いが変わるのが `IQueryable<T>` に対する呼び出しである。
 .NET 10 には `Queryable.LeftJoin` / `Queryable.RightJoin` / `Queryable.Shuffle` があるため、`IQueryable<T>` に対する同じ呼び出しが、`Enumerable` 版のポリフィルではなく `Queryable` 版に解決される。
-ただし `LeftJoin` / `RightJoin` でこうなるのは、セレクタをラムダ式で直接書いた場合である。
-`Func` 型の変数で渡すと式ツリーにできないため、移行後も `Enumerable` 版（.NET 10 では本家）に解決され、結合はクライアント側のまま動く。
+ただし `LeftJoin` / `RightJoin` でこうなるのは、3 つのセレクタをすべてラムダ式で直接書いた場合である。
+いずれかを `Func` 型の変数で渡すと式ツリーにできないため、移行後も `Enumerable` 版（.NET 10 では本家）に解決され、結合はクライアント側のまま動く。
 引数にデリゲートを取らない `Shuffle` は、常に `Queryable` 版に解決される。
 移行前はクライアント側で結合や並べ替えをしていたクエリが、移行後は式ツリーとしてプロバイダへ渡る。
 前節の落とし穴の裏返しである。
 プロバイダがこれらを翻訳できれば処理はサーバー側へ移るが、翻訳できないプロバイダでは、移行前に動いていたクエリが実行時に例外になり得る。
 
 その前に、コンパイルの段階で止まる場合もある。
-結果セレクタが式ツリーに変わるため、前述の `d?.DeptName` のように null 条件演算子を使ったラムダは、「式ツリーのラムダに null 条件演算子は使えない」という `CS8072` になる。
+結果セレクタが式ツリーに変わるため、前述の `d?.DeptName` のように null 条件演算子を使ったラムダは、式ツリーのラムダには null 条件演算子を使えないという趣旨の `CS8072` になる。
 それでも `IQueryable<T>` に対して呼んでいる箇所があれば、`d == null ? null : d.DeptName` のように条件演算子で書いておくと、移行の前後どちらでもそのままコンパイルが通る。
-前節で勧めた `GroupJoin(...).SelectMany(..., DefaultIfEmpty())` の形も、`IQueryable<T>` に書くとラムダが式ツリーになるため、同じく `?.` は使えない。
 
 .NET SDK 10.0.404 / Linux で、`net10.0` をターゲットに `IQueryable<T>` へ `LeftJoin`・`RightJoin`・`Shuffle` を呼び、いずれも戻り値が `IQueryable<T>` になる（`Queryable` 版に解決される）ことと、結果セレクタを `Func` 型の変数で渡した `LeftJoin` は `IQueryable<T>` にならないことを確かめた。
 同じ環境で、`?.` を使った結果セレクタの `LeftJoin` が `CS8072` になり、条件演算子に書き換えるとビルド・実行できることも確かめた。

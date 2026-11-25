@@ -428,7 +428,7 @@ The backports for later versions (such as `Order` in .NET 7) apply the same rule
 | Hand-rolled polyfill (this article) | No dependency; also fixes the complexity problems | Implementation effort | Projects minimizing dependencies |
 | Keep the workaround idioms | No extra code | Complexity and allocation waste persists | Data that is always tiny |
 | MoreLINQ (NuGet) | Rich, battle-tested method set | Adds an external dependency | Projects needing many extra methods |
-| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | The effort of leaving .NET Framework; .NET 6 [went out of support](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you want new APIs beyond these four methods too |
+| Upgrade to .NET 6 or later | Root fix; no polyfill to maintain or test | The effort of leaving .NET Framework; .NET 6 [went out of support](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2024, so an upgrade goes on to the current LTS, .NET 10, or later | When you want new APIs beyond these four methods too |
 
 `MoreLINQ` (NuGet package `morelinq`) covers `Chunk` and `MaxBy` equivalents, but when only these four methods are needed, a dependency-free polyfill is simpler to maintain.
 

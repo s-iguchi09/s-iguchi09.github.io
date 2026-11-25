@@ -201,12 +201,13 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 
 `Order` / `OrderDescending` の 4 シグネチャは、1 つの `#if !NET7_0_OR_GREATER` でまとめて囲む。
 条件を `!NETCOREAPP` にすると .NET Core と .NET 5・.NET 6 で、`!NET6_0_OR_GREATER` にすると .NET 6 で、まだ `Order` を持たないランタイムからポリフィルが外れる。
-呼び出し箇所は「`Order` の定義が見つからない」という `CS1061` エラーになる（.NET SDK 10.0.404 / Linux で、`net6.0` をターゲットにポリフィル無しで `Order()` を呼んで確かめた）。
+呼び出し箇所は、`Order` の定義が見つからないという趣旨の `CS1061` エラーになる（.NET SDK 10.0.404 / Linux で、`net6.0` をターゲットにポリフィル無しで `Order()` を呼んで確かめた）。
 
 戻り値型を本家と揃えたこのポリフィルは、ガードが切り替わった後も、`IEnumerable<T>` の呼び出し側にコンパイルのための書き換えを求めない（例外型の差は互換性論点 2 のとおり）。
 本家の `Order` もポリフィルと同じ `IOrderedEnumerable<T>` を返すため、`IEnumerable<T>` に対して `Order().ThenBy(...)` と連結したコードは .NET 7 以降へ移行してもそのままコンパイルが通る。
-`IQueryable<T>` に対する呼び出しは別で、移行後は `Queryable.Order` に解決され、続く `ThenBy` のセレクタが式ツリーになる。
-そのため `x => x.Name?.Length` のように `?.` を含むセレクタは `CS8072` になる（.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットにビルドして確かめた）。
+`IQueryable<T>` に対する呼び出しは別である。
+移行前はポリフィル（`Enumerable` 版）に解決されてクライアント側で並べ替えるが、移行後は `Queryable.Order` に解決されてプロバイダへ渡り、続く `ThenBy` のセレクタも式ツリーになる。
+そのため `IQueryable<T>` の `q` に対する `q.Order().ThenBy(x => x.Name?.Length)` のように、`?.` を含むセレクタは `CS8072` になる（.NET SDK 10.0.404 / Linux で、`net10.0` をターゲットにビルドして確かめた）。
 戻り値型を `IEnumerable<T>` に縮めていたら、移行前は第 2 ソートキーが必要な箇所だけ `OrderBy(x => x).ThenBy(...)` と書くしかなく、移行後に `Order` へ揃える置換が残っていた（互換性論点 1）。
 
 バージョン別シンボルの選び方の一般規則は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理している。
@@ -226,8 +227,8 @@ var result = words.Order(StringComparer.OrdinalIgnoreCase)
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
 | 委譲型ポリフィル（本記事） | 実装が数行・アルゴリズム起因のバグが入らない | 委譲先と本家の挙動差（例外型）は再現できない | `Order` の記法を移行前から使いたい場合 |
-| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・.NET 7 以降への移行時に一括置換が必要 | `OrderBy(x => x)` の呼び出しが数か所しかなく、移行予定もない場合 |
-| .NET 7 以降へのアップグレード | 根本的解決・委譲用のファイル自体を消せる | フレームワーク移行の工数に加え、.NET 7 は 2024 年 5 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support) STS 版のため、上げるなら LTS の .NET 10 などまで進むことになる | `Order` 以外にも .NET 7 以降の API を使いたい場合 |
+| `OrderBy(x => x)` を直書き | 追加コード不要 | 記述が冗長・`Order` にそろえるなら移行時に一括置換が要る | `OrderBy(x => x)` の呼び出しが数か所しかなく、移行予定もない場合 |
+| .NET 7 以降へのアップグレード | 根本的解決・委譲用のファイル自体を消せる | フレームワーク移行の工数に加え、.NET 7 は 2024 年 5 月に[サポートが終わった](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) STS 版のため、上げるなら LTS の .NET 10 などまで進むことになる | `Order` 以外にも .NET 7 以降の API を使いたい場合 |
 
 `OrderBy(x => x)` の直書きは動作上の問題こそないが、後日 .NET 7 以降へ移行して `Order` に統一する際、使用箇所を洗い出して置換する手間が残る。
 ポリフィルを導入しておけば移行前から `Order` で記述でき、移行時には条件付きコンパイルが自動で本家へ切り替える。

@@ -112,7 +112,7 @@ public static IEnumerable<KeyValuePair<TKey, int>> CountBy<TSource, TKey>(
 ## 実装例
 
 以下は 3 メソッド（`AggregateBy` の `seed` 版・`seedSelector` 版を含む計 4 シグネチャ）のポリフィル実装一式である。
-`LinqExtensions.Net9.cs` などのファイル名で追加する。
+`LinqExtensions.Net9.cs` などのファイルに置けば、.NET 9 未満のターゲットでだけ有効になる。
 
 ```csharp
 #nullable enable
@@ -346,7 +346,7 @@ var query = numbers.CountBy(n => n);
 ## 移行ガード
 
 本ポリフィルは、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)で整理した「追加されたバージョン以上で無効化する」規則に従い、`#if !NET9_0_OR_GREATER` で囲む。
-`CountBy`・`AggregateBy`・`Index` は .NET 8 以前に無いため、`!NETCOREAPP` や `!NET8_0_OR_GREATER` を条件にすると .NET 8 でポリフィルが外れ、呼び出し箇所がコンパイルエラーになる。
+`CountBy`・`AggregateBy`・`Index` は .NET 8 以前に無いため、条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜8 で、`!NET8_0_OR_GREATER` にすると .NET 8 でポリフィルが外れ、呼び出し箇所がコンパイルエラーになる。
 
 このガードでは、.NET 8 へ移行した時点でもポリフィルが動き続ける。
 サポート終了後も `net8.0` をターゲットにしたまま残っているプロジェクトや、`net48` と `net8.0` をマルチターゲットしているライブラリでは、3 メソッドが BCL に無いため、本記事の辞書ベース実装がそのまま本番で使われる（.NET SDK 10.0.404 / Linux で `net8.0` 向けにビルドして実行し、`CountBy` の結果がポリフィル側のアセンブリから返ることを確かめた）。
@@ -368,10 +368,10 @@ var query = numbers.CountBy(n => n);
 
 | 方法 | メリット | デメリット | 適するケース |
 | --- | --- | --- | --- |
-| 辞書ベースのポリフィル（本記事） | 本家と同じメモリ特性・例外挙動 | 実装がやや長い | 移行時に挙動を変えたくない場合 |
+| 辞書ベースのポリフィル（本記事） | 本家と同じメモリ特性・例外挙動 | 実装がやや長い | 移行時に例外の挙動やメモリ特性を変えたくない場合 |
 | `GroupBy` への委譲ポリフィル | 実装が数行で済む | 中間グルーピングを割り当てる・`null` キーの挙動が本家と異なる | 挙動差を理解したうえで暫定利用する場合 |
-| `GroupBy(...).Select(...)` を直書き | 追加コード不要 | 中間のグループを作るぶん割り当てが増える・null キーの挙動が本家と異なる・移行時に一括置換が必要 | 集計箇所が少なく、割り当てが問題にならない場合 |
-| .NET 9 以降へのアップグレード | 根本的解決・自作の集計コードを手放せる | 移行作業が要る。STS 版の .NET 9 のサポート期限は、.NET 8 と同じ 2026 年 11 月に[切れている](https://learn.microsoft.com/dotnet/core/releases-and-support)ので、.NET 9 を飛ばして .NET 10 以降へ上げることになる | 集計以外にも .NET 9 以降の API を使いたい場合 |
+| `GroupBy(...).Select(...)` を直書き | 追加コード不要 | 中間のグループを作るぶん割り当てが増える・`null` キーの挙動が本家と異なる・移行時に一括置換が必要 | 集計箇所が少なく、割り当てが問題にならない場合 |
+| .NET 9 以降へのアップグレード | 根本的解決・自作の集計コードを手放せる | 移行作業が要るうえに、STS 版の .NET 9 のサポート期限は、.NET 8 と同じ 2026 年 11 月に[切れている](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core)ので、.NET 9 を飛ばして .NET 10 以降へ上げることになる | 集計以外にも .NET 9 以降の API を使いたい場合 |
 
 ---
 

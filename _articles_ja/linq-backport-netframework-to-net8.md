@@ -88,7 +88,7 @@ image: /images/articles/linq-backport-netframework-to-net8/linq-todictionary-wit
 
 以下は、`KeyValuePair` 版とタプル版をそれぞれ比較子あり・なしで用意した、計 4 シグネチャのポリフィルである。
 `ICollection<T>` を実装するソースでは要素数から辞書の容量をあらかじめ確保し、本家と同様に不要な再ハッシュを避ける。
-`LinqExtensions.Net8.cs` などの名前で追加する。
+既存の `ToDictionary` 呼び出しはそのまま残せるので、`LinqExtensions.Net8.cs` などのファイルを足すだけでよい。
 .NET SDK 10.0.404 / Linux で、参照アセンブリを使って `net48` 向けに、このポリフィルと `keySelector` を渡す既存の呼び出し方 3 通り（`ToDictionary(k)`・`ToDictionary(k, v)`・`ToDictionary(k, comparer)`）を同じプロジェクトに並べたところ、曖昧さのエラーにならずにコンパイルが通った。
 
 ```csharp
@@ -286,16 +286,16 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 .NET 8 が `ToDictionary` に加えたのは、新しいメソッドではなく既存メソッドのオーバーロードである。
 そのため、ガードを誤り、.NET 7 以前でポリフィルが外れたときの症状が、新メソッドを足す他のバックポートと異なる。
 
-- `keySelector` を渡している既存の呼び出しは、従来のオーバーロードに解決されるため、何事もなくコンパイルが通る
-- エラーになるのはセレクタを省いた呼び出しだけで、内容も「メソッドが無い」ではない
-  - 引数なしの `ToDictionary()` は「引数を 0 個とるオーバーロードが無い」という `CS1501` になる
-  - 比較子だけを渡す `ToDictionary(comparer)` は、既存の `ToDictionary(keySelector)` に当てはめられて「型引数を推論できない」という `CS0411` になる
+- `keySelector` を渡している既存の呼び出しは、従来のオーバーロードに解決されるため、何事もなくコンパイルが通る。
+- エラーになるのはセレクタを省いた呼び出しだけで、内容も「メソッドが無い」ではない。
+  - 引数なしの `ToDictionary()` は、引数を 0 個とるオーバーロードが無いという趣旨の `CS1501` になる。
+  - 比較子だけを渡す `ToDictionary(comparer)` は、既存の `ToDictionary(keySelector)` に当てはめられて、型引数を推論できないという趣旨の `CS0411` になる。
 
 どちらもメッセージだけを見ると呼び出し側の書き間違いに見えるため、原因がガードの条件にあると気付きにくい。
 .NET SDK 10.0.404 / Linux で、`net7.0` をターゲットにポリフィル無しでビルドし、この 2 つのエラーを確かめた（引数なしの呼び出しは `net6.0` でも同じ `CS1501` だった）。
 条件を `!NETCOREAPP` にすると .NET Core と .NET 5〜7 で、`!NET7_0_OR_GREATER` にすると .NET 7 でポリフィルが外れ、これらのエラーになり得る。
 
-シンボル選択の一般規則（追加されたバージョン以上で無効化する）は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)を参照。
+シンボル選択の一般規則（追加されたバージョン以上で無効化する）は、[.NET 6 メソッドのバックポート記事](/ja/articles/linq-backport-netframework-to-net6/)にまとめてある。
 
 ---
 
@@ -314,7 +314,7 @@ var dictionary = query.ToDictionary(); // ここでソースが列挙される
 | --- | --- | --- | --- |
 | 自作ポリフィル（本記事） | 外部依存なし・シグネチャを本家と完全一致させられる | オーバーロード設計の検討が必要 | `#nullable enable` なコードベースで移行を見据える場合 |
 | `ToDictionary(p => p.Key, p => p.Value)` を直書き | 追加コード不要 | キーと値のセレクタを毎回書く・移行時に一括置換が必要 | 辞書化が数か所しかない場合 |
-| .NET 8 以降へのアップグレード | 根本的解決・`KeyValuePair` 版とタプル版が標準で揃う | 移行の工数がかかるうえ、.NET 8 は 2026 年 11 月に[サポートが終わった](https://learn.microsoft.com/dotnet/core/releases-and-support)ため、新たに移るならサポート中の .NET 10 などを選ぶ | 辞書化以外の新しい API もまとめて使いたい場合 |
+| .NET 8 以降へのアップグレード | 根本的解決・`KeyValuePair` 版とタプル版が標準で揃う | 移行の工数がかかるうえ、.NET 8 は 2026 年 11 月に[サポートが終わった](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core)ため、新たに移るならサポート中の .NET 10 などを選ぶ | 辞書化以外の新しい API もまとめて使いたい場合 |
 
 セレクタの直書きは追加コードこそ不要だが、後日 .NET 8 以降へ移行してセレクタなしの記法へ統一する際に、使用箇所を洗い出して置換する手間が残る。
 

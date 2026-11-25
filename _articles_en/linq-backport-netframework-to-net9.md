@@ -112,7 +112,7 @@ To keep lazy evaluation while validating arguments eagerly, the public methods a
 ## Implementation
 
 The following is the complete polyfill — 4 signatures including the `seed` and `seedSelector` forms of `AggregateBy`.
-Add it under a file name such as `LinqExtensions.Net9.cs`.
+Placed in a file such as `LinqExtensions.Net9.cs`, it takes effect only on targets below .NET 9.
 
 ```csharp
 #nullable enable
@@ -346,7 +346,7 @@ This matches the built-in .NET 9 behavior of the internal dictionary rejecting `
 ## Migration Guard
 
 Following the rule from the [.NET 6 backport article](/articles/linq-backport-netframework-to-net6/) — disable at and above the introducing version — the polyfill is wrapped in `#if !NET9_0_OR_GREATER`.
-`CountBy`, `AggregateBy` and `Index` do not exist on .NET 8 or earlier, so guarding with `!NETCOREAPP` or `!NET8_0_OR_GREATER` would strip the polyfill on .NET 8 and break compilation at the call sites.
+`CountBy`, `AggregateBy` and `Index` do not exist on .NET 8 or earlier, so guarding with `!NETCOREAPP` would strip the polyfill on .NET Core and .NET 5–8, and `!NET8_0_OR_GREATER` would strip it on .NET 8, breaking compilation at the call sites.
 
 With this guard, the polyfill keeps running after a move to .NET 8.
 In a project still left on `net8.0` after its end of support, or a library multi-targeting `net48` and `net8.0`, the three methods are missing from the BCL, so this article's dictionary-based implementation is what runs in production (a `net8.0` build run with .NET SDK 10.0.404 on Linux confirmed that the `CountBy` result comes from the polyfill's assembly).
@@ -368,10 +368,10 @@ Since key enumeration order is not guaranteed by the API, as noted above, making
 
 | Approach | Pros | Cons | Best for |
 | --- | --- | --- | --- |
-| Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping behavior identical across migration |
+| Dictionary-backed polyfill (this article) | Same memory profile and exception behavior as the built-ins | Somewhat longer implementation | Keeping exception behavior and memory profile unchanged across migration |
 | GroupBy-delegating polyfill | A few lines of code | Allocates intermediate groupings; `null`-key behavior differs from the built-ins | Temporary use with the differences understood |
-| Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; null keys behave differently from the BCL; mass replacement at migration | Few aggregation sites where allocations do not matter |
-| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/dotnet/core/releases-and-support) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
+| Write `GroupBy(...).Select(...)` inline | No extra code | Extra allocations for the intermediate groups; `null`-key behavior differs from the built-ins; mass replacement at migration | Few aggregation sites where allocations do not matter |
+| Upgrade to .NET 9 or later | Root fix; the hand-written aggregation code can go | Migration work is needed; the support window of .NET 9, an STS release, [closed](https://learn.microsoft.com/lifecycle/products/microsoft-net-and-net-core) in November 2026, the same month as .NET 8, so the upgrade skips .NET 9 and goes to .NET 10 or later | When you also want other APIs from .NET 9 onward |
 
 ---
 
