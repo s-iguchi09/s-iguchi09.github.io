@@ -223,7 +223,26 @@ internal sealed class LoginStartupExitScene : IScene
             throw new InvalidOperationException($"{condition}: メイン画面は表示されたが、1.5 秒後の観測が記録されていない。計測に失敗した。");
         }
 
-        int openCount = int.TryParse(Value("main windows open"), out int parsed) ? parsed : 0;
+        int openCount = 0;
+        if (loadedCount > 0)
+        {
+            // 観測は 1 回だけなので、後から表示されたメイン画面を数え漏らさないよう、すべての Loaded が観測より前にあることを確かめる。
+            int lastLoaded = Array.FindLastIndex(lines, l => l.Split('\t')[0] == "main loaded");
+            if (lastLoaded > Order("main after 1.5 s"))
+            {
+                throw new InvalidOperationException($"{condition}: 1.5 秒後の観測より後にメイン画面が表示された。数え漏らすため、計測の失敗とする。");
+            }
+
+            if (!int.TryParse(Value("main windows open"), out openCount))
+            {
+                throw new InvalidOperationException($"{condition}: 開いているメイン画面の数が記録されていない。計測に失敗した。");
+            }
+
+            if (openCount != loadedCount && openCount != 0)
+            {
+                throw new InvalidOperationException($"{condition}: 表示されたメイン画面は {loadedCount} つだが、1.5 秒後に開いていたのは {openCount} つだった。表の分類に無い結果である。");
+            }
+        }
 
         if (!Has("login closed"))
         {

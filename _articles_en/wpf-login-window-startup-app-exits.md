@@ -322,9 +322,10 @@ The `x:Class` in `App.xaml` is `LoginSample.App`, including the C# namespace, so
 ```
 
 Without `StartupUri`, `OnStartup` alone decides which window appears at startup.
-What happens when `StartupUri` is kept depends on `ShutdownMode`.
-With the default `ShutdownMode`, the main window is created but the app shuts down without showing it, as the "StartupUri kept, login in OnStartup" row shows.
-With this recommended form, the app does not shut down, but both the `StartupUri` main window and the one shown in `OnStartup` open, as the "recommended, StartupUri kept" row shows.
+What happens when `StartupUri` is kept depends on how `OnStartup` is written.
+With the default `ShutdownMode` and the main window left to `StartupUri`, the main window is created but the app shuts down without showing it, as the "StartupUri kept, login in OnStartup" row shows.
+If `StartupUri` is left in place with this recommended form, the app does not shut down when the login window closes, but both the `StartupUri` main window and the one shown in `OnStartup` open, as the "recommended, StartupUri kept" row shows.
+[How to get and set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window) also notes that setting both `StartupUri` and `MainWindow` displays both windows.
 
 The login window's XAML only binds an input box and two buttons to the view model.
 
@@ -365,7 +366,7 @@ The main window's code-behind also contains only `InitializeComponent`.
 ## Notes
 
 - **The return from `Show()` does not reveal the failure.** `Show()` returned without throwing after shutdown had begun. When investigating a main window that never appears, read `IsVisible` right after `Show()`, or set a breakpoint in an `Application.Exit` event handler (or an `OnExit` override)
-- **Change `ShutdownMode` before `ShowDialog`.** In the "OnExplicitShutdown set after ShowDialog returns" row, shutdown had already begun, so setting `ShutdownMode` itself threw an `InvalidOperationException`. The exception skipped the rest of `OnStartup`, and the app shut down without ever creating the main window
+- **Change `ShutdownMode` before `ShowDialog`.** In the "OnExplicitShutdown set after ShowDialog returns" row, shutdown had already begun, so setting `ShutdownMode` itself threw an `InvalidOperationException`. The exception skipped the rest of `OnStartup`, and the app shut down without ever creating the main window (the test app marked the exception as handled in `DispatcherUnhandledException`; an app without a handler was not measured)
 - **If `OnExplicitShutdown` is never switched, closing the main window does not end the app.** In the "OnExplicitShutdown kept after login" row, closing the main window did not raise `Application.Exit` and the process kept running. Write the line that switches to `OnMainWindowClose` together with the main window's `Show`
 - **Showing the login window modelessly with `Show` is not covered.** Unlike `ShowDialog`, it does not pause `OnStartup`, so it requires a different design that shows the main window from the login window's close event
 

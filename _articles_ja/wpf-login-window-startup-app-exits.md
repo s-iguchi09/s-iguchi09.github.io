@@ -322,9 +322,10 @@ namespace LoginSample
 ```
 
 `StartupUri` が無いので、起動時にどのウィンドウを出すかは `OnStartup` だけが決める。
-`StartupUri` を残したときの結果は、`ShutdownMode` で変わる。
-既定の `ShutdownMode` のままなら、表の「StartupUri を残し、OnStartup でログイン」の行のとおり、メイン画面は生成されても表示されないまま終了する。
-この推奨形で残すと、終了はしないが、表の「推奨形で StartupUri を残す」の行のとおり、`StartupUri` のメイン画面と `OnStartup` で表示したメイン画面が 2 つとも開く。
+`StartupUri` を残したときの結果は、`OnStartup` の書き方で変わる。
+既定の `ShutdownMode` のままメイン画面を `StartupUri` に任せる形では、表の「StartupUri を残し、OnStartup でログイン」の行のとおり、メイン画面は生成されても表示されないまま終了する。
+この推奨形のまま `StartupUri` を消し忘れると、ログイン画面を閉じても終了はしないが、表の「推奨形で StartupUri を残す」の行のとおり、`StartupUri` のメイン画面と `OnStartup` で表示したメイン画面が 2 つとも開く。
+`StartupUri` と `MainWindow` の両方を設定すると両方のウィンドウが表示されることは、[メイン アプリケーション ウィンドウの取得と設定](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)にも注意として書かれている。
 
 ログイン画面の XAML は、入力欄と 2 つのボタンをビューモデルにバインドするだけである。
 
@@ -365,7 +366,7 @@ namespace LoginSample
 ## 注意点
 
 - **`Show()` の戻りでは失敗を検出できない。** 終了処理が始まった後の `Show()` は例外を投げずに戻った。メイン画面が出ない症状を調べるときは、`Show()` の直後に `IsVisible` を読むか、`Application.Exit` イベントのハンドラー（または `OnExit` のオーバーライド）にブレークポイントを置く
-- **`ShutdownMode` は `ShowDialog` より前に変える。** 表の「ShowDialog が戻った後に OnExplicitShutdown を設定」の行では、終了処理がすでに始まっていたため、`ShutdownMode` の設定そのものが `InvalidOperationException` になった。例外で `OnStartup` の残りが実行されず、メイン画面は生成されないまま終了した
+- **`ShutdownMode` は `ShowDialog` より前に変える。** 表の「ShowDialog が戻った後に OnExplicitShutdown を設定」の行では、終了処理がすでに始まっていたため、`ShutdownMode` の設定そのものが `InvalidOperationException` になった。例外で `OnStartup` の残りが実行されず、メイン画面は生成されないまま終了した（検証用アプリでは `DispatcherUnhandledException` で例外を処理済みにした。ハンドラーが無いアプリでの挙動は測っていない）
 - **`OnExplicitShutdown` のまま切り替え忘れると、メイン画面を閉じても終わらない。** 表の「ログイン後も OnExplicitShutdown のまま」の行では、メイン画面を閉じても `Application.Exit` が発生せず、プロセスが残った。`OnMainWindowClose` に切り替える行を、メイン画面の `Show` と組にして書く
 - **ログイン画面を `Show`（モードレス）で出す構成は扱っていない。** `ShowDialog` と違って `OnStartup` の処理が止まらないため、ログイン画面の閉じるイベントからメイン画面を出す別の設計になる
 
