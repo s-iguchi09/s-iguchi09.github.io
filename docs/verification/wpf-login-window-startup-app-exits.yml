@@ -1,0 +1,24 @@
+# tools/screenshot-capture が実行時に自動生成する。手で編集しない。
+# 再生成: dotnet run --project tools/screenshot-capture -c Release -- wpf-login-window-startup-app-exits
+slug: "wpf-login-window-startup-app-exits"
+scene: "LoginStartupExitScene"
+environment:
+  runtime: ".NET 10.0.13"
+  os: "Microsoft Windows 10.0.26300"
+verifies:
+  - "OnLastWindowClose のまま OnStartup でログイン画面を ShowDialog すると、ShowDialog が戻った時点で Application の終了処理が始まっており、続く Show() は例外を出さずに IsVisible が false のまま戻ること"
+  - "OnMainWindowClose を起動時に設定すると、最初に生成したログイン画面が MainWindow になり、ログイン画面を閉じた時点で終了処理が始まること"
+  - "StartupUri を残したままログイン画面を出すと、ログイン画面を閉じた時点で終了処理が始まり、StartupUri のメイン画面は生成されるが表示されない（Loaded が発生しない）こと"
+  - "メイン画面を先に生成しておくと表示は続くが、ログインを取り消したときに Shutdown を呼ばないとプロセスが残り、呼べば終わること"
+  - "ログイン中は OnExplicitShutdown にし、メイン画面を MainWindow に代入してから OnMainWindowClose に切り替えると、メイン画面を閉じたときに終了すること"
+  - "MainWindow だったログイン画面を閉じると MainWindow が null に戻り、代入しなくても次に生成したメイン画面が MainWindow になること"
+  - "代入を省き、メイン画面の前に別の Window を生成すると、その Window が MainWindow になり、メイン画面を閉じても終了しないこと。代入すれば終了すること"
+  - "ログイン後に OnLastWindowClose に切り替えると、ウィンドウがメイン画面だけなら閉じたときに終了するが、表示していない別の Window が残っている間はメイン画面を閉じても終了しないこと"
+  - "ログイン後に OnMainWindowClose へ切り替えないと、メイン画面を閉じても終了しないこと"
+  - "ShowDialog が戻った後に ShutdownMode を設定すると InvalidOperationException が投げられ、OnStartup の残りが実行されずに終了すること"
+  - "OnExplicitShutdown の構成で、取り消しと × で閉じた場合（WM_CLOSE）のどちらも ShowDialog が False を返し、Shutdown を呼べばプロセスが終わること"
+images:
+  - "images/articles/wpf-login-window-startup-app-exits/login-startup-exit-matrix.svg"
+tables:
+  - "_includes/tables/articles/wpf-login-window-startup-app-exits/login-startup-exit-matrix.en.md"
+  - "_includes/tables/articles/wpf-login-window-startup-app-exits/login-startup-exit-matrix.ja.md"

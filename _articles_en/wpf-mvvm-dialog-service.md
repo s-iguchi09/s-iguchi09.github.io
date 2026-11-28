@@ -443,3 +443,4 @@ The edit is made on a copy and written back only when `true` is returned.
 - [Why WPF PasswordBox.Password Cannot Be Bound, and Two Ways to Pass It to a ViewModel](/articles/wpf-passwordbox-binding-mvvm/)
 - [Exceptions WPF's DispatcherUnhandledException Never Sees — Where Thread, Task and async void Exceptions Go](/articles/wpf-unhandled-exception-dispatcher-task-thread/)
 - [WPF DataGrid Row Double-Click to a Command: MouseDoubleClick Also Fires on Column Headers](/articles/wpf-datagrid-row-doubleclick-command-mvvm/)
+- [WPF ShutdownMode and MainWindow: Why the App Exits When the Login Window Closes](/articles/wpf-login-window-startup-app-exits/)

@@ -368,3 +368,9 @@ When window presence does not track application lifetime, move to `ShutdownMode`
 If `OnExit` is called and the process still survives, the stall is at gate 2.
 Identify the surviving thread with `dotnet-stack report` or the debugger's Threads window, and replace it with `IsBackground = true` for work that may be cut short, cancellation plus `Join` for work that must complete, or `Dispatcher.InvokeShutdown()` for a second UI thread.
 Work passed to `Task.Run` does not obstruct this gate and can be excluded from the investigation.
+
+---
+
+## Related Articles
+
+- [WPF ShutdownMode and MainWindow: Why the App Exits When the Login Window Closes](/articles/wpf-login-window-startup-app-exits/)
