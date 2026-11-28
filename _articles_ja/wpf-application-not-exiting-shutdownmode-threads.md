@@ -365,3 +365,9 @@ nullable 参照型を有効にしているプロジェクトでは、`Dispatcher
 `OnExit` が呼ばれるのにプロセスが残るなら第 2 関門である。
 `dotnet-stack report` かデバッガーのスレッドウィンドウで残存スレッドを特定し、打ち切ってよい処理なら `IsBackground` を `true` に、完了が必要ならキャンセルと `Join` に、2 つ目の UI スレッドなら `Dispatcher.InvokeShutdown()` に置き換える。
 `Task.Run` に渡した処理はこの関門を妨げないため、調査対象から外してよい。
+
+---
+
+## 関連記事
+
+- [WPF の ShutdownMode と MainWindow: ログイン画面を閉じるとアプリが終了する原因](/ja/articles/wpf-login-window-startup-app-exits/)
