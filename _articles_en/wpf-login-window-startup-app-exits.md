@@ -195,7 +195,7 @@ The subsequent `Show()` returned without throwing, and `IsVisible` was `false` r
 
 ### With OnMainWindowClose, the login window is MainWindow
 
-`Application.MainWindow` is automatically set to the first `Window` the application instantiates ([How to get and set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)).
+`Application.MainWindow` is automatically set to the first `Window` the application instantiates ([How to get or set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)).
 The first window `OnStartup` creates is the login window, so `MainWindow` is the login window during the login (the "MainWindow during login" column).
 `OnMainWindowClose` shuts down when `MainWindow` closes, so in the "OnMainWindowClose from startup" row as well, shutdown had begun right after `ShowDialog` returned.
 As with the default configuration, `IsVisible` was `false` right after the following `Show()`.
@@ -325,7 +325,7 @@ Without `StartupUri`, `OnStartup` alone decides which window appears at startup.
 What happens when `StartupUri` is kept depends on how `OnStartup` is written.
 With the default `ShutdownMode` and the main window left to `StartupUri`, the main window is created but the app shuts down without showing it, as the "StartupUri kept, login in OnStartup" row shows.
 If `StartupUri` is left in place with this recommended form, the app does not shut down when the login window closes, but both the `StartupUri` main window and the one shown in `OnStartup` open, as the "recommended, StartupUri kept" row shows.
-[How to get and set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window) also notes that setting both `StartupUri` and `MainWindow` displays both windows.
+`StartupUri` automatically instantiates and displays the specified window ([How to get or set the main application window](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)), so a second one opens in addition to the main window shown in `OnStartup`.
 
 The login window's XAML only binds an input box and two buttons to the view model.
 

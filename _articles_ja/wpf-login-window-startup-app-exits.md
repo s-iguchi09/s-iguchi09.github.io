@@ -194,7 +194,7 @@ protected override void OnStartup(StartupEventArgs e)
 
 ### OnMainWindowClose では、ログイン画面が MainWindow になる
 
-`Application.MainWindow` には、そのアプリで最初に生成された `Window` が自動的に入る（[メイン アプリケーション ウィンドウの取得と設定](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)）。
+`Application.MainWindow` には、そのアプリで最初に生成された `Window` が自動的に入る（[メイン アプリケーション ウィンドウを取得または設定する方法](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)）。
 `OnStartup` で最初に生成するのはログイン画面なので、ログイン中の `MainWindow` はログイン画面である（表の「ログイン中の MainWindow」の列）。
 `OnMainWindowClose` は `MainWindow` が閉じたときに終了するため、表の「起動時から OnMainWindowClose」の行でも、`ShowDialog` の直後には終了処理が始まっていた。
 既定の構成と同じく、続く `Show()` の直後の `IsVisible` は `false` だった。
@@ -325,7 +325,7 @@ namespace LoginSample
 `StartupUri` を残したときの結果は、`OnStartup` の書き方で変わる。
 既定の `ShutdownMode` のままメイン画面を `StartupUri` に任せる形では、表の「StartupUri を残し、OnStartup でログイン」の行のとおり、メイン画面は生成されても表示されないまま終了する。
 この推奨形のまま `StartupUri` を消し忘れると、ログイン画面を閉じても終了はしないが、表の「推奨形で StartupUri を残す」の行のとおり、`StartupUri` のメイン画面と `OnStartup` で表示したメイン画面が 2 つとも開く。
-`StartupUri` と `MainWindow` の両方を設定すると両方のウィンドウが表示されることは、[メイン アプリケーション ウィンドウの取得と設定](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)にも注意として書かれている。
+`StartupUri` は指定したウィンドウを自動で生成して表示する（[メイン アプリケーション ウィンドウを取得または設定する方法](https://learn.microsoft.com/dotnet/desktop/wpf/windows/how-to-get-set-main-application-window)）ため、`OnStartup` で表示したメイン画面とは別にもう 1 つ開く。
 
 ログイン画面の XAML は、入力欄と 2 つのボタンをビューモデルにバインドするだけである。
 
