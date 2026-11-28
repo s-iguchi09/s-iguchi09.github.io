@@ -1241,7 +1241,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-11-28T15:52:05Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1252,7 +1252,7 @@
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-application-not-exiting-shutdownmode-threads/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-application-not-exiting-shutdownmode-threads/shutdown-two-gates.svg</image:loc></image:image>
-    <lastmod>2026-10-19T22:44:57Z</lastmod>
+    <lastmod>2026-11-28T15:52:05Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1800,6 +1800,26 @@
   </url>
 
   <url>
+    <loc>https://s-iguchi09.github.io/articles/wpf-login-window-startup-app-exits/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-login-window-startup-app-exits/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-login-window-startup-app-exits/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-login-window-startup-app-exits/" />
+    <lastmod>2026-11-28T15:52:05Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://s-iguchi09.github.io/ja/articles/wpf-login-window-startup-app-exits/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-login-window-startup-app-exits/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-login-window-startup-app-exits/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-login-window-startup-app-exits/" />
+    <lastmod>2026-11-28T15:52:05Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://s-iguchi09.github.io/articles/wpf-master-detail-edit-cancel-selecteditem/" />
     <xhtml:link rel="alternate" hreflang="ja" href="https://s-iguchi09.github.io/ja/articles/wpf-master-detail-edit-cancel-selecteditem/" />
@@ -1852,7 +1872,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-not-set.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-main.png</image:loc></image:image>
-    <lastmod>2026-11-21T14:33:15Z</lastmod>
+    <lastmod>2026-11-28T15:52:05Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -1864,7 +1884,7 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://s-iguchi09.github.io/articles/wpf-mvvm-dialog-service/" />
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-not-set.png</image:loc></image:image>
     <image:image><image:loc>https://s-iguchi09.github.io/images/articles/wpf-mvvm-dialog-service/owner-main.png</image:loc></image:image>
-    <lastmod>2026-11-21T14:33:15Z</lastmod>
+    <lastmod>2026-11-28T15:52:05Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
