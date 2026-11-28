@@ -59,6 +59,12 @@ internal sealed class LoginStartupExitScene : IScene
     public async Task CaptureAsync(SceneContext context)
     {
         string workspace = Path.Combine(Path.GetTempPath(), "login-startup-exit-scene");
+        // 前の版が書き出したファイル（.cs やビルドの成果物）が残ると、記事と違うコードを測ってしまう。毎回作り直す。
+        if (Directory.Exists(workspace))
+        {
+            Directory.Delete(workspace, recursive: true);
+        }
+
         Directory.CreateDirectory(workspace);
         string executable = await BuildProbeAsync(workspace);
 
@@ -195,6 +201,16 @@ internal sealed class LoginStartupExitScene : IScene
             lines.Select(l => l.Split('\t')).FirstOrDefault(p => p[0] == key) is { Length: > 1 } p ? p[1] : null;
         bool Has(string key) => lines.Any(l => l.Split('\t')[0] == key);
         int Order(string key) => Array.FindIndex(lines, l => l.Split('\t')[0] == key);
+
+        if (Value("probe error") is { } probeError)
+        {
+            throw new InvalidOperationException($"{condition}: 検証用アプリが計測を始められなかった: {probeError}");
+        }
+
+        if (ended && !Has("Run() returned"))
+        {
+            throw new InvalidOperationException($"{condition}: 検証用アプリが Run() から戻らずに終了した（終了コード {process.ExitCode}）。異常終了とみなす。");
+        }
 
         if (!Has("login closed"))
         {
@@ -408,11 +424,9 @@ internal sealed class LoginStartupExitScene : IScene
 
             private const uint WM_CLOSE = 0x0010;
 
-            private static readonly PropertyInfo IsShuttingDownProperty =
-                typeof(Application).GetProperty("IsShuttingDown", BindingFlags.NonPublic | BindingFlags.Static)
-                ?? throw new MissingMemberException("Application.IsShuttingDown が見つからない。");
+            private static PropertyInfo? _isShuttingDownProperty;
 
-            public static bool IsShuttingDown => (bool)IsShuttingDownProperty.GetValue(null)!;
+            public static bool IsShuttingDown => (bool)_isShuttingDownProperty!.GetValue(null)!;
 
             public static void Record(string label, string value = "")
                 => File.AppendAllText(Log, $"{label}\t{value}\t{Clock.Elapsed.TotalMilliseconds:F0}\n");
@@ -423,6 +437,14 @@ internal sealed class LoginStartupExitScene : IScene
                 string condition = args.Length > 0 ? args[0] : "naive";
                 Log = args.Length > 1 ? args[1] : Log;
                 File.WriteAllText(Log, "");
+
+                // 終了処理が始まったかは公開されていないため、内部の静的プロパティを読む。見つからなければ理由を残して止める。
+                _isShuttingDownProperty = typeof(Application).GetProperty("IsShuttingDown", BindingFlags.NonPublic | BindingFlags.Static);
+                if (_isShuttingDownProperty?.PropertyType != typeof(bool))
+                {
+                    Record("probe error", "Application.IsShuttingDown が見つからない");
+                    return 2;
+                }
 
                 var app = new ProbeApp(condition);
                 if (condition == "startup-uri")
