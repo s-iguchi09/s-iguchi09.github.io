@@ -7,6 +7,7 @@
 | main window created before login, canceled, no Shutdown() | MainWindow | False | MainWindow | not started | — | — | never shown | not raised | keeps running | — |
 | main window created before login, canceled → Shutdown() | MainWindow | False | MainWindow | not started | — | — | never shown | Shutdown() | ends | — |
 | OnExplicitShutdown → OnMainWindowClose (recommended) | LoginWindow | True | null | not started | true | MainWindow | open after 1.5 s | main window closed | ends | — |
+| recommended, StartupUri kept | LoginWindow | True | null | not started | true | MainWindow | 2 open after 1.5 s | main window closed | ends | — |
 | recommended, canceled → Shutdown() | LoginWindow | False | null | not started | — | — | never created | Shutdown() | ends | — |
 | recommended, login closed with × (WM\_CLOSE) → Shutdown() | LoginWindow | False | null | not started | — | — | never created | Shutdown() | ends | — |
 | recommended without assigning MainWindow | LoginWindow | True | null | not started | true | MainWindow | open after 1.5 s | main window closed | ends | — |

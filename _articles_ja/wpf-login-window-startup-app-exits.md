@@ -178,7 +178,7 @@ protected override void OnStartup(StartupEventArgs e)
 
 {% include tables/articles/wpf-login-window-startup-app-exits/login-startup-exit-matrix.ja.md %}
 
-構成ごとに別のプロセスとして検証用アプリを起動し、`OnStartup` の中身だけを変えて記録した。.NET 10 / Windows 11 で実測。表を作るシーンを 2 回実行し（各構成を 1 回ずつ起動する）、2 回の表が一致することを確かめた。ログイン画面の操作は、表示から 0.8 秒後に、ビューモデルの `LoginCommand` を実行するか、取り消しの行では `CancelCommand` を実行するか、「× で閉じる」の行ではウィンドウへ `WM_CLOSE` を送って代えた。「ShowDialog() の戻り値」の列は `bool?` を文字列にした値（`True` / `False`）である。メイン画面は表示から 1.5 秒後に開いているかを記録してから閉じた。`MainWindow` の列は `Application.MainWindow` の型名で、「ログイン中」はログイン画面の `Loaded` で、「ログイン画面を閉じた後」は `ShowDialog` が戻った直後に、「Show() 後」は `Show()` の直後に読んだ。「ShowDialog() 直後の終了処理」は、`ShowDialog` が戻った直後に `Application` の内部の静的プロパティ `IsShuttingDown` をリフレクションで読んだ値である。「メイン画面」の列の生成の有無は、メイン画面のコンストラクタで記録した。「生成されない」はコンストラクタが呼ばれなかったこと、「表示されない」は生成されたが `Loaded` が発生しなかったことを示す。「代入を省き、…」「代入し、…」の 2 行は推奨形から変えたもので、「OnExplicitShutdown → OnLastWindowClose」の 2 行は `MainWindow` を代入している。「別の Window を生成」は、メイン画面より前に `Window` を 1 つ生成し、表示しないままにした。「Application.Exit のきっかけ」は、`ShowDialog` の直後に終了処理が始まっていた場合を、その後の `Shutdown()` の呼び出しの有無にかかわらず「ログイン画面を閉じたこと」とし、それ以外は `Exit` より前に記録された `Shutdown()` の呼び出しかメイン画面を閉じる操作とした。「—」は、その構成では `Show()` を呼ばないか、その前に処理が止まったこと（例外の列では、例外が起きなかったこと）を示す。例外は `DispatcherUnhandledException` で記録し、処理済みにした。10 秒たっても終わらないプロセスは「終わらない」とし、強制終了した。`StartupUri` の行は、`StartupUri` をコードで `MainWindow.xaml` に設定した。
+構成ごとに別のプロセスとして検証用アプリを起動し、`OnStartup` の中身だけを変えて記録した。.NET 10 / Windows 11 で実測。表を作るシーンを 2 回実行し（各構成を 1 回ずつ起動する）、2 回の表が一致することを確かめた。ログイン画面の操作は、表示から 0.8 秒後に、ビューモデルの `LoginCommand` を実行するか、取り消しの行では `CancelCommand` を実行するか、「× で閉じる」の行ではウィンドウへ `WM_CLOSE` を送って代えた。「ShowDialog() の戻り値」の列は `bool?` を文字列にした値（`True` / `False`）である。最初のメイン画面の表示から 1.5 秒後に、開いているメイン画面の数を記録してから、すべて閉じた。`MainWindow` の列は `Application.MainWindow` の型名で、「ログイン中」はログイン画面の `Loaded` で、「ログイン画面を閉じた後」は `ShowDialog` が戻った直後に、「Show() 後」は `Show()` の直後に読んだ。「ShowDialog() 直後の終了処理」は、`ShowDialog` が戻った直後に `Application` の内部の静的プロパティ `IsShuttingDown` をリフレクションで読んだ値である。「メイン画面」の列の生成の有無は、メイン画面のコンストラクタで記録した。「生成されない」はコンストラクタが呼ばれなかったこと、「表示されない」は生成されたが `Loaded` が発生しなかったことを示す。「代入を省き、…」「代入し、…」の 2 行は推奨形から変えたもので、「OnExplicitShutdown → OnLastWindowClose」の 2 行は `MainWindow` を代入している。「別の Window を生成」は、メイン画面より前に `Window` を 1 つ生成し、表示しないままにした。「Application.Exit のきっかけ」は、`ShowDialog` の直後に終了処理が始まっていた場合を、その後の `Shutdown()` の呼び出しの有無にかかわらず「ログイン画面を閉じたこと」とし、それ以外は `Exit` より前に記録された `Shutdown()` の呼び出しかメイン画面を閉じる操作とした。「—」は、その構成では `Show()` を呼ばないか、その前に処理が止まったこと（例外の列では、例外が起きなかったこと）を示す。例外は `DispatcherUnhandledException` で記録し、処理済みにした。10 秒たっても終わらないプロセスは「終わらない」とし、強制終了した。`StartupUri` を残す 2 行は、`StartupUri` をコードで `MainWindow.xaml` に設定した。
 {: .table-caption}
 
 ---
@@ -322,7 +322,9 @@ namespace LoginSample
 ```
 
 `StartupUri` が無いので、起動時にどのウィンドウを出すかは `OnStartup` だけが決める。
-`StartupUri` を残すと、表の「StartupUri を残し、OnStartup でログイン」の行のとおり、メイン画面は生成されても表示されないまま終了する。
+`StartupUri` を残したときの結果は、`ShutdownMode` で変わる。
+既定の `ShutdownMode` のままなら、表の「StartupUri を残し、OnStartup でログイン」の行のとおり、メイン画面は生成されても表示されないまま終了する。
+この推奨形で残すと、終了はしないが、表の「推奨形で StartupUri を残す」の行のとおり、`StartupUri` のメイン画面と `OnStartup` で表示したメイン画面が 2 つとも開く。
 
 ログイン画面の XAML は、入力欄と 2 つのボタンをビューモデルにバインドするだけである。
 

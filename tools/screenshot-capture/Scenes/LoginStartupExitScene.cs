@@ -26,6 +26,7 @@ internal sealed class LoginStartupExitScene : IScene
         "代入を省き、メイン画面の前に別の Window を生成すると、その Window が MainWindow になり、メイン画面を閉じても終了しないこと。代入すれば終了すること",
         "ログイン後に OnLastWindowClose に切り替えると、ウィンドウがメイン画面だけなら閉じたときに終了するが、表示していない別の Window が残っている間はメイン画面を閉じても終了しないこと",
         "ログイン後に OnMainWindowClose へ切り替えないと、メイン画面を閉じても終了しないこと",
+        "推奨形で StartupUri を残すと、終了はせず、StartupUri のメイン画面と OnStartup で表示したメイン画面の 2 つが表示されること",
         "ShowDialog が戻った後に ShutdownMode を設定すると InvalidOperationException が投げられ、OnStartup の残りが実行されずに終了すること",
         "OnExplicitShutdown の構成で、取り消しと × で閉じた場合（WM_CLOSE）のどちらも ShowDialog が False を返し、Shutdown を呼べばプロセスが終わること",
     ];
@@ -45,6 +46,7 @@ internal sealed class LoginStartupExitScene : IScene
         ("main-first-cancel", T("main window created before login, canceled, no Shutdown()", "ログイン前にメイン画面を生成、取り消し、Shutdown() なし")),
         ("main-first-cancel-shutdown", T("main window created before login, canceled → Shutdown()", "ログイン前にメイン画面を生成、取り消し → Shutdown()")),
         ("explicit", T("OnExplicitShutdown → OnMainWindowClose (recommended)", "OnExplicitShutdown → OnMainWindowClose（推奨）")),
+        ("explicit-startup-uri", T("recommended, StartupUri kept", "推奨形で StartupUri を残す")),
         ("explicit-cancel", T("recommended, canceled → Shutdown()", "推奨形、取り消し → Shutdown()")),
         ("explicit-close-button", T("recommended, login closed with × (WM_CLOSE) → Shutdown()", "推奨形、× で閉じる（WM_CLOSE）→ Shutdown()")),
         ("explicit-no-assign", T("recommended without assigning MainWindow", "推奨形から MainWindow の代入を省く")),
@@ -81,8 +83,9 @@ internal sealed class LoginStartupExitScene : IScene
                 m.VisibleAfterShow ?? "—",
                 m.MainWindowAfterShow ?? "—",
                 !m.MainCreated ? T("never created", "生成されない")
-                    : !m.MainShown ? T("never shown", "表示されない")
-                    : m.MainStillOpen ? T("open after 1.5 s", "1.5 秒後も開いている") : T("closed within 1.5 s", "1.5 秒以内に閉じる"),
+                    : m.MainShownCount == 0 ? T("never shown", "表示されない")
+                    : m.MainOpenCount >= 2 ? T($"{m.MainOpenCount} open after 1.5 s", $"1.5 秒後に {m.MainOpenCount} つ開いている")
+                    : m.MainOpenCount == 1 ? T("open after 1.5 s", "1.5 秒後も開いている") : T("closed within 1.5 s", "1.5 秒以内に閉じる"),
                 m.ExitTrigger switch
                 {
                     ExitTrigger.LoginClosed => T("login window closed", "ログイン画面を閉じたこと"),
@@ -124,8 +127,8 @@ internal sealed class LoginStartupExitScene : IScene
         string? VisibleAfterShow,
         string? MainWindowAfterShow,
         bool MainCreated,
-        bool MainShown,
-        bool MainStillOpen,
+        int MainShownCount,
+        int MainOpenCount,
         ExitTrigger ExitTrigger,
         bool ProcessEnded,
         string? Exception);
@@ -212,6 +215,16 @@ internal sealed class LoginStartupExitScene : IScene
             throw new InvalidOperationException($"{condition}: 検証用アプリが Run() から戻らずに終了した（終了コード {process.ExitCode}）。異常終了とみなす。");
         }
 
+        // メイン画面が表示されたなら、1.5 秒後の観測が記録されているはず。無ければ、観測の前に期限で
+        // 強制終了したことになる。未観測を「閉じた」と読まないよう、計測の失敗として止める。
+        int loadedCount = lines.Count(l => l.Split('\t')[0] == "main loaded");
+        if (loadedCount > 0 && !Has("main after 1.5 s"))
+        {
+            throw new InvalidOperationException($"{condition}: メイン画面は表示されたが、1.5 秒後の観測が記録されていない。計測に失敗した。");
+        }
+
+        int openCount = int.TryParse(Value("main windows open"), out int parsed) ? parsed : 0;
+
         if (!Has("login closed"))
         {
             throw new InvalidOperationException($"{condition}: ログイン画面が閉じられていない。検証用アプリが想定どおりに動いていない。");
@@ -253,8 +266,8 @@ internal sealed class LoginStartupExitScene : IScene
             Value("after Show")?.ToLowerInvariant(),
             Value("MainWindow after Show"),
             Has("main created"),
-            Has("main loaded"),
-            Value("main after 1.5 s") == "open",
+            loadedCount,
+            openCount,
             trigger,
             ended,
             Value("unhandled"));
@@ -447,7 +460,7 @@ internal sealed class LoginStartupExitScene : IScene
                 }
 
                 var app = new ProbeApp(condition);
-                if (condition == "startup-uri")
+                if (condition is "startup-uri" or "explicit-startup-uri")
                 {
                     app.StartupUri = new Uri("MainWindow.xaml", UriKind.Relative);
                 }
@@ -487,15 +500,23 @@ internal sealed class LoginStartupExitScene : IScene
                 });
             }
 
+            private static bool _observing;
+
             private static void OnMainLoaded(MainWindow main)
             {
                 Record("main loaded");
                 main.Closing += (_, _) => Record("main closing");
+
+                // 観測は最初のメイン画面の表示から 1.5 秒後に 1 回だけ行う。メイン画面が 2 つ表示される構成では、
+                // 1 つ目を閉じると OnMainWindowClose で終了するため、画面ごとに観測すると 2 つ目の観測が残らない。
+                if (_observing) return;
+                _observing = true;
                 After(1.5, () =>
                 {
-                    bool open = main.IsVisible && Application.Current?.Windows.OfType<MainWindow>().Contains(main) == true;
-                    Record("main after 1.5 s", open ? "open" : "gone");
-                    if (open) main.Close();
+                    MainWindow[] open = Application.Current?.Windows.OfType<MainWindow>().Where(w => w.IsVisible).ToArray() ?? [];
+                    Record("main after 1.5 s", open.Length > 0 ? "open" : "gone");
+                    Record("main windows open", open.Length.ToString());
+                    foreach (MainWindow window in open) window.Close();
                 });
             }
 

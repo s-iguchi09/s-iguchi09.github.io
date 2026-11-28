@@ -7,6 +7,7 @@
 | ログイン前にメイン画面を生成、取り消し、Shutdown() なし | MainWindow | False | MainWindow | 始まっていない | — | — | 表示されない | 発生しない | 終わらない | — |
 | ログイン前にメイン画面を生成、取り消し → Shutdown() | MainWindow | False | MainWindow | 始まっていない | — | — | 表示されない | Shutdown() | 終わる | — |
 | OnExplicitShutdown → OnMainWindowClose（推奨） | LoginWindow | True | null | 始まっていない | true | MainWindow | 1.5 秒後も開いている | メイン画面を閉じたこと | 終わる | — |
+| 推奨形で StartupUri を残す | LoginWindow | True | null | 始まっていない | true | MainWindow | 1.5 秒後に 2 つ開いている | メイン画面を閉じたこと | 終わる | — |
 | 推奨形、取り消し → Shutdown() | LoginWindow | False | null | 始まっていない | — | — | 生成されない | Shutdown() | 終わる | — |
 | 推奨形、× で閉じる（WM\_CLOSE）→ Shutdown() | LoginWindow | False | null | 始まっていない | — | — | 生成されない | Shutdown() | 終わる | — |
 | 推奨形から MainWindow の代入を省く | LoginWindow | True | null | 始まっていない | true | MainWindow | 1.5 秒後も開いている | メイン画面を閉じたこと | 終わる | — |

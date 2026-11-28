@@ -15,6 +15,7 @@ verifies:
   - "代入を省き、メイン画面の前に別の Window を生成すると、その Window が MainWindow になり、メイン画面を閉じても終了しないこと。代入すれば終了すること"
   - "ログイン後に OnLastWindowClose に切り替えると、ウィンドウがメイン画面だけなら閉じたときに終了するが、表示していない別の Window が残っている間はメイン画面を閉じても終了しないこと"
   - "ログイン後に OnMainWindowClose へ切り替えないと、メイン画面を閉じても終了しないこと"
+  - "推奨形で StartupUri を残すと、終了はせず、StartupUri のメイン画面と OnStartup で表示したメイン画面の 2 つが表示されること"
   - "ShowDialog が戻った後に ShutdownMode を設定すると InvalidOperationException が投げられ、OnStartup の残りが実行されずに終了すること"
   - "OnExplicitShutdown の構成で、取り消しと × で閉じた場合（WM_CLOSE）のどちらも ShowDialog が False を返し、Shutdown を呼べばプロセスが終わること"
 images:
